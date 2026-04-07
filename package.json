@@ -1,0 +1,20 @@
+{
+  "name": "likaslens",
+  "version": "0.0.1",
+  "private": true,
+  "description": "LikasLens - Neuro-symbolic civic reporting platform",
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint",
+    "syncpack:list": "syncpack list-mismatches",
+    "syncpack:fix": "syncpack fix-mismatches"
+  },
+  "devDependencies": {
+    "syncpack": "^14.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

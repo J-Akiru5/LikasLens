@@ -1,0 +1,128 @@
+# =========================
+# Node.js / pnpm
+# =========================
+node_modules/
+.pnpm-store/
+.pnpm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn
+
+# =========================
+# Next.js
+# =========================
+apps/frontend/.next/
+apps/frontend/out/
+apps/frontend/.swc/
+apps/frontend/build/
+
+# PWA generated files
+apps/frontend/public/sw.js
+apps/frontend/public/sw.js.map
+apps/frontend/public/workbox-*.js
+apps/frontend/public/workbox-*.js.map
+
+# =========================
+# Python / Poetry
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+.env.local
+
+# Poetry
+poetry.lock
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# =========================
+# Laravel / PHP
+# =========================
+apps/backend/vendor/
+apps/backend/.env
+apps/backend/.env.backup
+apps/backend/.env.production
+apps/backend/storage/*.key
+apps/backend/storage/logs/
+apps/backend/bootstrap/cache/
+apps/backend/public/hot
+apps/backend/public/storage
+apps/backend/Homestead.yaml
+apps/backend/Homestead.json
+apps/backend/auth.json
+
+# Laravel Sail
+apps/backend/docker-compose.override.yml
+
+# =========================
+# IDE / Editors
+# =========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# =========================
+# Testing / Coverage
+# =========================
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+htmlcov/
+.pytest_cache/
+.phpunit.result.cache
+
+# =========================
+# Build & Logs
+# =========================
+dist/
+build/
+*.log
+logs/
+
+# =========================
+# Environment Files
+# =========================
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# =========================
+# Misc
+# =========================
+*.bak
+*.tmp
+*.temp
+.cache/
