@@ -1,6 +1,7 @@
 # LikasLens
 
 > Neuro-symbolic civic reporting platform
+>The platform is a smart community watchdog that lets everyday  citizens earn rewards for reporting minor environmental issues, while a public scoreboard holds local governments accountable for how fast they resolve them. For highly dangerous crimes like illegal logging, a built-in safety scanner can instantly warn users to switch into an untraceable "Ghost Mode" to protect their identity. Behind the scenes, a powerful AI brain automatically analyzes the photos, checks local laws, and instantly forwards the report to the exact government agency responsible for taking action.
 
 ## Project Structure
 
