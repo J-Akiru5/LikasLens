@@ -17,3 +17,24 @@ You are operating within a `pnpm` monorepo with three strictly isolated environm
 ## 4. PACKAGE MANAGEMENT
 * This is a `pnpm` workspace. NEVER suggest `npm install` or `yarn add`.
 * Use `pnpm --filter <app-name> add <package>` for localized dependencies.
+
+## 5. BUILD, RUN, AND TEST BASELINE
+Use these defaults unless a task requires app-specific alternatives:
+* Install workspace dependencies: `pnpm install`
+* Start all services: `pnpm dev`
+* Frontend only: `pnpm --filter frontend dev`
+* Frontend build: `pnpm --filter frontend build`
+* Frontend lint: `pnpm --filter frontend lint`
+* Backend tests: `cd apps/backend && php artisan test`
+* Backend formatting/linting: `cd apps/backend && ./vendor/bin/pint`
+* AI service run: `cd apps/ai-service && python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001`
+
+## 6. PROJECT NAVIGATION
+* Primary onboarding and env setup: `README.md`
+* Frontend guidance can be overridden by nearest `AGENTS.md` in `apps/frontend`.
+* Keep instructions minimal in this file; link to docs instead of duplicating large guidance blocks.
+
+## 7. TASK EXECUTION CONVENTIONS
+* Respect service boundaries first, then implement changes in the owning app.
+* For any cross-service payload change, propose and align OpenAPI contract updates before implementation.
+* For frontend image upload flows, explicitly include EXIF stripping before transmission.
