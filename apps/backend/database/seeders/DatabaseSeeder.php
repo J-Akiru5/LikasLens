@@ -15,9 +15,15 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        $this->call([
+            EnvironmentalLawSeeder::class,
+        ]);
+
         User::factory()->create([
+            'supabase_auth_user_id' => '11111111-1111-1111-1111-111111111111',
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'role' => 'citizen',
         ]);
     }
 }
