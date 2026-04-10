@@ -4,13 +4,19 @@
   "private": true,
   "description": "LikasLens - Neuro-symbolic civic reporting platform",
   "scripts": {
-    "dev": "pnpm -r --parallel run dev",
-    "build": "pnpm -r run build",
-    "lint": "pnpm -r run lint",
-    "syncpack:list": "syncpack list-mismatches",
-    "syncpack:fix": "syncpack fix-mismatches"
+    "dev": "concurrently -n \"FRONTEND,BACKEND,AI\" -c \"cyan,magenta,yellow\" \"pnpm dev:frontend\" \"pnpm dev:backend\" \"pnpm dev:ai\"",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:backend": "cd apps/backend && php artisan serve --host=127.0.0.1 --port=8000",
+    "dev:ai": "cd apps/ai-service && python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001",
+    "build": "pnpm --filter frontend build",
+    "build:all": "pnpm build",
+    "lint": "pnpm --filter frontend lint",
+    "install:all": "pnpm install && cd apps/backend && composer install && cd ../ai-service && pip install -r requirements.txt",
+    "clean": "pnpm --filter frontend clean && rm -rf node_modules",
+    "check:deps": "syncpack list-mismatches"
   },
   "devDependencies": {
+    "concurrently": "^9.1.0",
     "syncpack": "^14.3.0"
   },
   "engines": {
