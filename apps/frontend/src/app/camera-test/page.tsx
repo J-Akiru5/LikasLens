@@ -113,7 +113,7 @@ export default function CameraTestPage() {
           }
         >
           {isLoading
-            ? "initialising"
+            ? "initializing"
             : isActive
             ? "streaming"
             : errorMessage
