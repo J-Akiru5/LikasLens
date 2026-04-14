@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -16,12 +16,15 @@ export const metadata: Metadata = {
   title: "LikasLens",
   description: "Neuro-symbolic civic reporting platform",
   manifest: "/manifest.json",
-  themeColor: "#0ea5e9",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "LikasLens",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0ea5e9",
 };
 
 export default function RootLayout({
