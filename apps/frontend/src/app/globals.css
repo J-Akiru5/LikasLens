@@ -1,26 +1,197 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8f9fa;
+  --foreground: #081c15;
+  --panel: #f8f9fa;
+  --panel-border: rgba(8, 28, 21, 0.2);
+  --muted-text: rgba(8, 28, 21, 0.8);
+  --hero-overlay: linear-gradient(140deg, rgba(27, 67, 50, 0.92), rgba(8, 28, 21, 0.88));
+  --accent: #ffb703;
+  --secondary: #2de1c2;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-data);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root[data-theme="ghost"] {
+  --background: #081c15;
+  --foreground: #f8f9fa;
+  --panel: rgba(8, 28, 21, 0.9);
+  --panel-border: rgba(45, 225, 194, 0.35);
+  --muted-text: rgba(248, 249, 250, 0.84);
+  --hero-overlay: linear-gradient(140deg, rgba(8, 28, 21, 0.95), rgba(27, 67, 50, 0.92));
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Inter, "Helvetica Now", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.font-heading {
+  font-family: var(--font-heading), Montserrat, "Archivo Black", Arial, sans-serif;
+}
+
+.font-data {
+  font-family: var(--font-data), "Space Mono", "JetBrains Mono", "Courier New", monospace;
+}
+
+.font-body {
+  font-family: var(--font-body), Inter, "Helvetica Now", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.landing-shell {
+  background-image:
+    radial-gradient(circle at 10% 5%, rgba(45, 225, 194, 0.14), transparent 38%),
+    radial-gradient(circle at 92% 12%, rgba(255, 183, 3, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(27, 67, 50, 0.14), transparent 40%);
+}
+
+.landing-panel {
+  border-color: var(--panel-border);
+  background: var(--panel);
+  backdrop-filter: blur(2px);
+}
+
+.hero-panel {
+  background-image:
+    var(--hero-overlay),
+    linear-gradient(120deg, rgba(45, 225, 194, 0.06), rgba(255, 183, 3, 0.08));
+  color: #f8f9fa;
+}
+
+.ghost-panel {
+  background-image:
+    radial-gradient(circle at 30% 20%, rgba(45, 225, 194, 0.14), transparent 40%),
+    radial-gradient(circle at 68% 66%, rgba(255, 183, 3, 0.22), transparent 42%),
+    linear-gradient(160deg, rgba(8, 28, 21, 0.96), rgba(27, 67, 50, 0.94));
+  color: #f8f9fa;
+}
+
+:root[data-theme="ghost"] .ghost-panel {
+  animation: ghost-flicker 4.6s ease-in-out infinite;
+}
+
+.landing-link {
+  color: var(--foreground);
+  text-underline-offset: 4px;
+}
+
+.landing-link:hover,
+.landing-link:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.cta-primary {
+  color: #081c15;
+  background: var(--secondary);
+  border: 1px solid rgba(8, 28, 21, 0.3);
+}
+
+.cta-primary:hover,
+.cta-primary:focus-visible {
+  background: #f8f9fa;
+}
+
+.cta-secondary {
+  color: #f8f9fa;
+  border: 1px solid rgba(248, 249, 250, 0.45);
+}
+
+.cta-secondary:hover,
+.cta-secondary:focus-visible {
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-flex;
+  width: 2.8rem;
+  height: 1.5rem;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--panel-border);
+  background: rgba(8, 28, 21, 0.2);
+  transition: background-color 200ms ease;
+}
+
+.theme-switch.is-on {
+  background: rgba(45, 225, 194, 0.45);
+}
+
+.theme-switch-dot {
+  height: 1.1rem;
+  width: 1.1rem;
+  margin-left: 0.1rem;
+  border-radius: 9999px;
+  background: #f8f9fa;
+  transition: transform 200ms ease;
+}
+
+.theme-switch.is-on .theme-switch-dot {
+  transform: translateX(1.25rem);
+}
+
+.score-row {
+  background: linear-gradient(95deg, rgba(27, 67, 50, 0.1), rgba(45, 225, 194, 0.06));
+  border-color: rgba(27, 67, 50, 0.25);
+}
+
+.reward-tile {
+  background: linear-gradient(90deg, rgba(45, 225, 194, 0.1), rgba(248, 249, 250, 0.2));
+}
+
+.avatar-dot {
+  height: 5rem;
+  width: 5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(248, 249, 250, 0.34);
+  background: radial-gradient(circle at 30% 20%, rgba(248, 249, 250, 0.4), rgba(45, 225, 194, 0.25));
+}
+
+.avatar-dot.ghost {
+  border-color: rgba(255, 183, 3, 0.7);
+  box-shadow: 0 0 24px rgba(255, 183, 3, 0.35);
+  background: radial-gradient(circle at 30% 20%, rgba(248, 249, 250, 0.35), rgba(255, 183, 3, 0.28));
+}
+
+.bionic-frame {
+  border-color: rgba(45, 225, 194, 0.6);
+}
+
+.ai-grid {
+  background-image:
+    linear-gradient(rgba(45, 225, 194, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 225, 194, 0.2) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(27, 67, 50, 0.7), rgba(8, 28, 21, 0.9));
+  background-size: 24px 24px, 24px 24px, cover;
+}
+
+@keyframes ghost-flicker {
+  0%, 100% {
+    filter: brightness(1) saturate(1);
+  }
+  48% {
+    filter: brightness(1.04) saturate(1.02);
+  }
+  52% {
+    filter: brightness(0.98) saturate(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="ghost"] .ghost-panel {
+    animation: none;
+  }
 }
