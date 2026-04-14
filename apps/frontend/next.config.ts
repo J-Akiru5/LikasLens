@@ -3,6 +3,7 @@ import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  turbopack: {},
 };
 
 const pwaConfig = withPWA({
