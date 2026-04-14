@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat, Space_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -24,12 +24,15 @@ export const metadata: Metadata = {
   title: "LikasLens",
   description: "Neuro-symbolic civic reporting platform",
   manifest: "/manifest.json",
-  themeColor: "#1B4332",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "LikasLens",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0ea5e9",
 };
 
 export default function RootLayout({
