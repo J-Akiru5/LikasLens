@@ -1,46 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { resendConfirmation, signIn, signUp } from "@/app/actions/auth";
 
 export default function LoginPage() {
 	const searchParams = useSearchParams();
-	const [isLogin, setIsLogin] = useState(false);
+	const [isLogin, setIsLogin] = useState(() => searchParams.get("mode") === "login");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [name, setName] = useState("");
 	const [agreeToUpdates, setAgreeToUpdates] = useState(false);
-	const [statusMessage, setStatusMessage] = useState("");
-	const [statusType, setStatusType] = useState<"success" | "error" | "">("");
 
-	useEffect(() => {
+	const status = useMemo(() => {
 		const error = searchParams.get("error");
 		const message = searchParams.get("message");
-		const mode = searchParams.get("mode");
-
-		if (mode === "login") setIsLogin(true);
 
 		if (error) {
-			setStatusType("error");
-			setStatusMessage(error);
-			if (error.toLowerCase().includes("email not confirmed")) setIsLogin(true);
-			return;
+			return { type: "error" as const, message: error };
 		}
 
 		if (message) {
-			setStatusType("success");
-			setStatusMessage(message);
-			if (message.toLowerCase().includes("confirmation")) setIsLogin(true);
-			return;
+			return { type: "success" as const, message };
 		}
 
-		setStatusType("");
-		setStatusMessage("");
+		return { type: "" as const, message: "" };
 	}, [searchParams]);
 
 	const showResend =
-		statusType === "error" && statusMessage.toLowerCase().includes("email not confirmed");
+		status.type === "error" && status.message.toLowerCase().includes("email not confirmed");
+	const shouldForceLogin =
+		showResend || status.message.toLowerCase().includes("confirmation");
+	const activeLoginView = shouldForceLogin || isLogin;
 
 	return (
 		<main className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
@@ -48,7 +39,7 @@ export default function LoginPage() {
 				<div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 md:p-12">
 						<div className="flex flex-col justify-center">
-							{isLogin ? (
+							{activeLoginView ? (
 								<div>
 									<h1 className="text-3xl font-bold text-gray-900 mb-2">Login</h1>
 									<p className="text-gray-600 mb-6">
@@ -62,15 +53,15 @@ export default function LoginPage() {
 										</button>
 									</p>
 
-									{statusMessage ? (
+									{status.message ? (
 										<div
 											className={`mb-4 rounded-lg p-4 text-sm font-medium ${
-												statusType === "error"
+												status.type === "error"
 													? "bg-red-50 text-red-800 border border-red-200"
 													: "bg-green-50 text-green-800 border border-green-200"
 											}`}
 										>
-											{statusMessage}
+											{status.message}
 										</div>
 									) : null}
 
@@ -136,15 +127,15 @@ export default function LoginPage() {
 										</button>
 									</p>
 
-									{statusMessage ? (
+									{status.message ? (
 										<div
 											className={`mb-6 rounded-lg p-4 text-sm font-medium ${
-												statusType === "error"
+												status.type === "error"
 													? "bg-red-50 text-red-800 border border-red-200"
 													: "bg-green-50 text-green-800 border border-green-200"
 											}`}
 										>
-											{statusMessage}
+											{status.message}
 										</div>
 									) : null}
 
@@ -220,10 +211,10 @@ export default function LoginPage() {
 									<p className="text-gray-400 text-sm">Illustration</p>
 								</div>
 								<h2 className="text-2xl font-semibold text-gray-800 mb-2">
-									{isLogin ? "Welcome Back!" : "Get Started"}
+									{activeLoginView ? "Welcome Back!" : "Get Started"}
 								</h2>
 								<p className="text-gray-600">
-									{isLogin
+									{activeLoginView
 										? "Login to access your civic reporting dashboard"
 										: "Join LikasLens and start reporting environmental issues"}
 								</p>

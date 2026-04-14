@@ -66,11 +66,33 @@ body {
 }
 
 .ghost-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   background-image:
     radial-gradient(circle at 30% 20%, rgba(45, 225, 194, 0.14), transparent 40%),
     radial-gradient(circle at 68% 66%, rgba(255, 183, 3, 0.22), transparent 42%),
     linear-gradient(160deg, rgba(8, 28, 21, 0.96), rgba(27, 67, 50, 0.94));
   color: #f8f9fa;
+}
+
+.ghost-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -30% -10%;
+  height: 62%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 70%, rgba(248, 249, 250, 0.08), transparent 48%),
+    radial-gradient(circle at 65% 75%, rgba(248, 249, 250, 0.1), transparent 54%);
+  filter: blur(14px);
+  animation: ghost-smoke 9s ease-in-out infinite;
+}
+
+:root[data-theme="ghost"] .ghost-panel > * {
+  position: relative;
+  z-index: 1;
 }
 
 :root[data-theme="ghost"] .ghost-panel {
@@ -190,8 +212,24 @@ body {
   }
 }
 
+@keyframes ghost-smoke {
+  0%,
+  100% {
+    transform: translate3d(0, 10px, 0) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate3d(0, -8px, 0) scale(1.06);
+    opacity: 0.7;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root[data-theme="ghost"] .ghost-panel {
+    animation: none;
+  }
+
+  .ghost-panel::after {
     animation: none;
   }
 }

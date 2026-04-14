@@ -2,37 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-type ScoreRow = {
-  rank: number;
-  agency: string;
-  user: string;
-  responseTime: string;
-};
-
-const scoreData: ScoreRow[] = [
-  { rank: 1, agency: "Forest Guard", user: "Gov Agency North", responseTime: "14 minutes" },
-  { rank: 2, agency: "Dept. Environment", user: "Gov Agency River", responseTime: "16 minutes" },
-  { rank: 3, agency: "City Sanitation", user: "Gov Agency Metro", responseTime: "20 minutes" },
-  { rank: 4, agency: "Coastal Watch", user: "Gov Agency Bay", responseTime: "23 minutes" },
-];
+import { PublicScoreboard } from "@/components/scoreboard/public-scoreboard";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { scoreboardRows } from "@/lib/mock-data";
 
 export default function Home() {
   const [ghostMode, setGhostMode] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem("likaslens-theme");
-    setGhostMode(storedTheme === "ghost");
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
     const themeValue = ghostMode ? "ghost" : "civic";
     document.documentElement.setAttribute("data-theme", themeValue);
     window.localStorage.setItem("likaslens-theme", themeValue);
-  }, [ghostMode, mounted]);
+  }, [ghostMode]);
 
   return (
     <main className="landing-shell min-h-screen">
@@ -44,19 +25,10 @@ export default function Home() {
             <li><a href="#scoreboard" className="landing-link">Scoreboard</a></li>
             <li><a href="#technology" className="landing-link">Technology</a></li>
             <li><a href="#rewards" className="landing-link">Rewards</a></li>
+            <li><Link href="/dashboard" className="landing-link">Dashboard</Link></li>
             <li><Link href="/login" className="landing-link">Login</Link></li>
           </ul>
-          <button
-            type="button"
-            onClick={() => setGhostMode((value) => !value)}
-            className="flex items-center gap-3 rounded-full border px-3 py-1.5 text-sm"
-            aria-label="Toggle Ghost Mode"
-          >
-            <span className="font-body">Ghost Mode</span>
-            <span className={`theme-switch ${ghostMode ? "is-on" : ""}`}>
-              <span className="theme-switch-dot" />
-            </span>
-          </button>
+          <ThemeToggle ghostMode={ghostMode} onToggle={() => setGhostMode((value) => !value)} />
         </nav>
       </header>
 
@@ -79,6 +51,9 @@ export default function Home() {
             <a href="#scoreboard" className="cta-secondary rounded-lg px-5 py-3 font-semibold uppercase tracking-wide">
               View Public Scoreboard
             </a>
+            <Link href="/dashboard" className="cta-secondary rounded-lg px-5 py-3 font-semibold uppercase tracking-wide">
+              Open Command Dashboard
+            </Link>
           </div>
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <StatChip label="Cities Connected" value="38" />
@@ -97,22 +72,7 @@ export default function Home() {
             <p className="font-body mt-1 text-sm">Recent issues resolved by agency</p>
           </header>
 
-          <div className="grid gap-3">
-            <div className="font-data hidden grid-cols-[0.4fr_1.6fr_1fr_1fr] rounded-md border px-3 py-2 text-xs uppercase tracking-[0.12em] sm:grid">
-              <span>Rank</span>
-              <span>Agency</span>
-              <span>User Name</span>
-              <span className="text-right">Response</span>
-            </div>
-            {scoreData.map((row) => (
-              <div key={row.rank} className="score-row grid items-center gap-2 rounded-lg border px-3 py-3 sm:grid-cols-[0.4fr_1.6fr_1fr_1fr]">
-                <span className="font-data text-2xl font-bold sm:text-xl">{row.rank}</span>
-                <span className="font-body text-sm font-semibold sm:text-base">{row.agency}</span>
-                <span className="font-body text-sm">{row.user}</span>
-                <span className="font-data text-sm sm:text-right">{row.responseTime}</span>
-              </div>
-            ))}
-          </div>
+          <PublicScoreboard rows={scoreboardRows} />
           <a href="#" className="landing-link mt-4 inline-block text-sm">Show more details</a>
         </article>
       </section>
