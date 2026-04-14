@@ -19,42 +19,42 @@ export default function LoginPage() {
 		const message = searchParams.get("message");
 		const mode = searchParams.get("mode");
 
-		if (mode === "login") {
-			setIsLogin(true);
-		}
+		if (mode === "login") setIsLogin(true);
 
 		if (error) {
 			setStatusType("error");
 			setStatusMessage(error);
-			if (error.toLowerCase().includes("email not confirmed")) {
-				setIsLogin(true);
-			}
-		} else if (message) {
+			if (error.toLowerCase().includes("email not confirmed")) setIsLogin(true);
+			return;
+		}
+
+		if (message) {
 			setStatusType("success");
 			setStatusMessage(message);
-			if (message.toLowerCase().includes("confirmation")) {
-				setIsLogin(true);
-			}
-		} else {
-			setStatusType("");
-			setStatusMessage("");
+			if (message.toLowerCase().includes("confirmation")) setIsLogin(true);
+			return;
 		}
+
+		setStatusType("");
+		setStatusMessage("");
 	}, [searchParams]);
+
+	const showResend =
+		statusType === "error" && statusMessage.toLowerCase().includes("email not confirmed");
 
 	return (
 		<main className="min-h-screen bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center p-4">
 			<div className="w-full max-w-4xl">
 				<div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 md:p-12">
-						{/* Form Section */}
 						<div className="flex flex-col justify-center">
 							{isLogin ? (
-								// Login Form
 								<div>
 									<h1 className="text-3xl font-bold text-gray-900 mb-2">Login</h1>
 									<p className="text-gray-600 mb-6">
-										Don't have an account?{" "}
+										Don&apos;t have an account?{" "}
 										<button
+											type="button"
 											onClick={() => setIsLogin(false)}
 											className="text-blue-600 font-semibold hover:underline"
 										>
@@ -62,9 +62,9 @@ export default function LoginPage() {
 										</button>
 									</p>
 
-									{statusMessage && (
+									{statusMessage ? (
 										<div
-											className={`mb-6 rounded-lg p-4 text-sm font-medium ${
+											className={`mb-4 rounded-lg p-4 text-sm font-medium ${
 												statusType === "error"
 													? "bg-red-50 text-red-800 border border-red-200"
 													: "bg-green-50 text-green-800 border border-green-200"
@@ -72,29 +72,13 @@ export default function LoginPage() {
 										>
 											{statusMessage}
 										</div>
-									)}
+									) : null}
 
 									<form className="flex flex-col gap-4">
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-2">
-												Email
-											</label>
+											<label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
 											<input
 												type="email"
-
-											{statusType === "error" &&
-												statusMessage.toLowerCase().includes("email not confirmed") && (
-													<form className="mb-4">
-														<input type="hidden" name="email" value={email} />
-														<button
-															type="submit"
-															formAction={resendConfirmation}
-															className="text-sm font-semibold text-blue-700 hover:underline"
-														>
-															Resend confirmation email
-														</button>
-													</form>
-												)}
 												name="email"
 												placeholder="Enter your email here"
 												value={email}
@@ -105,9 +89,7 @@ export default function LoginPage() {
 										</div>
 
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-2">
-												Password
-											</label>
+											<label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
 											<input
 												type="password"
 												name="password"
@@ -119,22 +101,34 @@ export default function LoginPage() {
 											/>
 										</div>
 
+										<input type="hidden" name="email" value={email} />
+
 										<button
 											type="submit"
 											formAction={signIn}
-											className="w-32 mx-auto mt-4 px-6 py-3 bg-blue-700 text-white font-semibold rounded-full hover:bg-blue-800 transition-colors"
+											className="w-32 mx-auto mt-2 px-6 py-3 bg-blue-700 text-white font-semibold rounded-full hover:bg-blue-800 transition-colors"
 										>
 											Login
 										</button>
+
+										{showResend ? (
+											<button
+												type="submit"
+												formAction={resendConfirmation}
+												className="mx-auto text-sm font-semibold text-blue-700 hover:underline"
+											>
+												Resend confirmation email
+											</button>
+										) : null}
 									</form>
 								</div>
 							) : (
-								// Sign Up Form
 								<div>
 									<h1 className="text-3xl font-bold text-gray-900 mb-2">Sign up</h1>
 									<p className="text-gray-600 mb-6">
 										Already have account?{" "}
 										<button
+											type="button"
 											onClick={() => setIsLogin(true)}
 											className="text-blue-600 font-semibold hover:underline"
 										>
@@ -142,7 +136,7 @@ export default function LoginPage() {
 										</button>
 									</p>
 
-									{statusMessage && (
+									{statusMessage ? (
 										<div
 											className={`mb-6 rounded-lg p-4 text-sm font-medium ${
 												statusType === "error"
@@ -152,13 +146,11 @@ export default function LoginPage() {
 										>
 											{statusMessage}
 										</div>
-									)}
+									) : null}
 
 									<form className="flex flex-col gap-4">
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-2">
-												Name
-											</label>
+											<label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
 											<input
 												type="text"
 												name="name"
@@ -171,9 +163,7 @@ export default function LoginPage() {
 										</div>
 
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-2">
-												Email Id
-											</label>
+											<label className="block text-sm font-medium text-gray-700 mb-2">Email Id</label>
 											<input
 												type="email"
 												name="email"
@@ -186,9 +176,7 @@ export default function LoginPage() {
 										</div>
 
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-2">
-												Password
-											</label>
+											<label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
 											<input
 												type="password"
 												name="password"
@@ -225,10 +213,8 @@ export default function LoginPage() {
 							)}
 						</div>
 
-						{/* Illustration Section */}
 						<div className="hidden md:flex flex-col justify-center items-center">
 							<div className="text-center">
-								{/* Placeholder illustration - using emoji and text */}
 								<div className="mb-6">
 									<div className="text-6xl mb-4">👤📱</div>
 									<p className="text-gray-400 text-sm">Illustration</p>
