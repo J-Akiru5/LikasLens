@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from gremlin_bootstrap import build_bootstrap_queries
+from graph_topology import build_seed_edges, build_seed_vertices, get_topology_config
+
 # Load environment variables
 load_dotenv()
 
@@ -65,6 +68,34 @@ async def root():
         "docs": "/docs",
         "health": "/health",
     }
+
+
+@app.get("/graph/topology")
+async def graph_topology():
+    """Return the canonical Gremlin graph topology used by LikasLens."""
+    topology = get_topology_config()
+    return {
+        "vertex_labels": topology.vertex_labels,
+        "edge_labels": topology.edge_labels,
+        "edge_properties": topology.edge_properties,
+    }
+
+
+@app.get("/graph/bootstrap-payload")
+async def graph_bootstrap_payload():
+    """Return deterministic seed payloads that can be upserted into Cosmos Gremlin."""
+    return {
+        "vertices": build_seed_vertices(),
+        "edges": build_seed_edges(),
+    }
+
+
+@app.get("/graph/bootstrap-queries")
+async def graph_bootstrap_queries():
+    """Return idempotent Gremlin upsert traversals for the seed graph."""
+    vertices = build_seed_vertices()
+    edges = build_seed_edges()
+    return build_bootstrap_queries(vertices, edges)
 
 
 if __name__ == "__main__":
