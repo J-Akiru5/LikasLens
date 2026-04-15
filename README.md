@@ -75,7 +75,7 @@ ENVIRONMENT=development
 cd apps/frontend && pnpm dev
 
 # Terminal 2: Backend (Laravel)
-cd apps/backend && php artisan serve
+cd apps/backend && php artisan serve --host=127.0.0.1 --port=8000
 
 # Terminal 3: AI Service (FastAPI)
 cd apps/ai-service
@@ -83,10 +83,16 @@ cd apps/ai-service
 uvicorn main:app --reload --port 8001
 ```
 
-Or from root:
+Or from root (workspace package dev scripts only):
 ```bash
-pnpm dev  # Runs frontend dev server
+pnpm dev
 ```
+
+Important:
+- `pnpm dev` executes the root workspace script `pnpm -r --parallel run dev`.
+- That runs each package `dev` script in the workspace, but it does **not** run Laravel's PHP server command.
+- The Laravel API must still be started explicitly from `apps/backend` using `php artisan serve`.
+- If AI service dependencies are missing (e.g. `No module named uvicorn`), run `pip install -r requirements.txt` inside `apps/ai-service` after activating the virtual environment.
 
 ## Service Endpoints
 

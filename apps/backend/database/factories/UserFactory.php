@@ -24,8 +24,12 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'supabase_auth_user_id' => fake()->uuid(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'role' => 'citizen',
+            'trust_score' => fake()->numberBetween(0, 100),
+            'reward_points_balance' => 0,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
