@@ -1,0 +1,37 @@
+<?php
+
+return [
+    /*
+    |--------------------------------------------------------------------------
+    | Cross-Origin Resource Sharing (CORS) Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure CORS settings for your Laravel application.
+    | This configuration is used by the Illuminate\Http\Middleware\HandleCors
+    | middleware to handle Cross-Origin Requests.
+    |
+    */
+
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+
+    'allowed_methods' => ['*'],
+
+    'allowed_origins' => [
+        'localhost:3000',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+    ],
+
+    'allowed_origins_patterns' => [
+        '/^http:\/\/localhost:\d+$/',
+        '/^http:\/\/127\.0\.0\.1:\d+$/',
+    ],
+
+    'allowed_headers' => ['*'],
+
+    'exposed_headers' => [],
+
+    'max_age' => 0,
+
+    'supports_credentials' => false,
+];
