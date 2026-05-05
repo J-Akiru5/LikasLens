@@ -16,6 +16,7 @@ import {
   Globe,
   Bot,
 } from "lucide-react";
+import { UserNav } from "@/components/layout/user-nav";
 
 export default function Home() {
   const [ghostMode, setGhostMode] = useState(false);
@@ -31,13 +32,13 @@ export default function Home() {
       <div
         className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-700"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=3270&auto=format&fit=crop')",
-          opacity: ghostMode ? 0.4 : 1,
+          backgroundImage: "url('/images/bg-hero.png')",
+          filter: ghostMode ? "invert(1) hue-rotate(180deg) brightness(1.2)" : "none",
+          opacity: ghostMode ? 0.8 : 1,
         }}
       >
         <div
-          className={`absolute inset-0 backdrop-blur-[3px] transition-colors duration-700 ${ghostMode ? "bg-[#081c15]/90" : "bg-[#f8f9fa]/40"}`}
+          className={`absolute inset-0 backdrop-blur-[3px] transition-colors duration-700 ${ghostMode ? "bg-[#081c15]/60" : "bg-[#f8f9fa]/40"}`}
         />
       </div>
 
@@ -68,20 +69,7 @@ export default function Home() {
             <Fingerprint className="w-4 h-4" /> Ghost Mode
           </button>
         </div>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/login"
-            className="text-sm font-bold uppercase hover:text-primary transition-colors text-primary/70"
-          >
-            Log In
-          </Link>
-          <Link
-            href="/dashboard"
-            className="brutal-button px-5 py-2.5 rounded text-sm"
-          >
-            Open Dashboard
-          </Link>
-        </div>
+        <UserNav />
       </nav>
 
       {/* Hero Section */}

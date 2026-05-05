@@ -7,7 +7,9 @@ const stats = [
     trend: "+12%",
     isPositive: false,
     icon: AlertOctagon,
-    color: "text-accent"
+    color: "text-accent",
+    progress: 75,
+    progressColor: "bg-accent"
   },
   {
     label: "Resolved Today",
@@ -15,7 +17,9 @@ const stats = [
     trend: "+5%",
     isPositive: true,
     icon: CheckCircle2,
-    color: "text-secondary"
+    color: "text-secondary",
+    progress: 40,
+    progressColor: "bg-secondary"
   },
   {
     label: "Avg Response",
@@ -23,7 +27,9 @@ const stats = [
     trend: "-2m",
     isPositive: true,
     icon: Clock,
-    color: "text-primary"
+    color: "text-primary",
+    progress: 85,
+    progressColor: "bg-primary"
   },
   {
     label: "System Load",
@@ -31,7 +37,9 @@ const stats = [
     trend: "Stable",
     isPositive: true,
     icon: Activity,
-    color: "text-blue-500"
+    color: "text-blue-500",
+    progress: 98,
+    progressColor: "bg-blue-500"
   }
 ];
 
@@ -49,12 +57,16 @@ export function StatsCards() {
               </div>
             </div>
 
-            <div className="flex items-end gap-3 relative z-10">
+            <div className="flex items-end gap-3 relative z-10 mb-4">
               <div className="font-heading text-5xl font-black text-primary">{stat.value}</div>
               <div className={`flex items-center font-mono text-sm font-bold mb-1 ${stat.isPositive ? 'text-secondary' : 'text-accent'}`}>
                 {stat.isPositive ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                 {stat.trend}
               </div>
+            </div>
+
+            <div className="w-full h-2 bg-primary/10 rounded-full overflow-hidden relative z-10">
+              <div className={`h-full ${stat.progressColor} transition-all duration-1000 ease-out`} style={{ width: `${stat.progress}%` }} />
             </div>
 
             <Icon className="absolute -bottom-6 -right-6 w-32 h-32 text-primary/5 group-hover:scale-110 transition-transform duration-500" />
