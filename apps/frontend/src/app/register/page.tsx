@@ -1,10 +1,31 @@
+"use client";
+
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import { Leaf, ArrowRight } from "lucide-react";
+import { signUp } from "@/app/actions/auth";
 
 export default function RegisterPage() {
+  const searchParams = useSearchParams();
+
+  const status = useMemo(() => {
+    const error = searchParams.get("error");
+    const message = searchParams.get("message");
+
+    if (error) {
+      return { type: "error" as const, message: error };
+    }
+
+    if (message) {
+      return { type: "success" as const, message };
+    }
+
+    return { type: "" as const, message: "" };
+  }, [searchParams]);
+
   return (
     <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden font-body selection:bg-accent/30 selection:text-current">
-      {/* Background with blur */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center"
         style={{
@@ -29,25 +50,29 @@ export default function RegisterPage() {
           Join us to protect the environment
         </p>
 
-        <form className="space-y-6">
-          <div>
-            <label className="block font-mono text-sm font-bold uppercase mb-2">
-              Full Name
-            </label>
-            <input
-              type="text"
-              className="w-full brutal-panel px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-medium"
-              placeholder="Jane Doe"
-            />
+        {status.message ? (
+          <div
+            className={`mb-6 p-4 rounded border-2 font-mono text-sm font-bold ${
+              status.type === "error"
+                ? "bg-accent/20 border-accent text-accent"
+                : "bg-secondary/20 border-secondary text-primary"
+            }`}
+          >
+            {status.message}
           </div>
+        ) : null}
+
+        <form action={signUp} className="space-y-6">
           <div>
             <label className="block font-mono text-sm font-bold uppercase mb-2">
               Email Address
             </label>
             <input
               type="email"
+              name="email"
               className="w-full brutal-panel px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-medium"
               placeholder="you@example.com"
+              required
             />
           </div>
           <div>
@@ -56,8 +81,10 @@ export default function RegisterPage() {
             </label>
             <input
               type="password"
+              name="password"
               className="w-full brutal-panel px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-secondary font-medium"
               placeholder="••••••••"
+              required
             />
           </div>
 
@@ -65,7 +92,9 @@ export default function RegisterPage() {
             <div className="mt-1">
               <input
                 type="checkbox"
+                name="agreeToUpdates"
                 className="w-5 h-5 border-2 border-primary rounded text-secondary focus:ring-secondary accent-secondary"
+                required
               />
             </div>
             <span className="text-sm font-medium text-primary/80 leading-snug">
@@ -75,7 +104,7 @@ export default function RegisterPage() {
           </label>
 
           <button
-            type="button"
+            type="submit"
             className="w-full brutal-button py-4 rounded font-heading text-lg tracking-wider flex items-center justify-center gap-2"
           >
             Sign Up <ArrowRight className="w-5 h-5" />

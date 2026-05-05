@@ -8,6 +8,8 @@ import {
   FileText,
   Settings,
   Leaf,
+  Home,
+  ArrowLeft,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -57,7 +59,14 @@ export function Sidebar() {
         })}
       </div>
 
-      <div className="p-6 border-t-4 border-primary">
+      <div className="p-6 border-t-4 border-primary space-y-2">
+        <Link
+          href="/"
+          className="flex items-center gap-3 px-4 py-3 font-bold uppercase rounded text-primary border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all group"
+        >
+          <Home className="w-5 h-5" />
+          <span>Back to Home</span>
+        </Link>
         <Link
           href="/dashboard/settings"
           className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all ${
