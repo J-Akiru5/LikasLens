@@ -40,7 +40,7 @@ export default function ReportPage() {
 			};
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_LARAVEL_API_URL}/api/reports`,
+				`${process.env.NEXT_PUBLIC_API_URL}/reports`,
 				{
 					method: "POST",
 					headers: {
