@@ -25,9 +25,9 @@
 	- Status: Not started. Scoreboard UI files are not present yet.
 
 **FE2 (Hardware & PWA):**
-- [ ] Create a blank test page to open mobile camera via HTML5 `<video>`.
-- [ ] Build standalone UI component: "Take Photo" button.
-	- Status: Not started yet.
+- [x] Create a blank test page to open mobile camera via HTML5 `<video>`.
+- [x] Build standalone UI component: "Take Photo" button.
+	- Status: Completed in `apps/frontend/src/app/camera-test/page.tsx`.
 
 **FE3 (State & API Connector):**
 - [ ] Connect Next.js app to Supabase Auth SDK.
@@ -55,8 +55,9 @@
 - [ ] Implement dynamic Tailwind dark/light theme switching based on toggle state.
 
 **FE2:**
-- [ ] Update Camera component to capture and save base64 image / File.
-- [ ] Integrate Geolocation API to get Lat/Long when photo snaps.
+- [x] Update Camera component to capture and save base64 image / File.
+- [x] Integrate Geolocation API to get Lat/Long when photo snaps.
+	- Status: Completed in `apps/frontend/src/app/camera-test/page.tsx`.
 
 **FE3:**
 - [ ] Create Form State to hold FE2's camera/GPS data.
@@ -78,8 +79,9 @@
 - [ ] Build User Profile UI to display Eco-Credits.
 
 **FE2:**
-- [ ] Write JS utility function to strip EXIF data from images.
-- [ ] Apply EXIF stripper ONLY when Ghost Mode toggle is ON.
+- [x] Write JS utility function to strip EXIF data from images.
+- [x] Apply EXIF stripper ONLY when Ghost Mode toggle is ON.
+	- Status: Completed in `apps/frontend/src/utils/exifStripper.ts` and `apps/frontend/src/app/camera-test/page.tsx`.
 
 **FE3:**
 - [ ] Hook up Scoreboard UI to fetch real data from Laravel GET endpoint.
@@ -99,8 +101,9 @@
 - [ ] Ensure theme colors meet contrast accessibility standards.
 
 **FE2:**
-- [ ] Install and configure `next-pwa` plugin.
-- [ ] Generate `manifest.json` and app icons for home screen installation.
+- [x] Install and configure `next-pwa` plugin.
+- [x] Generate `manifest.json` and app icons for home screen installation.
+	- Status: Completed in `apps/frontend/next.config.ts`, `apps/frontend/public/manifest.json`, and `apps/frontend/public/icons/`.
 
 **FE3:**
 - [ ] Add offline error catching (prompt user if connection drops).
@@ -115,4 +118,4 @@
 * **Workflow Rules:** Devs use a Kanban board. No more than 2 tickets "In Progress" at once per dev.
 
 ## 🤝 Handoff Notes
-*ReD update: Sprint 1 status was audited and annotated with Partial/Not started markers. FE2 remains not started. Use the status notes above to claim next tickets in Kanban.*
+*ReD update: Sprint 1 status was audited and annotated with Partial/Not started markers. FE2 camera test, capture + GPS, EXIF stripping, and PWA setup are now implemented. Use the status notes above to claim next tickets in Kanban.*
