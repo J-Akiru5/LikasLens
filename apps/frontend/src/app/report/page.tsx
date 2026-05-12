@@ -33,6 +33,7 @@ export default function ReportPage() {
 		setToastMessage("");
 
 		try {
+			const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
 			const payload = {
 				base64Image,
 				latitude,
@@ -40,160 +41,147 @@ export default function ReportPage() {
 			};
 
 			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_API_URL}/reports`,
+				`${laravelUrl}/api/reports`,
 				{
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
+						Accept: "application/json",
 					},
 					body: JSON.stringify(payload),
 				}
 			);
 
 			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
+				const errorData = await response.json().catch(() => ({}));
+				throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
 			}
 
-			setToastMessage("Report Submitted!");
+			const responseData = await response.json();
+			setToastMessage(responseData.message || "Report Submitted Successfully!");
 			clearForm();
 		} catch (error) {
 			console.error("Error submitting report:", error);
-			setToastMessage("Error submitting report.");
+			setToastMessage(
+				error instanceof Error ? `Error: ${error.message}` : "Error submitting report. Check console and CORS."
+			);
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
 	return (
-		<main style={{ padding: "20px", maxWidth: "800px", margin: "0 auto", fontFamily: "Arial, sans-serif" }}>
-			<div style={{ backgroundColor: "#f9f9f9", padding: "30px", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-				<h1 style={{ marginBottom: "20px", color: "#333" }}>Report Submission Form</h1>
+		<main className="min-h-screen bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center p-4">
+			<div className="w-full max-w-2xl">
+				<div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8">
+					<h1 className="text-3xl font-bold text-gray-900 mb-2">Report Environmental Issue</h1>
+					<p className="text-gray-600 mb-6">
+						Help us protect the environment by reporting violations in your area.
+					</p>
 
-				{toastMessage && (
-					<div style={{ 
-						padding: "15px", 
-						margin: "20px 0", 
-						border: "2px solid", 
-						borderRadius: "6px",
-						backgroundColor: toastMessage.includes("Error") ? "#ffe6e6" : "#e6ffe6",
-						borderColor: toastMessage.includes("Error") ? "#ff6b6b" : "#51cf66",
-						color: toastMessage.includes("Error") ? "#c92a2a" : "#2f9e44",
-						fontWeight: "bold"
-					}}>
-						{toastMessage}
-					</div>
-				)}
-
-				<div style={{ marginBottom: "30px", padding: "15px", backgroundColor: "#fff", borderRadius: "6px", border: "1px solid #ddd" }}>
-					<h2 style={{ marginTop: "0", color: "#555" }}>📷 Image State</h2>
-					<div style={{ padding: "20px", backgroundColor: "#f5f5f5", borderRadius: "4px", textAlign: "center" }}>
-						{base64Image ? <img src={base64Image} alt="Report" style={{ maxWidth: "200px", borderRadius: "4px" }} /> : <p style={{ color: "#999" }}>No image yet</p>}
-					</div>
-					<p style={{ marginTop: "10px", color: "#666" }}>Base64 Length: <strong>{base64Image.length} chars</strong></p>
-				</div>
-
-				<div style={{ marginBottom: "30px", padding: "15px", backgroundColor: "#fff", borderRadius: "6px", border: "1px solid #ddd" }}>
-					<h2 style={{ marginTop: "0", color: "#555" }}>📍 GPS Coordinates</h2>
-					<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-						<p style={{ backgroundColor: "#f5f5f5", padding: "10px", borderRadius: "4px" }}>
-							<strong>Latitude:</strong><br />
-							<span style={{ fontSize: "18px", color: "#007bff" }}>{latitude ?? "Not set"}</span>
-						</p>
-						<p style={{ backgroundColor: "#f5f5f5", padding: "10px", borderRadius: "4px" }}>
-							<strong>Longitude:</strong><br />
-							<span style={{ fontSize: "18px", color: "#007bff" }}>{longitude ?? "Not set"}</span>
-						</p>
-					</div>
-				</div>
-
-				<form onSubmit={handleSubmit}>
-					<div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
-						<button 
-							type="button" 
-							onClick={populateWithTestData}
-							style={{
-								padding: "12px 24px",
-								backgroundColor: "#28a745",
-								color: "white",
-								border: "none",
-								borderRadius: "6px",
-								cursor: "pointer",
-								fontWeight: "bold",
-								fontSize: "14px",
-								transition: "background-color 0.2s"
-							}}
-							onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#218838"}
-							onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#28a745"}
+					{toastMessage && (
+						<div
+							className={`mb-6 rounded-lg p-4 text-sm font-medium ${
+								toastMessage.toLowerCase().includes("error")
+									? "bg-red-50 text-red-800 border border-red-200"
+									: "bg-green-50 text-green-800 border border-green-200"
+							}`}
 						>
-							✓ Populate with Test Data
-						</button>
-						<button 
-							type="button" 
-							onClick={clearForm}
-							style={{
-								padding: "12px 24px",
-								backgroundColor: "#dc3545",
-								color: "white",
-								border: "none",
-								borderRadius: "6px",
-								cursor: "pointer",
-								fontWeight: "bold",
-								fontSize: "14px",
-								transition: "background-color 0.2s"
-							}}
-							onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#c82333"}
-							onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#dc3545"}
-						>
-							✕ Clear Form
-						</button>
+							{toastMessage}
+						</div>
+					)}
+
+					{/* Image Preview */}
+					<div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+						<h2 className="text-lg font-semibold text-gray-800 mb-4">📷 Image Preview</h2>
+						<div className="h-40 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-auto">
+							{base64Image ? (
+								<img
+									src={base64Image}
+									alt="Report"
+									className="max-h-full max-w-full rounded"
+								/>
+							) : (
+								<p className="text-gray-400 text-center">No image yet</p>
+							)}
+						</div>
+						<p className="text-xs text-gray-500 mt-2">
+							Base64 Length: <strong>{base64Image.length} characters</strong>
+						</p>
 					</div>
 
-					<div style={{ marginBottom: "30px" }}>
+					{/* GPS Coordinates */}
+					<div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+						<h2 className="text-lg font-semibold text-gray-800 mb-4">📍 GPS Coordinates</h2>
+						<div className="grid grid-cols-2 gap-4">
+							<div className="bg-white p-4 rounded-lg border border-gray-200">
+								<p className="text-sm font-medium text-gray-600 mb-1">Latitude</p>
+								<p className="text-xl font-bold text-green-700">
+									{latitude ?? "Not set"}
+								</p>
+							</div>
+							<div className="bg-white p-4 rounded-lg border border-gray-200">
+								<p className="text-sm font-medium text-gray-600 mb-1">Longitude</p>
+								<p className="text-xl font-bold text-green-700">
+									{longitude ?? "Not set"}
+								</p>
+							</div>
+						</div>
+					</div>
+
+					{/* Action Buttons */}
+					<form onSubmit={handleSubmit} className="space-y-4">
+						<div className="grid grid-cols-2 gap-4">
+							<button
+								type="button"
+								onClick={populateWithTestData}
+								className="px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+							>
+								✓ Test Data
+							</button>
+							<button
+								type="button"
+								onClick={clearForm}
+								className="px-4 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+							>
+								✕ Clear Form
+							</button>
+						</div>
+
 						<button
 							type="submit"
 							disabled={isSubmitting || !base64Image || latitude === null || longitude === null}
-							style={{
-								width: "100%",
-								padding: "16px",
-								backgroundColor: isSubmitting ? "#ccc" : "#007bff",
-								color: "white",
-								border: "none",
-								borderRadius: "6px",
-								cursor: isSubmitting ? "not-allowed" : "pointer",
-								fontWeight: "bold",
-								fontSize: "16px",
-								transition: "background-color 0.2s"
-							}}
-							onMouseOver={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = "#0056b3")}
-							onMouseOut={(e) => !isSubmitting && (e.currentTarget.style.backgroundColor = "#007bff")}
+							className={`w-full px-6 py-3 font-semibold rounded-lg transition-colors ${
+								isSubmitting || !base64Image || latitude === null || longitude === null
+									? "bg-gray-400 text-white cursor-not-allowed"
+									: "bg-green-700 text-white hover:bg-green-800"
+							}`}
 						>
 							{isSubmitting ? "⏳ Sending to LGU..." : "🚀 Submit Report"}
 						</button>
-					</div>
-				</form>
+					</form>
 
-				<div style={{ padding: "15px", backgroundColor: "#e8f4f8", borderRadius: "6px", border: "1px solid #b3e5fc" }}>
-					<h2 style={{ marginTop: "0", color: "#00838f", fontSize: "14px" }}>Debug Info</h2>
-					<pre style={{ 
-						backgroundColor: "#fff", 
-						padding: "10px", 
-						borderRadius: "4px", 
-						overflow: "auto",
-						fontSize: "12px",
-						border: "1px solid #b3e5fc"
-					}}>
-						{JSON.stringify(
-							{
-								base64ImageLength: base64Image.length,
-								latitude,
-								longitude,
-								isSubmitting,
-								toastMessage,
-							},
-							null,
-							2
-						)}
-					</pre>
+					{/* Debug Info */}
+					<div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+						<h3 className="text-sm font-semibold text-blue-900 mb-2">Debug Info</h3>
+						<pre className="text-xs bg-white p-3 rounded border border-blue-200 overflow-auto max-h-40 text-gray-700">
+							{JSON.stringify(
+								{
+									base64ImageLength: base64Image.length,
+									latitude,
+									longitude,
+									isSubmitting,
+									laravelUrl: process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000",
+									toastMessage,
+								},
+								null,
+								2
+							)}
+						</pre>
+						<p className="text-xs text-blue-700 mt-2">
+							<strong>Env Check:</strong> Set <code className="bg-white px-2 py-1 rounded">NEXT_PUBLIC_LARAVEL_API_URL</code> in .env.local
+						</p>
+					</div>
 				</div>
 			</div>
 		</main>
