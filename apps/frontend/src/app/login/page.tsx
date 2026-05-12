@@ -120,9 +120,9 @@ export default function LoginPage() {
 									</form>
 								</div>
 							) : (
-								<div>
-									<h1 className="text-3xl font-bold text-gray-900 mb-2">Sign up</h1>
-									<p className="text-gray-600 mb-6">
+								<div className="w-full">
+									<h1 className="text-4xl font-extrabold text-gray-900 mb-3">Sign up</h1>
+									<p className="text-sm text-gray-600 mb-6">
 										Already have account?{" "}
 										<button
 											type="button"
@@ -145,45 +145,39 @@ export default function LoginPage() {
 										</div>
 									) : null}
 
-									<form className="flex flex-col gap-4">
-										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
-											<input
-												type="text"
-												name="name"
-												placeholder="Enter your name here"
-												value={name}
-												onChange={(e) => setName(e.target.value)}
-												className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-												required
-											/>
-										</div>
+									<form className="flex flex-col gap-5">
+										<label className="block text-sm font-medium text-gray-700">Name</label>
+										<input
+											type="text"
+											name="name"
+											placeholder="Charlyn Aguirre"
+											value={name}
+											onChange={(e) => setName(e.target.value)}
+											className="w-full px-5 py-4 bg-blue-50 rounded-xl border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-300"
+											required
+										/>
 
-										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-2">Email Id</label>
-											<input
-												type="email"
-												name="email"
-												placeholder="Enter your email here"
-												value={email}
-												onChange={(e) => setEmail(e.target.value)}
-												className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-												required
-											/>
-										</div>
+										<label className="block text-sm font-medium text-gray-700">Email Id</label>
+										<input
+											type="email"
+											name="email"
+											placeholder="you@example.com"
+											value={email}
+											onChange={(e) => setEmail(e.target.value)}
+											className="w-full px-5 py-4 bg-blue-50 rounded-xl border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-300"
+											required
+										/>
 
-										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-											<input
-												type="password"
-												name="password"
-												placeholder="Enter your password here"
-												value={password}
-												onChange={(e) => setPassword(e.target.value)}
-												className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-												required
-											/>
-										</div>
+										<label className="block text-sm font-medium text-gray-700">Password</label>
+										<input
+											type="password"
+											name="password"
+											placeholder="Enter a secure password"
+											value={password}
+											onChange={(e) => setPassword(e.target.value)}
+											className="w-full px-5 py-4 bg-blue-50 rounded-xl border border-transparent focus:outline-none focus:ring-2 focus:ring-blue-300"
+											required
+										/>
 
 										<label className="flex items-center gap-3 py-2">
 											<input
@@ -191,7 +185,7 @@ export default function LoginPage() {
 												name="agreeToUpdates"
 												checked={agreeToUpdates}
 												onChange={(e) => setAgreeToUpdates(e.target.checked)}
-												className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+												className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-300"
 											/>
 											<span className="text-sm text-gray-600">
 												By signing up you agree to receive updates and special Offers
@@ -201,13 +195,13 @@ export default function LoginPage() {
 										<button
 											type="submit"
 											formAction={signUp}
-											className="w-32 mx-auto mt-4 px-6 py-3 bg-blue-700 text-white font-semibold rounded-full hover:bg-blue-800 transition-colors"
+											className="mt-6 w-44 mx-auto px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-700 text-white font-semibold rounded-full shadow-lg hover:from-blue-600 hover:to-blue-800 transition-colors"
 										>
 											Submit
 										</button>
 									</form>
 								</div>
-							)}
+							)
 						</div>
 
 						<div className="hidden md:flex flex-col justify-center items-center">
