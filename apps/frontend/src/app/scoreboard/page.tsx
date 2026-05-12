@@ -40,36 +40,30 @@ export default function ScoreboardPage() {
   }, []);
 
   return (
-    <main className="min-h-screen p-6">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Public Scoreboard</h1>
+    <main>
+      <h1>Public Scoreboard</h1>
 
-        {loading ? (
-          <div className="space-y-2">
-            <div className="h-6 bg-gray-200 rounded w-3/4 animate-pulse" />
-            <div className="h-6 bg-gray-200 rounded w-1/2 animate-pulse" />
-            <div className="h-6 bg-gray-200 rounded w-5/6 animate-pulse" />
-          </div>
-        ) : error ? (
-          <div className="p-4 bg-red-50 text-red-800 rounded">{error}</div>
-        ) : (
-          <ol className="space-y-3">
-            {data && data.length ? (
-              data.map((u, idx) => (
-                <li key={u.id} className="p-4 bg-white rounded shadow-sm flex justify-between items-center">
-                  <div>
-                    <div className="font-medium">{idx + 1}. {u.name}</div>
-                    <div className="text-xs text-gray-500">Eco Credits: {u.eco_credits ?? u.score}</div>
-                  </div>
-                  <div className="text-lg font-semibold text-green-700">{u.eco_credits ?? u.score}</div>
-                </li>
-              ))
-            ) : (
-              <div className="p-4 text-gray-600">No leaderboard entries yet.</div>
-            )}
-          </ol>
-        )}
-      </div>
+      {loading ? (
+        <ul>
+          <li>Loading...</li>
+          <li>Loading...</li>
+          <li>Loading...</li>
+        </ul>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        <ol>
+          {data && data.length ? (
+            data.map((u, idx) => (
+              <li key={u.id}>
+                {idx + 1}. {u.name} - Eco Credits: {u.eco_credits ?? u.score}
+              </li>
+            ))
+          ) : (
+            <li>No leaderboard entries yet.</li>
+          )}
+        </ol>
+      )}
     </main>
   );
 }
