@@ -100,9 +100,6 @@ export default function LoginPage() {
 												required
 											/>
 										</div>
-
-										<input type="hidden" name="email" value={email} />
-
 										<button
 											type="submit"
 											formAction={signIn}

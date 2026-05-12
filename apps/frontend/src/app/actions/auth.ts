@@ -29,13 +29,18 @@ export async function signIn(formData: FormData) {
 export async function signUp(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
+  const agreeToUpdates = String(formData.get("agreeToUpdates") ?? "").trim() === "on";
 
   if (!email || !password) {
     redirect("/login?error=Email+and+password+are+required.");
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({ email, password });
+  const { error } = await supabase.auth.signUp(
+    { email, password },
+    { data: { name, agreeToUpdates } }
+  );
 
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
