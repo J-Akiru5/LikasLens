@@ -25,9 +25,9 @@
 	- Status: Not started. Scoreboard UI files are not present yet.
 
 **FE2 (Hardware & PWA):**
-- [ ] Create a blank test page to open mobile camera via HTML5 `<video>`.
-- [ ] Build standalone UI component: "Take Photo" button.
-	- Status: Not started yet.
+- [x] Create a blank test page to open mobile camera via HTML5 `<video>`.
+- [x] Build standalone UI component: "Take Photo" button.
+	- Status: Completed in `apps/frontend/src/app/camera-test/page.tsx`.
 
 **FE3 (State & API Connector):**
 - [ ] Connect Next.js app to Supabase Auth SDK.
@@ -115,4 +115,4 @@
 * **Workflow Rules:** Devs use a Kanban board. No more than 2 tickets "In Progress" at once per dev.
 
 ## 🤝 Handoff Notes
-*ReD update: Sprint 1 status was audited and annotated with Partial/Not started markers. FE2 remains not started. Use the status notes above to claim next tickets in Kanban.*
+*ReD update: Sprint 1 status was audited and annotated with Partial/Not started markers. FE2 camera test page and Take Photo button are now implemented. Use the status notes above to claim next tickets in Kanban.*
