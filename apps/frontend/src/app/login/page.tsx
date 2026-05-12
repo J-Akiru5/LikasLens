@@ -199,9 +199,10 @@ export default function LoginPage() {
 										>
 											Submit
 										</button>
-									</form>
-								</div>
-							)
+								</form>
+							</div>
+						)
+						}
 						</div>
 
 						<div className="hidden md:flex flex-col justify-center items-center">
