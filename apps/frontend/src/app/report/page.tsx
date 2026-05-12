@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function ReportPage() {
 	const [base64Image, setBase64Image] = useState<string>("");
@@ -8,6 +9,7 @@ export default function ReportPage() {
 	const [longitude, setLongitude] = useState<number | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [toastMessage, setToastMessage] = useState("");
+	const [isGhostMode, setIsGhostMode] = useState(false);
 
 	// Dummy test data
 	const mockBase64Image =
@@ -34,23 +36,64 @@ export default function ReportPage() {
 
 		try {
 			const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
-			const payload = {
-				base64Image,
+
+			// Strip EXIF by re-encoding the image via canvas (works for JPEG/PNG in browser)
+			async function stripExif(base64: string) {
+				if (!base64) return base64;
+				return await new Promise<string>((resolve) => {
+					const img = new Image();
+					img.crossOrigin = "anonymous";
+					img.onload = () => {
+						try {
+							const canvas = document.createElement("canvas");
+							canvas.width = img.naturalWidth || img.width;
+							canvas.height = img.naturalHeight || img.height;
+							const ctx = canvas.getContext("2d");
+							if (!ctx) return resolve(base64);
+							ctx.drawImage(img, 0, 0);
+							const cleaned = canvas.toDataURL();
+							resolve(cleaned);
+						} catch (err) {
+							resolve(base64);
+						}
+					};
+					img.onerror = () => resolve(base64);
+					img.src = base64;
+				});
+			}
+
+			const cleanedImage = await stripExif(base64Image);
+
+			// Try to fetch Supabase user id unless Ghost Mode is enabled
+			let userId: string | undefined = undefined;
+			if (!isGhostMode) {
+				try {
+					const supabase = createClient();
+					const {
+						data: { user },
+					} = await supabase.auth.getUser();
+					userId = user?.id;
+				} catch {
+					// ignore, continue anonymously if not available
+				}
+			}
+
+			const payload: Record<string, unknown> = {
+				base64Image: cleanedImage,
 				latitude,
 				longitude,
 			};
 
-			const response = await fetch(
-				`${laravelUrl}/api/reports`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Accept: "application/json",
-					},
-					body: JSON.stringify(payload),
-				}
-			);
+			if (userId && !isGhostMode) payload["user_id"] = userId;
+
+			const response = await fetch(`${laravelUrl}/api/reports`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json",
+				},
+				body: JSON.stringify(payload),
+			});
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({}));
