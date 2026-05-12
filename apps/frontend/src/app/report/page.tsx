@@ -84,7 +84,11 @@ export default function ReportPage() {
 				longitude,
 			};
 
-			if (userId && !isGhostMode) payload["user_id"] = userId;
+			if (isGhostMode) {
+				payload["user_id"] = "ANONYMOUS_GHOST";
+			} else if (userId) {
+				payload["user_id"] = userId;
+			}
 
 			const response = await fetch(`${laravelUrl}/api/reports`, {
 				method: "POST",
@@ -172,6 +176,28 @@ export default function ReportPage() {
 						</div>
 					</div>
 
+					<div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+						<div className="flex items-center justify-between gap-4">
+							<div>
+								<p className="text-sm font-semibold text-emerald-900">Ghost Mode</p>
+								<p className="text-xs text-emerald-700">
+									Send report anonymously and mask user identity.
+								</p>
+							</div>
+							<label className="inline-flex items-center gap-2">
+								<input
+									type="checkbox"
+									checked={isGhostMode}
+									onChange={(e) => setIsGhostMode(e.target.checked)}
+									className="h-5 w-5 accent-emerald-600"
+								/>
+								<span className="text-sm text-emerald-900">
+									{isGhostMode ? "ON" : "OFF"}
+								</span>
+							</label>
+						</div>
+					</div>
+
 					{/* Action Buttons */}
 					<form onSubmit={handleSubmit} className="space-y-4">
 						<div className="grid grid-cols-2 gap-4">
@@ -214,6 +240,7 @@ export default function ReportPage() {
 									latitude,
 									longitude,
 									isSubmitting,
+									isGhostMode,
 									laravelUrl: process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000",
 									toastMessage,
 								},
