@@ -16,7 +16,14 @@ export const metadata: Metadata = {
   title: "LikasLens",
   description: "Neuro-symbolic civic reporting platform",
   manifest: "/manifest.json",
-  themeColor: "#0ea5e9",
+  themeColor: "#10b981",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
