@@ -16,6 +16,7 @@ class ReportController extends Controller
             'base64Image' => 'required|string',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'user_id' => 'nullable|string|max:255',
         ]);
 
         // TODO: Process the report

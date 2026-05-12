@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 export default function ReportPage() {
@@ -10,6 +10,9 @@ export default function ReportPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [toastMessage, setToastMessage] = useState("");
 	const [isGhostMode, setIsGhostMode] = useState(false);
+	const offlineQueueKey = "likaslens_offline_reports";
+	const offlineDbName = "likaslens-offline";
+	const offlineStoreName = "report-queue";
 
 	// Dummy test data
 	const mockBase64Image =
@@ -17,18 +20,162 @@ export default function ReportPage() {
 	const mockLatitude = 14.5994;
 	const mockLongitude = 120.9842;
 
+	/**
+	 * Populate the form with safe, dummy values for quick UI testing.
+	 */
 	const populateWithTestData = () => {
 		setBase64Image(mockBase64Image);
 		setLatitude(mockLatitude);
 		setLongitude(mockLongitude);
 	};
 
+	/**
+	 * Clear all report fields to reset the form state.
+	 */
 	const clearForm = () => {
 		setBase64Image("");
 		setLatitude(null);
 		setLongitude(null);
 	};
 
+	/**
+	 * Strip EXIF by re-encoding the image via canvas (browser-only).
+	 */
+	const stripExif = async (base64: string) => {
+		if (!base64) return base64;
+		return await new Promise<string>((resolve) => {
+			const img = new Image();
+			img.crossOrigin = "anonymous";
+			img.onload = () => {
+				try {
+					const canvas = document.createElement("canvas");
+					canvas.width = img.naturalWidth || img.width;
+					canvas.height = img.naturalHeight || img.height;
+					const ctx = canvas.getContext("2d");
+					if (!ctx) return resolve(base64);
+					ctx.drawImage(img, 0, 0);
+					const cleaned = canvas.toDataURL();
+					resolve(cleaned);
+				} catch {
+					resolve(base64);
+				}
+			};
+			img.onerror = () => resolve(base64);
+			img.src = base64;
+		});
+	};
+
+	/**
+	 * Open IndexedDB for offline report storage.
+	 */
+	const openOfflineDb = () =>
+		new Promise<IDBDatabase>((resolve, reject) => {
+			const request = indexedDB.open(offlineDbName, 1);
+			request.onupgradeneeded = () => {
+				const db = request.result;
+				if (!db.objectStoreNames.contains(offlineStoreName)) {
+					db.createObjectStore(offlineStoreName, { keyPath: "id" });
+				}
+			};
+			request.onsuccess = () => resolve(request.result);
+			request.onerror = () => reject(request.error);
+		});
+
+	/**
+	 * Persist a report payload when offline so it can sync later.
+	 */
+	const queueOfflineReport = async (payload: Record<string, unknown>) => {
+		const queuedPayload = { ...payload, queuedAt: new Date().toISOString() };
+		try {
+			const db = await openOfflineDb();
+			const tx = db.transaction(offlineStoreName, "readwrite");
+			const store = tx.objectStore(offlineStoreName);
+			store.put({ id: crypto.randomUUID(), payload: queuedPayload });
+			await new Promise<void>((resolve, reject) => {
+				tx.oncomplete = () => resolve();
+				tx.onerror = () => reject(tx.error);
+			});
+			return;
+		} catch {
+			const existing = localStorage.getItem(offlineQueueKey);
+			const queue = existing ? JSON.parse(existing) : [];
+			queue.push(queuedPayload);
+			localStorage.setItem(offlineQueueKey, JSON.stringify(queue));
+		}
+	};
+
+	/**
+	 * Flush queued offline reports when connectivity returns.
+	 */
+	const flushOfflineQueue = async () => {
+		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+		const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
+
+		try {
+			const db = await openOfflineDb();
+			const tx = db.transaction(offlineStoreName, "readonly");
+			const store = tx.objectStore(offlineStoreName);
+			const request = store.getAll();
+			const items = await new Promise<Array<{ id: string; payload: Record<string, unknown> }>>(
+				(resolve, reject) => {
+					request.onsuccess = () => resolve(request.result as Array<{ id: string; payload: Record<string, unknown> }>);
+					request.onerror = () => reject(request.error);
+				}
+			);
+			queued.push(...items);
+		} catch {
+			const existing = localStorage.getItem(offlineQueueKey);
+			const items = existing ? JSON.parse(existing) : [];
+			queued.push(...items.map((payload: Record<string, unknown>, idx: number) => ({ id: String(idx), payload })));
+		}
+
+		if (!queued.length) return;
+
+		const successfulIds: string[] = [];
+		for (const item of queued) {
+			try {
+				const response = await fetch(`${laravelUrl}/api/reports`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Accept: "application/json",
+					},
+					body: JSON.stringify(item.payload),
+				});
+				if (response.ok) successfulIds.push(item.id);
+			} catch {
+				// keep item queued
+			}
+		}
+
+		try {
+			const db = await openOfflineDb();
+			const tx = db.transaction(offlineStoreName, "readwrite");
+			const store = tx.objectStore(offlineStoreName);
+			successfulIds.forEach((id) => store.delete(id));
+			await new Promise<void>((resolve, reject) => {
+				tx.oncomplete = () => resolve();
+				tx.onerror = () => reject(tx.error);
+			});
+		} catch {
+			const existing = localStorage.getItem(offlineQueueKey);
+			const items = existing ? JSON.parse(existing) : [];
+			const remaining = items.filter((_: unknown, idx: number) => !successfulIds.includes(String(idx)));
+			localStorage.setItem(offlineQueueKey, JSON.stringify(remaining));
+		}
+	};
+
+	useEffect(() => {
+		const handleOnline = () => {
+			void flushOfflineQueue();
+		};
+		window.addEventListener("online", handleOnline);
+		return () => window.removeEventListener("online", handleOnline);
+	}, []);
+
+	/**
+	 * Validate, anonymize, and submit the report to the backend.
+	 */
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setIsSubmitting(true);
@@ -36,31 +183,6 @@ export default function ReportPage() {
 
 		try {
 			const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
-
-			// Strip EXIF by re-encoding the image via canvas (works for JPEG/PNG in browser)
-			async function stripExif(base64: string) {
-				if (!base64) return base64;
-				return await new Promise<string>((resolve) => {
-					const img = new Image();
-					img.crossOrigin = "anonymous";
-					img.onload = () => {
-						try {
-							const canvas = document.createElement("canvas");
-							canvas.width = img.naturalWidth || img.width;
-							canvas.height = img.naturalHeight || img.height;
-							const ctx = canvas.getContext("2d");
-							if (!ctx) return resolve(base64);
-							ctx.drawImage(img, 0, 0);
-							const cleaned = canvas.toDataURL();
-							resolve(cleaned);
-						} catch (err) {
-							resolve(base64);
-						}
-					};
-					img.onerror = () => resolve(base64);
-					img.src = base64;
-				});
-			}
 
 			const cleanedImage = await stripExif(base64Image);
 
@@ -90,6 +212,15 @@ export default function ReportPage() {
 				payload["user_id"] = userId;
 			}
 
+			if (!navigator.onLine) {
+				await queueOfflineReport(payload);
+				setToastMessage(
+					"You are offline. Report queued securely and will sync when connection is restored."
+				);
+				setIsSubmitting(false);
+				return;
+			}
+
 			const response = await fetch(`${laravelUrl}/api/reports`, {
 				method: "POST",
 				headers: {
@@ -108,7 +239,6 @@ export default function ReportPage() {
 			setToastMessage(responseData.message || "Report Submitted Successfully!");
 			clearForm();
 		} catch (error) {
-			console.error("Error submitting report:", error);
 			setToastMessage(
 				error instanceof Error ? `Error: ${error.message}` : "Error submitting report. Check console and CORS."
 			);
