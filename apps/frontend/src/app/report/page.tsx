@@ -108,7 +108,7 @@ export default function ReportPage() {
 	 * Flush queued offline reports when connectivity returns.
 	 */
 	const flushOfflineQueue = async () => {
-		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL="http://127.0.0.1:8000";
 		const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
 
 		try {
