@@ -12,9 +12,9 @@
 
 ### 🏃 Sprint 1: Foundation & Boilerplate (ACTIVE)
 **ReD (Lead):**
-- [ ] Set up Supabase DB schemas (users, reports, leaderboard). *(Architecture Rules: Use UUIDs for users, set point expiration to 12 months, make reward stock global, seed RA 9003/8749/9275/6969, and allow Analysts to directly assign NGOs).*
-	- Status: Not started in repository implementation yet.
-	- Next: Add migrations/models/seeders for reports + leaderboard and enforce UUID + policy rules in schema.
+- [x] Set up Supabase DB schemas (users, reports, leaderboard). *(Architecture Rules: Use UUIDs for users, set point expiration to 12 months, make reward stock global, seed RA 9003/8749/9275/6969, and allow Analysts to directly assign NGOs).*
+	- Status: Completed. Migrations, Eloquent Models (with UUIDs/relationships), and Laravel Policies are set up in `apps/backend`.
+	- Next: Unblocked. Ready for API endpoint implementations in Sprint 2.
 
 **FE1 (UI & Styling):**
 - [ ] Init Next.js repo with Tailwind & push to GitHub.
