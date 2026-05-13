@@ -78,6 +78,7 @@ async def graph_topology():
         "vertex_labels": topology.vertex_labels,
         "edge_labels": topology.edge_labels,
         "edge_properties": topology.edge_properties,
+        "partition_key": topology.partition_key,
     }
 
 
