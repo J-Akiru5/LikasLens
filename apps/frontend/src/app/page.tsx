@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -17,14 +17,39 @@ import {
   Bot,
 } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
+import { useTheme } from "@/components/theme-provider";
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="brutal-panel p-8 min-h-[300px] flex flex-col"
+    >
+      <div className="mb-4">{icon}</div>
+      <h3 className="font-heading text-2xl font-bold mb-4 uppercase">{title}</h3>
+      <p className="text-foreground/85 flex-1">{description}</p>
+    </motion.div>
+  );
+}
 
 export default function Home() {
-  const [ghostMode, setGhostMode] = useState(false);
+  const { theme, toggleTheme } = useTheme();
+  const isGhostMode = theme === "ghost";
 
   useEffect(() => {
-    const themeValue = ghostMode ? "ghost" : "light";
+    const themeValue = isGhostMode ? "ghost" : "light";
     document.documentElement.setAttribute("data-theme", themeValue);
-  }, [ghostMode]);
+  }, [isGhostMode]);
 
   return (
     <main className="relative min-h-screen overflow-hidden selection:bg-accent/30 selection:text-current font-body">
@@ -33,12 +58,12 @@ export default function Home() {
         className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-700"
         style={{
           backgroundImage: "url('/images/bg-hero.png')",
-          filter: ghostMode ? "invert(1) hue-rotate(180deg) brightness(1.2)" : "none",
-          opacity: ghostMode ? 0.8 : 1,
+          filter: isGhostMode ? "invert(1) hue-rotate(180deg) brightness(1.2)" : "none",
+          opacity: isGhostMode ? 0.8 : 1,
         }}
       >
         <div
-          className={`absolute inset-0 backdrop-blur-[3px] transition-colors duration-700 ${ghostMode ? "bg-[#081c15]/60" : "bg-[#f8f9fa]/40"}`}
+          className={`absolute inset-0 backdrop-blur-[3px] transition-colors duration-700 ${isGhostMode ? "bg-[#081c15]/60" : "bg-[#f8f9fa]/40"}`}
         />
       </div>
 
@@ -63,8 +88,8 @@ export default function Home() {
             Public Records
           </a>
           <button
-            onClick={() => setGhostMode(!ghostMode)}
-            className={`flex items-center gap-1 transition-colors ${ghostMode ? "text-accent" : "hover:text-accent"}`}
+            onClick={toggleTheme}
+            className={`flex items-center gap-1 transition-colors ${isGhostMode ? "text-accent" : "hover:text-accent"}`}
           >
             <Fingerprint className="w-4 h-4" /> Ghost Mode
           </button>
@@ -89,7 +114,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={`text-6xl md:text-8xl font-heading font-black tracking-tighter leading-[0.9] mb-6 uppercase ${ghostMode ? "ghost-flicker" : ""}`}
+          className={`text-6xl md:text-8xl font-heading font-black tracking-tighter leading-[0.9] mb-6 uppercase ${isGhostMode ? "ghost-flicker" : ""}`}
         >
           See It. <span className="text-primary">Report It.</span>
           <br />
@@ -158,15 +183,15 @@ export default function Home() {
         className="relative z-10 max-w-7xl mx-auto px-6 py-32"
       >
         <div
-          className={`p-10 md:p-16 rounded-[2rem] transition-colors duration-500 border-4 relative overflow-hidden ${ghostMode ? "bg-[#081c15] border-accent shadow-[8px_8px_0px_#ffb703] text-white" : "bg-white border-primary shadow-[8px_8px_0px_#1b4332]"}`}
+          className={`p-10 md:p-16 rounded-[2rem] transition-colors duration-500 border-4 relative overflow-hidden ${isGhostMode ? "bg-[#081c15] border-accent shadow-[8px_8px_0px_#ffb703] text-white" : "bg-white border-primary shadow-[8px_8px_0px_#1b4332]"}`}
         >
           <div className="grid md:grid-cols-2 gap-12 items-center relative z-10">
             <div>
               <div
-                className={`inline-flex items-center gap-2 px-3 py-1 font-mono text-sm font-bold mb-6 border-2 ${ghostMode ? "text-accent border-accent" : "text-primary border-primary"}`}
+                className={`inline-flex items-center gap-2 px-3 py-1 font-mono text-sm font-bold mb-6 border-2 ${isGhostMode ? "text-accent border-accent" : "text-primary border-primary"}`}
               >
                 <Fingerprint className="w-4 h-4" />
-                {ghostMode ? "GHOST MODE ACTIVE" : "YOUR SAFETY MATTERS"}
+                {isGhostMode ? "GHOST MODE ACTIVE" : "YOUR SAFETY MATTERS"}
               </div>
               <h2 className="font-heading text-4xl md:text-5xl font-black tracking-tight mb-6 uppercase">
                 Protect your identity.
@@ -174,7 +199,7 @@ export default function Home() {
                 Report safely.
               </h2>
               <p
-                className={`text-lg mb-8 font-semibold ${ghostMode ? "text-white/90" : "text-primary/90"}`}
+                className={`text-lg mb-8 font-semibold ${isGhostMode ? "text-white/90" : "text-primary/90"}`}
               >
                 Need to report something dangerous, like illegal logging, but
                 worried about your safety? Turn on Ghost Mode. We will
@@ -182,22 +207,22 @@ export default function Home() {
                 photos, and keep you 100% anonymous.
               </p>
               <button
-                onClick={() => setGhostMode(!ghostMode)}
-                className={`flex items-center gap-3 px-6 py-4 rounded-xl font-bold uppercase transition-all duration-300 border-2 ${ghostMode ? "bg-accent text-[#081c15] border-accent shadow-[4px_4px_0px_rgba(255,255,255,0.5)]" : "bg-primary text-white border-primary shadow-[4px_4px_0px_#081c15]"}`}
+                onClick={toggleTheme}
+                className={`flex items-center gap-3 px-6 py-4 rounded-xl font-bold uppercase transition-all duration-300 border-2 ${isGhostMode ? "bg-accent text-[#081c15] border-accent shadow-[4px_4px_0px_rgba(255,255,255,0.5)]" : "bg-primary text-white border-primary shadow-[4px_4px_0px_#081c15]"}`}
               >
-                {ghostMode ? (
+                {isGhostMode ? (
                   <ShieldAlert className="w-6 h-6" />
                 ) : (
                   <Eye className="w-6 h-6" />
                 )}
-                {ghostMode ? "Turn Off Ghost Mode" : "Turn On Ghost Mode"}
+                {isGhostMode ? "Turn Off Ghost Mode" : "Turn On Ghost Mode"}
               </button>
             </div>
 
             <div className="relative h-[400px] w-full bionic-frame p-8 flex flex-col justify-center items-center bg-background/40 backdrop-blur-md">
-              {ghostMode && <div className="ai-scan-line" />}
+              {isGhostMode && <div className="ai-scan-line" />}
               <AnimatePresence mode="wait">
-                {ghostMode ? (
+                {isGhostMode ? (
                   <motion.div
                     key="ghost-on"
                     initial={{ opacity: 0, scale: 0.9 }}
