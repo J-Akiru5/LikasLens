@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             EnvironmentalLawSeeder::class,
+            NgoSeeder::class,
         ]);
 
         User::factory()->create([
