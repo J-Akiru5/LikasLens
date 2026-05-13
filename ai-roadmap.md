@@ -4,7 +4,12 @@
 > 3. Update the "Current State" and "Completed" sections before finishing a session.
 
 ## 📍 Current Phase: Sprint 1 (Foundation & Boilerplate)
-**Current Goal:** Environments running, database ready, basic screens visible. No complex logic yet.
+**Current Goal:** Environments running, database ready, basic screens visible. Cosmos Gremlin setup guidance is now documented; routing logic is next.
+
+## ✅ Completed This Session
+- Reviewed the open ReD issues and focused on issue #30 as the Cosmos Gremlin setup slice.
+- Added Cosmos Gremlin setup guidance for the AI service and aligned the graph seed data with a Cosmos partition key.
+- Exposed the partition key through the AI service topology endpoint for downstream consumers.
 
 ---
 
@@ -15,6 +20,7 @@
 - [ ] Set up Supabase DB schemas (users, reports, leaderboard). *(Architecture Rules: Use UUIDs for users, set point expiration to 12 months, make reward stock global, seed RA 9003/8749/9275/6969, and allow Analysts to directly assign NGOs).*
 	- Status: Not started in repository implementation yet.
 	- Next: Add migrations/models/seeders for reports + leaderboard and enforce UUID + policy rules in schema.
+	- Note: Cosmos Gremlin setup work is now scaffolded in `apps/ai-service`; logic rules still need implementation.
 
 **FE1 (UI & Styling):**
 - [ ] Init Next.js repo with Tailwind & push to GitHub.
