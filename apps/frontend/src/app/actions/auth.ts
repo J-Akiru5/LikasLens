@@ -37,10 +37,13 @@ export async function signUp(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signUp(
-    { email, password },
-    { data: { name, agreeToUpdates } }
-  );
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { name, agreeToUpdates },
+    },
+  });
 
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
