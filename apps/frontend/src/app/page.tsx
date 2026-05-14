@@ -79,7 +79,13 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 px-4 py-2 brutal-panel mb-8"
         >
-          <span className="w-3 h-3 bg-secondary rounded-full border border-primary animate-pulse" />
+          <span
+            className={`w-3 h-3 rounded-full border transition-all duration-300 ${
+              ghostMode
+                ? "status-dot-glitch bg-accent border-accent"
+                : "bg-secondary border-primary animate-pulse"
+            }`}
+          />
           <span className="font-mono text-xs font-bold uppercase tracking-widest">
             Ready to help protect our earth
           </span>
@@ -285,23 +291,42 @@ export default function Home() {
               s: "Fixed",
               t: "2 hours",
             },
-          ].map((row, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-4 font-mono text-sm p-4 border-t-2 border-primary/20 hover:bg-secondary/10 transition-colors"
-            >
-              <div className="font-bold text-base">{row.j}</div>
-              <div className="text-base">{row.i}</div>
-              <div>
-                <span
-                  className={`px-2 py-1 rounded text-xs font-bold border-2 ${row.s === "Fixed" ? "border-secondary text-primary" : "border-accent text-accent"}`}
-                >
-                  {row.s}
-                </span>
+          ].map((row, idx) => {
+            const getStatusColor = (status: string) => {
+              switch (status.toLowerCase()) {
+                case "fixed":
+                case "resolved":
+                  return "border-2 border-secondary bg-secondary/15 text-secondary shadow-[0_0_12px_rgba(45,225,194,0.5)]";
+                case "checking it":
+                case "in progress":
+                case "investigating":
+                  return "border-2 border-accent bg-accent/15 text-accent shadow-[0_0_12px_rgba(255,183,3,0.5)]";
+                case "pending":
+                case "not started":
+                  return "border-2 border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(27,67,50,0.5)]";
+                default:
+                  return "border-2 border-foreground/40 bg-foreground/5 text-foreground/60";
+              }
+            };
+
+            return (
+              <div
+                key={idx}
+                className="grid grid-cols-4 font-mono text-sm p-4 border-t-2 border-primary/20 hover:bg-secondary/10 transition-colors"
+              >
+                <div className="font-bold text-base">{row.j}</div>
+                <div className="text-base">{row.i}</div>
+                <div>
+                  <span
+                    className={`px-3 py-1.5 rounded font-bold uppercase text-xs tracking-widest transition-all ${getStatusColor(row.s)}`}
+                  >
+                    {row.s}
+                  </span>
+                </div>
+                <div className="text-right font-bold text-base">{row.t}</div>
               </div>
-              <div className="text-right font-bold text-base">{row.t}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
