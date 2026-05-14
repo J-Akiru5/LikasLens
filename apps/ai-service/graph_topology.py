@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 VERTEX_LABELS = [
     "Citizen",
     "Incident",
+    "Law",
     "ViolationType",
     "NGO",
     "Reward",
