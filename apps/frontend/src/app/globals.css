@@ -270,3 +270,74 @@ body {
     animation: none;
   }
 }
+
+.brutal-panel,
+.panel-surface,
+.landing-panel {
+  background: var(--panel) !important;
+  color: var(--foreground) !important;
+  border-color: var(--panel-border) !important;
+}
+
+.brutal-panel {
+  backdrop-filter: blur(4px);
+}
+
+.panel-surface {
+  box-shadow: 8px 8px 0px rgba(8, 28, 21, 0.16);
+}
+
+.panel-surface strong,
+.panel-surface h1,
+.panel-surface h2,
+.panel-surface h3,
+.panel-surface h4,
+.panel-surface p,
+.panel-surface span,
+.panel-surface label,
+.panel-surface li,
+.panel-surface a,
+.panel-surface button,
+.brutal-panel strong,
+.brutal-panel h1,
+.brutal-panel h2,
+.brutal-panel h3,
+.brutal-panel h4,
+.brutal-panel p,
+.brutal-panel span,
+.brutal-panel label,
+.brutal-panel li,
+.brutal-panel a,
+.brutal-panel button {
+  color: inherit;
+}
+
+.surface-muted {
+  color: var(--muted-text) !important;
+}
+
+.surface-chip {
+  background: color-mix(in srgb, var(--panel) 80%, var(--background));
+  color: var(--foreground);
+  border: 1px solid var(--panel-border);
+}
+
+.theme-input {
+  background: var(--background);
+  color: var(--foreground);
+  border: 2px solid var(--panel-border);
+}
+
+.theme-input::placeholder {
+  color: var(--muted-text);
+}
+
+.theme-input:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 2px rgba(45, 225, 194, 0.24);
+}
+
+.theme-status {
+  background: color-mix(in srgb, var(--panel) 88%, var(--background));
+}
