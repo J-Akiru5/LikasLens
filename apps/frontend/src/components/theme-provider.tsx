@@ -13,17 +13,20 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("civic");
-  const [mounted, setMounted] = useState(false);
+  const [theme, setThemeState] = useState<Theme>(() => {
+    try {
+      if (typeof window === "undefined") return "civic";
+      const stored = localStorage.getItem("likas-theme") as Theme | null;
+      return stored || "civic";
+    } catch {
+      return "civic";
+    }
+  });
 
-  // Hydrate from localStorage on mount
+  // Sync DOM attribute when theme changes
   useEffect(() => {
-    const stored = localStorage.getItem("likas-theme") as Theme | null;
-    const initial = stored || "civic";
-    setThemeState(initial);
-    document.documentElement.setAttribute("data-theme", initial === "ghost" ? "ghost" : "light");
-    setMounted(true);
-  }, []);
+    document.documentElement.setAttribute("data-theme", theme === "ghost" ? "ghost" : "light");
+  }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -39,8 +42,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(newTheme);
   };
 
-  // Prevent hydration mismatch
-  if (!mounted) {
+  // Prevent hydration mismatch on server
+  if (typeof window === "undefined") {
     return <>{children}</>;
   }
 
