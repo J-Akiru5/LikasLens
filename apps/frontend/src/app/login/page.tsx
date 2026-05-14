@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { resendConfirmation, signIn, signUp } from "@/app/actions/auth";
 
-export default function LoginPage() {
+function LoginContent() {
 	const searchParams = useSearchParams();
 	const [isLogin, setIsLogin] = useState(false);
 	const [email, setEmail] = useState("");
@@ -225,5 +225,15 @@ export default function LoginPage() {
 				</div>
 			</div>
 		</main>
+	);
+}
+
+export default function LoginPage() {
+	return (
+		<Suspense
+			fallback={<main className="flex min-h-screen items-center justify-center p-4">Loading…</main>}
+		>
+			<LoginContent />
+		</Suspense>
 	);
 }
