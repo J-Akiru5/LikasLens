@@ -32,11 +32,16 @@ const DEFAULT_ERROR = "Unable to access the camera. Please retry.";
 
 export default function CameraTestPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [status, setStatus] = useState<CameraStatus>({
     kind: "loading",
     message: "Opening camera...",
   });
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [gpsStatus, setGpsStatus] = useState("GPS idle");
 
   const stopStream = useCallback((stream: MediaStream | null) => {
     stream?.getTracks().forEach((track) => track.stop());
@@ -131,6 +136,42 @@ export default function CameraTestPage() {
     })();
   }, [attachStream, stopStream]);
 
+  const handleTakePhoto = useCallback(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+
+    if (!video || !canvas) return;
+    if (video.videoWidth === 0 || video.videoHeight === 0) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    setCapturedImage(dataUrl);
+
+    setGpsStatus("Requesting GPS...");
+    if (!navigator.geolocation) {
+      setGpsStatus("Geolocation not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLatitude(position.coords.latitude);
+        setLongitude(position.coords.longitude);
+        setGpsStatus("GPS locked");
+      },
+      () => {
+        setGpsStatus("GPS denied or unavailable");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }, []);
+
   return (
     <main
       className={`${spaceGrotesk.className} relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950 p-6 text-white`}
@@ -164,10 +205,12 @@ export default function CameraTestPage() {
           <div className="pointer-events-none absolute inset-0 border border-white/10" />
         </div>
 
+        <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
+
         <div className="space-y-3">
           <button
             type="button"
-            onClick={() => console.log("Photo Snapped")}
+            onClick={handleTakePhoto}
             className="w-full rounded-full bg-white px-4 py-3 text-sm font-semibold text-zinc-950 transition hover:bg-zinc-200"
           >
             Take Photo
@@ -183,6 +226,26 @@ export default function CameraTestPage() {
             </button>
           )}
         </div>
+
+        {capturedImage && (
+          <div className="space-y-2 rounded-2xl border border-white/10 bg-black/40 p-3">
+            <img
+              src={capturedImage}
+              alt="Captured preview"
+              className="h-40 w-full rounded-xl object-cover"
+            />
+            <div className="flex flex-wrap justify-between gap-2 text-xs text-zinc-300">
+              <span>Captured: {capturedImage ? "Yes" : "No"}</span>
+              <span>
+                Lat: {latitude !== null ? latitude.toFixed(6) : "-"}
+              </span>
+              <span>
+                Lng: {longitude !== null ? longitude.toFixed(6) : "-"}
+              </span>
+            </div>
+            <div className="text-xs text-zinc-400">{gpsStatus}</div>
+          </div>
+        )}
 
         <div className="flex items-center justify-between text-xs text-zinc-400" aria-live="polite">
           <span>{status.message}</span>
