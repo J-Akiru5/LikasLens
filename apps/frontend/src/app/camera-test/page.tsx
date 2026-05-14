@@ -2,6 +2,7 @@
 
 import { Space_Grotesk } from "next/font/google";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { stripExif } from "@/utils/exifStripper";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -42,6 +43,8 @@ export default function CameraTestPage() {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
   const [gpsStatus, setGpsStatus] = useState("GPS idle");
+  const [isGhostMode, setIsGhostMode] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState("Idle");
 
   const stopStream = useCallback((stream: MediaStream | null) => {
     stream?.getTracks().forEach((track) => track.stop());
@@ -150,7 +153,7 @@ export default function CameraTestPage() {
     if (!ctx) return;
 
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    const dataUrl = canvas.toDataURL("image/jpeg", 1);
     setCapturedImage(dataUrl);
 
     setGpsStatus("Requesting GPS...");
@@ -171,6 +174,32 @@ export default function CameraTestPage() {
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }, []);
+
+  const handleSubmit = useCallback(async () => {
+    if (!capturedImage) {
+      setSubmitStatus("Capture a photo first");
+      return;
+    }
+
+    setSubmitStatus("Preparing payload...");
+    try {
+      const imageForUpload = isGhostMode
+        ? await stripExif(capturedImage)
+        : capturedImage;
+
+      const payload = {
+        imageBase64: imageForUpload,
+        latitude,
+        longitude,
+        isGhostMode,
+      };
+
+      console.log("Submit payload", payload);
+      setSubmitStatus("Payload ready (see console)");
+    } catch (error) {
+      setSubmitStatus("Failed to prepare payload");
+    }
+  }, [capturedImage, isGhostMode, latitude, longitude]);
 
   return (
     <main
@@ -216,6 +245,15 @@ export default function CameraTestPage() {
             Take Photo
           </button>
 
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!capturedImage}
+            className="w-full rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Prepare Submit
+          </button>
+
           {status.kind === "error" && (
             <button
               type="button"
@@ -226,6 +264,16 @@ export default function CameraTestPage() {
             </button>
           )}
         </div>
+
+        <label className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-200">
+          <span className="font-medium">Ghost Mode (strip EXIF)</span>
+          <input
+            type="checkbox"
+            checked={isGhostMode}
+            onChange={(event) => setIsGhostMode(event.target.checked)}
+            className="h-4 w-4 accent-emerald-300"
+          />
+        </label>
 
         {capturedImage && (
           <div className="space-y-2 rounded-2xl border border-white/10 bg-black/40 p-3">
@@ -265,6 +313,8 @@ export default function CameraTestPage() {
               : "OPENING"}
           </span>
         </div>
+
+        <p className="text-xs text-zinc-400">Submit: {submitStatus}</p>
       </section>
     </main>
   );
