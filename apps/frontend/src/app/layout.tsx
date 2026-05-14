@@ -1,38 +1,34 @@
-import type { Metadata, Viewport } from "next";
-import { Inter, Montserrat, Space_Mono } from "next/font/google";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const headingFont = Montserrat({
-  variable: "--font-heading",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight: ["700", "800"],
 });
 
-const bodyFont = Inter({
-  variable: "--font-body",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const dataFont = Space_Mono({
-  variable: "--font-data",
-  subsets: ["latin"],
-  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
   title: "LikasLens",
   description: "Neuro-symbolic civic reporting platform",
   manifest: "/manifest.json",
+  themeColor: "#10b981",
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "LikasLens",
   },
-};
-
-export const viewport: Viewport = {
-  themeColor: "#0ea5e9",
 };
 
 export default function RootLayout({
@@ -43,8 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${headingFont.variable} ${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
-      data-theme="civic"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
