@@ -1,199 +1,235 @@
 @import "tailwindcss";
 
 :root {
-    /* The Vigilant Earth Palette */
-    --primary: #1b4332; /* Forest Guard */
-    --secondary: #2de1c2; /* Tech Cyan */
-    --accent: #ffb703; /* Ghost Amber */
-    --background: #f8f9fa; /* Concrete */
-    --foreground: #081c15; /* Night Shadow */
-
-    --panel-bg: #ffffff;
-    --panel-border: #1b4332;
-    --shadow-color: #1b4332;
-}
-
-:root[data-theme="ghost"] {
-    --background: #081c15;
-    --foreground: #f8f9fa;
-    --panel-bg: #0a241a;
-    --panel-border: #ffb703;
-    --shadow-color: #ffb703;
-    --primary: #2de1c2;
+  --background: #f8f9fa;
+  --foreground: #081c15;
+  --panel: #f8f9fa;
+  --panel-border: rgba(8, 28, 21, 0.2);
+  --muted-text: rgba(8, 28, 21, 0.8);
+  --hero-overlay: linear-gradient(140deg, rgba(27, 67, 50, 0.92), rgba(8, 28, 21, 0.88));
+  --accent: #ffb703;
+  --secondary: #2de1c2;
 }
 
 @theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --color-primary: var(--primary);
-    --color-secondary: var(--secondary);
-    --color-accent: var(--accent);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-data);
+}
+
+:root[data-theme="ghost"] {
+  --background: #081c15;
+  --foreground: #f8f9fa;
+  --panel: rgba(8, 28, 21, 0.9);
+  --panel-border: rgba(45, 225, 194, 0.35);
+  --muted-text: rgba(248, 249, 250, 0.84);
+  --hero-overlay: linear-gradient(140deg, rgba(8, 28, 21, 0.95), rgba(27, 67, 50, 0.92));
 }
 
 body {
-    background-color: var(--background);
-    color: var(--foreground);
-    font-family: var(--font-body), system-ui, sans-serif;
-    transition:
-        background-color 0.5s ease,
-        color 0.5s ease;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), Inter, "Helvetica Now", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
 .font-heading {
-    font-family: var(--font-heading), sans-serif;
+  font-family: var(--font-heading), Montserrat, "Archivo Black", Arial, sans-serif;
 }
 
-.font-mono,
 .font-data {
-    font-family: var(--font-data), monospace;
+  font-family: var(--font-data), "Space Mono", "JetBrains Mono", "Courier New", monospace;
 }
 
-/* Eco-Brutalism UI Elements */
-.brutal-panel {
-    background-color: var(--panel-bg);
-    border: 2px solid var(--panel-border);
-    box-shadow: 6px 6px 0px var(--shadow-color);
-    transition: all 0.3s ease;
-    border-radius: 8px;
+.font-body {
+  font-family: var(--font-body), Inter, "Helvetica Now", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
-.brutal-panel:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 8px 8px 0px var(--shadow-color);
+.landing-shell {
+  background-image:
+    radial-gradient(circle at 10% 5%, rgba(45, 225, 194, 0.14), transparent 38%),
+    radial-gradient(circle at 92% 12%, rgba(255, 183, 3, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(27, 67, 50, 0.14), transparent 40%);
 }
 
-.brutal-button {
-    background-color: var(--primary);
-    color: var(--background);
-    border: 2px solid var(--foreground);
-    box-shadow: 4px 4px 0px var(--foreground);
-    font-weight: 800;
-    text-transform: uppercase;
-    transition: all 0.15s ease;
+.landing-panel {
+  border-color: var(--panel-border);
+  background: var(--panel);
+  backdrop-filter: blur(2px);
 }
 
-.brutal-button:hover {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0px var(--foreground);
+.hero-panel {
+  background-image:
+    var(--hero-overlay),
+    linear-gradient(120deg, rgba(45, 225, 194, 0.06), rgba(255, 183, 3, 0.08));
+  color: #f8f9fa;
 }
 
-.brutal-button:active {
-    transform: translate(4px, 4px);
-    box-shadow: 0px 0px 0px var(--foreground);
+.ghost-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-image:
+    radial-gradient(circle at 30% 20%, rgba(45, 225, 194, 0.14), transparent 40%),
+    radial-gradient(circle at 68% 66%, rgba(255, 183, 3, 0.22), transparent 42%),
+    linear-gradient(160deg, rgba(8, 28, 21, 0.96), rgba(27, 67, 50, 0.94));
+  color: #f8f9fa;
 }
 
-:root[data-theme="ghost"] .brutal-button {
-    border-color: var(--accent);
-    box-shadow: 4px 4px 0px var(--accent);
+.ghost-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -30% -10%;
+  height: 62%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 70%, rgba(248, 249, 250, 0.08), transparent 48%),
+    radial-gradient(circle at 65% 75%, rgba(248, 249, 250, 0.1), transparent 54%);
+  filter: blur(14px);
+  animation: ghost-smoke 9s ease-in-out infinite;
 }
 
-/* AI Bionic Framing */
+:root[data-theme="ghost"] .ghost-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+:root[data-theme="ghost"] .ghost-panel {
+  animation: ghost-flicker 4.6s ease-in-out infinite;
+}
+
+.landing-link {
+  color: var(--foreground);
+  text-underline-offset: 4px;
+}
+
+.landing-link:hover,
+.landing-link:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.cta-primary {
+  color: #081c15;
+  background: var(--secondary);
+  border: 1px solid rgba(8, 28, 21, 0.3);
+}
+
+.cta-primary:hover,
+.cta-primary:focus-visible {
+  background: #f8f9fa;
+}
+
+.cta-secondary {
+  color: #f8f9fa;
+  border: 1px solid rgba(248, 249, 250, 0.45);
+}
+
+.cta-secondary:hover,
+.cta-secondary:focus-visible {
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-flex;
+  width: 2.8rem;
+  height: 1.5rem;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--panel-border);
+  background: rgba(8, 28, 21, 0.2);
+  transition: background-color 200ms ease;
+}
+
+.theme-switch.is-on {
+  background: rgba(45, 225, 194, 0.45);
+}
+
+.theme-switch-dot {
+  height: 1.1rem;
+  width: 1.1rem;
+  margin-left: 0.1rem;
+  border-radius: 9999px;
+  background: #f8f9fa;
+  transition: transform 200ms ease;
+}
+
+.theme-switch.is-on .theme-switch-dot {
+  transform: translateX(1.25rem);
+}
+
+.score-row {
+  background: linear-gradient(95deg, rgba(27, 67, 50, 0.1), rgba(45, 225, 194, 0.06));
+  border-color: rgba(27, 67, 50, 0.25);
+}
+
+.reward-tile {
+  background: linear-gradient(90deg, rgba(45, 225, 194, 0.1), rgba(248, 249, 250, 0.2));
+}
+
+.avatar-dot {
+  height: 5rem;
+  width: 5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(248, 249, 250, 0.34);
+  background: radial-gradient(circle at 30% 20%, rgba(248, 249, 250, 0.4), rgba(45, 225, 194, 0.25));
+}
+
+.avatar-dot.ghost {
+  border-color: rgba(255, 183, 3, 0.7);
+  box-shadow: 0 0 24px rgba(255, 183, 3, 0.35);
+  background: radial-gradient(circle at 30% 20%, rgba(248, 249, 250, 0.35), rgba(255, 183, 3, 0.28));
+}
+
 .bionic-frame {
-    position: relative;
-    border: 1px solid var(--secondary);
-    background: rgba(45, 225, 194, 0.05);
+  border-color: rgba(45, 225, 194, 0.6);
 }
 
-.bionic-frame::before,
-.bionic-frame::after {
-    content: "";
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    border: 2px solid var(--secondary);
-}
-
-.bionic-frame::before {
-    top: -2px;
-    left: -2px;
-    border-right: none;
-    border-bottom: none;
-}
-.bionic-frame::after {
-    bottom: -2px;
-    right: -2px;
-    border-left: none;
-    border-top: none;
-}
-
-.ai-scan-line {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--secondary);
-    box-shadow: 0 0 8px var(--secondary);
-    animation: scan 2.5s infinite linear;
-}
-
-@keyframes scan {
-    0% {
-        top: 0%;
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        top: 100%;
-        opacity: 0;
-    }
-}
-
-/* Ghost Mode Animations */
-.ghost-flicker {
-    animation: ghost-flicker 4s infinite;
+.ai-grid {
+  background-image:
+    linear-gradient(rgba(45, 225, 194, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 225, 194, 0.2) 1px, transparent 1px),
+    linear-gradient(145deg, rgba(27, 67, 50, 0.7), rgba(8, 28, 21, 0.9));
+  background-size: 24px 24px, 24px 24px, cover;
 }
 
 @keyframes ghost-flicker {
-    0%,
-    100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.95;
-        text-shadow: 0 0 10px rgba(255, 183, 3, 0.3);
-    }
-    52% {
-        opacity: 0.8;
-    }
-    54% {
-        opacity: 1;
-    }
+  0%, 100% {
+    filter: brightness(1) saturate(1);
+  }
+  48% {
+    filter: brightness(1.04) saturate(1.02);
+  }
+  52% {
+    filter: brightness(0.98) saturate(0.95);
+  }
 }
 
-.smoke-overlay {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(
-        circle at 50% 50%,
-        transparent 20%,
-        rgba(8, 28, 21, 0.8) 100%
-    );
-    opacity: 0;
-    transition: opacity 1s ease;
-    z-index: 1;
+@keyframes ghost-smoke {
+  0%,
+  100% {
+    transform: translate3d(0, 10px, 0) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate3d(0, -8px, 0) scale(1.06);
+    opacity: 0.7;
+  }
 }
 
-:root[data-theme="ghost"] .smoke-overlay {
-    opacity: 1;
-    animation: smoke-drift 10s infinite alternate;
-}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="ghost"] .ghost-panel {
+    animation: none;
+  }
 
-@keyframes smoke-drift {
-    0% {
-        transform: scale(1);
-    }
-    }
+  .ghost-panel::after {
+    animation: none;
+  }
 }
