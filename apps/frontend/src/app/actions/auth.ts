@@ -2,8 +2,6 @@
 
 import { redirect } from "next/navigation";
 
-import { createClient } from "@/utils/supabase/server";
-
 export async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "").trim();
@@ -12,14 +10,7 @@ export async function signIn(formData: FormData) {
     redirect("/login?error=Email+and+password+are+required.");
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
-  }
-
-  redirect("/dashboard");
+  redirect("/login?error=Authentication+service+is+temporarily+unavailable.");
 }
 
 export async function signUp(formData: FormData) {
@@ -30,12 +21,5 @@ export async function signUp(formData: FormData) {
     redirect("/login?error=Email+and+password+are+required.");
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({ email, password });
-
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
-  }
-
-  redirect("/login?message=Account+created.+Check+your+email+for+verification.");
+  redirect("/login?error=Registration+service+is+temporarily+unavailable.");
 }

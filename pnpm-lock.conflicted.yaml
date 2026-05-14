@@ -35,12 +35,15 @@ importers:
 
   apps/frontend:
     dependencies:
+<<<<<<< HEAD
       '@supabase/ssr':
         specifier: ^0.10.2
         version: 0.10.2(@supabase/supabase-js@2.103.0)
       '@supabase/supabase-js':
         specifier: ^2.103.0
         version: 2.103.0
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
       next:
         specifier: 16.2.2
         version: 16.2.2(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1223,6 +1226,7 @@ packages:
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
+<<<<<<< HEAD
   '@supabase/auth-js@2.103.0':
     resolution: {integrity: sha512-6zAanO6c+6gpHOlt5Lb9TlBBkJdZiUWkWCJKAxzkywBDcwaHlLJKXnjQGX6GyVCyKRR1e7sTq4re/yRTH6U/9A==}
     engines: {node: '>=20.0.0'}
@@ -1255,6 +1259,8 @@ packages:
     resolution: {integrity: sha512-j/6q5+LtXbR/YOLSLhy7Na74RD1cV2v+KwIIuuqMEjk1JpLEEyu0ynwDHpGoxMncDQl+R5FogaVqZm+85lZvtw==}
     engines: {node: '>=20.0.0'}
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   '@surma/rollup-plugin-off-main-thread@2.2.3':
     resolution: {integrity: sha512-lR8q/9W7hZpMWweNiAKU7NQerBnzQQLvi8qnTDU/fxItPhtZVMbPV3lbCwjhIlNBe9Bbr5V+KHshvWmVSG9cxQ==}
 
@@ -1403,9 +1409,12 @@ packages:
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
+<<<<<<< HEAD
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   '@typescript-eslint/eslint-plugin@8.58.1':
     resolution: {integrity: sha512-eSkwoemjo76bdXl2MYqtxg51HNwUSkWfODUOQ3PaTLZGh9uIWWFZIjyjaJnex7wXDu+TRx+ATsnSxdN9YWfRTQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -1885,10 +1894,13 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
+<<<<<<< HEAD
   cookie@1.1.1:
     resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
     engines: {node: '>=18'}
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   core-js-compat@3.49.0:
     resolution: {integrity: sha512-VQXt1jr9cBz03b331DFDCCP90b3fanciLkgiOoy8SBHy06gNf+vQ1A3WFLqG7I8TipYIKeYK9wxd0tUrvHcOZA==}
 
@@ -2385,10 +2397,13 @@ packages:
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
 
+<<<<<<< HEAD
   iceberg-js@0.8.1:
     resolution: {integrity: sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==}
     engines: {node: '>=20.0.0'}
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   idb@7.1.1:
     resolution: {integrity: sha512-gchesWBzyvGHRO9W8tzUWFDycow5gwjvFKfyV9FF32Y7F50yZMp7mP+T2mJIWFx49zicqyC4uefHM17o6xKIVQ==}
 
@@ -3653,6 +3668,7 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
+<<<<<<< HEAD
   ws@8.20.0:
     resolution: {integrity: sha512-sAt8BhgNbzCtgGbt2OxmpuryO63ZoDk/sqaB/znQm94T4fCEsy/yV+7CdC1kJhOU9lboAEU7R3kquuycDoibVA==}
     engines: {node: '>=10.0.0'}
@@ -3665,6 +3681,8 @@ packages:
       utf-8-validate:
         optional: true
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
@@ -4789,6 +4807,7 @@ snapshots:
 
   '@rtsao/scc@1.1.0': {}
 
+<<<<<<< HEAD
   '@supabase/auth-js@2.103.0':
     dependencies:
       tslib: 2.8.1
@@ -4834,6 +4853,8 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   '@surma/rollup-plugin-off-main-thread@2.2.3':
     dependencies:
       ejs: 3.1.10
@@ -4971,10 +4992,13 @@ snapshots:
 
   '@types/trusted-types@2.0.7': {}
 
+<<<<<<< HEAD
   '@types/ws@8.18.1':
     dependencies:
       '@types/node': 20.19.39
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   '@typescript-eslint/eslint-plugin@8.58.1(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -5493,8 +5517,11 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
+<<<<<<< HEAD
   cookie@1.1.1: {}
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   core-js-compat@3.49.0:
     dependencies:
       browserslist: 4.28.2
@@ -5739,8 +5766,12 @@ snapshots:
       '@next/eslint-plugin-next': 16.2.2
       eslint: 9.39.4(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1))
+<<<<<<< HEAD
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1))
+=======
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.6.1))
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.4(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.4(jiti@2.6.1))
       eslint-plugin-react-hooks: 7.0.1(eslint@9.39.4(jiti@2.6.1))
@@ -5762,7 +5793,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.6.1)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3
@@ -5773,22 +5804,30 @@ snapshots:
       tinyglobby: 0.2.16
       unrs-resolver: 1.11.1
     optionalDependencies:
+<<<<<<< HEAD
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1))
+=======
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.6.1))
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
       eslint: 9.39.4(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
+<<<<<<< HEAD
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1)):
+=======
   eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.6.1)):
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -5799,7 +5838,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.4(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.10
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1)))(eslint@9.39.4(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -6169,8 +6208,11 @@ snapshots:
     dependencies:
       hermes-estree: 0.25.1
 
+<<<<<<< HEAD
   iceberg-js@0.8.1: {}
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   idb@7.1.1: {}
 
   ignore@5.3.2: {}
@@ -7596,8 +7638,11 @@ snapshots:
 
   wrappy@1.0.2: {}
 
+<<<<<<< HEAD
   ws@8.20.0: {}
 
+=======
+>>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
   y18n@5.0.8: {}
 
   yallist@3.1.1: {}
