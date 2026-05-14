@@ -1,0 +1,11 @@
+# MCP Environment Files
+.env.local
+.env
+.env.*
+
+# MCP Logs
+*.log
+logs/
+
+# Dependencies (if any)
+node_modules/

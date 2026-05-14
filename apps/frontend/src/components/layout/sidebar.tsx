@@ -9,7 +9,7 @@ import {
   Settings,
   Leaf,
   Home,
-  ArrowLeft,
+  User,
 } from "lucide-react";
 
 export function Sidebar() {
@@ -24,6 +24,7 @@ export function Sidebar() {
     },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
     { href: "/dashboard/reports", label: "Analytics", icon: FileText },
+    { href: "/profile", label: "Profile", icon: User },
   ];
 
   return (
