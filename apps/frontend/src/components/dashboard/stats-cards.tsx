@@ -49,9 +49,9 @@ export function StatsCards() {
       {stats.map((stat, idx) => {
         const Icon = stat.icon;
         return (
-          <div key={idx} className="brutal-panel p-6 bg-white relative overflow-hidden group">
+          <div key={idx} className="brutal-panel panel-surface p-6 relative overflow-hidden group">
             <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="font-mono text-sm font-bold uppercase text-primary/70">{stat.label}</div>
+              <div className="font-mono text-sm font-bold uppercase surface-muted">{stat.label}</div>
               <div className={`p-2 border-2 border-primary rounded bg-background shadow-[2px_2px_0px_#1b4332] ${stat.color}`}>
                 <Icon className="w-5 h-5" />
               </div>
@@ -68,8 +68,6 @@ export function StatsCards() {
             <div className="w-full h-2 bg-primary/10 rounded-full overflow-hidden relative z-10">
               <div className={`h-full ${stat.progressColor} transition-all duration-1000 ease-out`} style={{ width: `${stat.progress}%` }} />
             </div>
-
-            <Icon className="absolute -bottom-6 -right-6 w-32 h-32 text-primary/5 group-hover:scale-110 transition-transform duration-500" />
           </div>
         );
       })}

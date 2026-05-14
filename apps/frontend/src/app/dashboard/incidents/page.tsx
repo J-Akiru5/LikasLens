@@ -15,11 +15,11 @@ export default function IncidentsPage() {
               <h1 className="font-heading text-4xl font-black uppercase">Reported Incidents</h1>
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
                   <input
                     type="text"
                     placeholder="Search ID or Keyword..."
-                    className="pl-9 pr-4 py-2 border-2 border-primary rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_#1b4332]"
+                    className="pl-9 pr-4 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
                   />
                 </div>
                 <button className="brutal-panel p-2 hover:bg-primary hover:text-white transition-colors cursor-pointer border-2 border-primary shadow-[2px_2px_0px_#1b4332]">
@@ -28,8 +28,8 @@ export default function IncidentsPage() {
               </div>
             </div>
 
-            <div className="brutal-panel bg-white p-0 overflow-hidden">
-              <div className="grid grid-cols-12 bg-primary text-white font-mono font-bold text-xs sm:text-sm uppercase p-4">
+            <div className="brutal-panel panel-surface p-0 overflow-hidden">
+              <div className="grid grid-cols-12 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2 border-[#081c15]" style={{ backgroundColor: "#1b4332", color: "#f8f9fa" }}>
                 <div className="col-span-2">ID</div>
                 <div className="col-span-3">Category</div>
                 <div className="col-span-3">Location</div>
@@ -50,7 +50,7 @@ export default function IncidentsPage() {
                     {inc.stat === 'Critical' && <AlertTriangle className="w-4 h-4 text-accent" />}
                     {inc.cat}
                   </div>
-                  <div className="col-span-3 opacity-80">{inc.loc}</div>
+                  <div className="col-span-3 surface-muted">{inc.loc}</div>
                   <div className="col-span-2">
                     <span className={`px-2 py-1 rounded text-xs font-bold border-2 uppercase font-mono tracking-widest ${
                       inc.stat === 'Critical' ? 'border-accent text-accent' :

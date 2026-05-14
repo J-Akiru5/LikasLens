@@ -35,15 +35,12 @@ importers:
 
   apps/frontend:
     dependencies:
-<<<<<<< HEAD
       '@supabase/ssr':
         specifier: ^0.10.2
         version: 0.10.2(@supabase/supabase-js@2.103.0)
       '@supabase/supabase-js':
         specifier: ^2.103.0
         version: 2.103.0
-=======
->>>>>>> bdd6b431138cbfbdb23fcbab18f81f01d71891d6
       next:
         specifier: 16.2.2
         version: 16.2.2(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
