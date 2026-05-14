@@ -2,197 +2,334 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-type ScoreRow = {
-  rank: number;
-  agency: string;
-  user: string;
-  responseTime: string;
-};
-
-const scoreData: ScoreRow[] = [
-  { rank: 1, agency: "Forest Guard", user: "Gov Agency North", responseTime: "14 minutes" },
-  { rank: 2, agency: "Dept. Environment", user: "Gov Agency River", responseTime: "16 minutes" },
-  { rank: 3, agency: "City Sanitation", user: "Gov Agency Metro", responseTime: "20 minutes" },
-  { rank: 4, agency: "Coastal Watch", user: "Gov Agency Bay", responseTime: "23 minutes" },
-];
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ShieldAlert,
+  Fingerprint,
+  Activity,
+  Map,
+  ArrowRight,
+  Eye,
+  Leaf,
+  ShieldCheck,
+  Camera,
+  Globe,
+  Bot,
+} from "lucide-react";
 
 export default function Home() {
   const [ghostMode, setGhostMode] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem("likaslens-theme");
-    setGhostMode(storedTheme === "ghost");
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    const themeValue = ghostMode ? "ghost" : "civic";
+    const themeValue = ghostMode ? "ghost" : "light";
     document.documentElement.setAttribute("data-theme", themeValue);
-    window.localStorage.setItem("likaslens-theme", themeValue);
-  }, [ghostMode, mounted]);
+  }, [ghostMode]);
 
   return (
-    <main className="landing-shell min-h-screen">
-      <header className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-        <nav className="landing-panel flex flex-col gap-4 rounded-xl border px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="font-heading text-2xl font-extrabold tracking-tight">LikasLens</div>
-          <ul className="flex flex-wrap items-center gap-4 text-sm uppercase tracking-[0.08em]">
-            <li><a href="#reporting" className="landing-link">Reporting</a></li>
-            <li><a href="#scoreboard" className="landing-link">Scoreboard</a></li>
-            <li><a href="#technology" className="landing-link">Technology</a></li>
-            <li><a href="#rewards" className="landing-link">Rewards</a></li>
-            <li><Link href="/login" className="landing-link">Login</Link></li>
-          </ul>
-          <button
-            type="button"
-            onClick={() => setGhostMode((value) => !value)}
-            className="flex items-center gap-3 rounded-full border px-3 py-1.5 text-sm"
-            aria-label="Toggle Ghost Mode"
+    <main className="relative min-h-screen overflow-hidden selection:bg-accent/30 selection:text-current font-body">
+      {/* Background Image for Hero Section */}
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-700"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=3270&auto=format&fit=crop')",
+          opacity: ghostMode ? 0.4 : 1,
+        }}
+      >
+        <div
+          className={`absolute inset-0 backdrop-blur-[3px] transition-colors duration-700 ${ghostMode ? "bg-[#081c15]/90" : "bg-[#f8f9fa]/40"}`}
+        />
+      </div>
+
+      <div className="smoke-overlay" />
+
+      {/* Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-background/90 backdrop-blur-md border-b-2 border-primary/10">
+        <div className="flex items-center gap-2 text-primary">
+          <Leaf className="w-8 h-8" />
+          <span className="font-heading font-extrabold text-2xl tracking-tighter">
+            LikasLens
+          </span>
+        </div>
+        <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-primary/70">
+          <a href="#platform" className="hover:text-primary transition-colors">
+            Features
+          </a>
+          <a
+            href="#scoreboard"
+            className="hover:text-primary transition-colors"
           >
-            <span className="font-body">Ghost Mode</span>
-            <span className={`theme-switch ${ghostMode ? "is-on" : ""}`}>
-              <span className="theme-switch-dot" />
-            </span>
+            Public Records
+          </a>
+          <button
+            onClick={() => setGhostMode(!ghostMode)}
+            className={`flex items-center gap-1 transition-colors ${ghostMode ? "text-accent" : "hover:text-accent"}`}
+          >
+            <Fingerprint className="w-4 h-4" /> Ghost Mode
           </button>
-        </nav>
-      </header>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/login"
+            className="text-sm font-bold uppercase hover:text-primary transition-colors text-primary/70"
+          >
+            Log In
+          </Link>
+          <Link
+            href="/dashboard"
+            className="brutal-button px-5 py-2.5 rounded text-sm"
+          >
+            Open Dashboard
+          </Link>
+        </div>
+      </nav>
 
-      <section id="reporting" className="mx-auto grid w-full max-w-7xl gap-5 px-4 pb-4 sm:px-6 lg:grid-cols-[1.4fr_1fr] lg:px-8">
-        <article className="landing-panel hero-panel rounded-2xl border p-6 sm:p-8">
-          <p className="font-data text-xs uppercase tracking-[0.3em]">Civic Intelligence Grid</p>
-          <h1 className="font-heading mt-4 text-4xl font-extrabold leading-[1.06] sm:text-6xl">
-            The Smart Watchdog for a Greener World.
-          </h1>
-          <p className="font-body mt-4 max-w-2xl text-base sm:text-lg">
-            Communities can report environmental issues fast, route evidence to the right agency, and watch response times in a public accountability ledger.
-          </p>
-          <p className="font-data mt-3 text-xs tracking-wide">
-            Ghost Mode safeguards: EXIF metadata is stripped on-device before transmission.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/login" className="cta-primary rounded-lg px-5 py-3 font-semibold uppercase tracking-wide">
-              Get Involved
-            </Link>
-            <a href="#scoreboard" className="cta-secondary rounded-lg px-5 py-3 font-semibold uppercase tracking-wide">
-              View Public Scoreboard
-            </a>
-          </div>
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <StatChip label="Cities Connected" value="38" />
-            <StatChip label="Avg. Response" value="18m" />
-            <StatChip label="Reports This Week" value="2,640" />
-          </div>
-        </article>
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 px-6 lg:pt-48 lg:pb-32 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-2 px-4 py-2 brutal-panel mb-8"
+        >
+          <span className="w-3 h-3 bg-secondary rounded-full border border-primary animate-pulse" />
+          <span className="font-mono text-xs font-bold uppercase tracking-widest">
+            Ready to help protect our earth
+          </span>
+        </motion.div>
 
-        <GhostPanel />
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className={`text-6xl md:text-8xl font-heading font-black tracking-tighter leading-[0.9] mb-6 uppercase ${ghostMode ? "ghost-flicker" : ""}`}
+        >
+          See It. <span className="text-primary">Report It.</span>
+          <br />
+          Fix It.
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-lg md:text-xl text-foreground/90 max-w-2xl font-semibold mb-10"
+        >
+          An easy-to-use app that lets anyone report environmental issues like
+          illegal dumping or pollution. Our smart system makes sure your report
+          goes straight to the right local agency, fast and safely.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="flex flex-col sm:flex-row items-center gap-6"
+        >
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 brutal-button px-8 py-4 rounded-lg text-lg"
+          >
+            Report an Issue <ArrowRight className="w-5 h-5" />
+          </Link>
+          <a
+            href="#scoreboard"
+            className="flex items-center gap-2 brutal-panel px-8 py-4 rounded-lg text-lg font-bold hover:bg-primary/5 transition-colors"
+          >
+            <Activity className="w-5 h-5 text-secondary" /> View Public Reports
+          </a>
+        </motion.div>
       </section>
 
-      <section id="scoreboard" className="mx-auto w-full max-w-7xl px-4 pb-5 sm:px-6 lg:px-8">
-        <article className="landing-panel rounded-2xl border p-6">
-          <header className="mb-5">
-            <h2 className="font-heading text-3xl font-extrabold">The Public Scoreboard</h2>
-            <p className="font-body mt-1 text-sm">Recent issues resolved by agency</p>
-          </header>
+      {/* Feature Grids */}
+      <section
+        id="platform"
+        className="relative z-10 max-w-7xl mx-auto px-6 py-20 bg-background/50 rounded-[3rem] mt-10 backdrop-blur-sm"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <FeatureCard
+            icon={<Bot className="w-8 h-8 text-secondary" />}
+            title="Smart AI Sorting"
+            description="You don't need to know who to call. Just take a picture, and our AI figures out the problem and sends it to the correct government department automatically."
+          />
+          <FeatureCard
+            icon={<Map className="w-8 h-8 text-secondary" />}
+            title="Live Community Map"
+            description="See a map of environmental issues in your area. Watch how your community works together to highlight places that need help."
+          />
+          <FeatureCard
+            icon={<ShieldCheck className="w-8 h-8 text-secondary" />}
+            title="Public Record"
+            description="Every report is tracked openly. This means everyone can see how fast issues are being fixed, holding agencies accountable."
+          />
+        </div>
+      </section>
 
-          <div className="grid gap-3">
-            <div className="font-data hidden grid-cols-[0.4fr_1.6fr_1fr_1fr] rounded-md border px-3 py-2 text-xs uppercase tracking-[0.12em] sm:grid">
-              <span>Rank</span>
-              <span>Agency</span>
-              <span>User Name</span>
-              <span className="text-right">Response</span>
-            </div>
-            {scoreData.map((row) => (
-              <div key={row.rank} className="score-row grid items-center gap-2 rounded-lg border px-3 py-3 sm:grid-cols-[0.4fr_1.6fr_1fr_1fr]">
-                <span className="font-data text-2xl font-bold sm:text-xl">{row.rank}</span>
-                <span className="font-body text-sm font-semibold sm:text-base">{row.agency}</span>
-                <span className="font-body text-sm">{row.user}</span>
-                <span className="font-data text-sm sm:text-right">{row.responseTime}</span>
+      {/* Ghost Mode Spotlight */}
+      <section
+        id="ghost"
+        className="relative z-10 max-w-7xl mx-auto px-6 py-32"
+      >
+        <div
+          className={`p-10 md:p-16 rounded-[2rem] transition-colors duration-500 border-4 relative overflow-hidden ${ghostMode ? "bg-[#081c15] border-accent shadow-[8px_8px_0px_#ffb703] text-white" : "bg-white border-primary shadow-[8px_8px_0px_#1b4332]"}`}
+        >
+          <div className="grid md:grid-cols-2 gap-12 items-center relative z-10">
+            <div>
+              <div
+                className={`inline-flex items-center gap-2 px-3 py-1 font-mono text-sm font-bold mb-6 border-2 ${ghostMode ? "text-accent border-accent" : "text-primary border-primary"}`}
+              >
+                <Fingerprint className="w-4 h-4" />
+                {ghostMode ? "GHOST MODE ACTIVE" : "YOUR SAFETY MATTERS"}
               </div>
-            ))}
+              <h2 className="font-heading text-4xl md:text-5xl font-black tracking-tight mb-6 uppercase">
+                Protect your identity.
+                <br />
+                Report safely.
+              </h2>
+              <p
+                className={`text-lg mb-8 font-semibold ${ghostMode ? "text-white/90" : "text-primary/90"}`}
+              >
+                Need to report something dangerous, like illegal logging, but
+                worried about your safety? Turn on Ghost Mode. We will
+                completely hide your personal details, remove your location from
+                photos, and keep you 100% anonymous.
+              </p>
+              <button
+                onClick={() => setGhostMode(!ghostMode)}
+                className={`flex items-center gap-3 px-6 py-4 rounded-xl font-bold uppercase transition-all duration-300 border-2 ${ghostMode ? "bg-accent text-[#081c15] border-accent shadow-[4px_4px_0px_rgba(255,255,255,0.5)]" : "bg-primary text-white border-primary shadow-[4px_4px_0px_#081c15]"}`}
+              >
+                {ghostMode ? (
+                  <ShieldAlert className="w-6 h-6" />
+                ) : (
+                  <Eye className="w-6 h-6" />
+                )}
+                {ghostMode ? "Turn Off Ghost Mode" : "Turn On Ghost Mode"}
+              </button>
+            </div>
+
+            <div className="relative h-[400px] w-full bionic-frame p-8 flex flex-col justify-center items-center bg-background/40 backdrop-blur-md">
+              {ghostMode && <div className="ai-scan-line" />}
+              <AnimatePresence mode="wait">
+                {ghostMode ? (
+                  <motion.div
+                    key="ghost-on"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 1.1 }}
+                    className="flex flex-col items-center text-center"
+                  >
+                    <Fingerprint className="w-32 h-32 text-accent mb-6 animate-pulse" />
+                    <div className="font-mono text-accent text-xl font-bold uppercase">
+                      Identity Hidden
+                    </div>
+                    <div className="font-mono text-white/70 text-sm mt-2 uppercase tracking-widest">
+                      Photo location removed // Sent secretly
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="ghost-off"
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="flex flex-col items-center text-center"
+                  >
+                    <Camera className="w-32 h-32 text-primary mb-6" />
+                    <div className="font-mono text-primary text-xl font-bold uppercase">
+                      Normal Report
+                    </div>
+                    <div className="font-mono text-primary/70 text-sm mt-2 uppercase tracking-widest">
+                      Your name is shown // Location saved
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-          <a href="#" className="landing-link mt-4 inline-block text-sm">Show more details</a>
-        </article>
+        </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-5 px-4 pb-8 sm:px-6 lg:grid-cols-[2fr_1fr] lg:px-8">
-        <article id="technology" className="landing-panel rounded-2xl border p-6">
-          <h3 className="font-heading text-3xl font-extrabold">Powered by AI Brain</h3>
-          <p className="font-body mt-2 text-sm sm:text-base">Environmental photos are classified and routed with jurisdiction context in seconds.</p>
-          <div className="bionic-frame mt-5 rounded-xl border p-4">
-            <div className="font-data mb-4 flex flex-wrap items-center justify-between gap-3 text-xs uppercase tracking-[0.12em]">
-              <span>Object Detected: Illegal Dumping</span>
-              <span>Location: Riverside Drive</span>
-              <span>Jurisdiction: Dept. Environment</span>
+      {/* Public Scoreboard Preview */}
+      <section
+        id="scoreboard"
+        className="relative z-10 max-w-7xl mx-auto px-6 py-20"
+      >
+        <h2 className="font-heading text-4xl font-black mb-8 uppercase border-b-4 border-primary pb-4">
+          Public Records of Fixed Issues
+        </h2>
+        <div className="brutal-panel p-0 overflow-hidden bg-white/90 backdrop-blur">
+          <div className="grid grid-cols-4 bg-primary text-white font-mono font-bold text-sm uppercase p-4">
+            <div>Agency in charge</div>
+            <div>What happened</div>
+            <div>Current Status</div>
+            <div className="text-right">Time to fix</div>
+          </div>
+          {[
+            {
+              j: "Dept. of Forestry",
+              i: "Illegal Logging",
+              s: "Fixed",
+              t: "12 mins",
+            },
+            {
+              j: "Coast Guard",
+              i: "Oil Spill",
+              s: "Checking it",
+              t: "45 mins",
+            },
+            {
+              j: "City Sanitation",
+              i: "Trash Dumping",
+              s: "Fixed",
+              t: "2 hours",
+            },
+          ].map((row, idx) => (
+            <div
+              key={idx}
+              className="grid grid-cols-4 font-mono text-sm p-4 border-t-2 border-primary/20 hover:bg-secondary/10 transition-colors"
+            >
+              <div className="font-bold text-base">{row.j}</div>
+              <div className="text-base">{row.i}</div>
+              <div>
+                <span
+                  className={`px-2 py-1 rounded text-xs font-bold border-2 ${row.s === "Fixed" ? "border-secondary text-primary" : "border-accent text-accent"}`}
+                >
+                  {row.s}
+                </span>
+              </div>
+              <div className="text-right font-bold text-base">{row.t}</div>
             </div>
-            <div className="relative h-48 overflow-hidden rounded-lg border sm:h-60">
-              <div className="ai-grid absolute inset-0" />
-              <div className="absolute left-4 top-4 rounded border px-2 py-1 text-xs uppercase tracking-[0.08em]">AI Scan Active</div>
-              <div className="absolute bottom-4 right-4 rounded border px-2 py-1 text-xs uppercase tracking-[0.08em]">Local Law Match</div>
-            </div>
-          </div>
-        </article>
-
-        <article id="rewards" className="landing-panel rounded-2xl border p-6">
-          <h3 className="font-heading text-3xl font-extrabold">Earn Rewards</h3>
-          <p className="font-body mt-2 text-sm">Contributions grow your civic impact badge and unlock milestones.</p>
-          <div className="mt-6 grid gap-3">
-            <RewardTile title="Daily Reports" value="+10" />
-            <RewardTile title="Verified Reports" value="+35" />
-            <RewardTile title="Weekly Streak" value="+60" />
-          </div>
-          <div className="mt-6 flex items-center justify-between rounded-lg border px-4 py-3">
-            <span className="font-data text-sm uppercase tracking-[0.12em]">Rewards</span>
-            <span className="font-data text-2xl font-bold">100</span>
-          </div>
-        </article>
+          ))}
+        </div>
       </section>
 
-      <footer className="mx-auto w-full max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
-        <div className="landing-panel flex flex-col gap-3 rounded-xl border px-4 py-4 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="font-data text-xs uppercase tracking-[0.12em]">Legal | Social | Contact</div>
-          <p className="font-body">Vigilance for the Wild</p>
+      <footer className="relative z-10 border-t-4 border-primary mt-20 p-8 text-center font-mono font-bold uppercase text-sm bg-background">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <Globe className="w-4 h-4 text-secondary" /> LikasLens 2026 //
+          Protecting our environment together.
         </div>
       </footer>
     </main>
   );
 }
 
-function GhostPanel() {
+function FeatureCard({
+  icon,
+  title,
+  description,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
   return (
-    <article className="landing-panel ghost-panel rounded-2xl border p-6">
-      <h2 className="font-heading text-4xl font-extrabold leading-tight">
-        Stay Protected
-        <br />
-        with <span className="text-accent">Ghost Mode</span>
-      </h2>
-      <p className="font-body mt-3 text-base">High-danger incidents can be filed with identity-safe handling and secure routing.</p>
-      <div className="mt-8 flex items-center justify-center gap-6">
-        <div className="avatar-dot" />
-        <div className="font-data text-2xl">&rarr;</div>
-        <div className="avatar-dot ghost" />
+    <div className="brutal-panel p-8 bg-white/90 backdrop-blur">
+      <div className="w-16 h-16 rounded border-2 border-primary flex items-center justify-center mb-6 bg-background">
+        {icon}
       </div>
-      <p className="font-data mt-8 text-xs uppercase tracking-[0.14em]">Night Shadow to Ghost Amber transition</p>
-    </article>
-  );
-}
-
-function StatChip({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border p-3">
-      <p className="font-data text-xs uppercase tracking-[0.12em]">{label}</p>
-      <p className="font-heading mt-1 text-2xl font-extrabold">{value}</p>
-    </div>
-  );
-}
-
-function RewardTile({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="reward-tile flex items-center justify-between rounded-lg border px-3 py-3">
-      <span className="font-body text-sm font-semibold">{title}</span>
-      <span className="font-data text-base font-bold">{value}</span>
+      <h3 className="font-heading text-2xl font-black mb-4 uppercase">
+        {title}
+      </h3>
+      <p className="font-semibold text-lg">{description}</p>
     </div>
   );
 }
