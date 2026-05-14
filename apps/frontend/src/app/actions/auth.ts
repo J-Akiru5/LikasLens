@@ -15,7 +15,7 @@ export async function signIn(formData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`)
+    redirect("/login?error=" + encodeURIComponent(error.message))
   }
 
   redirect("/dashboard")
@@ -36,5 +36,5 @@ export async function signUp(formData) {
     redirect("/login?error=" + encodeURIComponent(error.message))
   }
 
-  redirect("/login?message=Account+created.+Check+your+email+for+verification.")
+  redirect("/login?message=Account+created")
 }
