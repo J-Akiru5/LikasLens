@@ -120,7 +120,7 @@ export default function Home() {
           className="flex flex-col sm:flex-row items-center gap-6"
         >
           <Link
-            href="/dashboard"
+            href="/report"
             className="flex items-center gap-2 brutal-button px-8 py-4 rounded-lg text-lg"
           >
             Report an Issue <ArrowRight className="w-5 h-5" />
