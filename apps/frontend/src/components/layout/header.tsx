@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { Bell, Leaf } from "lucide-react"
 import { UserNav } from "./user-nav"
-import { createClient } from "@/utils/supabase/client"
 
 export function AppHeader({ greeting }: { greeting?: string }) {
   return (

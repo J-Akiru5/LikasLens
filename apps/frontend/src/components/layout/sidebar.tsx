@@ -9,7 +9,6 @@ import {
   Settings,
   Leaf,
   Home,
-  ArrowLeft,
 } from "lucide-react";
 
 export function Sidebar() {
