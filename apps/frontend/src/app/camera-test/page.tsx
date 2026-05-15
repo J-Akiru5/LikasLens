@@ -1,6 +1,7 @@
 "use client";
 
 import { Space_Grotesk } from "next/font/google";
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { stripExif } from "@/utils/exifStripper";
 
@@ -64,6 +65,7 @@ export default function CameraTestPage() {
 
   useEffect(() => {
     let isMounted = true;
+    const videoNode = videoRef.current;
 
     const startCamera = async () => {
       try {
@@ -106,9 +108,8 @@ export default function CameraTestPage() {
       stopStream(streamRef.current);
       streamRef.current = null;
 
-      const video = videoRef.current;
-      if (video) {
-        video.srcObject = null;
+      if (videoNode) {
+        videoNode.srcObject = null;
       }
     };
   }, [attachStream, stopStream]);
@@ -181,23 +182,45 @@ export default function CameraTestPage() {
       return;
     }
 
+    if (latitude === null || longitude === null) {
+      setSubmitStatus("GPS lock required before submit");
+      return;
+    }
+
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiBaseUrl) {
+      setSubmitStatus("Missing API URL configuration");
+      return;
+    }
+
     setSubmitStatus("Preparing payload...");
     try {
-      const imageForUpload = isGhostMode
-        ? await stripExif(capturedImage)
-        : capturedImage;
+      const imageForUpload = await stripExif(capturedImage);
 
       const payload = {
-        imageBase64: imageForUpload,
+        base64Image: imageForUpload,
         latitude,
         longitude,
         isGhostMode,
       };
 
-      console.log("Submit payload", payload);
-      setSubmitStatus("Payload ready (see console)");
-    } catch (error) {
-      setSubmitStatus("Failed to prepare payload");
+      setSubmitStatus("Submitting report...");
+      const response = await fetch(`${apiBaseUrl}/reports`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        setSubmitStatus(`Submit failed (${response.status})`);
+        return;
+      }
+
+      setSubmitStatus("Report submitted");
+    } catch {
+      setSubmitStatus("Failed to submit report");
     }
   }, [capturedImage, isGhostMode, latitude, longitude]);
 
@@ -251,7 +274,7 @@ export default function CameraTestPage() {
             disabled={!capturedImage}
             className="w-full rounded-full border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Prepare Submit
+            Submit Report
           </button>
 
           {status.kind === "error" && (
@@ -277,9 +300,13 @@ export default function CameraTestPage() {
 
         {capturedImage && (
           <div className="space-y-2 rounded-2xl border border-white/10 bg-black/40 p-3">
-            <img
+            <Image
               src={capturedImage}
               alt="Captured preview"
+              width={640}
+              height={853}
+              sizes="(max-width: 768px) 100vw, 320px"
+              unoptimized
               className="h-40 w-full rounded-xl object-cover"
             />
             <div className="flex flex-wrap justify-between gap-2 text-xs text-zinc-300">
