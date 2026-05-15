@@ -11,9 +11,9 @@
 
 | Branch | Latest Commit | Synced With |
 |--------|--------------|-------------|
-| `main` | `7147cac` | ✅ Up to date — contains all `development` changes |
-| `development` | `7147cac` | ✅ Up to date — contains merged PR #49 (FE3) + project lead changes |
-| `jeff-ProjectLead` | `3574ea5` | ✅ Ahead — contains ReD's backend + AI enhancements |
+| `main` | `335131d` | ✅ Up to date — clean reconstructed history |
+| `development` | `335131d` | ✅ Up to date — clean reconstructed history |
+| `jeff-ProjectLead` | `335131d` | ✅ Synced — zero zero with `main` |
 | `charlyn-FE3` | `b8c1f33` | ✅ Merged via PR #49 into `development` |
 | `katherine-FE1` | `c66b021` | ⚠️ Behind 50 commits — needs rebase onto `development` |
 | `roseby-FE2` | `da65ab0` | ⚠️ Behind 91 commits — needs rebase onto `development` |
