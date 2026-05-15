@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import NextImage from "next/image";
 import { createClient } from "@/utils/supabase/client";
 
 export default function ReportPage() {
@@ -68,18 +69,21 @@ export default function ReportPage() {
 	/**
 	 * Open IndexedDB for offline report storage.
 	 */
-	const openOfflineDb = () =>
-		new Promise<IDBDatabase>((resolve, reject) => {
-			const request = indexedDB.open(offlineDbName, 1);
-			request.onupgradeneeded = () => {
-				const db = request.result;
-				if (!db.objectStoreNames.contains(offlineStoreName)) {
-					db.createObjectStore(offlineStoreName, { keyPath: "id" });
-				}
-			};
-			request.onsuccess = () => resolve(request.result);
-			request.onerror = () => reject(request.error);
-		});
+	const openOfflineDb = useCallback(
+		() =>
+			new Promise<IDBDatabase>((resolve, reject) => {
+				const request = indexedDB.open(offlineDbName, 1);
+				request.onupgradeneeded = () => {
+					const db = request.result;
+					if (!db.objectStoreNames.contains(offlineStoreName)) {
+						db.createObjectStore(offlineStoreName, { keyPath: "id" });
+					}
+				};
+				request.onsuccess = () => resolve(request.result);
+				request.onerror = () => reject(request.error);
+			}),
+		[offlineDbName, offlineStoreName]
+	);
 
 	/**
 	 * Persist a report payload when offline so it can sync later.
@@ -107,8 +111,9 @@ export default function ReportPage() {
 	/**
 	 * Flush queued offline reports when connectivity returns.
 	 */
-	const flushOfflineQueue = async () => {
-		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL="http://127.0.0.1:8000";
+	const flushOfflineQueue = useCallback(async () => {
+		const laravelUrl =
+			process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://127.0.0.1:8000";
 		const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
 
 		try {
@@ -163,7 +168,7 @@ export default function ReportPage() {
 			const remaining = items.filter((_: unknown, idx: number) => !successfulIds.includes(String(idx)));
 			localStorage.setItem(offlineQueueKey, JSON.stringify(remaining));
 		}
-	};
+	}, [openOfflineDb, offlineQueueKey, offlineStoreName]);
 
 	useEffect(() => {
 		const handleOnline = () => {
@@ -171,7 +176,7 @@ export default function ReportPage() {
 		};
 		window.addEventListener("online", handleOnline);
 		return () => window.removeEventListener("online", handleOnline);
-	}, []);
+	}, [flushOfflineQueue]);
 
 	/**
 	 * Validate, anonymize, and submit the report to the backend.
@@ -273,10 +278,14 @@ export default function ReportPage() {
 						<h2 className="text-lg font-semibold text-gray-800 mb-4">📷 Image Preview</h2>
 						<div className="h-40 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-auto">
 							{base64Image ? (
-								<img
+								<NextImage
 									src={base64Image}
 									alt="Report"
-									className="max-h-full max-w-full rounded"
+									width={640}
+									height={480}
+									sizes="(max-width: 768px) 100vw, 640px"
+									unoptimized
+									className="max-h-full max-w-full rounded object-contain"
 								/>
 							) : (
 								<p className="text-gray-400 text-center">No image yet</p>
