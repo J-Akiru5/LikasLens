@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import NextImage from "next/image";
 import { createClient } from "@/utils/supabase/client";
+import { Camera, MapPin, Fingerprint, AlertCircle } from "lucide-react";
 
 export default function ReportPage() {
 	const [base64Image, setBase64Image] = useState<string>("");
@@ -270,169 +271,179 @@ export default function ReportPage() {
 	};
 
 	return (
-		<main className="min-h-screen bg-gradient-to-br from-[#081C15] via-[#1B4332] to-[#081C15] flex items-center justify-center p-4">
-			<div className="w-full max-w-2xl">
-				<div className="bg-[#F8F9FA] rounded-3xl shadow-2xl overflow-hidden p-8 border-2 border-[#1B4332]/15">
-					<h1 className="text-3xl font-bold text-[#081C15] mb-2">Report Environmental Issue</h1>
-					<p className="text-[#1B4332]/80 mb-6">
-						Help us protect the environment by reporting violations in your area.
-					</p>
-
-					<div className="mb-6 flex items-center justify-between rounded-lg border border-[#1B4332]/15 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#1B4332]">
-						<span>Connection</span>
-						<span
-							className={
-								isOnline
-									? "rounded-full border border-[#2DE1C2] px-2 py-1 text-[#081C15]"
-									: "rounded-full border border-[#FFB703] px-2 py-1 text-[#081C15]"
-							}
-						>
-							{isOnline ? "Online" : "Offline"}
+		<main className={`min-h-screen font-body transition-colors duration-700 ${
+			isGhostMode 
+				? "bg-[#081c15]" 
+				: "bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10"
+		}`}>
+			<div className="max-w-2xl mx-auto p-6">
+				{/* Header */}
+				<div className="mb-8">
+					<div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary mb-4 bg-background/50 rounded">
+						<span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+						<span className="font-mono text-xs font-bold uppercase tracking-widest text-primary">
+							Report an Issue
 						</span>
 					</div>
+					<h1 className="font-heading text-5xl md:text-6xl font-black uppercase tracking-tight text-primary mb-2">
+						Document the Problem
+					</h1>
+					<p className="text-lg text-foreground/80 font-semibold">
+						Your evidence helps protect our earth. Every photo, every detail counts.
+					</p>
+				</div>
 
-					{toastMessage && (
-						<div
-							className={`mb-6 rounded-lg p-4 text-sm font-medium border ${
-								toastTone === "error"
-									? "bg-[#FFB703]/10 text-[#081C15] border-[#FFB703]"
-									: toastTone === "success"
-									? "bg-[#2DE1C2]/10 text-[#081C15] border-[#2DE1C2]"
-									: "bg-[#F8F9FA] text-[#1B4332] border-[#1B4332]/20"
-							}`}
-						>
-							{toastMessage}
-						</div>
-					)}
+				{/* Toast Messages */}
+				{toastMessage && (
+					<div className={`mb-6 p-4 border-2 font-mono text-sm font-bold rounded ${
+						toastMessage.toLowerCase().includes("error")
+							? "border-accent bg-accent/10 text-accent"
+							: "border-secondary bg-secondary/10 text-secondary"
+					}`}>
+						{toastMessage}
+					</div>
+				)}
 
+				<form onSubmit={handleSubmit} className="space-y-6">
 					{/* Image Preview */}
-					<div className="mb-8 p-6 bg-white rounded-lg border border-[#1B4332]/15">
-						<h2 className="text-lg font-semibold text-[#081C15] mb-4">📷 Image Preview</h2>
-						<div className="h-40 bg-[#F8F9FA] border-2 border-dashed border-[#1B4332]/25 rounded-lg flex items-center justify-center overflow-auto">
+					<div className="brutal-panel panel-surface border-4 border-primary p-8">
+						<div className="flex items-center gap-3 mb-6">
+							<Camera className="w-6 h-6 text-secondary" />
+							<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
+								Evidence Photo
+							</h2>
+						</div>
+						<div className="bionic-frame p-6 bg-background/40 backdrop-blur-md border-2 border-primary rounded-lg h-48 flex items-center justify-center overflow-auto">
 							{base64Image ? (
 								<NextImage
 									src={base64Image}
-									alt="Report"
-									width={640}
-									height={480}
-									sizes="(max-width: 768px) 100vw, 640px"
-									unoptimized
-									className="max-h-full max-w-full rounded object-contain"
+									alt="Report Evidence"
+									className="max-h-full max-w-full rounded"
 								/>
 							) : (
-								<p className="text-[#1B4332]/60 text-center">No image yet</p>
+								<div className="text-center">
+									<Camera className="w-12 h-12 text-primary/40 mx-auto mb-2" />
+									<p className="text-primary/60 font-mono text-sm">No image captured yet</p>
+								</div>
 							)}
 						</div>
-							<p className="text-xs text-[#1B4332]/70 mt-2">
-							Base64 Length: <strong>{base64Image.length} characters</strong>
+						<p className="text-xs font-mono text-foreground/60 mt-3 uppercase tracking-widest">
+							Base64 Size: <strong>{(base64Image.length / 1024).toFixed(2)} KB</strong>
 						</p>
 					</div>
 
 					{/* GPS Coordinates */}
-						<div className="mb-8 p-6 bg-white rounded-lg border border-[#1B4332]/15">
-							<h2 className="text-lg font-semibold text-[#081C15] mb-4">📍 GPS Coordinates</h2>
+					<div className="brutal-panel panel-surface border-4 border-primary p-8">
+						<div className="flex items-center gap-3 mb-6">
+							<MapPin className="w-6 h-6 text-secondary" />
+							<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
+								Location Data
+							</h2>
+						</div>
 						<div className="grid grid-cols-2 gap-4">
-								<div className="bg-[#F8F9FA] p-4 rounded-lg border border-[#1B4332]/15">
-									<p className="text-sm font-medium text-[#1B4332]/80 mb-1">Latitude</p>
-									<p className="text-xl font-bold text-[#1B4332]">
-									{latitude ?? "Not set"}
+							<div className="bionic-frame p-4 border-2 border-primary bg-background/50 rounded">
+								<p className="text-xs font-mono font-bold text-primary/70 uppercase mb-2">Latitude</p>
+								<p className="text-2xl font-mono font-bold text-primary">
+									{latitude?.toFixed(6) ?? "—"}
 								</p>
 							</div>
-								<div className="bg-[#F8F9FA] p-4 rounded-lg border border-[#1B4332]/15">
-									<p className="text-sm font-medium text-[#1B4332]/80 mb-1">Longitude</p>
-									<p className="text-xl font-bold text-[#1B4332]">
-									{longitude ?? "Not set"}
+							<div className="bionic-frame p-4 border-2 border-primary bg-background/50 rounded">
+								<p className="text-xs font-mono font-bold text-primary/70 uppercase mb-2">Longitude</p>
+								<p className="text-2xl font-mono font-bold text-primary">
+									{longitude?.toFixed(6) ?? "—"}
 								</p>
 							</div>
 						</div>
 					</div>
 
-						<div className="mb-6 rounded-lg border border-[#2DE1C2]/40 bg-[#2DE1C2]/10 p-4">
-						<div className="flex items-center justify-between gap-4">
-							<div>
-									<p className="text-sm font-semibold text-[#081C15]">Ghost Mode</p>
-									<p className="text-xs text-[#1B4332]/80">
-									Send report anonymously and mask user identity.
-								</p>
+					{/* Ghost Mode Toggle */}
+					<div className={`brutal-panel border-4 p-8 transition-colors duration-500 ${
+						isGhostMode
+							? "border-accent bg-[#081c15]/80 shadow-[8px_8px_0px_#ffb703]"
+							: "panel-surface border-primary shadow-[8px_8px_0px_#1b4332]"
+					}`}>
+						<div className="flex items-center justify-between gap-6">
+							<div className="flex items-center gap-3">
+								<Fingerprint className={`w-6 h-6 ${isGhostMode ? "text-accent" : "text-primary"}`} />
+								<div>
+									<p className={`font-heading text-xl font-black uppercase tracking-tight ${
+										isGhostMode ? "text-accent" : "text-primary"
+									}`}>
+										Ghost Mode
+									</p>
+									<p className={`text-sm font-semibold ${isGhostMode ? "text-white/80" : "text-foreground/70"}`}>
+										Send anonymously. Remove all identifying data.
+									</p>
+								</div>
 							</div>
-							<label className="inline-flex items-center gap-2">
+							<label className="inline-flex items-center">
 								<input
 									type="checkbox"
 									checked={isGhostMode}
 									onChange={(e) => setIsGhostMode(e.target.checked)}
-										className="h-5 w-5 accent-[#2DE1C2]"
+									className="w-6 h-6 rounded border-2 cursor-pointer"
+									style={{
+										borderColor: isGhostMode ? "#ffb703" : "#1b4332",
+										accentColor: isGhostMode ? "#ffb703" : "#1b4332",
+									}}
 								/>
-									<span className="text-sm text-[#081C15]">
-									{isGhostMode ? "ON" : "OFF"}
-								</span>
 							</label>
 						</div>
 					</div>
 
 					{/* Action Buttons */}
-					<form onSubmit={handleSubmit} className="space-y-4">
-						<div className="grid grid-cols-2 gap-4">
-							<button
-								type="button"
-								onClick={populateWithTestData}
-								className="px-4 py-3 bg-[#2DE1C2] text-[#081C15] font-semibold rounded-lg hover:bg-[#28cbb0] transition-colors"
-							>
-								✓ Test Data
-							</button>
-							<button
-								type="button"
-								onClick={clearForm}
-								className="px-4 py-3 bg-[#FFB703] text-[#081C15] font-semibold rounded-lg hover:bg-[#e6a503] transition-colors"
-							>
-								✕ Clear Form
-							</button>
-						</div>
-
+					<div className="grid grid-cols-2 gap-4">
 						<button
-							type="submit"
-							disabled={isSubmitting || !base64Image || latitude === null || longitude === null}
-							className={`w-full px-6 py-3 font-semibold rounded-lg transition-colors ${
-								isSubmitting || !base64Image || latitude === null || longitude === null
-									? "bg-[#1B4332]/40 text-[#F8F9FA] cursor-not-allowed"
-									: "bg-[#1B4332] text-[#F8F9FA] hover:bg-[#163b2b]"
-							}`}
+							type="button"
+							onClick={populateWithTestData}
+							className="brutal-button px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-primary bg-primary text-background hover:shadow-[4px_4px_0px_#1b4332]"
 						>
-							<span className="inline-flex items-center justify-center gap-2">
-								{isSubmitting && (
-									<span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-								)}
-								{isSubmitting
-									? "Sending to LGU..."
-									: !isOnline
-									? "Queue Offline"
-									: "Submit Report"}
-							</span>
+							Load Test Data
 						</button>
-					</form>
+						<button
+							type="button"
+							onClick={clearForm}
+							className="brutal-panel px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-accent text-accent hover:bg-accent/5"
+						>
+							Clear Form
+						</button>
+					</div>
 
-					{/* Debug Info */}
-					<div className="mt-8 p-4 bg-[#F8F9FA] rounded-lg border border-[#1B4332]/15">
-						<h3 className="text-sm font-semibold text-[#081C15] mb-2">Debug Info</h3>
-						<pre className="text-xs bg-white p-3 rounded border border-[#1B4332]/15 overflow-auto max-h-40 text-[#081C15]">
+					{/* Submit Button */}
+					<button
+						type="submit"
+						disabled={isSubmitting || !base64Image || latitude === null || longitude === null}
+						className={`w-full brutal-button px-8 py-4 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 ${
+							isSubmitting || !base64Image || latitude === null || longitude === null
+								? "border-foreground/30 bg-foreground/10 text-foreground/40 cursor-not-allowed"
+								: "border-primary bg-primary text-background hover:shadow-[6px_6px_0px_#1b4332]"
+						}`}
+					>
+						{isSubmitting ? "⏳ Submitting..." : "🚀 Submit Report"}
+					</button>
+				</form>
+
+				{/* Debug Panel (for development) */}
+				{process.env.NODE_ENV === "development" && (
+					<div className="mt-8 brutal-panel panel-surface border-2 border-primary/20 p-4">
+						<h3 className="text-xs font-mono font-bold text-primary/60 uppercase mb-2">Debug Info</h3>
+						<pre className="text-xs bg-background/50 p-3 rounded border border-primary/20 overflow-auto max-h-40 font-mono text-foreground/70">
 							{JSON.stringify(
 								{
-									base64ImageLength: base64Image.length,
+									imageLength: base64Image.length,
 									latitude,
 									longitude,
 									isSubmitting,
 									isGhostMode,
 									laravelUrl: process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000",
-									toastMessage,
 								},
 								null,
 								2
 							)}
 						</pre>
-						<p className="text-xs text-[#1B4332]/80 mt-2">
-							<strong>Env Check:</strong> Set <code className="bg-white px-2 py-1 rounded">NEXT_PUBLIC_LARAVEL_API_URL</code> in .env.local
-						</p>
+
 					</div>
-				</div>
+				)}
 			</div>
 		</main>
 	);

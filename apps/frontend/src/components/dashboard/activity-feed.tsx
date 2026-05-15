@@ -1,6 +1,9 @@
-import { AlertTriangle, Info, Map } from "lucide-react";
+"use client";
 
-const feed = [
+import { AlertTriangle, Info, Map } from "lucide-react";
+import { useState } from "react";
+
+const allIncidents = [
   {
     id: "INC-092",
     type: "Critical",
@@ -25,32 +28,109 @@ const feed = [
     time: "2 hours ago",
     status: "Archived"
   },
+  {
+    id: "INC-089",
+    type: "Warning",
+    title: "Water Contamination Alert",
+    location: "Riverside Industrial",
+    time: "3 hours ago",
+    status: "Investigating"
+  },
+  {
+    id: "INC-088",
+    type: "Critical",
+    title: "Deforestation Zone Detected",
+    location: "Northern Ridge Forest",
+    time: "5 hours ago",
+    status: "Critical Review"
+  },
+  {
+    id: "INC-087",
+    type: "Info",
+    title: "Noise Level Normalized",
+    location: "Downtown Core",
+    time: "6 hours ago",
+    status: "Resolved"
+  },
+  {
+    id: "INC-086",
+    type: "Warning",
+    title: "Wildfire Risk Assessment",
+    location: "Sector 7, Forest Zone",
+    time: "8 hours ago",
+    status: "Monitoring"
+  },
+  {
+    id: "INC-085",
+    type: "Critical",
+    title: "Illegal Wildlife Trafficking",
+    location: "National Park Boundary",
+    time: "10 hours ago",
+    status: "Active Investigation"
+  },
+  {
+    id: "INC-084",
+    type: "Info",
+    title: "Air Quality Improved",
+    location: "Downtown Core",
+    time: "12 hours ago",
+    status: "Resolved"
+  },
 ];
 
 export function ActivityFeed() {
+  const [displayedCount, setDisplayedCount] = useState(3);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLoadMore = () => {
+    setIsLoading(true);
+    // Simulate loading delay
+    setTimeout(() => {
+      setDisplayedCount((prev) => Math.min(prev + 3, allIncidents.length));
+      setIsLoading(false);
+    }, 500);
+  };
+
+  const displayedIncidents = allIncidents.slice(0, displayedCount);
+
   return (
-    <div className="brutal-panel bg-white p-0 overflow-hidden h-full flex flex-col">
+    <div className="brutal-panel panel-surface p-0 overflow-hidden h-full flex flex-col">
       <div className="p-6 border-b-4 border-primary bg-background flex justify-between items-center">
         <h2 className="font-heading text-2xl font-black uppercase">Live Intelligence Feed</h2>
-        <span className="flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-accent opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-accent border border-primary"></span>
+        {/* Glitch Animation Live Indicator - CSS responds to data-theme attribute */}
+        <span className="flex h-3 w-3 relative items-center justify-center">
+          <span className="status-dot-glitch absolute inline-flex h-3 w-3 rounded-full opacity-75 live-indicator-glitch"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 border-2 live-indicator-ring"></span>
         </span>
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {feed.map((item, idx) => (
-          <div key={idx} className="p-6 border-b-2 border-primary/10 hover:bg-background transition-colors flex gap-6 group">
+        {displayedIncidents.map((item, idx) => (
+          <div key={item.id} className="p-6 border-b-2 border-primary/10 hover:bg-secondary/10 transition-colors flex gap-6 group">
             <div className="hidden sm:flex flex-col items-center">
-              <div className={`w-12 h-12 rounded border-2 border-primary flex items-center justify-center shadow-[2px_2px_0px_#1b4332] group-hover:scale-110 transition-transform ${item.type === 'Critical' ? 'bg-accent text-primary' : item.type === 'Warning' ? 'bg-secondary text-primary' : 'bg-background text-primary'}`}>
-                {item.type === 'Critical' ? <AlertTriangle className="w-6 h-6" /> : item.type === 'Warning' ? <Map className="w-6 h-6" /> : <Info className="w-6 h-6" />}
+              <div
+                className={`w-12 h-12 rounded border-2 flex items-center justify-center shadow-[2px_2px_0px_#1b4332] group-hover:scale-110 transition-transform font-heading font-black ${
+                  item.type === "Critical"
+                    ? "bg-accent/20 border-accent text-accent"
+                    : item.type === "Warning"
+                    ? "bg-secondary/20 border-secondary text-secondary"
+                    : "bg-primary/20 border-primary text-primary"
+                }`}
+              >
+                {item.type === "Critical" ? (
+                  <AlertTriangle className="w-6 h-6" />
+                ) : item.type === "Warning" ? (
+                  <Map className="w-6 h-6" />
+                ) : (
+                  <Info className="w-6 h-6" />
+                )}
               </div>
-              <div className="w-0.5 h-full bg-primary/20 mt-4 group-last:hidden"></div>
+              <div className={`w-0.5 ${idx === displayedIncidents.length - 1 ? 'hidden' : 'h-full'} bg-primary/20 mt-4`}></div>
             </div>
 
             <div className="flex-1">
               <div className="flex justify-between items-start mb-2">
-                <div className="font-mono text-xs font-bold text-primary/60 border border-primary/20 px-2 py-1 rounded inline-block bg-white">
+                <div className="font-mono text-xs font-bold surface-muted border border-primary/20 px-2 py-1 rounded inline-block surface-chip">
                   {item.id}
                 </div>
                 <div className="font-mono text-xs font-bold">{item.time}</div>
@@ -60,7 +140,7 @@ export function ActivityFeed() {
               <p className="font-mono text-sm opacity-80 mb-4">{item.location}</p>
 
               <div className="flex items-center gap-2">
-                <div className="text-xs font-mono font-bold uppercase tracking-widest border-2 border-primary px-3 py-1 rounded bg-white shadow-[2px_2px_0px_#1b4332]">
+                <div className="text-xs font-mono font-bold uppercase tracking-widest border-2 border-primary px-3 py-1 rounded surface-chip shadow-[2px_2px_0px_#1b4332]">
                   Status: {item.status}
                 </div>
               </div>
@@ -68,8 +148,21 @@ export function ActivityFeed() {
           </div>
         ))}
 
-        <div className="p-6 text-center">
-          <button className="brutal-button px-6 py-2 text-sm">Load Older Logs</button>
+        <div className="p-6 text-center border-t-2 border-primary/10">
+          {displayedCount < allIncidents.length && (
+            <button
+              onClick={handleLoadMore}
+              disabled={isLoading}
+              className="brutal-button px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Loading..." : `Load Older Logs (${allIncidents.length - displayedCount} more)`}
+            </button>
+          )}
+          {displayedCount >= allIncidents.length && (
+            <div className="font-mono text-xs text-foreground/60 uppercase tracking-widest">
+              ✓ All {allIncidents.length} incidents loaded
+            </div>
+          )}
         </div>
       </div>
     </div>
