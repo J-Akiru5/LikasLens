@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 
 /*
@@ -29,6 +30,9 @@ Route::post('/reports', [ReportController::class, 'store']);
 
 // Public leaderboard endpoint
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+
+// Public profile stats (by Supabase auth user id)
+Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

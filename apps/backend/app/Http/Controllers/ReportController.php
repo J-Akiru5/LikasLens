@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Report;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -48,10 +49,20 @@ class ReportController extends Controller
         $filename = Str::uuid()->toString().'.'.$extension;
         $path = 'reports/'.now()->format('Y/m/d').'/'.$filename;
 
-        Storage::disk('supabase')->put($path, $binary, [
-            'visibility' => 'public',
-            'ContentType' => $contentType,
-        ]);
+        $diskName = $this->resolveStorageDisk();
+        try {
+            Storage::disk($diskName)->put($path, $binary, [
+                'visibility' => 'public',
+                'ContentType' => $contentType,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Report image storage failed, using local', [
+                'disk' => $diskName,
+                'error' => $e->getMessage(),
+            ]);
+            $diskName = 'local';
+            Storage::disk($diskName)->put($path, $binary);
+        }
 
         $report = Report::create([
             'user_id' => $validated['user_id'] ?? null,
@@ -59,7 +70,7 @@ class ReportController extends Controller
             'longitude' => $validated['longitude'],
             'image_path' => $path,
             'image_size' => strlen($binary),
-            'storage_disk' => 'supabase',
+            'storage_disk' => $diskName,
         ]);
 
         return response()->json([
@@ -72,5 +83,16 @@ class ReportController extends Controller
                 'imagePath' => $report->image_path,
             ],
         ], 201);
+    }
+
+    private function resolveStorageDisk(): string
+    {
+        $config = config('filesystems.disks.supabase');
+
+        if (!empty($config['key']) && !empty($config['secret']) && !empty($config['endpoint'])) {
+            return 'supabase';
+        }
+
+        return 'local';
     }
 }
