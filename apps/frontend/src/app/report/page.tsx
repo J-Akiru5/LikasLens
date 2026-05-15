@@ -10,7 +10,9 @@ export default function ReportPage() {
 	const [longitude, setLongitude] = useState<number | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [toastMessage, setToastMessage] = useState("");
+	const [toastTone, setToastTone] = useState<"success" | "error" | "info">("info");
 	const [isGhostMode, setIsGhostMode] = useState(false);
+	const [isOnline, setIsOnline] = useState(true);
 	const offlineQueueKey = "likaslens_offline_reports";
 	const offlineDbName = "likaslens-offline";
 	const offlineStoreName = "report-queue";
@@ -172,10 +174,23 @@ export default function ReportPage() {
 
 	useEffect(() => {
 		const handleOnline = () => {
+			setIsOnline(true);
 			void flushOfflineQueue();
+			setToastTone("success");
+			setToastMessage("Connection restored. Syncing queued reports.");
+		};
+		const handleOffline = () => {
+			setIsOnline(false);
+			setToastTone("error");
+			setToastMessage("Connection lost. Reports will queue until you are back online.");
 		};
 		window.addEventListener("online", handleOnline);
-		return () => window.removeEventListener("online", handleOnline);
+		window.addEventListener("offline", handleOffline);
+		setIsOnline(navigator.onLine);
+		return () => {
+			window.removeEventListener("online", handleOnline);
+			window.removeEventListener("offline", handleOffline);
+		};
 	}, [flushOfflineQueue]);
 
 	/**
@@ -185,6 +200,7 @@ export default function ReportPage() {
 		e.preventDefault();
 		setIsSubmitting(true);
 		setToastMessage("");
+		setToastTone("info");
 
 		try {
 			const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
@@ -211,9 +227,7 @@ export default function ReportPage() {
 				longitude,
 			};
 
-			if (isGhostMode) {
-				payload["user_id"] = "ANONYMOUS_GHOST";
-			} else if (userId) {
+			if (!isGhostMode && userId) {
 				payload["user_id"] = userId;
 			}
 
@@ -222,6 +236,7 @@ export default function ReportPage() {
 				setToastMessage(
 					"You are offline. Report queued securely and will sync when connection is restored."
 				);
+				setToastTone("info");
 				setIsSubmitting(false);
 				return;
 			}
@@ -241,32 +256,49 @@ export default function ReportPage() {
 			}
 
 			const responseData = await response.json();
-			setToastMessage(responseData.message || "Report Submitted Successfully!");
+			setToastMessage(responseData.message || "Report submitted successfully!");
+			setToastTone("success");
 			clearForm();
 		} catch (error) {
 			setToastMessage(
 				error instanceof Error ? `Error: ${error.message}` : "Error submitting report. Check console and CORS."
 			);
+			setToastTone("error");
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
 	return (
-		<main className="min-h-screen bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center p-4">
+		<main className="min-h-screen bg-gradient-to-br from-[#081C15] via-[#1B4332] to-[#081C15] flex items-center justify-center p-4">
 			<div className="w-full max-w-2xl">
-				<div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8">
-					<h1 className="text-3xl font-bold text-gray-900 mb-2">Report Environmental Issue</h1>
-					<p className="text-gray-600 mb-6">
+				<div className="bg-[#F8F9FA] rounded-3xl shadow-2xl overflow-hidden p-8 border-2 border-[#1B4332]/15">
+					<h1 className="text-3xl font-bold text-[#081C15] mb-2">Report Environmental Issue</h1>
+					<p className="text-[#1B4332]/80 mb-6">
 						Help us protect the environment by reporting violations in your area.
 					</p>
 
+					<div className="mb-6 flex items-center justify-between rounded-lg border border-[#1B4332]/15 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#1B4332]">
+						<span>Connection</span>
+						<span
+							className={
+								isOnline
+									? "rounded-full border border-[#2DE1C2] px-2 py-1 text-[#081C15]"
+									: "rounded-full border border-[#FFB703] px-2 py-1 text-[#081C15]"
+							}
+						>
+							{isOnline ? "Online" : "Offline"}
+						</span>
+					</div>
+
 					{toastMessage && (
 						<div
-							className={`mb-6 rounded-lg p-4 text-sm font-medium ${
-								toastMessage.toLowerCase().includes("error")
-									? "bg-red-50 text-red-800 border border-red-200"
-									: "bg-green-50 text-green-800 border border-green-200"
+							className={`mb-6 rounded-lg p-4 text-sm font-medium border ${
+								toastTone === "error"
+									? "bg-[#FFB703]/10 text-[#081C15] border-[#FFB703]"
+									: toastTone === "success"
+									? "bg-[#2DE1C2]/10 text-[#081C15] border-[#2DE1C2]"
+									: "bg-[#F8F9FA] text-[#1B4332] border-[#1B4332]/20"
 							}`}
 						>
 							{toastMessage}
@@ -274,9 +306,9 @@ export default function ReportPage() {
 					)}
 
 					{/* Image Preview */}
-					<div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-						<h2 className="text-lg font-semibold text-gray-800 mb-4">📷 Image Preview</h2>
-						<div className="h-40 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-auto">
+					<div className="mb-8 p-6 bg-white rounded-lg border border-[#1B4332]/15">
+						<h2 className="text-lg font-semibold text-[#081C15] mb-4">📷 Image Preview</h2>
+						<div className="h-40 bg-[#F8F9FA] border-2 border-dashed border-[#1B4332]/25 rounded-lg flex items-center justify-center overflow-auto">
 							{base64Image ? (
 								<NextImage
 									src={base64Image}
@@ -288,38 +320,38 @@ export default function ReportPage() {
 									className="max-h-full max-w-full rounded object-contain"
 								/>
 							) : (
-								<p className="text-gray-400 text-center">No image yet</p>
+								<p className="text-[#1B4332]/60 text-center">No image yet</p>
 							)}
 						</div>
-						<p className="text-xs text-gray-500 mt-2">
+							<p className="text-xs text-[#1B4332]/70 mt-2">
 							Base64 Length: <strong>{base64Image.length} characters</strong>
 						</p>
 					</div>
 
 					{/* GPS Coordinates */}
-					<div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-						<h2 className="text-lg font-semibold text-gray-800 mb-4">📍 GPS Coordinates</h2>
+						<div className="mb-8 p-6 bg-white rounded-lg border border-[#1B4332]/15">
+							<h2 className="text-lg font-semibold text-[#081C15] mb-4">📍 GPS Coordinates</h2>
 						<div className="grid grid-cols-2 gap-4">
-							<div className="bg-white p-4 rounded-lg border border-gray-200">
-								<p className="text-sm font-medium text-gray-600 mb-1">Latitude</p>
-								<p className="text-xl font-bold text-green-700">
+								<div className="bg-[#F8F9FA] p-4 rounded-lg border border-[#1B4332]/15">
+									<p className="text-sm font-medium text-[#1B4332]/80 mb-1">Latitude</p>
+									<p className="text-xl font-bold text-[#1B4332]">
 									{latitude ?? "Not set"}
 								</p>
 							</div>
-							<div className="bg-white p-4 rounded-lg border border-gray-200">
-								<p className="text-sm font-medium text-gray-600 mb-1">Longitude</p>
-								<p className="text-xl font-bold text-green-700">
+								<div className="bg-[#F8F9FA] p-4 rounded-lg border border-[#1B4332]/15">
+									<p className="text-sm font-medium text-[#1B4332]/80 mb-1">Longitude</p>
+									<p className="text-xl font-bold text-[#1B4332]">
 									{longitude ?? "Not set"}
 								</p>
 							</div>
 						</div>
 					</div>
 
-					<div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+						<div className="mb-6 rounded-lg border border-[#2DE1C2]/40 bg-[#2DE1C2]/10 p-4">
 						<div className="flex items-center justify-between gap-4">
 							<div>
-								<p className="text-sm font-semibold text-emerald-900">Ghost Mode</p>
-								<p className="text-xs text-emerald-700">
+									<p className="text-sm font-semibold text-[#081C15]">Ghost Mode</p>
+									<p className="text-xs text-[#1B4332]/80">
 									Send report anonymously and mask user identity.
 								</p>
 							</div>
@@ -328,9 +360,9 @@ export default function ReportPage() {
 									type="checkbox"
 									checked={isGhostMode}
 									onChange={(e) => setIsGhostMode(e.target.checked)}
-									className="h-5 w-5 accent-emerald-600"
+										className="h-5 w-5 accent-[#2DE1C2]"
 								/>
-								<span className="text-sm text-emerald-900">
+									<span className="text-sm text-[#081C15]">
 									{isGhostMode ? "ON" : "OFF"}
 								</span>
 							</label>
@@ -343,14 +375,14 @@ export default function ReportPage() {
 							<button
 								type="button"
 								onClick={populateWithTestData}
-								className="px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+								className="px-4 py-3 bg-[#2DE1C2] text-[#081C15] font-semibold rounded-lg hover:bg-[#28cbb0] transition-colors"
 							>
 								✓ Test Data
 							</button>
 							<button
 								type="button"
 								onClick={clearForm}
-								className="px-4 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+								className="px-4 py-3 bg-[#FFB703] text-[#081C15] font-semibold rounded-lg hover:bg-[#e6a503] transition-colors"
 							>
 								✕ Clear Form
 							</button>
@@ -361,18 +393,27 @@ export default function ReportPage() {
 							disabled={isSubmitting || !base64Image || latitude === null || longitude === null}
 							className={`w-full px-6 py-3 font-semibold rounded-lg transition-colors ${
 								isSubmitting || !base64Image || latitude === null || longitude === null
-									? "bg-gray-400 text-white cursor-not-allowed"
-									: "bg-green-700 text-white hover:bg-green-800"
+									? "bg-[#1B4332]/40 text-[#F8F9FA] cursor-not-allowed"
+									: "bg-[#1B4332] text-[#F8F9FA] hover:bg-[#163b2b]"
 							}`}
 						>
-							{isSubmitting ? "⏳ Sending to LGU..." : "🚀 Submit Report"}
+							<span className="inline-flex items-center justify-center gap-2">
+								{isSubmitting && (
+									<span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+								)}
+								{isSubmitting
+									? "Sending to LGU..."
+									: !isOnline
+									? "Queue Offline"
+									: "Submit Report"}
+							</span>
 						</button>
 					</form>
 
 					{/* Debug Info */}
-					<div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-						<h3 className="text-sm font-semibold text-blue-900 mb-2">Debug Info</h3>
-						<pre className="text-xs bg-white p-3 rounded border border-blue-200 overflow-auto max-h-40 text-gray-700">
+					<div className="mt-8 p-4 bg-[#F8F9FA] rounded-lg border border-[#1B4332]/15">
+						<h3 className="text-sm font-semibold text-[#081C15] mb-2">Debug Info</h3>
+						<pre className="text-xs bg-white p-3 rounded border border-[#1B4332]/15 overflow-auto max-h-40 text-[#081C15]">
 							{JSON.stringify(
 								{
 									base64ImageLength: base64Image.length,
@@ -387,7 +428,7 @@ export default function ReportPage() {
 								2
 							)}
 						</pre>
-						<p className="text-xs text-blue-700 mt-2">
+						<p className="text-xs text-[#1B4332]/80 mt-2">
 							<strong>Env Check:</strong> Set <code className="bg-white px-2 py-1 rounded">NEXT_PUBLIC_LARAVEL_API_URL</code> in .env.local
 						</p>
 					</div>
