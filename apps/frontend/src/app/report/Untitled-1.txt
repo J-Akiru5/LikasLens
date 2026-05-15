@@ -1,0 +1,1 @@
+extension_dir="C:\xampp\php\ext"
