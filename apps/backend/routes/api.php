@@ -24,8 +24,9 @@ Route::get('/health', function () {
     ]);
 });
 
-// Report submission endpoint (public)
+// Report submission endpoints (public)
 Route::post('/reports', [ReportController::class, 'store']);
+Route::post('/reports/triage', [ReportController::class, 'triage']);
 
 // Public leaderboard endpoint
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);

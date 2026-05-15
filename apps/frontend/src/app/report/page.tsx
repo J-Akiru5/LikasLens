@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import NextImage from "next/image";
-import { createClient } from "@/utils/supabase/client";
-import { Camera, MapPin, Fingerprint } from "lucide-react";
+import { Camera, MapPin, Fingerprint, Activity } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 
 export default function ReportPage() {
 	const [base64Image, setBase64Image] = useState<string>("");
@@ -14,6 +13,9 @@ export default function ReportPage() {
 	const [toastTone, setToastTone] = useState<"success" | "error" | "info">("info");
 	const [isGhostMode, setIsGhostMode] = useState(false);
 	const [isOnline, setIsOnline] = useState(true);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isTriaging, setIsTriaging] = useState(false);
+	const [triageIndicators, setTriageIndicators] = useState<string[]>([]);
 	const offlineQueueKey = "likaslens_offline_reports";
 	const offlineDbName = "likaslens-offline";
 	const offlineStoreName = "report-queue";
@@ -194,6 +196,69 @@ export default function ReportPage() {
 		};
 	}, [flushOfflineQueue]);
 
+	// Sync local Ghost Mode with global theme
+	useEffect(() => {
+		const themeValue = isGhostMode ? "ghost" : "civic";
+		document.documentElement.setAttribute("data-theme", themeValue);
+	}, [isGhostMode]);
+
+	const finalizeSubmission = async (cleanedImage: string) => {
+		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+		
+		// Try to fetch Supabase user id unless Ghost Mode is enabled
+		let userId: string | undefined = undefined;
+		if (!isGhostMode) {
+			try {
+				const supabase = createClient();
+				const {
+					data: { user },
+				} = await supabase.auth.getUser();
+				userId = user?.id;
+			} catch {
+				// ignore, continue anonymously if not available
+			}
+		}
+
+		const payload: Record<string, unknown> = {
+			base64Image: cleanedImage,
+			latitude,
+			longitude,
+		};
+
+		if (!isGhostMode && userId) {
+			payload["user_id"] = userId;
+		}
+
+		if (!navigator.onLine) {
+			await queueOfflineReport(payload);
+			setToastMessage(
+				"You are offline. Report queued securely and will sync when connection is restored."
+			);
+			setToastTone("info");
+			setIsSubmitting(false);
+			return;
+		}
+
+		const response = await fetch(`${laravelUrl}/api/reports`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify(payload),
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json().catch(() => ({}));
+			throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+		}
+
+		const responseData = await response.json();
+		setToastMessage(responseData.message || "Report submitted successfully!");
+		setToastTone("success");
+		clearForm();
+	};
+
 	/**
 	 * Validate, anonymize, and submit the report to the backend.
 	 */
@@ -208,58 +273,33 @@ export default function ReportPage() {
 
 			const cleanedImage = await stripExif(base64Image);
 
-			// Try to fetch Supabase user id unless Ghost Mode is enabled
-			let userId: string | undefined = undefined;
-			if (!isGhostMode) {
+			// Morph: Triage Pre-check if NOT already in Ghost Mode
+			if (!isGhostMode && navigator.onLine) {
+				setIsTriaging(true);
 				try {
-					const supabase = createClient();
-					const {
-						data: { user },
-					} = await supabase.auth.getUser();
-					userId = user?.id;
-				} catch {
-					// ignore, continue anonymously if not available
+					const triageRes = await fetch(`${laravelUrl}/api/reports/triage`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ base64Image: cleanedImage }),
+					});
+					if (triageRes.ok) {
+						const triageData = await triageRes.json();
+						if (triageData.has_concern) {
+							setTriageIndicators(triageData.indicators.map((i: any) => i.label || i.type));
+							setIsModalOpen(true);
+							setIsSubmitting(false);
+							setIsTriaging(false);
+							return; // Intercept submission
+						}
+					}
+				} catch (err) {
+					console.error("Triage pre-check failed:", err);
+				} finally {
+					setIsTriaging(false);
 				}
 			}
 
-			const payload: Record<string, unknown> = {
-				base64Image: cleanedImage,
-				latitude,
-				longitude,
-			};
-
-			if (!isGhostMode && userId) {
-				payload["user_id"] = userId;
-			}
-
-			if (!navigator.onLine) {
-				await queueOfflineReport(payload);
-				setToastMessage(
-					"You are offline. Report queued securely and will sync when connection is restored."
-				);
-				setToastTone("info");
-				setIsSubmitting(false);
-				return;
-			}
-
-			const response = await fetch(`${laravelUrl}/api/reports`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Accept: "application/json",
-				},
-				body: JSON.stringify(payload),
-			});
-
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-			}
-
-			const responseData = await response.json();
-			setToastMessage(responseData.message || "Report submitted successfully!");
-			setToastTone("success");
-			clearForm();
+			await finalizeSubmission(cleanedImage);
 		} catch (error) {
 			setToastMessage(
 				error instanceof Error ? `Error: ${error.message}` : "Error submitting report. Check console and CORS."
@@ -271,7 +311,22 @@ export default function ReportPage() {
 	};
 
 	return (
-		<main className={`min-h-screen font-body transition-colors duration-700 ${
+		<>
+		<EdgeInterceptorModal 
+			isOpen={isModalOpen}
+			isLoading={isSubmitting}
+			onCancel={() => setIsModalOpen(false)}
+			onProceed={async () => {
+				setIsGhostMode(true);
+				setIsSubmitting(true);
+				const cleaned = await stripExif(base64Image);
+				// We wrap it in a timeout to ensure state update for isGhostMode is processed if needed
+				// though state is used in finalizeSubmission
+				await finalizeSubmission(cleaned);
+				setIsModalOpen(false);
+			}}
+		/>
+		<main className={`min-h-screen font-body transition-all duration-700 ${
 			isGhostMode 
 				? "bg-[#081c15]" 
 				: "bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10"
@@ -320,7 +375,11 @@ export default function ReportPage() {
 
 				<form onSubmit={handleSubmit} className="space-y-6">
 					{/* Image Preview */}
-					<div className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8">
+					<motion.div 
+						initial={{ opacity: 0, x: -20 }}
+						animate={{ opacity: 1, x: 0 }}
+						className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8"
+					>
 						<div className="flex items-center gap-3 mb-6">
 							<Camera className="w-6 h-6 text-secondary" />
 							<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
@@ -347,7 +406,12 @@ export default function ReportPage() {
 					</div>
 
 					{/* GPS Coordinates */}
-					<div className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8">
+					<motion.div 
+						initial={{ opacity: 0, x: 20 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ delay: 0.1 }}
+						className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8"
+					>
 						<div className="flex items-center gap-3 mb-6">
 							<MapPin className="w-6 h-6 text-secondary" />
 							<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
@@ -426,14 +490,14 @@ export default function ReportPage() {
 					{/* Submit Button */}
 					<button
 						type="submit"
-						disabled={isSubmitting || !base64Image || latitude === null || longitude === null}
+						disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
 						className={`w-full brutal-button px-8 py-4 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
-							isSubmitting || !base64Image || latitude === null || longitude === null
+							isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null
 								? "border-foreground/30 bg-foreground/10 text-foreground/40 cursor-not-allowed"
 								: "border-primary bg-primary text-background hover:shadow-[6px_6px_0px_#1b4332]"
 						}`}
 					>
-						{isSubmitting ? "⏳ Submitting..." : "🚀 Submit Report"}
+						{isSubmitting ? "⏳ Submitting..." : isTriaging ? "🧠 Analyzing..." : "🚀 Submit Report"}
 					</button>
 				</form>
 
@@ -460,5 +524,6 @@ export default function ReportPage() {
 				)}
 			</div>
 		</main>
+		</>
 	);
 }

@@ -15,6 +15,7 @@
 | `development` | `7147cac` | ✅ Up to date — contains merged PR #49 (FE3) + project lead changes |
 | `jeff-ProjectLead` | `3574ea5` | ✅ Ahead — contains ReD's backend + AI enhancements |
 | `charlyn-FE3` | `b8c1f33` | ✅ Merged via PR #49 into `development` |
+| `ui-experiment` | `04bf749` | ✅ **MORPHED** — Integrated PR #52 with AI Triage & Modal |
 | `katherine-FE1` | `c66b021` | ⚠️ Behind 50 commits — needs rebase onto `development` |
 | `roseby-FE2` | `da65ab0` | ⚠️ Behind 91 commits — needs rebase onto `development` |
 

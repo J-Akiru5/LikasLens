@@ -18,6 +18,31 @@ class ReportController extends Controller
     private const GHOST_USER_ID = '00000000-0000-0000-0000-000000000000';
 
     /**
+     * Triage a report without storing it yet.
+     */
+    public function triage(Request $request)
+    {
+        $validated = $request->validate([
+            'base64Image' => 'required|string',
+        ]);
+
+        try {
+            $triage = app(TriageService::class)->analyze($validated['base64Image'], new Ticket());
+            
+            return response()->json([
+                'success' => true,
+                'has_concern' => $triage['has_concern'] ?? false,
+                'indicators' => $triage['indicators'] ?? [],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Triage failed',
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created report in storage.
      */
     public function store(Request $request)
