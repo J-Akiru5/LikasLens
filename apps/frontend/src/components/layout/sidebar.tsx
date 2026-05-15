@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   AlertCircle,
@@ -9,10 +10,37 @@ import {
   Settings,
   Leaf,
   Home,
+  User,
+  Fingerprint,
 } from "lucide-react";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [isGhostMode, setIsGhostMode] = useState(false);
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const theme = document.documentElement.getAttribute("data-theme");
+      setIsGhostMode(theme === "ghost");
+    };
+
+    handleThemeChange();
+    window.addEventListener("themechange", handleThemeChange);
+    
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      window.removeEventListener("themechange", handleThemeChange);
+      observer.disconnect();
+    };
+  }, []);
+
+  const toggleGhostMode = () => {
+    const newTheme = isGhostMode ? "civic" : "ghost";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    setIsGhostMode(!isGhostMode);
+  };
 
   const navItems = [
     {
@@ -23,10 +51,11 @@ export function Sidebar() {
     },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
     { href: "/dashboard/reports", label: "Analytics", icon: FileText },
+    { href: "/profile", label: "Profile", icon: User },
   ];
 
   return (
-    <aside className="w-64 bg-background border-r-4 border-primary flex flex-col h-full relative z-20 font-body">
+    <aside className="w-64 panel-surface border-r-4 border-primary flex flex-col h-full relative z-20 font-body">
       <div className="p-6 border-b-4 border-primary flex items-center gap-2 text-primary">
         <Leaf className="w-8 h-8" />
         <span className="font-heading font-black text-2xl uppercase tracking-tighter">
@@ -49,7 +78,7 @@ export function Sidebar() {
               className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all ${
                 isActive
                   ? "bg-primary text-white shadow-[4px_4px_0px_#081c15] transform translate-y-[-2px]"
-                  : "text-primary border-2 border-transparent hover:border-primary"
+                  : "surface-muted border-2 border-transparent hover:border-primary"
               }`}
             >
               <Icon className="w-5 h-5" /> {item.label}
@@ -58,24 +87,66 @@ export function Sidebar() {
         })}
       </div>
 
-      <div className="p-6 border-t-4 border-primary space-y-2">
-        <Link
-          href="/"
-          className="flex items-center gap-3 px-4 py-3 font-bold uppercase rounded text-primary border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all group"
-        >
-          <Home className="w-5 h-5" />
-          <span>Back to Home</span>
-        </Link>
-        <Link
-          href="/dashboard/settings"
-          className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all ${
-            pathname.startsWith("/dashboard/settings")
-              ? "bg-primary text-white shadow-[4px_4px_0px_#081c15] transform translate-y-[-2px]"
-              : "text-primary border-2 border-transparent hover:border-primary"
+      {/* Ghost Mode Toggle */}
+      <div className="p-6 border-t-4 border-primary space-y-4">
+        <div
+          className={`brutal-panel border-4 p-4 transition-colors duration-500 cursor-pointer ${
+            isGhostMode
+              ? "border-accent bg-[#081c15]/80 shadow-[6px_6px_0px_#ffb703]"
+              : "panel-surface border-primary shadow-[6px_6px_0px_#1b4332]"
           }`}
+          onClick={toggleGhostMode}
         >
-          <Settings className="w-5 h-5" /> Settings
-        </Link>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Fingerprint
+                className={`w-5 h-5 ${isGhostMode ? "text-accent" : "text-primary"}`}
+              />
+              <span
+                className={`font-heading font-black text-xs uppercase tracking-widest ${
+                  isGhostMode ? "text-accent" : "text-primary"
+                }`}
+              >
+                {isGhostMode ? "Ghost" : "Civic"}
+              </span>
+            </div>
+            <div
+              className={`w-8 h-4 rounded-full border-2 flex items-center transition-colors ${
+                isGhostMode
+                  ? "bg-accent/20 border-accent"
+                  : "bg-primary/20 border-primary"
+              }`}
+            >
+              <div
+                className={`w-3 h-3 rounded-full transition-all ${
+                  isGhostMode
+                    ? "ml-auto mr-0.5 bg-accent"
+                    : "ml-0.5 mr-auto bg-primary"
+                }`}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Link
+            href="/"
+            className="flex items-center gap-3 px-4 py-3 font-bold uppercase rounded surface-muted border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all group"
+          >
+            <Home className="w-5 h-5" />
+            <span>Back to Home</span>
+          </Link>
+          <Link
+            href="/dashboard/settings"
+            className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all ${
+              pathname.startsWith("/dashboard/settings")
+                ? "bg-primary text-white shadow-[4px_4px_0px_#081c15] transform translate-y-[-2px]"
+                : "surface-muted border-2 border-transparent hover:border-primary"
+            }`}
+          >
+            <Settings className="w-5 h-5" /> Settings
+          </Link>
+        </div>
       </div>
     </aside>
   );
