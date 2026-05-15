@@ -224,6 +224,67 @@ body {
   }
 }
 
+@keyframes status-dot-glitch {
+  0%, 100% {
+    color: #ffb703;
+    text-shadow: 2px 2px 0px rgba(255, 183, 3, 0.6);
+    box-shadow: 0 0 8px rgba(255, 183, 3, 0.7), inset 0 0 6px rgba(255, 183, 3, 0.4);
+  }
+  25% {
+    color: #ffb703;
+    text-shadow: -2px 2px 0px rgba(255, 183, 3, 0.5);
+    box-shadow: 0 0 12px rgba(255, 183, 3, 0.8), inset 0 0 4px rgba(255, 183, 3, 0.3);
+    transform: scale(1.1);
+  }
+  50% {
+    color: #ffc107;
+    text-shadow: 2px -2px 0px rgba(255, 183, 3, 0.5);
+    box-shadow: 0 0 16px rgba(255, 183, 3, 0.9), inset 0 0 8px rgba(255, 183, 3, 0.5);
+  }
+  75% {
+    color: #ffb703;
+    text-shadow: -2px -2px 0px rgba(255, 183, 3, 0.6);
+    box-shadow: 0 0 10px rgba(255, 183, 3, 0.7), inset 0 0 5px rgba(255, 183, 3, 0.35);
+    transform: scale(0.95);
+  }
+}
+
+/* Civic Mode glitch - visible with forest green glow */
+@keyframes status-dot-glitch-civic {
+  0%, 100% {
+    color: #1b4332;
+    text-shadow: 2px 2px 0px rgba(27, 67, 50, 0.6);
+    box-shadow: 0 0 8px rgba(27, 67, 50, 0.7), inset 0 0 6px rgba(27, 67, 50, 0.4);
+  }
+  25% {
+    color: #1b4332;
+    text-shadow: -2px 2px 0px rgba(27, 67, 50, 0.5);
+    box-shadow: 0 0 12px rgba(27, 67, 50, 0.8), inset 0 0 4px rgba(27, 67, 50, 0.3);
+    transform: scale(1.1);
+  }
+  50% {
+    color: #2d3e2e;
+    text-shadow: 2px -2px 0px rgba(27, 67, 50, 0.5);
+    box-shadow: 0 0 16px rgba(27, 67, 50, 0.9), inset 0 0 8px rgba(27, 67, 50, 0.5);
+  }
+  75% {
+    color: #1b4332;
+    text-shadow: -2px -2px 0px rgba(27, 67, 50, 0.6);
+    box-shadow: 0 0 10px rgba(27, 67, 50, 0.7), inset 0 0 5px rgba(27, 67, 50, 0.35);
+    transform: scale(0.95);
+  }
+}
+
+.status-dot-glitch {
+  animation: status-dot-glitch 0.6s infinite;
+}
+
+/* Apply civic mode animation when not in ghost mode */
+:root[data-theme="civic"] .status-dot-glitch,
+:root:not([data-theme]) .status-dot-glitch {
+  animation: status-dot-glitch-civic 0.6s infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root[data-theme="ghost"] .ghost-panel {
     animation: none;
@@ -303,4 +364,26 @@ body {
 
 .theme-status {
   background: color-mix(in srgb, var(--panel) 88%, var(--background));
+}
+
+/* Live Indicator - Civic Mode (Forest Green) */
+:root[data-theme="civic"] .live-indicator-glitch,
+:root:not([data-theme]) .live-indicator-glitch {
+  background-color: #1B4332 !important;
+}
+
+:root[data-theme="civic"] .live-indicator-ring,
+:root:not([data-theme]) .live-indicator-ring {
+  border-color: #1B4332 !important;
+  box-shadow: 0_0_8px_rgba(27, 67, 50, 0.8) !important;
+}
+
+/* Live Indicator - Ghost Mode (Yellow) */
+:root[data-theme="ghost"] .live-indicator-glitch {
+  background-color: #FFB703 !important;
+}
+
+:root[data-theme="ghost"] .live-indicator-ring {
+  border-color: #FFB703 !important;
+  box-shadow: 0_0_8px_rgba(255, 183, 3, 0.8) !important;
 }
