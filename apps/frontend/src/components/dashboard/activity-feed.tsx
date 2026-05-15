@@ -29,7 +29,7 @@ const feed = [
 
 export function ActivityFeed() {
   return (
-    <div className="brutal-panel bg-white p-0 overflow-hidden h-full flex flex-col">
+    <div className="brutal-panel panel-surface p-0 overflow-hidden h-full flex flex-col">
       <div className="p-6 border-b-4 border-primary bg-background flex justify-between items-center">
         <h2 className="font-heading text-2xl font-black uppercase">Live Intelligence Feed</h2>
         <span className="flex h-3 w-3">
@@ -50,7 +50,7 @@ export function ActivityFeed() {
 
             <div className="flex-1">
               <div className="flex justify-between items-start mb-2">
-                <div className="font-mono text-xs font-bold text-primary/60 border border-primary/20 px-2 py-1 rounded inline-block bg-white">
+                <div className="font-mono text-xs font-bold surface-muted border border-primary/20 px-2 py-1 rounded inline-block surface-chip">
                   {item.id}
                 </div>
                 <div className="font-mono text-xs font-bold">{item.time}</div>
@@ -60,7 +60,7 @@ export function ActivityFeed() {
               <p className="font-mono text-sm opacity-80 mb-4">{item.location}</p>
 
               <div className="flex items-center gap-2">
-                <div className="text-xs font-mono font-bold uppercase tracking-widest border-2 border-primary px-3 py-1 rounded bg-white shadow-[2px_2px_0px_#1b4332]">
+                <div className="text-xs font-mono font-bold uppercase tracking-widest border-2 border-primary px-3 py-1 rounded surface-chip shadow-[2px_2px_0px_#1b4332]">
                   Status: {item.status}
                 </div>
               </div>

@@ -19,10 +19,10 @@ export default function ReportsPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="brutal-panel p-6 bg-white">
+              <div className="brutal-panel panel-surface p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="font-heading text-xl font-bold uppercase">Incident Types</h2>
-                  <BarChart3 className="w-5 h-5 text-primary/50" />
+                  <BarChart3 className="w-5 h-5 surface-muted" />
                 </div>
 
                 <div className="space-y-4">
@@ -45,10 +45,10 @@ export default function ReportsPage() {
                 </div>
               </div>
 
-              <div className="brutal-panel p-6 bg-white">
+              <div className="brutal-panel panel-surface p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="font-heading text-xl font-bold uppercase">Resolution Efficiency</h2>
-                  <TrendingUp className="w-5 h-5 text-primary/50" />
+                  <TrendingUp className="w-5 h-5 surface-muted" />
                 </div>
 
                 <div className="flex items-end h-48 gap-2 mt-4">
@@ -65,7 +65,7 @@ export default function ReportsPage() {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between font-mono text-xs font-bold text-primary/60 uppercase mt-4 border-t-2 border-primary/10 pt-2">
+                <div className="flex justify-between font-mono text-xs font-bold surface-muted uppercase mt-4 border-t-2 border-primary/10 pt-2">
                   <span>Mon</span>
                   <span>Tue</span>
                   <span>Wed</span>
@@ -77,9 +77,9 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            <div className="brutal-panel p-6 bg-white mt-8 border-4 border-accent shadow-[4px_4px_0px_#ffb703]">
+            <div className="brutal-panel panel-surface p-6 mt-8 border-4 border-accent shadow-[4px_4px_0px_#ffb703]">
               <h2 className="font-heading text-xl font-bold uppercase text-primary mb-2">AI Efficiency Insight</h2>
-              <p className="font-mono text-sm leading-relaxed text-primary/80">
+              <p className="font-mono text-sm leading-relaxed surface-muted">
                 The Neuro-Symbolic AI accurately categorized <strong>98.4%</strong> of reports this week, reducing manual dispatch time by an average of 4.2 hours per critical incident. Ghost Mode usage increased by 12% in high-risk zones, indicating strong community trust in the anonymity protocol.
               </p>
             </div>
