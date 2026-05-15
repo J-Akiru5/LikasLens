@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import NextImage from "next/image";
 import { createClient } from "@/utils/supabase/client";
 import { Camera, MapPin, Fingerprint, AlertCircle } from "lucide-react";
 
@@ -10,7 +11,9 @@ export default function ReportPage() {
 	const [longitude, setLongitude] = useState<number | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [toastMessage, setToastMessage] = useState("");
+	const [toastTone, setToastTone] = useState<"success" | "error" | "info">("info");
 	const [isGhostMode, setIsGhostMode] = useState(false);
+	const [isOnline, setIsOnline] = useState(true);
 	const offlineQueueKey = "likaslens_offline_reports";
 	const offlineDbName = "likaslens-offline";
 	const offlineStoreName = "report-queue";
@@ -69,18 +72,21 @@ export default function ReportPage() {
 	/**
 	 * Open IndexedDB for offline report storage.
 	 */
-	const openOfflineDb = () =>
-		new Promise<IDBDatabase>((resolve, reject) => {
-			const request = indexedDB.open(offlineDbName, 1);
-			request.onupgradeneeded = () => {
-				const db = request.result;
-				if (!db.objectStoreNames.contains(offlineStoreName)) {
-					db.createObjectStore(offlineStoreName, { keyPath: "id" });
-				}
-			};
-			request.onsuccess = () => resolve(request.result);
-			request.onerror = () => reject(request.error);
-		});
+	const openOfflineDb = useCallback(
+		() =>
+			new Promise<IDBDatabase>((resolve, reject) => {
+				const request = indexedDB.open(offlineDbName, 1);
+				request.onupgradeneeded = () => {
+					const db = request.result;
+					if (!db.objectStoreNames.contains(offlineStoreName)) {
+						db.createObjectStore(offlineStoreName, { keyPath: "id" });
+					}
+				};
+				request.onsuccess = () => resolve(request.result);
+				request.onerror = () => reject(request.error);
+			}),
+		[offlineDbName, offlineStoreName]
+	);
 
 	/**
 	 * Persist a report payload when offline so it can sync later.
@@ -108,8 +114,9 @@ export default function ReportPage() {
 	/**
 	 * Flush queued offline reports when connectivity returns.
 	 */
-	const flushOfflineQueue = async () => {
-		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL="http://127.0.0.1:8000";
+	const flushOfflineQueue = useCallback(async () => {
+		const laravelUrl =
+			process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://127.0.0.1:8000";
 		const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
 
 		try {
@@ -164,15 +171,28 @@ export default function ReportPage() {
 			const remaining = items.filter((_: unknown, idx: number) => !successfulIds.includes(String(idx)));
 			localStorage.setItem(offlineQueueKey, JSON.stringify(remaining));
 		}
-	};
+	}, [openOfflineDb, offlineQueueKey, offlineStoreName]);
 
 	useEffect(() => {
 		const handleOnline = () => {
+			setIsOnline(true);
 			void flushOfflineQueue();
+			setToastTone("success");
+			setToastMessage("Connection restored. Syncing queued reports.");
+		};
+		const handleOffline = () => {
+			setIsOnline(false);
+			setToastTone("error");
+			setToastMessage("Connection lost. Reports will queue until you are back online.");
 		};
 		window.addEventListener("online", handleOnline);
-		return () => window.removeEventListener("online", handleOnline);
-	}, []);
+		window.addEventListener("offline", handleOffline);
+		setIsOnline(navigator.onLine);
+		return () => {
+			window.removeEventListener("online", handleOnline);
+			window.removeEventListener("offline", handleOffline);
+		};
+	}, [flushOfflineQueue]);
 
 	/**
 	 * Validate, anonymize, and submit the report to the backend.
@@ -181,6 +201,7 @@ export default function ReportPage() {
 		e.preventDefault();
 		setIsSubmitting(true);
 		setToastMessage("");
+		setToastTone("info");
 
 		try {
 			const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
@@ -207,9 +228,7 @@ export default function ReportPage() {
 				longitude,
 			};
 
-			if (isGhostMode) {
-				payload["user_id"] = "ANONYMOUS_GHOST";
-			} else if (userId) {
+			if (!isGhostMode && userId) {
 				payload["user_id"] = userId;
 			}
 
@@ -218,6 +237,7 @@ export default function ReportPage() {
 				setToastMessage(
 					"You are offline. Report queued securely and will sync when connection is restored."
 				);
+				setToastTone("info");
 				setIsSubmitting(false);
 				return;
 			}
@@ -237,12 +257,14 @@ export default function ReportPage() {
 			}
 
 			const responseData = await response.json();
-			setToastMessage(responseData.message || "Report Submitted Successfully!");
+			setToastMessage(responseData.message || "Report submitted successfully!");
+			setToastTone("success");
 			clearForm();
 		} catch (error) {
 			setToastMessage(
 				error instanceof Error ? `Error: ${error.message}` : "Error submitting report. Check console and CORS."
 			);
+			setToastTone("error");
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -293,7 +315,7 @@ export default function ReportPage() {
 						</div>
 						<div className="bionic-frame p-6 bg-background/40 backdrop-blur-md border-2 border-primary rounded-lg h-48 flex items-center justify-center overflow-auto">
 							{base64Image ? (
-								<img
+								<NextImage
 									src={base64Image}
 									alt="Report Evidence"
 									className="max-h-full max-w-full rounded"
@@ -419,6 +441,7 @@ export default function ReportPage() {
 								2
 							)}
 						</pre>
+
 					</div>
 				)}
 			</div>

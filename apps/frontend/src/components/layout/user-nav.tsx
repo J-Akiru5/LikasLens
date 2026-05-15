@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { User, LogOut, LayoutDashboard, UserCircle, ChevronDown } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -64,7 +65,15 @@ export function UserNav() {
       >
         <div className="w-9 h-9 rounded-full border-2 border-primary bg-secondary/20 flex items-center justify-center overflow-hidden transition-all group-hover:shadow-[2px_2px_0px_#2de1c2] shadow-[1px_1px_0px_#1b4332]">
           {user.user_metadata?.avatar_url ? (
-            <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+            <Image
+              src={user.user_metadata.avatar_url}
+              alt="Avatar"
+              width={36}
+              height={36}
+              sizes="36px"
+              unoptimized
+              className="w-full h-full object-cover"
+            />
           ) : (
             <User className="w-5 h-5 text-primary" />
           )}
