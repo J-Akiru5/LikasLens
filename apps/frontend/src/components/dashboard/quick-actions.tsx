@@ -12,7 +12,7 @@ const actions = [
 
 export function QuickActions() {
   return (
-    <div className="brutal-panel bg-white p-6 h-full">
+    <div className="brutal-panel panel-surface p-6 h-full">
       <h2 className="font-heading text-xl font-black uppercase mb-6 border-b-2 border-primary/20 pb-2">Directives</h2>
 
       <motion.div 
@@ -50,7 +50,7 @@ export function QuickActions() {
         })}
       </motion.div>
 
-      <div className="mt-8 p-4 bg-background border-2 border-primary font-mono text-xs text-primary">
+      <div className="mt-8 p-4 panel-surface border-2 border-primary font-mono text-xs">
         <strong>SYS_MSG:</strong> AI categorization module online. Processing capacity nominal.
       </div>
     </div>

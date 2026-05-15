@@ -53,7 +53,7 @@ export function EdgeInterceptorModal({
               if (e.target === e.currentTarget) onCancel();
             }}
           >
-            <div className="relative w-full max-w-md bg-white border-4 border-accent shadow-[12px_12px_0px_#1B4332] rounded-2xl overflow-hidden">
+            <div className="relative w-full max-w-md panel-surface border-4 border-accent shadow-[12px_12px_0px_#1B4332] rounded-2xl overflow-hidden">
               {/* Header */}
               <div className="bg-gradient-to-r from-accent to-accent/90 p-6 relative">
                 <div className="flex items-center justify-between mb-2">
@@ -83,7 +83,7 @@ export function EdgeInterceptorModal({
                     <h3 className="font-mono font-bold uppercase text-sm mb-2 text-primary">
                       High-Risk Incident Detected
                     </h3>
-                    <p className="text-foreground/80 text-base font-medium leading-relaxed">
+                    <p className="surface-muted text-base font-medium leading-relaxed">
                       Our AI has flagged this submission as potentially dangerous to you or others. 
                       This might involve illegal logging, dangerous criminals, or high-risk environmental crimes.
                     </p>
@@ -94,7 +94,7 @@ export function EdgeInterceptorModal({
                   <p className="font-mono text-sm font-bold text-accent uppercase">
                     Recommendation: Use Ghost Mode
                   </p>
-                  <p className="text-xs text-foreground/70 mt-2">
+                    <p className="text-xs surface-muted mt-2">
                     This removes your identity, location, and device info from the report. Only the facts matter.
                   </p>
                 </div>
@@ -107,7 +107,7 @@ export function EdgeInterceptorModal({
                       className="w-5 h-5 rounded border-2 border-primary accent-secondary cursor-pointer"
                       disabled={isLoading}
                     />
-                    <span className="text-sm font-mono text-foreground/80 group-hover:text-foreground">
+                    <span className="text-sm font-mono surface-muted group-hover:text-foreground">
                       Submit in Ghost Mode (recommended)
                     </span>
                   </label>
