@@ -14,6 +14,7 @@ DEFAULT_PARTITION_KEY = "likaslens-routing-seed"
 VERTEX_LABELS = [
     "Citizen",
     "Incident",
+    "Law",
     "ViolationType",
     "NGO",
     "Reward",
