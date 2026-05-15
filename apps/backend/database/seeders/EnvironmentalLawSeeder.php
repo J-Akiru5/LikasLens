@@ -117,6 +117,7 @@ class EnvironmentalLawSeeder extends Seeder
 
             if ($existing !== null) {
                 $lawIdByCode[$law['law_code']] = $existing->id;
+
                 continue;
             }
 
@@ -188,6 +189,7 @@ class EnvironmentalLawSeeder extends Seeder
 
             if ($existing !== null) {
                 $penaltyIdByLawCode[$penalty['law_code']] = $existing->id;
+
                 continue;
             }
 
