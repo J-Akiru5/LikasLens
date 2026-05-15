@@ -60,6 +60,20 @@ return [
             'report' => false,
         ],
 
+        'supabase' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_KEY'),
+            'secret' => env('SUPABASE_STORAGE_SECRET'),
+            'region' => env('SUPABASE_STORAGE_REGION', 'auto'),
+            'bucket' => env('SUPABASE_STORAGE_BUCKET', 'reports'),
+            'url' => env('SUPABASE_STORAGE_URL'),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT'),
+            'use_path_style_endpoint' => env('SUPABASE_STORAGE_PATH_STYLE', true),
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
     ],
 
     /*
