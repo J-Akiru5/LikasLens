@@ -83,15 +83,15 @@ export default function ProfilePage() {
 
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {/* Eco-Credits Card */}
-          <div className="brutal-panel bg-white p-8 md:col-span-1">
+          <div className="brutal-panel panel-surface p-8 md:col-span-1">
             <div className="text-center">
-              <div className="text-sm font-mono uppercase text-primary/70 mb-4">
+              <div className="text-sm font-mono uppercase surface-muted mb-4">
                 Eco-Credit Balance
               </div>
               <div className="font-heading text-5xl font-black text-primary mb-2">
                 {totalEcoCredits.toLocaleString()}
               </div>
-              <div className="text-xs font-mono uppercase text-primary/60 mb-6 tracking-widest">
+              <div className="text-xs font-mono uppercase surface-muted mb-6 tracking-widest">
                 Level: {ecoCreditLevel}
               </div>
               <div className="h-2 bg-primary/10 rounded-full overflow-hidden mb-6">
@@ -104,13 +104,13 @@ export default function ProfilePage() {
           </div>
 
           {/* User Stats */}
-          <div className="brutal-panel bg-white p-8 md:col-span-2">
+          <div className="brutal-panel panel-surface p-8 md:col-span-2">
             <h2 className="font-heading text-xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
               Your Impact Stats
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-4 bg-primary/10 rounded border border-primary">
-                <div className="font-mono text-xs uppercase text-primary/70 mb-2">
+                <div className="font-mono text-xs uppercase surface-muted mb-2">
                   Reports Filed
                 </div>
                 <div className="font-heading text-3xl font-black text-primary">48</div>
@@ -138,7 +138,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Eco-Credits Breakdown */}
-        <div className="brutal-panel bg-white p-8 mb-8">
+        <div className="brutal-panel panel-surface p-8 mb-8">
           <h2 className="font-heading text-2xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
             Eco-Credits Earned
           </h2>
@@ -163,7 +163,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Achievement Badges */}
-        <div className="brutal-panel bg-white p-8">
+        <div className="brutal-panel panel-surface p-8">
           <h2 className="font-heading text-2xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
             Achievement Badges
           </h2>
@@ -192,7 +192,7 @@ export default function ProfilePage() {
                       {badge.description}
                     </p>
 
-                    <div className="text-xs font-mono text-primary/60 uppercase">
+                    <div className="text-xs font-mono surface-muted uppercase">
                       Unlocked • {badge.date}
                     </div>
                   </div>
