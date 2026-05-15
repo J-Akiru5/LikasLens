@@ -1,75 +1,152 @@
+"use client";
+
 import { ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, AlertOctagon, Activity } from "lucide-react";
 
-const stats = [
-  {
-    label: "Active Incidents",
-    value: "142",
-    trend: "+12%",
-    isPositive: false,
-    icon: AlertOctagon,
-    color: "text-accent",
-    progress: 75,
-    progressColor: "bg-accent"
-  },
-  {
-    label: "Resolved Today",
-    value: "28",
-    trend: "+5%",
-    isPositive: true,
-    icon: CheckCircle2,
-    color: "text-secondary",
-    progress: 40,
-    progressColor: "bg-secondary"
-  },
-  {
-    label: "Avg Response",
-    value: "18m",
-    trend: "-2m",
-    isPositive: true,
-    icon: Clock,
-    color: "text-primary",
-    progress: 85,
-    progressColor: "bg-primary"
-  },
-  {
-    label: "System Load",
-    value: "98%",
-    trend: "Stable",
-    isPositive: true,
-    icon: Activity,
-    color: "text-blue-500",
-    progress: 98,
-    progressColor: "bg-blue-500"
-  }
-];
-
 export function StatsCards() {
+  // Demo data with realistic calculations
+  const incidentsData = [
+    { id: "INC-104", stat: "Critical" },
+    { id: "INC-103", stat: "Investigating" },
+    { id: "INC-102", stat: "Resolved" },
+    { id: "INC-101", stat: "Monitoring" },
+    { id: "INC-100", stat: "Resolved" },
+    { id: "INC-099", stat: "Investigating" },
+    { id: "INC-098", stat: "Monitoring" },
+  ];
+
+  // Calculate actual stats from data
+  const activeIncidents = incidentsData.filter(
+    (i) => i.stat !== "Resolved"
+  ).length;
+  const totalIncidents = incidentsData.length;
+  const activeProgress = (activeIncidents / 200) * 100; // Out of 200 max capacity
+
+  const resolvedToday = incidentsData.filter((i) => i.stat === "Resolved").length;
+  const resolvedProgress = (resolvedToday / 50) * 100; // Out of 50 daily target
+
+  // Response time: 18 minutes out of 30-minute SLA = 60% capacity used
+  const responseProgress = (18 / 30) * 100;
+
+  // System load based on active incidents vs capacity
+  const systemLoadProgress = (activeIncidents / 200) * 100;
+
+  const stats = [
+    {
+      label: "Active Incidents",
+      value: String(activeIncidents),
+      total: "/ 200",
+      trend: "+12%",
+      isPositive: false,
+      icon: AlertOctagon,
+      color: "text-accent",
+      borderColor: "border-accent",
+      progress: activeProgress,
+      progressColor: "bg-accent",
+      description: "Current active cases"
+    },
+    {
+      label: "Resolved Today",
+      value: String(resolvedToday),
+      total: "/ 50",
+      trend: "+5%",
+      isPositive: true,
+      icon: CheckCircle2,
+      color: "text-secondary",
+      borderColor: "border-secondary",
+      progress: resolvedProgress,
+      progressColor: "bg-secondary",
+      description: "Daily resolution quota"
+    },
+    {
+      label: "Avg Response",
+      value: "18",
+      total: "m",
+      trend: "-2m",
+      isPositive: true,
+      icon: Clock,
+      color: "text-primary",
+      borderColor: "border-primary",
+      progress: responseProgress,
+      progressColor: "bg-primary",
+      description: "vs 30m SLA"
+    },
+    {
+      label: "System Load",
+      value: String(Math.round(systemLoadProgress)),
+      total: "%",
+      trend: "Stable",
+      isPositive: true,
+      icon: Activity,
+      color: "text-secondary",
+      borderColor: "border-secondary",
+      progress: systemLoadProgress,
+      progressColor: "bg-secondary",
+      description: "Capacity utilization"
+    }
+  ];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat, idx) => {
         const Icon = stat.icon;
         return (
-          <div key={idx} className="brutal-panel p-6 bg-white relative overflow-hidden group">
+          <div
+            key={idx}
+            className={`brutal-panel panel-surface p-6 relative overflow-hidden group border-2 ${stat.borderColor} shadow-[4px_4px_0px_rgba(27,67,50,0.2)]`}
+          >
+            {/* Background gradient overlay for Ghost Mode visibility */}
+            <div className="absolute inset-0 bg-gradient-to-br from-background/40 to-background/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
             <div className="flex justify-between items-start mb-4 relative z-10">
-              <div className="font-mono text-sm font-bold uppercase text-primary/70">{stat.label}</div>
-              <div className={`p-2 border-2 border-primary rounded bg-background shadow-[2px_2px_0px_#1b4332] ${stat.color}`}>
+              <div className="font-mono text-sm font-bold uppercase tracking-widest surface-muted">
+                {stat.label}
+              </div>
+              <div
+                className={`p-2 border-2 ${stat.borderColor} rounded bg-background shadow-[2px_2px_0px_#1b4332] ${stat.color}`}
+              >
                 <Icon className="w-5 h-5" />
               </div>
             </div>
 
             <div className="flex items-end gap-3 relative z-10 mb-4">
               <div className="font-heading text-5xl font-black text-primary">{stat.value}</div>
-              <div className={`flex items-center font-mono text-sm font-bold mb-1 ${stat.isPositive ? 'text-secondary' : 'text-accent'}`}>
-                {stat.isPositive ? <ArrowDownRight className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
-                {stat.trend}
+              <div className="flex flex-col">
+                <div className="font-mono text-xs text-foreground/60 mb-1">{stat.total}</div>
+                <div
+                  className={`flex items-center font-mono text-sm font-bold tracking-widest ${
+                    stat.isPositive ? "text-secondary" : "text-accent"
+                  }`}
+                >
+                  {stat.isPositive ? (
+                    <ArrowDownRight className="w-4 h-4" />
+                  ) : (
+                    <ArrowUpRight className="w-4 h-4" />
+                  )}
+                  {stat.trend}
+                </div>
               </div>
             </div>
 
-            <div className="w-full h-2 bg-primary/10 rounded-full overflow-hidden relative z-10">
-              <div className={`h-full ${stat.progressColor} transition-all duration-1000 ease-out`} style={{ width: `${stat.progress}%` }} />
+            <div className="mb-2">
+              <div className="text-xs font-mono text-foreground/50 mb-2">{stat.description}</div>
+              <div className="w-full h-5 bg-foreground/10 rounded overflow-hidden relative z-10 border-2 border-foreground/30">
+                <div
+                  className={`h-full transition-all duration-500 ease-out ${
+                    stat.progressColor === 'bg-secondary' ? 'bg-[#2de1c2]' : 
+                    stat.progressColor === 'bg-accent' ? 'bg-[#ffb703]' :
+                    'bg-[#1B4332]'
+                  } shadow-[0_0_12px_var(--progress-glow),inset_0_0_4px_rgba(255,255,255,0.2)]`}
+                  style={{ 
+                    width: `${Math.min(stat.progress, 100)}%`,
+                    '--progress-glow': stat.progressColor === 'bg-secondary' ? 'rgba(45,225,194,1)' : 'rgba(255,183,3,1)'
+                  } as React.CSSProperties}
+                />
+              </div>
+              <div className="flex justify-between text-xs font-mono text-foreground/60 mt-2 font-bold uppercase tracking-widest">
+                <span>{Math.round(stat.progress)}%</span>
+                <span>{stat.progress >= 100 ? "✓ Complete" : "In Progress"}</span>
+              </div>
             </div>
-
-            <Icon className="absolute -bottom-6 -right-6 w-32 h-32 text-primary/5 group-hover:scale-110 transition-transform duration-500" />
           </div>
         );
       })}

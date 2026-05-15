@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Report;
 use App\Models\Ticket;
 use App\Models\TicketEvidence;
 use App\Models\User;
@@ -66,6 +67,15 @@ class ReportController extends Controller
                     'captured_at' => now(),
                     'exif_removed_at' => now(),
                     'yolo_status' => 'pending',
+                ]);
+
+                Report::create([
+                    'user_id' => $validated['user_id'] ?? null,
+                    'latitude' => $validated['latitude'],
+                    'longitude' => $validated['longitude'],
+                    'image_path' => $storagePath,
+                    'image_size' => strlen($imageData),
+                    'storage_disk' => $this->getBucketName(),
                 ]);
 
                 $triage = app(TriageService::class)->analyze($validated['base64Image'], $ticket);
