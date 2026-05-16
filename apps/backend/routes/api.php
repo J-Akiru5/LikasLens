@@ -2,19 +2,9 @@
 
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\TicketAssignmentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
 
 Route::get('/health', function () {
     return response()->json([
@@ -30,6 +20,39 @@ Route::post('/reports', [ReportController::class, 'store']);
 // Public leaderboard endpoint
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+// Authenticated user endpoints
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    Route::get('/user/profile', function (Request $request) {
+        $user = $request->user();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'trust_score' => $user->trust_score,
+                'reward_points_balance' => $user->reward_points_balance,
+            ],
+        ]);
+    });
+
+    // Analyst+ routes
+    Route::middleware('role:analyst,super_admin')->group(function () {
+        Route::apiResource('ticket-assignments', TicketAssignmentController::class);
+    });
+
+    // Super admin only routes (stub — controllers to be built)
+    Route::middleware('role:super_admin')->group(function () {
+        Route::get('/admin/health', function () {
+            return response()->json([
+                'success' => true,
+                'message' => 'Super admin endpoints ready for Rewards, NGOs, Laws, and Audit Logs controllers.',
+            ]);
+        });
+    });
 });
