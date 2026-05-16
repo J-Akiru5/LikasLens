@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/layout/sidebar";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
 import { StatsCards } from "@/components/dashboard/stats-cards";
 import { QuickActions } from "@/components/dashboard/quick-actions";
@@ -15,7 +16,8 @@ export default async function DashboardPage() {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         <div className="smoke-overlay" />
         <AppHeader greeting={userGreeting} />
-        <main className="flex-1 overflow-y-auto p-6 relative z-10">
+        <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
+          <BottomNav />
           <div className="max-w-7xl mx-auto space-y-8">
             <StatsCards />
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

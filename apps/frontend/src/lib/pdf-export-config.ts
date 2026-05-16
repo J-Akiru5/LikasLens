@@ -280,7 +280,7 @@ export const PDF_COLOR_PALETTE = {
  * Create exportable table HTML with styling
  */
 export function createExportableTable(
-  data: Record<string, any>[],
+  data: Record<string, unknown>[],
   columns: { key: string; label: string }[]
 ): string {
   const headerRow = columns

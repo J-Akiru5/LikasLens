@@ -2,6 +2,7 @@ packages:
   - "apps/frontend"
   - "apps/backend"
 allowBuilds:
+  core-js: true
   esbuild: true
   sharp: true
   unrs-resolver: true
