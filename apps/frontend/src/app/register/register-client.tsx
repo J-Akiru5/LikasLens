@@ -9,6 +9,8 @@ import { signUp } from "@/app/actions/auth";
 export function RegisterClient() {
   const searchParams = useSearchParams();
 
+  const redirectTo = searchParams.get("redirect_to") || "/dashboard";
+
   const status = useMemo(() => {
     const error = searchParams.get("error");
     const message = searchParams.get("message");
@@ -67,6 +69,7 @@ export function RegisterClient() {
         ) : null}
 
         <form action={signUp} className="space-y-6">
+          <input type="hidden" name="redirect_to" value={redirectTo} />
           <div>
             <label className="block font-mono text-sm font-bold uppercase mb-2">
               Email Address
