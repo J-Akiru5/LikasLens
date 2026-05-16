@@ -1,6 +1,7 @@
 "use client";
 
 import { Sidebar } from "@/components/layout/sidebar";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
 import { AlertTriangle, Filter, MoreVertical, Search } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -56,7 +57,8 @@ export default function IncidentsPage() {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         <div className="smoke-overlay" />
         <AppHeader />
-        <main className="flex-1 overflow-y-auto p-6 relative z-10">
+        <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
+          <BottomNav />
           <div className="max-w-7xl mx-auto space-y-8">
             {/* Header with Search */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b-4 border-primary pb-4">

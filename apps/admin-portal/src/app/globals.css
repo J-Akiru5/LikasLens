@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+:root {
+  --color-emerald-50: #ecfdf5;
+  --color-emerald-100: #d1fae5;
+  --color-emerald-200: #a7f3d0;
+  --color-emerald-600: #059669;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-emerald-900: #064e3b;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+}

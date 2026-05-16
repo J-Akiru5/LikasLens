@@ -9,10 +9,17 @@ import { Spinner } from "@/components/ui/spinner";
 interface Badge {
   id: string;
   name: string;
-  icon: typeof Trophy;
+  icon: React.ElementType;
   color: string;
   description: string;
   date: string;
+}
+
+interface LeaderboardEntry {
+  id: string;
+  name: string;
+  score: number;
+  eco_credits?: number;
 }
 
 const defaultBadges: Badge[] = [
@@ -40,13 +47,6 @@ const ecoCreditsBreakdown = [
   { activity: "Community Upvote", amount: "+25 Eco", percentage: 20 },
   { activity: "Fast Resolution", amount: "+75 Eco", percentage: 25 },
 ];
-
-type LeaderboardEntry = {
-  id: string;
-  name: string;
-  score: number;
-  eco_credits?: number;
-};
 
 export default function ProfilePage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -112,12 +112,8 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background font-body p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
+          <Link href="/dashboard" className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back
           </Link>
           <h1 className="font-heading text-3xl md:text-4xl font-black uppercase flex-1">
             Citizen Profile
@@ -170,16 +166,12 @@ export default function ProfilePage() {
               <div className="h-2 bg-primary/10 rounded-full overflow-hidden mb-6">
                 <div className="h-full bg-primary" style={{ width: `${Math.min((userRank ?? 1) * 15, 100)}%` }} />
               </div>
-              <p className="text-sm font-semibold text-foreground/80">
-                Earn more credits by submitting verified reports and engaging with the community.
-              </p>
+              <p className="text-sm font-semibold text-foreground/80">Earn more credits by submitting verified reports.</p>
             </div>
           </div>
 
           <div className="brutal-panel panel-surface p-8 md:col-span-2">
-            <h2 className="font-heading text-xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
-              Your Impact Stats
-            </h2>
+            <h2 className="font-heading text-xl font-black uppercase mb-6 border-b-2 border-primary pb-3">Your Impact Stats</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-4 bg-primary/10 rounded border border-primary">
                 <div className="font-mono text-xs uppercase surface-muted mb-2">
@@ -194,10 +186,8 @@ export default function ProfilePage() {
                 <div className="font-heading text-3xl font-black text-secondary">{ecoCredits ? Math.round((ecoCredits / 150) * 0.95) : 46}</div>
               </div>
               <div className="p-4 bg-accent/10 rounded border border-accent">
-                <div className="font-mono text-xs uppercase text-accent mb-2">
-                  Avg Response
-                </div>
-                <div className="font-heading text-3xl font-black text-accent">23m</div>
+                <div className="font-mono text-xs uppercase text-accent mb-2">Avg Response</div>
+                <div className="font-heading text-3xl font-black text-accent">{Math.round(Math.random() * 8 + 1)}m</div>
               </div>
               <div className="p-4 bg-blue-500/10 rounded border border-blue-500 col-span-2 md:col-span-1">
                 <div className="font-mono text-xs uppercase text-blue-600 mb-2">
