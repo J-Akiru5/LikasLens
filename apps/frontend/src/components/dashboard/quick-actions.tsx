@@ -38,7 +38,7 @@ export function QuickActions() {
                 hidden: { opacity: 0, x: -20 },
                 visible: { opacity: 1, x: 0 }
               }}
-              className={`w-full flex items-center gap-4 p-4 border-2 ${action.color} hover:bg-accent/10 transition-all group rounded text-left shadow-[2px_2px_0px_#1b4332] active:translate-y-[2px] active:shadow-none hover:shadow-[4px_4px_0px_#1b4332]`}
+              className={`w-full flex items-center gap-4 p-4 border-2 ${action.color} hover:bg-accent/10 transition-all group rounded text-left shadow-[2px_2px_0px_#1b4332] active:translate-y-[2px] active:shadow-none hover:shadow-[4px_4px_0px_#1b4332] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary`}
             >
               <div className={`p-2 border-2 ${action.color} bg-background group-hover:bg-accent/20 transition-colors`}>
                 <Icon className="w-5 h-5" />

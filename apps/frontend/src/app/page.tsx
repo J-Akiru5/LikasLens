@@ -189,7 +189,8 @@ export default function Home() {
               </p>
               <button
                 onClick={() => setGhostMode(!ghostMode)}
-                className="flex items-center gap-3 px-6 py-4 rounded-xl font-bold uppercase transition-all duration-300 border-2"
+                aria-label={ghostMode ? "Turn off Ghost Mode" : "Turn on Ghost Mode"}
+                className="flex items-center gap-3 px-6 py-4 rounded-xl font-bold uppercase transition-all duration-300 border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
                 style={
                   ghostMode
                     ? {

@@ -27,6 +27,11 @@
   --hero-overlay: linear-gradient(140deg, rgba(8, 28, 21, 0.95), rgba(27, 67, 50, 0.92));
 }
 
+*:focus-visible {
+  outline: 2px solid #2de1c2;
+  outline-offset: 2px;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -261,6 +266,25 @@ body {
   }
 }
 
+@keyframes slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.25s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-slide-in {
+    animation: none;
+  }
+}
+
 @keyframes status-dot-glitch {
   0%, 100% {
     color: #ffb703;
@@ -328,6 +352,14 @@ body {
   }
 
   .ghost-panel::after {
+    animation: none;
+  }
+
+  .status-dot-glitch {
+    animation: none !important;
+  }
+
+  .animate-slide-in {
     animation: none;
   }
 }

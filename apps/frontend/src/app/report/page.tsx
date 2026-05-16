@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import NextImage from "next/image";
 import { createClient } from "@/utils/supabase/client";
-import { Camera, MapPin, Fingerprint, AlertCircle } from "lucide-react";
+import { Camera, MapPin, Fingerprint } from "lucide-react";
 
 export default function ReportPage() {
 	const [base64Image, setBase64Image] = useState<string>("");
@@ -276,7 +276,7 @@ export default function ReportPage() {
 				? "bg-[#081c15]" 
 				: "bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10"
 		}`}>
-			<div className="max-w-2xl mx-auto p-6">
+			<div className="max-w-2xl mx-auto p-4 sm:p-6">
 				{/* Header */}
 				<div className="mb-8">
 					<div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary mb-4 bg-background/50 rounded">
@@ -285,28 +285,42 @@ export default function ReportPage() {
 							Report an Issue
 						</span>
 					</div>
-					<h1 className="font-heading text-5xl md:text-6xl font-black uppercase tracking-tight text-primary mb-2">
+					<h1 className="font-heading text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-primary mb-2">
 						Document the Problem
 					</h1>
-					<p className="text-lg text-foreground/80 font-semibold">
+					<p className="text-base sm:text-lg text-foreground/80 font-semibold">
 						Your evidence helps protect our earth. Every photo, every detail counts.
 					</p>
 				</div>
 
+				{/* Offline indicator */}
+				{!isOnline && (
+					<div className="mb-4 p-3 border-2 border-accent bg-accent/10 text-accent font-mono text-xs font-bold rounded flex items-center gap-2">
+						<span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+						Offline — reports will queue until connection returns.
+					</div>
+				)}
+
 				{/* Toast Messages */}
 				{toastMessage && (
-					<div className={`mb-6 p-4 border-2 font-mono text-sm font-bold rounded ${
-						toastMessage.toLowerCase().includes("error")
-							? "border-accent bg-accent/10 text-accent"
-							: "border-secondary bg-secondary/10 text-secondary"
-					}`}>
+					<div
+						role="alert"
+						aria-live="polite"
+						className={`mb-6 p-4 border-2 font-mono text-sm font-bold rounded ${
+							toastTone === "error"
+								? "border-accent bg-accent/10 text-accent"
+								: toastTone === "success"
+								? "border-secondary bg-secondary/10 text-secondary"
+								: "border-primary bg-primary/10 text-primary"
+						}`}
+					>
 						{toastMessage}
 					</div>
 				)}
 
 				<form onSubmit={handleSubmit} className="space-y-6">
 					{/* Image Preview */}
-					<div className="brutal-panel panel-surface border-4 border-primary p-8">
+					<div className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8">
 						<div className="flex items-center gap-3 mb-6">
 							<Camera className="w-6 h-6 text-secondary" />
 							<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
@@ -333,14 +347,14 @@ export default function ReportPage() {
 					</div>
 
 					{/* GPS Coordinates */}
-					<div className="brutal-panel panel-surface border-4 border-primary p-8">
+					<div className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8">
 						<div className="flex items-center gap-3 mb-6">
 							<MapPin className="w-6 h-6 text-secondary" />
 							<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
 								Location Data
 							</h2>
 						</div>
-						<div className="grid grid-cols-2 gap-4">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<div className="bionic-frame p-4 border-2 border-primary bg-background/50 rounded">
 								<p className="text-xs font-mono font-bold text-primary/70 uppercase mb-2">Latitude</p>
 								<p className="text-2xl font-mono font-bold text-primary">
@@ -357,7 +371,7 @@ export default function ReportPage() {
 					</div>
 
 					{/* Ghost Mode Toggle */}
-					<div className={`brutal-panel border-4 p-8 transition-colors duration-500 ${
+					<div className={`brutal-panel border-4 p-4 sm:p-8 transition-colors duration-500 ${
 						isGhostMode
 							? "border-accent bg-[#081c15]/80 shadow-[8px_8px_0px_#ffb703]"
 							: "panel-surface border-primary shadow-[8px_8px_0px_#1b4332]"
@@ -376,7 +390,7 @@ export default function ReportPage() {
 									</p>
 								</div>
 							</div>
-							<label className="inline-flex items-center">
+							<label className="inline-flex items-center" aria-label="Toggle Ghost Mode">
 								<input
 									type="checkbox"
 									checked={isGhostMode}
@@ -392,18 +406,18 @@ export default function ReportPage() {
 					</div>
 
 					{/* Action Buttons */}
-					<div className="grid grid-cols-2 gap-4">
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<button
 							type="button"
 							onClick={populateWithTestData}
-							className="brutal-button px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-primary bg-primary text-background hover:shadow-[4px_4px_0px_#1b4332]"
+							className="brutal-button px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-primary bg-primary text-background hover:shadow-[4px_4px_0px_#1b4332] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
 						>
 							Load Test Data
 						</button>
 						<button
 							type="button"
 							onClick={clearForm}
-							className="brutal-panel px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-accent text-accent hover:bg-accent/5"
+							className="brutal-panel px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-accent text-accent hover:bg-accent/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
 						>
 							Clear Form
 						</button>
@@ -413,7 +427,7 @@ export default function ReportPage() {
 					<button
 						type="submit"
 						disabled={isSubmitting || !base64Image || latitude === null || longitude === null}
-						className={`w-full brutal-button px-8 py-4 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 ${
+						className={`w-full brutal-button px-8 py-4 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
 							isSubmitting || !base64Image || latitude === null || longitude === null
 								? "border-foreground/30 bg-foreground/10 text-foreground/40 cursor-not-allowed"
 								: "border-primary bg-primary text-background hover:shadow-[6px_6px_0px_#1b4332]"
