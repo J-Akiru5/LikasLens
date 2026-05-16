@@ -60,7 +60,7 @@ export default function ProfileSettingsPage() {
     return (
       <div className="flex h-screen overflow-hidden bg-background font-body">
         <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 min-w-0 flex items-center justify-center">
           <Spinner size={32} className="text-primary" />
         </div>
       </div>
@@ -71,7 +71,7 @@ export default function ProfileSettingsPage() {
     <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
       <ToastContainer />
       <Sidebar />
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
         <div className="smoke-overlay" />
         <AppHeader greeting={displayName || "Citizen"} />
         <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">

@@ -1,6 +1,11 @@
 import { createClient } from "@/lib/supabase";
 import { laravelPost } from "@likaslens/shared";
 
+function setCookie(name: string, value: string, days: number) {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
 export async function signIn(email: string, password: string) {
   const supabase = createClient();
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -19,11 +24,17 @@ export async function signIn(email: string, password: string) {
   }
 
   try {
-    await laravelPost("/auth/sync", {
+    const res = await laravelPost<{
+      success: boolean;
+      data: { token: string };
+    }>("/auth/sync", {
       supabase_auth_user_id: data.user.id,
       email: data.user.email,
       name: data.user.user_metadata?.full_name || data.user.email?.split("@")[0],
     });
+    if (res?.data?.token) {
+      setCookie("laravel_token", res.data.token, 30);
+    }
   } catch {
     // Sync failure is non-blocking
   }
