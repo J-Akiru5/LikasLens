@@ -42,6 +42,8 @@ Route::post('/auth/sync', [AuthController::class, 'sync']);
 
 // Authenticated user endpoints
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
+
     Route::get('/user', function (Request $request) {
         return $request->user();
     });

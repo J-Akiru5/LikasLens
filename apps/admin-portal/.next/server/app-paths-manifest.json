@@ -1,0 +1,15 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/analytics/page": "app/analytics/page.js",
+  "/audit-logs/page": "app/audit-logs/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/laws/page": "app/laws/page.js",
+  "/login/page": "app/login/page.js",
+  "/ngos/page": "app/ngos/page.js",
+  "/page": "app/page.js",
+  "/rewards/page": "app/rewards/page.js",
+  "/settings/page": "app/settings/page.js",
+  "/tickets/page": "app/tickets/page.js",
+  "/users/page": "app/users/page.js"
+}
