@@ -2,20 +2,23 @@
 
 namespace App\Models;
 
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasUuids, Notifiable, SoftDeletes;
+    use HasFactory, HasUuids, Notifiable;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var list<string>
+     */
     protected $fillable = [
         'supabase_auth_user_id',
         'name',
@@ -26,11 +29,21 @@ class User extends Authenticatable
         'password',
     ];
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -38,40 +51,5 @@ class User extends Authenticatable
             'password' => 'hashed',
             'deleted_at' => 'datetime',
         ];
-    }
-
-    public function tickets(): HasMany
-    {
-        return $this->hasMany(Ticket::class, 'reporter_user_id');
-    }
-
-    public function ticketEvidence(): HasMany
-    {
-        return $this->hasMany(TicketEvidence::class, 'uploaded_by_user_id');
-    }
-
-    public function assignedTickets(): HasMany
-    {
-        return $this->hasMany(TicketAssignment::class, 'assigned_by_user_id');
-    }
-
-    public function rewardRedemptions(): HasMany
-    {
-        return $this->hasMany(RewardRedemption::class);
-    }
-
-    public function pointLedger(): HasMany
-    {
-        return $this->hasMany(RewardPointLedger::class);
-    }
-
-    public function geminiConversations(): HasMany
-    {
-        return $this->hasMany(GeminiConversation::class);
-    }
-
-    public function auditLogs(): HasMany
-    {
-        return $this->hasMany(AuditLog::class, 'actor_user_id');
     }
 }

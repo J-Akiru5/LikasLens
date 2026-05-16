@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   title: "LikasLens",
   description: "Neuro-symbolic civic reporting platform",
   manifest: "/manifest.json",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://likaslens.vercel.app"),
+  themeColor: "#10b981",
   icons: {
     icon: [
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
