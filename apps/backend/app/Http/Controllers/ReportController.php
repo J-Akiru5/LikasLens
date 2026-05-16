@@ -204,4 +204,15 @@ class ReportController extends Controller
 
         return 'local';
     }
+
+    private function resolveStorageDisk(): string
+    {
+        $config = config('filesystems.disks.supabase');
+
+        if (!empty($config['key']) && !empty($config['secret']) && !empty($config['endpoint'])) {
+            return 'supabase';
+        }
+
+        return 'local';
+    }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TicketAssignmentController;
 use App\Http\Controllers\TicketController;
@@ -23,6 +24,9 @@ Route::post('/reports/triage', [ReportController::class, 'triage']);
 
 // Public leaderboard endpoint
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+
+// Public profile stats (by Supabase auth user id)
+Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
 
 // Auth endpoints
 Route::post('/auth/register', [AuthController::class, 'register']);
