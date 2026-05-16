@@ -14,12 +14,16 @@ import {
   Fingerprint,
   Menu,
   X,
+  MapPin,
 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { isAnalystOrSuperAdmin, getRole } from "@/lib/roles";
 
 export function Sidebar() {
   const pathname = usePathname();
   const [isGhostMode, setIsGhostMode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const closeMobile = () => setMobileOpen(false);
 
@@ -41,6 +45,15 @@ export function Sidebar() {
     };
   }, []);
 
+  useEffect(() => {
+    async function fetchRole() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserRole(getRole(user?.user_metadata as Record<string, unknown> | null));
+    }
+    fetchRole();
+  }, []);
+
   const toggleGhostMode = () => {
     const newTheme = isGhostMode ? "civic" : "ghost";
     document.documentElement.setAttribute("data-theme", newTheme);
@@ -53,11 +66,17 @@ export function Sidebar() {
       label: "Dashboard",
       icon: LayoutDashboard,
       exact: true,
+      roles: null,
     },
-    { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
-    { href: "/dashboard/reports", label: "Analytics", icon: FileText },
-    { href: "/profile", label: "Profile", icon: User },
+    { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle, roles: null },
+    { href: "/dashboard/reports", label: "Analytics", icon: FileText, roles: null },
+    { href: "/dashboard/analytics", label: "Towns", icon: MapPin, roles: ["analyst", "super_admin"] },
+    { href: "/profile", label: "Profile", icon: User, roles: null },
   ];
+
+  const visibleNavItems = navItems.filter(
+    (item) => !item.roles || (userRole && item.roles.includes(userRole)),
+  );
 
   const sidebarContent = (
     <>
@@ -69,7 +88,7 @@ export function Sidebar() {
       </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);
