@@ -83,7 +83,7 @@ export function AvatarUpload({ userId, currentUrl, onUploadComplete }: AvatarUpl
           <Upload className="w-4 h-4" />
           {currentUrl ? "Change Photo" : "Upload Photo"}
         </button>
-        <p className="text-xs font-mono surface-muted mt-2">JPEG, PNG, or WebP. Max 2MB.</p>
+        <p className="text-xs font-mono surface-muted mt-2">JPEG, PNG, or WebP. Max 25MB.</p>
         {error && (
           <p className="text-xs font-mono text-accent mt-1">{error}</p>
         )}
