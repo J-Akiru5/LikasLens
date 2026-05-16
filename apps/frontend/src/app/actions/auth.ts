@@ -18,7 +18,8 @@ export async function signIn(formData: FormData) {
     redirect("/login?error=" + encodeURIComponent(error.message))
   }
 
-  redirect("/dashboard")
+  const redirectTo = String(formData.get("redirect_to") ?? "").trim() || "/dashboard"
+  redirect(redirectTo)
 }
 
 export async function signUp(formData: FormData) {
@@ -36,5 +37,6 @@ export async function signUp(formData: FormData) {
     redirect("/login?error=" + encodeURIComponent(error.message))
   }
 
-  redirect("/login?message=Account+created")
+  const redirectTo = String(formData.get("redirect_to") ?? "").trim() || "/login?message=Account+created"
+  redirect(redirectTo)
 }
