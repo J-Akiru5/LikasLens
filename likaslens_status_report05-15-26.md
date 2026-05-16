@@ -11,9 +11,9 @@
 
 | Branch | Latest Commit | Synced With |
 |--------|--------------|-------------|
-| `main` | `c2162e5` | ✅ **STABLE** — ui-experiment merged |
-| `development` | `c2162e5` | ✅ **SYNCED** — Match with main |
-| `jeff-ProjectLead` | `c2162e5` | ✅ **SYNCED** — Match with main |
+| `main` | `b58decb` | ✅ **STABLE** — PR #66 merged and stabilized |
+| `development` | `b58decb` | ✅ **SYNCED** — Match with main |
+| `jeff-ProjectLead` | `b58decb` | ✅ **SYNCED** — Match with main |
 | `charlyn-FE3` | `b8c1f33` | ✅ **MERGED** — Integrated into all primary branches |
 
 > [!NOTE]
