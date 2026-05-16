@@ -29,13 +29,30 @@ class ReportSubmissionTest extends TestCase
         $response->assertCreated()
             ->assertJsonStructure([
                 'success',
-                'data' => ['reportId', 'latitude', 'longitude'],
+                'data' => ['ticket_id', 'evidence_id', 'latitude', 'longitude', 'checksum'],
             ]);
 
-        $this->assertDatabaseHas('reports', [
+        $this->assertDatabaseHas('tickets', [
             'latitude' => 14.5833,
             'longitude' => 120.9667,
         ]);
+
+        $this->assertDatabaseHas('ticket_evidence', [
+            'checksum_sha256' => $response->json('data.checksum'),
+        ]);
+    }
+
+    public function test_it_handles_ghost_mode_submission(): void
+    {
+        $response = $this->postJson('/api/reports', [
+            'base64Image' => $this->dummyBase64Image(),
+            'latitude' => 10.3157,
+            'longitude' => 123.8854,
+            'user_id' => 'ANONYMOUS_GHOST',
+        ]);
+
+        $response->assertCreated();
+        $this->assertDatabaseHas('users', ['role' => 'ghost']);
     }
 
     public function test_it_validates_required_fields(): void

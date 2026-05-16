@@ -3,95 +3,29 @@
 import { AlertTriangle, Info, Map } from "lucide-react";
 import { useState } from "react";
 
-const allIncidents = [
-  {
-    id: "INC-092",
-    type: "Critical",
-    title: "Illegal Dumping Detected",
-    location: "Sector 4, Riverside",
-    time: "10 mins ago",
-    status: "Routing to Agency"
-  },
-  {
-    id: "INC-091",
-    type: "Warning",
-    title: "Air Quality Drop",
-    location: "Downtown Core",
-    time: "45 mins ago",
-    status: "Monitoring"
-  },
-  {
-    id: "INC-090",
-    type: "Info",
-    title: "Resolution Confirmed",
-    location: "Park District",
-    time: "2 hours ago",
-    status: "Archived"
-  },
-  {
-    id: "INC-089",
-    type: "Warning",
-    title: "Water Contamination Alert",
-    location: "Riverside Industrial",
-    time: "3 hours ago",
-    status: "Investigating"
-  },
-  {
-    id: "INC-088",
-    type: "Critical",
-    title: "Deforestation Zone Detected",
-    location: "Northern Ridge Forest",
-    time: "5 hours ago",
-    status: "Critical Review"
-  },
-  {
-    id: "INC-087",
-    type: "Info",
-    title: "Noise Level Normalized",
-    location: "Downtown Core",
-    time: "6 hours ago",
-    status: "Resolved"
-  },
-  {
-    id: "INC-086",
-    type: "Warning",
-    title: "Wildfire Risk Assessment",
-    location: "Sector 7, Forest Zone",
-    time: "8 hours ago",
-    status: "Monitoring"
-  },
-  {
-    id: "INC-085",
-    type: "Critical",
-    title: "Illegal Wildlife Trafficking",
-    location: "National Park Boundary",
-    time: "10 hours ago",
-    status: "Active Investigation"
-  },
-  {
-    id: "INC-084",
-    type: "Info",
-    title: "Air Quality Improved",
-    location: "Downtown Core",
-    time: "12 hours ago",
-    status: "Resolved"
-  },
-];
+interface FeedItem {
+  id: string;
+  display_id: string;
+  type: string;
+  title: string;
+  location: string;
+  time: string;
+  status: string;
+}
 
-export function ActivityFeed() {
+export function ActivityFeed({ feed }: { feed: FeedItem[] }) {
   const [displayedCount, setDisplayedCount] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLoadMore = () => {
     setIsLoading(true);
-    // Simulate loading delay
     setTimeout(() => {
-      setDisplayedCount((prev) => Math.min(prev + 3, allIncidents.length));
+      setDisplayedCount((prev) => Math.min(prev + 3, feed.length));
       setIsLoading(false);
     }, 500);
   };
 
-  const displayedIncidents = allIncidents.slice(0, displayedCount);
+  const displayedIncidents = feed.slice(0, displayedCount);
 
   return (
     <div className="brutal-panel panel-surface p-0 overflow-hidden h-full flex flex-col">
@@ -149,18 +83,19 @@ export function ActivityFeed() {
         ))}
 
         <div className="p-6 text-center border-t-2 border-primary/10">
-          {displayedCount < allIncidents.length && (
+          {displayedCount < feed.length && (
             <button
               onClick={handleLoadMore}
               disabled={isLoading}
-              className="brutal-button px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={`Load older logs, ${feed.length - displayedCount} remaining`}
+              className="brutal-button px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
             >
-              {isLoading ? "Loading..." : `Load Older Logs (${allIncidents.length - displayedCount} more)`}
+              {isLoading ? "Loading..." : `Load Older Logs (${feed.length - displayedCount} more)`}
             </button>
           )}
-          {displayedCount >= allIncidents.length && (
+          {displayedCount >= feed.length && (
             <div className="font-mono text-xs text-foreground/60 uppercase tracking-widest">
-              ✓ All {allIncidents.length} incidents loaded
+              ✓ All {feed.length} incidents loaded
             </div>
           )}
         </div>

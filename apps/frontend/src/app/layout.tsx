@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat, Space_Mono } from "next/font/google";
 import "./globals.css";
+import { OfflineBanner } from "@/components/ui/offline-banner";
 
 const headingFont = Montserrat({
   variable: "--font-heading",
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
   title: "LikasLens",
   description: "Neuro-symbolic civic reporting platform",
   manifest: "/manifest.json",
-  themeColor: "#10b981",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://likaslens.vercel.app"),
   icons: {
     icon: [
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
@@ -54,7 +55,10 @@ export default function RootLayout({
       className={`${headingFont.variable} ${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
       data-theme="civic"
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <OfflineBanner />
+        {children}
+      </body>
     </html>
   );
 }

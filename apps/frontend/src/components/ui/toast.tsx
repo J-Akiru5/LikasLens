@@ -1,65 +1,78 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { X, CheckCircle, AlertCircle, Info, Loader2 } from "lucide-react";
 
-export type ToastTone = "success" | "error" | "info";
+type ToastType = "success" | "error" | "info" | "loading";
 
-interface ToastProps {
+interface ToastItem {
+  id: string;
   message: string;
-  tone: ToastTone;
-  onDismiss?: () => void;
-  autoHideMs?: number;
+  type: ToastType;
 }
 
-const toneStyles: Record<ToastTone, string> = {
-  success: "border-secondary bg-secondary/10 text-secondary",
-  error: "border-accent bg-accent/10 text-accent",
-  info: "border-primary bg-primary/10 text-primary",
-};
+let toastId = 0;
+const listeners: Array<(toast: ToastItem) => void> = [];
 
-export function Toast({ message, tone, onDismiss, autoHideMs = 5000 }: ToastProps) {
+export function showToast(message: string, type: ToastType = "info") {
+  const toast: ToastItem = { id: String(++toastId), message, type };
+  listeners.forEach((fn) => fn(toast));
+}
+
+export function ToastContainer() {
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
   useEffect(() => {
-    if (!autoHideMs || !onDismiss) return;
-    const timer = setTimeout(onDismiss, autoHideMs);
-    return () => clearTimeout(timer);
-  }, [autoHideMs, onDismiss]);
+    const handler = (toast: ToastItem) => {
+      setToasts((prev) => [...prev, toast]);
+      if (toast.type !== "error" && toast.type !== "loading") {
+        setTimeout(() => {
+          setToasts((prev) => prev.filter((t) => t.id !== toast.id));
+        }, 5000);
+      }
+    };
+    listeners.push(handler);
+    return () => {
+      const idx = listeners.indexOf(handler);
+      if (idx >= 0) listeners.splice(idx, 1);
+    };
+  }, []);
+
+  const dismiss = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  if (!toasts.length) return null;
 
   return (
-    <AnimatePresence>
-      {message && (
-        <motion.div
-          initial={{ opacity: 0, y: -20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          className={`mb-6 p-4 border-2 font-mono text-sm font-bold rounded flex items-center justify-between gap-3 ${toneStyles[tone]}`}
+    <div className="fixed top-4 right-4 z-50 flex flex-col gap-3 max-w-sm">
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          className={`flex items-start gap-3 p-4 border-2 font-mono text-sm font-bold rounded-lg shadow-[4px_4px_0px_#1b4332] backdrop-blur-md ${
+            t.type === "success"
+              ? "border-secondary bg-secondary/10 text-secondary"
+              : t.type === "error"
+              ? "border-accent bg-accent/10 text-accent"
+              : t.type === "loading"
+              ? "border-primary bg-primary/10 text-primary"
+              : "border-primary bg-background/90 text-primary"
+          }`}
         >
-          <span>{message}</span>
-          {onDismiss && (
-            <button onClick={onDismiss} className="opacity-60 hover:opacity-100 shrink-0" aria-label="Dismiss">
-              ✕
-            </button>
-          )}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-export function Spinner({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg
-      className={`animate-spin ${className}`}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
+          {t.type === "success" && <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+          {t.type === "error" && <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+          {t.type === "loading" && <Loader2 className="w-5 h-5 flex-shrink-0 mt-0.5 animate-spin" />}
+          {t.type === "info" && <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+          <span className="flex-1">{t.message}</span>
+          <button
+            onClick={() => dismiss(t.id)}
+            className="p-0.5 hover:opacity-70 transition-opacity flex-shrink-0"
+            aria-label="Dismiss"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ))}
+    </div>
   );
 }
