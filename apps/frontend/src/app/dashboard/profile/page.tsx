@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Save, User } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { Spinner } from "@/components/ui/spinner";
@@ -72,8 +73,9 @@ export default function ProfileSettingsPage() {
       <Sidebar />
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         <div className="smoke-overlay" />
-        <AppHeader />
-        <main className="flex-1 overflow-y-auto p-6 relative z-10">
+        <AppHeader greeting={displayName || "Citizen"} />
+        <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
+          <BottomNav />
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex items-center gap-3 mb-8">
               <Link

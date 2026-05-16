@@ -35,7 +35,7 @@ export default async function DashboardPage() {
         <AppHeader greeting={userGreeting} />
         <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-4xl mx-auto space-y-8">
             <CitizenDashboardClient impact={impactData} ghostModeActive={false} />
           </div>
         </main>
