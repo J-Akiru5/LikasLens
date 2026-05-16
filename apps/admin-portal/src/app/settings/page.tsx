@@ -5,47 +5,53 @@ import { Settings as SettingsIcon, Globe, Bell, Shield } from "lucide-react";
 
 export default function SettingsPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-500">System configuration</p>
+    <div className="space-y-8">
+      <div className="border-b-4 border-primary pb-4">
+        <h1 className="font-heading text-4xl font-black uppercase">Settings</h1>
+        <p className="font-mono text-sm surface-muted mt-1">System configuration</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow">
-          <div className="rounded-lg bg-blue-50 p-3">
-            <Globe className="h-6 w-6 text-blue-600" />
+        <div className="brutal-panel panel-surface p-6 border-2 border-primary shadow-[4px_4px_0px_#1b4332] cursor-pointer hover:bg-primary/5 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">
+              <Globe className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold uppercase">Platform</h3>
+              <p className="font-mono text-sm surface-muted">General settings</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-medium text-gray-900">Platform</h3>
-            <p className="text-sm text-gray-500">General settings</p>
-          </div>
-        </Card>
+        </div>
 
-        <Card className="flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow">
-          <div className="rounded-lg bg-purple-50 p-3">
-            <Bell className="h-6 w-6 text-purple-600" />
+        <div className="brutal-panel panel-surface p-6 border-2 border-primary shadow-[4px_4px_0px_#1b4332] cursor-pointer hover:bg-primary/5 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">
+              <Bell className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold uppercase">Notifications</h3>
+              <p className="font-mono text-sm surface-muted">Alert configuration</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-medium text-gray-900">Notifications</h3>
-            <p className="text-sm text-gray-500">Alert configuration</p>
-          </div>
-        </Card>
+        </div>
 
-        <Card className="flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow">
-          <div className="rounded-lg bg-orange-50 p-3">
-            <Shield className="h-6 w-6 text-orange-600" />
+        <div className="brutal-panel panel-surface p-6 border-2 border-primary shadow-[4px_4px_0px_#1b4332] cursor-pointer hover:bg-primary/5 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">
+              <Shield className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold uppercase">Security</h3>
+              <p className="font-mono text-sm surface-muted">Access controls</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-medium text-gray-900">Security</h3>
-            <p className="text-sm text-gray-500">Access controls</p>
-          </div>
-        </Card>
+        </div>
       </div>
 
-      <Card>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">System Information</h3>
-        <div className="space-y-2 text-sm text-gray-600">
+      <Card variant="brutal">
+        <h3 className="font-heading text-xl font-black uppercase mb-4">System Information</h3>
+        <div className="space-y-2 font-mono text-sm surface-muted">
           <p>LikasLens Admin Portal v0.1.0</p>
           <p>API: {process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}</p>
           <p>Environment: {process.env.NODE_ENV}</p>

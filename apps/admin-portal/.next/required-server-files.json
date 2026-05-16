@@ -104,7 +104,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "S:\\Dev\\Laravel\\LikasLens\\likaslens",
+    "outputFileTracingRoot": "C:\\LikasLens\\LikasLens",
     "cacheComponents": false,
     "cacheLife": {
       "default": {
@@ -166,7 +166,7 @@
       "proxyPrefetch": "flexible",
       "optimisticClientCache": true,
       "manualClientBasePath": false,
-      "cpus": 11,
+      "cpus": 3,
       "memoryBasedWorkersCount": false,
       "imgOptConcurrency": null,
       "imgOptTimeoutInSeconds": 7,
@@ -304,11 +304,11 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "S:\\Dev\\Laravel\\LikasLens\\likaslens"
+      "root": "C:\\LikasLens\\LikasLens"
     },
     "distDirRoot": ".next"
   },
-  "appDir": "S:\\Dev\\Laravel\\LikasLens\\likaslens\\apps\\admin-portal",
+  "appDir": "C:\\LikasLens\\LikasLens\\apps\\admin-portal",
   "relativeAppDir": "apps\\admin-portal",
   "files": [
     ".next\\routes-manifest.json",

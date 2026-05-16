@@ -1,11 +1,9 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { getDashboardStats, getDashboardFeed, getTickets } from "@likaslens/shared";
 import type { DashboardStats, ActivityFeedItem, Ticket } from "@likaslens/shared";
-import { Card } from "@likaslens/shared";
-import { Card as CardUI, CardHeader, CardTitle } from "@likaslens/shared";
-import { LayoutDashboard, AlertTriangle, CheckCircle2, Clock, Users } from "lucide-react";
+import { Card, CardHeader, CardTitle } from "@likaslens/shared";
+import { AlertTriangle, CheckCircle2, Clock, Users, LayoutDashboard } from "lucide-react";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -17,18 +15,13 @@ export default function DashboardPage() {
     async function load() {
       try {
         const [statsRes, feedRes, ticketsRes] = await Promise.all([
-          getDashboardStats(),
-          getDashboardFeed(),
-          getTickets({ per_page: "5" }),
+          getDashboardStats(), getDashboardFeed(), getTickets({ per_page: "5" }),
         ]);
         if (statsRes.success) setStats(statsRes.data);
         if (feedRes.success) setFeed(feedRes.data);
         if (ticketsRes.success) setRecentTickets(ticketsRes.data);
-      } catch (err) {
-        console.error("Failed to load dashboard:", err);
-      } finally {
-        setLoading(false);
-      }
+      } catch (err) { console.error("Failed to load dashboard:", err); }
+      finally { setLoading(false); }
     }
     load();
   }, []);
@@ -36,88 +29,94 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
       </div>
     );
   }
 
   const kpis = [
-    { label: "Active Incidents", value: stats?.active_incidents ?? 0, icon: AlertTriangle, color: "text-orange-600", bg: "bg-orange-50" },
-    { label: "Resolved Today", value: stats?.resolved_today ?? 0, icon: CheckCircle2, color: "text-green-600", bg: "bg-green-50" },
-    { label: "Avg Response", value: `${stats?.avg_response_minutes ?? 0}m`, icon: Clock, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Total Users", value: stats?.total_users ?? 0, icon: Users, color: "text-purple-600", bg: "bg-purple-50" },
+    { label: "Active Incidents", value: stats?.active_incidents ?? 0, icon: AlertTriangle, color: "text-accent border-accent shadow-[3px_3px_0px_#ffb703]" },
+    { label: "Resolved Today", value: stats?.resolved_today ?? 0, icon: CheckCircle2, color: "text-secondary border-secondary shadow-[3px_3px_0px_#2de1c2]" },
+    { label: "Avg Response", value: `${stats?.avg_response_minutes ?? 0}m`, icon: Clock, color: "text-primary border-primary shadow-[3px_3px_0px_#1b4332]" },
+    { label: "Total Users", value: stats?.total_users ?? 0, icon: Users, color: "text-primary border-primary shadow-[3px_3px_0px_#1b4332]" },
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500">Overview of the LikasLens platform</p>
+    <div className="space-y-8">
+      <div className="border-b-4 border-primary pb-4">
+        <h1 className="font-heading text-4xl font-black uppercase">Dashboard</h1>
+        <p className="font-mono text-sm surface-muted mt-1">Overview of the LikasLens platform</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <CardUI key={kpi.label} className="flex items-center gap-4">
-              <div className={`rounded-lg ${kpi.bg} p-3`}>
-                <Icon className={`h-6 w-6 ${kpi.color}`} />
+            <div key={kpi.label} className={`brutal-panel panel-surface p-6 border-2 ${kpi.color}`}>
+              <div className="flex items-center gap-4">
+                <Icon className={`h-8 w-8 ${kpi.color.split(" ")[0]}`} />
+                <div>
+                  <p className="font-mono text-xs font-bold uppercase tracking-widest surface-muted">{kpi.label}</p>
+                  <p className="font-heading text-3xl font-black">{kpi.value}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-500">{kpi.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{kpi.value}</p>
-              </div>
-            </CardUI>
+            </div>
           );
         })}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <CardUI>
+      <div className="grid gap-8 lg:grid-cols-2">
+        <Card variant="brutal">
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">
+                <LayoutDashboard className="w-5 h-5 text-primary" />
+              </div>
+              <CardTitle className="font-heading text-xl font-black uppercase">Recent Activity</CardTitle>
+            </div>
           </CardHeader>
           <div className="space-y-3">
             {feed.slice(0, 8).map((item) => (
-              <div key={item.id} className="flex items-start gap-3 border-b border-gray-100 pb-3 last:border-0">
-                <div className={`mt-1 h-2 w-2 rounded-full ${
-                  item.type === "Critical" ? "bg-red-500" : item.type === "Warning" ? "bg-yellow-500" : "bg-blue-500"
-                }`} />
+              <div key={item.id} className="flex items-start gap-3 border-b-2 border-primary/10 pb-3 last:border-0">
+                <div className={`mt-1.5 h-2.5 w-2.5 rounded-full ${item.type === "Critical" ? "bg-accent" : item.type === "Warning" ? "bg-secondary" : "bg-primary"}`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                  <p className="text-xs text-gray-500">{item.location} &middot; {item.time}</p>
+                  <p className="font-bold uppercase text-sm truncate">{item.title}</p>
+                  <p className="font-mono text-xs surface-muted">{item.location} &middot; {item.time}</p>
                 </div>
-                <span className="text-xs text-gray-400">{item.status}</span>
+                <span className="font-mono text-xs font-bold uppercase tracking-widest surface-muted shrink-0">{item.status}</span>
               </div>
             ))}
-            {feed.length === 0 && (
-              <p className="text-sm text-gray-400">No recent activity</p>
-            )}
+            {feed.length === 0 && <p className="font-mono text-sm surface-muted text-center py-4">No recent activity</p>}
           </div>
-        </CardUI>
+        </Card>
 
-        <CardUI>
+        <Card variant="brutal">
           <CardHeader>
-            <CardTitle>Recent Tickets</CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">
+                <AlertTriangle className="w-5 h-5 text-primary" />
+              </div>
+              <CardTitle className="font-heading text-xl font-black uppercase">Recent Tickets</CardTitle>
+            </div>
           </CardHeader>
           <div className="space-y-3">
             {recentTickets.map((ticket) => (
-              <div key={ticket.id} className="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0">
+              <div key={ticket.id} className="flex items-center justify-between border-b-2 border-primary/10 pb-3 last:border-0">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">{ticket.title}</p>
-                  <p className="text-xs text-gray-500">{ticket.location}</p>
+                  <p className="font-bold uppercase text-sm truncate">{ticket.title}</p>
+                  <p className="font-mono text-xs surface-muted">{ticket.location}</p>
                 </div>
-                <span className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                  ticket.status === "Open" ? "bg-yellow-100 text-yellow-800" :
-                  ticket.status === "Resolved" ? "bg-green-100 text-green-800" :
-                  "bg-blue-100 text-blue-800"
+                <span className={`ml-2 shrink-0 rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 ${
+                  ticket.status === "Open" ? "border-accent bg-accent/15 text-accent" :
+                  ticket.status === "Resolved" ? "border-secondary bg-secondary/15 text-secondary" :
+                  "border-primary bg-primary/15 text-primary"
                 }`}>
                   {ticket.status}
                 </span>
               </div>
             ))}
           </div>
-        </CardUI>
+        </Card>
       </div>
     </div>
   );
