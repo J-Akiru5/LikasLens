@@ -1,23 +1,46 @@
-"use client";
-
 import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/header";
-import { AlertTriangle, Filter, MoreVertical, Search } from "lucide-react";
-import { useState, useMemo } from "react";
+import { AlertTriangle, Search, Filter } from "lucide-react";
+import { laravelGet } from "@/utils/laravel-api";
 
-export default function IncidentsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+interface TicketItem {
+  id: string;
+  display_id: string;
+  category: string;
+  title: string;
+  description: string;
+  location: string;
+  latitude: number | null;
+  longitude: number | null;
+  status: string;
+  urgency_score: number | null;
+  reporter: string;
+  created_at: string;
+  resolved_at: string | null;
+}
 
-  const incidentsData = [
-    { id: "INC-104", cat: "Deforestation", loc: "Northern Ridge", stat: "Critical" },
-    { id: "INC-103", cat: "Water Pollution", loc: "Lake View", stat: "Investigating" },
-    { id: "INC-102", cat: "Illegal Dumping", loc: "Highway 9", stat: "Resolved" },
-    { id: "INC-101", cat: "Wildfire Risk", loc: "Sector 7", stat: "Monitoring" },
-    { id: "INC-100", cat: "Wildlife Threat", loc: "National Park", stat: "Resolved" },
-    { id: "INC-099", cat: "Air Quality", loc: "Downtown Core", stat: "Investigating" },
-    { id: "INC-098", cat: "Noise Pollution", loc: "Industrial Zone", stat: "Monitoring" },
-  ];
+async function getTickets(search?: string, status?: string): Promise<TicketItem[]> {
+  try {
+    const params: Record<string, string> = {};
+    if (search) params.search = search;
+    if (status) params.status = status.toLowerCase();
+
+    const res = await laravelGet<{ success: boolean; data: TicketItem[] }>("/api/tickets", params);
+    return res.data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export default async function IncidentsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ search?: string; status?: string }>;
+}) {
+  const sp = await searchParams;
+  const tickets = await getTickets(sp?.search, sp?.status);
+
+  const statuses = Array.from(new Set(tickets.map((t) => t.status)));
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -27,28 +50,12 @@ export default function IncidentsPage() {
       case "monitoring":
         return "border-2 border-accent bg-accent/15 text-accent shadow-[0_0_12px_rgba(255,183,3,0.5)]";
       case "critical":
+      case "open":
         return "border-2 border-accent bg-accent/25 text-accent shadow-[0_0_16px_rgba(255,183,3,0.7)] animate-pulse";
       default:
         return "border-2 border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(27,67,50,0.5)]";
     }
   };
-
-  const filteredIncidents = useMemo(() => {
-    return incidentsData.filter((incident) => {
-      const matchesSearch =
-        !searchQuery ||
-        incident.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        incident.cat.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        incident.loc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        incident.stat.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesStatus = !selectedStatus || incident.stat === selectedStatus;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [searchQuery, selectedStatus]);
-
-  const statuses = Array.from(new Set(incidentsData.map((inc) => inc.stat)));
 
   return (
     <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
@@ -58,56 +65,53 @@ export default function IncidentsPage() {
         <AppHeader />
         <main className="flex-1 overflow-y-auto p-6 relative z-10">
           <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header with Search */}
+            {/* Header with Search Form */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b-4 border-primary pb-4">
               <h1 className="font-heading text-4xl font-black uppercase">Reported Incidents</h1>
-              <div className="flex items-center gap-4">
+              <form action="/dashboard/incidents" method="GET" className="flex items-center gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
                   <input
                     type="text"
-                    placeholder="Search ID, Category, Location, Status..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    name="search"
+                    defaultValue={sp?.search ?? ""}
+                    placeholder="Search incidents..."
                     className="pl-9 pr-4 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
                   />
                 </div>
-                <button className="brutal-panel p-2 hover:bg-primary hover:text-white transition-colors cursor-pointer border-2 border-primary shadow-[2px_2px_0px_#1b4332]">
+                <button type="submit" className="brutal-panel p-2 hover:bg-primary hover:text-white transition-colors cursor-pointer border-2 border-primary shadow-[2px_2px_0px_#1b4332]">
                   <Filter className="w-5 h-5" />
                 </button>
-              </div>
+                {sp?.search && (
+                  <a href="/dashboard/incidents" className="font-mono text-xs text-accent underline">Clear</a>
+                )}
+              </form>
             </div>
 
             {/* Status Filter Pills */}
             <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setSelectedStatus(null)}
-                className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#1b4332] ${
-                  selectedStatus === null
-                    ? "bg-primary text-white border-primary"
-                    : "bg-background border-2 border-primary text-primary hover:bg-primary/20 hover:border-primary"
-                }`}
-              >
-                All
-              </button>
-              {statuses.map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setSelectedStatus(status)}
-                  className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#1b4332] ${
-                    selectedStatus === status
-                      ? getStatusColor(status)
-                      : `border-2 border-primary text-primary hover:bg-primary/10`
-                  }`}
-                >
-                  {status}
-                </button>
-              ))}
+              {["All", ...statuses].map((status) => {
+                const isActive = status === "All" ? !sp?.status : sp?.status === status;
+                const href = status === "All" ? "/dashboard/incidents" : `/dashboard/incidents?status=${status}`;
+                return (
+                  <a
+                    key={status}
+                    href={href}
+                    className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#1b4332] ${
+                      isActive
+                        ? "bg-primary text-white border-primary"
+                        : "bg-background border-2 border-primary text-primary hover:bg-primary/20"
+                    }`}
+                  >
+                    {status}
+                  </a>
+                );
+              })}
             </div>
 
             {/* Results Count */}
             <div className="text-sm font-mono text-foreground/60 uppercase tracking-widest">
-              Showing {filteredIncidents.length} of {incidentsData.length} incidents
+              Showing {tickets.length} incident{tickets.length !== 1 ? "s" : ""}
             </div>
 
             {/* Incidents Table */}
@@ -120,48 +124,38 @@ export default function IncidentsPage() {
                 <div className="col-span-2 text-right">Actions</div>
               </div>
 
-              {filteredIncidents.length > 0 ? (
-                filteredIncidents.map((inc, i) => (
+              {tickets.length > 0 ? (
+                tickets.map((inc) => (
                   <div
-                    key={i}
+                    key={inc.id}
                     className="grid grid-cols-12 items-center border-t-2 border-primary/20 p-4 hover:bg-secondary/10 transition-colors font-medium"
                   >
-                    <div className="col-span-2 font-mono text-sm font-bold">{inc.id}</div>
+                    <div className="col-span-2 font-mono text-sm font-bold">{inc.display_id}</div>
                     <div className="col-span-3 flex items-center gap-2">
-                      {inc.stat === "Critical" && (
+                      {(inc.urgency_score ?? 0) >= 4 && (
                         <AlertTriangle className="w-4 h-4 text-accent animate-pulse" />
                       )}
-                      {inc.cat}
+                      {inc.category}
                     </div>
-                    <div className="col-span-3 surface-muted">{inc.loc}</div>
+                    <div className="col-span-3 surface-muted">{inc.location}</div>
                     <div className="col-span-2">
-                      <span className={`px-3 py-1.5 rounded text-xs font-bold uppercase font-mono tracking-widest transition-all ${getStatusColor(inc.stat)}`}>
-                        {inc.stat}
+                      <span className={`px-3 py-1.5 rounded text-xs font-bold uppercase font-mono tracking-widest transition-all ${getStatusColor(inc.status)}`}>
+                        {inc.status}
                       </span>
                     </div>
                     <div className="col-span-2 text-right">
-                      <button className="p-1 hover:bg-primary/10 rounded transition-colors">
-                        <MoreVertical className="w-5 h-5 text-primary" />
-                      </button>
+                      <span className="font-mono text-xs text-foreground/50">{inc.reporter}</span>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="grid grid-cols-12 p-8 text-center col-span-12">
                   <div className="col-span-12 text-foreground/50 font-mono">
-                    No incidents match your search criteria.
+                    No incidents found.
                   </div>
                 </div>
               )}
             </div>
-
-            {filteredIncidents.length > 0 && (
-              <div className="flex justify-center mt-6">
-                <button className="brutal-button px-6 py-3 rounded text-sm tracking-wider">
-                  Load More Records
-                </button>
-              </div>
-            )}
           </div>
         </main>
       </div>

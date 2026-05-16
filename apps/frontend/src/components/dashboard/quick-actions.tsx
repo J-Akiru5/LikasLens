@@ -2,15 +2,34 @@
 
 import { Camera, MapPin, Share2, ShieldAlert } from "lucide-react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { showToast } from "../ui/toast";
 
 const actions = [
-  { icon: Camera, label: "New Report", desc: "Submit evidential data", color: "border-accent" },
-  { icon: MapPin, label: "Geo-Tag", desc: "Mark hazard location", color: "border-secondary" },
-  { icon: Share2, label: "Broadcast", desc: "Alert local agencies", color: "border-primary" },
-  { icon: ShieldAlert, label: "Ghost Mode", desc: "Anonymous submission", color: "border-accent" },
+  { icon: Camera, label: "New Report", desc: "Submit evidential data", color: "border-accent", route: "/report" },
+  { icon: MapPin, label: "Geo-Tag", desc: "Mark hazard location", color: "border-secondary", route: "/report?geo=true" },
+  { icon: Share2, label: "Broadcast", desc: "Alert local agencies", color: "border-primary", route: null },
+  { icon: ShieldAlert, label: "Ghost Mode", desc: "Anonymous submission", color: "border-accent", route: "/report" },
 ];
 
 export function QuickActions() {
+  const router = useRouter();
+
+  const handleAction = (action: typeof actions[number]) => {
+    if (action.label === "Broadcast") {
+      showToast("Broadcast feature will notify local agencies. Coming soon.", "info");
+      return;
+    }
+
+    if (action.label === "Ghost Mode") {
+      document.documentElement.setAttribute("data-theme", "ghost");
+    }
+
+    if (action.route) {
+      router.push(action.route);
+    }
+  };
+
   return (
     <div className="brutal-panel panel-surface p-6 h-full">
       <h2 className="font-heading text-xl font-black uppercase mb-6 border-b-2 border-primary/20 pb-2">
@@ -34,11 +53,12 @@ export function QuickActions() {
           return (
             <motion.button
               key={idx}
+              onClick={() => handleAction(action)}
               variants={{
                 hidden: { opacity: 0, x: -20 },
                 visible: { opacity: 1, x: 0 }
               }}
-              className={`w-full flex items-center gap-4 p-4 border-2 ${action.color} hover:bg-accent/10 transition-all group rounded text-left shadow-[2px_2px_0px_#1b4332] active:translate-y-[2px] active:shadow-none hover:shadow-[4px_4px_0px_#1b4332] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary`}
+              className={`w-full flex items-center gap-4 p-4 border-2 ${action.color} hover:bg-accent/10 transition-all group rounded text-left shadow-[2px_2px_0px_#1b4332] active:translate-y-[2px] active:shadow-none hover:shadow-[4px_4px_0px_#1b4332] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary cursor-pointer`}
             >
               <div className={`p-2 border-2 ${action.color} bg-background group-hover:bg-accent/20 transition-colors`}>
                 <Icon className="w-5 h-5" />
