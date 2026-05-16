@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+const ANALYST_ROUTES = ["/dashboard/analytics"];
+const ALLOWED_ROLES = ["analyst", "super_admin"];
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -29,18 +32,31 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) return supabaseResponse;
+  if (!user) {
+    const protectedPaths = ["/dashboard", "/report"];
+    const needsAuth = protectedPaths.some((p) =>
+      request.nextUrl.pathname.startsWith(p)
+    );
 
-  const protectedPaths = ["/dashboard", "/report"];
-  const needsAuth = protectedPaths.some((p) =>
+    if (needsAuth) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect_to", request.nextUrl.pathname);
+      loginUrl.searchParams.set("error", "Please sign in to continue.");
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return supabaseResponse;
+  }
+
+  const role = user.user_metadata?.role as string | undefined;
+  const isAnalystRoute = ANALYST_ROUTES.some((p) =>
     request.nextUrl.pathname.startsWith(p)
   );
 
-  if (needsAuth) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect_to", request.nextUrl.pathname);
-    loginUrl.searchParams.set("error", "Please sign in to continue.");
-    return NextResponse.redirect(loginUrl);
+  if (isAnalystRoute && (!role || !ALLOWED_ROLES.includes(role))) {
+    const dashUrl = new URL("/dashboard", request.url);
+    dashUrl.searchParams.set("error", "You do not have access to this section.");
+    return NextResponse.redirect(dashUrl);
   }
 
   return supabaseResponse;

@@ -15,11 +15,37 @@ import {
   Camera,
   Globe,
   Bot,
+  Smartphone,
+  Download,
 } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
 
 export default function Home() {
   const [ghostMode, setGhostMode] = useState(false);
+  interface BeforeInstallPromptEvent extends Event {
+    prompt: () => void;
+    userChoice: Promise<{ outcome: string }>;
+  }
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handler = (e: BeforeInstallPromptEvent) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler as EventListener);
+    return () => window.removeEventListener("beforeinstallprompt", handler as EventListener);
+  }, []);
+
+  const handleInstall = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const result = await installPrompt.userChoice;
+      if (result.outcome === "accepted") setInstallPrompt(null);
+    } else {
+      document.getElementById("install-guide")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     const themeValue = ghostMode ? "ghost" : "light";
@@ -131,6 +157,12 @@ export default function Home() {
           >
             <Activity className="w-5 h-5 text-secondary" /> View Public Reports
           </a>
+          <button
+            onClick={handleInstall}
+            className="flex items-center gap-2 px-6 py-3 rounded-lg text-base font-bold border-2 border-secondary text-secondary hover:bg-secondary/10 transition-colors"
+          >
+            <Smartphone className="w-5 h-5" /> <Download className="w-4 h-4" /> Get the App
+          </button>
         </motion.div>
       </section>
 
@@ -328,6 +360,54 @@ export default function Home() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* Install Guide */}
+      <section id="install-guide" className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+        <div className="brutal-panel panel-surface p-10 md:p-16 rounded-[2rem] border-4 border-primary shadow-[8px_8px_0px_#1b4332]">
+          <div className="flex flex-col md:flex-row items-center gap-10">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 font-mono text-sm font-bold mb-6 border-2 border-primary text-primary">
+                <Smartphone className="w-4 h-4" /> GET THE APP
+              </div>
+              <h2 className="font-heading text-4xl md:text-5xl font-black tracking-tight mb-6 uppercase">
+                Install on Your Device
+              </h2>
+              <p className="text-lg font-semibold text-foreground/90 mb-8">
+                Use LikasLens like a native app. Take photos instantly, report even
+                when offline, and get push notifications when issues are resolved.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded border-2 border-primary flex items-center justify-center flex-shrink-0 font-heading font-black text-sm">1</div>
+                  <div>
+                    <p className="font-bold uppercase text-sm">Open in your browser</p>
+                    <p className="text-sm text-foreground/70">Chrome, Edge, or Safari on your mobile device</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded border-2 border-primary flex items-center justify-center flex-shrink-0 font-heading font-black text-sm">2</div>
+                  <div>
+                    <p className="font-bold uppercase text-sm">Tap the share menu</p>
+                    <p className="text-sm text-foreground/70">Look for &ldquo;Add to Home Screen&rdquo; or &ldquo;Install App&rdquo;</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded border-2 border-primary flex items-center justify-center flex-shrink-0 font-heading font-black text-sm">3</div>
+                  <div>
+                    <p className="font-bold uppercase text-sm">Start reporting</p>
+                    <p className="text-sm text-foreground/70">LikasLens appears on your home screen like any other app</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              <div className="w-48 h-48 rounded-[2rem] border-4 border-primary bg-primary/5 flex items-center justify-center shadow-[8px_8px_0px_#1b4332]">
+                <Smartphone className="w-24 h-24 text-primary" />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

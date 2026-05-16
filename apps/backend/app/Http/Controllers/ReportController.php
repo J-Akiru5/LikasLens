@@ -94,7 +94,7 @@ class ReportController extends Controller
                 ]);
 
                 Report::create([
-                    'user_id' => $userId === $this->ensureGhostUser() ? null : $userId,
+                    'user_id' => $validated['user_id'] ?? null,
                     'latitude' => $validated['latitude'],
                     'longitude' => $validated['longitude'],
                     'image_path' => $storagePath,
@@ -200,6 +200,17 @@ class ReportController extends Controller
         $config = config('filesystems.disks.supabase');
         if (! empty($config['key']) && ! empty($config['secret']) && ! empty($config['endpoint'])) {
             return $config['bucket'];
+        }
+
+        return 'local';
+    }
+
+    private function resolveStorageDisk(): string
+    {
+        $config = config('filesystems.disks.supabase');
+
+        if (!empty($config['key']) && !empty($config['secret']) && !empty($config['endpoint'])) {
+            return 'supabase';
         }
 
         return 'local';
