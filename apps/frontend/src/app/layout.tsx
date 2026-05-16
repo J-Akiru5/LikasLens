@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { OfflineBanner } from "@/components/ui/offline-banner";
+import { Footer } from "@/components/layout/footer";
 import { LikasyChat } from "@/components/chat/LikasyChat";
 
 const headingFont = Montserrat({
@@ -58,7 +59,10 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <OfflineBanner />
-        {children}
+        <div className="flex-1">
+          {children}
+        </div>
+        <Footer />
         <LikasyChat />
       </body>
     </html>

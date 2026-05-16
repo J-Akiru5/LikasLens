@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\UserCreated;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,6 +29,8 @@ class AuthController extends Controller
             'trust_score' => 0,
             'reward_points_balance' => 0,
         ]);
+
+        UserCreated::dispatch($user);
 
         $token = $user->createToken('api-token')->plainTextToken;
 
@@ -99,6 +102,8 @@ class AuthController extends Controller
                 'trust_score' => 0,
                 'reward_points_balance' => 0,
             ]);
+
+            UserCreated::dispatch($user);
         } else {
             $user->update([
                 'email' => $validated['email'],

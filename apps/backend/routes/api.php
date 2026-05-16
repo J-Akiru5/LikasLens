@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminRewardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EcoCreditController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
@@ -84,6 +85,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Environmental laws (analyst+ can view)
         Route::get('/admin/laws', [AdminLawController::class, 'index']);
         Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
+    });
+
+    // Eco-Credit Engine
+    Route::prefix('v1/likaslens-engine')->group(function () {
+        Route::post('/credits/award', [EcoCreditController::class, 'awardCredits']);
     });
 
     // Super admin only routes

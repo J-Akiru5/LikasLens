@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import NextImage from "next/image";
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { Camera, MapPin, Fingerprint, Activity, RefreshCw } from "lucide-react";
+import { ArrowLeft, Camera, MapPin, Fingerprint, Activity, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
 import { ToastContainer, showToast } from "@/components/ui/toast";
@@ -352,6 +353,15 @@ export default function ReportPage() {
 					: "bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10"
 			}`}>
 				<div className="max-w-2xl mx-auto p-4 sm:p-6">
+					{/* Back Navigation */}
+					<Link
+						href="/"
+						className="inline-flex items-center gap-2 mb-6 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors font-mono text-sm font-bold uppercase tracking-wider"
+					>
+						<ArrowLeft className="w-4 h-4" />
+						Back to Home
+					</Link>
+
 					{/* Header */}
 					<div className="mb-8">
 						<div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary mb-4 bg-background/50 rounded">
@@ -575,20 +585,18 @@ export default function ReportPage() {
 							>
 								Clear Form
 							</button>
+							<button
+								type="submit"
+								disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
+								className={`brutal-button px-6 py-3 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
+									isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null
+										? "border-foreground/30 bg-foreground/10 text-foreground/40 cursor-not-allowed"
+										: "border-primary bg-primary text-background hover:shadow-[6px_6px_0px_#1b4332]"
+								}`}
+							>
+								{isSubmitting ? "⏳ Submitting..." : isTriaging ? "🧠 Analyzing..." : "🚀 Submit Report"}
+							</button>
 						</div>
-
-						{/* Submit Button */}
-						<button
-							type="submit"
-							disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
-							className={`w-full brutal-button px-8 py-4 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
-								isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null
-									? "border-foreground/30 bg-foreground/10 text-foreground/40 cursor-not-allowed"
-									: "border-primary bg-primary text-background hover:shadow-[6px_6px_0px_#1b4332]"
-							}`}
-						>
-							{isSubmitting ? "⏳ Submitting..." : isTriaging ? "🧠 Analyzing..." : "🚀 Submit Report"}
-						</button>
 					</form>
 				</div>
 			</main>
