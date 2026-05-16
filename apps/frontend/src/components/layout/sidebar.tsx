@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   AlertCircle,
-  FileText,
+  BarChart3,
   Settings,
   Leaf,
   Home,
@@ -15,11 +15,13 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 export function Sidebar() {
   const pathname = usePathname();
   const [isGhostMode, setIsGhostMode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const closeMobile = () => setMobileOpen(false);
 
@@ -41,11 +43,22 @@ export function Sidebar() {
     };
   }, []);
 
+  useEffect(() => {
+    async function fetchRole() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserRole(user?.user_metadata?.role ?? "citizen");
+    }
+    fetchRole();
+  }, []);
+
   const toggleGhostMode = () => {
     const newTheme = isGhostMode ? "civic" : "ghost";
     document.documentElement.setAttribute("data-theme", newTheme);
     setIsGhostMode(!isGhostMode);
   };
+
+  const isAnalyst = userRole === "analyst" || userRole === "super_admin";
 
   const navItems = [
     {
@@ -55,7 +68,7 @@ export function Sidebar() {
       exact: true,
     },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
-    { href: "/dashboard/reports", label: "Analytics", icon: FileText },
+    ...(isAnalyst ? [{ href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 }] : []),
     { href: "/profile", label: "Profile", icon: User },
   ];
 
