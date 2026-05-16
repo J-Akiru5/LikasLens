@@ -38,8 +38,6 @@ export function Sidebar() {
   const [role, setRole] = useState<Role>("citizen");
   const [collapsed, setCollapsed] = useState(false);
 
-  if (pathname === "/login") return null;
-
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -48,6 +46,8 @@ export function Sidebar() {
       }
     });
   }, []);
+
+  if (pathname === "/login") return null;
 
   async function handleSignOut() {
     const supabase = createClient();

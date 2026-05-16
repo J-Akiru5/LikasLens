@@ -43,10 +43,10 @@ export function LikasyChat() {
 
   return (
     <>
-      {/* Chat bubble button — fixed bottom-left */}
+      {/* Chat bubble button — fixed bottom-right */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-6 left-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[4px_4px_0px_rgba(8,28,21,0.3)] transition-all duration-200 hover:scale-105 hover:shadow-[6px_6px_0px_rgba(8,28,21,0.4)] active:scale-95"
+        className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[4px_4px_0px_rgba(8,28,21,0.3)] transition-all duration-200 hover:scale-105 hover:shadow-[6px_6px_0px_rgba(8,28,21,0.4)] active:scale-95"
         style={{ background: "var(--secondary)", color: "#081c15" }}
         aria-label={open ? "Close chat" : "Open Likasy chat"}
       >
@@ -56,7 +56,7 @@ export function LikasyChat() {
       {/* Chat panel */}
       {open && (
         <div
-          className="fixed bottom-24 left-6 z-50 w-80 sm:w-96 h-[28rem] max-h-[70vh] flex flex-col rounded-xl shadow-[8px_8px_0px_rgba(8,28,21,0.2)] animate-slide-in overflow-hidden"
+          className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 h-[28rem] max-h-[70vh] flex flex-col rounded-xl shadow-[8px_8px_0px_rgba(8,28,21,0.2)] animate-slide-in overflow-hidden"
           style={{ background: "var(--panel)", border: "4px solid var(--panel-border)" }}
         >
           {/* Header */}
