@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   AlertCircle,
-  FileText,
+  BarChart3,
   Settings,
   Leaf,
   Home,
@@ -55,7 +55,7 @@ export function Sidebar() {
       exact: true,
     },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
-    { href: "/dashboard/reports", label: "Analytics", icon: FileText },
+    { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/profile", label: "Profile", icon: User },
   ];
 
