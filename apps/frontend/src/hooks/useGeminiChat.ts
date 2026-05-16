@@ -20,7 +20,7 @@ Your role:
 
 Keep responses brief (2-3 paragraphs max) and conversational.`;
 
-const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
 export function useGeminiChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -62,8 +62,10 @@ export function useGeminiChat() {
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: SYSTEM_PROMPT }]
+          },
           contents: [
-            { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
             ...history,
             { role: "user", parts: [{ text }] },
           ],
