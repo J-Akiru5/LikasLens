@@ -12,10 +12,9 @@
 | Branch | Latest Commit | Synced With |
 |--------|--------------|-------------|
 | `main` | `335131d` | ✅ Up to date — clean reconstructed history |
-| `development` | `7147cac` | ✅ Up to date — contains merged PR #49 (FE3) + project lead changes + ui-experiment morph |
+| `development` | `f8705df` | ✅ Up to date — contains merged PR #52 (ui-experiment) |
 | `jeff-ProjectLead` | `335131d` | ✅ Synced — zero zero with `main` |
-| `charlyn-FE3` | `b8c1f33` | ✅ Merged via PR #49 into `development` |
-| `ui-experiment` | `04bf749` | ✅ **MORPHED** — Integrated AI Triage, Modal, PDF Export & enhanced animations |
+| `ui-experiment` | `813223b` | ✅ **MERGED** — Integrated AI Triage, Modal, PDF Export & enhanced animations |
 | `katherine-FE1` | `c66b021` | ⚠️ Behind 50 commits — needs rebase onto `development` |
 | `roseby-FE2` | `da65ab0` | ⚠️ Behind 91 commits — needs rebase onto `development` |
 
