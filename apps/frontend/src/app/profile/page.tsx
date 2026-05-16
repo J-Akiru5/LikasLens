@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Trophy, Leaf, Award, Target, Shield, User, Mail, Calendar } from "lucide-react";
+import { ArrowLeft, Trophy, Leaf, Award, Target, Shield, User, Mail, Calendar, Settings } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { Spinner } from "@/components/ui/spinner";
@@ -51,6 +51,8 @@ type LeaderboardEntry = {
 export default function ProfilePage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userCreated, setUserCreated] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [ecoCredits, setEcoCredits] = useState<number | null>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,6 +67,8 @@ export default function ProfilePage() {
         if (user) {
           setUserEmail(user.email ?? null);
           setUserCreated(user.created_at ? new Date(user.created_at).toLocaleDateString() : null);
+          setAvatarUrl(user.user_metadata?.avatar_url ?? null);
+          setDisplayName(user.user_metadata?.display_name ?? null);
         }
 
         const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
@@ -115,19 +119,30 @@ export default function ProfilePage() {
             <ArrowLeft className="w-4 h-4" />
             Back
           </Link>
-          <h1 className="font-heading text-3xl md:text-4xl font-black uppercase">
+          <h1 className="font-heading text-3xl md:text-4xl font-black uppercase flex-1">
             Citizen Profile
           </h1>
+          <Link
+            href="/dashboard/profile"
+            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-secondary text-secondary hover:bg-secondary/10 rounded transition-colors font-bold uppercase text-sm"
+          >
+            <Settings className="w-4 h-4" />
+            Edit Profile
+          </Link>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div className="brutal-panel panel-surface p-8 md:col-span-1">
             <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-primary flex items-center justify-center bg-primary/10">
-                <User className="w-10 h-10 text-primary" />
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-primary overflow-hidden flex items-center justify-center bg-primary/10">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-10 h-10 text-primary" />
+                )}
               </div>
               <div className="font-heading text-xl font-black text-primary mb-1">
-                {userEmail ? userEmail.split("@")[0] : "Citizen"}
+                {displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")}
               </div>
               {userEmail && (
                 <div className="flex items-center justify-center gap-2 text-xs font-mono surface-muted mb-4">
