@@ -306,7 +306,7 @@ function ReportPageContent() {
 					if (triageRes.ok) {
 						const triageData = await triageRes.json();
 						if (triageData.has_concern) {
-							setTriageIndicators(triageData.indicators.map((i: any) => i.label || i.type));
+							setTriageIndicators(triageData.indicators.map((i: { label?: string; type?: string }) => i.label || i.type));
 							setIsModalOpen(true);
 							setIsSubmitting(false);
 							setIsTriaging(false);
