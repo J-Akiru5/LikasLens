@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import NextImage from "next/image";
 import { createClient } from "@/utils/supabase/client";
-import { Camera, MapPin, Fingerprint, RefreshCw } from "lucide-react";
+import { Camera, MapPin, Fingerprint, RefreshCw, Activity } from "lucide-react";
 import { useCamera } from "@/hooks/useCamera";
 import { ToastContainer, showToast } from "@/components/ui/toast";
+import { motion, AnimatePresence } from "framer-motion";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 
 export default function ReportPage() {
@@ -18,6 +19,9 @@ export default function ReportPage() {
 	const [showEdgeInterceptor, setShowEdgeInterceptor] = useState(false);
 	const [riskIndicators, setRiskIndicators] = useState<string[]>([]);
 	const pendingPayloadRef = useRef<Record<string, unknown> | null>(null);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isTriaging, setIsTriaging] = useState(false);
+	const [triageIndicators, setTriageIndicators] = useState<string[]>([]);
 	const offlineQueueKey = "likaslens_offline_reports";
 	const offlineDbName = "likaslens-offline";
 	const offlineStoreName = "report-queue";
@@ -208,6 +212,12 @@ export default function ReportPage() {
 		camera.stop();
 	};
 
+	// Sync local Ghost Mode with global theme
+	useEffect(() => {
+		const themeValue = isGhostMode ? "ghost" : "civic";
+		document.documentElement.setAttribute("data-theme", themeValue);
+	}, [isGhostMode]);
+
 	const submitReport = async (payload: Record<string, unknown>, ghostRetry = false) => {
 		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
 
@@ -218,7 +228,10 @@ export default function ReportPage() {
 
 		if (!navigator.onLine) {
 			await queueOfflineReport(payload);
-			showToast("You are offline. Report queued securely and will sync when connection is restored.", "info");
+			showToast(
+				"You are offline. Report queued securely and will sync when connection is restored.",
+				"info"
+			);
 			setIsSubmitting(false);
 			return;
 		}
@@ -261,6 +274,59 @@ export default function ReportPage() {
 		}
 	};
 
+	const finalizeSubmission = async (cleanedImage: string) => {
+		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+
+		let userId: string | undefined = undefined;
+		if (!isGhostMode) {
+			try {
+				const supabase = createClient();
+				const { data: { user } } = await supabase.auth.getUser();
+				userId = user?.id;
+			} catch {
+				// continue anonymously
+			}
+		}
+
+		const payload: Record<string, unknown> = {
+			base64Image: cleanedImage,
+			latitude,
+			longitude,
+		};
+
+		if (!isGhostMode && userId) {
+			payload["user_id"] = userId;
+		}
+
+		if (!navigator.onLine) {
+			await queueOfflineReport(payload);
+			showToast(
+				"You are offline. Report queued securely and will sync when connection is restored.",
+				"info"
+			);
+			setIsSubmitting(false);
+			return;
+		}
+
+		const response = await fetch(`${laravelUrl}/api/reports`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify(payload),
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json().catch(() => ({}));
+			throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+		}
+
+		const responseData = await response.json();
+		showToast(responseData.message || "Report submitted successfully!", "success");
+		clearForm();
+	};
+
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setIsSubmitting(true);
@@ -268,24 +334,29 @@ export default function ReportPage() {
 		try {
 			const cleanedImage = await stripExif(base64Image);
 
-			let userId: string | undefined = undefined;
-			if (!isGhostMode) {
-				try {
-					const supabase = createClient();
-					const { data: { user } } = await supabase.auth.getUser();
-					userId = user?.id;
-				} catch {
-					// continue anonymously
+			const payload = await (async () => {
+				let userId: string | undefined = undefined;
+				if (!isGhostMode) {
+					try {
+						const supabase = createClient();
+						const { data: { user } } = await supabase.auth.getUser();
+						userId = user?.id;
+					} catch {
+						// continue anonymously
+					}
 				}
-			}
 
-			const payload: Record<string, unknown> = {
-				base64Image: cleanedImage,
-				latitude,
-				longitude,
-			};
+				const p: Record<string, unknown> = {
+					base64Image: cleanedImage,
+					latitude,
+					longitude,
+				};
 
-			if (!isGhostMode && userId) {
+				if (!isGhostMode && userId) {
+					p["user_id"] = userId;
+				}
+				return p;
+			})();
 				payload["user_id"] = userId;
 			}
 
@@ -298,6 +369,33 @@ export default function ReportPage() {
 				setShowEdgeInterceptor(true);
 				setIsSubmitting(false);
 				return;
+			}
+
+			// Triage pre-check via backend
+			const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+			if (!isGhostMode && navigator.onLine) {
+				setIsTriaging(true);
+				try {
+					const triageRes = await fetch(`${laravelUrl}/api/reports/triage`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ base64Image: cleanedImage }),
+					});
+					if (triageRes.ok) {
+						const triageData = await triageRes.json();
+						if (triageData.has_concern) {
+							setTriageIndicators(triageData.indicators.map((i: any) => i.label || i.type));
+							setIsModalOpen(true);
+							setIsSubmitting(false);
+							setIsTriaging(false);
+							return;
+						}
+					}
+				} catch (err) {
+					console.error("Triage pre-check failed:", err);
+				} finally {
+					setIsTriaging(false);
+				}
 			}
 
 			const responseData = await submitReport(payload);
@@ -350,13 +448,24 @@ export default function ReportPage() {
 				isLoading={isSubmitting}
 				indicators={riskIndicators}
 			/>
-
-			<main className={`min-h-screen font-body transition-colors duration-700 ${
+			<EdgeInterceptorModal
+				isOpen={isModalOpen}
+				isLoading={isSubmitting}
+				onCancel={() => setIsModalOpen(false)}
+				onProceed={async () => {
+					setIsGhostMode(true);
+					setIsSubmitting(true);
+					const cleaned = await stripExif(base64Image);
+					await finalizeSubmission(cleaned);
+					setIsModalOpen(false);
+				}}
+			/>
+			<main className={`min-h-screen font-body transition-all duration-700 ${
 				isGhostMode
 					? "bg-[#081c15]"
 					: "bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10"
 			}`}>
-				<div className="max-w-2xl mx-auto p-6">
+				<div className="max-w-2xl mx-auto p-4 sm:p-6">
 					<div className="mb-8">
 						<div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary mb-4 bg-background/50 rounded">
 							<span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
@@ -364,23 +473,33 @@ export default function ReportPage() {
 								Report an Issue
 							</span>
 						</div>
-						<h1 className="font-heading text-5xl md:text-6xl font-black uppercase tracking-tight text-primary mb-2">
+						<h1 className="font-heading text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-primary mb-2">
 							Document the Problem
 						</h1>
-						<p className="text-lg text-foreground/80 font-semibold">
+						<p className="text-base sm:text-lg text-foreground/80 font-semibold">
 							Your evidence helps protect our earth. Every photo, every detail counts.
 						</p>
 					</div>
 
+					{!isOnline && (
+						<div className="mb-4 p-3 border-2 border-accent bg-accent/10 text-accent font-mono text-xs font-bold rounded flex items-center gap-2">
+							<span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+							Offline — reports will queue until connection returns.
+						</div>
+					)}
+
 					<form onSubmit={handleSubmit} className="space-y-6">
-						<div className="brutal-panel panel-surface border-4 border-primary p-8">
+						<motion.div
+							initial={{ opacity: 0, x: -20 }}
+							animate={{ opacity: 1, x: 0 }}
+							className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8"
+						>
 							<div className="flex items-center gap-3 mb-6">
 								<Camera className="w-6 h-6 text-secondary" />
 								<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
 									Evidence Photo
 								</h2>
 							</div>
-
 							{base64Image ? (
 								<div className="bionic-frame p-6 bg-background/40 backdrop-blur-md border-2 border-primary rounded-lg">
 									<NextImage
@@ -448,16 +567,21 @@ export default function ReportPage() {
 									</div>
 								</div>
 							)}
-						</div>
+						</motion.div>
 
-						<div className="brutal-panel panel-surface border-4 border-primary p-8">
+						<motion.div
+							initial={{ opacity: 0, x: 20 }}
+							animate={{ opacity: 1, x: 0 }}
+							transition={{ delay: 0.1 }}
+							className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8"
+						>
 							<div className="flex items-center gap-3 mb-6">
 								<MapPin className="w-6 h-6 text-secondary" />
 								<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
 									Location Data
 								</h2>
 							</div>
-							<div className="grid grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 								<div className="bionic-frame p-4 border-2 border-primary bg-background/50 rounded">
 									<p className="text-xs font-mono font-bold text-primary/70 uppercase mb-2">Latitude</p>
 									<p className="text-2xl font-mono font-bold text-primary">
@@ -471,9 +595,9 @@ export default function ReportPage() {
 									</p>
 								</div>
 							</div>
-						</div>
+						</motion.div>
 
-						<div className={`brutal-panel border-4 p-8 transition-colors duration-500 ${
+						<div className={`brutal-panel border-4 p-4 sm:p-8 transition-colors duration-500 ${
 							isGhostMode
 								? "border-accent bg-[#081c15]/80 shadow-[8px_8px_0px_#ffb703]"
 								: "panel-surface border-primary shadow-[8px_8px_0px_#1b4332]"
@@ -492,7 +616,7 @@ export default function ReportPage() {
 										</p>
 									</div>
 								</div>
-								<label className="inline-flex items-center">
+								<label className="inline-flex items-center" aria-label="Toggle Ghost Mode">
 									<input
 										type="checkbox"
 										checked={isGhostMode}
@@ -507,11 +631,11 @@ export default function ReportPage() {
 							</div>
 						</div>
 
-						<div className="grid grid-cols-2 gap-4">
+						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							<button
 								type="button"
 								onClick={clearForm}
-								className="brutal-panel px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-accent text-accent hover:bg-accent/5"
+								className="brutal-panel px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-accent text-accent hover:bg-accent/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
 							>
 								Clear Form
 							</button>
@@ -519,9 +643,9 @@ export default function ReportPage() {
 
 						<button
 							type="submit"
-							disabled={isSubmitting || !base64Image || latitude === null || longitude === null}
-							className={`w-full brutal-button px-8 py-4 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 flex items-center justify-center gap-3 ${
-								isSubmitting || !base64Image || latitude === null || longitude === null
+							disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
+							className={`w-full brutal-button px-8 py-4 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
+								isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null
 									? "border-foreground/30 bg-foreground/10 text-foreground/40 cursor-not-allowed"
 									: "border-primary bg-primary text-background hover:shadow-[6px_6px_0px_#1b4332]"
 							}`}
@@ -531,14 +655,38 @@ export default function ReportPage() {
 									<RefreshCw className="w-5 h-5 animate-spin" />
 									Submitting...
 								</>
+							) : isTriaging ? (
+								<>
+									<Activity className="w-5 h-5 animate-pulse" />
+									Analyzing...
+								</>
 							) : (
 								"Submit Report"
 							)}
 						</button>
 					</form>
+
+					{process.env.NODE_ENV === "development" && (
+						<div className="mt-8 brutal-panel panel-surface border-2 border-primary/20 p-4">
+							<h3 className="text-xs font-mono font-bold text-primary/60 uppercase mb-2">Debug Info</h3>
+							<pre className="text-xs bg-background/50 p-3 rounded border border-primary/20 overflow-auto max-h-40 font-mono text-foreground/70">
+								{JSON.stringify(
+									{
+										imageLength: base64Image.length,
+										latitude,
+										longitude,
+										isSubmitting,
+										isGhostMode,
+										laravelUrl: process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000",
+									},
+									null,
+									2
+								)}
+							</pre>
+						</div>
+					)}
 				</div>
 			</main>
-
 			<canvas ref={canvasRef} className="hidden" aria-hidden="true" />
 		</>
 	);
