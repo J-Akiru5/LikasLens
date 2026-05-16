@@ -16,6 +16,7 @@ export default function ReportPage() {
 	const [isGhostMode, setIsGhostMode] = useState(false);
 	const [isOnline, setIsOnline] = useState(true);
 	const [showEdgeInterceptor, setShowEdgeInterceptor] = useState(false);
+	const [riskIndicators, setRiskIndicators] = useState<string[]>([]);
 	const pendingPayloadRef = useRef<Record<string, unknown> | null>(null);
 	const offlineQueueKey = "likaslens_offline_reports";
 	const offlineDbName = "likaslens-offline";
@@ -239,19 +240,24 @@ export default function ReportPage() {
 		return response.json();
 	};
 
-	const checkRiskWithAI = async (imageBase64: string): Promise<{ highRisk: boolean }> => {
+	const checkRiskWithAI = async (imageBase64: string): Promise<{ hasConcern: boolean; indicators: string[] }> => {
 		try {
 			const aiUrl = process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:8001";
-			const response = await fetch(`${aiUrl}/classify`, {
+			const response = await fetch(`${aiUrl}/analyze/base64`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ image: imageBase64 }),
+				body: JSON.stringify({ image: imageBase64, confidence: 0.25 }),
 			});
-			if (!response.ok) return { highRisk: false };
+			if (!response.ok) return { hasConcern: false, indicators: [] };
 			const data = await response.json();
-			return { highRisk: data.highRisk === true || data.risk_level === "high" };
+			const assessment = data?.analysis?.environmental_assessment;
+			const hasConcern = assessment?.has_environmental_concern === true;
+			const indicators: string[] = (assessment?.indicators ?? []).map(
+				(i: { label: string }) => i.label
+			);
+			return { hasConcern, indicators };
 		} catch {
-			return { highRisk: false };
+			return { hasConcern: false, indicators: [] };
 		}
 	};
 
@@ -285,9 +291,10 @@ export default function ReportPage() {
 
 			showToast("Analyzing submission...", "loading");
 
-			const { highRisk } = await checkRiskWithAI(cleanedImage);
-			if (highRisk) {
+			const { hasConcern, indicators } = await checkRiskWithAI(cleanedImage);
+			if (hasConcern) {
 				pendingPayloadRef.current = payload;
+				setRiskIndicators(indicators);
 				setShowEdgeInterceptor(true);
 				setIsSubmitting(false);
 				return;
@@ -308,6 +315,7 @@ export default function ReportPage() {
 
 	const handleEdgeProceed = async () => {
 		setShowEdgeInterceptor(false);
+		setRiskIndicators([]);
 		const payload = pendingPayloadRef.current;
 		if (!payload) return;
 
@@ -335,10 +343,12 @@ export default function ReportPage() {
 				isOpen={showEdgeInterceptor}
 				onCancel={() => {
 					setShowEdgeInterceptor(false);
+					setRiskIndicators([]);
 					pendingPayloadRef.current = null;
 				}}
 				onProceed={handleEdgeProceed}
 				isLoading={isSubmitting}
+				indicators={riskIndicators}
 			/>
 
 			<main className={`min-h-screen font-body transition-colors duration-700 ${

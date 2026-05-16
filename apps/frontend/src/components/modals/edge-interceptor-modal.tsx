@@ -9,6 +9,7 @@ interface EdgeInterceptorModalProps {
   onCancel: () => void;
   onProceed: () => void;
   isLoading?: boolean;
+  indicators?: string[];
 }
 
 export function EdgeInterceptorModal({
@@ -16,6 +17,7 @@ export function EdgeInterceptorModal({
   onCancel,
   onProceed,
   isLoading = false,
+  indicators = [],
 }: EdgeInterceptorModalProps) {
   // Handle keyboard navigation
   useEffect(() => {
@@ -87,6 +89,18 @@ export function EdgeInterceptorModal({
                       Our AI has flagged this submission as potentially dangerous to you or others. 
                       This might involve illegal logging, dangerous criminals, or high-risk environmental crimes.
                     </p>
+                    {indicators.length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {indicators.map((label, i) => (
+                          <span
+                            key={i}
+                            className="inline-block px-3 py-1 text-xs font-mono font-bold uppercase tracking-widest border border-accent bg-accent/10 text-accent rounded"
+                          >
+                            {label}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
