@@ -10,7 +10,6 @@ export async function middleware(request: NextRequest) {
     loginUrl.searchParams.set("error", "Please sign in to continue.");
     return NextResponse.redirect(loginUrl);
   }
-
   return response;
 }
 
