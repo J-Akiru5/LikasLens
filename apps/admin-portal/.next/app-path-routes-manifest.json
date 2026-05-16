@@ -1,0 +1,15 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/analytics/page": "/analytics",
+  "/audit-logs/page": "/audit-logs",
+  "/dashboard/page": "/dashboard",
+  "/laws/page": "/laws",
+  "/login/page": "/login",
+  "/ngos/page": "/ngos",
+  "/page": "/",
+  "/rewards/page": "/rewards",
+  "/settings/page": "/settings",
+  "/tickets/page": "/tickets",
+  "/users/page": "/users"
+}
