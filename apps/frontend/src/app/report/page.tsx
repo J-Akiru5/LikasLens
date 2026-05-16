@@ -346,7 +346,7 @@ export default function ReportPage() {
 					? "bg-[#081c15]"
 					: "bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10"
 			}`}>
-				<div className="max-w-2xl mx-auto p-6">
+				<div className="max-w-2xl mx-auto p-4 sm:p-6">
 					<div className="mb-8">
 						<div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary mb-4 bg-background/50 rounded">
 							<span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
@@ -354,7 +354,16 @@ export default function ReportPage() {
 								Report an Issue
 							</span>
 						</div>
-						<h1 className="font-heading text-5xl md:text-6xl font-black uppercase tracking-tight text-primary mb-2">
+
+						{/* Offline indicator */}
+						{!isOnline && (
+							<div className="mb-4 p-3 border-2 border-accent bg-accent/10 text-accent font-mono text-xs font-bold rounded flex items-center gap-2">
+								<span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+								Offline — reports will queue until connection returns.
+							</div>
+						)}
+
+						<h1 className="font-heading text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-primary mb-2">
 							Document the Problem
 						</h1>
 						<p className="text-lg text-foreground/80 font-semibold">
@@ -447,7 +456,7 @@ export default function ReportPage() {
 									Location Data
 								</h2>
 							</div>
-							<div className="grid grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 								<div className="bionic-frame p-4 border-2 border-primary bg-background/50 rounded">
 									<p className="text-xs font-mono font-bold text-primary/70 uppercase mb-2">Latitude</p>
 									<p className="text-2xl font-mono font-bold text-primary">
@@ -482,7 +491,7 @@ export default function ReportPage() {
 										</p>
 									</div>
 								</div>
-								<label className="inline-flex items-center">
+								<label className="inline-flex items-center" aria-label="Toggle Ghost Mode">
 									<input
 										type="checkbox"
 										checked={isGhostMode}

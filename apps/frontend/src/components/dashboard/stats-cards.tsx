@@ -18,7 +18,6 @@ export function StatsCards() {
   const activeIncidents = incidentsData.filter(
     (i) => i.stat !== "Resolved"
   ).length;
-  const totalIncidents = incidentsData.length;
   const activeProgress = (activeIncidents / 200) * 100; // Out of 200 max capacity
 
   const resolvedToday = incidentsData.filter((i) => i.stat === "Resolved").length;
@@ -127,21 +126,28 @@ export function StatsCards() {
               </div>
             </div>
 
-            <div className="mb-2">
-              <div className="text-xs font-mono text-foreground/50 mb-2">{stat.description}</div>
-              <div className="w-full h-5 bg-foreground/10 rounded overflow-hidden relative z-10 border-2 border-foreground/30">
-                <div
-                  className={`h-full transition-all duration-500 ease-out ${
-                    stat.progressColor === 'bg-secondary' ? 'bg-[#2de1c2]' : 
-                    stat.progressColor === 'bg-accent' ? 'bg-[#ffb703]' :
-                    'bg-[#1B4332]'
-                  } shadow-[0_0_12px_var(--progress-glow),inset_0_0_4px_rgba(255,255,255,0.2)]`}
-                  style={{ 
-                    width: `${Math.min(stat.progress, 100)}%`,
-                    '--progress-glow': stat.progressColor === 'bg-secondary' ? 'rgba(45,225,194,1)' : 'rgba(255,183,3,1)'
-                  } as React.CSSProperties}
-                />
-              </div>
+              <div className="mb-2">
+                  <div className="text-xs font-mono text-foreground/50 mb-2">{stat.description}</div>
+                  <div
+                    className="w-full h-5 bg-foreground/10 rounded overflow-hidden relative z-10 border-2 border-foreground/30"
+                    role="progressbar"
+                    aria-valuenow={Math.round(stat.progress)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`${stat.label}: ${Math.round(stat.progress)}%`}
+                  >
+                    <div
+                      className={`h-full transition-all duration-500 ease-out ${
+                        stat.progressColor === 'bg-secondary' ? 'bg-[#2de1c2]' : 
+                        stat.progressColor === 'bg-accent' ? 'bg-[#ffb703]' :
+                        'bg-[#1B4332]'
+                      } shadow-[0_0_12px_var(--progress-glow),inset_0_0_4px_rgba(255,255,255,0.2)]`}
+                      style={{ 
+                        width: `${Math.min(stat.progress, 100)}%`,
+                        '--progress-glow': stat.progressColor === 'bg-secondary' ? 'rgba(45,225,194,1)' : 'rgba(255,183,3,1)'
+                      } as React.CSSProperties}
+                    />
+                  </div>
               <div className="flex justify-between text-xs font-mono text-foreground/60 mt-2 font-bold uppercase tracking-widest">
                 <span>{Math.round(stat.progress)}%</span>
                 <span>{stat.progress >= 100 ? "✓ Complete" : "In Progress"}</span>
