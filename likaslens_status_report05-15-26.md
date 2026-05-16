@@ -1,8 +1,8 @@
 # 🔍 LikasLens — Project Status Report & Work Breakdown
 
 **Generated:** May 15, 2026  
-**Last Updated:** May 16, 2026 — 09:10 PHT  
-**Branch:** `jeff-ProjectLead` → merged into `development` → merged into `main`  
+**Last Updated:** May 16, 2026 — 10:30 PHT  
+**Branch:** `jeff-ProjectLead` → merged into `development` → merged into `main` ✅  
 **Architecture:** Next.js (Frontend) → Laravel (Backend) → FastAPI (AI Service) → Supabase (DB) + Cosmos Gremlin (Graph)
 
 ---
@@ -11,9 +11,9 @@
 
 | Branch | Latest Commit | Synced With |
 |--------|--------------|-------------|
-| `main` | `335131d` | ✅ Up to date — clean reconstructed history |
-| `development` | `f8705df` | ✅ Up to date — contains merged PR #52 (ui-experiment) + recovery guides |
-| `jeff-ProjectLead` | `335131d` | ✅ Synced — zero zero with `main` |
+| `main` | `1995fdc` | ✅ Up to date — fast-forwarded from `development` (contains all merged branches) |
+| `development` | `1995fdc` | ✅ Up to date — merged `jeff-ProjectLead` (GeoTagMap, Dashboard API, Auth, etc.) |
+| `jeff-ProjectLead` | `4e14371` | ✅ Synced — content merged into `development` → `main` |
 | `ui-experiment` | `813223b` | ✅ **MERGED** — Integrated AI Triage, Modal, PDF Export & enhanced animations |
 | `charlyn-FE3` | `b8c1f33` | ✅ Merged via PR #49 + PR #55 into `development` |
 | `katherine-FE1` | `c66b021` | ⚠️ Behind — needs rebase onto `development` |
@@ -102,6 +102,42 @@ The `users` table has a `role` column (default: `'citizen'`). One policy exists 
 
 ---
 
+## 📌 Features Not in the Original Plan (Unplanned Additions)
+
+These features were built outside the scope of the original `ai-roadmap.md` sprint plan — originating from `jeff-ProjectLead`, `ui-experiment`, or pre-existing development work.
+
+### Frontend — Unplanned
+
+| Feature | Files | Origin | Notes |
+|---------|-------|--------|-------|
+| **Full Analytics Dashboard** (5 pages) | `dashboard/` pages + `stats-cards`, `activity-feed`, `quick-actions` components | `jeff-ProjectLead` | Roadmap only described a static landing page; this is a full command center with KPI cards, live feed, and incident management |
+| **GeoTagMap (Leaflet)** | `components/maps/geo-tag-map.tsx` | `jeff-ProjectLead` | Interactive map with draggable marker, Philippines-centered — beyond the "lat/long capture" in the roadmap |
+| **PDF Export System** | `hooks/usePdfExport.ts`, `utils/pdf-export.ts`, `lib/pdf-export-*`, 2 dashboard export components | `ui-experiment` | 7 source files + 4 documentation files — entirely unplanned |
+| **Profile Avatar Upload** | `components/profile/avatar-upload.tsx`, `utils/supabase/storage.ts` | `jeff-ProjectLead` | File validation, Supabase Storage upload — not in roadmap |
+| **Laravel API Client** | `utils/laravel-api.ts` | `jeff-ProjectLead` | Typed fetch wrapper with auto-token injection — roadmap assumed ad-hoc fetch calls |
+| **Layout Components** (Sidebar, Header, UserNav) | `components/layout/` | `ui-experiment` | Roadmap only mentioned sidebar as a future RBAC task; full responsive layout built |
+| **Supabase Utility Layer** | `utils/supabase/client.ts`, `server.ts`, `config.ts`, `middleware.ts` | pre-existing | Structured multi-file client/server/middleware layer — roadmap only said "connect SDK" |
+
+### Backend — Unplanned
+
+| Feature | Files | Origin | Notes |
+|---------|-------|--------|-------|
+| **AuthController** (Sanctum) | `Http/Controllers/AuthController.php` | `jeff-ProjectLead` | Full register/login/logout/sync bridging Supabase Auth with Laravel Sanctum tokens — roadmap described Supabase-only auth |
+| **DashboardController** | `Http/Controllers/DashboardController.php` | `jeff-ProjectLead` | Stats aggregation + activity feed endpoints — no dashboard API was planned |
+| **TicketController** | `Http/Controllers/TicketController.php` | `jeff-ProjectLead` | Paginated listing with search/filter — roadmap only planned `TicketAssignmentController` for analysts |
+| **LikasLensSeeder** | `database/seeders/LikasLensSeeder.php` | `jeff-ProjectLead` | Multi-role test data seeder (4 roles, sample tickets/evidence) — not in original plan |
+
+### Infrastructure / Docs — Unplanned
+
+| Feature | Details | Origin |
+|---------|---------|--------|
+| **PWA Config** | `next-pwa` runtime caching, `manifest.json` with maskable icons, 6 icon variants | pre-existing |
+| **Recovery & Fix Documentation** | 12+ markdown files: `BACKEND_RECOVERY.md`, `GIT_MERGE_FIX.md`, `ISSUES_AND_RESOLUTION.md`, etc. | development |
+| **GitHub Agents & Skills** | `.github/agents/` (3 agent specs), `.github/skills/` (40+ skill definitions) | development |
+| **Utility Scripts** | `fix-backend.bat`, `clean-install.bat`, `clean-install.sh` | development |
+
+---
+
 ## ✅ What's Built & Working
 
 ### Backend (`apps/backend`) — Laravel 12
@@ -125,6 +161,10 @@ The `users` table has a `role` column (default: `'citizen'`). One policy exists 
 | LeaderboardTest | [LeaderboardTest](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/backend/tests/Feature/LeaderboardTest.php) | ✅ Complete |
 | Dockerfile for Azure Container Apps | [Dockerfile](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/backend/Dockerfile) | ✅ PHP 8.2-cli + Composer |
 | AWS S3 SDK (for Supabase S3 compat) | [composer.json](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/backend/composer.json) | ✅ Complete |
+| AuthController (Sanctum register/login/logout/sync) | [AuthController.php](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/backend/app/Http/Controllers/AuthController.php) | ✅ **NEW** — bridges Supabase Auth with Laravel users |
+| DashboardController (stats + activity feed endpoints) | [DashboardController.php](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/backend/app/Http/Controllers/DashboardController.php) | ✅ **NEW** — from `jeff-ProjectLead` |
+| TicketController (paginated listing with search/filter) | [TicketController.php](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/backend/app/Http/Controllers/TicketController.php) | ✅ **NEW** — from `jeff-ProjectLead` |
+| LikasLensSeeder (multi-role test data) | [LikasLensSeeder.php](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/backend/database/seeders/LikasLensSeeder.php) | ✅ **NEW** — seeds 4 roles + sample tickets/evidence |
 
 ### Frontend (`apps/frontend`) — Next.js 14 + Tailwind
 
@@ -149,6 +189,10 @@ The `users` table has a `role` column (default: `'citizen'`). One policy exists 
 | Middleware — route protection | [middleware.ts](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/frontend/src/middleware.ts) | ✅ Protects `/dashboard` and `/report` — Supabase session check |
 | PDF Export utility | [pdf-export.ts](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/frontend/src/utils/pdf-export.ts) | ✅ **NEW** |
 | PDF Export hook | [usePdfExport.ts](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/frontend/src/hooks/usePdfExport.ts) | ✅ **NEW** |
+| GeoTagMap (Leaflet interactive map with draggable marker) | [geo-tag-map.tsx](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/frontend/src/components/maps/geo-tag-map.tsx) | ✅ **NEW** — from `jeff-ProjectLead` |
+| Profile avatar upload (file validation + Supabase Storage) | [avatar-upload.tsx](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/frontend/src/components/profile/avatar-upload.tsx) | ✅ **NEW** — from `jeff-ProjectLead` |
+| Supabase Storage utility (profile images) | [storage.ts](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/frontend/src/utils/supabase/storage.ts) | ✅ **NEW** |
+| Laravel API client (typed fetch wrapper) | [laravel-api.ts](file:///s:/Dev/Laravel/LikasLens/likaslens/apps/frontend/src/utils/laravel-api.ts) | ✅ **NEW** |
 
 ### AI Service (`apps/ai-service`) — FastAPI + Python
 
@@ -259,6 +303,14 @@ The `ai-roadmap.md` file is **outdated** in several areas. Here are corrections 
 | Sprint 3, FE3: Edge Interceptor wiring | "needs trigger from triage response" | ✅ **DONE** — `handleSubmit()` calls triage, intercepts on `has_concern: true` |
 | Sprint 2 Progress | "~50% COMPLETE" | Should be **~85% COMPLETE** |
 | Sprint 3 Progress | "~40% COMPLETE" | Should be **~85% COMPLETE** |
+| Sprint 4 Feature: PWA | "Installable on phones" (generically) | **MORE THAN PLANNED** — `next-pwa`, `manifest.json`, maskable icons, runtime caching all implemented |
+| Backend: Auth | Not mentioned in Sprint 4 | **UNPLANNED** — `AuthController.php` with Sanctum register/login/logout/sync endpoints |
+| Backend: Dashboard API | Not planned | **UNPLANNED** — `DashboardController.php` with `/api/dashboard/stats` and `/api/dashboard/feed` |
+| Backend: Ticket listing | Not planned | **UNPLANNED** — `TicketController.php` with paginated search/filter listing |
+| Frontend: Analytics Dashboard | "Static Home/Feed UI" only | **UNPLANNED** — 5 page dashboard suite with KPI cards, incidents manager, analytics/reports page |
+| Frontend: GeoTagMap | "Geolocation API integration" (lat/long capture) | **UNPLANNED** — Full Leaflet interactive map with draggable marker |
+| Frontend: Avatar Upload | Not planned | **UNPLANNED** — Profile avatar upload with Supabase Storage |
+| Frontend: Laravel API client | Not planned | **UNPLANNED** — Typed `laravelFetch<T>()` wrapper |
 
 ---
 
@@ -270,8 +322,9 @@ The team has made **excellent progress** since the initial roadmap. Sprint 2 and
 - Supabase fix: ~30 minutes (if project just needs resuming)
 - Sprint 1 completion: ~1 hour (runtime verification)
 - Sprint 2 completion: ✅ Effectively done (minor polish only)
-- Sprint 3 completion: ~2-3 hours (profile data endpoint)
+- Sprint 3 completion: ~2-3 hours (profile data endpoint — partially done via `jeff-ProjectLead` profile page but still needs live data hookup)
 - Sprint 4 completion: ~8-12 hours (Azure deployment + branch rebases + polish)
-- RBAC implementation: ~4-6 hours (middleware + controllers + frontend gating)
+- RBAC implementation: ~3-5 hours (middleware done; frontend gating + admin controller stubs remain)
+- **Unplanned feature integration:** ~2-4 hours (GeoTagMap wiring into report flow, PDF export documentation cleanup, dashboard analytics integration)
 
-**Total estimated time to demo-ready:** ~16-22 hours
+**Total estimated time to demo-ready:** ~16-24 hours
