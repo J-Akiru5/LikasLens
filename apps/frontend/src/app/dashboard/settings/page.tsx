@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/layout/sidebar";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
 import { ArrowLeft, Bell, Lock, Eye, ToggleRight } from "lucide-react";
 import Link from "next/link";
@@ -10,7 +11,8 @@ export default function SettingsPage() {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         <div className="smoke-overlay" />
         <AppHeader />
-        <main className="flex-1 overflow-y-auto p-6 relative z-10">
+        <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
+          <BottomNav />
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex items-center gap-3 mb-8">
               <Link

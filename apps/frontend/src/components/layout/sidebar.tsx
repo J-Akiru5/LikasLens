@@ -185,9 +185,9 @@ export function Sidebar() {
         aria-label={mobileOpen ? "Close sidebar menu" : "Open sidebar menu"}
         aria-expanded={mobileOpen}
         onClick={() => setMobileOpen((prev) => !prev)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 brutal-panel border-2 border-primary rounded-lg shadow-[3px_3px_0px_#1b4332] hover:bg-primary/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        className="lg:hidden fixed top-3 left-3 z-50 p-1.5 brutal-panel border-2 border-primary rounded-lg shadow-[2px_2px_0px_#1b4332] hover:bg-primary/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
       >
-        {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
       </button>
 
       {/* Desktop sidebar */}
