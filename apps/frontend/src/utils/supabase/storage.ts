@@ -60,7 +60,7 @@ export async function deleteProfileImage(userId: string): Promise<void> {
     .list(userId);
 
   if (files && files.length > 0) {
-    const paths = files.map((f) => `${userId}/${f.name}`);
+    const paths = files.map((f: { name: string }) => `${userId}/${f.name}`);
     await supabase.storage.from(PROFILE_BUCKET).remove(paths);
   }
 }

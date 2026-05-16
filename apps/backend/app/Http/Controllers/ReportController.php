@@ -94,7 +94,7 @@ class ReportController extends Controller
                 ]);
 
                 Report::create([
-                    'user_id' => $validated['user_id'] ?? null,
+                    'user_id' => $userId === $this->ensureGhostUser() ? null : $userId,
                     'latitude' => $validated['latitude'],
                     'longitude' => $validated['longitude'],
                     'image_path' => $storagePath,
