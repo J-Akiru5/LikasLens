@@ -5,7 +5,9 @@ import { Bell, Leaf, AlertTriangle, CheckCircle2, Info, X } from "lucide-react"
 import { UserNav } from "./user-nav"
 import { useEffect, useRef, useState } from "react"
 
-const MOCK_NOTIFICATIONS = [
+type NotificationType = "critical" | "resolved" | "info";
+
+const MOCK_NOTIFICATIONS: { id: string; type: NotificationType; title: string; desc: string; time: string }[] = [
   { id: "1", type: "critical", title: "Critical Incident Report", desc: "Illegal dumping detected near Riverside Drive", time: "2m ago" },
   { id: "2", type: "resolved", title: "Report Resolved", desc: "Water contamination at Lake View has been cleared", time: "15m ago" },
   { id: "3", type: "info", title: "Ghost Mode Active", desc: "Your anonymous report was successfully submitted", time: "1h ago" },
@@ -18,7 +20,7 @@ const NOTIFICATION_ICONS = {
   info: Info,
 };
 
-const NOTIFICATION_STYLES = {
+const NOTIFICATION_STYLES: Record<NotificationType, string> = {
   critical: "border-l-4 border-accent bg-accent/5",
   resolved: "border-l-4 border-secondary bg-secondary/5",
   info: "border-l-4 border-primary bg-primary/5",

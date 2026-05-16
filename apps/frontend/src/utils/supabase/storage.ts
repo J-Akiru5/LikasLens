@@ -98,15 +98,9 @@ export async function deleteProfileImage(userId: string): Promise<void> {
     .list(userId);
 
   if (files && files.length > 0) {
-    const paths = files.map((f) => `${userId}/${f.name}`);
+    const paths = files.map((f: { name: string }) => `${userId}/${f.name}`);
     await supabase.storage.from(PROFILE_BUCKET).remove(paths);
   }
 }
 
-export function getProfileImageUrl(userId: string): string {
-  const supabase = createClient();
-  const { data } = supabase.storage
-    .from(PROFILE_BUCKET)
-    .getPublicUrl(`${userId}/avatar.jpg`);
-  return data.publicUrl;
-}
+
