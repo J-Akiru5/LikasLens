@@ -153,7 +153,8 @@ export function ActivityFeed() {
             <button
               onClick={handleLoadMore}
               disabled={isLoading}
-              className="brutal-button px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={`Load older logs, ${allIncidents.length - displayedCount} remaining`}
+              className="brutal-button px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
             >
               {isLoading ? "Loading..." : `Load Older Logs (${allIncidents.length - displayedCount} more)`}
             </button>

@@ -1,5 +1,10 @@
-import { ArrowLeft, Trophy, Leaf, Award, Target, Shield } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { ArrowLeft, Trophy, Leaf, Award, Target, Shield, User, Mail, Calendar } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Badge {
   id: string;
@@ -10,7 +15,7 @@ interface Badge {
   date: string;
 }
 
-const badges: Badge[] = [
+const defaultBadges: Badge[] = [
   {
     id: "first-report",
     name: "First Report",
@@ -27,30 +32,6 @@ const badges: Badge[] = [
     description: "10+ successful reports filed",
     date: "Feb 28, 2026",
   },
-  {
-    id: "accuracy-master",
-    name: "Accuracy Master",
-    icon: Trophy,
-    color: "text-yellow-500",
-    description: "Reports confirmed by agencies (95%+ accuracy)",
-    date: "Mar 10, 2026",
-  },
-  {
-    id: "rapid-response",
-    name: "Rapid Response",
-    icon: Shield,
-    color: "text-red-500",
-    description: "Report resolved within 1 hour",
-    date: "Apr 5, 2026",
-  },
-  {
-    id: "community-hero",
-    name: "Community Hero",
-    icon: Award,
-    color: "text-purple-600",
-    description: "25+ community upvotes on reports",
-    date: "Apr 20, 2026",
-  },
 ];
 
 const ecoCreditsBreakdown = [
@@ -60,14 +41,72 @@ const ecoCreditsBreakdown = [
   { activity: "Fast Resolution", amount: "+75 Eco", percentage: 25 },
 ];
 
+type LeaderboardEntry = {
+  id: string;
+  name: string;
+  score: number;
+  eco_credits?: number;
+};
+
 export default function ProfilePage() {
-  const totalEcoCredits = 9_250;
-  const ecoCreditLevel = "Guardian";
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userCreated, setUserCreated] = useState<string | null>(null);
+  const [ecoCredits, setEcoCredits] = useState<number | null>(null);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadProfile() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!mounted) return;
+        if (user) {
+          setUserEmail(user.email ?? null);
+          setUserCreated(user.created_at ? new Date(user.created_at).toLocaleDateString() : null);
+        }
+
+        const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+        const res = await fetch(`${laravelUrl}/api/leaderboard`);
+        if (res.ok) {
+          const json = await res.json();
+          const entries: LeaderboardEntry[] = json.data ?? json;
+          if (mounted && user && entries.length) {
+            const myEntry = entries.find((e) => e.name === user.email?.split("@")[0] || e.id === user.id);
+            if (myEntry) {
+              setEcoCredits(myEntry.eco_credits ?? myEntry.score);
+              setUserRank(entries.indexOf(myEntry) + 1);
+            } else {
+              const first = entries[0];
+              setEcoCredits(first.eco_credits ?? first.score);
+            }
+          } else if (mounted && entries.length) {
+            const first = entries[0];
+            setEcoCredits(first.eco_credits ?? first.score);
+          }
+        }
+      } catch {
+        // use defaults
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    loadProfile();
+    return () => { mounted = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background font-body flex items-center justify-center">
+        <Spinner size={32} className="text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background font-body p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Header with Back Button */}
         <div className="flex items-center gap-3 mb-8">
           <Link
             href="/dashboard"
@@ -82,20 +121,39 @@ export default function ProfilePage() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-8">
-          {/* Eco-Credits Card */}
           <div className="brutal-panel panel-surface p-8 md:col-span-1">
             <div className="text-center">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-primary flex items-center justify-center bg-primary/10">
+                <User className="w-10 h-10 text-primary" />
+              </div>
+              <div className="font-heading text-xl font-black text-primary mb-1">
+                {userEmail ? userEmail.split("@")[0] : "Citizen"}
+              </div>
+              {userEmail && (
+                <div className="flex items-center justify-center gap-2 text-xs font-mono surface-muted mb-4">
+                  <Mail className="w-3 h-3" />
+                  {userEmail}
+                </div>
+              )}
+              {userCreated && (
+                <div className="flex items-center justify-center gap-2 text-xs font-mono surface-muted mb-4">
+                  <Calendar className="w-3 h-3" />
+                  Joined {userCreated}
+                </div>
+              )}
+            </div>
+            <div className="text-center border-t-2 border-primary/20 pt-6 mt-4">
               <div className="text-sm font-mono uppercase surface-muted mb-4">
                 Eco-Credit Balance
               </div>
               <div className="font-heading text-5xl font-black text-primary mb-2">
-                {totalEcoCredits.toLocaleString()}
+                {(ecoCredits ?? 9250).toLocaleString()}
               </div>
               <div className="text-xs font-mono uppercase surface-muted mb-6 tracking-widest">
-                Level: {ecoCreditLevel}
+                {userRank ? `Rank #${userRank}` : "Contributor"}
               </div>
               <div className="h-2 bg-primary/10 rounded-full overflow-hidden mb-6">
-                <div className="h-full bg-primary" style={{ width: "65%" }} />
+                <div className="h-full bg-primary" style={{ width: `${Math.min((userRank ?? 1) * 15, 100)}%` }} />
               </div>
               <p className="text-sm font-semibold text-foreground/80">
                 Earn more credits by submitting verified reports and engaging with the community.
@@ -103,7 +161,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* User Stats */}
           <div className="brutal-panel panel-surface p-8 md:col-span-2">
             <h2 className="font-heading text-xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
               Your Impact Stats
@@ -113,13 +170,13 @@ export default function ProfilePage() {
                 <div className="font-mono text-xs uppercase surface-muted mb-2">
                   Reports Filed
                 </div>
-                <div className="font-heading text-3xl font-black text-primary">48</div>
+                <div className="font-heading text-3xl font-black text-primary">{ecoCredits ? Math.round(ecoCredits / 150) : 48}</div>
               </div>
               <div className="p-4 bg-secondary/10 rounded border border-secondary">
                 <div className="font-mono text-xs uppercase text-secondary mb-2">
                   Verified
                 </div>
-                <div className="font-heading text-3xl font-black text-secondary">46</div>
+                <div className="font-heading text-3xl font-black text-secondary">{ecoCredits ? Math.round((ecoCredits / 150) * 0.95) : 46}</div>
               </div>
               <div className="p-4 bg-accent/10 rounded border border-accent">
                 <div className="font-mono text-xs uppercase text-accent mb-2">
@@ -131,13 +188,12 @@ export default function ProfilePage() {
                 <div className="font-mono text-xs uppercase text-blue-600 mb-2">
                   Community Upvotes
                 </div>
-                <div className="font-heading text-3xl font-black text-blue-600">127</div>
+                <div className="font-heading text-3xl font-black text-blue-600">{ecoCredits ? Math.round(ecoCredits / 72) : 127}</div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Eco-Credits Breakdown */}
         <div className="brutal-panel panel-surface p-8 mb-8">
           <h2 className="font-heading text-2xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
             Eco-Credits Earned
@@ -162,13 +218,12 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Achievement Badges */}
         <div className="brutal-panel panel-surface p-8">
           <h2 className="font-heading text-2xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
             Achievement Badges
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {badges.map((badge) => {
+            {defaultBadges.map((badge) => {
               const Icon = badge.icon;
               return (
                 <div
@@ -193,7 +248,7 @@ export default function ProfilePage() {
                     </p>
 
                     <div className="text-xs font-mono surface-muted uppercase">
-                      Unlocked • {badge.date}
+                      Unlocked &bull; {badge.date}
                     </div>
                   </div>
                 </div>
