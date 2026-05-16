@@ -19,6 +19,9 @@ export default function ReportPage() {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [isTriaging, setIsTriaging] = useState(false);
 	const [triageIndicators, setTriageIndicators] = useState<string[]>([]);
+	const [showManualCoords, setShowManualCoords] = useState(false);
+	const [manualLat, setManualLat] = useState("");
+	const [manualLng, setManualLng] = useState("");
 
 	const offlineQueueKey = "likaslens_offline_reports";
 	const offlineDbName = "likaslens-offline";
@@ -202,10 +205,13 @@ export default function ReportPage() {
 					setLongitude(position.coords.longitude);
 				},
 				() => {
-					showToast("Could not get GPS location. You can enter coordinates manually.", "info");
+					setShowManualCoords(true);
+					showToast("Could not get GPS location. Enter coordinates manually below.", "info");
 				},
 				{ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
 			);
+		} else {
+			setShowManualCoords(true);
 		}
 	}, [camera]);
 
@@ -213,6 +219,11 @@ export default function ReportPage() {
 		setBase64Image("");
 		setLatitude(null);
 		setLongitude(null);
+		setShowManualCoords(false);
+		setManualLat("");
+		setManualLng("");
+		setTriageIndicators([]);
+		setIsModalOpen(false);
 		camera.stop();
 	};
 
@@ -324,6 +335,7 @@ export default function ReportPage() {
 			<EdgeInterceptorModal 
 				isOpen={isModalOpen}
 				isLoading={isSubmitting}
+				indicators={triageIndicators}
 				onCancel={() => setIsModalOpen(false)}
 				onProceed={async () => {
 					setIsGhostMode(true);
@@ -468,14 +480,51 @@ export default function ReportPage() {
 									<p className="text-2xl font-mono font-bold text-primary">
 										{latitude?.toFixed(6) ?? "—"}
 									</p>
+									{showManualCoords && (
+										<input
+											type="number"
+											step="any"
+											placeholder="e.g. 11.7053"
+											value={manualLat}
+											onChange={(e) => {
+												setManualLat(e.target.value);
+												const val = parseFloat(e.target.value);
+												if (!isNaN(val) && val >= -90 && val <= 90) setLatitude(val);
+											}}
+											className="w-full mt-2 brutal-panel theme-input px-3 py-2 rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
+										/>
+									)}
 								</div>
 								<div className="bionic-frame p-4 border-2 border-primary bg-background/50 rounded">
 									<p className="text-xs font-mono font-bold text-primary/70 uppercase mb-2">Longitude</p>
 									<p className="text-2xl font-mono font-bold text-primary">
 										{longitude?.toFixed(6) ?? "—"}
 									</p>
+									{showManualCoords && (
+										<input
+											type="number"
+											step="any"
+											placeholder="e.g. 122.2970"
+											value={manualLng}
+											onChange={(e) => {
+												setManualLng(e.target.value);
+												const val = parseFloat(e.target.value);
+												if (!isNaN(val) && val >= -180 && val <= 180) setLongitude(val);
+											}}
+											className="w-full mt-2 brutal-panel theme-input px-3 py-2 rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
+										/>
+									)}
 								</div>
 							</div>
+							{!showManualCoords && (
+								<button
+									type="button"
+									onClick={() => setShowManualCoords(true)}
+									className="mt-4 text-xs font-mono font-bold uppercase tracking-wider text-secondary hover:underline"
+								>
+									Enter coordinates manually
+								</button>
+							)}
 						</motion.div>
 
 						{/* Ghost Mode Toggle */}

@@ -20,6 +20,30 @@ export function validateProfileImage(file: File): string | null {
   return null;
 }
 
+function stripExifFromFile(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { resolve(file); return; }
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(url);
+          if (blob) resolve(blob);
+          else resolve(file);
+        }, file.type, 0.92);
+      } catch { URL.revokeObjectURL(url); resolve(file); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 export async function uploadProfileImage(
   userId: string,
   file: File
@@ -27,13 +51,14 @@ export async function uploadProfileImage(
   const validationError = validateProfileImage(file);
   if (validationError) return { success: false, error: validationError };
 
+  const cleanedBlob = await stripExifFromFile(file);
   const ext = file.name.split(".").pop() || "jpg";
   const filePath = `${userId}/avatar.${ext}`;
 
   const supabase = createClient();
   const { data, error } = await supabase.storage
     .from(PROFILE_BUCKET)
-    .upload(filePath, file, { upsert: true, contentType: file.type });
+    .upload(filePath, cleanedBlob, { upsert: true, contentType: file.type });
 
   if (error) {
     if (error.message.includes("bucket")) {
@@ -51,6 +76,19 @@ export async function uploadProfileImage(
   } = supabase.storage.from(PROFILE_BUCKET).getPublicUrl(data.path);
 
   return { success: true, url: publicUrl, path: data.path };
+}
+
+export async function getProfileImageUrl(userId: string): Promise<string | null> {
+  const supabase = createClient();
+  const { data: files } = await supabase.storage
+    .from(PROFILE_BUCKET)
+    .list(userId, { limit: 1, sortBy: { column: "created_at", order: "desc" } });
+
+  if (!files || files.length === 0) return null;
+  const { data } = supabase.storage
+    .from(PROFILE_BUCKET)
+    .getPublicUrl(`${userId}/${files[0].name}`);
+  return data.publicUrl;
 }
 
 export async function deleteProfileImage(userId: string): Promise<void> {
