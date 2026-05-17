@@ -51,10 +51,10 @@ export function useGeminiChat(customSystemPrompt?: string, customWelcomeMessage?
       .map((m) => ({ role: m.role, content: m.content }));
 
     try {
-      const aiServiceUrl = process.env.NEXT_PUBLIC_AI_SERVICE_URL;
-      if (!aiServiceUrl) throw new Error("AI service URL not configured");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) throw new Error("API URL not configured");
 
-      const res = await fetch(`${aiServiceUrl}/api/v1/chat`, {
+      const res = await fetch(`${apiUrl}/v1/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
