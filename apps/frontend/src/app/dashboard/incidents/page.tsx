@@ -87,7 +87,7 @@ export default function IncidentsPage() {
                 className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#1b4332] ${
                   selectedStatus === null
                     ? "bg-primary text-white border-primary"
-                    : "bg-background border-2 border-primary text-primary hover:bg-primary/20 hover:border-primary"
+                    : "bg-background border-2 border-foreground/20 text-foreground/80 hover:bg-foreground/10 hover:border-foreground/40"
                 }`}
               >
                 All
@@ -99,7 +99,7 @@ export default function IncidentsPage() {
                   className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#1b4332] ${
                     selectedStatus === status
                       ? getStatusColor(status)
-                      : `border-2 border-primary text-primary hover:bg-primary/10`
+                      : `border-2 border-foreground/20 text-foreground/80 hover:bg-foreground/10`
                   }`}
                 >
                   {status}
