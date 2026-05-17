@@ -1,7 +1,6 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
-import { ToastContainer } from "@/components/ui/toast";
 import { createClient } from "@/utils/supabase/server";
 import { laravelGet } from "@/utils/laravel-api";
 import { CitizenDashboardClient } from "./citizen-dashboard-client";

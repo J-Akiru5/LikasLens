@@ -16,6 +16,7 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <OfflineBanner />
+      <ToastContainer />
       <div className="flex-1">{children}</div>
       <Footer />
       <LikasyChat persona="citizen" locale={locale} />

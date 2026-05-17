@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Mail, MessageSquare, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppHeader } from "@/components/layout/header";
+import { showToast } from "@likaslens/shared";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -13,9 +14,9 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    
+
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/contact-messages`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/contact-messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -23,10 +24,14 @@ export default function ContactPage() {
         },
         body: JSON.stringify(formData),
       });
-      // Keeping it simple; if it fails we still show submitted for now
-      // since the design didn't have error states.
+      if (response.ok) {
+        showToast("Message sent successfully", "success");
+      } else {
+        showToast("Failed to send message. Please try again.", "error");
+      }
     } catch (error) {
       console.error("Failed to submit contact form", error);
+      showToast("Failed to send message. Check your connection.", "error");
     }
 
     setTimeout(() => {

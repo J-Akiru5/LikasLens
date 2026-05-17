@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { laravelGet, laravelPatch } from "@likaslens/shared";
 import type { PaginatedResponse, ApiResponse } from "@likaslens/shared";
-import { Spinner } from "@likaslens/shared";
+import { Spinner, showToast } from "@likaslens/shared";
 import { MessageSquare, Mail, User, Clock, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -41,9 +41,11 @@ export default function InquiriesPage() {
         setMessages((prev) =>
           prev.map((msg) => (msg.id === id ? res.data : msg))
         );
+        showToast("Message marked as read", "success");
       }
     } catch (error) {
       console.error("Failed to mark as read", error);
+      showToast("Failed to mark message as read", "error");
     }
   };
 
