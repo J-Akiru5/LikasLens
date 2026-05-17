@@ -1,58 +1,75 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/header";
-import { Spinner } from "@/components/ui/spinner";
 import { createClient } from "@/utils/supabase/client";
-import { allProvinces, allTowns, getProvinceSummary, overallSummary } from "@/data/region6";
-import { BarChart3, Globe, MapPin, Search, Shield } from "lucide-react";
+import { isAnalystOrSuperAdmin, getRole } from "@/lib/roles";
+import { getTownsByProvince } from "@/data/region6";
+import type { Province, TownData } from "@/data/region6";
+import {
+  MapPin,
+  ChevronRight,
+  Building2,
+  Trees,
+  AlertTriangle,
+  Search,
+} from "lucide-react";
+import Link from "next/link";
+
+const PROVINCE_INFO: Record<
+  Province,
+  { label: string; color: string; borderColor: string; towns: number }
+> = {
+  "Aklan": { label: "Aklan", color: "text-secondary", borderColor: "border-secondary", towns: 17 },
+  "Antique": { label: "Antique", color: "text-accent", borderColor: "border-accent", towns: 18 },
+  "Capiz": { label: "Capiz", color: "text-primary", borderColor: "border-primary", towns: 17 },
+  "Guimaras": { label: "Guimaras", color: "text-secondary", borderColor: "border-secondary", towns: 5 },
+  "Iloilo": { label: "Iloilo", color: "text-accent", borderColor: "border-accent", towns: 43 },
+  "Negros Occidental": { label: "Negros Occidental", color: "text-primary", borderColor: "border-primary", towns: 32 },
+};
 
 export default function AnalyticsPage() {
   const router = useRouter();
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [checking, setChecking] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
+  const [data, setData] = useState<Record<Province, TownData[]>>({} as Record<Province, TownData[]>);
 
   useEffect(() => {
     async function check() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      const role = user?.user_metadata?.role ?? "citizen";
-      setUserRole(role);
-      setChecking(false);
-      if (!["analyst", "super_admin"].includes(role)) {
+      const role = getRole(user?.user_metadata as Record<string, unknown> | null);
+      if (!isAnalystOrSuperAdmin(role)) {
         router.replace("/dashboard");
+        return;
       }
+      setAuthorized(true);
+      setData(getTownsByProvince());
     }
     check();
   }, [router]);
 
-  if (checking) {
-    return (
-      <div className="flex h-screen overflow-hidden bg-background font-body">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
-          <Spinner size={32} className="text-primary" />
-        </div>
-      </div>
-    );
-  }
+  if (!authorized) return null;
 
-  if (!["analyst", "super_admin"].includes(userRole ?? "")) {
-    return null;
-  }
+  const provinces = Object.entries(data) as [Province, TownData[]][];
+  const hasSearch = search.trim().length > 0;
 
-  const filteredTowns = allTowns.filter((t) => {
-    const matchesSearch = !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.province.toLowerCase().includes(search.toLowerCase());
-    const matchesProvince = !selectedProvince || t.province === selectedProvince;
-    return matchesSearch && matchesProvince;
-  });
+  const filtered = hasSearch
+    ? provinces.map(([prov, towns]) => [
+        prov,
+        towns.filter((t) =>
+          t.name.toLowerCase().includes(search.toLowerCase()),
+        ),
+      ] as [Province, TownData[]])
+    : provinces;
 
-  const summary = overallSummary();
+  const totalTowns = Object.values(data).reduce((s, t) => s + t.length, 0);
+  const totalBarangays = Object.values(data).reduce(
+    (s, towns) => s + towns.reduce((s2, t) => s2 + t.totalBarangays, 0),
+    0,
+  );
 
   return (
     <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
@@ -62,136 +79,109 @@ export default function AnalyticsPage() {
         <AppHeader />
         <main className="flex-1 overflow-y-auto p-6 relative z-10">
           <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="flex items-center gap-3 border-b-4 border-primary pb-4">
-              <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-                <BarChart3 className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-heading text-3xl md:text-4xl font-black uppercase">Town Analytics</h1>
-                <p className="font-mono text-sm surface-muted">Region VI — Western Visayas</p>
-              </div>
-            </div>
-
-            {/* Role Badge */}
-            <div className="flex items-center gap-2 px-4 py-2 border-2 border-accent bg-accent/10 text-accent rounded w-fit font-mono text-xs font-bold uppercase tracking-widest">
-              <Shield className="w-4 h-4" />
-              {userRole === "super_admin" ? "Super Admin" : "Analyst"} Access
-            </div>
-
-            {/* Region Overview Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              <div className="brutal-panel panel-surface p-4 text-center">
-                <div className="font-heading text-3xl font-black">{summary.totalProvinces}</div>
-                <div className="font-mono text-xs uppercase tracking-widest surface-muted">Provinces</div>
-              </div>
-              <div className="brutal-panel panel-surface p-4 text-center">
-                <div className="font-heading text-3xl font-black">{summary.totalTowns}</div>
-                <div className="font-mono text-xs uppercase tracking-widest surface-muted">Towns</div>
-              </div>
-              <div className="brutal-panel panel-surface p-4 text-center">
-                <div className="font-heading text-3xl font-black">{summary.totalBarangays.toLocaleString()}</div>
-                <div className="font-mono text-xs uppercase tracking-widest surface-muted">Barangays</div>
-              </div>
-              <div className="brutal-panel panel-surface p-4 text-center">
-                <div className="font-heading text-3xl font-black">{summary.totalReports.toLocaleString()}</div>
-                <div className="font-mono text-xs uppercase tracking-widest surface-muted">Reports Filed</div>
-              </div>
-              <div className="brutal-panel panel-surface p-4 text-center">
-                <div className="font-heading text-3xl font-black">{summary.totalResolved.toLocaleString()}</div>
-                <div className="font-mono text-xs uppercase tracking-widest surface-muted">Resolved</div>
-              </div>
-              <div className="brutal-panel panel-surface p-4 text-center">
-                <div className="font-heading text-3xl font-black">
-                  {summary.totalReports > 0
-                    ? Math.round((summary.totalResolved / summary.totalReports) * 100)
-                    : 0}%
-                </div>
-                <div className="font-mono text-xs uppercase tracking-widest surface-muted">Resolution</div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-4 border-primary pb-4">
+              <h1 className="font-heading text-4xl font-black uppercase">Town Analytics</h1>
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
+                <input
+                  type="text"
+                  placeholder="Search towns..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
+                />
               </div>
             </div>
 
-            {/* Province Summaries */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {allProvinces.map((prov) => {
-                const ps = getProvinceSummary(prov);
-                return (
-                  <div key={prov} className="brutal-panel panel-surface p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Globe className="w-5 h-5 text-primary" />
-                      <h3 className="font-heading font-black text-lg uppercase">{prov}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="brutal-panel panel-surface p-4 border-2 border-primary shadow-[3px_3px_0px_#1b4332]">
+                <div className="font-mono text-xs font-bold uppercase tracking-widest surface-muted">Towns</div>
+                <div className="font-heading text-3xl font-black mt-1">{totalTowns}</div>
+              </div>
+              <div className="brutal-panel panel-surface p-4 border-2 border-secondary shadow-[3px_3px_0px_#1b4332]">
+                <div className="font-mono text-xs font-bold uppercase tracking-widest surface-muted">Provinces</div>
+                <div className="font-heading text-3xl font-black mt-1">6</div>
+              </div>
+              <div className="brutal-panel panel-surface p-4 border-2 border-accent shadow-[3px_3px_0px_#1b4332]">
+                <div className="font-mono text-xs font-bold uppercase tracking-widest surface-muted">Total Barangays</div>
+                <div className="font-heading text-3xl font-black mt-1">{totalBarangays.toLocaleString()}</div>
+              </div>
+            </div>
+
+            {filtered.map(([province, towns]) => {
+              if (towns.length === 0) return null;
+              const info = PROVINCE_INFO[province];
+              const avgScore = Math.round(
+                towns.reduce((s, t) => s + t.avgEnvironmentalScore, 0) / towns.length,
+              );
+              const totalIncidents = towns.reduce((s, t) => s + t.totalReportedIncidents, 0);
+              const totalResolved = towns.reduce((s, t) => s + t.totalResolvedIncidents, 0);
+
+              return (
+                <div
+                  key={province}
+                  className={`brutal-panel panel-surface border-2 ${info.borderColor} shadow-[4px_4px_0px_#1b4332] overflow-hidden`}
+                >
+                  <div className={`p-4 border-b-2 ${info.borderColor} flex items-center justify-between`}>
+                    <div className="flex items-center gap-3">
+                      <MapPin className={`w-5 h-5 ${info.color}`} />
+                      <h2 className="font-heading text-xl font-black uppercase tracking-wider">
+                        {province}
+                      </h2>
+                      <span className="font-mono text-xs font-bold px-2 py-1 border-2 rounded surface-muted">
+                        {towns.length} towns
+                      </span>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div><span className="font-mono font-bold">{ps.totalTowns}</span> <span className="font-mono text-xs surface-muted">towns</span></div>
-                      <div><span className="font-mono font-bold">{ps.totalBarangays.toLocaleString()}</span> <span className="font-mono text-xs surface-muted">barangays</span></div>
-                      <div><span className="font-mono font-bold">{ps.totalReports.toLocaleString()}</span> <span className="font-mono text-xs surface-muted">reports</span></div>
-                      <div><span className="font-mono font-bold">{ps.avgEcoScore}</span> <span className="font-mono text-xs surface-muted">avg eco score</span></div>
+                    <div className="flex items-center gap-4 text-xs font-mono font-bold uppercase tracking-widest surface-muted">
+                      <span className="flex items-center gap-1">
+                        <Trees className="w-3 h-3 text-secondary" />
+                        {avgScore} avg
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3 text-accent" />
+                        {totalIncidents}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Town Selection */}
-            <div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                <h2 className="font-heading text-2xl font-black uppercase flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Towns
-                </h2>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <div className="relative flex-1 sm:flex-none">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
-                    <input
-                      type="text"
-                      placeholder="Search town or province..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="pl-9 pr-4 py-2 brutal-panel theme-input rounded font-mono text-sm w-full sm:w-64"
-                    />
+                  <div className="p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                      {towns.map((town) => {
+                        const scoreColor =
+                          town.avgEnvironmentalScore >= 75
+                            ? "text-secondary"
+                            : town.avgEnvironmentalScore >= 50
+                            ? "text-accent"
+                            : "text-accent";
+                        return (
+                          <Link
+                            key={town.name}
+                            href={`/dashboard/analytics/towns/${town.name.toLowerCase().replace(/\s+/g, "-")}`}
+                            className="group flex items-center justify-between p-3 border-2 border-primary/20 hover:border-primary rounded transition-all hover:bg-primary/5 hover:shadow-[2px_2px_0px_#1b4332]"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Building2 className="w-4 h-4 shrink-0 surface-muted" />
+                              <span className="font-bold text-sm truncate">{town.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className={`font-mono text-xs font-bold ${scoreColor}`}>
+                                {town.avgEnvironmentalScore}
+                              </span>
+                              <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity surface-muted" />
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <select
-                    value={selectedProvince ?? ""}
-                    onChange={(e) => setSelectedProvince(e.target.value || null)}
-                    className="brutal-panel theme-input px-3 py-2 rounded font-mono text-sm"
-                  >
-                    <option value="">All Provinces</option>
-                    {allProvinces.map((p) => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
-                  </select>
                 </div>
-              </div>
+              );
+            })}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredTowns.map((town) => (
-                  <Link
-                    key={town.id}
-                    href={`/dashboard/analytics/towns/${town.id}`}
-                    className="brutal-panel panel-surface p-5 hover:border-secondary hover:shadow-[4px_4px_0px_#2de1c2] transition-all border-2 border-transparent"
-                  >
-                    <div className="font-heading font-black text-lg">{town.name}</div>
-                    <div className="font-mono text-xs uppercase tracking-widest surface-muted mt-1">{town.province}</div>
-                    <div className="flex items-center gap-2 mt-3">
-                      <span className="px-2 py-0.5 border border-primary/30 rounded text-xs font-mono font-bold">{town.classification}</span>
-                      <span className="px-2 py-0.5 border border-primary/30 rounded text-xs font-mono">{town.totalBarangays} brgys</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {town.primaryEconomicDrivers.slice(0, 2).map((d) => (
-                        <span key={d} className="text-[10px] font-mono surface-muted px-1.5 py-0.5 rounded bg-primary/5">{d}</span>
-                      ))}
-                      {town.primaryEconomicDrivers.length > 2 && (
-                        <span className="text-[10px] font-mono surface-muted">+{town.primaryEconomicDrivers.length - 2}</span>
-                      )}
-                    </div>
-                  </Link>
-                ))}
+            {hasSearch && filtered.every(([, towns]) => towns.length === 0) && (
+              <div className="text-center py-12 surface-muted font-mono text-sm">
+                No towns match "{search}".
               </div>
-
-              {filteredTowns.length === 0 && (
-                <div className="text-center py-12 font-mono surface-muted">No towns match your filters.</div>
-              )}
-            </div>
+            )}
           </div>
         </main>
       </div>

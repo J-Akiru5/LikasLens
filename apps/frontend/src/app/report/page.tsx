@@ -1,28 +1,15 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import NextImage from "next/image";
-import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Camera, MapPin, Fingerprint, Activity, RefreshCw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
 import { ToastContainer, showToast } from "@/components/ui/toast";
-import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 
 export default function ReportPage() {
-	return (
-		<Suspense fallback={null}>
-			<ReportPageContent />
-		</Suspense>
-	);
-}
-
-function ReportPageContent() {
-	const searchParams = useSearchParams();
-	const geoMode = searchParams.get("geo") === "true";
-
 	const [base64Image, setBase64Image] = useState<string>("");
 	const [latitude, setLatitude] = useState<number | null>(null);
 	const [longitude, setLongitude] = useState<number | null>(null);
@@ -378,35 +365,6 @@ function ReportPageContent() {
 					)}
 
 					<form onSubmit={handleSubmit} className="space-y-6">
-						{/* Geo-Tag Map (shown when coming from Geo-Tag directive) */}
-						{geoMode && (
-							<motion.div
-								initial={{ opacity: 0, y: -20 }}
-								animate={{ opacity: 1, y: 0 }}
-								className="brutal-panel panel-surface border-4 border-secondary p-4 sm:p-8"
-							>
-								<div className="flex items-center gap-3 mb-4">
-									<MapPin className="w-6 h-6 text-secondary" />
-									<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
-										Pin the Location
-									</h2>
-								</div>
-								<GeoTagMap
-									initialLat={latitude}
-									initialLng={longitude}
-									onLocationChange={(lat, lng) => {
-										setLatitude(lat);
-										setLongitude(lng);
-									}}
-								/>
-								{latitude !== null && longitude !== null && (
-									<div className="mt-4 p-3 bg-secondary/10 border-l-4 border-secondary rounded font-mono text-sm">
-										Coordinates: {latitude.toFixed(6)}, {longitude.toFixed(6)}
-									</div>
-								)}
-							</motion.div>
-						)}
-
 						{/* Image Preview */}
 						<motion.div 
 							initial={{ opacity: 0, x: -20 }}

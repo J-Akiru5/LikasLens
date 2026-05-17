@@ -1,216 +1,69 @@
-import type { TownData } from "./types";
-
-type TownDef = {
-  id: string;
+export interface BarangayMetrics {
   name: string;
-  classification: string;
-  barangayCount: number;
-  drivers: string[];
-};
+  classification: "urban" | "rural";
+  population: number;
+  households: number;
+  landAreaKm2: number;
+  economicDrivers: string[];
+  environmentalScore: number;
+  riskLevel: "low" | "moderate" | "high" | "critical";
+  reportedIncidents: number;
+  resolvedIncidents: number;
+}
 
-type ProvinceDef = {
-  province: string;
-  towns: TownDef[];
-};
+export interface TownData {
+  name: string;
+  province: Province;
+  classification: "city" | "municipality";
+  totalBarangays: number;
+  economicDrivers: string[];
+  barangays: BarangayMetrics[];
+  totalReportedIncidents: number;
+  totalResolvedIncidents: number;
+  avgEnvironmentalScore: number;
+}
 
-const provinces: ProvinceDef[] = [
-  {
-    province: "Aklan",
-    towns: [
-      { id: "altavas", name: "Altavas", classification: "4th Class", barangayCount: 14, drivers: ["Agriculture", "Fishery"] },
-      { id: "balete", name: "Balete", classification: "4th Class", barangayCount: 10, drivers: ["Agriculture", "Tourism"] },
-      { id: "banga", name: "Banga", classification: "4th Class", barangayCount: 16, drivers: ["Agriculture", "Poultry"] },
-      { id: "batan", name: "Batan", classification: "5th Class", barangayCount: 20, drivers: ["Agriculture", "Fishing"] },
-      { id: "buruanga", name: "Buruanga", classification: "5th Class", barangayCount: 15, drivers: ["Tourism", "Fishing"] },
-      { id: "ibajay", name: "Ibajay", classification: "3rd Class", barangayCount: 35, drivers: ["Agriculture", "Tourism", "Trade"] },
-      { id: "kalibo", name: "Kalibo", classification: "1st Class", barangayCount: 16, drivers: ["Commerce", "Tourism", "Government"] },
-      { id: "lezo", name: "Lezo", classification: "5th Class", barangayCount: 12, drivers: ["Agriculture", "Handicraft"] },
-      { id: "libacao", name: "Libacao", classification: "3rd Class", barangayCount: 24, drivers: ["Agriculture", "Forestry"] },
-      { id: "madalag", name: "Madalag", classification: "4th Class", barangayCount: 25, drivers: ["Agriculture", "Mining"] },
-      { id: "makato", name: "Makato", classification: "4th Class", barangayCount: 18, drivers: ["Agriculture", "Weaving"] },
-      { id: "malay", name: "Malay", classification: "1st Class", barangayCount: 17, drivers: ["Tourism", "Commerce", "Real Estate"] },
-      { id: "malinao", name: "Malinao", classification: "4th Class", barangayCount: 23, drivers: ["Agriculture", "Mining"] },
-      { id: "nabas", name: "Nabas", classification: "4th Class", barangayCount: 20, drivers: ["Tourism", "Agriculture"] },
-      { id: "new-washington", name: "New Washington", classification: "3rd Class", barangayCount: 16, drivers: ["Fishing", "Agriculture"] },
-      { id: "numancia", name: "Numancia", classification: "4th Class", barangayCount: 12, drivers: ["Agriculture", "Commerce"] },
-      { id: "tangalan", name: "Tangalan", classification: "5th Class", barangayCount: 15, drivers: ["Tourism", "Agriculture"] },
-    ],
-  },
-  {
-    province: "Antique",
-    towns: [
-      { id: "anini-y", name: "Anini-y", classification: "4th Class", barangayCount: 23, drivers: ["Tourism", "Fishing"] },
-      { id: "barbaza", name: "Barbaza", classification: "4th Class", barangayCount: 19, drivers: ["Agriculture", "Fishing"] },
-      { id: "belison", name: "Belison", classification: "5th Class", barangayCount: 11, drivers: ["Agriculture", "Fishing"] },
-      { id: "bugasong", name: "Bugasong", classification: "3rd Class", barangayCount: 27, drivers: ["Agriculture", "Fishing"] },
-      { id: "caluya", name: "Caluya", classification: "2nd Class", barangayCount: 18, drivers: ["Mining", "Fishing", "Tourism"] },
-      { id: "culasi", name: "Culasi", classification: "3rd Class", barangayCount: 44, drivers: ["Agriculture", "Fishing", "Mining"] },
-      { id: "hamtic", name: "Hamtic", classification: "3rd Class", barangayCount: 47, drivers: ["Agriculture", "Commerce"] },
-      { id: "laua-an", name: "Laua-an", classification: "4th Class", barangayCount: 26, drivers: ["Agriculture", "Fishing"] },
-      { id: "libertad", name: "Libertad", classification: "5th Class", barangayCount: 19, drivers: ["Agriculture", "Fishing"] },
-      { id: "pandan", name: "Pandan", classification: "3rd Class", barangayCount: 34, drivers: ["Tourism", "Fishing", "Agriculture"] },
-      { id: "patnongon", name: "Patnongon", classification: "4th Class", barangayCount: 14, drivers: ["Agriculture", "Fishing"] },
-      { id: "san-jose", name: "San Jose de Buenavista", classification: "2nd Class", barangayCount: 28, drivers: ["Commerce", "Government", "Agriculture"] },
-      { id: "san-remigio", name: "San Remigio", classification: "4th Class", barangayCount: 45, drivers: ["Agriculture", "Forestry"] },
-      { id: "sebaste", name: "Sebaste", classification: "5th Class", barangayCount: 10, drivers: ["Fishing", "Tourism"] },
-      { id: "sibalom", name: "Sibalom", classification: "3rd Class", barangayCount: 54, drivers: ["Agriculture", "Commerce"] },
-      { id: "tibiao", name: "Tibiao", classification: "4th Class", barangayCount: 21, drivers: ["Tourism", "Agriculture"] },
-      { id: "tobias-fornier", name: "Tobias Fornier", classification: "4th Class", barangayCount: 33, drivers: ["Agriculture", "Fishing"] },
-      { id: "valderrama", name: "Valderrama", classification: "4th Class", barangayCount: 22, drivers: ["Agriculture", "Forestry"] },
-    ],
-  },
-  {
-    province: "Capiz",
-    towns: [
-      { id: "roxas-city", name: "Roxas City", classification: "1st Class", barangayCount: 47, drivers: ["Commerce", "Fishing", "Government", "Tourism"] },
-      { id: "cuartero", name: "Cuartero", classification: "4th Class", barangayCount: 22, drivers: ["Agriculture", "Fishing"] },
-      { id: "dao", name: "Dao", classification: "4th Class", barangayCount: 20, drivers: ["Agriculture", "Fishing"] },
-      { id: "dumalag", name: "Dumalag", classification: "4th Class", barangayCount: 29, drivers: ["Agriculture", "Fishing"] },
-      { id: "dumarao", name: "Dumarao", classification: "3rd Class", barangayCount: 33, drivers: ["Agriculture", "Fishing"] },
-      { id: "ivisan", name: "Ivisan", classification: "4th Class", barangayCount: 15, drivers: ["Fishing", "Agriculture"] },
-      { id: "jamindan", name: "Jamindan", classification: "4th Class", barangayCount: 30, drivers: ["Agriculture", "Mining"] },
-      { id: "maayon", name: "Maayon", classification: "4th Class", barangayCount: 32, drivers: ["Agriculture", "Fishing"] },
-      { id: "mambusao", name: "Mambusao", classification: "3rd Class", barangayCount: 26, drivers: ["Agriculture", "Commerce"] },
-      { id: "panay", name: "Panay", classification: "3rd Class", barangayCount: 42, drivers: ["Agriculture", "Fishing", "Tourism"] },
-      { id: "panitan", name: "Panitan", classification: "4th Class", barangayCount: 26, drivers: ["Agriculture", "Fishing"] },
-      { id: "pilar", name: "Pilar", classification: "4th Class", barangayCount: 24, drivers: ["Agriculture", "Fishing"] },
-      { id: "pontevedra-capiz", name: "Pontevedra", classification: "3rd Class", barangayCount: 26, drivers: ["Fishing", "Agriculture", "Commerce"] },
-      { id: "president-roxas", name: "President Roxas", classification: "3rd Class", barangayCount: 22, drivers: ["Agriculture", "Fishing"] },
-      { id: "sapi-an", name: "Sapi-an", classification: "5th Class", barangayCount: 10, drivers: ["Fishing", "Agriculture"] },
-      { id: "sigma", name: "Sigma", classification: "5th Class", barangayCount: 10, drivers: ["Agriculture", "Fishing"] },
-      { id: "tapaz", name: "Tapaz", classification: "3rd Class", barangayCount: 58, drivers: ["Agriculture", "Mining"] },
-    ],
-  },
-  {
-    province: "Guimaras",
-    towns: [
-      { id: "buenavista", name: "Buenavista", classification: "3rd Class", barangayCount: 37, drivers: ["Tourism", "Agriculture", "Fishing"] },
-      { id: "jordan", name: "Jordan", classification: "3rd Class", barangayCount: 14, drivers: ["Tourism", "Agriculture", "Government"] },
-      { id: "nueva-valencia", name: "Nueva Valencia", classification: "4th Class", barangayCount: 22, drivers: ["Tourism", "Fishing", "Agriculture"] },
-      { id: "san-lorenzo", name: "San Lorenzo", classification: "4th Class", barangayCount: 12, drivers: ["Tourism", "Fishing"] },
-      { id: "sibunag", name: "Sibunag", classification: "5th Class", barangayCount: 14, drivers: ["Agriculture", "Fishing"] },
-    ],
-  },
-  {
-    province: "Iloilo",
-    towns: [
-      { id: "iloilo-city", name: "Iloilo City", classification: "1st Class", barangayCount: 180, drivers: ["Commerce", "Government", "Education", "Tourism", "Industry"] },
-      { id: "passi-city", name: "Passi City", classification: "2nd Class", barangayCount: 51, drivers: ["Agriculture", "Commerce", "Industry"] },
-      { id: "ajuy", name: "Ajuy", classification: "3rd Class", barangayCount: 34, drivers: ["Fishing", "Agriculture"] },
-      { id: "alimodian", name: "Alimodian", classification: "3rd Class", barangayCount: 25, drivers: ["Agriculture", "Handicraft"] },
-      { id: "anilao", name: "Anilao", classification: "4th Class", barangayCount: 21, drivers: ["Agriculture", "Fishing"] },
-      { id: "badiangan", name: "Badiangan", classification: "4th Class", barangayCount: 24, drivers: ["Agriculture", "Fishing"] },
-      { id: "balasan", name: "Balasan", classification: "4th Class", barangayCount: 23, drivers: ["Fishing", "Tourism", "Agriculture"] },
-      { id: "banate", name: "Banate", classification: "4th Class", barangayCount: 18, drivers: ["Fishing", "Agriculture"] },
-      { id: "barotac-nuevo", name: "Barotac Nuevo", classification: "2nd Class", barangayCount: 29, drivers: ["Agriculture", "Fishing", "Commerce"] },
-      { id: "barotac-viejo", name: "Barotac Viejo", classification: "3rd Class", barangayCount: 26, drivers: ["Agriculture", "Fishing"] },
-      { id: "batad", name: "Batad", classification: "5th Class", barangayCount: 24, drivers: ["Agriculture", "Fishing"] },
-      { id: "bingawan", name: "Bingawan", classification: "4th Class", barangayCount: 14, drivers: ["Agriculture", "Fishing"] },
-      { id: "cabatuan", name: "Cabatuan", classification: "3rd Class", barangayCount: 28, drivers: ["Agriculture", "Commerce"] },
-      { id: "calinog", name: "Calinog", classification: "2nd Class", barangayCount: 59, drivers: ["Agriculture", "Commerce"] },
-      { id: "carles", name: "Carles", classification: "2nd Class", barangayCount: 33, drivers: ["Fishing", "Tourism", "Agriculture"] },
-      { id: "concepcion", name: "Concepcion", classification: "3rd Class", barangayCount: 25, drivers: ["Fishing", "Tourism", "Agriculture"] },
-      { id: "dingle", name: "Dingle", classification: "3rd Class", barangayCount: 33, drivers: ["Agriculture", "Commerce"] },
-      { id: "dueñas", name: "Dueñas", classification: "3rd Class", barangayCount: 20, drivers: ["Agriculture", "Fishing"] },
-      { id: "dumangas", name: "Dumangas", classification: "2nd Class", barangayCount: 45, drivers: ["Agriculture", "Fishing", "Commerce", "Industry"] },
-      { id: "estancia", name: "Estancia", classification: "2nd Class", barangayCount: 26, drivers: ["Fishing", "Commerce", "Tourism"] },
-      { id: "guimbal", name: "Guimbal", classification: "3rd Class", barangayCount: 33, drivers: ["Tourism", "Agriculture", "Fishing"] },
-      { id: "igbaras", name: "Igbaras", classification: "3rd Class", barangayCount: 46, drivers: ["Agriculture", "Tourism"] },
-      { id: "janiuay", name: "Janiuay", classification: "2nd Class", barangayCount: 60, drivers: ["Agriculture", "Commerce"] },
-      { id: "lambunao", name: "Lambunao", classification: "2nd Class", barangayCount: 73, drivers: ["Agriculture", "Commerce"] },
-      { id: "leganes", name: "Leganes", classification: "3rd Class", barangayCount: 18, drivers: ["Industry", "Commerce", "Agriculture"] },
-      { id: "lemery", name: "Lemery", classification: "5th Class", barangayCount: 22, drivers: ["Agriculture", "Fishing"] },
-      { id: "leon", name: "Leon", classification: "2nd Class", barangayCount: 49, drivers: ["Agriculture", "Commerce"] },
-      { id: "maasin", name: "Maasin", classification: "4th Class", barangayCount: 50, drivers: ["Agriculture", "Fishing"] },
-      { id: "miagao", name: "Miagao", classification: "1st Class", barangayCount: 78, drivers: ["Agriculture", "Tourism", "Education"] },
-      { id: "mina", name: "Mina", classification: "5th Class", barangayCount: 22, drivers: ["Agriculture", "Fishing"] },
-      { id: "new-lucena", name: "New Lucena", classification: "4th Class", barangayCount: 20, drivers: ["Agriculture", "Commerce"] },
-      { id: "oton", name: "Oton", classification: "1st Class", barangayCount: 37, drivers: ["Commerce", "Industry", "Tourism", "Agriculture"] },
-      { id: "pavia", name: "Pavia", classification: "1st Class", barangayCount: 18, drivers: ["Commerce", "Industry", "Real Estate"] },
-      { id: "pototan", name: "Pototan", classification: "2nd Class", barangayCount: 50, drivers: ["Agriculture", "Commerce"] },
-      { id: "san-dionisio", name: "San Dionisio", classification: "4th Class", barangayCount: 29, drivers: ["Fishing", "Agriculture"] },
-      { id: "san-enrique-iloilo", name: "San Enrique", classification: "4th Class", barangayCount: 28, drivers: ["Agriculture", "Fishing"] },
-      { id: "san-joaquin", name: "San Joaquin", classification: "2nd Class", barangayCount: 49, drivers: ["Agriculture", "Tourism", "Fishing"] },
-      { id: "san-miguel", name: "San Miguel", classification: "4th Class", barangayCount: 24, drivers: ["Agriculture", "Fishing"] },
-      { id: "san-rafael", name: "San Rafael", classification: "5th Class", barangayCount: 9, drivers: ["Agriculture", "Fishing"] },
-      { id: "santa-barbara", name: "Santa Barbara", classification: "2nd Class", barangayCount: 25, drivers: ["Agriculture", "Commerce", "Tourism"] },
-      { id: "sara", name: "Sara", classification: "3rd Class", barangayCount: 44, drivers: ["Agriculture", "Fishing"] },
-      { id: "tigbauan", name: "Tigbauan", classification: "2nd Class", barangayCount: 52, drivers: ["Agriculture", "Fishing", "Tourism"] },
-      { id: "tubungan", name: "Tubungan", classification: "4th Class", barangayCount: 48, drivers: ["Agriculture", "Handicraft"] },
-      { id: "zarraga", name: "Zarraga", classification: "4th Class", barangayCount: 24, drivers: ["Agriculture", "Fishing"] },
-    ],
-  },
-  {
-    province: "Negros Occidental",
-    towns: [
-      { id: "bacolod-city", name: "Bacolod City", classification: "1st Class", barangayCount: 61, drivers: ["Commerce", "Government", "Education", "Tourism", "Industry"] },
-      { id: "bago", name: "Bago", classification: "2nd Class", barangayCount: 24, drivers: ["Agriculture", "Fishing", "Commerce"] },
-      { id: "binalbagan", name: "Binalbagan", classification: "3rd Class", barangayCount: 16, drivers: ["Agriculture", "Fishing"] },
-      { id: "cadiz", name: "Cadiz", classification: "2nd Class", barangayCount: 22, drivers: ["Fishing", "Agriculture", "Commerce"] },
-      { id: "calatrava", name: "Calatrava", classification: "3rd Class", barangayCount: 40, drivers: ["Agriculture", "Mining"] },
-      { id: "candoni", name: "Candoni", classification: "4th Class", barangayCount: 9, drivers: ["Agriculture", "Forestry"] },
-      { id: "cauayan", name: "Cauayan", classification: "3rd Class", barangayCount: 25, drivers: ["Agriculture", "Fishing", "Mining"] },
-      { id: "eb-magalona", name: "Enrique B. Magalona", classification: "3rd Class", barangayCount: 23, drivers: ["Agriculture", "Fishing"] },
-      { id: "escalante", name: "Escalante", classification: "3rd Class", barangayCount: 18, drivers: ["Fishing", "Agriculture", "Commerce"] },
-      { id: "himamaylan", name: "Himamaylan", classification: "3rd Class", barangayCount: 19, drivers: ["Agriculture", "Fishing", "Commerce"] },
-      { id: "hinigaran", name: "Hinigaran", classification: "2nd Class", barangayCount: 24, drivers: ["Agriculture", "Fishing"] },
-      { id: "hinoba-an", name: "Hinoba-an", classification: "3rd Class", barangayCount: 13, drivers: ["Mining", "Agriculture", "Fishing"] },
-      { id: "ilog", name: "Ilog", classification: "3rd Class", barangayCount: 15, drivers: ["Agriculture", "Fishing"] },
-      { id: "isabela", name: "Isabela", classification: "2nd Class", barangayCount: 30, drivers: ["Agriculture", "Fishing", "Commerce"] },
-      { id: "kabankalan", name: "Kabankalan", classification: "1st Class", barangayCount: 32, drivers: ["Agriculture", "Commerce", "Education"] },
-      { id: "la-carlota", name: "La Carlota", classification: "3rd Class", barangayCount: 14, drivers: ["Agriculture", "Commerce"] },
-      { id: "la-castellana", name: "La Castellana", classification: "3rd Class", barangayCount: 13, drivers: ["Agriculture", "Tourism"] },
-      { id: "manapla", name: "Manapla", classification: "3rd Class", barangayCount: 12, drivers: ["Fishing", "Agriculture"] },
-      { id: "moises-padilla", name: "Moises Padilla", classification: "4th Class", barangayCount: 15, drivers: ["Agriculture", "Forestry"] },
-      { id: "murcia", name: "Murcia", classification: "2nd Class", barangayCount: 23, drivers: ["Agriculture", "Tourism"] },
-      { id: "pontevedra-negros", name: "Pontevedra", classification: "3rd Class", barangayCount: 18, drivers: ["Agriculture", "Fishing"] },
-      { id: "pulupandan", name: "Pulupandan", classification: "4th Class", barangayCount: 20, drivers: ["Fishing", "Commerce", "Industry"] },
-      { id: "sagay", name: "Sagay", classification: "2nd Class", barangayCount: 25, drivers: ["Fishing", "Agriculture", "Tourism", "Commerce"] },
-      { id: "san-carlos", name: "San Carlos", classification: "2nd Class", barangayCount: 18, drivers: ["Agriculture", "Commerce", "Industry"] },
-      { id: "san-enrique-negros", name: "San Enrique", classification: "5th Class", barangayCount: 10, drivers: ["Agriculture", "Fishing"] },
-      { id: "silay", name: "Silay", classification: "2nd Class", barangayCount: 16, drivers: ["Tourism", "Commerce", "Agriculture", "Industry"] },
-      { id: "sipalay", name: "Sipalay", classification: "3rd Class", barangayCount: 17, drivers: ["Tourism", "Mining", "Fishing"] },
-      { id: "talisay", name: "Talisay", classification: "3rd Class", barangayCount: 27, drivers: ["Commerce", "Industry", "Agriculture"] },
-      { id: "toboso", name: "Toboso", classification: "4th Class", barangayCount: 9, drivers: ["Agriculture", "Fishing"] },
-      { id: "valladolid", name: "Valladolid", classification: "3rd Class", barangayCount: 16, drivers: ["Agriculture", "Fishing"] },
-      { id: "victorias", name: "Victorias", classification: "2nd Class", barangayCount: 16, drivers: ["Industry", "Commerce", "Agriculture"] },
-    ],
-  },
+export type Province =
+  | "Aklan"
+  | "Antique"
+  | "Capiz"
+  | "Guimaras"
+  | "Iloilo"
+  | "Negros Occidental";
+
+const BARANGAY_POOL: string[] = [
+  "Poblacion", "Ilaya", "Iraya", "Daan Sur", "Daan Norte",
+  "Mabini", "Rizal", "Bonifacio", "Magsaysay", "Luna",
+  "Burgos", "Del Carmen", "San Roque", "San Jose", "San Miguel",
+  "San Isidro", "Santo Niño", "Santo Rosario", "San Nicolas", "San Vicente",
+  "Santa Cruz", "Santa Monica", "Santa Teresa", "Santa Maria", "San Juan",
+  "San Antonio", "San Francisco", "San Martin", "San Pedro", "San Pablo",
+  "Buenavista", "Libertad", "Progresso", "Alegria", "Calumpang",
+  "Tabucan", "Talon", "Baybay", "Mountain View", "Riverside",
+  "New Settlement", "Upper Bgy.", "Lower Bgy.", "East Side", "West Side",
+  "Sitio Lawis", "Sitio Dacal", "Sitio Manggahan", "Sitio Baybayon", "Sitio Kahoy",
+  "Katipunan", "Maharlika", "Maligaya", "Masagana", "Pag-asa",
+  "Bagong Silang", "Bagumbayan", "Balintawak", "Pulang Lupa", "Pinagbuhatan",
 ];
 
-const barangayNamesPool: Record<string, string[]> = {
-  Aklan: [
-    "Poblacion", "Bakhaw Norte", "Bakhaw Sur", "Bilbao", "Cortez", "Dapdap", "Guadalupe",
-    "Japlon", "Laguinbanwa", "Malanog", "Mangoso", "Nabaoy", "Pook", "Sampaguita",
-    "Tigayon", "Tinigaw", "Tulang", "Union", "Baybay", "Bugo",
-  ],
-  Antique: [
-    "Poblacion", "Agsirab", "Bacong", "Bagongbong", "Balanacan", "Batang", "Binitayan",
-    "Buga", "Camba", "Candelaria", "Caneja", "Canoa", "Caygman", "Cruz", "Daga",
-    "Ega", "Esperanza", "Igbacag", "Igang", "Igpasungaw",
-  ],
-  Capiz: [
-    "Poblacion", "Agtambi", "Agtang", "Balijuagan", "Bato", "Baybay", "Bolo",
-    "Buri", "Cabugao", "Cogon", "Cortes", "Culasi", "Dulangan", "Gabuan",
-    "Gines", "Jagnaya", "Lanot", "Libertad", "Lico-an", "Linao",
-  ],
-  Guimaras: [
-    "Poblacion", "Alaguisoc", "Alegria", "Ayangan", "Balanacan", "Bicolan", "Cabano",
-    "Cabisi", "Calumpang", "Danao", "Dolores", "Gavino", "Ilog", "Lawi",
-    "Maasin", "Mahayag", "Mchin", "Morobuan", "Panag-as", "Pandaraon",
-  ],
-  Iloilo: [
-    "Poblacion", "Aglalana", "Aguisan", "Amamaros", "Ambil", "Aripdip", "Bagacay",
-    "Balanacan", "Banate", "Bantayan", "Barosbos", "Batuan", "Bito-on", "Bolilao",
-    "Bongco", "Bongulan", "Cabugao", "Cagay", "Camalig", "Camansi",
-  ],
-  "Negros Occidental": [
-    "Poblacion", "Aguinaldo", "Alijis", "Alunan", "Ara-al", "Bacong", "Bagacay",
-    "Bagtason", "Banago", "Barangay 1", "Barangay 2", "Barangay 3", "Barangay 4",
-    "Barangay 5", "Barangay 6", "Barangay 7", "Barangay 8", "Barangay 9",
-    "Barangay 10", "Barangay 11",
-  ],
+const PROVINCE_DRIVERS: Record<Province, string[]> = {
+  "Aklan": ["Tourism", "Coconut Farming", "Fishing", "Aquaculture", "Handicraft Weaving"],
+  "Antique": ["Fishing", "Rice Farming", "Coconut Farming", "Ecotourism", "Mining"],
+  "Capiz": ["Fishing", "Aquaculture", "Rice Farming", "Seaweed Farming", "Commerce"],
+  "Guimaras": ["Mango Farming", "Tourism", "Fishing", "Coconut Farming", "Handicraft"],
+  "Iloilo": ["Rice Farming", "Sugarcane", "Fishing", "Commerce", "Aquaculture"],
+  "Negros Occidental": ["Sugarcane", "Fishing", "Rice Farming", "Commerce", "Livestock"],
 };
+
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
 
 function seededRandom(seed: number): () => number {
   let s = seed;
@@ -220,81 +73,314 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-function generateBarangays(townId: string, count: number, province: string): TownData["barangays"] {
-  const rand = seededRandom(townId.charCodeAt(0) * 1000 + count);
-  const pool = barangayNamesPool[province] || barangayNamesPool["Iloilo"];
-  const names: string[] = [];
-  const used = new Set<number>();
-  const barangayCount = Math.min(count, Math.min(10, pool.length));
+function generateBarangays(
+  townName: string,
+  classification: "city" | "municipality",
+): BarangayMetrics[] {
+  const seed = hashCode(townName.toLowerCase());
+  const rand = seededRandom(seed);
+  const count = classification === "city"
+    ? 12 + Math.floor(rand() * 20)
+    : 8 + Math.floor(rand() * 10);
 
-  for (let i = 0; i < barangayCount; i++) {
-    let idx: number;
-    do { idx = Math.floor(rand() * pool.length); } while (used.has(idx));
+  const selectedNames: string[] = [];
+  const used = new Set<number>();
+  const bgyCount = Math.min(count, BARANGAY_POOL.length);
+  for (let i = 0; i < bgyCount; i++) {
+    let idx = Math.floor(rand() * BARANGAY_POOL.length);
+    while (used.has(idx)) idx = (idx + 1) % BARANGAY_POOL.length;
     used.add(idx);
-    names.push(pool[idx]);
+    const suffix = i > 0 && idx === 0 ? ` ${i + 1}` : "";
+    selectedNames.push(BARANGAY_POOL[idx] + suffix);
   }
 
-  return names.map((name) => {
-    const population = Math.floor(rand() * 14000 + 1000);
-    const reportsFiled = Math.floor(rand() * 180 + 10);
-    const resolutionRate = Math.floor(rand() * 35 + 60);
-    const reportsResolved = Math.floor(reportsFiled * resolutionRate / 100);
-    const ecoScore = Math.floor(rand() * 55 + 40);
-    const activeIssues = Math.floor(rand() * 12);
+  return selectedNames.map((name, i) => {
+    const isUrban = i < Math.ceil(count * 0.3);
+    const pop = isUrban
+      ? Math.floor(1500 + rand() * 8500)
+      : Math.floor(300 + rand() * 2500);
+    const hh = Math.floor(pop / (3.8 + rand() * 1.2));
+
+    const envScore = Math.floor(
+      (isUrban ? 35 : 55) + rand() * (isUrban ? 40 : 37),
+    );
+    const riskLevel = envScore >= 80 ? "low"
+      : envScore >= 60 ? "moderate"
+      : envScore >= 40 ? "high"
+      : "critical";
+
+    const reported = Math.floor(rand() * (isUrban ? 25 : 12)) + (riskLevel === "critical" ? 5 : 1);
+    const resolved = Math.floor(reported * (0.45 + rand() * 0.4));
 
     return {
       name,
-      population,
-      reportsFiled,
-      reportsResolved,
-      resolutionRate,
-      ecoScore,
-      activeIssues,
+      classification: isUrban ? "urban" : "rural",
+      population: pop,
+      households: hh,
+      landAreaKm2: Math.round((0.5 + rand() * 4.5) * 100) / 100,
+      economicDrivers: isUrban ? ["Commerce", "Services"] : ["Farming", "Fishing"],
+      environmentalScore: envScore,
+      riskLevel,
+      reportedIncidents: reported,
+      resolvedIncidents: resolved,
     };
   });
 }
 
-export const allTowns: TownData[] = provinces.flatMap((p) =>
-  p.towns.map((t) => ({
-    id: t.id,
-    province: p.province,
-    name: t.name,
-    classification: t.classification,
-    totalBarangays: t.barangayCount,
-    primaryEconomicDrivers: t.drivers,
-    barangays: generateBarangays(t.id, t.barangayCount, p.province),
-  }))
-);
-
-export const allProvinces = provinces.map((p) => p.province);
-
-export function getTownById(id: string): TownData | undefined {
-  return allTowns.find((t) => t.id === id);
+interface TownDef {
+  name: string;
+  province: Province;
+  classification: "city" | "municipality";
+  totalBarangays: number;
 }
 
-export function getTownsByProvince(province: string): TownData[] {
-  return allTowns.filter((t) => t.province === province);
+const TOWNS: TownDef[] = [
+  // --- Aklan ---
+  { name: "Altavas", province: "Aklan", classification: "municipality", totalBarangays: 14 },
+  { name: "Balete", province: "Aklan", classification: "municipality", totalBarangays: 10 },
+  { name: "Banga", province: "Aklan", classification: "municipality", totalBarangays: 16 },
+  { name: "Batan", province: "Aklan", classification: "municipality", totalBarangays: 20 },
+  { name: "Buruanga", province: "Aklan", classification: "municipality", totalBarangays: 15 },
+  { name: "Ibajay", province: "Aklan", classification: "municipality", totalBarangays: 35 },
+  { name: "Kalibo", province: "Aklan", classification: "municipality", totalBarangays: 16 },
+  { name: "Lezo", province: "Aklan", classification: "municipality", totalBarangays: 12 },
+  { name: "Libacao", province: "Aklan", classification: "municipality", totalBarangays: 24 },
+  { name: "Madalag", province: "Aklan", classification: "municipality", totalBarangays: 25 },
+  { name: "Makato", province: "Aklan", classification: "municipality", totalBarangays: 18 },
+  { name: "Malay", province: "Aklan", classification: "municipality", totalBarangays: 17 },
+  { name: "Malinao", province: "Aklan", classification: "municipality", totalBarangays: 23 },
+  { name: "Nabas", province: "Aklan", classification: "municipality", totalBarangays: 20 },
+  { name: "New Washington", province: "Aklan", classification: "municipality", totalBarangays: 16 },
+  { name: "Numancia", province: "Aklan", classification: "municipality", totalBarangays: 12 },
+  { name: "Tangalan", province: "Aklan", classification: "municipality", totalBarangays: 15 },
+  // --- Antique ---
+  { name: "Anini-y", province: "Antique", classification: "municipality", totalBarangays: 23 },
+  { name: "Barbaza", province: "Antique", classification: "municipality", totalBarangays: 39 },
+  { name: "Belison", province: "Antique", classification: "municipality", totalBarangays: 11 },
+  { name: "Bugasong", province: "Antique", classification: "municipality", totalBarangays: 27 },
+  { name: "Caluya", province: "Antique", classification: "municipality", totalBarangays: 18 },
+  { name: "Culasi", province: "Antique", classification: "municipality", totalBarangays: 44 },
+  { name: "Hamtic", province: "Antique", classification: "municipality", totalBarangays: 47 },
+  { name: "Laua-an", province: "Antique", classification: "municipality", totalBarangays: 40 },
+  { name: "Libertad", province: "Antique", classification: "municipality", totalBarangays: 19 },
+  { name: "Pandan", province: "Antique", classification: "municipality", totalBarangays: 34 },
+  { name: "Patnongon", province: "Antique", classification: "municipality", totalBarangays: 36 },
+  { name: "San Jose de Buenavista", province: "Antique", classification: "municipality", totalBarangays: 28 },
+  { name: "San Remigio", province: "Antique", classification: "municipality", totalBarangays: 45 },
+  { name: "Sebaste", province: "Antique", classification: "municipality", totalBarangays: 10 },
+  { name: "Sibalom", province: "Antique", classification: "municipality", totalBarangays: 76 },
+  { name: "Tibiao", province: "Antique", classification: "municipality", totalBarangays: 21 },
+  { name: "Tobias Fornier", province: "Antique", classification: "municipality", totalBarangays: 50 },
+  { name: "Valderrama", province: "Antique", classification: "municipality", totalBarangays: 22 },
+  // --- Capiz ---
+  { name: "Roxas City", province: "Capiz", classification: "city", totalBarangays: 47 },
+  { name: "Cuartero", province: "Capiz", classification: "municipality", totalBarangays: 22 },
+  { name: "Dao", province: "Capiz", classification: "municipality", totalBarangays: 20 },
+  { name: "Dumalag", province: "Capiz", classification: "municipality", totalBarangays: 19 },
+  { name: "Dumarao", province: "Capiz", classification: "municipality", totalBarangays: 33 },
+  { name: "Ivisan", province: "Capiz", classification: "municipality", totalBarangays: 15 },
+  { name: "Jamindan", province: "Capiz", classification: "municipality", totalBarangays: 30 },
+  { name: "Maayon", province: "Capiz", classification: "municipality", totalBarangays: 32 },
+  { name: "Mambusao", province: "Capiz", classification: "municipality", totalBarangays: 26 },
+  { name: "Panay", province: "Capiz", classification: "municipality", totalBarangays: 42 },
+  { name: "Panitan", province: "Capiz", classification: "municipality", totalBarangays: 26 },
+  { name: "Pilar", province: "Capiz", classification: "municipality", totalBarangays: 24 },
+  { name: "Pontevedra", province: "Capiz", classification: "municipality", totalBarangays: 26 },
+  { name: "President Roxas", province: "Capiz", classification: "municipality", totalBarangays: 22 },
+  { name: "Sapi-an", province: "Capiz", classification: "municipality", totalBarangays: 10 },
+  { name: "Sigma", province: "Capiz", classification: "municipality", totalBarangays: 21 },
+  { name: "Tapaz", province: "Capiz", classification: "municipality", totalBarangays: 58 },
+  // --- Guimaras ---
+  { name: "Buenavista", province: "Guimaras", classification: "municipality", totalBarangays: 36 },
+  { name: "Jordan", province: "Guimaras", classification: "municipality", totalBarangays: 14 },
+  { name: "Nueva Valencia", province: "Guimaras", classification: "municipality", totalBarangays: 22 },
+  { name: "San Lorenzo", province: "Guimaras", classification: "municipality", totalBarangays: 12 },
+  { name: "Sibunag", province: "Guimaras", classification: "municipality", totalBarangays: 16 },
+  // --- Iloilo ---
+  { name: "Iloilo City", province: "Iloilo", classification: "city", totalBarangays: 180 },
+  { name: "Passi City", province: "Iloilo", classification: "city", totalBarangays: 51 },
+  { name: "Ajuy", province: "Iloilo", classification: "municipality", totalBarangays: 34 },
+  { name: "Alimodian", province: "Iloilo", classification: "municipality", totalBarangays: 25 },
+  { name: "Anilao", province: "Iloilo", classification: "municipality", totalBarangays: 21 },
+  { name: "Badiangan", province: "Iloilo", classification: "municipality", totalBarangays: 31 },
+  { name: "Balasan", province: "Iloilo", classification: "municipality", totalBarangays: 23 },
+  { name: "Banate", province: "Iloilo", classification: "municipality", totalBarangays: 18 },
+  { name: "Barotac Nuevo", province: "Iloilo", classification: "municipality", totalBarangays: 29 },
+  { name: "Barotac Viejo", province: "Iloilo", classification: "municipality", totalBarangays: 26 },
+  { name: "Batad", province: "Iloilo", classification: "municipality", totalBarangays: 24 },
+  { name: "Bingawan", province: "Iloilo", classification: "municipality", totalBarangays: 14 },
+  { name: "Cabatuan", province: "Iloilo", classification: "municipality", totalBarangays: 39 },
+  { name: "Calinog", province: "Iloilo", classification: "municipality", totalBarangays: 59 },
+  { name: "Carles", province: "Iloilo", classification: "municipality", totalBarangays: 33 },
+  { name: "Concepcion", province: "Iloilo", classification: "municipality", totalBarangays: 25 },
+  { name: "Dingle", province: "Iloilo", classification: "municipality", totalBarangays: 33 },
+  { name: "Dueñas", province: "Iloilo", classification: "municipality", totalBarangays: 20 },
+  { name: "Dumangas", province: "Iloilo", classification: "municipality", totalBarangays: 45 },
+  { name: "Estancia", province: "Iloilo", classification: "municipality", totalBarangays: 25 },
+  { name: "Guimbal", province: "Iloilo", classification: "municipality", totalBarangays: 33 },
+  { name: "Igbaras", province: "Iloilo", classification: "municipality", totalBarangays: 46 },
+  { name: "Janiuay", province: "Iloilo", classification: "municipality", totalBarangays: 45 },
+  { name: "Lambunao", province: "Iloilo", classification: "municipality", totalBarangays: 73 },
+  { name: "Leganes", province: "Iloilo", classification: "municipality", totalBarangays: 18 },
+  { name: "Lemery", province: "Iloilo", classification: "municipality", totalBarangays: 22 },
+  { name: "Leon", province: "Iloilo", classification: "municipality", totalBarangays: 49 },
+  { name: "Maasin", province: "Iloilo", classification: "municipality", totalBarangays: 22 },
+  { name: "Miagao", province: "Iloilo", classification: "municipality", totalBarangays: 66 },
+  { name: "Mina", province: "Iloilo", classification: "municipality", totalBarangays: 22 },
+  { name: "New Lucena", province: "Iloilo", classification: "municipality", totalBarangays: 16 },
+  { name: "Oton", province: "Iloilo", classification: "municipality", totalBarangays: 37 },
+  { name: "Pavia", province: "Iloilo", classification: "municipality", totalBarangays: 18 },
+  { name: "Pototan", province: "Iloilo", classification: "municipality", totalBarangays: 50 },
+  { name: "San Dionisio", province: "Iloilo", classification: "municipality", totalBarangays: 29 },
+  { name: "San Enrique", province: "Iloilo", classification: "municipality", totalBarangays: 28 },
+  { name: "San Joaquin", province: "Iloilo", classification: "municipality", totalBarangays: 85 },
+  { name: "San Miguel", province: "Iloilo", classification: "municipality", totalBarangays: 24 },
+  { name: "San Rafael", province: "Iloilo", classification: "municipality", totalBarangays: 9 },
+  { name: "Santa Barbara", province: "Iloilo", classification: "municipality", totalBarangays: 25 },
+  { name: "Sara", province: "Iloilo", classification: "municipality", totalBarangays: 42 },
+  { name: "Tigbauan", province: "Iloilo", classification: "municipality", totalBarangays: 52 },
+  { name: "Tubungan", province: "Iloilo", classification: "municipality", totalBarangays: 33 },
+  { name: "Zarraga", province: "Iloilo", classification: "municipality", totalBarangays: 24 },
+  // --- Negros Occidental ---
+  { name: "Bacolod City", province: "Negros Occidental", classification: "city", totalBarangays: 61 },
+  { name: "Bago City", province: "Negros Occidental", classification: "city", totalBarangays: 24 },
+  { name: "Binalbagan", province: "Negros Occidental", classification: "municipality", totalBarangays: 16 },
+  { name: "Cadiz City", province: "Negros Occidental", classification: "city", totalBarangays: 22 },
+  { name: "Calatrava", province: "Negros Occidental", classification: "municipality", totalBarangays: 40 },
+  { name: "Candoni", province: "Negros Occidental", classification: "municipality", totalBarangays: 10 },
+  { name: "Cauayan", province: "Negros Occidental", classification: "municipality", totalBarangays: 25 },
+  { name: "Enrique B. Magalona", province: "Negros Occidental", classification: "municipality", totalBarangays: 23 },
+  { name: "Escalante City", province: "Negros Occidental", classification: "city", totalBarangays: 21 },
+  { name: "Himamaylan City", province: "Negros Occidental", classification: "city", totalBarangays: 19 },
+  { name: "Hinigaran", province: "Negros Occidental", classification: "municipality", totalBarangays: 24 },
+  { name: "Hinoba-an", province: "Negros Occidental", classification: "municipality", totalBarangays: 13 },
+  { name: "Ilog", province: "Negros Occidental", classification: "municipality", totalBarangays: 15 },
+  { name: "Isabela", province: "Negros Occidental", classification: "municipality", totalBarangays: 30 },
+  { name: "Kabankalan City", province: "Negros Occidental", classification: "city", totalBarangays: 32 },
+  { name: "La Carlota City", province: "Negros Occidental", classification: "city", totalBarangays: 14 },
+  { name: "La Castellana", province: "Negros Occidental", classification: "municipality", totalBarangays: 13 },
+  { name: "Manapla", province: "Negros Occidental", classification: "municipality", totalBarangays: 12 },
+  { name: "Moises Padilla", province: "Negros Occidental", classification: "municipality", totalBarangays: 15 },
+  { name: "Murcia", province: "Negros Occidental", classification: "municipality", totalBarangays: 23 },
+  { name: "Pontevedra", province: "Negros Occidental", classification: "municipality", totalBarangays: 20 },
+  { name: "Pulupandan", province: "Negros Occidental", classification: "municipality", totalBarangays: 20 },
+  { name: "Sagay City", province: "Negros Occidental", classification: "city", totalBarangays: 25 },
+  { name: "San Carlos City", province: "Negros Occidental", classification: "city", totalBarangays: 18 },
+  { name: "San Enrique", province: "Negros Occidental", classification: "municipality", totalBarangays: 10 },
+  { name: "Silay City", province: "Negros Occidental", classification: "city", totalBarangays: 16 },
+  { name: "Sipalay City", province: "Negros Occidental", classification: "city", totalBarangays: 17 },
+  { name: "Talisay City", province: "Negros Occidental", classification: "city", totalBarangays: 27 },
+  { name: "Toboso", province: "Negros Occidental", classification: "municipality", totalBarangays: 9 },
+  { name: "Valladolid", province: "Negros Occidental", classification: "municipality", totalBarangays: 16 },
+  { name: "Victorias City", province: "Negros Occidental", classification: "city", totalBarangays: 16 },
+];
+
+export const PROVINCES: Record<
+  Province,
+  { name: string; description: string; primaryDriver: string }
+> = {
+  "Aklan": {
+    name: "Aklan",
+    description: "Home to Boracay — premier tourism destination with rich coastal and agricultural resources",
+    primaryDriver: "Tourism",
+  },
+  "Antique": {
+    name: "Antique",
+    description: "Western seaboard province known for its long coastline, fishing grounds, and ecotourism",
+    primaryDriver: "Fishing",
+  },
+  "Capiz": {
+    name: "Capiz",
+    description: "Seafood Capital of the Philippines with extensive aquaculture and fishing industries",
+    primaryDriver: "Aquaculture",
+  },
+  "Guimaras": {
+    name: "Guimaras",
+    description: "Island province famous for world-class sweet mangoes and emerging eco-tourism",
+    primaryDriver: "Mango Farming",
+  },
+  "Iloilo": {
+    name: "Iloilo",
+    description: "Regional economic center with rich agricultural plains and a bustling port economy",
+    primaryDriver: "Rice Farming",
+  },
+  "Negros Occidental": {
+    name: "Negros Occidental",
+    description: "Sugar Capital of the Philippines with a diversified agro-industrial economy",
+    primaryDriver: "Sugarcane",
+  },
+};
+
+function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
 }
 
-export function getProvinceSummary(province: string) {
-  const towns = getTownsByProvince(province);
-  return {
-    province,
-    totalTowns: towns.length,
-    totalBarangays: towns.reduce((s, t) => s + t.totalBarangays, 0),
-    totalReports: towns.reduce((s, t) => s + t.barangays.reduce((a, b) => a + b.reportsFiled, 0), 0),
-    totalResolved: towns.reduce((s, t) => s + t.barangays.reduce((a, b) => a + b.reportsResolved, 0), 0),
-    avgEcoScore: Math.round(
-      towns.reduce((s, t) => s + t.barangays.reduce((a, b) => a + b.ecoScore, 0), 0) /
-        Math.max(1, towns.reduce((s, t) => s + t.barangays.length, 0))
-    ),
+let computedCache: Map<string, TownData> | null = null;
+
+export function getTownData(name: string): TownData | undefined {
+  if (!computedCache) {
+    computedCache = new Map();
+    for (const town of TOWNS) {
+      const barangays = generateBarangays(town.name, town.classification);
+      const totalReported = barangays.reduce((s, b) => s + b.reportedIncidents, 0);
+      const totalResolved = barangays.reduce((s, b) => s + b.resolvedIncidents, 0);
+      const avgScore = Math.round(
+        barangays.reduce((s, b) => s + b.environmentalScore, 0) / barangays.length,
+      );
+
+      const drivers = PROVINCE_DRIVERS[town.province];
+
+      computedCache.set(normalizeName(town.name), {
+        name: town.name,
+        province: town.province,
+        classification: town.classification,
+        totalBarangays: town.totalBarangays,
+        economicDrivers: drivers,
+        barangays,
+        totalReportedIncidents: totalReported,
+        totalResolvedIncidents: totalResolved,
+        avgEnvironmentalScore: avgScore,
+      });
+    }
+  }
+  return computedCache.get(normalizeName(name));
+}
+
+export function getTownsByProvince(): Record<Province, TownData[]> {
+  const grouped: Record<Province, TownData[]> = {
+    "Aklan": [],
+    "Antique": [],
+    "Capiz": [],
+    "Guimaras": [],
+    "Iloilo": [],
+    "Negros Occidental": [],
   };
+  for (const town of TOWNS) {
+    const data = getTownData(town.name);
+    if (data) grouped[town.province].push(data);
+  }
+  for (const key of Object.keys(grouped)) {
+    grouped[key as Province].sort((a, b) => a.name.localeCompare(b.name));
+  }
+  return grouped;
 }
 
-export const overallSummary = () => ({
-  totalTowns: allTowns.length,
-  totalProvinces: allProvinces.length,
-  totalBarangays: allTowns.reduce((s, t) => s + t.totalBarangays, 0),
-  totalReports: allTowns.reduce((s, t) => s + t.barangays.reduce((a, b) => a + b.reportsFiled, 0), 0),
-  totalResolved: allTowns.reduce((s, t) => s + t.barangays.reduce((a, b) => a + b.reportsResolved, 0), 0),
-});
+export function getAllTowns(): TownData[] {
+  return TOWNS.map((t) => getTownData(t.name)).filter(Boolean) as TownData[];
+}
+
+export function searchTowns(query: string): TownData[] {
+  const q = query.toLowerCase();
+  return getAllTowns().filter(
+    (t) =>
+      t.name.toLowerCase().includes(q) ||
+      t.province.toLowerCase().includes(q) ||
+      t.economicDrivers.some((d) => d.toLowerCase().includes(q)),
+  );
+}
+
+// Pre-load cache
+getAllTowns();

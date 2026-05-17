@@ -1,77 +1,84 @@
+"use client";
+
 import { ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, AlertOctagon, Activity } from "lucide-react";
 
-interface DashboardStats {
-  active_incidents?: number;
-  active_incidents_total?: number;
-  active_incidents_progress?: number;
-  active_incidents_trend?: string;
-  resolved_today?: number;
-  resolved_today_total?: number;
-  resolved_today_progress?: number;
-  resolved_today_trend?: string;
-  avg_response_minutes?: number;
-  avg_response_sla?: number;
-  avg_response_progress?: number;
-  avg_response_trend?: string;
-  system_load?: number;
-  system_load_total?: number;
-  system_load_progress?: number;
-  system_load_trend?: string;
-}
+export function StatsCards() {
+  // Demo data with realistic calculations
+  const incidentsData = [
+    { id: "INC-104", stat: "Critical" },
+    { id: "INC-103", stat: "Investigating" },
+    { id: "INC-102", stat: "Resolved" },
+    { id: "INC-101", stat: "Monitoring" },
+    { id: "INC-100", stat: "Resolved" },
+    { id: "INC-099", stat: "Investigating" },
+    { id: "INC-098", stat: "Monitoring" },
+  ];
 
-export function StatsCards({ stats }: { stats: DashboardStats | null }) {
-  const s = stats || {};
+  // Calculate actual stats from data
+  const activeIncidents = incidentsData.filter(
+    (i) => i.stat !== "Resolved"
+  ).length;
+  const activeProgress = (activeIncidents / 200) * 100; // Out of 200 max capacity
 
-  const cards = [
+  const resolvedToday = incidentsData.filter((i) => i.stat === "Resolved").length;
+  const resolvedProgress = (resolvedToday / 50) * 100; // Out of 50 daily target
+
+  // Response time: 18 minutes out of 30-minute SLA = 60% capacity used
+  const responseProgress = (18 / 30) * 100;
+
+  // System load based on active incidents vs capacity
+  const systemLoadProgress = (activeIncidents / 200) * 100;
+
+  const stats = [
     {
       label: "Active Incidents",
-      value: String(s.active_incidents ?? 0),
-      total: `/ ${s.active_incidents_total ?? 200}`,
-      trend: s.active_incidents_trend ?? "+0%",
+      value: String(activeIncidents),
+      total: "/ 200",
+      trend: "+12%",
       isPositive: false,
       icon: AlertOctagon,
       color: "text-accent",
       borderColor: "border-accent",
-      progress: s.active_incidents_progress ?? 0,
+      progress: activeProgress,
       progressColor: "bg-accent",
       description: "Current active cases"
     },
     {
       label: "Resolved Today",
-      value: String(s.resolved_today ?? 0),
-      total: `/ ${s.resolved_today_total ?? 50}`,
-      trend: s.resolved_today_trend ?? "+0%",
+      value: String(resolvedToday),
+      total: "/ 50",
+      trend: "+5%",
       isPositive: true,
       icon: CheckCircle2,
       color: "text-secondary",
       borderColor: "border-secondary",
-      progress: s.resolved_today_progress ?? 0,
+      progress: resolvedProgress,
       progressColor: "bg-secondary",
       description: "Daily resolution quota"
     },
     {
       label: "Avg Response",
-      value: String(s.avg_response_minutes ?? 0),
+      value: "18",
       total: "m",
-      trend: s.avg_response_trend ?? "0m",
+      trend: "-2m",
       isPositive: true,
       icon: Clock,
       color: "text-primary",
       borderColor: "border-primary",
-      progress: s.avg_response_progress ?? 0,
+      progress: responseProgress,
       progressColor: "bg-primary",
       description: "vs 30m SLA"
     },
     {
       label: "System Load",
-      value: String(Math.round(s.system_load ?? 0)),
+      value: String(Math.round(systemLoadProgress)),
       total: "%",
-      trend: s.system_load_trend ?? "Stable",
+      trend: "Stable",
       isPositive: true,
       icon: Activity,
       color: "text-secondary",
       borderColor: "border-secondary",
-      progress: s.system_load_progress ?? 0,
+      progress: systemLoadProgress,
       progressColor: "bg-secondary",
       description: "Capacity utilization"
     }
@@ -79,7 +86,7 @@ export function StatsCards({ stats }: { stats: DashboardStats | null }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {cards.map((stat, idx) => {
+      {stats.map((stat, idx) => {
         const Icon = stat.icon;
         return (
           <div
