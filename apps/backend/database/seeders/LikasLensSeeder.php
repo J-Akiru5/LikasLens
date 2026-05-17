@@ -120,7 +120,7 @@ class LikasLensSeeder extends Seeder
                 'uploaded_by_user_id' => $ticket->reporter_user_id,
                 'storage_provider' => 'local',
                 'storage_bucket' => 'local',
-                'storage_path' => 'evidence/' . $ticket->created_at->format('Y/m/d') . '/' . Str::uuid7() . '.jpg',
+                'storage_path' => 'evidence/'.$ticket->created_at->format('Y/m/d').'/'.Str::uuid7().'.jpg',
                 'checksum_sha256' => hash('sha256', (string) Str::uuid()),
                 'mime_type' => 'image/jpeg',
                 'file_size_bytes' => fake()->numberBetween(100000, 5000000),

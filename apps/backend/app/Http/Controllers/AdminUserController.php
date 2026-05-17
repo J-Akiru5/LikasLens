@@ -66,7 +66,7 @@ class AdminUserController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -115,7 +115,7 @@ class AdminUserController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
+            'email' => 'sometimes|email|unique:users,email,'.$id,
             'trust_score' => 'sometimes|integer|min:0|max:100',
             'reward_points_balance' => 'sometimes|integer|min:0',
         ]);

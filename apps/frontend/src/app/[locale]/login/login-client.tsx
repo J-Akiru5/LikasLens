@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { Leaf, ArrowRight } from "lucide-react";
-import { signIn } from "@/app/actions/auth";
+import { signIn } from "@/app/[locale]/actions/auth";
 
 export function LoginClient() {
   const searchParams = useSearchParams();

@@ -11,3 +11,6 @@ export { StatsCards } from "./stats-cards";
 export { ActivityFeed } from "./activity-feed";
 export { PublicScoreboard } from "./public-scoreboard";
 export { FaqSection } from "./faq-section";
+export { AchievementCard } from "./achievement-card";
+export { RecentUnlocksWidget } from "./recent-unlocks-widget";
+export { RankProgressCard } from "./rank-progress-card";

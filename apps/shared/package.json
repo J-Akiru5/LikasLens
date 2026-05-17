@@ -20,7 +20,9 @@
     "./i18n/yolo-labels/vi": "./src/i18n/yolo-labels/vi.json",
     "./i18n/yolo-labels/id": "./src/i18n/yolo-labels/id.json",
     "./i18n/yolo-labels/ms": "./src/i18n/yolo-labels/ms.json",
-    "./i18n/yolo-labels/ta": "./src/i18n/yolo-labels/ta.json"
+    "./i18n/yolo-labels/ta": "./src/i18n/yolo-labels/ta.json",
+    "./src/styles/civic-brutalism.css": "./src/styles/civic-brutalism.css",
+    "./styles/civic-brutalism.css": "./src/styles/civic-brutalism.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

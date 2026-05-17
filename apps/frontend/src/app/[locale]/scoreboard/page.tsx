@@ -9,6 +9,8 @@ type LeaderboardEntry = {
   name: string;
   score: number;
   eco_credits?: number;
+  level?: string;
+  level_number?: number;
 };
 
 const rankMedal = (rank: number) => {
@@ -142,8 +144,17 @@ export default function ScoreboardPage() {
                       </div>
 
                       {/* Name */}
-                      <div className="font-body text-sm sm:text-base font-bold text-primary sm:text-center sm:text-left truncate">
+                      <div className="font-body text-sm sm:text-base font-bold text-primary sm:text-center sm:text-left truncate flex items-center gap-2">
                         {u.name}
+                        {u.level && (
+                          <span className={`hidden sm:inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest border ${
+                            u.level === "Eco Champion" ? "border-accent/60 bg-accent/10 text-accent" :
+                            u.level === "Guardian" ? "border-secondary/50 bg-secondary/10 text-secondary" :
+                            "border-primary/30 bg-primary/10 text-primary"
+                          }`}>
+                            {u.level}
+                          </span>
+                        )}
                       </div>
 
                       {/* Eco Credits (mobile: inline with name) */}

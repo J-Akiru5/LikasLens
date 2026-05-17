@@ -16,9 +16,9 @@ class TicketController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('address_text', 'like', "%{$search}%")
-                  ->orWhere('status', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('address_text', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
             });
         }
 
@@ -32,7 +32,7 @@ class TicketController extends Controller
         $tickets->getCollection()->transform(function (Ticket $ticket) {
             return [
                 'id' => $ticket->id,
-                'display_id' => 'INC-' . str_pad((string) Ticket::where('created_at', '<=', $ticket->created_at)->count(), 3, '0', STR_PAD_LEFT),
+                'display_id' => 'INC-'.str_pad((string) Ticket::where('created_at', '<=', $ticket->created_at)->count(), 3, '0', STR_PAD_LEFT),
                 'category' => $ticket->ai_triage_summary ?? 'Uncategorized',
                 'title' => $ticket->title,
                 'description' => $ticket->description,

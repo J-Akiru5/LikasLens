@@ -23,6 +23,7 @@ class User extends Authenticatable
         'supabase_auth_user_id',
         'name',
         'email',
+        'country_code',
         'role',
         'trust_score',
         'reward_points_balance',
@@ -38,6 +39,28 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function wallet()
+    {
+        return $this->hasOne(CitizenWallet::class);
+    }
+
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'user_achievements')
+            ->withPivot('progress_value', 'unlocked_at')
+            ->withTimestamps();
+    }
+
+    public function userAchievements()
+    {
+        return $this->hasMany(UserAchievement::class);
+    }
+
+    public function currencySetting()
+    {
+        return $this->belongsTo(CurrencySetting::class, 'country_code', 'country_code');
+    }
 
     /**
      * Get the attributes that should be cast.

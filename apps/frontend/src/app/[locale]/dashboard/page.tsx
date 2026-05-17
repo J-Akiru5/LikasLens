@@ -6,6 +6,7 @@ import { createClient } from "@/utils/supabase/server";
 import { laravelGet } from "@/utils/laravel-api";
 import { CitizenDashboardClient } from "./citizen-dashboard-client";
 import { GamifiedProfile } from "@/components/dashboard/gamified-profile";
+import type { RecentAchievement, RankProgress } from "@likaslens/shared";
 
 interface ImpactData {
   eco_credits: number;
@@ -13,6 +14,8 @@ interface ImpactData {
   community_rank: number;
   total_reports: number;
   total_citizens: number;
+  rank_progress: RankProgress;
+  recent_achievements: RecentAchievement[];
   reports: { id: string; status: string; created_at: string }[];
 }
 
