@@ -126,11 +126,11 @@ export function Sidebar() {
               aria-current={isActive ? "page" : undefined}
               className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
                 isActive
-                  ? "bg-primary text-white shadow-[4px_4px_0px_#081c15] transform translate-y-[-2px]"
-                  : "surface-muted border-2 border-transparent hover:border-primary"
+                  ? "bg-primary !text-white shadow-[4px_4px_0px_#081c15] transform translate-y-[-2px]"
+                  : "text-primary border-2 border-transparent hover:border-primary hover:bg-primary/5"
               }`}
             >
-              <Icon className="w-5 h-5" /> {item.label}
+              <Icon className={`w-5 h-5 ${isActive ? "!text-white" : "text-primary"}`} /> {item.label}
             </Link>
           );
         })}
