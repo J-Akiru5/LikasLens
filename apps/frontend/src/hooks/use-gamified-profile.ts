@@ -17,7 +17,7 @@ export interface AchievementRow {
 }
 
 export interface UnlockedMap {
-  [achievementId: string]: string;
+  [achievementId: string]: string; // achievement_id → unlocked_at ISO string
 }
 
 export interface UserStats {
@@ -89,64 +89,117 @@ export function useGamifiedProfile(): GamifiedProfileState {
     let cancelled = false;
 
     async function fetchAll() {
-      try {
-        const supabase = createClient();
-        const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser();
+      const supabase = createClient();
+      const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser();
 
-        if (authErr || !authUser) {
-          if (!cancelled) { setError(authErr?.message ?? "Not authenticated"); setLoading(false); }
-          return;
+      if (authErr || !authUser) {
+        if (!cancelled) {
+          setError(authErr?.message ?? "Not authenticated");
+          setLoading(false);
         }
+        return;
+      }
 
+      // 1. Try Laravel API first (standard production boundary)
+      try {
         const [impactRes, achievementsRes] = await Promise.all([
           fetch(`${LARAVEL_API}/user/impact`, { credentials: "include" })
-            .then(r => r.ok ? r.json() : null)
-            .catch(() => null),
+            .then(r => {
+              if (!r.ok) throw new Error("Laravel impact fetch failed");
+              return r.json();
+            }),
           fetch(`${LARAVEL_API}/user/achievements`, { credentials: "include" })
-            .then(r => r.ok ? r.json() : null)
-            .catch(() => null),
+            .then(r => {
+              if (!r.ok) throw new Error("Laravel achievements fetch failed");
+              return r.json();
+            }),
         ]);
 
         if (cancelled) return;
 
-        if (!impactRes?.success) {
-          setError("Failed to load profile data");
+        if (impactRes?.success) {
+          const impact = impactRes.data;
+          const verifiedReports = Math.round(impact.total_reports * 0.4);
+
+          setStats({
+            total_verified_reports: verifiedReports,
+            total_xp: impact.eco_credits,
+            ranking_tier: calculateRankingTier(impact.eco_credits, verifiedReports),
+            trust_score: impact.trust_score,
+          });
+
+          if (achievementsRes?.success) {
+            const rows = achievementsRes.data.map(mapLaravelAchievementToRow);
+            setAllAchievements(rows);
+
+            const map: UnlockedMap = {};
+            for (const item of achievementsRes.data) {
+              if (item.unlocked_at) map[item.id] = item.unlocked_at;
+            }
+            setUnlocked(map);
+          }
+
+          setLoading(false);
+          return; // Success, exit early!
+        }
+      } catch (err) {
+        console.warn("Laravel API fetch failed or returned error, falling back to direct Supabase queries:", err);
+      }
+
+      // 2. Fallback: Fetch directly from Supabase (preserves developer's original implementation)
+      try {
+        const { data: userRow, error: userErr } = await supabase
+          .from("users")
+          .select("total_verified_reports, total_xp, ranking_tier, trust_score")
+          .eq("supabase_auth_user_id", authUser.id)
+          .single();
+
+        const [{ data: achievementsData, error: achErr }, { data: citizenData, error: citErr }] = await Promise.all([
+          supabase
+            .from("achievements")
+            .select("*")
+            .order("threshold_value", { ascending: true }),
+          supabase
+            .from("citizen_achievements")
+            .select("achievement_id, unlocked_at")
+            .eq("user_id", userRow?.id ?? ""),
+        ]);
+
+        if (cancelled) return;
+
+        const combinedErr = userErr ?? achErr ?? citErr;
+        if (combinedErr) {
+          setError(combinedErr.message);
           setLoading(false);
           return;
         }
 
-        const impact = impactRes.data;
-        const verifiedReports = Math.round(impact.total_reports * 0.4);
-
         setStats({
-          total_verified_reports: verifiedReports,
-          total_xp: impact.eco_credits,
-          ranking_tier: calculateRankingTier(impact.eco_credits, verifiedReports),
-          trust_score: impact.trust_score,
+          total_verified_reports: userRow?.total_verified_reports ?? 0,
+          total_xp: userRow?.total_xp ?? 0,
+          ranking_tier: (userRow?.ranking_tier ?? 1) as 1 | 2 | 3,
+          trust_score: userRow?.trust_score ?? 0,
         });
+        setAllAchievements(achievementsData ?? []);
 
-        if (achievementsRes?.success) {
-          const rows = achievementsRes.data.map(mapLaravelAchievementToRow);
-          setAllAchievements(rows);
-
-          const map: UnlockedMap = {};
-          for (const item of achievementsRes.data) {
-            if (item.unlocked_at) map[item.id] = item.unlocked_at;
-          }
-          setUnlocked(map);
+        const map: UnlockedMap = {};
+        for (const c of citizenData ?? []) {
+          map[c.achievement_id] = c.unlocked_at;
         }
-
+        setUnlocked(map);
         setLoading(false);
-      } catch (err) {
+      } catch (fallbackErr) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Unknown error");
+          setError(fallbackErr instanceof Error ? fallbackErr.message : "Failed to load achievements and profile data");
           setLoading(false);
         }
       }
     }
 
     fetchAll();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return { stats, allAchievements, unlocked, loading, error };
