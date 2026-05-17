@@ -153,8 +153,8 @@ export default function UsersPage() {
 
       {/* Error state */}
       {error && (
-        <div className="rounded border-2 border-amber-400 bg-amber-50 p-4 font-mono text-sm text-amber-800">
-          <span className="font-bold uppercase">Error: </span>
+        <div className="rounded border-2 border-accent bg-accent/10 p-4 font-mono text-sm">
+          <span className="font-bold text-accent uppercase">Error: </span>
           {error}
         </div>
       )}
@@ -211,7 +211,7 @@ export default function UsersPage() {
                   {roleBadge(user.role)}
                 </div>
                 <div className="hidden sm:block sm:col-span-2 font-mono text-sm">
-                  <span className={`font-bold ${user.trust_score >= 70 ? "text-emerald-700" : user.trust_score >= 40 ? "text-amber-700" : "surface-muted"}`}>
+                  <span className={`font-bold ${user.trust_score >= 70 ? "text-secondary" : user.trust_score >= 40 ? "text-accent" : "surface-muted"}`}>
                     {user.trust_score}
                   </span>
                 </div>

@@ -5,13 +5,14 @@ function getCookie(name: string): string | null {
 }
 
 function normalizeBaseUrl(raw: string): string {
-  let url = raw.trim();
-  if (!url) return "";
-  if (!/^https?:\/\//i.test(url)) {
-    url = `https://${url}`;
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.origin + parsed.pathname.replace(/\/+$/, "");
+  } catch {
+    return `https://${trimmed.replace(/\/+$/, "")}`;
   }
-  url = url.replace(/\/+$/, "");
-  return url;
 }
 
 export async function laravelFetch<T>(
@@ -31,7 +32,7 @@ export async function laravelFetch<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const url = `${baseUrl}${endpoint}`;
+  const url = baseUrl + (baseUrl.endsWith("/") && endpoint.startsWith("/") ? endpoint.slice(1) : endpoint);
 
   const res = await fetch(url, {
     ...options,
