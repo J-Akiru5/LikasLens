@@ -3,7 +3,7 @@
 import { createClient } from "./client";
 
 const PROFILE_BUCKET = "profile-images";
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export type UploadResult =

@@ -1,16 +1,29 @@
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
 export async function laravelFetch<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    ...(options.headers as Record<string, string>),
+  };
+
+  const token = getCookie("laravel_token");
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${baseUrl}${endpoint}`, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      ...options.headers,
-    },
+    headers,
     credentials: "include",
   });
 
