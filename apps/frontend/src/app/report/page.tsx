@@ -291,7 +291,7 @@ export default function ReportPage() {
 		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
 
 		try {
-			const cleanedImage = await stripExif(base64Image);
+			const cleanedImage = isGhostMode ? await stripExif(base64Image) : base64Image;
 
 			// Triage Pre-check if NOT already in Ghost Mode
 			if (!isGhostMode && navigator.onLine) {
