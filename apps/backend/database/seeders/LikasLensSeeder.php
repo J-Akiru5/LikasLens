@@ -2,11 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\Achievement;
 use App\Models\NgoGroup;
 use App\Models\Report;
 use App\Models\Ticket;
 use App\Models\TicketEvidence;
 use App\Models\User;
+use App\Models\UserAchievement;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -69,6 +71,80 @@ class LikasLensSeeder extends Seeder
                 'reward_points_balance' => fake()->numberBetween(100, 2000),
             ]);
             $users["citizen_{$i}"] = $user;
+        }
+
+        // ── User Achievements (Demo unlocks) ──────────────────────────
+        $allAchievements = Achievement::all()->keyBy('name');
+
+        $nowForAchievements = now()->subDays(fake()->numberBetween(1, 30));
+
+        // Maria Santos: Steward level, has unlocked 4 achievements
+        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Community Watchdog'] as $name) {
+            $ach = $allAchievements->get($name);
+            if ($ach) {
+                UserAchievement::create([
+                    'user_id' => $users['citizen']->id,
+                    'achievement_id' => $ach->id,
+                    'progress_value' => $ach->criteria_value['threshold'] ?? 1,
+                    'unlocked_at' => $nowForAchievements,
+                ]);
+            }
+        }
+        // Environmental Guardian: in progress (8/10)
+        $envGuardian = $allAchievements->get('Environmental Guardian');
+        if ($envGuardian) {
+            UserAchievement::create([
+                'user_id' => $users['citizen']->id,
+                'achievement_id' => $envGuardian->id,
+                'progress_value' => 8,
+                'unlocked_at' => null,
+            ]);
+        }
+
+        // Juan Dela Cruz: has unlocked 6 achievements
+        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Offline Warrior', 'Community Watchdog', 'Environmental Guardian'] as $name) {
+            $ach = $allAchievements->get($name);
+            if ($ach) {
+                UserAchievement::create([
+                    'user_id' => $users['analyst']->id,
+                    'achievement_id' => $ach->id,
+                    'progress_value' => $ach->criteria_value['threshold'] ?? 1,
+                    'unlocked_at' => $nowForAchievements->copy()->subDays(fake()->numberBetween(1, 60)),
+                ]);
+            }
+        }
+        // Truth Seeker: in progress (3/5)
+        $truthSeeker = $allAchievements->get('Truth Seeker');
+        if ($truthSeeker) {
+            UserAchievement::create([
+                'user_id' => $users['analyst']->id,
+                'achievement_id' => $truthSeeker->id,
+                'progress_value' => 3,
+                'unlocked_at' => null,
+            ]);
+        }
+
+        // Admin Reyes: has 7 achievements (all but Eco Champion)
+        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Offline Warrior', 'Community Watchdog', 'Environmental Guardian', 'Truth Seeker'] as $name) {
+            $ach = $allAchievements->get($name);
+            if ($ach) {
+                UserAchievement::create([
+                    'user_id' => $users['super_admin']->id,
+                    'achievement_id' => $ach->id,
+                    'progress_value' => $ach->criteria_value['threshold'] ?? 1,
+                    'unlocked_at' => $nowForAchievements->copy()->subDays(fake()->numberBetween(1, 90)),
+                ]);
+            }
+        }
+        // Eco Champion: in progress (0/1 since rank is Guardian, not Eco Champion yet)
+        $ecoChampion = $allAchievements->get('Eco Champion');
+        if ($ecoChampion) {
+            UserAchievement::create([
+                'user_id' => $users['super_admin']->id,
+                'achievement_id' => $ecoChampion->id,
+                'progress_value' => 0,
+                'unlocked_at' => null,
+            ]);
         }
 
         // ── Tickets ─────────────────────────────────────────────────────

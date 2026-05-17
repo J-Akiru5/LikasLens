@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Achievement;
+use App\Models\User;
 use App\Models\UserAchievement;
 use App\Services\RankService;
 use Illuminate\Http\JsonResponse;
@@ -94,6 +95,55 @@ class AchievementController extends Controller
         return response()->json([
             'success' => true,
             'data' => $rankService->getRankProgress($user),
+        ]);
+    }
+
+    public function userAchievementsBySupabaseId(string $supabaseUserId): JsonResponse
+    {
+        $user = User::where('supabase_auth_user_id', $supabaseUserId)->first();
+
+        if (! $user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.',
+            ], 404);
+        }
+
+        $allAchievements = Achievement::orderBy('sort_order')->get();
+
+        $userAchievements = UserAchievement::where('user_id', $user->id)
+            ->get()
+            ->keyBy('achievement_id');
+
+        $data = $allAchievements->map(function ($achievement) use ($userAchievements) {
+            $ua = $userAchievements->get($achievement->id);
+            $unlocked = $ua && $ua->unlocked_at !== null;
+            $criteriaValue = $achievement->criteria_value;
+            $threshold = $criteriaValue['threshold'] ?? 1;
+
+            return [
+                'id' => $achievement->id,
+                'name' => $unlocked || ! $achievement->is_hidden ? $achievement->name : '???',
+                'description' => $unlocked || ! $achievement->is_hidden
+                    ? $achievement->description
+                    : 'This achievement remains shrouded in mystery...',
+                'criteria_type' => $achievement->criteria_type,
+                'criteria_value' => $unlocked || ! $achievement->is_hidden ? $criteriaValue : null,
+                'icon' => $unlocked || ! $achievement->is_hidden ? $achievement->icon : '❓',
+                'tier' => $achievement->tier,
+                'points_awarded' => $achievement->points_awarded,
+                'is_hidden' => $achievement->is_hidden,
+                'sort_order' => $achievement->sort_order,
+                'unlocked' => $unlocked,
+                'progress_value' => $ua ? (int) $ua->progress_value : 0,
+                'threshold' => $threshold,
+                'unlocked_at' => $ua?->unlocked_at?->toISOString(),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
         ]);
     }
 }

@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Spinner } from "@/components/ui/spinner";
 import { AchievementCard, RankProgressCard } from "@likaslens/shared";
-import { fetchUserAchievements, fetchEcoCreditRate } from "@likaslens/shared";
+import { fetchEcoCreditRate } from "@likaslens/shared";
 import type { Achievement, RankProgress, CurrencySetting } from "@likaslens/shared";
 
 type TabKey = "overview" | "achievements";
@@ -27,6 +27,7 @@ function ProfilePageContent() {
   const [loading, setLoading] = useState(true);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [rankProgress, setRankProgress] = useState<RankProgress | null>(null);
+  const [profileStats, setProfileStats] = useState({ reports_filed: 0, reports_verified: 0, community_upvotes: 0 });
   const [countryCode, setCountryCode] = useState<string | null>(null);
   const [currencySetting, setCurrencySetting] = useState<CurrencySetting | null>(null);
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -52,14 +53,27 @@ function ProfilePageContent() {
         }
 
         const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+        const supabaseUserId = user?.id;
 
-        const [leaderboardRes, achievementsRes, rankRes] = await Promise.all([
+        const [leaderboardRes, achievementsRes, rankRes, profileRes] = await Promise.all([
           fetch(`${laravelUrl}/api/leaderboard`).then(r => r.ok ? r.json() : null),
-          fetchUserAchievements<{ success: boolean; data: Achievement[] }>().catch(() => null),
-          fetch(`${laravelUrl}/api/user/rank-progress`, { credentials: "include" }).then(r => r.ok ? r.json() : null).catch(() => null),
+          supabaseUserId
+            ? fetch(`${laravelUrl}/api/achievements/user/${supabaseUserId}`).then(r => r.ok ? r.json() : null)
+            : fetch(`${laravelUrl}/api/achievements`).then(r => r.ok ? r.json() : null),
+          supabaseUserId
+            ? fetch(`${laravelUrl}/api/user/rank-progress`, { credentials: "include" }).then(r => r.ok ? r.json() : null)
+            : Promise.resolve(null),
+          supabaseUserId
+            ? fetch(`${laravelUrl}/api/profile/${supabaseUserId}`).then(r => r.ok ? r.json() : null)
+            : Promise.resolve(null),
         ]);
 
         if (mounted) {
+          let profileStatsData = { reports_filed: 0, reports_verified: 0, community_upvotes: 0 };
+          if (profileRes?.success) {
+            profileStatsData = profileRes.data.stats ?? profileStatsData;
+          }
+          setProfileStats(profileStatsData);
           if (leaderboardRes) {
             const entries = leaderboardRes.data ?? leaderboardRes;
             if (user && entries.length) {
@@ -208,19 +222,19 @@ function ProfilePageContent() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div className="p-4 bg-primary/10 rounded border border-primary">
                     <div className="font-mono text-xs uppercase surface-muted mb-2">Reports Filed</div>
-                    <div className="font-heading text-3xl font-black text-primary">{ecoCredits ? Math.round(ecoCredits / 150) : 0}</div>
+                    <div className="font-heading text-3xl font-black text-primary">{profileStats.reports_filed}</div>
                   </div>
                   <div className="p-4 bg-secondary/10 rounded border border-secondary">
                     <div className="font-mono text-xs uppercase text-secondary mb-2">Verified</div>
-                    <div className="font-heading text-3xl font-black text-secondary">{ecoCredits ? Math.round((ecoCredits / 150) * 0.95) : 0}</div>
+                    <div className="font-heading text-3xl font-black text-secondary">{profileStats.reports_verified}</div>
                   </div>
                   <div className="p-4 bg-accent/10 rounded border border-accent">
-                    <div className="font-mono text-xs uppercase text-accent mb-2">Avg Response</div>
-                    <div className="font-heading text-3xl font-black text-accent">{Math.round(Math.random() * 8 + 1)}m</div>
+                    <div className="font-mono text-xs uppercase text-accent mb-2">Achievements</div>
+                    <div className="font-heading text-3xl font-black text-accent">{achievements.filter(a => a.unlocked).length}</div>
                   </div>
                   <div className="p-4 bg-blue-500/10 rounded border border-blue-500 col-span-2 md:col-span-1">
-                    <div className="font-mono text-xs uppercase text-blue-600 mb-2">Community Upvotes</div>
-                    <div className="font-heading text-3xl font-black text-blue-600">{ecoCredits ? Math.round(ecoCredits / 72) : 0}</div>
+                    <div className="font-mono text-xs uppercase text-blue-600 mb-2">XP Earned</div>
+                    <div className="font-heading text-3xl font-black text-blue-600">{(ecoCredits ?? 0).toLocaleString()}</div>
                   </div>
                 </div>
               </div>
@@ -237,25 +251,36 @@ function ProfilePageContent() {
 
             <div className="brutal-panel panel-surface p-8">
               <h2 className="font-heading text-2xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
-                <span className="flex items-center gap-2"><Leaf className="w-5 h-5" /> Eco-Credits Earned</span>
+                <span className="flex items-center gap-2"><Leaf className="w-5 h-5" /> XP &amp; Credit Sources</span>
               </h2>
               <div className="space-y-4">
-                {[
-                  { activity: "Report Submitted", amount: "+50 XP", percentage: 30 },
-                  { activity: "Report Verified by LGU", amount: "+100 XP + Eco-Credits", percentage: 40 },
-                  { activity: "Community Upvote", amount: "+25 XP", percentage: 20 },
-                  { activity: "Rank Level Up Bonus", amount: "+Eco-Credits", percentage: 25 },
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-6">
-                    <div className="flex-1">
-                      <div className="font-semibold text-foreground mb-2">{item.activity}</div>
-                      <div className="h-2 bg-primary/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary transition-all duration-500" style={{ width: `${item.percentage}%` }} />
+                {(() => {
+                  const unlockedAchievements = achievements.filter(a => a.unlocked);
+                  const totalXp = unlockedAchievements.reduce((sum, a) => sum + a.points_awarded, 0) || 1;
+                  const items = unlockedAchievements.length > 0
+                    ? unlockedAchievements.map(a => ({
+                        activity: a.name,
+                        amount: `+${a.points_awarded} XP`,
+                        percentage: Math.round((a.points_awarded / totalXp) * 100),
+                      }))
+                    : [
+                        { activity: "Submit an environmental report", amount: "+50 XP", percentage: 25 },
+                        { activity: "Report verified by an LGU", amount: "+100 XP + Eco-Credits", percentage: 25 },
+                        { activity: "Community corroboration (500m geofence)", amount: "+150 XP", percentage: 25 },
+                        { activity: "Rank level up bonus", amount: "+Eco-Credits", percentage: 25 },
+                      ];
+                  return items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-6">
+                      <div className="flex-1">
+                        <div className="font-semibold text-foreground mb-2">{item.activity}</div>
+                        <div className="h-2 bg-primary/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-secondary rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(45,225,194,0.4)]" style={{ width: `${Math.max(item.percentage, 5)}%` }} />
+                        </div>
                       </div>
+                      <div className="font-heading text-xl font-black text-secondary min-w-fit">{item.amount}</div>
                     </div>
-                    <div className="font-heading text-xl font-black text-primary min-w-fit">{item.amount}</div>
-                  </div>
-                ))}
+                  ));
+                })()}
               </div>
             </div>
           </>

@@ -19,16 +19,16 @@ class AdminUserController extends Controller
         $serviceKey = env('SUPABASE_SERVICE_ROLE_KEY');
 
         // Safety check: Don't attempt to sync if keys aren't configured yet
-        if (!$supabaseUrl || !$serviceKey) {
+        if (! $supabaseUrl || ! $serviceKey) {
             return;
         }
 
         try {
             // Fetch users directly from the administrative Supabase Auth endpoint
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $serviceKey,
+                'Authorization' => 'Bearer '.$serviceKey,
                 'apikey' => $serviceKey,
-            ])->get($supabaseUrl . '/auth/v1/admin/users');
+            ])->get($supabaseUrl.'/auth/v1/admin/users');
 
             if ($response->successful() && isset($response->json()['users'])) {
                 $supabaseUsers = $response->json()['users'];
@@ -51,7 +51,7 @@ class AdminUserController extends Controller
             }
         } catch (\Exception $e) {
             // Silent catch to prevent the entire endpoint from breaking if Supabase is temporarily unreachable
-            logger('Supabase synchronization error: ' . $e->getMessage());
+            logger('Supabase synchronization error: '.$e->getMessage());
         }
     }
 

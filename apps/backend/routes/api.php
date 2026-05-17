@@ -44,6 +44,7 @@ Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 
 // Public achievement catalog
 Route::get('/achievements', [AchievementController::class, 'catalog']);
+Route::get('/achievements/user/{supabaseUserId}', [AchievementController::class, 'userAchievementsBySupabaseId']);
 
 // Public eco-credit currency rate
 Route::get('/settings/eco-credit-rate', [CurrencySettingController::class, 'showRate']);
@@ -124,7 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('v1/likaslens-admin')->group(function () {
             Route::get('/users/sync', [AdminUserController::class, 'index']);
         });
-        
+
         // Full NGO CRUD
         Route::post('/admin/ngos', [AdminNgoController::class, 'store']);
         Route::put('/admin/ngos/{id}', [AdminNgoController::class, 'update']);
