@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/server"
 
 const LARAVEL_API = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://127.0.0.1:8000"
 
-async function syncUserToLaravel(supabaseUserId: string, email: string, name?: string) {
+async function syncUserToLaravel(supabaseUserId: string, email: string, name?: string, role?: string) {
   try {
     const res = await fetch(`${LARAVEL_API}/api/auth/sync`, {
       method: "POST",
@@ -15,6 +15,7 @@ async function syncUserToLaravel(supabaseUserId: string, email: string, name?: s
         supabase_auth_user_id: supabaseUserId,
         email,
         name: name || email.split("@")[0],
+        role: role || undefined,
       }),
     });
     if (res.ok) {
@@ -51,10 +52,12 @@ export async function signIn(formData: FormData) {
   }
 
   if (data.user) {
+    const role = data.user.user_metadata?.role as string | undefined;
     await syncUserToLaravel(
       data.user.id,
       data.user.email ?? email,
       data.user.user_metadata?.full_name as string | undefined,
+      role,
     );
   }
 
@@ -78,10 +81,12 @@ export async function signUp(formData: FormData) {
   }
 
   if (data.user) {
+    const role = data.user.user_metadata?.role as string | undefined;
     await syncUserToLaravel(
       data.user.id,
       data.user.email ?? email,
       data.user.user_metadata?.full_name as string | undefined,
+      role,
     );
   }
 

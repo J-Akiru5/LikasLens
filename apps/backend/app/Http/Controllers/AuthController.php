@@ -88,9 +88,11 @@ class AuthController extends Controller
             'supabase_auth_user_id' => 'required|string',
             'email' => 'required|email',
             'name' => 'nullable|string|max:255',
+            'role' => 'nullable|string|in:citizen,ghost,analyst,super_admin',
         ]);
 
         $user = User::where('supabase_auth_user_id', $validated['supabase_auth_user_id'])->first();
+        $role = $validated['role'] ?? 'citizen';
 
         if (!$user) {
             $user = User::create([
@@ -98,7 +100,7 @@ class AuthController extends Controller
                 'name' => $validated['name'] ?? 'Citizen',
                 'email' => $validated['email'],
                 'password' => Hash::make(Str::random(32)),
-                'role' => 'citizen',
+                'role' => $role,
                 'trust_score' => 0,
                 'reward_points_balance' => 0,
             ]);
@@ -108,6 +110,7 @@ class AuthController extends Controller
             $user->update([
                 'email' => $validated['email'],
                 'name' => $validated['name'] ?? $user->name,
+                'role' => $role,
             ]);
         }
 

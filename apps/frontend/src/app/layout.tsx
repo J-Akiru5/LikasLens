@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat, Space_Mono } from "next/font/google";
 import "./globals.css";
-import { OfflineBanner } from "@/components/ui/offline-banner";
+import { OfflineBanner, LikasyChat } from "@likaslens/shared";
 import { Footer } from "@/components/layout/footer";
-import { LikasyChat } from "@likaslens/shared";
 
 const headingFont = Montserrat({
   variable: "--font-heading",
@@ -27,7 +26,6 @@ export const metadata: Metadata = {
   title: "LikasLens",
   description: "Neuro-symbolic civic reporting platform",
   manifest: "/manifest.json",
-  themeColor: "#10b981",
   icons: {
     icon: [
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },

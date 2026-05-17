@@ -1,55 +1,71 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { getTickets } from "@likaslens/shared";
+import type { Ticket } from "@likaslens/shared";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
 import { AlertTriangle, Filter, MoreVertical, Search } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 
 export default function IncidentsPage() {
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
-  const incidentsData = [
-    { id: "INC-104", cat: "Deforestation", loc: "Northern Ridge", stat: "Critical" },
-    { id: "INC-103", cat: "Water Pollution", loc: "Lake View", stat: "Investigating" },
-    { id: "INC-102", cat: "Illegal Dumping", loc: "Highway 9", stat: "Resolved" },
-    { id: "INC-101", cat: "Wildfire Risk", loc: "Sector 7", stat: "Monitoring" },
-    { id: "INC-100", cat: "Wildlife Threat", loc: "National Park", stat: "Resolved" },
-    { id: "INC-099", cat: "Air Quality", loc: "Downtown Core", stat: "Investigating" },
-    { id: "INC-098", cat: "Noise Pollution", loc: "Industrial Zone", stat: "Monitoring" },
-  ];
+  useEffect(() => {
+    getTickets({ per_page: "50" })
+      .then((res) => { if (res.success) setTickets(res.data); })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "resolved":
+      case "closed":
         return "border-2 border-secondary bg-secondary/15 text-secondary shadow-[0_0_12px_rgba(45,225,194,0.5)]";
+      case "open":
+        return "border-2 border-accent bg-accent/25 text-accent shadow-[0_0_16px_rgba(255,183,3,0.7)] animate-pulse";
       case "investigating":
       case "monitoring":
         return "border-2 border-accent bg-accent/15 text-accent shadow-[0_0_12px_rgba(255,183,3,0.5)]";
-      case "critical":
-        return "border-2 border-accent bg-accent/25 text-accent shadow-[0_0_16px_rgba(255,183,3,0.7)] animate-pulse";
       default:
         return "border-2 border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(27,67,50,0.5)]";
     }
   };
 
   const filteredIncidents = useMemo(() => {
-    return incidentsData.filter((incident) => {
+    return tickets.filter((ticket) => {
+      const q = searchQuery.toLowerCase();
       const matchesSearch =
-        !searchQuery ||
-        incident.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        incident.cat.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        incident.loc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        incident.stat.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesStatus = !selectedStatus || incident.stat === selectedStatus;
-
+        !q ||
+        ticket.display_id?.toLowerCase().includes(q) ||
+        ticket.title?.toLowerCase().includes(q) ||
+        ticket.location?.toLowerCase().includes(q) ||
+        ticket.status.toLowerCase().includes(q);
+      const matchesStatus = !selectedStatus || ticket.status === selectedStatus;
       return matchesSearch && matchesStatus;
     });
-  }, [searchQuery, selectedStatus]);
+  }, [tickets, searchQuery, selectedStatus]);
 
-  const statuses = Array.from(new Set(incidentsData.map((inc) => inc.stat)));
+  const statuses = useMemo(
+    () => [...new Set(tickets.map((t) => t.status))],
+    [tickets]
+  );
+
+  if (loading) {
+    return (
+      <div className="flex h-screen overflow-hidden bg-background font-body">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
@@ -60,7 +76,6 @@ export default function IncidentsPage() {
         <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
           <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header with Search */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b-4 border-primary pb-4">
               <h1 className="font-heading text-4xl font-black uppercase">Reported Incidents</h1>
               <div className="flex items-center gap-4">
@@ -80,7 +95,6 @@ export default function IncidentsPage() {
               </div>
             </div>
 
-            {/* Status Filter Pills */}
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setSelectedStatus(null)}
@@ -107,12 +121,10 @@ export default function IncidentsPage() {
               ))}
             </div>
 
-            {/* Results Count */}
             <div className="text-sm font-mono text-foreground/60 uppercase tracking-widest">
-              Showing {filteredIncidents.length} of {incidentsData.length} incidents
+              Showing {filteredIncidents.length} of {tickets.length} incidents
             </div>
 
-            {/* Incidents Table */}
             <div className="brutal-panel panel-surface p-0 overflow-hidden">
               <div className="grid grid-cols-12 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2 border-[#081c15]" style={{ backgroundColor: "#1b4332", color: "#f8f9fa" }}>
                 <div className="col-span-2">ID</div>
@@ -123,22 +135,22 @@ export default function IncidentsPage() {
               </div>
 
               {filteredIncidents.length > 0 ? (
-                filteredIncidents.map((inc, i) => (
+                filteredIncidents.map((ticket, i) => (
                   <div
-                    key={i}
+                    key={ticket.id}
                     className="grid grid-cols-12 items-center border-t-2 border-primary/20 p-4 hover:bg-secondary/10 transition-colors font-medium"
                   >
-                    <div className="col-span-2 font-mono text-sm font-bold">{inc.id}</div>
+                    <div className="col-span-2 font-mono text-sm font-bold">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</div>
                     <div className="col-span-3 flex items-center gap-2">
-                      {inc.stat === "Critical" && (
+                      {ticket.status === "Open" && (
                         <AlertTriangle className="w-4 h-4 text-accent animate-pulse" />
                       )}
-                      {inc.cat}
+                      {ticket.title}
                     </div>
-                    <div className="col-span-3 surface-muted">{inc.loc}</div>
+                    <div className="col-span-3 surface-muted">{ticket.location}</div>
                     <div className="col-span-2">
-                      <span className={`px-3 py-1.5 rounded text-xs font-bold uppercase font-mono tracking-widest transition-all ${getStatusColor(inc.stat)}`}>
-                        {inc.stat}
+                      <span className={`px-3 py-1.5 rounded text-xs font-bold uppercase font-mono tracking-widest transition-all ${getStatusColor(ticket.status)}`}>
+                        {ticket.status}
                       </span>
                     </div>
                     <div className="col-span-2 text-right">
