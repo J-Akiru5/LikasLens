@@ -139,8 +139,8 @@ export function LikasyChat({ systemPrompt, welcomeMessage }: LikasyChatProps) {
 }
 
 function parseInlineStyles(text: string): React.ReactNode[] {
-  // Regex to split by bold (**text**) or inline code (`code`)
-  const regex = /(\*\*.*?\*\*|`.*?`)/g;
+  // Regex to split by bold (**text**), italics (*text*), or inline code (`code`)
+  const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`)/g;
   const parts = text.split(regex);
 
   return parts.map((part, index) => {
@@ -149,6 +149,13 @@ function parseInlineStyles(text: string): React.ReactNode[] {
         <strong key={index} className="font-extrabold text-foreground">
           {part.slice(2, -2)}
         </strong>
+      );
+    }
+    if (part.startsWith("*") && part.endsWith("*")) {
+      return (
+        <em key={index} className="italic text-foreground/95">
+          {part.slice(1, -1)}
+        </em>
       );
     }
     if (part.startsWith("`") && part.endsWith("`")) {
@@ -198,7 +205,8 @@ function MarkdownRenderer({ content }: { content: string }) {
             return (
               <ol key={blockIdx} className="list-decimal pl-5 space-y-1 my-1">
                 {lines.map((line, lineIdx) => {
-                  const cleaned = line.trim().replace(/^\d+\.\s+/, "");
+                  let cleaned = line.trim().replace(/^\d+\.\s+/, "");
+                  cleaned = cleaned.trim().replace(/^[-*]\s+/, "");
                   return (
                     <li key={lineIdx} className="text-sm">
                       {parseInlineStyles(cleaned)}
