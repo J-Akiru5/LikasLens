@@ -6,7 +6,7 @@ import type { Ticket } from "@likaslens/shared";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
-import { AlertTriangle, Filter, MoreVertical, Eye, UserCheck, Flag, Trash2, X } from "lucide-react";
+import { AlertTriangle, Filter, MoreVertical, Eye, UserCheck, Flag, Trash2, X, Search } from "lucide-react";
 
 export default function IncidentsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -231,7 +231,8 @@ export default function IncidentsPage() {
                       )}
                     </div>
                   </div>
-                ))
+                </div>
+              ))
               ) : (
                 <div className="grid grid-cols-12 p-8 text-center col-span-12">
                   <div className="col-span-12 text-foreground/50 font-mono">
