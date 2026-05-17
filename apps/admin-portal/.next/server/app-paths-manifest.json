@@ -2,6 +2,7 @@
   "/(dashboard)/analytics/page": "app/(dashboard)/analytics/page.js",
   "/(dashboard)/audit-logs/page": "app/(dashboard)/audit-logs/page.js",
   "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
+  "/(dashboard)/inquiries/page": "app/(dashboard)/inquiries/page.js",
   "/(dashboard)/laws/page": "app/(dashboard)/laws/page.js",
   "/(dashboard)/ngos/page": "app/(dashboard)/ngos/page.js",
   "/(dashboard)/rewards/page": "app/(dashboard)/rewards/page.js",

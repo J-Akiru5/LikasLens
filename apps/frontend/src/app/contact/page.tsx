@@ -10,10 +10,25 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
-    // Simulate API call
+    
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/contact-messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      // Keeping it simple; if it fails we still show submitted for now
+      // since the design didn't have error states.
+    } catch (error) {
+      console.error("Failed to submit contact form", error);
+    }
+
     setTimeout(() => {
       setSubmitted(false);
       setFormData({ name: "", email: "", message: "" });

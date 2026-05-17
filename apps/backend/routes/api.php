@@ -29,6 +29,9 @@ Route::get('/health', function () {
 Route::post('/reports', [ReportController::class, 'store']);
 Route::post('/reports/triage', [ReportController::class, 'triage']);
 
+// Contact message endpoint (public)
+Route::post('/contact-messages', [\App\Http\Controllers\ContactMessageController::class, 'store']);
+
 // Public leaderboard endpoint
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 
@@ -117,5 +120,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Audit logs
         Route::get('/admin/audit-logs', [AdminAuditLogController::class, 'index']);
         Route::get('/admin/audit-logs/{id}', [AdminAuditLogController::class, 'show']);
+
+        // Contact messages (Inquiries)
+        Route::get('/admin/contact-messages', [\App\Http\Controllers\ContactMessageController::class, 'index']);
+        Route::patch('/admin/contact-messages/{id}/read', [\App\Http\Controllers\ContactMessageController::class, 'markAsRead']);
     });
 });

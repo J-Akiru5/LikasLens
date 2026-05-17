@@ -56,3 +56,10 @@ export function laravelPut<T>(endpoint: string, body?: unknown) {
 export function laravelDelete<T>(endpoint: string) {
   return laravelFetch<T>(endpoint, { method: "DELETE" });
 }
+
+export function laravelPatch<T>(endpoint: string, body?: unknown) {
+  return laravelFetch<T>(endpoint, {
+    method: "PATCH",
+    body: body ? JSON.stringify(body) : undefined,
+  });
+}
