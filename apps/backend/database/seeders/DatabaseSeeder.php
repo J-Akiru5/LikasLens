@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             EnvironmentalLawSeeder::class,
+            LawSeeder::class,
             NgoSeeder::class,
             AchievementSeeder::class,
             CurrencySettingSeeder::class,
