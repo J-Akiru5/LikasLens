@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { createClient } from "@/lib/supabase";
-import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import { useEffect, useState, useCallback } from "react";
 import {
   Search,
   Shield,
@@ -28,12 +26,12 @@ interface UserRow {
 }
 
 const PAGE_SIZE = 50;
-
 const ROLE_ORDER: Role[] = ["citizen", "ghost", "analyst", "super_admin"];
 
-export default function UsersPage() {
-  const supabase = useRef(createClient());
+// Base URL for your Laravel container application instance
+const LARAVEL_API_BASE = "https://likaslens-backend.jollysand-02a996f5.southeastasia.azurecontainerapps.io/api";
 
+export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
@@ -44,99 +42,104 @@ export default function UsersPage() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
+  // Helper to fetch authorization header strings if token storage is used
+  const getAuthHeaders = () => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+    return {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+    };
+  };
+
+  // 1. Fetch Users from Laravel API instead of Supabase Client
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const client = supabase.current;
-      let query = client
-        .from("users")
-        .select("id, supabase_auth_user_id, name, email, role, trust_score, reward_points_balance, created_at, deleted_at", { count: "exact" });
+      // Build search query parameters matching Laravel syntax structure
+      const params = new URLSearchParams({
+        page: (page + 1).toString(), // Laravel pagination scales from 1 index base
+        per_page: PAGE_SIZE.toString(),
+        ...(search && { search }),
+        ...(roleFilter && { role: roleFilter }),
+      });
 
-      if (search) {
-        query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
+      const response = await fetch(`${LARAVEL_API_BASE}/admin/users?${params}`, {
+        method: "GET",
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned error code: ${response.status}`);
       }
-      if (roleFilter) {
-        query = query.eq("role", roleFilter);
+
+      const result = await response.json();
+      
+      // Handle structures wrapped inside Laravel's LengthAwarePaginator framework
+      if (result && result.data) {
+        setUsers(result.data as UserRow[]);
+        setTotal(result.total ?? result.data.length);
+      } else {
+        setUsers((result ?? []) as UserRow[]);
+        setTotal((result ?? []).length);
       }
-
-      const from = page * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
-      query = query.order("created_at", { ascending: false }).range(from, to);
-
-      const { data, count, error: fetchErr } = await query;
-
-      if (fetchErr) throw fetchErr;
-      setUsers((data ?? []) as UserRow[]);
-      if (count !== null) setTotal(count);
     } catch (err) {
-      console.error("Supabase fetch error:", err);
-      setError(err instanceof Error ? err.message : "Failed to load users");
+      console.error("Laravel fetch error:", err);
+      setError(err instanceof Error ? err.message : "Failed to load users from backend engine");
       setUsers([]);
     } finally {
       setLoading(false);
     }
   }, [page, search, roleFilter]);
 
-  // Initial fetch + refetch on filters/page change
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  // Handle data reload triggers
+  useEffect(() => { 
+    fetchUsers(); 
+  }, [fetchUsers]);
 
-  // Realtime subscription
-  useEffect(() => {
-    const client = supabase.current;
-    const channel = client
-      .channel("admin-users-changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "users" },
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          if (payload.eventType === "INSERT") {
-            const row = payload.new as unknown as UserRow;
-            setUsers((prev) => {
-              if (prev.some((u) => u.id === row.id)) return prev;
-              return [row, ...prev];
-            });
-            setTotal((t) => t + 1);
-          } else if (payload.eventType === "UPDATE") {
-            const row = payload.new as unknown as UserRow;
-            setUsers((prev) => prev.map((u) => (u.id === row.id ? row : u)));
-          } else if (payload.eventType === "DELETE") {
-            const old = payload.old as { id: string };
-            setUsers((prev) => prev.filter((u) => u.id !== old.id));
-            setTotal((t) => Math.max(0, t - 1));
-          }
-        },
-      )
-      .subscribe();
-
-    return () => { client.removeChannel(channel); };
-  }, []);
-
+  // 2. Change Role endpoint mapping through Laravel Controller
   async function handleRoleChange(userId: string, newRole: string) {
     try {
-      const { error: updateErr } = await supabase.current
-        .from("users")
-        .update({ role: newRole })
-        .eq("id", userId);
+      const response = await fetch(`${LARAVEL_API_BASE}/admin/users/${userId}/role`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ role: newRole }),
+      });
 
-      if (updateErr) throw updateErr;
+      if (!response.ok) throw new Error("Failed to update role layout parameters");
+
+      // Optimistic state updates
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, role: newRole as Role } : u))
+      );
     } catch (err) {
       console.error("Failed to update role:", err);
+      alert("Error altering authorization role tier balance allocation.");
     }
   }
 
+  // 3. Deactivate mapping through Laravel Controller
   async function handleDelete(userId: string) {
-    if (!confirm("Deactivate this user?")) return;
+    if (!confirm("Deactivate this user account?")) return;
     try {
-      const { error: deleteErr } = await supabase.current
-        .from("users")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", userId);
+      const response = await fetch(`${LARAVEL_API_BASE}/admin/users/${userId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
 
-      if (deleteErr) throw deleteErr;
+      if (!response.ok) throw new Error("Failed termination command on resource ID");
+
+      // Optimistic state update for soft-deletions
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, deleted_at: new Date().toISOString() } : u
+        )
+      );
     } catch (err) {
-      console.error("Failed to deactivate user:", err);
+      console.error("Failed to deactivate user row instance:", err);
+      alert("Failed execution status updates during deactivation routines.");
     }
   }
 
@@ -233,7 +236,7 @@ export default function UsersPage() {
                 }`}
               >
                 <div className="col-span-4 sm:col-span-3 truncate">
-                  <span className="font-bold uppercase">{user.name}</span>
+                  <span className="font-bold uppercase">{user.name || "Anonymous"}</span>
                 </div>
                 <div className="hidden sm:block sm:col-span-3 truncate font-mono text-sm surface-muted">
                   {user.email}

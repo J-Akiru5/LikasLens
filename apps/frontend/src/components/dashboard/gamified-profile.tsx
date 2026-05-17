@@ -82,9 +82,8 @@ const CATEGORY_ICON: Record<string, LucideIcon> = {
   community: Award,
 };
 
-function achievementIconNode(ach: AchievementRow, className: string) {
-  const Icon = CATEGORY_ICON[ach.category] ?? Star;
-  return <Icon className={className} />;
+function achievementIcon(ach: AchievementRow): LucideIcon {
+  return CATEGORY_ICON[ach.category] ?? Star;
 }
 
 /* ------------------------------------------------------------------ */
@@ -190,6 +189,7 @@ function BadgeCard({
   unlockedAt: string | null;
   stats: UserStats;
 }) {
+  const Icon = achievementIcon(achievement);
   const isUnlocked = !!unlockedAt;
 
   const current = thresholdCurrent(stats, achievement);
@@ -209,7 +209,9 @@ function BadgeCard({
           isUnlocked ? "border-primary bg-primary/10" : "border-primary/20 bg-primary/5"
         }`}
       >
-        {achievementIconNode(achievement, `w-5 h-5 ${isUnlocked ? "text-primary" : "text-foreground/30"}`)}
+        <Icon
+          className={`w-5 h-5 ${isUnlocked ? "text-primary" : "text-foreground/30"}`}
+        />
         {!isUnlocked && (
           <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-foreground/20 flex items-center justify-center">
             <Lock className="w-2.5 h-2.5 text-background" />
