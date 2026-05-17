@@ -107,25 +107,11 @@ export default function ReportsPage() {
         <div class="footer">
             <p>LikasLens 2026 | Neuro-symbolic Civic Reporting Platform</p>
         </div>
-    </body>
-    </html>`;
+    \x3c/body>
+    \x3c/html>`;
     const w = window.open("", "", "width=1200,height=800");
     if (w) { w.document.write(htmlContent); w.document.close(); }
     else { alert("Please disable pop-up blocker to generate PDF"); }
-  };
-        </script>
-    </body>
-    </html>
-    `;
-
-    // Open in new window
-    const printWindow = window.open('', '', 'width=1200,height=800');
-    if (printWindow) {
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-    } else {
-      alert('Please disable pop-up blocker to generate PDF');
-    }
   };
 
   return (
@@ -227,15 +213,13 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            {/* AI Efficiency Insight Card */}
+            {/* Analytics Summary Card */}
             <div className="brutal-panel panel-surface p-8 border-4 border-accent shadow-[4px_4px_0px_#ffb703]">
               <h2 className="font-heading text-xl font-black uppercase text-primary mb-2 tracking-widest">
-                🤖 AI Efficiency Insight
+                Analytics Summary
               </h2>
               <p className="font-mono text-sm leading-relaxed text-foreground/80">
-                The Neuro-Symbolic AI accurately categorized <span className="text-secondary font-bold">98.4%</span> of
-                reports this week, reducing manual dispatch time by an average of <span className="text-accent font-bold">4.2 hours</span> per
-                critical incident. Ghost Mode usage increased to <span className="text-secondary font-bold">{ghostModeUsage} reports</span> ({Math.round((ghostModeUsage/totalIncidents)*100)}%), indicating strong community trust in the anonymity protocol.
+                Total of <span className="text-secondary font-bold">{totalIncidents} incidents</span> tracked, with <span className="text-secondary font-bold">{stats?.resolved_today ?? 0} resolved</span> today. Resolution rate at <span className="text-secondary font-bold">{avgResolutionRate}%</span>. {ghostModeUsage} reports ({Math.round((ghostModeUsage/Math.max(totalIncidents,1))*100)}%) submitted anonymously via Ghost Mode.
               </p>
             </div>
 
@@ -243,28 +227,28 @@ export default function ReportsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
               {[
                 { 
-                  title: "Response Time", 
-                  value: "18m", 
-                  unit: "Average", 
+                  title: "Total Tickets", 
+                  value: `${stats?.total_tickets ?? totalIncidents}`, 
+                  unit: "All Time", 
                   color: "border-primary",
-                  progress: (18 / 30) * 100,
-                  label: "vs 30m SLA"
+                  progress: 100,
+                  label: "platform total"
                 },
                 { 
                   title: "Resolution Rate", 
                   value: `${avgResolutionRate}%`, 
-                  unit: "This Week", 
+                  unit: "Overall", 
                   color: "border-secondary",
                   progress: avgResolutionRate,
-                  label: "weekly target"
+                  label: "resolved vs total"
                 },
                 { 
-                  title: "Ghost Mode Usage", 
-                  value: `${Math.round((ghostModeUsage/totalIncidents)*100)}%`, 
-                  unit: `${ghostModeUsage} Reports`, 
+                  title: "Open Incidents", 
+                  value: `${stats?.active_incidents ?? 0}`, 
+                  unit: "Active", 
                   color: "border-accent",
-                  progress: (ghostModeUsage / totalIncidents) * 100,
-                  label: "of all reports"
+                  progress: stats?.active_incidents_total ? Math.min(Math.round((stats.active_incidents / stats.active_incidents_total) * 100), 100) : 0,
+                  label: "currently active"
                 },
               ].map((metric, i) => (
                 <div key={i} className={`brutal-panel panel-surface p-6 border-2 ${metric.color} shadow-[3px_3px_0px_#1b4332]`}>
