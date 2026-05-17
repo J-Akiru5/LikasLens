@@ -52,7 +52,7 @@ export function LikasyChat({ systemPrompt, welcomeMessage }: LikasyChatProps) {
       <button
         onClick={() => setOpen((v) => !v)}
         className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-[4px_4px_0px_rgba(8,28,21,0.3)] transition-all duration-200 hover:scale-105 hover:shadow-[6px_6px_0px_rgba(8,28,21,0.4)] active:scale-95"
-        style={{ background: "var(--color-secondary, #2DE1C2)", color: "#081c15" }}
+        style={{ background: "var(--secondary)", color: "#081c15" }}
         aria-label={open ? "Close chat" : "Open Likasy chat"}
       >
         {open ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
@@ -62,12 +62,12 @@ export function LikasyChat({ systemPrompt, welcomeMessage }: LikasyChatProps) {
       {open && (
         <div
           className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 h-[28rem] max-h-[70vh] flex flex-col rounded-xl shadow-[8px_8px_0px_rgba(8,28,21,0.2)] animate-slide-in overflow-hidden"
-          style={{ background: "var(--color-background, #F8F9FA)", border: "4px solid var(--color-primary, #1B4332)" }}
+          style={{ background: "var(--panel)", border: "4px solid var(--panel-border)" }}
         >
           {/* Header */}
           <div
             className="flex items-center gap-2 px-4 py-3 shrink-0"
-            style={{ background: "var(--color-secondary, #2DE1C2)", color: "#081c15" }}
+            style={{ background: "var(--secondary)", color: "#081c15" }}
           >
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/30">
               <Bot className="w-5 h-5" />
@@ -89,7 +89,7 @@ export function LikasyChat({ systemPrompt, welcomeMessage }: LikasyChatProps) {
           <div
             ref={listRef}
             className="flex-1 overflow-y-auto p-3 space-y-3"
-            style={{ background: "var(--color-background, #F8F9FA)" }}
+            style={{ background: "var(--background)" }}
           >
             {messages.map((msg) => (
               <ChatBubble key={msg.id} message={msg} />
@@ -97,20 +97,20 @@ export function LikasyChat({ systemPrompt, welcomeMessage }: LikasyChatProps) {
 
             {loading && (
               <div className="flex items-start gap-2">
-                <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-1" style={{ background: "var(--color-secondary, #2DE1C2)" }}>
+                <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-1" style={{ background: "var(--secondary)" }}>
                   <Bot className="w-3.5 h-3.5" style={{ color: "#081c15" }} />
                 </div>
-                <div className="flex items-center gap-1 px-3 py-2 rounded-xl" style={{ background: "var(--color-background, #F8F9FA)", border: "2px solid var(--color-primary, #1B4332)" }}>
-                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: "var(--color-secondary, #2DE1C2)" }} />
-                  <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:0.15s]" style={{ background: "var(--color-secondary, #2DE1C2)" }} />
-                  <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:0.3s]" style={{ background: "var(--color-secondary, #2DE1C2)" }} />
+                <div className="flex items-center gap-1 px-3 py-2 rounded-xl" style={{ background: "var(--panel)", border: "2px solid var(--panel-border)" }}>
+                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: "var(--secondary)" }} />
+                  <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:0.15s]" style={{ background: "var(--secondary)" }} />
+                  <span className="w-2 h-2 rounded-full animate-bounce [animation-delay:0.3s]" style={{ background: "var(--secondary)" }} />
                 </div>
               </div>
             )}
           </div>
 
           {/* Input */}
-          <div className="p-3 shrink-0" style={{ borderTop: "2px solid var(--color-primary, #1B4332)" }}>
+          <div className="p-3 shrink-0" style={{ borderTop: "2px solid var(--panel-border)" }}>
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -119,14 +119,13 @@ export function LikasyChat({ systemPrompt, welcomeMessage }: LikasyChatProps) {
                 onKeyDown={handleKeyDown}
                 placeholder="Ask Likasy..."
                 disabled={loading}
-                className="flex-1 px-3 py-2 rounded-lg font-mono text-sm border-2 border-primary focus:outline-none focus:ring-2 focus:ring-secondary"
-                style={{ background: "#FFFFFF", color: "#081C15", borderColor: "var(--color-primary, #1B4332)" }}
+                className="flex-1 px-3 py-2 rounded-lg font-mono text-sm theme-input"
               />
               <button
                 onClick={handleSend}
                 disabled={loading || !input.trim()}
                 className="flex items-center justify-center w-10 h-10 rounded-lg shrink-0 transition-all disabled:opacity-40"
-                style={{ background: "var(--color-secondary, #2DE1C2)", color: "#081c15" }}
+                style={{ background: "var(--secondary)", color: "#081c15" }}
                 aria-label="Send message"
               >
                 <Send className="w-4 h-4" />
@@ -146,7 +145,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
     <div className={`flex items-start gap-2 ${isUser ? "flex-row-reverse" : ""}`}>
       <div
         className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-1"
-        style={{ background: isUser ? "var(--color-accent, #FFB703)" : "var(--color-secondary, #2DE1C2)" }}
+        style={{ background: isUser ? "var(--accent)" : "var(--secondary)" }}
       >
         {isUser ? (
           <User className="w-3.5 h-3.5" style={{ color: "#081c15" }} />
@@ -158,9 +157,9 @@ function ChatBubble({ message }: { message: ChatMessage }) {
       <div
         className="max-w-[80%] px-3 py-2 rounded-xl font-body text-sm leading-relaxed"
         style={{
-          background: isUser ? "var(--color-accent, #FFB703)" : "var(--color-background, #F8F9FA)",
-          color: isUser ? "#081c15" : "var(--color-foreground, #081C15)",
-          border: isUser ? "none" : "2px solid var(--color-primary, #1B4332)",
+          background: isUser ? "var(--accent)" : "var(--panel)",
+          color: isUser ? "#081c15" : "var(--foreground)",
+          border: isUser ? "none" : "2px solid var(--panel-border)",
         }}
       >
         <div className="whitespace-pre-wrap break-words">{message.content}</div>
