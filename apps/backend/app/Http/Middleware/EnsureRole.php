@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\AuditLog;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,10 @@ class EnsureRole
         $user = $request->user();
 
         if (!$user) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
         }
 
         foreach ($roles as $role) {
@@ -22,6 +26,20 @@ class EnsureRole
             }
         }
 
-        return response()->json(['message' => 'Forbidden. Insufficient role.'], 403);
+        AuditLog::create([
+            'actor_user_id' => $user->id,
+            'action' => 'rbac_denied',
+            'entity_type' => 'route',
+            'entity_id' => $request->method() . ' ' . $request->path(),
+            'old_values' => ['role' => $user->role],
+            'new_values' => ['required_roles' => $roles],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Forbidden. Requires one of: ' . implode(', ', $roles) . '.',
+        ], 403);
     }
 }
