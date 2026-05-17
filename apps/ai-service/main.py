@@ -40,6 +40,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",  # Next.js frontend
+        "http://localhost:3002",  # Next.js admin-portal
         "http://localhost:8000",  # Laravel backend
     ],
     allow_credentials=True,
@@ -208,6 +209,28 @@ async def analyze_hazard(payload: dict):
         enforcing_agencies=graph_data["agencies"],
         ai_summary=ai_summary,
     )
+
+
+@app.post("/api/v1/chat")
+async def chat_proxy(payload: dict):
+    """Secure chat proxy for the Likasy chatbot.
+
+    Accepts chat messages from the frontend, calls Gemini 2.5 Flash
+    server-side, and returns the response. The GOOGLE_API_KEY never
+    leaves the server.
+    """
+    from chat_proxy import ChatRequest, ChatResponse, generate_chat_reply
+
+    try:
+        request = ChatRequest(**payload)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid request body: {exc}",
+        )
+
+    reply = await generate_chat_reply(request)
+    return ChatResponse(reply=reply)
 
 
 if __name__ == "__main__":
