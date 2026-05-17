@@ -6,8 +6,16 @@ import { Leaf, ShieldCheck, Map, Bot, ArrowRight, UserCheck, Activity } from "lu
 
 export default function AdminLandingPage() {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
-      <div className="absolute inset-0 z-0 bg-[#081c15]/5" />
+    <main className="relative min-h-screen overflow-hidden selection:bg-accent/30 selection:text-current font-body">
+      {/* Background Image for Hero Section */}
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center"
+        style={{
+          backgroundImage: "url('/images/bg-hero.png')",
+        }}
+      >
+        <div className="absolute inset-0 backdrop-blur-[3px] bg-[#f8f9fa]/40" />
+      </div>
 
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-background/90 backdrop-blur-md border-b-2 border-primary/10">
