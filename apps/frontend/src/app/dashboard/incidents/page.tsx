@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getTickets } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
-import { AlertTriangle, Filter, MoreVertical, Search } from "lucide-react";
-import { useMemo } from "react";
+import { AlertTriangle, Filter, MoreVertical, Eye, UserCheck, Flag, Trash2, X } from "lucide-react";
 
 export default function IncidentsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -55,6 +54,32 @@ export default function IncidentsPage() {
     () => [...new Set(tickets.map((t) => t.status))],
     [tickets]
   );
+
+  // ── Row action dropdown state ──
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const closeMenu = useCallback(() => setOpenMenuId(null), []);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [openMenuId, closeMenu]);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        closeMenu();
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [openMenuId, closeMenu]);
 
   if (loading) {
     return (
@@ -125,7 +150,7 @@ export default function IncidentsPage() {
               Showing {filteredIncidents.length} of {tickets.length} incidents
             </div>
 
-            <div className="brutal-panel panel-surface p-0 overflow-hidden">
+            <div className="brutal-panel panel-surface p-0">
               <div className="grid grid-cols-12 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2 border-[#081c15]" style={{ backgroundColor: "#1b4332", color: "#f8f9fa" }}>
                 <div className="col-span-2">ID</div>
                 <div className="col-span-3">Category</div>
@@ -154,9 +179,56 @@ export default function IncidentsPage() {
                       </span>
                     </div>
                     <div className="col-span-2 text-right">
-                      <button className="p-1 hover:bg-primary/10 rounded transition-colors">
-                        <MoreVertical className="w-5 h-5 text-primary" />
-                      </button>
+                      <div ref={menuRef} className="relative inline-block">
+                        <button
+                          onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
+                          className="p-1 hover:bg-primary/10 rounded transition-colors"
+                          aria-label="Row actions"
+                          aria-expanded={openMenuId === ticket.id}
+                        >
+                          <MoreVertical className="w-5 h-5 text-primary" />
+                        </button>
+                        {openMenuId === ticket.id && (
+                          <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden"
+                        >
+                          <button
+                            type="button"
+                            style={{ touchAction: "manipulation" }}
+                            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
+                          >
+                            <Eye className="w-4 h-4 text-primary" />
+                            View Details
+                          </button>
+                          <button
+                            type="button"
+                            style={{ touchAction: "manipulation" }}
+                            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
+                          >
+                            <UserCheck className="w-4 h-4 text-secondary" />
+                            Assign
+                          </button>
+                          <button
+                            type="button"
+                            style={{ touchAction: "manipulation" }}
+                            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
+                          >
+                            <Flag className="w-4 h-4 text-accent" />
+                            Change Status
+                          </button>
+                          <button
+                            type="button"
+                            style={{ touchAction: "manipulation" }}
+                            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-red-50 transition-colors text-accent"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Remove
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
