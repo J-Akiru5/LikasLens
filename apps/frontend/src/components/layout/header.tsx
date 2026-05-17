@@ -48,8 +48,9 @@ export function AppHeader({ greeting }: { greeting?: string }) {
             Welcome back, <span className="text-secondary">{greeting}</span>
           </h1>
         ) : (
-          <Link href="/" className="text-primary hover:text-secondary transition-colors" aria-label="Home">
+          <Link href="/" className="flex items-center gap-2 text-primary hover:text-secondary transition-colors">
             <Leaf className="w-6 h-6" />
+            <span className="font-heading font-black text-xl uppercase">LikasLens</span>
           </Link>
         )}
       </div>

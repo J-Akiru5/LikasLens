@@ -114,7 +114,7 @@ export default function IncidentsPage() {
                     className="pl-9 pr-4 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
                   />
                 </div>
-                <button className="brutal-panel p-2 hover:bg-primary hover:text-background transition-colors cursor-pointer border-2 border-primary shadow-[2px_2px_0px_#1b4332]">
+                <button className="brutal-panel p-2 hover:bg-primary hover:text-white transition-colors cursor-pointer border-2 border-primary shadow-[2px_2px_0px_#1b4332]">
                   <Filter className="w-5 h-5" />
                 </button>
               </div>
@@ -125,7 +125,7 @@ export default function IncidentsPage() {
                 onClick={() => setSelectedStatus(null)}
                 className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
                   selectedStatus === null
-                    ? "bg-primary text-background border-primary shadow-[2px_2px_0px_#081c15]"
+                    ? "bg-primary text-white border-primary shadow-[2px_2px_0px_#081c15]"
                     : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
                 }`}
               >

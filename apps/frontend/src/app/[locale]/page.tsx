@@ -160,7 +160,7 @@ export default function Home() {
           </a>
           <button
             onClick={handleInstall}
-            className="flex items-center gap-2 px-6 py-3 rounded-lg text-base font-bold border-2 border-primary text-primary hover:bg-primary/10 transition-colors"
+            className="flex items-center gap-2 px-6 py-3 rounded-lg text-base font-bold border-2 border-secondary text-secondary hover:bg-secondary/10 transition-colors"
           >
             <Smartphone className="w-5 h-5" /> <Download className="w-4 h-4" /> Get the App
           </button>

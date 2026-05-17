@@ -49,7 +49,7 @@ function TabButton({
       style={{ touchAction: "manipulation" }}
       className={`relative flex items-center gap-2 shrink-0 px-4 py-3 rounded-lg font-bold uppercase text-sm transition-all border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
         isActive
-          ? "bg-primary text-background border-primary shadow-[3px_3px_0px_#081c15]"
+          ? "bg-primary text-white border-primary shadow-[3px_3px_0px_#081c15]"
           : "bg-transparent text-primary border-primary/30 hover:border-primary hover:bg-primary/5"
       }`}
       aria-current={isActive ? "true" : undefined}
@@ -177,7 +177,7 @@ function AccountSection() {
           <button
             type="button"
             style={{ touchAction: "manipulation" }}
-            className="w-full p-4 border-2 border-primary text-primary hover:bg-primary hover:text-background transition-colors rounded font-bold uppercase"
+            className="w-full p-4 border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors rounded font-bold uppercase"
           >
             Change Password
           </button>

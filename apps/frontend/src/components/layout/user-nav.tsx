@@ -35,7 +35,7 @@ export function UserNav() {
   };
 
   if (loading) {
-    return <div className="w-10 h-10 rounded-full bg-primary/20 animate-pulse border-2 border-primary/30" />;
+    return <div className="w-10 h-10 rounded-full bg-primary/10 animate-pulse border-2 border-primary/20" />;
   }
 
   if (!user) {
@@ -61,9 +61,9 @@ export function UserNav() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 group focus:outline-none bg-primary/10 hover:bg-primary/20 transition-colors p-1 pr-3 rounded-full border-2 border-primary/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        className="flex items-center gap-2 group focus:outline-none bg-primary/5 hover:bg-primary/10 transition-colors p-1 pr-3 rounded-full border-2 border-primary/20"
       >
-        <div className="w-9 h-9 rounded-full border-2 border-primary bg-primary/15 flex items-center justify-center overflow-hidden transition-all">
+        <div className="w-9 h-9 rounded-full border-2 border-primary bg-secondary/20 flex items-center justify-center overflow-hidden transition-all group-hover:shadow-[2px_2px_0px_#2de1c2] shadow-[1px_1px_0px_#1b4332]">
           {user.user_metadata?.avatar_url ? (
             <Image
               src={user.user_metadata.avatar_url}
@@ -75,7 +75,7 @@ export function UserNav() {
               className="w-full h-full object-cover"
             />
           ) : (
-            <User className="w-5 h-5 text-foreground" />
+            <User className="w-5 h-5 text-primary" />
           )}
         </div>
         <ChevronDown className={`w-4 h-4 text-primary transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />

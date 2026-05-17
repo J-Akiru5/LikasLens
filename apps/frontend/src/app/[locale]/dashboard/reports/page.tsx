@@ -127,7 +127,7 @@ export default function ReportsPage() {
               <h1 className="font-heading text-4xl font-black uppercase">Analytics & Reports</h1>
               <button
                 onClick={handleExportData}
-                className="brutal-button px-4 py-2 rounded text-sm flex items-center gap-2 hover:bg-primary hover:text-background transition-colors"
+                className="brutal-button px-4 py-2 rounded text-sm flex items-center gap-2 hover:bg-primary hover:text-white transition-colors"
               >
                 <Download className="w-4 h-4" /> Export Data
               </button>

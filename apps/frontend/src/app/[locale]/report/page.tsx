@@ -432,7 +432,7 @@ export default function ReportPage() {
 										<button
 											type="button"
 											onClick={() => camera.stop()}
-											className="px-4 py-3 font-bold uppercase text-sm rounded-lg border-2 border-accent text-primary bg-background/80 hover:bg-accent/10 transition-colors"
+											className="px-4 py-3 font-bold uppercase text-sm rounded-lg border-2 border-accent text-accent bg-background/80 hover:bg-accent/10 transition-colors"
 										>
 											Cancel
 										</button>
@@ -581,7 +581,7 @@ export default function ReportPage() {
 							<button
 								type="button"
 								onClick={clearForm}
-								className="brutal-panel px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-accent text-primary hover:bg-accent/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+								className="brutal-panel px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-accent text-accent hover:bg-accent/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
 							>
 								Clear Form
 							</button>
@@ -590,7 +590,7 @@ export default function ReportPage() {
 								disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
 								className={`brutal-button px-6 py-3 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
 									isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null
-										? "border-primary/30 bg-primary/10 text-primary/40 cursor-not-allowed"
+										? "border-foreground/30 bg-foreground/10 text-foreground/40 cursor-not-allowed"
 										: "border-primary bg-primary text-background hover:shadow-[6px_6px_0px_#1b4332]"
 								}`}
 							>
