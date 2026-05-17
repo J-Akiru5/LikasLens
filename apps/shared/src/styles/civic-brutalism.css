@@ -5,10 +5,22 @@
   --background: #F8F9FA;
   --foreground: #081C15;
   --panel: #F8F9FA;
-  --panel-border: rgba(8, 28, 21, 0.2);
-  --muted-text: rgba(8, 28, 21, 0.8);
+  --panel-border: rgba(8, 28, 21, 0.3);
+  --muted-text: rgba(8, 28, 21, 0.85);
   --accent-fg: #92400E;
   --secondary-fg: #0D9488;
+  --ghost-panel: hsl(220, 60%, 12%);
+  --ghost-primary: hsl(120, 80%, 82%);
+}
+
+[data-theme="ghost"] {
+  --primary: hsl(120, 80%, 82%);
+  --secondary: #2DE1C2;
+  --accent: #FFB703;
+  --background: hsl(220, 60%, 6%);
+  --foreground: hsl(0, 0%, 94%);
+  --panel: hsl(220, 60%, 12%);
+  --muted-text: rgba(255, 255, 255, 0.75);
 }
 
 .brutal-panel {

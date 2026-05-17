@@ -612,7 +612,7 @@ export default function SettingsPage() {
     <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-        <AppHeader />
+        <AppHeader showBranding={false} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Back + Heading */}

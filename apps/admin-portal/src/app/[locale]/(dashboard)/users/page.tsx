@@ -113,7 +113,7 @@ export default function UsersPage() {
     if (role === "super_admin") return <ShieldAlert className="h-5 w-5 text-accent" />;
     if (role === "analyst") return <Shield className="h-5 w-5 text-secondary" />;
     return (
-      <span className="rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 border-primary/30 bg-primary/10 text-foreground/60">
+      <span className="rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 border-primary bg-primary/10 text-primary">
         {role}
       </span>
     );
@@ -197,8 +197,8 @@ export default function UsersPage() {
             {users.map((user) => (
               <div
                 key={user.id}
-                className={`grid grid-cols-12 gap-2 items-center border-t-2 p-4 font-medium hover:bg-primary/5 transition-colors ${
-                  user.deleted_at ? "opacity-40" : "border-primary/20"
+                className={`grid grid-cols-12 gap-2 items-center border-t-2 p-4 font-medium hover:bg-primary/10 transition-colors ${
+                  user.deleted_at ? "opacity-50" : "border-primary/20"
                 }`}
               >
                 <div className="col-span-4 sm:col-span-3 truncate">
