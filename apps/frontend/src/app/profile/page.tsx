@@ -120,7 +120,7 @@ export default function ProfilePage() {
           </h1>
           <Link
             href="/dashboard/profile"
-            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-secondary text-secondary hover:bg-secondary/10 rounded transition-colors font-bold uppercase text-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/10 rounded transition-colors font-bold uppercase text-sm"
           >
             <Settings className="w-4 h-4" />
             Edit Profile

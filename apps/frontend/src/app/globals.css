@@ -34,6 +34,7 @@
   --muted-text: rgba(248, 249, 250, 0.84);
   --hero-overlay: linear-gradient(140deg, rgba(8, 28, 21, 0.95), rgba(27, 67, 50, 0.92));
   --primary: #2de1c2;
+  --secondary: #2DE1C2;
 }
 
 *:focus-visible {
@@ -205,9 +206,7 @@ body {
 .brutal-panel h2,
 .brutal-panel h3,
 .brutal-panel p,
-.brutal-panel label,
-.brutal-panel input,
-.brutal-panel button {
+.brutal-panel label {
   color: var(--foreground) !important;
 }
 
