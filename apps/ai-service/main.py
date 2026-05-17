@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from gremlin_bootstrap import build_bootstrap_queries
@@ -175,6 +175,39 @@ async def routing_traversal(citizen_id: str, incident_id: str, violation_code: s
         citizen_id, incident_id, violation_code, ngo_id or None
     )
     return {"queries": queries}
+
+
+@app.post("/api/v1/analyze-hazard")
+async def analyze_hazard(payload: dict):
+    """Neuro-symbolic hazard analysis: Gremlin graph traversal + Gemini LLM synthesis.
+
+    Accepts a JSON body with ``hazard_id`` (string), queries the Cosmos DB Gremlin
+    graph for strictly mapped Philippine laws and enforcing agencies, then passes
+    that data to Gemini 2.5 Flash to generate a natural-language incident summary.
+    """
+    from hazard_analyzer import HazardRequest, HazardResponse, generate_incident_summary, query_hazard_laws_and_agencies
+
+    try:
+        request = HazardRequest(**payload)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid request body: {exc}",
+        )
+
+    graph_data = await query_hazard_laws_and_agencies(request.hazard_id)
+    ai_summary = await generate_incident_summary(
+        request.hazard_id,
+        graph_data["laws"],
+        graph_data["agencies"],
+    )
+
+    return HazardResponse(
+        hazard_id=request.hazard_id,
+        violated_laws=graph_data["laws"],
+        enforcing_agencies=graph_data["agencies"],
+        ai_summary=ai_summary,
+    )
 
 
 if __name__ == "__main__":

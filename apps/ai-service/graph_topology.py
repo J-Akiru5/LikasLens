@@ -16,6 +16,7 @@ VERTEX_LABELS = [
     "Incident",
     "Law",
     "ViolationType",
+    "HazardType",
     "NGO",
     "Reward",
     "Partner",
@@ -31,6 +32,8 @@ EDGE_LABELS = [
     "PROVIDED_BY",
     "HAS_EVIDENCE",
     "RELATED_TO",
+    "violates",
+    "enforced_by",
 ]
 
 
