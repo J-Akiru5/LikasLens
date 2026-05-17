@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\AdminAuditLogController;
 use App\Http\Controllers\AdminLawController;
 use App\Http\Controllers\AdminNgoController;
@@ -7,6 +8,8 @@ use App\Http\Controllers\AdminRewardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\CurrencySettingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EcoCreditController;
 use App\Http\Controllers\LeaderboardController;
@@ -31,13 +34,20 @@ Route::post('/reports', [ReportController::class, 'store']);
 Route::post('/reports/triage', [ReportController::class, 'triage']);
 
 // Contact message endpoint (public)
-Route::post('/contact-messages', [\App\Http\Controllers\ContactMessageController::class, 'store']);
+Route::post('/contact-messages', [ContactMessageController::class, 'store']);
 
 // Chat proxy endpoint (public — proxies to internal AI service)
 Route::post('/v1/chat', [ChatController::class, 'send']);
 
 // Public leaderboard endpoint
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+
+// Public achievement catalog
+Route::get('/achievements', [AchievementController::class, 'catalog']);
+Route::get('/achievements/user/{supabaseUserId}', [AchievementController::class, 'userAchievementsBySupabaseId']);
+
+// Public eco-credit currency rate
+Route::get('/settings/eco-credit-rate', [CurrencySettingController::class, 'showRate']);
 
 // Public profile stats (by Supabase auth user id)
 Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
@@ -57,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user/profile', function (Request $request) {
         $user = $request->user();
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -72,6 +83,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Citizen dashboard data
     Route::get('/user/impact', [UserImpactController::class, 'show']);
+
+    // Achievements
+    Route::get('/user/achievements', [AchievementController::class, 'userAchievements']);
+    Route::get('/user/rank-progress', [AchievementController::class, 'rankProgress']);
+
+    // Report actions
+    Route::post('/reports/verify', [ReportController::class, 'verify']);
+    Route::post('/reports/batch-sync', [ReportController::class, 'batchSync']);
 
     // Dashboard endpoints
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
@@ -106,7 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('v1/likaslens-admin')->group(function () {
             Route::get('/users/sync', [AdminUserController::class, 'index']);
         });
-        
+
         // Full NGO CRUD
         Route::post('/admin/ngos', [AdminNgoController::class, 'store']);
         Route::put('/admin/ngos/{id}', [AdminNgoController::class, 'update']);
@@ -120,6 +139,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Rewards catalog
         Route::apiResource('/admin/rewards', AdminRewardController::class);
 
+        // Currency settings
+        Route::apiResource('/admin/currency-settings', CurrencySettingController::class);
+
         // User management
         Route::get('/admin/users', [AdminUserController::class, 'index']);
         Route::get('/admin/users/{id}', [AdminUserController::class, 'show']);
@@ -132,7 +154,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/audit-logs/{id}', [AdminAuditLogController::class, 'show']);
 
         // Contact messages (Inquiries)
-        Route::get('/admin/contact-messages', [\App\Http\Controllers\ContactMessageController::class, 'index']);
-        Route::patch('/admin/contact-messages/{id}/read', [\App\Http\Controllers\ContactMessageController::class, 'markAsRead']);
+        Route::get('/admin/contact-messages', [ContactMessageController::class, 'index']);
+        Route::patch('/admin/contact-messages/{id}/read', [ContactMessageController::class, 'markAsRead']);
     });
 });

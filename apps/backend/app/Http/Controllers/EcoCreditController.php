@@ -24,7 +24,7 @@ class EcoCreditController extends Controller
             $result = DB::transaction(function () use ($userId, $creditAmount) {
                 $wallet = CitizenWallet::where('user_id', $userId)->lockForUpdate()->first();
 
-                if (!$wallet) {
+                if (! $wallet) {
                     return response()->json(['error' => 'Citizen wallet not found. Ensure the user is registered.'], 404);
                 }
 
@@ -37,7 +37,7 @@ class EcoCreditController extends Controller
                     ->orderBy('created_at', 'asc')
                     ->first();
 
-                if (!$pool) {
+                if (! $pool) {
                     return response()->json(['error' => 'Corporate ESG Credit Pools are currently depleted.'], 503);
                 }
 
