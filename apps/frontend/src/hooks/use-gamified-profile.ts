@@ -154,15 +154,21 @@ export function useGamifiedProfile(): GamifiedProfileState {
           .eq("supabase_auth_user_id", authUser.id)
           .maybeSingle();
 
+        const achievementsPromise = supabase
+          .from("achievements")
+          .select("*")
+          .order("threshold_value", { ascending: true });
+
+        const citizenPromise = userRow?.id
+          ? supabase
+              .from("citizen_achievements")
+              .select("achievement_id, unlocked_at")
+              .eq("user_id", userRow.id)
+          : Promise.resolve({ data: [], error: null });
+
         const [{ data: achievementsData, error: achErr }, { data: citizenData, error: citErr }] = await Promise.all([
-          supabase
-            .from("achievements")
-            .select("*")
-            .order("threshold_value", { ascending: true }),
-          supabase
-            .from("citizen_achievements")
-            .select("achievement_id, unlocked_at")
-            .eq("user_id", userRow?.id ?? ""),
+          achievementsPromise,
+          citizenPromise,
         ]);
 
         if (cancelled) return;
