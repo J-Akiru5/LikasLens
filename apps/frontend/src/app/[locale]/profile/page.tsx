@@ -57,15 +57,15 @@ function ProfilePageContent() {
         const supabaseUserId = user?.id;
 
         const [leaderboardRes, achievementsRes, rankRes, profileRes] = await Promise.all([
-          fetch(`${laravelUrl}/api/leaderboard`).then(r => r.ok ? r.json() : null),
+          fetch(`${laravelUrl}/leaderboard`).then(r => r.ok ? r.json() : null),
           supabaseUserId
-            ? fetch(`${laravelUrl}/api/achievements/user/${supabaseUserId}`).then(r => r.ok ? r.json() : null)
-            : fetch(`${laravelUrl}/api/achievements`).then(r => r.ok ? r.json() : null),
+            ? fetch(`${laravelUrl}/achievements/user/${supabaseUserId}`).then(r => r.ok ? r.json() : null)
+            : fetch(`${laravelUrl}/achievements`).then(r => r.ok ? r.json() : null),
           supabaseUserId
-            ? fetch(`${laravelUrl}/api/user/rank-progress`, { credentials: "include" }).then(r => r.ok ? r.json() : null)
+            ? fetch(`${laravelUrl}/user/rank-progress`, { credentials: "include" }).then(r => r.ok ? r.json() : null)
             : Promise.resolve(null),
           supabaseUserId
-            ? fetch(`${laravelUrl}/api/profile/${supabaseUserId}`).then(r => r.ok ? r.json() : null)
+            ? fetch(`${laravelUrl}/profile/${supabaseUserId}`).then(r => r.ok ? r.json() : null)
             : Promise.resolve(null),
         ]);
 

@@ -39,7 +39,7 @@ export default function ScoreboardPage() {
       setError(null);
       try {
         const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
-        const res = await fetch(`${laravelUrl}/api/leaderboard`);
+        const res = await fetch(`${laravelUrl}/leaderboard`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         if (mounted) setData(json.data ?? json);

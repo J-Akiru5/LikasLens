@@ -36,6 +36,10 @@ Route::post('/reports/triage', [ReportController::class, 'triage']);
 // Contact message endpoint (public)
 Route::post('/contact-messages', [ContactMessageController::class, 'store']);
 
+// Public law search (citizen-facing)
+Route::get('/laws', [AdminLawController::class, 'index']);
+Route::get('/laws/{id}', [AdminLawController::class, 'show']);
+
 // Chat proxy endpoint (public — proxies to internal AI service)
 Route::post('/v1/chat', [ChatController::class, 'send']);
 

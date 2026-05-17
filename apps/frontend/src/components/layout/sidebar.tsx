@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   MapPin,
+  Scale,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { isAnalystOrSuperAdmin, getRole } from "@/lib/roles";
@@ -94,6 +95,7 @@ export function Sidebar() {
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle, roles: null },
     { href: "/dashboard/reports", label: "Analytics", icon: FileText, roles: null },
     { href: "/dashboard/analytics", label: "Towns", icon: MapPin, roles: ["analyst", "super_admin"] },
+    { href: "/laws", label: "Laws", icon: Scale, roles: null },
     { href: "/profile", label: "Profile", icon: User, roles: null },
   ];
 

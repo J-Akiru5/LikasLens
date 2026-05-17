@@ -512,7 +512,7 @@ function PlatformSection() {
   const handleLocaleChange = (newLocale: string) => {
     if (newLocale === currentLocale) return;
     const newPath = pathname.replace(new RegExp(`^/${currentLocale}(/|$)`), `/${newLocale}$1`);
-    document.cookie = `likaslens-locale=${newLocale};path=/;max-age=31536000`;
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000;SameSite=Lax`;
     showToast(`Language changed to ${localeNames[newLocale as keyof typeof localeNames]?.native || newLocale}`, "success");
     startTransition(() => {
       router.replace(newPath);

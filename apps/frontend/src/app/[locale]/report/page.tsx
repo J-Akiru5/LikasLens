@@ -133,7 +133,7 @@ export default function ReportPage() {
 		const successfulIds: string[] = [];
 		for (const item of queued) {
 			try {
-				const response = await fetch(`${laravelUrl}/api/reports`, {
+				const response = await fetch(`${laravelUrl}/reports`, {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -261,7 +261,7 @@ export default function ReportPage() {
 			return;
 		}
 
-		const response = await fetch(`${laravelUrl}/api/reports`, {
+		const response = await fetch(`${laravelUrl}/reports`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -297,7 +297,7 @@ export default function ReportPage() {
 			if (!isGhostMode && navigator.onLine) {
 				setIsTriaging(true);
 				try {
-					const triageRes = await fetch(`${laravelUrl}/api/reports/triage`, {
+					const triageRes = await fetch(`${laravelUrl}/reports/triage`, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({ base64Image: cleanedImage }),
