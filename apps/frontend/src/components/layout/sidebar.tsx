@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   LayoutDashboard,
   AlertCircle,
@@ -25,7 +25,30 @@ export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
-  const closeMobile = () => setMobileOpen(false);
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  // Close on route change
+  useEffect(() => { closeMobile(); }, [pathname, closeMobile]);
+
+  // Escape key closes the overlay
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMobile();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen, closeMobile]);
+
+  // Prevent body scroll while overlay is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   useEffect(() => {
     const handleThemeChange = () => {
@@ -186,7 +209,7 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile hamburger button */}
+      {/* Mobile hamburger button — fixed, safe z-index */}
       <button
         aria-label={mobileOpen ? "Close sidebar menu" : "Open sidebar menu"}
         aria-expanded={mobileOpen}
@@ -196,25 +219,41 @@ export function Sidebar() {
         {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
       </button>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-64 panel-surface border-r-4 border-primary flex-col h-full relative z-20 font-body">
+      {/* Desktop sidebar — hidden on mobile, visible on lg+ */}
+      <aside className="hidden lg:flex lg:w-64 shrink-0 panel-surface border-r-4 border-primary flex-col h-full relative z-20 font-body">
         {sidebarContent}
       </aside>
 
-      {/* Mobile sidebar overlay */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-30">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
-          />
-          {/* Slide-in sidebar */}
-          <aside className="absolute left-0 top-0 bottom-0 w-72 panel-surface border-r-4 border-primary flex flex-col font-body shadow-[8px_0_32px_rgba(0,0,0,0.3)] animate-slide-in z-40">
-            {sidebarContent}
-          </aside>
-        </div>
-      )}
+      {/* Mobile sidebar — overlay with animated slide-in/out */}
+      <div
+        className={`fixed inset-0 z-30 lg:hidden transition-opacity duration-200 ${
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={!mobileOpen}
+      >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={closeMobile}
+        />
+        {/* Slide-in sidebar panel */}
+        <aside
+          className={`absolute left-0 top-0 bottom-0 w-72 panel-surface border-r-4 border-primary flex flex-col font-body shadow-[8px_0_32px_rgba(0,0,0,0.3)] transition-transform duration-200 ${
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-end p-4 lg:hidden">
+            <button
+              aria-label="Close sidebar"
+              onClick={closeMobile}
+              className="p-1 rounded hover:bg-primary/10 transition-colors text-primary"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {sidebarContent}
+        </aside>
+      </div>
     </>
   );
 }
