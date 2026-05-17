@@ -85,7 +85,7 @@ export function Sidebar() {
               aria-current={isActive ? "page" : undefined}
               className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
                 isActive
-                  ? "bg-primary text-white shadow-[4px_4px_0px_#081c15]"
+                  ? "bg-primary/10 text-primary border-2 border-primary shadow-[2px_2px_0px_#1b4332]"
                   : "surface-muted border-2 border-transparent hover:border-primary hover:text-foreground"
               }`}
             >
