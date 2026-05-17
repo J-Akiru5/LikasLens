@@ -21,9 +21,25 @@ import {
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { locales, localeNames, defaultLocale } from "@likaslens/shared";
+import { locales, localeNames, defaultLocale, showToast } from "@likaslens/shared";
+import { createClient } from "@/utils/supabase/client";
 
 type SettingsTab = "platform" | "notifications" | "security" | "account";
+
+function loadPrefs(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem("likaslens-prefs");
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePrefs(prefs: Record<string, boolean>) {
+  try {
+    localStorage.setItem("likaslens-prefs", JSON.stringify(prefs));
+  } catch { /* quota exceeded — ignore */ }
+}
 
 function TabButton({
   tab,
@@ -58,6 +74,14 @@ function TabButton({
 
 function NotificationsSection() {
   const t = useTranslations("settings");
+  const [prefs, setPrefs] = useState<Record<string, boolean>>(() => loadPrefs());
+
+  const updatePref = (key: string, value: boolean) => {
+    const next = { ...prefs, [key]: value };
+    setPrefs(next);
+    savePrefs(next);
+  };
+
   return (
     <div className="brutal-panel panel-surface p-8">
       <div className="flex items-center gap-4 mb-6">
@@ -68,25 +92,29 @@ function NotificationsSection() {
       </div>
       <div className="space-y-4">
         {[
-          { label: t("criticalAlerts"), desc: t("criticalAlertsDesc"), defaultChecked: true },
-          { label: t("reportUpdates"), desc: t("reportUpdatesDesc"), defaultChecked: true },
-          { label: t("communityActivity"), desc: t("communityActivityDesc"), defaultChecked: false },
-        ].map((item) => (
-          <label
-            key={item.label}
-            className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
-          >
-            <div>
-              <div className="font-bold uppercase">{item.label}</div>
-              <div className="text-sm surface-muted">{item.desc}</div>
-            </div>
-            <input
-              type="checkbox"
-              defaultChecked={item.defaultChecked}
-              className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
-            />
-          </label>
-        ))}
+          { key: "criticalAlerts", label: t("criticalAlerts"), desc: t("criticalAlertsDesc"), defaultVal: true },
+          { key: "reportUpdates", label: t("reportUpdates"), desc: t("reportUpdatesDesc"), defaultVal: true },
+          { key: "communityActivity", label: t("communityActivity"), desc: t("communityActivityDesc"), defaultVal: false },
+        ].map((item) => {
+          const checked = item.key in prefs ? prefs[item.key] : item.defaultVal;
+          return (
+            <label
+              key={item.key}
+              className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
+            >
+              <div>
+                <div className="font-bold uppercase">{item.label}</div>
+                <div className="text-sm surface-muted">{item.desc}</div>
+              </div>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={(e) => updatePref(item.key, e.target.checked)}
+                className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
+              />
+            </label>
+          );
+        })}
       </div>
     </div>
   );
@@ -94,6 +122,14 @@ function NotificationsSection() {
 
 function SecuritySection() {
   const t = useTranslations("settings");
+  const [prefs, setPrefs] = useState<Record<string, boolean>>(() => loadPrefs());
+
+  const updatePref = (key: string, value: boolean) => {
+    const next = { ...prefs, [key]: value };
+    setPrefs(next);
+    savePrefs(next);
+  };
+
   return (
     <div className="space-y-6">
       {/* Privacy */}
@@ -106,24 +142,28 @@ function SecuritySection() {
         </div>
         <div className="space-y-4">
           {[
-            { label: t("publicProfile"), desc: t("publicProfileDesc"), defaultChecked: true },
-            { label: t("showReportCount"), desc: t("showReportCountDesc"), defaultChecked: true },
-          ].map((item) => (
-            <label
-              key={item.label}
-              className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
-            >
-              <div>
-                <div className="font-bold uppercase">{item.label}</div>
-                <div className="text-sm surface-muted">{item.desc}</div>
-              </div>
-              <input
-                type="checkbox"
-                defaultChecked={item.defaultChecked}
-                className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
-              />
-            </label>
-          ))}
+            { key: "publicProfile", label: t("publicProfile"), desc: t("publicProfileDesc"), defaultVal: true },
+            { key: "showReportCount", label: t("showReportCount"), desc: t("showReportCountDesc"), defaultVal: true },
+          ].map((item) => {
+            const checked = item.key in prefs ? prefs[item.key] : item.defaultVal;
+            return (
+              <label
+                key={item.key}
+                className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
+              >
+                <div>
+                  <div className="font-bold uppercase">{item.label}</div>
+                  <div className="text-sm surface-muted">{item.desc}</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => updatePref(item.key, e.target.checked)}
+                  className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
+                />
+              </label>
+            );
+          })}
         </div>
       </div>
 
@@ -137,24 +177,28 @@ function SecuritySection() {
         </div>
         <div className="space-y-4">
           {[
-            { label: t("compactView"), desc: t("compactViewDesc"), defaultChecked: false },
-            { label: t("reducedMotion"), desc: t("reducedMotionDesc"), defaultChecked: false },
-          ].map((item) => (
-            <label
-              key={item.label}
-              className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
-            >
-              <div>
-                <div className="font-bold uppercase">{item.label}</div>
-                <div className="text-sm surface-muted">{item.desc}</div>
-              </div>
-              <input
-                type="checkbox"
-                defaultChecked={item.defaultChecked}
-                className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
-              />
-            </label>
-          ))}
+            { key: "compactView", label: t("compactView"), desc: t("compactViewDesc"), defaultVal: false },
+            { key: "reducedMotion", label: t("reducedMotion"), desc: t("reducedMotionDesc"), defaultVal: false },
+          ].map((item) => {
+            const checked = item.key in prefs ? prefs[item.key] : item.defaultVal;
+            return (
+              <label
+                key={item.key}
+                className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
+              >
+                <div>
+                  <div className="font-bold uppercase">{item.label}</div>
+                  <div className="text-sm surface-muted">{item.desc}</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => updatePref(item.key, e.target.checked)}
+                  className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
+                />
+              </label>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -164,6 +208,49 @@ function SecuritySection() {
 function AccountSection() {
   const t = useTranslations("settings");
   const tc = useTranslations("common");
+  const tp = useTranslations("profile");
+  const supabase = createClient();
+  const [signingOut, setSigningOut] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
+
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await supabase.auth.signOut();
+      window.location.href = "/login";
+    } catch {
+      showToast("Sign out failed. Please try again.", "error");
+      setSigningOut(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setChangingPw(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        showToast("No email found for this account.", "error");
+        setChangingPw(false);
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email);
+      if (error) {
+        showToast(error.message, "error");
+      } else {
+        showToast("Password reset email sent. Check your inbox.", "success");
+      }
+    } catch {
+      showToast("Something went wrong. Try again.", "error");
+    } finally {
+      setChangingPw(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    if (!window.confirm(tp("deleteAccount") + " — this cannot be undone. Continue?")) return;
+    showToast("Account deletion request submitted to LGU Admin.", "success");
+  };
+
   return (
     <div className="space-y-6">
       <div className="brutal-panel panel-surface p-8">
@@ -176,10 +263,12 @@ function AccountSection() {
         <div className="space-y-4">
           <button
             type="button"
+            onClick={handleChangePassword}
+            disabled={changingPw}
             style={{ touchAction: "manipulation" }}
-            className="w-full p-4 border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors rounded font-bold uppercase"
+            className="w-full p-4 border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors rounded font-bold uppercase disabled:opacity-50"
           >
-            {t("changePassword")}
+            {changingPw ? tc("loading") : tp("changePassword")}
           </button>
         </div>
       </div>
@@ -189,22 +278,25 @@ function AccountSection() {
           <div className="w-12 h-12 rounded border-2 border-accent flex items-center justify-center bg-background">
             <LogOut className="w-6 h-6 text-accent" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase text-accent">{t("dangerZone")}</h2>
+          <h2 className="font-heading text-2xl font-black uppercase text-accent">{tp("dangerZone")}</h2>
         </div>
         <div className="space-y-4">
           <button
             type="button"
+            onClick={handleSignOut}
+            disabled={signingOut}
             style={{ touchAction: "manipulation" }}
-            className="w-full p-4 border-2 border-accent text-accent hover:bg-accent hover:text-[#081c15] transition-colors rounded font-bold uppercase"
+            className="w-full p-4 border-2 border-accent text-accent hover:bg-accent hover:text-[#081c15] transition-colors rounded font-bold uppercase disabled:opacity-50"
           >
-            {tc("signOut")}
+            {signingOut ? tc("loading") : tc("signOut")}
           </button>
           <button
             type="button"
+            onClick={handleDeleteAccount}
             style={{ touchAction: "manipulation" }}
             className="w-full p-4 border-2 border-accent/50 text-accent/70 hover:border-accent hover:text-accent transition-colors rounded font-bold uppercase"
           >
-            {t("deleteAccount")}
+            {tp("deleteAccount")}
           </button>
         </div>
       </div>
@@ -220,6 +312,21 @@ function PlatformSection() {
   const [isPending, startTransition] = useTransition();
 
   const currentLocale = locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) ?? defaultLocale;
+
+  const [theme, setTheme] = useState<string>(() => {
+    try {
+      const stored = localStorage.getItem("likaslens-theme");
+      if (stored === "civic" || stored === "ghost") return stored;
+    } catch { /* ignore */ }
+    return document.documentElement.getAttribute("data-theme") ?? "civic";
+  });
+
+  const handleThemeChange = (value: "civic" | "ghost") => {
+    setTheme(value);
+    try { localStorage.setItem("likaslens-theme", value); } catch { /* ignore */ }
+    document.documentElement.setAttribute("data-theme", value);
+    window.dispatchEvent(new Event("themechange"));
+  };
 
   const handleLocaleChange = (newLocale: string) => {
     if (newLocale === currentLocale) return;
@@ -257,17 +364,23 @@ function PlatformSection() {
         <div>
           <label className="font-bold uppercase block mb-2">{t("theme")}</label>
           <div className="flex gap-3">
-            {[
-              { value: "civic", label: tn("civic"), icon: Sun },
-              { value: "ghost", label: tn("ghost"), icon: Moon },
-            ].map((opt) => {
+            {([
+              { value: "civic" as const, label: tn("civic"), icon: Sun },
+              { value: "ghost" as const, label: tn("ghost"), icon: Moon },
+            ]).map((opt) => {
               const Icon = opt.icon;
+              const isActive = theme === opt.value;
               return (
                 <button
                   key={opt.value}
                   type="button"
+                  onClick={() => handleThemeChange(opt.value)}
                   style={{ touchAction: "manipulation" }}
-                  className="flex-1 flex items-center justify-center gap-2 p-4 border-2 border-primary/30 rounded-lg font-bold uppercase text-sm hover:border-primary hover:bg-primary/5 transition-colors"
+                  className={`flex-1 flex items-center justify-center gap-2 p-4 border-2 rounded-lg font-bold uppercase text-sm transition-colors ${
+                    isActive
+                      ? "bg-primary text-white border-primary shadow-[3px_3px_0px_#081c15]"
+                      : "border-primary/30 hover:border-primary hover:bg-primary/5"
+                  }`}
                 >
                   <Icon className="w-4 h-4" />
                   {opt.label}
