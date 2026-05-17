@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { laravelGet, laravelPatch } from "@likaslens/shared";
 import type { PaginatedResponse, ApiResponse } from "@likaslens/shared";
+import { Spinner } from "@likaslens/shared";
 import { MessageSquare, Mail, User, Clock, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -55,7 +56,7 @@ export default function InquiriesPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+          <Spinner size="lg" />
         </div>
       ) : (
         <div className="space-y-4">
@@ -66,8 +67,8 @@ export default function InquiriesPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`brutal-panel panel-surface p-6 border-2 transition-all ${
-                  msg.status === "unread" 
-                    ? "border-secondary shadow-[4px_4px_0px_#2DE1C2] bg-secondary/5" 
+                  msg.status === "unread"
+                    ? "border-emerald-400 shadow-[4px_4px_0px_#047857] bg-emerald-50"
                     : "border-primary/20 shadow-[2px_2px_0px_rgba(27,67,50,0.2)] opacity-70"
                 }`}
               >
@@ -80,20 +81,20 @@ export default function InquiriesPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4 text-primary" />
-                        <a href={`mailto:${msg.email}`} className="font-mono text-sm hover:underline hover:text-secondary">{msg.email}</a>
+                        <a href={`mailto:${msg.email}`} className="font-mono text-sm hover:underline hover:text-emerald-700">{msg.email}</a>
                       </div>
                       <div className="flex items-center gap-2 surface-muted">
                         <Clock className="w-4 h-4" />
                         <span className="font-mono text-sm">{new Date(msg.created_at).toLocaleString()}</span>
                       </div>
-                      
+
                       {msg.status === "unread" && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 border border-secondary bg-secondary/10 text-secondary rounded font-mono text-xs font-bold uppercase tracking-widest animate-pulse">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 border border-emerald-400 bg-emerald-100 text-emerald-700 rounded font-mono text-xs font-bold uppercase tracking-widest animate-pulse">
                           New
                         </span>
                       )}
                     </div>
-                    
+
                     <div className="font-body text-base bg-background/50 p-4 rounded border-l-4 border-primary/30 whitespace-pre-wrap">
                       {msg.message}
                     </div>

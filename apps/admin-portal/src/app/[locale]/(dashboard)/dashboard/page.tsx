@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getDashboardStats, getDashboardFeed, getTickets } from "@likaslens/shared";
 import type { DashboardStats, ActivityFeedItem, Ticket } from "@likaslens/shared";
-import { Card, CardHeader, CardTitle } from "@likaslens/shared";
+import { Card, CardHeader, CardTitle, Spinner } from "@likaslens/shared";
 import { AlertTriangle, CheckCircle2, Clock, Users, LayoutDashboard } from "lucide-react";
 
 export default function DashboardPage() {
@@ -29,16 +29,16 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+        <Spinner size="lg" />
       </div>
     );
   }
 
   const kpis = [
-    { label: "Active Incidents", value: stats?.active_incidents ?? 0, icon: AlertTriangle, color: "text-accent border-accent shadow-[3px_3px_0px_#ffb703]" },
-    { label: "Resolved Today", value: stats?.resolved_today ?? 0, icon: CheckCircle2, color: "text-secondary border-secondary shadow-[3px_3px_0px_#2de1c2]" },
-    { label: "Avg Response", value: `${stats?.avg_response_minutes ?? 0}m`, icon: Clock, color: "text-primary border-primary shadow-[3px_3px_0px_#1b4332]" },
-    { label: "Total Users", value: stats?.total_users ?? 0, icon: Users, color: "text-primary border-primary shadow-[3px_3px_0px_#1b4332]" },
+    { label: "Active Incidents", value: stats?.active_incidents ?? 0, icon: AlertTriangle, cardClass: "border-amber-400 shadow-[3px_3px_0px_#92400e]", iconColor: "text-amber-600" },
+    { label: "Resolved Today", value: stats?.resolved_today ?? 0, icon: CheckCircle2, cardClass: "border-emerald-400 shadow-[3px_3px_0px_#047857]", iconColor: "text-emerald-600" },
+    { label: "Avg Response", value: `${stats?.avg_response_minutes ?? 0}m`, icon: Clock, cardClass: "border-primary shadow-[3px_3px_0px_#1b4332]", iconColor: "text-primary" },
+    { label: "Total Users", value: stats?.total_users ?? 0, icon: Users, cardClass: "border-primary shadow-[3px_3px_0px_#1b4332]", iconColor: "text-primary" },
   ];
 
   return (
@@ -52,12 +52,12 @@ export default function DashboardPage() {
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className={`brutal-panel panel-surface p-6 border-2 ${kpi.color}`}>
+            <div key={kpi.label} className={`brutal-panel panel-surface p-6 border-2 ${kpi.cardClass}`}>
               <div className="flex items-center gap-4">
-                <Icon className={`h-8 w-8 ${kpi.color.split(" ")[0]}`} />
+                <Icon className={`h-8 w-8 ${kpi.iconColor}`} />
                 <div>
                   <p className="font-mono text-xs font-bold uppercase tracking-widest surface-muted">{kpi.label}</p>
-                  <p className="font-heading text-3xl font-black">{kpi.value}</p>
+                  <p className="font-heading text-3xl font-black text-primary">{kpi.value}</p>
                 </div>
               </div>
             </div>
@@ -107,8 +107,8 @@ export default function DashboardPage() {
                   <p className="font-mono text-xs surface-muted">{ticket.location}</p>
                 </div>
                 <span className={`ml-2 shrink-0 rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 ${
-                  ticket.status === "Open" ? "border-accent bg-accent/15 text-accent" :
-                  ticket.status === "Resolved" ? "border-secondary bg-secondary/15 text-secondary" :
+                  ticket.status === "Open" ? "border-amber-400 bg-amber-100 text-amber-800" :
+                  ticket.status === "Resolved" ? "border-emerald-400 bg-emerald-100 text-emerald-700" :
                   "border-primary bg-primary/15 text-primary"
                 }`}>
                   {ticket.status}

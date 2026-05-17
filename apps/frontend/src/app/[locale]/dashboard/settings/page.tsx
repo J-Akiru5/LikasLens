@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
@@ -22,24 +22,35 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { locales, localeNames, defaultLocale, showToast } from "@likaslens/shared";
 import { createClient } from "@/utils/supabase/client";
 import { deleteAccount } from "@/app/[locale]/actions/account";
 
 type SettingsTab = "platform" | "notifications" | "security" | "account";
 
-const TABS: { id: SettingsTab; label: string; icon: typeof Globe }[] = [
-  { id: "platform", label: "Platform", icon: Globe },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "security", label: "Security", icon: Shield },
-  { id: "account", label: "Account", icon: UserCircle },
-];
+function loadPrefs(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem("likaslens-prefs");
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePrefs(prefs: Record<string, boolean>) {
+  try {
+    localStorage.setItem("likaslens-prefs", JSON.stringify(prefs));
+  } catch { /* quota exceeded — ignore */ }
+}
 
 function TabButton({
   tab,
   isActive,
   onSelect,
 }: {
-  tab: (typeof TABS)[number];
+  tab: { id: SettingsTab; label: string; icon: typeof Globe };
   isActive: boolean;
   onSelect: (id: SettingsTab) => void;
 }) {
@@ -66,58 +77,33 @@ function TabButton({
 }
 
 function NotificationsSection() {
+  const t = useTranslations("settings");
+  const [prefs, setPrefs] = useState<Record<string, boolean>>(() => loadPrefs());
+
+  const updatePref = (key: string, value: boolean) => {
+    const next = { ...prefs, [key]: value };
+    setPrefs(next);
+    savePrefs(next);
+  };
+
   return (
     <div className="brutal-panel panel-surface p-8">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
           <Bell className="w-6 h-6 text-primary" />
         </div>
-        <h2 className="font-heading text-2xl font-black uppercase">Notifications</h2>
+        <h2 className="font-heading text-2xl font-black uppercase">{t("notifications")}</h2>
       </div>
       <div className="space-y-4">
         {[
-          { label: "Critical Alerts", desc: "Receive notifications for critical incidents", defaultChecked: true },
-          { label: "Report Updates", desc: "Get updates when your reports are resolved", defaultChecked: true },
-          { label: "Community Activity", desc: "Notifications about community engagement", defaultChecked: false },
-        ].map((item) => (
-          <label
-            key={item.label}
-            className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
-          >
-            <div>
-              <div className="font-bold uppercase">{item.label}</div>
-              <div className="text-sm surface-muted">{item.desc}</div>
-            </div>
-            <input
-              type="checkbox"
-              defaultChecked={item.defaultChecked}
-              className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
-            />
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SecuritySection() {
-  return (
-    <div className="space-y-6">
-      {/* Privacy */}
-      <div className="brutal-panel panel-surface p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-            <Lock className="w-6 h-6 text-primary" />
-          </div>
-          <h2 className="font-heading text-2xl font-black uppercase">Privacy</h2>
-        </div>
-        <div className="space-y-4">
-          {[
-            { label: "Public Profile", desc: "Allow others to view your public activity", defaultChecked: true },
-            { label: "Show Report Count", desc: "Display your total reports on your profile", defaultChecked: true },
-          ].map((item) => (
+          { key: "criticalAlerts", label: t("criticalAlerts"), desc: t("criticalAlertsDesc"), defaultVal: true },
+          { key: "reportUpdates", label: t("reportUpdates"), desc: t("reportUpdatesDesc"), defaultVal: true },
+          { key: "communityActivity", label: t("communityActivity"), desc: t("communityActivityDesc"), defaultVal: false },
+        ].map((item) => {
+          const checked = item.key in prefs ? prefs[item.key] : item.defaultVal;
+          return (
             <label
-              key={item.label}
+              key={item.key}
               className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
             >
               <div>
@@ -126,11 +112,62 @@ function SecuritySection() {
               </div>
               <input
                 type="checkbox"
-                defaultChecked={item.defaultChecked}
+                checked={checked}
+                onChange={(e) => updatePref(item.key, e.target.checked)}
                 className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
               />
             </label>
-          ))}
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function SecuritySection() {
+  const t = useTranslations("settings");
+  const [prefs, setPrefs] = useState<Record<string, boolean>>(() => loadPrefs());
+
+  const updatePref = (key: string, value: boolean) => {
+    const next = { ...prefs, [key]: value };
+    setPrefs(next);
+    savePrefs(next);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Privacy */}
+      <div className="brutal-panel panel-surface p-8">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
+            <Lock className="w-6 h-6 text-primary" />
+          </div>
+          <h2 className="font-heading text-2xl font-black uppercase">{t("privacy")}</h2>
+        </div>
+        <div className="space-y-4">
+          {[
+            { key: "publicProfile", label: t("publicProfile"), desc: t("publicProfileDesc"), defaultVal: true },
+            { key: "showReportCount", label: t("showReportCount"), desc: t("showReportCountDesc"), defaultVal: true },
+          ].map((item) => {
+            const checked = item.key in prefs ? prefs[item.key] : item.defaultVal;
+            return (
+              <label
+                key={item.key}
+                className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
+              >
+                <div>
+                  <div className="font-bold uppercase">{item.label}</div>
+                  <div className="text-sm surface-muted">{item.desc}</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => updatePref(item.key, e.target.checked)}
+                  className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
+                />
+              </label>
+            );
+          })}
         </div>
       </div>
 
@@ -140,28 +177,32 @@ function SecuritySection() {
           <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
             <Eye className="w-6 h-6 text-primary" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">Display</h2>
+          <h2 className="font-heading text-2xl font-black uppercase">{t("display")}</h2>
         </div>
         <div className="space-y-4">
           {[
-            { label: "Compact View", desc: "Use a more condensed layout", defaultChecked: false },
-            { label: "Reduced Motion", desc: "Minimize animations and transitions", defaultChecked: false },
-          ].map((item) => (
-            <label
-              key={item.label}
-              className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
-            >
-              <div>
-                <div className="font-bold uppercase">{item.label}</div>
-                <div className="text-sm surface-muted">{item.desc}</div>
-              </div>
-              <input
-                type="checkbox"
-                defaultChecked={item.defaultChecked}
-                className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
-              />
-            </label>
-          ))}
+            { key: "compactView", label: t("compactView"), desc: t("compactViewDesc"), defaultVal: false },
+            { key: "reducedMotion", label: t("reducedMotion"), desc: t("reducedMotionDesc"), defaultVal: false },
+          ].map((item) => {
+            const checked = item.key in prefs ? prefs[item.key] : item.defaultVal;
+            return (
+              <label
+                key={item.key}
+                className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
+              >
+                <div>
+                  <div className="font-bold uppercase">{item.label}</div>
+                  <div className="text-sm surface-muted">{item.desc}</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => updatePref(item.key, e.target.checked)}
+                  className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
+                />
+              </label>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -481,39 +522,82 @@ function AccountSection() {
 }
 
 function PlatformSection() {
+  const t = useTranslations("settings");
+  const tn = useTranslations("nav");
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+
+  const currentLocale = locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) ?? defaultLocale;
+
+  const [theme, setTheme] = useState<string>(() => {
+    try {
+      const stored = localStorage.getItem("likaslens-theme");
+      if (stored === "civic" || stored === "ghost") return stored;
+    } catch { /* ignore */ }
+    return document.documentElement.getAttribute("data-theme") ?? "civic";
+  });
+
+  const handleThemeChange = (value: "civic" | "ghost") => {
+    setTheme(value);
+    try { localStorage.setItem("likaslens-theme", value); } catch { /* ignore */ }
+    document.documentElement.setAttribute("data-theme", value);
+    window.dispatchEvent(new Event("themechange"));
+  };
+
+  const handleLocaleChange = (newLocale: string) => {
+    if (newLocale === currentLocale) return;
+    const newPath = pathname.replace(new RegExp(`^/${currentLocale}(/|$)`), `/${newLocale}$1`);
+    document.cookie = `likaslens-locale=${newLocale};path=/;max-age=31536000`;
+    startTransition(() => {
+      router.replace(newPath);
+    });
+  };
+
   return (
     <div className="brutal-panel panel-surface p-8">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
           <Monitor className="w-6 h-6 text-primary" />
         </div>
-        <h2 className="font-heading text-2xl font-black uppercase">Platform</h2>
+        <h2 className="font-heading text-2xl font-black uppercase">{t("platform")}</h2>
       </div>
       <div className="space-y-6">
         <div>
-          <label className="font-bold uppercase block mb-2">Language</label>
+          <label className="font-bold uppercase block mb-2">{t("language")}</label>
           <select
-            defaultValue="en"
-            className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold uppercase text-sm focus:outline-none focus:border-primary"
+            value={currentLocale}
+            onChange={(e) => handleLocaleChange(e.target.value)}
+            disabled={isPending}
+            className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold uppercase text-sm focus:outline-none focus:border-primary disabled:opacity-50"
           >
-            <option value="en">English</option>
-            <option value="fil">Filipino</option>
+            {locales.map((loc) => (
+              <option key={loc} value={loc}>
+                {localeNames[loc].native} ({localeNames[loc].english})
+              </option>
+            ))}
           </select>
         </div>
         <div>
-          <label className="font-bold uppercase block mb-2">Theme</label>
+          <label className="font-bold uppercase block mb-2">{t("theme")}</label>
           <div className="flex gap-3">
-            {[
-              { value: "civic", label: "Civic", icon: Sun },
-              { value: "ghost", label: "Ghost", icon: Moon },
-            ].map((opt) => {
+            {([
+              { value: "civic" as const, label: tn("civic"), icon: Sun },
+              { value: "ghost" as const, label: tn("ghost"), icon: Moon },
+            ]).map((opt) => {
               const Icon = opt.icon;
+              const isActive = theme === opt.value;
               return (
                 <button
                   key={opt.value}
                   type="button"
+                  onClick={() => handleThemeChange(opt.value)}
                   style={{ touchAction: "manipulation" }}
-                  className="flex-1 flex items-center justify-center gap-2 p-4 border-2 border-primary/30 rounded-lg font-bold uppercase text-sm hover:border-primary hover:bg-primary/5 transition-colors"
+                  className={`flex-1 flex items-center justify-center gap-2 p-4 border-2 rounded-lg font-bold uppercase text-sm transition-colors ${
+                    isActive
+                      ? "bg-primary text-white border-primary shadow-[3px_3px_0px_#081c15]"
+                      : "border-primary/30 hover:border-primary hover:bg-primary/5"
+                  }`}
                 >
                   <Icon className="w-4 h-4" />
                   {opt.label}
@@ -528,8 +612,17 @@ function PlatformSection() {
 }
 
 export default function SettingsPage() {
+  const t = useTranslations("settings");
+  const tc = useTranslations("common");
   const [activeTab, setActiveTab] = useState<SettingsTab>("platform");
   const onSelectTab = useCallback((id: SettingsTab) => setActiveTab(id), []);
+
+  const tabs: { id: SettingsTab; label: string; icon: typeof Globe }[] = [
+    { id: "platform", label: t("platform"), icon: Globe },
+    { id: "notifications", label: t("notifications"), icon: Bell },
+    { id: "security", label: t("security"), icon: Shield },
+    { id: "account", label: t("account"), icon: UserCircle },
+  ];
 
   // Debug: log interactions on data-debug-click elements in dev mode
   useEffect(() => {
@@ -564,10 +657,10 @@ export default function SettingsPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back
+                {tc("back")}
               </Link>
               <h1 className="font-heading text-3xl md:text-4xl font-black uppercase">
-                Settings
+                {t("title")}
               </h1>
             </div>
 
@@ -577,7 +670,7 @@ export default function SettingsPage() {
               style={{ scrollbarWidth: "none", touchAction: "pan-x" }}
               data-debug-click="tab-nav"
             >
-              {TABS.map((tab) => (
+              {tabs.map((tab) => (
                 <TabButton
                   key={tab.id}
                   tab={tab}
