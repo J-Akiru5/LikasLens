@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Leaf, Trophy, Shield, FileText, AlertTriangle, CheckCircle2, Clock, Eye } from "lucide-react";
+import { RecentUnlocksWidget } from "@likaslens/shared";
+import type { RecentAchievement } from "@likaslens/shared";
 
 interface ImpactData {
   eco_credits: number;
@@ -10,6 +12,7 @@ interface ImpactData {
   community_rank: number;
   total_reports: number;
   total_citizens: number;
+  recent_achievements: RecentAchievement[];
   reports: { id: string; status: string; created_at: string }[];
 }
 
@@ -72,6 +75,16 @@ export function CitizenDashboardClient({ impact, ghostModeActive }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Recent Unlocks */}
+      {impact?.recent_achievements && (
+        <RecentUnlocksWidget
+          achievements={impact.recent_achievements}
+          onViewAll={() => {
+            window.location.href = "/profile?tab=achievements";
+          }}
+        />
+      )}
 
       {/* Ghost Mode Status */}
       <div className={`brutal-panel p-6 sm:p-8 border-2 ${ghostMode ? "border-accent bg-accent/5 shadow-[4px_4px_0px_#ffb703]" : "panel-surface border-primary shadow-[4px_4px_0px_#1b4332]"}`}>

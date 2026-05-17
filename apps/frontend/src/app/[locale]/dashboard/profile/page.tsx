@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Save, User } from "lucide-react";
+import { ArrowLeft, Save, User, Globe } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
@@ -10,12 +10,29 @@ import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { Spinner } from "@/components/ui/spinner";
 import { showToast, ToastContainer } from "@/components/ui/toast";
 import { createClient } from "@/utils/supabase/client";
+import { fetchEcoCreditRate } from "@likaslens/shared";
+import type { CurrencySetting } from "@likaslens/shared";
+
+const ASEAN_COUNTRIES = [
+  { code: "PH", name: "Philippines" },
+  { code: "ID", name: "Indonesia" },
+  { code: "MY", name: "Malaysia" },
+  { code: "TH", name: "Thailand" },
+  { code: "VN", name: "Vietnam" },
+  { code: "SG", name: "Singapore" },
+  { code: "BN", name: "Brunei" },
+  { code: "LA", name: "Laos" },
+  { code: "KH", name: "Cambodia" },
+  { code: "MM", name: "Myanmar" },
+];
 
 export default function ProfileSettingsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
+  const [countryCode, setCountryCode] = useState("PH");
+  const [currencyRate, setCurrencyRate] = useState<CurrencySetting | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -29,10 +46,24 @@ export default function ProfileSettingsPage() {
       setAvatarUrl(user.user_metadata?.avatar_url ?? null);
       setDisplayName(user.user_metadata?.display_name ?? "");
       setBio(user.user_metadata?.bio ?? "");
+      setCountryCode(user.user_metadata?.country_code ?? "PH");
+
+      try {
+        const res = await fetchEcoCreditRate<{ success: boolean; data: CurrencySetting }>("PH");
+        if (res?.success) setCurrencyRate(res.data);
+      } catch { /* ignore */ }
+
       setLoading(false);
     }
     load();
   }, []);
+
+  useEffect(() => {
+    if (!countryCode) return;
+    fetchEcoCreditRate<{ success: boolean; data: CurrencySetting }>(countryCode)
+      .then((res) => { if (res?.success) setCurrencyRate(res.data); })
+      .catch(() => {});
+  }, [countryCode]);
 
   const handleSave = async () => {
     if (!userId) return;
@@ -44,6 +75,7 @@ export default function ProfileSettingsPage() {
         display_name: displayName,
         bio,
         avatar_url: avatarUrl,
+        country_code: countryCode,
       },
     });
 
@@ -144,6 +176,26 @@ export default function ProfileSettingsPage() {
                     maxLength={300}
                   />
                   <p className="text-xs font-mono surface-muted mt-1 text-right">{bio.length}/300</p>
+                </div>
+
+                <div>
+                  <label className="block font-mono text-sm font-bold uppercase mb-2">
+                    <span className="flex items-center gap-2"><Globe className="w-4 h-4" /> Country / Region</span>
+                  </label>
+                  <select
+                    value={countryCode}
+                    onChange={(e) => setCountryCode(e.target.value)}
+                    className="w-full brutal-panel theme-input px-4 py-3 font-medium rounded"
+                  >
+                    {ASEAN_COUNTRIES.map((c) => (
+                      <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
+                    ))}
+                  </select>
+                  {currencyRate && (
+                    <p className="text-xs font-mono text-secondary font-bold uppercase tracking-widest mt-2">
+                      Eco-Credit Rate: 1 Eco = {currencyRate.currency_code} {currencyRate.eco_credit_rate.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </p>
+                  )}
                 </div>
 
                 <button

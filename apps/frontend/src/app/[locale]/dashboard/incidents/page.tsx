@@ -13,6 +13,7 @@ export default function IncidentsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     getTickets({ per_page: "50" })
@@ -55,7 +56,6 @@ export default function IncidentsPage() {
     [tickets]
   );
 
-  // ── Row action dropdown state ──
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -81,6 +81,14 @@ export default function IncidentsPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, [openMenuId, closeMenu]);
 
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSelectedStatus(null);
+    setShowFilters(false);
+  };
+
+  const hasActiveFilters = searchQuery || selectedStatus;
+
   if (loading) {
     return (
       <div className="flex h-screen overflow-hidden bg-background font-body">
@@ -102,7 +110,9 @@ export default function IncidentsPage() {
           <BottomNav />
           <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b-4 border-primary pb-4">
-              <h1 className="font-heading text-4xl font-black uppercase">Reported Incidents</h1>
+              <h1 className="font-heading text-4xl font-black uppercase">
+                Reported Incidents
+              </h1>
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
@@ -114,37 +124,51 @@ export default function IncidentsPage() {
                     className="pl-9 pr-4 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
                   />
                 </div>
-                <button className="brutal-panel p-2 hover:bg-primary hover:text-background transition-colors cursor-pointer border-2 border-primary shadow-[2px_2px_0px_#1b4332]">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`brutal-panel p-2 transition-colors cursor-pointer border-2 border-primary shadow-[2px_2px_0px_#1b4332] ${showFilters ? "bg-primary text-white" : "hover:bg-primary hover:text-white"}`}
+                >
                   <Filter className="w-5 h-5" />
                 </button>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="p-2 border-2 border-accent text-accent hover:bg-accent hover:text-white transition-colors rounded shadow-[2px_2px_0px_#1b4332]"
+                    title="Clear all filters"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => setSelectedStatus(null)}
-                className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
-                  selectedStatus === null
-                    ? "bg-primary text-background border-primary shadow-[2px_2px_0px_#081c15]"
-                    : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
-                }`}
-              >
-                All
-              </button>
-              {statuses.map((status) => (
+            {showFilters && (
+              <div className="flex flex-wrap gap-3">
                 <button
-                  key={status}
-                  onClick={() => setSelectedStatus(status)}
+                  onClick={() => { setSelectedStatus(null); }}
                   className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
-                    selectedStatus === status
-                      ? getStatusColor(status)
+                    selectedStatus === null
+                      ? "bg-primary text-white border-primary shadow-[2px_2px_0px_#081c15]"
                       : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
                   }`}
                 >
-                  {status}
+                  All
                 </button>
-              ))}
-            </div>
+                {statuses.map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setSelectedStatus(status)}
+                    className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
+                      selectedStatus === status
+                        ? getStatusColor(status)
+                        : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="text-sm font-mono text-foreground/60 uppercase tracking-widest">
               Showing {filteredIncidents.length} of {tickets.length} incidents
@@ -179,7 +203,7 @@ export default function IncidentsPage() {
                       </span>
                     </div>
                     <div className="col-span-2 text-right">
-                      <div ref={menuRef} className="relative inline-block">
+                      <div className="relative inline-block">
                         <button
                           onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
                           className="p-1 hover:bg-primary/10 rounded transition-colors"
@@ -189,50 +213,49 @@ export default function IncidentsPage() {
                           <MoreVertical className="w-5 h-5 text-primary" />
                         </button>
                         {openMenuId === ticket.id && (
-                          <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden"
-                        >
-                          <button
-                            type="button"
-                            style={{ touchAction: "manipulation" }}
-                            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
-                          >
-                            <Eye className="w-4 h-4 text-primary" />
-                            View Details
-                          </button>
-                          <button
-                            type="button"
-                            style={{ touchAction: "manipulation" }}
-                            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
-                          >
-                            <UserCheck className="w-4 h-4 text-secondary" />
-                            Assign
-                          </button>
-                          <button
-                            type="button"
-                            style={{ touchAction: "manipulation" }}
-                            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
-                          >
-                            <Flag className="w-4 h-4 text-accent" />
-                            Change Status
-                          </button>
-                          <button
-                            type="button"
-                            style={{ touchAction: "manipulation" }}
-                            onClick={(e) => { e.stopPropagation(); closeMenu(); }}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-red-50 transition-colors text-accent"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Remove
-                          </button>
-                        </div>
-                      )}
+                          <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 w-48 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden">
+                            <button
+                              type="button"
+                              style={{ touchAction: "manipulation" }}
+                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
+                            >
+                              <Eye className="w-4 h-4 text-primary" />
+                              View Details
+                            </button>
+                            <button
+                              type="button"
+                              style={{ touchAction: "manipulation" }}
+                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
+                            >
+                              <UserCheck className="w-4 h-4 text-secondary" />
+                              Assign
+                            </button>
+                            <button
+                              type="button"
+                              style={{ touchAction: "manipulation" }}
+                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
+                            >
+                              <Flag className="w-4 h-4 text-accent" />
+                              Change Status
+                            </button>
+                            <button
+                              type="button"
+                              style={{ touchAction: "manipulation" }}
+                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-red-50 transition-colors text-accent"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))
               ) : (
                 <div className="grid grid-cols-12 p-8 text-center col-span-12">
                   <div className="col-span-12 text-foreground/50 font-mono">

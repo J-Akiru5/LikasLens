@@ -5,6 +5,8 @@ import { ToastContainer } from "@/components/ui/toast";
 import { createClient } from "@/utils/supabase/server";
 import { laravelGet } from "@/utils/laravel-api";
 import { CitizenDashboardClient } from "./citizen-dashboard-client";
+import { GamifiedProfile } from "@/components/dashboard/gamified-profile";
+import type { RecentAchievement, RankProgress } from "@likaslens/shared";
 
 interface ImpactData {
   eco_credits: number;
@@ -12,6 +14,8 @@ interface ImpactData {
   community_rank: number;
   total_reports: number;
   total_citizens: number;
+  rank_progress: RankProgress;
+  recent_achievements: RecentAchievement[];
   reports: { id: string; status: string; created_at: string }[];
 }
 
@@ -36,6 +40,7 @@ export default async function DashboardPage() {
         <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
           <div className="max-w-4xl mx-auto space-y-8">
+            <GamifiedProfile />
             <CitizenDashboardClient impact={impactData} ghostModeActive={false} />
           </div>
         </main>

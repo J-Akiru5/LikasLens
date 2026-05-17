@@ -47,16 +47,17 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { locale: Locale };
+  params: Promise<{ locale?: Locale }>;
 }>) {
+  const resolvedParams = await params;
   return (
     <html
-      lang={params.locale === "fil" ? "fil" : params.locale === "ta" ? "ta" : params.locale}
+      lang={resolvedParams?.locale === "fil" ? "fil" : resolvedParams?.locale === "ta" ? "ta" : (resolvedParams?.locale || "en")}
       className={`${headingFont.variable} ${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
       data-theme="civic"
     >

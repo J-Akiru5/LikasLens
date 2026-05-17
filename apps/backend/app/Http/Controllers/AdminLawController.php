@@ -19,8 +19,8 @@ class AdminLawController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('summary', 'like', "%{$search}%")
-                  ->orWhere('law_code', 'like', "%{$search}%");
+                    ->orWhere('summary', 'like', "%{$search}%")
+                    ->orWhere('law_code', 'like', "%{$search}%");
             });
         }
 
@@ -74,7 +74,7 @@ class AdminLawController extends Controller
         $law = EnvironmentalLawPh::findOrFail($id);
 
         $validated = $request->validate([
-            'law_code' => 'sometimes|string|max:50|unique:environmental_laws_ph,law_code,' . $id,
+            'law_code' => 'sometimes|string|max:50|unique:environmental_laws_ph,law_code,'.$id,
             'title' => 'sometimes|string|max:255',
             'summary' => 'sometimes|string',
             'issuing_agency' => 'sometimes|string|max:255',

@@ -126,11 +126,11 @@ export function Sidebar() {
               aria-current={isActive ? "page" : undefined}
               className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
                 isActive
-                  ? "bg-primary text-[#081c15] shadow-[4px_4px_0px_#1b4332] transform translate-y-[-2px]"
-                  : "text-primary border-2 border-transparent hover:border-primary hover:bg-primary/10"
+                  ? "bg-primary !text-white shadow-[4px_4px_0px_#081c15] transform translate-y-[-2px]"
+                  : "text-primary border-2 border-transparent hover:border-primary hover:bg-primary/5"
               }`}
             >
-              <Icon className={`w-5 h-5 ${isActive ? "text-[#081c15]" : "text-primary"}`} /> {item.label}
+              <Icon className={`w-5 h-5 ${isActive ? "!text-white" : "text-primary"}`} /> {item.label}
             </Link>
           );
         })}
@@ -196,8 +196,8 @@ export function Sidebar() {
             aria-current={pathname.startsWith("/dashboard/settings") ? "page" : undefined}
             className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
               pathname.startsWith("/dashboard/settings")
-                ? "bg-primary text-[#081c15] shadow-[4px_4px_0px_#1b4332] transform translate-y-[-2px]"
-                : "surface-muted border-2 border-transparent hover:border-primary hover:bg-primary/10"
+                ? "bg-primary text-white shadow-[4px_4px_0px_#081c15] transform translate-y-[-2px]"
+                : "surface-muted border-2 border-transparent hover:border-primary"
             }`}
           >
             <Settings className="w-5 h-5" /> Settings

@@ -1,54 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ArrowLeft, Trophy, Leaf, Award, Target, Shield, User, Mail, Calendar, Settings } from "lucide-react";
+import { Suspense, useEffect, useState} from "react";
+import { ArrowLeft, Trophy, Leaf, User, Mail, Calendar, Settings, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Spinner } from "@/components/ui/spinner";
+import { AchievementCard, RankProgressCard } from "@likaslens/shared";
+import { fetchEcoCreditRate } from "@likaslens/shared";
+import type { Achievement, RankProgress, CurrencySetting } from "@likaslens/shared";
 
-interface Badge {
-  id: string;
-  name: string;
-  icon: React.ElementType;
-  color: string;
-  description: string;
-  date: string;
-}
+type TabKey = "overview" | "achievements";
+type FilterKey = "all" | "unlocked" | "locked";
 
-interface LeaderboardEntry {
-  id: string;
-  name: string;
-  score: number;
-  eco_credits?: number;
-}
+function ProfilePageContent() {
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get("tab") as TabKey) || "overview";
 
-const defaultBadges: Badge[] = [
-  {
-    id: "first-report",
-    name: "First Report",
-    icon: Target,
-    color: "text-blue-500",
-    description: "Submitted your first environmental report",
-    date: "Jan 15, 2026",
-  },
-  {
-    id: "environmental-guardian",
-    name: "Environmental Guardian",
-    icon: Leaf,
-    color: "text-green-600",
-    description: "10+ successful reports filed",
-    date: "Feb 28, 2026",
-  },
-];
-
-const ecoCreditsBreakdown = [
-  { activity: "Report Submitted", amount: "+50 Eco", percentage: 30 },
-  { activity: "Report Verified", amount: "+100 Eco", percentage: 40 },
-  { activity: "Community Upvote", amount: "+25 Eco", percentage: 20 },
-  { activity: "Fast Resolution", amount: "+75 Eco", percentage: 25 },
-];
-
-export default function ProfilePage() {
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userCreated, setUserCreated] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -56,14 +25,26 @@ export default function ProfilePage() {
   const [ecoCredits, setEcoCredits] = useState<number | null>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [rankProgress, setRankProgress] = useState<RankProgress | null>(null);
+  const [profileStats, setProfileStats] = useState({ reports_filed: 0, reports_verified: 0, community_upvotes: 0 });
+  const [countryCode, setCountryCode] = useState<string | null>(null);
+  const [currencySetting, setCurrencySetting] = useState<CurrencySetting | null>(null);
+  const [filter, setFilter] = useState<FilterKey>("all");
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   useEffect(() => {
     let mounted = true;
+
     async function loadProfile() {
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!mounted) return;
+
         if (user) {
           setUserEmail(user.email ?? null);
           setUserCreated(user.created_at ? new Date(user.created_at).toLocaleDateString() : null);
@@ -72,22 +53,53 @@ export default function ProfilePage() {
         }
 
         const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
-        const res = await fetch(`${laravelUrl}/api/leaderboard`);
-        if (res.ok) {
-          const json = await res.json();
-          const entries: LeaderboardEntry[] = json.data ?? json;
-          if (mounted && user && entries.length) {
-            const myEntry = entries.find((e) => e.name === user.email?.split("@")[0] || e.id === user.id);
-            if (myEntry) {
-              setEcoCredits(myEntry.eco_credits ?? myEntry.score);
-              setUserRank(entries.indexOf(myEntry) + 1);
-            } else {
-              const first = entries[0];
-              setEcoCredits(first.eco_credits ?? first.score);
+        const supabaseUserId = user?.id;
+
+        const [leaderboardRes, achievementsRes, rankRes, profileRes] = await Promise.all([
+          fetch(`${laravelUrl}/api/leaderboard`).then(r => r.ok ? r.json() : null),
+          supabaseUserId
+            ? fetch(`${laravelUrl}/api/achievements/user/${supabaseUserId}`).then(r => r.ok ? r.json() : null)
+            : fetch(`${laravelUrl}/api/achievements`).then(r => r.ok ? r.json() : null),
+          supabaseUserId
+            ? fetch(`${laravelUrl}/api/user/rank-progress`, { credentials: "include" }).then(r => r.ok ? r.json() : null)
+            : Promise.resolve(null),
+          supabaseUserId
+            ? fetch(`${laravelUrl}/api/profile/${supabaseUserId}`).then(r => r.ok ? r.json() : null)
+            : Promise.resolve(null),
+        ]);
+
+        if (mounted) {
+          let profileStatsData = { reports_filed: 0, reports_verified: 0, community_upvotes: 0 };
+          if (profileRes?.success) {
+            profileStatsData = profileRes.data.stats ?? profileStatsData;
+          }
+          setProfileStats(profileStatsData);
+          if (leaderboardRes) {
+            const entries = leaderboardRes.data ?? leaderboardRes;
+            if (user && entries.length) {
+              const myEntry = entries.find((e: { id: string }) => e.id === user.id);
+              if (myEntry) {
+                setEcoCredits(myEntry.eco_credits ?? myEntry.score);
+                setUserRank(entries.indexOf(myEntry) + 1);
+              } else if (entries.length) {
+                setEcoCredits(entries[0].eco_credits ?? entries[0].score);
+              }
             }
-          } else if (mounted && entries.length) {
-            const first = entries[0];
-            setEcoCredits(first.eco_credits ?? first.score);
+          }
+
+          if (achievementsRes?.success) {
+            setAchievements(achievementsRes.data);
+          }
+
+          if (rankRes?.success) {
+            setRankProgress(rankRes.data);
+
+            const cc = user?.user_metadata?.country_code || rankRes.data?.country_code || "PH";
+            setCountryCode(cc);
+            try {
+              const rateRes = await fetchEcoCreditRate<{ success: boolean; data: CurrencySetting }>(cc);
+              if (rateRes?.success) setCurrencySetting(rateRes.data);
+            } catch { /* ignore */ }
           }
         }
       } catch {
@@ -96,9 +108,20 @@ export default function ProfilePage() {
         if (mounted) setLoading(false);
       }
     }
+
     loadProfile();
     return () => { mounted = false; };
   }, []);
+
+  const filteredAchievements = achievements.filter((a) => {
+    if (filter === "unlocked") return a.unlocked;
+    if (filter === "locked") return !a.unlocked;
+    return true;
+  });
+
+  const ecoCreditEquivalent = currencySetting
+    ? `${currencySetting.currency_code} ${((ecoCredits ?? 0) * currencySetting.eco_credit_rate).toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+    : null;
 
   if (loading) {
     return (
@@ -111,157 +134,212 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background font-body p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-6">
           <Link href="/dashboard" className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </Link>
-          <h1 className="font-heading text-3xl md:text-4xl font-black uppercase flex-1">
-            Citizen Profile
-          </h1>
+          <h1 className="font-heading text-3xl md:text-4xl font-black uppercase flex-1">Citizen Profile</h1>
           <Link
             href="/dashboard/profile"
-            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/10 rounded transition-colors font-bold uppercase text-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-secondary text-secondary hover:bg-secondary/10 rounded transition-colors font-bold uppercase text-sm"
           >
             <Settings className="w-4 h-4" />
             Edit Profile
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-8">
-          <div className="brutal-panel panel-surface p-8 md:col-span-1">
-            <div className="text-center">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-primary overflow-hidden flex items-center justify-center bg-primary/10">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <User className="w-10 h-10 text-primary" />
-                )}
-              </div>
-              <div className="font-heading text-xl font-black text-primary mb-1">
-                {displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")}
-              </div>
-              {userEmail && (
-                <div className="flex items-center justify-center gap-2 text-xs font-mono surface-muted mb-4">
-                  <Mail className="w-3 h-3" />
-                  {userEmail}
-                </div>
+        {/* Tab Navigation */}
+        <div className="flex border-b-4 border-primary mb-6">
+          {(["overview", "achievements"] as TabKey[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 font-heading text-sm font-black uppercase tracking-wider transition-colors ${
+                activeTab === tab
+                  ? "bg-primary text-background border-2 border-primary -mb-0.5"
+                  : "text-foreground/50 hover:text-foreground border-2 border-transparent"
+              }`}
+            >
+              {tab === "overview" ? (
+                <span className="flex items-center gap-2"><User className="w-4 h-4" /> Overview</span>
+              ) : (
+                <span className="flex items-center gap-2"><Trophy className="w-4 h-4" /> Achievements</span>
               )}
-              {userCreated && (
-                <div className="flex items-center justify-center gap-2 text-xs font-mono surface-muted mb-4">
-                  <Calendar className="w-3 h-3" />
-                  Joined {userCreated}
-                </div>
-              )}
-            </div>
-            <div className="text-center border-t-2 border-primary/20 pt-6 mt-4">
-              <div className="text-sm font-mono uppercase surface-muted mb-4">
-                Eco-Credit Balance
-              </div>
-              <div className="font-heading text-5xl font-black text-primary mb-2">
-                {(ecoCredits ?? 9250).toLocaleString()}
-              </div>
-              <div className="text-xs font-mono uppercase surface-muted mb-6 tracking-widest">
-                {userRank ? `Rank #${userRank}` : "Contributor"}
-              </div>
-              <div className="h-2 bg-primary/10 rounded-full overflow-hidden mb-6">
-                <div className="h-full bg-primary" style={{ width: `${Math.min((userRank ?? 1) * 15, 100)}%` }} />
-              </div>
-              <p className="text-sm font-semibold text-foreground/80">Earn more credits by submitting verified reports.</p>
-            </div>
-          </div>
-
-          <div className="brutal-panel panel-surface p-8 md:col-span-2">
-            <h2 className="font-heading text-xl font-black uppercase mb-6 border-b-2 border-primary pb-3">Your Impact Stats</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-primary/10 rounded border border-primary">
-                <div className="font-mono text-xs uppercase surface-muted mb-2">
-                  Reports Filed
-                </div>
-                <div className="font-heading text-3xl font-black text-primary">{ecoCredits ? Math.round(ecoCredits / 150) : 48}</div>
-              </div>
-              <div className="p-4 bg-secondary/10 rounded border border-secondary">
-                <div className="font-mono text-xs uppercase text-secondary mb-2">
-                  Verified
-                </div>
-                <div className="font-heading text-3xl font-black text-secondary">{ecoCredits ? Math.round((ecoCredits / 150) * 0.95) : 46}</div>
-              </div>
-              <div className="p-4 bg-accent/10 rounded border border-accent">
-                <div className="font-mono text-xs uppercase text-accent mb-2">Avg Response</div>
-                <div className="font-heading text-3xl font-black text-accent">{Math.round(Math.random() * 8 + 1)}m</div>
-              </div>
-              <div className="p-4 bg-blue-500/10 rounded border border-blue-500 col-span-2 md:col-span-1">
-                <div className="font-mono text-xs uppercase text-blue-600 mb-2">
-                  Community Upvotes
-                </div>
-                <div className="font-heading text-3xl font-black text-blue-600">{ecoCredits ? Math.round(ecoCredits / 72) : 127}</div>
-              </div>
-            </div>
-          </div>
+            </button>
+          ))}
         </div>
 
-        <div className="brutal-panel panel-surface p-8 mb-8">
-          <h2 className="font-heading text-2xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
-            Eco-Credits Earned
-          </h2>
-          <div className="space-y-4">
-            {ecoCreditsBreakdown.map((item, idx) => (
-              <div key={idx} className="flex items-center gap-6">
-                <div className="flex-1">
-                  <div className="font-semibold text-foreground mb-2">{item.activity}</div>
-                  <div className="h-2 bg-primary/10 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all duration-500"
-                      style={{ width: `${item.percentage}%` }}
-                    />
+        {/* Overview Tab */}
+        {activeTab === "overview" && (
+          <>
+            <div className="grid md:grid-cols-3 gap-8 mb-8">
+              <div className="brutal-panel panel-surface p-8 md:col-span-1">
+                <div className="text-center">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-primary overflow-hidden flex items-center justify-center bg-primary/10">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-10 h-10 text-primary" />
+                    )}
+                  </div>
+                  <div className="font-heading text-xl font-black text-primary mb-1">
+                    {displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")}
+                  </div>
+                  {userEmail && (
+                    <div className="flex items-center justify-center gap-2 text-xs font-mono surface-muted mb-4">
+                      <Mail className="w-3 h-3" />
+                      {userEmail}
+                    </div>
+                  )}
+                  {userCreated && (
+                    <div className="flex items-center justify-center gap-2 text-xs font-mono surface-muted mb-4">
+                      <Calendar className="w-3 h-3" />
+                      Joined {userCreated}
+                    </div>
+                  )}
+                </div>
+                <div className="text-center border-t-2 border-primary/20 pt-6 mt-4">
+                  <div className="text-sm font-mono uppercase surface-muted mb-4">Eco-Credit Balance</div>
+                  <div className="font-heading text-5xl font-black text-primary mb-2">
+                    {(ecoCredits ?? 0).toLocaleString()}
+                  </div>
+                  <div className="text-xs font-mono uppercase surface-muted mb-6 tracking-widest">
+                    XP Points {userRank ? ` | Rank #${userRank}` : " | Contributor"}
+                  </div>
+                  {ecoCreditEquivalent && (
+                    <div className="mb-4 p-3 border border-secondary/30 bg-secondary/5 rounded">
+                      <p className="font-mono text-xs font-bold uppercase tracking-widest text-secondary">
+                        ≈ {ecoCreditEquivalent}
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-sm font-semibold text-foreground/80">Earn more credits by submitting verified reports.</p>
+                </div>
+              </div>
+
+              <div className="brutal-panel panel-surface p-8 md:col-span-2">
+                <h2 className="font-heading text-xl font-black uppercase mb-6 border-b-2 border-primary pb-3">Your Impact Stats</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-primary/10 rounded border border-primary">
+                    <div className="font-mono text-xs uppercase surface-muted mb-2">Reports Filed</div>
+                    <div className="font-heading text-3xl font-black text-primary">{profileStats.reports_filed}</div>
+                  </div>
+                  <div className="p-4 bg-secondary/10 rounded border border-secondary">
+                    <div className="font-mono text-xs uppercase text-secondary mb-2">Verified</div>
+                    <div className="font-heading text-3xl font-black text-secondary">{profileStats.reports_verified}</div>
+                  </div>
+                  <div className="p-4 bg-accent/10 rounded border border-accent">
+                    <div className="font-mono text-xs uppercase text-accent mb-2">Achievements</div>
+                    <div className="font-heading text-3xl font-black text-accent">{achievements.filter(a => a.unlocked).length}</div>
+                  </div>
+                  <div className="p-4 bg-blue-500/10 rounded border border-blue-500 col-span-2 md:col-span-1">
+                    <div className="font-mono text-xs uppercase text-blue-600 mb-2">XP Earned</div>
+                    <div className="font-heading text-3xl font-black text-blue-600">{(ecoCredits ?? 0).toLocaleString()}</div>
                   </div>
                 </div>
-                <div className="font-heading text-2xl font-black text-primary min-w-fit">
-                  {item.amount}
-                </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        <div className="brutal-panel panel-surface p-8">
-          <h2 className="font-heading text-2xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
-            Achievement Badges
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {defaultBadges.map((badge) => {
-              const Icon = badge.icon;
-              return (
-                <div
-                  key={badge.id}
-                  className="p-6 border-2 border-primary rounded-xl hover:bg-primary/5 transition-colors relative overflow-hidden group"
+            {rankProgress && (
+              <div className="mb-8">
+                <RankProgressCard
+                  rankProgress={rankProgress}
+                  ecoCreditEquivalent={ecoCreditEquivalent}
+                />
+              </div>
+            )}
+
+            <div className="brutal-panel panel-surface p-8">
+              <h2 className="font-heading text-2xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
+                <span className="flex items-center gap-2"><Leaf className="w-5 h-5" /> XP &amp; Credit Sources</span>
+              </h2>
+              <div className="space-y-4">
+                {(() => {
+                  const unlockedAchievements = achievements.filter(a => a.unlocked);
+                  const totalXp = unlockedAchievements.reduce((sum, a) => sum + a.points_awarded, 0) || 1;
+                  const items = unlockedAchievements.length > 0
+                    ? unlockedAchievements.map(a => ({
+                        activity: a.name,
+                        amount: `+${a.points_awarded} XP`,
+                        percentage: Math.round((a.points_awarded / totalXp) * 100),
+                      }))
+                    : [
+                        { activity: "Submit an environmental report", amount: "+50 XP", percentage: 25 },
+                        { activity: "Report verified by an LGU", amount: "+100 XP + Eco-Credits", percentage: 25 },
+                        { activity: "Community corroboration (500m geofence)", amount: "+150 XP", percentage: 25 },
+                        { activity: "Rank level up bonus", amount: "+Eco-Credits", percentage: 25 },
+                      ];
+                  return items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-6">
+                      <div className="flex-1">
+                        <div className="font-semibold text-foreground mb-2">{item.activity}</div>
+                        <div className="h-2 bg-primary/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-secondary rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(45,225,194,0.4)]" style={{ width: `${Math.max(item.percentage, 5)}%` }} />
+                        </div>
+                      </div>
+                      <div className="font-heading text-xl font-black text-secondary min-w-fit">{item.amount}</div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Achievements Tab */}
+        {activeTab === "achievements" && (
+          <>
+            {/* Filter Pills */}
+            <div className="flex gap-3 mb-6">
+              {(["all", "unlocked", "locked"] as FilterKey[]).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-5 py-2 font-mono text-xs font-bold uppercase tracking-widest rounded border-2 transition-colors ${
+                    filter === f
+                      ? "bg-primary text-background border-primary shadow-[3px_3px_0px_#1b4332]"
+                      : "text-foreground/60 border-foreground/20 hover:border-primary/40"
+                  }`}
                 >
-                  <div className="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-300">
-                    <Icon className="w-32 h-32" />
-                  </div>
+                  {f === "all" && "All"}
+                  {f === "unlocked" && <span className="flex items-center gap-1"><Sparkles className="w-3 h-3" /> Unlocked</span>}
+                  {f === "locked" && <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> Locked</span>}
+                </button>
+              ))}
+            </div>
 
-                  <div className="relative z-10">
-                    <div className={`w-16 h-16 rounded-xl border-2 border-primary flex items-center justify-center mb-4 bg-background shadow-[4px_4px_0px_#1b4332]`}>
-                      <Icon className={`w-8 h-8 ${badge.color}`} />
-                    </div>
-
-                    <h3 className="font-heading text-lg font-black uppercase text-primary mb-2">
-                      {badge.name}
-                    </h3>
-
-                    <p className="text-sm text-foreground/80 font-semibold mb-4">
-                      {badge.description}
-                    </p>
-
-                    <div className="text-xs font-mono surface-muted uppercase">
-                      Unlocked &bull; {badge.date}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+            {filteredAchievements.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredAchievements.map((achievement) => (
+                  <AchievementCard key={achievement.id} achievement={achievement} />
+                ))}
+              </div>
+            ) : (
+              <div className="brutal-panel panel-surface p-12 text-center border-2 border-primary/20">
+                <Trophy className="w-12 h-12 text-primary/20 mx-auto mb-4" />
+                <p className="font-mono text-foreground/50 font-bold uppercase tracking-widest">
+                  {filter === "unlocked" ? "No achievements unlocked yet." : "No locked achievements remaining."}
+                </p>
+                <p className="font-mono text-foreground/40 text-sm mt-2">
+                  {filter === "unlocked" ? "Submit reports and engage with the community to earn badges." : "You have unlocked everything!"}
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background font-body flex items-center justify-center">
+        <Spinner size={32} className="text-primary" />
+      </div>
+    }>
+      <ProfilePageContent />
+    </Suspense>
   );
 }
