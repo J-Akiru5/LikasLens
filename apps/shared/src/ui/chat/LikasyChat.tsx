@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Bot, Leaf, User } from "lucide-react";
 import { useGeminiChat, type ChatMessage } from "../../hooks/useGeminiChat";
 
@@ -138,6 +138,108 @@ export function LikasyChat({ systemPrompt, welcomeMessage }: LikasyChatProps) {
   );
 }
 
+function parseInlineStyles(text: string): React.ReactNode[] {
+  // Regex to split by bold (**text**) or inline code (`code`)
+  const regex = /(\*\*.*?\*\*|`.*?`)/g;
+  const parts = text.split(regex);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return (
+        <strong key={index} className="font-extrabold text-foreground">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code key={index} className="px-1.5 py-0.5 bg-black/10 dark:bg-white/10 rounded font-mono text-xs border border-primary/10">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
+}
+
+function MarkdownRenderer({ content }: { content: string }) {
+  const blocks = content.split(/\n\n+/);
+
+  return (
+    <div className="space-y-2 text-sm leading-relaxed">
+      {blocks.map((block, blockIdx) => {
+        const trimmedBlock = block.trim();
+        if (!trimmedBlock) return null;
+
+        const lines = trimmedBlock.split(/\n/);
+
+        const isList = lines.every((line) => {
+          const l = line.trim();
+          return l.startsWith("- ") || l.startsWith("* ") || /^\d+\.\s/.test(l);
+        });
+
+        if (isList) {
+          const listType = lines[0].trim().startsWith("- ") || lines[0].trim().startsWith("* ") ? "ul" : "ol";
+
+          if (listType === "ul") {
+            return (
+              <ul key={blockIdx} className="list-disc pl-5 space-y-1 my-1">
+                {lines.map((line, lineIdx) => {
+                  const cleaned = line.trim().replace(/^[-*]\s+/, "");
+                  return (
+                    <li key={lineIdx} className="text-sm">
+                      {parseInlineStyles(cleaned)}
+                    </li>
+                  );
+                })}
+              </ul>
+            );
+          } else {
+            return (
+              <ol key={blockIdx} className="list-decimal pl-5 space-y-1 my-1">
+                {lines.map((line, lineIdx) => {
+                  const cleaned = line.trim().replace(/^\d+\.\s+/, "");
+                  return (
+                    <li key={lineIdx} className="text-sm">
+                      {parseInlineStyles(cleaned)}
+                    </li>
+                  );
+                })}
+              </ol>
+            );
+          }
+        }
+
+        if (trimmedBlock.startsWith("### ")) {
+          return (
+            <h4 key={blockIdx} className="font-heading text-sm font-black uppercase mt-3 mb-1 text-primary">
+              {parseInlineStyles(trimmedBlock.replace(/^###\s+/, ""))}
+            </h4>
+          );
+        }
+        if (trimmedBlock.startsWith("## ")) {
+          return (
+            <h3 key={blockIdx} className="font-heading text-base font-black uppercase mt-4 mb-2 text-primary">
+              {parseInlineStyles(trimmedBlock.replace(/^##\s+/, ""))}
+            </h3>
+          );
+        }
+
+        return (
+          <p key={blockIdx} className="mb-2">
+            {lines.map((line, lineIdx) => (
+              <React.Fragment key={lineIdx}>
+                {lineIdx > 0 && <br />}
+                {parseInlineStyles(line)}
+              </React.Fragment>
+            ))}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 function ChatBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
 
@@ -162,7 +264,11 @@ function ChatBubble({ message }: { message: ChatMessage }) {
           border: isUser ? "none" : "2px solid var(--panel-border)",
         }}
       >
-        <div className="whitespace-pre-wrap break-words">{message.content}</div>
+        {isUser ? (
+          <div className="whitespace-pre-wrap break-words">{message.content}</div>
+        ) : (
+          <MarkdownRenderer content={message.content} />
+        )}
       </div>
     </div>
   );

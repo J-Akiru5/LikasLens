@@ -88,7 +88,7 @@ export default function AdminLandingPage() {
       <section className="relative z-10 max-w-7xl mx-auto px-6 py-20 bg-background/50 rounded-[3rem] mt-10 backdrop-blur-sm border-t-4 border-primary">
         <div className="text-center mb-16">
           <h2 className="font-heading text-4xl font-black uppercase tracking-tight">Guide for Analysts</h2>
-          <p className="mt-4 text-lg font-mono font-bold text-foreground/70">What you can do in the LikasLens Portal</p>
+          <p className="mt-4 text-lg font-mono font-bold text-foreground/90">What you can do in the LikasLens Portal</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -121,7 +121,7 @@ export default function AdminLandingPage() {
       </section>
       
       <footer className="relative z-10 border-t-4 border-primary mt-20 p-8 text-center font-mono font-bold uppercase text-sm bg-background">
-        <div className="flex items-center justify-center gap-2 mb-2 text-foreground/70">
+        <div className="flex items-center justify-center gap-2 mb-2 text-foreground/90">
           <Leaf className="w-4 h-4 text-primary" /> LikasLens Admin Platform // Protecting our environment together.
         </div>
       </footer>

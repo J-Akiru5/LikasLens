@@ -171,6 +171,7 @@ export default function Home() {
         id="platform"
         className="relative z-10 max-w-7xl mx-auto px-6 py-20 bg-background/50 rounded-[3rem] mt-10 backdrop-blur-sm"
       >
+        <h2 className="sr-only">Platform Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <FeatureCard
             icon={<Bot className="w-8 h-8 text-secondary" />}
@@ -279,7 +280,7 @@ export default function Home() {
                     <div className="font-mono text-primary text-xl font-bold uppercase">
                       Normal Report
                     </div>
-                    <div className="font-mono text-primary/70 text-sm mt-2 uppercase tracking-widest">
+                    <div className="font-mono text-primary font-bold text-sm mt-2 uppercase tracking-widest">
                       Your name is shown // Location saved
                     </div>
                   </motion.div>

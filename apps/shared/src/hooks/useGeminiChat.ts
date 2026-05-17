@@ -71,7 +71,7 @@ export function useGeminiChat(customSystemPrompt?: string, customWelcomeMessage?
           ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 512,
+            maxOutputTokens: 2048,
             topP: 0.9,
           },
         }),
