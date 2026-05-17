@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@source "../../../shared/src/**/*.{ts,tsx}";
+@source "../shared/src/**/*.{ts,tsx}";
+@source "./node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
+@source "../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
+@source "../../shared/src/**/*.{ts,tsx}";
 
 :root {
   --background: #f8f9fa;
