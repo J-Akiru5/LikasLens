@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
@@ -19,22 +19,18 @@ import {
   Moon,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { locales, localeNames, defaultLocale } from "@likaslens/shared";
 
 type SettingsTab = "platform" | "notifications" | "security" | "account";
-
-const TABS: { id: SettingsTab; label: string; icon: typeof Globe }[] = [
-  { id: "platform", label: "Platform", icon: Globe },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "security", label: "Security", icon: Shield },
-  { id: "account", label: "Account", icon: UserCircle },
-];
 
 function TabButton({
   tab,
   isActive,
   onSelect,
 }: {
-  tab: (typeof TABS)[number];
+  tab: { id: SettingsTab; label: string; icon: typeof Globe };
   isActive: boolean;
   onSelect: (id: SettingsTab) => void;
 }) {
@@ -61,19 +57,20 @@ function TabButton({
 }
 
 function NotificationsSection() {
+  const t = useTranslations("settings");
   return (
     <div className="brutal-panel panel-surface p-8">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
           <Bell className="w-6 h-6 text-primary" />
         </div>
-        <h2 className="font-heading text-2xl font-black uppercase">Notifications</h2>
+        <h2 className="font-heading text-2xl font-black uppercase">{t("notifications")}</h2>
       </div>
       <div className="space-y-4">
         {[
-          { label: "Critical Alerts", desc: "Receive notifications for critical incidents", defaultChecked: true },
-          { label: "Report Updates", desc: "Get updates when your reports are resolved", defaultChecked: true },
-          { label: "Community Activity", desc: "Notifications about community engagement", defaultChecked: false },
+          { label: t("criticalAlerts"), desc: t("criticalAlertsDesc"), defaultChecked: true },
+          { label: t("reportUpdates"), desc: t("reportUpdatesDesc"), defaultChecked: true },
+          { label: t("communityActivity"), desc: t("communityActivityDesc"), defaultChecked: false },
         ].map((item) => (
           <label
             key={item.label}
@@ -96,6 +93,7 @@ function NotificationsSection() {
 }
 
 function SecuritySection() {
+  const t = useTranslations("settings");
   return (
     <div className="space-y-6">
       {/* Privacy */}
@@ -104,12 +102,12 @@ function SecuritySection() {
           <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
             <Lock className="w-6 h-6 text-primary" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">Privacy</h2>
+          <h2 className="font-heading text-2xl font-black uppercase">{t("privacy")}</h2>
         </div>
         <div className="space-y-4">
           {[
-            { label: "Public Profile", desc: "Allow others to view your public activity", defaultChecked: true },
-            { label: "Show Report Count", desc: "Display your total reports on your profile", defaultChecked: true },
+            { label: t("publicProfile"), desc: t("publicProfileDesc"), defaultChecked: true },
+            { label: t("showReportCount"), desc: t("showReportCountDesc"), defaultChecked: true },
           ].map((item) => (
             <label
               key={item.label}
@@ -135,12 +133,12 @@ function SecuritySection() {
           <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
             <Eye className="w-6 h-6 text-primary" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">Display</h2>
+          <h2 className="font-heading text-2xl font-black uppercase">{t("display")}</h2>
         </div>
         <div className="space-y-4">
           {[
-            { label: "Compact View", desc: "Use a more condensed layout", defaultChecked: false },
-            { label: "Reduced Motion", desc: "Minimize animations and transitions", defaultChecked: false },
+            { label: t("compactView"), desc: t("compactViewDesc"), defaultChecked: false },
+            { label: t("reducedMotion"), desc: t("reducedMotionDesc"), defaultChecked: false },
           ].map((item) => (
             <label
               key={item.label}
@@ -164,6 +162,8 @@ function SecuritySection() {
 }
 
 function AccountSection() {
+  const t = useTranslations("settings");
+  const tc = useTranslations("common");
   return (
     <div className="space-y-6">
       <div className="brutal-panel panel-surface p-8">
@@ -171,7 +171,7 @@ function AccountSection() {
           <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
             <Key className="w-6 h-6 text-primary" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">Credentials</h2>
+          <h2 className="font-heading text-2xl font-black uppercase">{t("credentials")}</h2>
         </div>
         <div className="space-y-4">
           <button
@@ -179,7 +179,7 @@ function AccountSection() {
             style={{ touchAction: "manipulation" }}
             className="w-full p-4 border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors rounded font-bold uppercase"
           >
-            Change Password
+            {t("changePassword")}
           </button>
         </div>
       </div>
@@ -189,7 +189,7 @@ function AccountSection() {
           <div className="w-12 h-12 rounded border-2 border-accent flex items-center justify-center bg-background">
             <LogOut className="w-6 h-6 text-accent" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase text-accent">Danger Zone</h2>
+          <h2 className="font-heading text-2xl font-black uppercase text-accent">{t("dangerZone")}</h2>
         </div>
         <div className="space-y-4">
           <button
@@ -197,14 +197,14 @@ function AccountSection() {
             style={{ touchAction: "manipulation" }}
             className="w-full p-4 border-2 border-accent text-accent hover:bg-accent hover:text-[#081c15] transition-colors rounded font-bold uppercase"
           >
-            Log Out
+            {tc("signOut")}
           </button>
           <button
             type="button"
             style={{ touchAction: "manipulation" }}
             className="w-full p-4 border-2 border-accent/50 text-accent/70 hover:border-accent hover:text-accent transition-colors rounded font-bold uppercase"
           >
-            Delete Account
+            {t("deleteAccount")}
           </button>
         </div>
       </div>
@@ -213,31 +213,53 @@ function AccountSection() {
 }
 
 function PlatformSection() {
+  const t = useTranslations("settings");
+  const tn = useTranslations("nav");
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
+
+  const currentLocale = locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) ?? defaultLocale;
+
+  const handleLocaleChange = (newLocale: string) => {
+    if (newLocale === currentLocale) return;
+    const newPath = pathname.replace(new RegExp(`^/${currentLocale}(/|$)`), `/${newLocale}$1`);
+    document.cookie = `likaslens-locale=${newLocale};path=/;max-age=31536000`;
+    startTransition(() => {
+      router.replace(newPath);
+    });
+  };
+
   return (
     <div className="brutal-panel panel-surface p-8">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
           <Monitor className="w-6 h-6 text-primary" />
         </div>
-        <h2 className="font-heading text-2xl font-black uppercase">Platform</h2>
+        <h2 className="font-heading text-2xl font-black uppercase">{t("platform")}</h2>
       </div>
       <div className="space-y-6">
         <div>
-          <label className="font-bold uppercase block mb-2">Language</label>
+          <label className="font-bold uppercase block mb-2">{t("language")}</label>
           <select
-            defaultValue="en"
-            className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold uppercase text-sm focus:outline-none focus:border-primary"
+            value={currentLocale}
+            onChange={(e) => handleLocaleChange(e.target.value)}
+            disabled={isPending}
+            className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold uppercase text-sm focus:outline-none focus:border-primary disabled:opacity-50"
           >
-            <option value="en">English</option>
-            <option value="fil">Filipino</option>
+            {locales.map((loc) => (
+              <option key={loc} value={loc}>
+                {localeNames[loc].native} ({localeNames[loc].english})
+              </option>
+            ))}
           </select>
         </div>
         <div>
-          <label className="font-bold uppercase block mb-2">Theme</label>
+          <label className="font-bold uppercase block mb-2">{t("theme")}</label>
           <div className="flex gap-3">
             {[
-              { value: "civic", label: "Civic", icon: Sun },
-              { value: "ghost", label: "Ghost", icon: Moon },
+              { value: "civic", label: tn("civic"), icon: Sun },
+              { value: "ghost", label: tn("ghost"), icon: Moon },
             ].map((opt) => {
               const Icon = opt.icon;
               return (
@@ -260,8 +282,17 @@ function PlatformSection() {
 }
 
 export default function SettingsPage() {
+  const t = useTranslations("settings");
+  const tc = useTranslations("common");
   const [activeTab, setActiveTab] = useState<SettingsTab>("platform");
   const onSelectTab = useCallback((id: SettingsTab) => setActiveTab(id), []);
+
+  const tabs: { id: SettingsTab; label: string; icon: typeof Globe }[] = [
+    { id: "platform", label: t("platform"), icon: Globe },
+    { id: "notifications", label: t("notifications"), icon: Bell },
+    { id: "security", label: t("security"), icon: Shield },
+    { id: "account", label: t("account"), icon: UserCircle },
+  ];
 
   // Debug: log interactions on data-debug-click elements in dev mode
   useEffect(() => {
@@ -296,10 +327,10 @@ export default function SettingsPage() {
                 className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Back
+{tc("back")}
               </Link>
               <h1 className="font-heading text-3xl md:text-4xl font-black uppercase">
-                Settings
+{t("title")}
               </h1>
             </div>
 
@@ -309,7 +340,7 @@ export default function SettingsPage() {
               style={{ scrollbarWidth: "none", touchAction: "pan-x" }}
               data-debug-click="tab-nav"
             >
-              {TABS.map((tab) => (
+              {tabs.map((tab) => (
                 <TabButton
                   key={tab.id}
                   tab={tab}
