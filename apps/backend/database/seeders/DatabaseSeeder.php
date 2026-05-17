@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             EnvironmentalLawSeeder::class,
             LawSeeder::class,
             NgoSeeder::class,
+            IncidentSeeder::class,
             AchievementSeeder::class,
             CurrencySettingSeeder::class,
             EcoCreditPoolSeeder::class,
