@@ -56,6 +56,18 @@ Route::get('/settings/eco-credit-rate', [CurrencySettingController::class, 'show
 // Public profile stats (by Supabase auth user id)
 Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
 
+// Public read-only reference data (tickets = incidents)
+Route::get('/tickets', [TicketController::class, 'index']);
+Route::get('/tickets/{id}', [TicketController::class, 'show']);
+
+// Public NGO catalog (admin portal reads)
+Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
+Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
+
+// Public law reference (admin portal reads)
+Route::get('/admin/laws', [AdminLawController::class, 'index']);
+Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
+
 // Auth endpoints
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -100,21 +112,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/dashboard/feed', [DashboardController::class, 'feed']);
 
-    // Tickets / Incidents
-    Route::get('/tickets', [TicketController::class, 'index']);
-    Route::get('/tickets/{id}', [TicketController::class, 'show']);
-
     // Analyst+ routes
     Route::middleware('role:analyst,super_admin')->group(function () {
         Route::apiResource('ticket-assignments', TicketAssignmentController::class);
-
-        // NGO management (analyst+ can view)
-        Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
-        Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
-
-        // Environmental laws (analyst+ can view)
-        Route::get('/admin/laws', [AdminLawController::class, 'index']);
-        Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
     });
 
     // Eco-Credit Engine

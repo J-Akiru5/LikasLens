@@ -15,6 +15,16 @@ function normalizeBaseUrl(raw: string): string {
   }
 }
 
+let _authToken: string | null = null;
+
+export function setLaravelAuthToken(token: string | null) {
+  _authToken = token;
+}
+
+export function getLaravelAuthToken(): string | null {
+  return _authToken;
+}
+
 export async function laravelFetch<T>(
   endpoint: string,
   options: RequestInit = {}
@@ -27,7 +37,7 @@ export async function laravelFetch<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  const token = getCookie("laravel_token");
+  const token = _authToken || getCookie("laravel_token");
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
