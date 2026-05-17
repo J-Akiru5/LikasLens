@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Users as UsersIcon,
 } from "lucide-react";
-import { Spinner, showToast } from "@likaslens/shared";
+import { laravelGet, laravelPut, laravelDelete, Spinner, showToast } from "@likaslens/shared";
 
 type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
@@ -29,9 +29,6 @@ interface UserRow {
 const PAGE_SIZE = 50;
 const ROLE_ORDER: Role[] = ["citizen", "ghost", "analyst", "super_admin"];
 
-// Base URL for your Laravel container application instance
-const LARAVEL_API_BASE = "https://likaslens-backend.jollysand-02a996f5.southeastasia.azurecontainerapps.io/api";
-
 export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -43,48 +40,29 @@ export default function UsersPage() {
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
-  // Helper to fetch authorization header strings if token storage is used
-  const getAuthHeaders = () => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
-    return {
-      "Accept": "application/json",
-      "Content-Type": "application/json",
-      ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-    };
-  };
-
-  // 1. Fetch Users from Laravel API instead of Supabase Client
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // Build search query parameters matching Laravel syntax structure
       const params = new URLSearchParams({
-        page: (page + 1).toString(), // Laravel pagination scales from 1 index base
+        page: (page + 1).toString(),
         per_page: PAGE_SIZE.toString(),
         ...(search && { search }),
         ...(roleFilter && { role: roleFilter }),
       });
 
-      const response = await fetch(`${LARAVEL_API_BASE}/admin/users?${params}`, {
-        method: "GET",
-        headers: getAuthHeaders(),
-      });
+      const result = await laravelGet<{ data: UserRow[]; meta: { total: number } }>(
+        `/admin/users?${params}`
+      );
 
-      if (!response.ok) {
-        throw new Error(`Server returned error code: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      // Handle structures wrapped inside Laravel's LengthAwarePaginator framework
-      if (result && result.data) {
-        setUsers(result.data as UserRow[]);
-        setTotal(result.total ?? result.data.length);
-      } else {
-        setUsers((result ?? []) as UserRow[]);
-        setTotal((result ?? []).length);
+      if (result && (result as { data: UserRow[] }).data) {
+        const r = result as { data: UserRow[]; meta: { total: number } };
+        setUsers(r.data);
+        setTotal(r.meta?.total ?? r.data.length);
+      } else if (Array.isArray(result)) {
+        setUsers(result);
+        setTotal(result.length);
       }
     } catch (err) {
       console.error("Laravel fetch error:", err);
@@ -100,16 +78,9 @@ export default function UsersPage() {
     fetchUsers(); 
   }, [fetchUsers]);
 
-  // 2. Change Role endpoint mapping through Laravel Controller
   async function handleRoleChange(userId: string, newRole: string) {
     try {
-      const response = await fetch(`${LARAVEL_API_BASE}/admin/users/${userId}/role`, {
-        method: "PUT",
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ role: newRole }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update role layout parameters");
+      await laravelPut(`/admin/users/${userId}/role`, { role: newRole });
 
       setUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, role: newRole as Role } : u))
@@ -121,16 +92,10 @@ export default function UsersPage() {
     }
   }
 
-  // 3. Deactivate mapping through Laravel Controller
   async function handleDelete(userId: string) {
     if (!confirm("Deactivate this user account?")) return;
     try {
-      const response = await fetch(`${LARAVEL_API_BASE}/admin/users/${userId}`, {
-        method: "DELETE",
-        headers: getAuthHeaders(),
-      });
-
-      if (!response.ok) throw new Error("Failed termination command on resource ID");
+      await laravelDelete(`/admin/users/${userId}`);
 
       setUsers((prev) =>
         prev.map((u) =>
