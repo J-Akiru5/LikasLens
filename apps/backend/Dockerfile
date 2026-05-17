@@ -18,6 +18,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 
 COPY . .
 
+RUN mkdir -p bootstrap/cache && chmod -R 775 bootstrap/cache storage
 RUN composer run-script post-autoload-dump
 RUN php artisan optimize
 
