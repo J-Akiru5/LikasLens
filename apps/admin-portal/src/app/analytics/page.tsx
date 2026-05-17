@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { getTickets } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
@@ -20,77 +19,63 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
       </div>
     );
   }
 
   const statusCounts: Record<string, number> = {};
-  tickets.forEach((t) => {
-    statusCounts[t.status] = (statusCounts[t.status] || 0) + 1;
-  });
+  tickets.forEach((t) => { statusCounts[t.status] = (statusCounts[t.status] || 0) + 1; });
 
   const totalTickets = tickets.length;
   const resolvedTickets = tickets.filter((t) => t.status === "Resolved" || t.status === "Closed").length;
   const pendingTickets = totalTickets - resolvedTickets;
   const resolutionRate = totalTickets > 0 ? Math.round((resolvedTickets / totalTickets) * 100) : 0;
 
+  const kpis = [
+    { label: "Total Tickets", value: totalTickets, icon: BarChart3, color: "text-accent border-accent shadow-[3px_3px_0px_#ffb703]" },
+    { label: "Resolution Rate", value: `${resolutionRate}%`, icon: TrendingUp, color: "text-secondary border-secondary shadow-[3px_3px_0px_#2de1c2]" },
+    { label: "Pending", value: pendingTickets, icon: TrendingDown, color: "text-primary border-primary shadow-[3px_3px_0px_#1b4332]" },
+  ];
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-        <p className="text-sm text-gray-500">Platform-wide statistics and trends</p>
+    <div className="space-y-8">
+      <div className="border-b-4 border-primary pb-4">
+        <h1 className="font-heading text-4xl font-black uppercase">Analytics</h1>
+        <p className="font-mono text-sm surface-muted mt-1">Platform-wide statistics and trends</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="flex items-center gap-4">
-          <div className="rounded-lg bg-blue-50 p-3">
-            <BarChart3 className="h-6 w-6 text-blue-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Total Tickets</p>
-            <p className="text-2xl font-bold text-gray-900">{totalTickets}</p>
-          </div>
-        </Card>
-
-        <Card className="flex items-center gap-4">
-          <div className="rounded-lg bg-green-50 p-3">
-            <TrendingUp className="h-6 w-6 text-green-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Resolution Rate</p>
-            <p className="text-2xl font-bold text-gray-900">{resolutionRate}%</p>
-          </div>
-        </Card>
-
-        <Card className="flex items-center gap-4">
-          <div className="rounded-lg bg-orange-50 p-3">
-            <TrendingDown className="h-6 w-6 text-orange-600" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Pending</p>
-            <p className="text-2xl font-bold text-gray-900">{pendingTickets}</p>
-          </div>
-        </Card>
+        {kpis.map((kpi) => {
+          const Icon = kpi.icon;
+          return (
+            <div key={kpi.label} className={`brutal-panel panel-surface p-6 border-2 ${kpi.color}`}>
+              <div className="flex items-center gap-4">
+                <Icon className={`h-8 w-8 ${kpi.color.split(" ")[0]}`} />
+                <div>
+                  <p className="font-mono text-xs font-bold uppercase tracking-widest surface-muted">{kpi.label}</p>
+                  <p className="font-heading text-3xl font-black">{kpi.value}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Tickets by Status</h3>
-          <div className="space-y-3">
+      <div className="grid gap-8 lg:grid-cols-2">
+        <Card variant="brutal">
+          <h3 className="font-heading text-xl font-black uppercase mb-6">Tickets by Status</h3>
+          <div className="space-y-4">
             {Object.entries(statusCounts).map(([status, count]) => {
               const pct = totalTickets > 0 ? Math.round((count / totalTickets) * 100) : 0;
               return (
                 <div key={status}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-600">{status}</span>
-                    <span className="font-medium text-gray-900">{count}</span>
+                  <div className="flex justify-between font-mono text-sm font-bold uppercase mb-2">
+                    <span className="surface-muted">{status}</span>
+                    <span className="font-bold">{count}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-gray-100">
-                    <div
-                      className="h-2 rounded-full bg-emerald-500 transition-all"
-                      style={{ width: `${pct}%` }}
-                    />
+                  <div className="w-full h-4 bg-foreground/10 rounded overflow-hidden border-2 border-foreground/30">
+                    <div className="h-full bg-secondary transition-all duration-500 shadow-[0_0_6px_rgba(45,225,194,0.4)]" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );
@@ -98,19 +83,19 @@ export default function AnalyticsPage() {
           </div>
         </Card>
 
-        <Card>
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Ticket List</h3>
+        <Card variant="brutal">
+          <h3 className="font-heading text-xl font-black uppercase mb-6">Ticket List</h3>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {tickets.map((ticket) => (
-              <div key={ticket.id} className="flex items-center justify-between rounded-lg border border-gray-100 p-3">
+              <div key={ticket.id} className="flex items-center justify-between border-2 border-primary/20 p-3 hover:border-primary hover:bg-primary/5 transition-colors rounded">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-gray-900 truncate">{ticket.title}</p>
-                  <p className="text-xs text-gray-500">{ticket.location}</p>
+                  <p className="font-bold uppercase text-sm truncate">{ticket.title}</p>
+                  <p className="font-mono text-xs surface-muted">{ticket.location}</p>
                 </div>
-                <span className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                  ticket.status === "Open" ? "bg-yellow-100 text-yellow-800" :
-                  ticket.status === "Resolved" ? "bg-green-100 text-green-800" :
-                  "bg-blue-100 text-blue-800"
+                <span className={`ml-2 shrink-0 rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 ${
+                  ticket.status === "Open" ? "border-accent bg-accent/15 text-accent" :
+                  ticket.status === "Resolved" ? "border-secondary bg-secondary/15 text-secondary" :
+                  "border-primary bg-primary/15 text-primary"
                 }`}>
                   {ticket.status}
                 </span>

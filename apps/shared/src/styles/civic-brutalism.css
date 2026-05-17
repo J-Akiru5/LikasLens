@@ -1,0 +1,63 @@
+:root {
+  --primary: #1B4332;
+  --secondary: #2DE1C2;
+  --accent: #FFB703;
+  --background: #F8F9FA;
+  --foreground: #081C15;
+  --panel: #F8F9FA;
+  --panel-border: rgba(8, 28, 21, 0.2);
+  --muted-text: rgba(8, 28, 21, 0.8);
+}
+
+.brutal-panel {
+  background: var(--panel) !important;
+  color: var(--foreground) !important;
+  border-color: var(--panel-border) !important;
+  backdrop-filter: blur(4px);
+}
+
+.panel-surface {
+  background: var(--panel) !important;
+  color: var(--foreground) !important;
+  border-color: var(--panel-border) !important;
+  box-shadow: 8px 8px 0px rgba(8, 28, 21, 0.16);
+}
+
+.brutal-button {
+  background: var(--secondary);
+  color: #081c15;
+  border: 2px solid rgba(8, 28, 21, 0.15);
+}
+.brutal-button:hover {
+  filter: brightness(1.03);
+}
+
+.font-heading {
+  font-family: Montserrat, "Archivo Black", Arial, sans-serif;
+}
+
+.font-body {
+  font-family: Inter, "Helvetica Now", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.font-mono {
+  font-family: "Space Mono", "JetBrains Mono", "Courier New", monospace;
+}
+
+.surface-muted {
+  color: var(--muted-text) !important;
+}
+
+.theme-input {
+  background: var(--background);
+  color: var(--foreground);
+  border: 2px solid var(--panel-border);
+}
+.theme-input::placeholder {
+  color: var(--muted-text);
+}
+.theme-input:focus {
+  outline: none;
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 2px rgba(45, 225, 194, 0.24);
+}

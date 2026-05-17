@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { laravelGet } from "@likaslens/shared";
 import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
@@ -28,43 +27,43 @@ export default function RewardsPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Rewards Catalog</h1>
-        <p className="text-sm text-gray-500">Manage eco-credit rewards</p>
+    <div className="space-y-8">
+      <div className="border-b-4 border-primary pb-4">
+        <h1 className="font-heading text-4xl font-black uppercase">Rewards Catalog</h1>
+        <p className="font-mono text-sm surface-muted mt-1">Manage eco-credit rewards</p>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {rewards.map((reward) => (
-            <Card key={reward.id}>
+            <div key={reward.id} className="brutal-panel panel-surface p-6 border-2 border-primary/20 hover:border-primary transition-colors">
               <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-emerald-50 p-2">
-                  <Gift className="h-5 w-5 text-emerald-600" />
+                <div className="w-10 h-10 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">
+                  <Gift className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900">{reward.reward_name}</h3>
-                  <p className="text-xs text-gray-500">{reward.reward_type}</p>
+                  <h3 className="font-bold uppercase">{reward.reward_name}</h3>
+                  <p className="font-mono text-xs surface-muted">{reward.reward_type}</p>
                   {reward.partner_store && (
-                    <p className="text-xs text-gray-400">{reward.partner_store.name}</p>
+                    <p className="font-mono text-xs surface-muted">{reward.partner_store.name}</p>
                   )}
                 </div>
               </div>
-              <div className="mt-3 flex items-center justify-between">
+              <div className="mt-4 flex items-center justify-between border-t-2 border-primary/10 pt-4">
                 <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">{reward.stock_quantity} in stock</span>
+                  <Package className="h-4 w-4 surface-muted" />
+                  <span className="font-mono text-sm surface-muted">{reward.stock_quantity} in stock</span>
                 </div>
-                <span className="text-lg font-bold text-emerald-600">{reward.points_cost} pts</span>
+                <span className="font-heading text-xl font-black text-secondary">{reward.points_cost} pts</span>
               </div>
-            </Card>
+            </div>
           ))}
           {rewards.length === 0 && (
-            <p className="col-span-full text-center text-sm text-gray-400 py-12">No rewards configured</p>
+            <p className="col-span-full text-center font-mono text-sm surface-muted py-12">No rewards configured</p>
           )}
         </div>
       )}

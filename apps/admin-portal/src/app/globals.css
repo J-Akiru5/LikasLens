@@ -1,15 +1,16 @@
 @import "tailwindcss";
+@import "@likaslens/shared/src/styles/civic-brutalism.css";
 
 :root {
-  --color-emerald-50: #ecfdf5;
-  --color-emerald-100: #d1fae5;
-  --color-emerald-200: #a7f3d0;
-  --color-emerald-600: #059669;
-  --color-emerald-700: #047857;
-  --color-emerald-800: #065f46;
-  --color-emerald-900: #064e3b;
+  --color-primary: #1B4332;
+  --color-secondary: #2DE1C2;
+  --color-accent: #FFB703;
+  --color-background: #F8F9FA;
+  --color-foreground: #081C15;
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, "Helvetica Now", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }

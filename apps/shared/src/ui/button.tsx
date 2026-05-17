@@ -1,7 +1,7 @@
 import { cn } from "../utils";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "brutal";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
 }
@@ -11,6 +11,7 @@ const variantStyles = {
   secondary: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-emerald-500",
   ghost: "text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500",
   danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+  brutal: "brutal-button font-heading font-black uppercase tracking-wide shadow-[3px_3px_0px_#1b4332] hover:brightness-105",
 };
 
 const sizeStyles = {

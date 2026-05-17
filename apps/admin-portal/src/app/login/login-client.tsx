@@ -1,8 +1,8 @@
 "use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth";
+import { Leaf } from "lucide-react";
 
 export function LoginClient() {
   const router = useRouter();
@@ -13,9 +13,7 @@ export function LoginClient() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-    setLoading(true);
-
+    setError(""); setLoading(true);
     try {
       await signIn(email, password);
       router.push("/dashboard");
@@ -26,61 +24,39 @@ export function LoginClient() {
       } else {
         setError(message || "Invalid email or password.");
       }
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background font-body px-4">
       <div className="w-full max-w-sm">
-        <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div className="brutal-panel panel-surface p-8 border-2 border-primary shadow-[8px_8px_0px_#1b4332]">
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold text-gray-900">LikasLens Admin</h1>
-            <p className="mt-1 text-sm text-gray-500">Sign in with your admin account</p>
+            <div className="flex items-center justify-center gap-2 text-primary mb-4">
+              <Leaf className="w-8 h-8" />
+              <h1 className="font-heading text-2xl font-black uppercase tracking-tighter">LikasLens Admin</h1>
+            </div>
+            <p className="font-mono text-sm surface-muted">Sign in with your admin account</p>
           </div>
-
           {error && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+            <div className="mb-4 rounded border-2 border-accent bg-accent/10 p-3 font-mono text-sm text-accent">
               {error}
             </div>
           )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                placeholder="admin@likaslens.ph"
-              />
+              <label htmlFor="email" className="block font-mono text-sm font-bold uppercase mb-2">Email</label>
+              <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full brutal-panel theme-input px-3 py-2 font-mono text-sm rounded"
+                placeholder="admin@likaslens.ph" />
             </div>
-
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              />
+              <label htmlFor="password" className="block font-mono text-sm font-bold uppercase mb-2">Password</label>
+              <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                className="w-full brutal-panel theme-input px-3 py-2 font-mono text-sm rounded" />
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full brutal-button font-heading font-black uppercase tracking-wide py-3 rounded shadow-[3px_3px_0px_#1b4332] hover:brightness-105 disabled:opacity-50 transition-all">
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
