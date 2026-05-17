@@ -67,11 +67,9 @@ function PlatformSection() {
           </div>
           <div>
             <label className="font-bold uppercase block mb-2">API Base URL</label>
-            <input
-              type="text"
-              defaultValue={process.env.NEXT_PUBLIC_API_URL || ""}
-              className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-mono text-sm focus:outline-none focus:border-primary"
-            />
+            <div className="w-full p-3 border-2 border-primary/20 rounded bg-background font-mono text-sm truncate" title={process.env.NEXT_PUBLIC_API_URL || "Not configured"}>
+              {process.env.NEXT_PUBLIC_API_URL || "Not configured"}
+            </div>
           </div>
         </div>
       </div>

@@ -107,7 +107,7 @@ export default function ReportPage() {
 
 	const flushOfflineQueue = useCallback(async () => {
 		const laravelUrl =
-			process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://127.0.0.1:8000";
+			process.env.NEXT_PUBLIC_API_URL || "";
 		const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
 
 		try {
