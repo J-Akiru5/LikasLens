@@ -21,7 +21,7 @@ export async function deleteAccount(): Promise<{ success: boolean; error?: strin
   try {
     const token = (await cookies()).get("laravel_token")?.value
     if (token) {
-      await fetch(`${LARAVEL_API}/api/user/delete`, {
+      await fetch(`${LARAVEL_API}/user/delete`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
