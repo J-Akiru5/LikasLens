@@ -4,8 +4,27 @@
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./i18n/messages/en": "./src/i18n/messages/en.json",
+    "./i18n/messages/fil": "./src/i18n/messages/fil.json",
+    "./i18n/messages/vi": "./src/i18n/messages/vi.json",
+    "./i18n/messages/id": "./src/i18n/messages/id.json",
+    "./i18n/messages/ms": "./src/i18n/messages/ms.json",
+    "./i18n/messages/ta": "./src/i18n/messages/ta.json",
+    "./i18n/yolo-labels/en": "./src/i18n/yolo-labels/en.json",
+    "./i18n/yolo-labels/fil": "./src/i18n/yolo-labels/fil.json",
+    "./i18n/yolo-labels/vi": "./src/i18n/yolo-labels/vi.json",
+    "./i18n/yolo-labels/id": "./src/i18n/yolo-labels/id.json",
+    "./i18n/yolo-labels/ms": "./src/i18n/yolo-labels/ms.json",
+    "./i18n/yolo-labels/ta": "./src/i18n/yolo-labels/ta.json"
+  },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "i18n:generate": "npx tsx src/i18n/generate.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",

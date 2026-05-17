@@ -1,0 +1,12 @@
+{
+  "illegalDumping": "Illegal Dumping",
+  "deforestation": "Deforestation",
+  "waterPollution": "Water Pollution",
+  "airPollution": "Air Pollution",
+  "wildlifeCrime": "Wildlife Crime",
+  "oilSpill": "Oil Spill",
+  "miningViolation": "Mining Violation",
+  "coastalDamage": "Coastal Damage",
+  "wasteBurning": "Waste Burning",
+  "unclassified": "Unclassified Environmental Issue"
+}
