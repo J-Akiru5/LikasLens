@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout to the branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Azure Login
         uses: azure/login@v2
@@ -34,16 +34,12 @@ jobs:
       - name: Build and push container image to registry
         uses: azure/container-apps-deploy-action@v2
         with:
-          appSourcePath: ${{ github.workspace }}apps/ai-service
-          _dockerfilePathKey_: _dockerfilePath_
-          _targetLabelKey_: _targetLabel_
+          appSourcePath: ${{ github.workspace }}/apps/ai-service
           registryUrl: likaslensregistry.azurecr.io
           registryUsername: ${{ secrets.LIKASLENSAISERVICE_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.LIKASLENSAISERVICE_REGISTRY_PASSWORD }}
           containerAppName: likaslens-ai-service
           resourceGroup: likaslens
           imageToBuild: likaslensregistry.azurecr.io/likaslens-ai-service:${{ github.sha }}
-          _buildArgumentsKey_: |
-            _buildArgumentsValues_
 
 
