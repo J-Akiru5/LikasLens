@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getTickets } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { Card } from "@likaslens/shared";
+import { Card, Spinner } from "@likaslens/shared";
 import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
 
 export default function AnalyticsPage() {
@@ -19,7 +19,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -33,9 +33,9 @@ export default function AnalyticsPage() {
   const resolutionRate = totalTickets > 0 ? Math.round((resolvedTickets / totalTickets) * 100) : 0;
 
   const kpis = [
-    { label: "Total Tickets", value: totalTickets, icon: BarChart3, color: "text-accent border-accent shadow-[3px_3px_0px_#ffb703]" },
-    { label: "Resolution Rate", value: `${resolutionRate}%`, icon: TrendingUp, color: "text-secondary border-secondary shadow-[3px_3px_0px_#2de1c2]" },
-    { label: "Pending", value: pendingTickets, icon: TrendingDown, color: "text-primary border-primary shadow-[3px_3px_0px_#1b4332]" },
+    { label: "Total Tickets", value: totalTickets, icon: BarChart3, cardClass: "border-amber-400 shadow-[3px_3px_0px_#92400e]", iconColor: "text-amber-600" },
+    { label: "Resolution Rate", value: `${resolutionRate}%`, icon: TrendingUp, cardClass: "border-emerald-400 shadow-[3px_3px_0px_#047857]", iconColor: "text-emerald-600" },
+    { label: "Pending", value: pendingTickets, icon: TrendingDown, cardClass: "border-primary shadow-[3px_3px_0px_#1b4332]", iconColor: "text-primary" },
   ];
 
   return (
@@ -49,12 +49,12 @@ export default function AnalyticsPage() {
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className={`brutal-panel panel-surface p-6 border-2 ${kpi.color}`}>
+            <div key={kpi.label} className={`brutal-panel panel-surface p-6 border-2 ${kpi.cardClass}`}>
               <div className="flex items-center gap-4">
-                <Icon className={`h-8 w-8 ${kpi.color.split(" ")[0]}`} />
+                <Icon className={`h-8 w-8 ${kpi.iconColor}`} />
                 <div>
                   <p className="font-mono text-xs font-bold uppercase tracking-widest surface-muted">{kpi.label}</p>
-                  <p className="font-heading text-3xl font-black">{kpi.value}</p>
+                  <p className="font-heading text-3xl font-black text-primary">{kpi.value}</p>
                 </div>
               </div>
             </div>
@@ -93,8 +93,8 @@ export default function AnalyticsPage() {
                   <p className="font-mono text-xs surface-muted">{ticket.location}</p>
                 </div>
                 <span className={`ml-2 shrink-0 rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 ${
-                  ticket.status === "Open" ? "border-accent bg-accent/15 text-accent" :
-                  ticket.status === "Resolved" ? "border-secondary bg-secondary/15 text-secondary" :
+                  ticket.status === "Open" ? "border-amber-400 bg-amber-100 text-amber-800" :
+                  ticket.status === "Resolved" ? "border-emerald-400 bg-emerald-100 text-emerald-700" :
                   "border-primary bg-primary/15 text-primary"
                 }`}>
                   {ticket.status}

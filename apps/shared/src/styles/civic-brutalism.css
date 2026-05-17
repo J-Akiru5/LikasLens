@@ -7,6 +7,8 @@
   --panel: #F8F9FA;
   --panel-border: rgba(8, 28, 21, 0.2);
   --muted-text: rgba(8, 28, 21, 0.8);
+  --accent-fg: #92400E;
+  --secondary-fg: #0D9488;
 }
 
 .brutal-panel {
