@@ -84,10 +84,10 @@ export default function IncidentsPage() {
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => setSelectedStatus(null)}
-                className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#1b4332] ${
+                className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
                   selectedStatus === null
-                    ? "bg-primary text-white border-primary"
-                    : "bg-background border-2 border-primary text-primary hover:bg-primary/20 hover:border-primary"
+                    ? "bg-primary text-white border-primary shadow-[2px_2px_0px_#081c15]"
+                    : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
                 }`}
               >
                 All
@@ -96,10 +96,10 @@ export default function IncidentsPage() {
                 <button
                   key={status}
                   onClick={() => setSelectedStatus(status)}
-                  className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#1b4332] ${
+                  className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
                     selectedStatus === status
                       ? getStatusColor(status)
-                      : `border-2 border-primary text-primary hover:bg-primary/10`
+                      : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
                   }`}
                 >
                   {status}

@@ -7,6 +7,7 @@
   --panel-border: rgba(8, 28, 21, 0.2);
   --muted-text: rgba(8, 28, 21, 0.8);
   --hero-overlay: linear-gradient(140deg, rgba(27, 67, 50, 0.92), rgba(8, 28, 21, 0.88));
+  --primary: #1b4332;
   --accent: #ffb703;
   --secondary: #2de1c2;
 }
@@ -14,6 +15,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
   --font-sans: var(--font-body);
   --font-mono: var(--font-data);
 }
@@ -25,6 +28,7 @@
   --panel-border: rgba(45, 225, 194, 0.35);
   --muted-text: rgba(248, 249, 250, 0.84);
   --hero-overlay: linear-gradient(140deg, rgba(8, 28, 21, 0.95), rgba(27, 67, 50, 0.92));
+  --primary: #2de1c2;
 }
 
 *:focus-visible {
