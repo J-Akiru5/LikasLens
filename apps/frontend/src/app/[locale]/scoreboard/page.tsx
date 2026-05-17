@@ -38,7 +38,7 @@ export default function ScoreboardPage() {
       setLoading(true);
       setError(null);
       try {
-        const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+        const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
         const res = await fetch(`${laravelUrl}/api/leaderboard`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();

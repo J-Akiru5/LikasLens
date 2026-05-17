@@ -229,7 +229,7 @@ export default function ReportPage() {
 	};
 
 	const finalizeSubmission = async (cleanedImage: string) => {
-		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+		const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
 		
 		let userId: string | undefined = undefined;
 		if (!isGhostMode) {
@@ -288,7 +288,7 @@ export default function ReportPage() {
 		}
 		
 		setIsSubmitting(true);
-		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+		const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
 		try {
 			const cleanedImage = isGhostMode ? await stripExif(base64Image) : base64Image;

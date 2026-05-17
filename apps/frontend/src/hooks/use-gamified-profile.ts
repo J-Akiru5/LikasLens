@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
-const LARAVEL_API = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000/api";
+const LARAVEL_API = process.env.NEXT_PUBLIC_API_URL || "";
 
 export interface AchievementRow {
   id: string;
@@ -152,7 +152,7 @@ export function useGamifiedProfile(): GamifiedProfileState {
           .from("users")
           .select("total_verified_reports, total_xp, ranking_tier, trust_score")
           .eq("supabase_auth_user_id", authUser.id)
-          .single();
+          .maybeSingle();
 
         const [{ data: achievementsData, error: achErr }, { data: citizenData, error: citErr }] = await Promise.all([
           supabase

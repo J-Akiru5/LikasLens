@@ -18,7 +18,7 @@ export function PublicScoreboard() {
     async function fetchReports() {
       try {
         const baseUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+          process.env.NEXT_PUBLIC_API_URL || "";
         const res = await fetch(`${baseUrl}/tickets?per_page=10&status=resolved,closed`, {
           headers: { Accept: "application/json" },
         });
