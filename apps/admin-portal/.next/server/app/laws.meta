@@ -2,13 +2,14 @@
   "headers": {
     "x-nextjs-stale-time": "300",
     "x-nextjs-prerender": "1",
-    "x-next-cache-tags": "_N_T_/layout,_N_T_/laws/layout,_N_T_/laws/page,_N_T_/laws"
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(dashboard)/layout,_N_T_/(dashboard)/laws/layout,_N_T_/(dashboard)/laws/page,_N_T_/laws"
   },
   "segmentPaths": [
     "/_tree",
     "/_full",
-    "/laws/__PAGE__",
-    "/laws",
+    "/!KGRhc2hib2FyZCk/laws/__PAGE__",
+    "/!KGRhc2hib2FyZCk/laws",
+    "/!KGRhc2hib2FyZCk",
     "/_index",
     "/_head"
   ]

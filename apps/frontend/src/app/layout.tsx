@@ -3,7 +3,7 @@ import { Inter, Montserrat, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { OfflineBanner } from "@/components/ui/offline-banner";
 import { Footer } from "@/components/layout/footer";
-import { LikasyChat } from "@/components/chat/LikasyChat";
+import { LikasyChat } from "@likaslens/shared";
 
 const headingFont = Montserrat({
   variable: "--font-heading",

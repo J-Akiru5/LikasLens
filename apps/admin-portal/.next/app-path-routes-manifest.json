@@ -1,15 +1,15 @@
 {
+  "/(dashboard)/analytics/page": "/analytics",
+  "/(dashboard)/audit-logs/page": "/audit-logs",
+  "/(dashboard)/dashboard/page": "/dashboard",
+  "/(dashboard)/laws/page": "/laws",
+  "/(dashboard)/ngos/page": "/ngos",
+  "/(dashboard)/rewards/page": "/rewards",
+  "/(dashboard)/settings/page": "/settings",
+  "/(dashboard)/tickets/page": "/tickets",
+  "/(dashboard)/users/page": "/users",
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
-  "/analytics/page": "/analytics",
-  "/audit-logs/page": "/audit-logs",
-  "/dashboard/page": "/dashboard",
-  "/laws/page": "/laws",
   "/login/page": "/login",
-  "/ngos/page": "/ngos",
-  "/page": "/",
-  "/rewards/page": "/rewards",
-  "/settings/page": "/settings",
-  "/tickets/page": "/tickets",
-  "/users/page": "/users"
+  "/page": "/"
 }

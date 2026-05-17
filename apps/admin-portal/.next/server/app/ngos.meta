@@ -2,13 +2,14 @@
   "headers": {
     "x-nextjs-stale-time": "300",
     "x-nextjs-prerender": "1",
-    "x-next-cache-tags": "_N_T_/layout,_N_T_/ngos/layout,_N_T_/ngos/page,_N_T_/ngos"
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(dashboard)/layout,_N_T_/(dashboard)/ngos/layout,_N_T_/(dashboard)/ngos/page,_N_T_/ngos"
   },
   "segmentPaths": [
     "/_tree",
     "/_full",
-    "/ngos/__PAGE__",
-    "/ngos",
+    "/!KGRhc2hib2FyZCk/ngos/__PAGE__",
+    "/!KGRhc2hib2FyZCk/ngos",
+    "/!KGRhc2hib2FyZCk",
     "/_index",
     "/_head"
   ]
