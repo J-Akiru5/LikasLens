@@ -111,6 +111,7 @@ dist/
 build/
 *.log
 logs/
+*.tsbuildinfo
 
 # =========================
 # Environment Files
