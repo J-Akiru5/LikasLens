@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getAdminNgos, createAdminNgo, updateAdminNgo, deleteAdminNgo } from "@likaslens/shared";
 import type { NgoGroup } from "@likaslens/shared";
-import { Card, Button, Spinner } from "@likaslens/shared";
+import { Card, Button, Spinner, showToast } from "@likaslens/shared";
 import { Building2, Plus } from "lucide-react";
 
 export default function NgosPage() {
@@ -31,6 +31,7 @@ export default function NgosPage() {
 
     if (!form.name.trim() || !form.region.trim()) {
       setError("Name and Region are required");
+      showToast("Name and Region are required", "error");
       return;
     }
 
@@ -46,8 +47,10 @@ export default function NgosPage() {
 
       if (editId) {
         await updateAdminNgo(editId, payload);
+        showToast("NGO updated successfully", "success");
       } else {
         await createAdminNgo(payload);
+        showToast("NGO created successfully", "success");
       }
 
       setShowForm(false);
@@ -58,6 +61,7 @@ export default function NgosPage() {
       const message = err instanceof Error ? err.message : "Failed to save NGO record";
       console.error("NGO save error:", err);
       setError(message);
+      showToast(message, "error");
     } finally {
       setSaving(false);
     }
@@ -71,8 +75,15 @@ export default function NgosPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this NGO?")) return;
-    try { await deleteAdminNgo(id); loadNgos(); }
-    catch (err) { console.error("Failed to delete NGO:", err); }
+    try {
+      await deleteAdminNgo(id);
+      showToast("NGO deleted successfully", "success");
+      loadNgos();
+    }
+    catch (err) {
+      console.error("Failed to delete NGO:", err);
+      showToast("Failed to delete NGO", "error");
+    }
   }
 
   return (
