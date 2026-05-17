@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { LikasyChat } from "@likaslens/shared";
+import { LikasyChat, OfflineBanner } from "@likaslens/shared";
 
 export const metadata: Metadata = {
   title: "LikasLens Admin",
@@ -15,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased" data-theme="civic">
       <body className="min-h-full bg-background font-body flex flex-col">
+        <OfflineBanner />
         <div className="flex-1">
           {children}
         </div>

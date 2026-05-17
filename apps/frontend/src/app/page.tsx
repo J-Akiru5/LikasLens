@@ -19,6 +19,7 @@ import {
   Download,
 } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
+import { PublicScoreboard, FaqSection } from "@likaslens/shared";
 
 export default function Home() {
   const [ghostMode, setGhostMode] = useState(false);
@@ -299,70 +300,11 @@ export default function Home() {
         <h2 className="font-heading text-4xl font-black mb-8 uppercase border-b-4 border-primary pb-4">
           Public Records of Fixed Issues
         </h2>
-        <div className="brutal-panel p-0 overflow-hidden panel-surface">
-          <div className="grid grid-cols-4 bg-[#1b4332] text-[#f8f9fa] font-mono font-bold text-sm uppercase p-4 border-b-2 border-[#081c15]">
-            <div>Agency in charge</div>
-            <div>What happened</div>
-            <div>Current Status</div>
-            <div className="text-right">Time to fix</div>
-          </div>
-          {[
-            {
-              j: "Dept. of Forestry",
-              i: "Illegal Logging",
-              s: "Fixed",
-              t: "12 mins",
-            },
-            {
-              j: "Coast Guard",
-              i: "Oil Spill",
-              s: "Checking it",
-              t: "45 mins",
-            },
-            {
-              j: "City Sanitation",
-              i: "Trash Dumping",
-              s: "Fixed",
-              t: "2 hours",
-            },
-          ].map((row, idx) => {
-            const getStatusColor = (status: string) => {
-              switch (status.toLowerCase()) {
-                case "fixed":
-                case "resolved":
-                  return "border-2 border-secondary bg-secondary/15 text-secondary shadow-[0_0_12px_rgba(45,225,194,0.5)]";
-                case "checking it":
-                case "in progress":
-                case "investigating":
-                  return "border-2 border-accent bg-accent/15 text-accent shadow-[0_0_12px_rgba(255,183,3,0.5)]";
-                case "pending":
-                case "not started":
-                  return "border-2 border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(27,67,50,0.5)]";
-                default:
-                  return "border-2 border-foreground/40 bg-foreground/5 text-foreground/60";
-              }
-            };
-
-            return (
-              <div
-                key={idx}
-                className="grid grid-cols-4 font-mono text-sm p-4 border-t-2 border-primary/20 hover:bg-secondary/10 transition-colors"
-              >
-                <div className="font-bold text-base">{row.j}</div>
-                <div className="text-base">{row.i}</div>
-                <div>
-                  <span
-                    className={`px-3 py-1.5 rounded font-bold uppercase text-xs tracking-widest transition-all ${getStatusColor(row.s)}`}
-                  >
-                    {row.s}
-                  </span>
-                </div>
-                <div className="text-right font-bold text-base">{row.t}</div>
-              </div>
-            );
-          })}
-        </div>
+        <PublicScoreboard />
       </section>
+
+      {/* FAQ Section */}
+      <FaqSection />
 
       {/* Install Guide */}
       <section id="install-guide" className="relative z-10 max-w-7xl mx-auto px-6 py-20">

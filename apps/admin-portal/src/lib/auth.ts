@@ -31,6 +31,7 @@ export async function signIn(email: string, password: string) {
       supabase_auth_user_id: data.user.id,
       email: data.user.email,
       name: data.user.user_metadata?.full_name || data.user.email?.split("@")[0],
+      role: data.user.user_metadata?.role || undefined,
     });
     if (res?.data?.token) {
       setCookie("laravel_token", res.data.token, 30);
