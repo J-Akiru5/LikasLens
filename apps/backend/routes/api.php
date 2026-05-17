@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\EcoCreditController;
 use App\Http\Controllers\LeaderboardController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TicketAssignmentController;
@@ -45,6 +46,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Analyst+ routes
     Route::middleware('role:analyst,super_admin')->group(function () {
         Route::apiResource('ticket-assignments', TicketAssignmentController::class);
+    });
+
+    // Eco-Credit Engine (authenticated pipeline / internal)
+    Route::prefix('v1/likaslens-engine')->group(function () {
+        Route::post('/credits/award', [EcoCreditController::class, 'awardCredits']);
     });
 
     // Super admin only routes (stub — controllers to be built)
