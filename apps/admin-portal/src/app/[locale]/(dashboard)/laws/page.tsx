@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { laravelGet } from "@likaslens/shared";
 import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
-import { Card } from "@likaslens/shared";
+import { Card, Spinner } from "@likaslens/shared";
 import { Scale, Search } from "lucide-react";
 
 interface Law {
@@ -39,7 +39,7 @@ export default function LawsPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+          <Spinner size="lg" />
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -53,7 +53,7 @@ export default function LawsPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-bold uppercase text-sm truncate">{law.title}</h3>
                     <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-bold uppercase font-mono tracking-widest border-2 ${
-                      law.is_active ? "border-secondary bg-secondary/15 text-secondary" : "border-primary/30 bg-foreground/10 text-foreground/60"
+                      law.is_active ? "border-emerald-400 bg-emerald-100 text-emerald-700" : "border-primary/30 bg-foreground/10 text-foreground/60"
                     }`}>
                       {law.is_active ? "Active" : "Inactive"}
                     </span>

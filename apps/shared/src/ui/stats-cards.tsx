@@ -108,9 +108,8 @@ export function StatsCards({ stats }: { stats?: StatItem[] }) {
                   {stat.total}
                 </div>
                 <div
-                  className={`flex items-center font-mono text-sm font-bold tracking-widest ${
-                    stat.isPositive ? "text-secondary" : "text-accent"
-                  }`}
+                  className="flex items-center font-mono text-sm font-bold tracking-widest"
+                  style={{ color: stat.isPositive ? "var(--secondary-fg)" : "var(--accent-fg)" }}
                 >
                   {stat.isPositive ? (
                     <ArrowDownRight className="w-4 h-4" />

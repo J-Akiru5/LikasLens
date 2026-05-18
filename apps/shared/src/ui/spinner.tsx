@@ -10,7 +10,8 @@ export function Spinner({ size = "md", className }: SpinnerProps) {
 
   return (
     <svg
-      className={cn("animate-spin text-emerald-600", sizeMap[size], className)}
+      className={cn("animate-spin", sizeMap[size], className)}
+      style={{ color: "var(--primary)" }}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
