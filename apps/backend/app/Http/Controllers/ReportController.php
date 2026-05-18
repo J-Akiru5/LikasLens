@@ -59,7 +59,15 @@ class ReportController extends Controller
         ]);
 
         try {
-            $imageData = base64_decode($validated['base64Image'], true);
+            $rawBase64 = $this->stripDataUriPrefix($validated['base64Image']);
+            if ($rawBase64 === null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid base64 image data',
+                ], 422);
+            }
+
+            $imageData = base64_decode($rawBase64, true);
             if ($imageData === false) {
                 return response()->json([
                     'success' => false,
@@ -194,6 +202,19 @@ class ReportController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
             ], 500);
         }
+    }
+
+    private function stripDataUriPrefix(string $value): ?string
+    {
+        if (str_starts_with($value, 'data:')) {
+            $commaPos = strpos($value, ',');
+            if ($commaPos === false) {
+                return null;
+            }
+            return substr($value, $commaPos + 1);
+        }
+
+        return $value;
     }
 
     private function reportTypeLabel(?string $type): ?string
