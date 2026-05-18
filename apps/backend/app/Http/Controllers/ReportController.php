@@ -59,28 +59,39 @@ class ReportController extends Controller
         ]);
 
         try {
-            return DB::transaction(function () use ($validated) {
-                $imageData = base64_decode($validated['base64Image']);
-                $checksum = hash('sha256', $imageData);
-                $mimeType = $this->detectMimeType($imageData);
-                $extension = $this->mimeToExtension($mimeType);
-                $filename = sprintf('%s_%s.%s', now()->format('Ymd_His'), Str::uuid7(), $extension);
-                $storagePath = sprintf('evidence/%s/%s', now()->format('Y/m/d'), $filename);
+            $imageData = base64_decode($validated['base64Image'], true);
+            if ($imageData === false) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid base64 image data',
+                ], 422);
+            }
 
-                $userId = $this->resolveUserId($validated['user_id']);
+            $checksum = hash('sha256', $imageData);
+            $mimeType = $this->detectMimeType($imageData);
+            $extension = $this->mimeToExtension($mimeType);
+            $filename = sprintf('%s_%s.%s', now()->format('Ymd_His'), Str::uuid7(), $extension);
+            $storagePath = sprintf('evidence/%s/%s', now()->format('Y/m/d'), $filename);
 
-                $disk = $this->getStorageDisk();
-                $disk->put($storagePath, $imageData, [
-                    'checksum' => $checksum,
-                    'ContentType' => $mimeType,
-                ]);
+            $userId = $this->resolveUserId($validated['user_id'] ?? null);
 
-                $reportTypeLabel = $this->reportTypeLabel($validated['report_type'] ?? null);
-                $title = $reportTypeLabel
-                    ? $reportTypeLabel.' — '.now()->format('M j, Y g:i A')
-                    : 'Environmental Report - '.now()->format('M j, Y g:i A');
-                $description = $validated['description'] ?? 'Automatically generated report from LikasLens mobile submission';
+            $disk = $this->getStorageDisk();
+            $disk->put($storagePath, $imageData, [
+                'checksum' => $checksum,
+                'ContentType' => $mimeType,
+            ]);
 
+            $reportTypeLabel = $this->reportTypeLabel($validated['report_type'] ?? null);
+            $title = $reportTypeLabel
+                ? $reportTypeLabel.' — '.now()->format('M j, Y g:i A')
+                : 'Environmental Report - '.now()->format('M j, Y g:i A');
+            $description = $validated['description'] ?? 'Automatically generated report from LikasLens mobile submission';
+
+            // Step 1 — Persist core data in a transaction
+            [$ticket, $evidence] = DB::transaction(function () use (
+                $userId, $title, $description, $validated,
+                $storagePath, $checksum, $mimeType, $imageData
+            ) {
                 $ticket = Ticket::create([
                     'reporter_user_id' => $userId,
                     'status' => 'open',
@@ -90,7 +101,7 @@ class ReportController extends Controller
                     'longitude' => $validated['longitude'],
                 ]);
 
-                TicketEvidence::create([
+                $evidence = TicketEvidence::create([
                     'ticket_id' => $ticket->id,
                     'uploaded_by_user_id' => $userId,
                     'storage_provider' => config('filesystems.default'),
@@ -105,7 +116,7 @@ class ReportController extends Controller
                 ]);
 
                 Report::create([
-                    'user_id' => $validated['user_id'] ?? null,
+                    'user_id' => $userId,
                     'latitude' => $validated['latitude'],
                     'longitude' => $validated['longitude'],
                     'image_path' => $storagePath,
@@ -113,21 +124,33 @@ class ReportController extends Controller
                     'storage_disk' => $this->getBucketName(),
                 ]);
 
+                return [$ticket, $evidence];
+            });
+
+            // Step 2 — AI triage (outside transaction — report survives even if AI is down)
+            $triage = null;
+            try {
                 $triage = app(TriageService::class)->analyze($validated['base64Image'], $ticket);
+            } catch (\Throwable $e) {
+                Log::warning('ReportController: AI triage failed, continuing', [
+                    'error' => $e->getMessage(),
+                    'ticket_id' => $ticket->id,
+                ]);
+                $triage = ['success' => false, 'has_concern' => false, 'indicators' => []];
+            }
 
-                $evidence = $ticket->fresh()->evidence->first();
-
-                if ($userId !== self::GHOST_USER_ID) {
+            // Step 3 — Achievement & rank evaluation (non-critical, best-effort)
+            if ($userId !== self::GHOST_USER_ID) {
+                try {
                     $reporter = User::find($userId);
                     if ($reporter) {
                         $previousPoints = $reporter->reward_points_balance;
 
-                        $achievementService = app(AchievementService::class);
-                        $achievementService->evaluate($reporter, 'report_count');
+                        app(AchievementService::class)->evaluate($reporter, 'report_count');
 
                         $yoloClass = $triage['indicators'][0]['type'] ?? null;
                         if ($yoloClass) {
-                            $achievementService->evaluate($reporter, 'yolov8_class', [
+                            app(AchievementService::class)->evaluate($reporter, 'yolov8_class', [
                                 'class' => strtolower(str_replace(' ', '_', $yoloClass)),
                             ]);
                         }
@@ -135,25 +158,32 @@ class ReportController extends Controller
                         $reporter->refresh();
                         app(RankService::class)->handleRankUp($reporter, $previousPoints);
                     }
+                } catch (\Throwable $e) {
+                    Log::warning('ReportController: Achievement/rank evaluation failed, continuing', [
+                        'error' => $e->getMessage(),
+                        'user_id' => $userId,
+                    ]);
                 }
+            }
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Report submitted successfully',
-                    'data' => [
-                        'ticket_id' => $ticket->id,
-                        'evidence_id' => $evidence?->id,
-                        'latitude' => $validated['latitude'],
-                        'longitude' => $validated['longitude'],
-                        'imageSize' => strlen($validated['base64Image']),
-                        'checksum' => $checksum,
-                        'triage' => $triage,
-                    ],
-                ], 201);
-            });
+            return response()->json([
+                'success' => true,
+                'message' => 'Report submitted successfully',
+                'data' => [
+                    'ticket_id' => $ticket->id,
+                    'evidence_id' => $evidence->id,
+                    'latitude' => $validated['latitude'],
+                    'longitude' => $validated['longitude'],
+                    'imageSize' => strlen($validated['base64Image']),
+                    'checksum' => $checksum,
+                    'triage' => $triage,
+                ],
+            ], 201);
         } catch (\Throwable $e) {
             Log::error('ReportController::store failed', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'latitude' => $validated['latitude'] ?? null,
                 'longitude' => $validated['longitude'] ?? null,
             ]);
