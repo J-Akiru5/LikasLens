@@ -1,6 +1,15 @@
 import { cookies } from "next/headers"
 
-const LARAVEL_API = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://127.0.0.1:8000"
+const LARAVEL_API = process.env.NEXT_PUBLIC_API_URL || ""
+
+function safeUrl(base: string, path: string): string {
+  let url = base;
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
+  url = url.replace(/\/+$/, "");
+  return `${url}${path}`;
+}
 
 async function getToken(): Promise<string | null> {
   const cookieStore = await cookies()
@@ -15,7 +24,8 @@ export async function laravelFetch<T = unknown>(path: string, options: FetchOpti
   const token = await getToken()
   const { params, ...fetchOpts } = options
 
-  const url = new URL(`${LARAVEL_API}${path}`)
+  const urlStr = safeUrl(LARAVEL_API, path)
+  const url = new URL(urlStr)
   if (params) {
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
   }

@@ -105,7 +105,7 @@ export default function IncidentsPage() {
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
         <div className="smoke-overlay" />
-        <AppHeader />
+        <AppHeader showBranding={false} />
         <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
           <div className="max-w-7xl mx-auto space-y-8">

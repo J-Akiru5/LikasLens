@@ -4,11 +4,20 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { createClient } from "@/utils/supabase/server"
 
-const LARAVEL_API = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://127.0.0.1:8000"
+const LARAVEL_API = process.env.NEXT_PUBLIC_API_URL || ""
+
+function safeUrl(base: string, path: string): string {
+  let url = base;
+  if (!/^https?:\/\//i.test(url)) {
+    url = `https://${url}`;
+  }
+  url = url.replace(/\/+$/, "");
+  return `${url}${path}`;
+}
 
 async function syncUserToLaravel(supabaseUserId: string, email: string, name?: string, role?: string) {
   try {
-    const res = await fetch(`${LARAVEL_API}/api/auth/sync`, {
+    const res = await fetch(safeUrl(LARAVEL_API, "/api/auth/sync"), {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
