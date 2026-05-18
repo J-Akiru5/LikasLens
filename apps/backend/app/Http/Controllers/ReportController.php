@@ -54,6 +54,8 @@ class ReportController extends Controller
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'user_id' => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:5000',
+            'report_type' => 'nullable|string|max:100',
         ]);
 
         try {
@@ -73,11 +75,17 @@ class ReportController extends Controller
                     'ContentType' => $mimeType,
                 ]);
 
+                $reportTypeLabel = $this->reportTypeLabel($validated['report_type'] ?? null);
+                $title = $reportTypeLabel
+                    ? $reportTypeLabel.' — '.now()->format('M j, Y g:i A')
+                    : 'Environmental Report - '.now()->format('M j, Y g:i A');
+                $description = $validated['description'] ?? 'Automatically generated report from LikasLens mobile submission';
+
                 $ticket = Ticket::create([
                     'reporter_user_id' => $userId,
                     'status' => 'open',
-                    'title' => 'Environmental Report - '.now()->format('M j, Y g:i A'),
-                    'description' => 'Automatically generated report from LikasLens mobile submission',
+                    'title' => $title,
+                    'description' => $description,
                     'latitude' => $validated['latitude'],
                     'longitude' => $validated['longitude'],
                 ]);
@@ -156,6 +164,22 @@ class ReportController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
             ], 500);
         }
+    }
+
+    private function reportTypeLabel(?string $type): ?string
+    {
+        return match ($type) {
+            'illegal_logging' => 'Illegal Logging',
+            'water_pollution' => 'Water Pollution',
+            'illegal_fishing' => 'Illegal Fishing',
+            'waste_dumping' => 'Waste Dumping',
+            'wildlife_poaching' => 'Wildlife Poaching',
+            'mining_violation' => 'Mining Violation',
+            'air_pollution' => 'Air Pollution',
+            'land_encroachment' => 'Land Encroachment',
+            'other' => 'Other Environmental Concern',
+            default => null,
+        };
     }
 
     private function resolveUserId(?string $submittedUserId): string
@@ -291,6 +315,8 @@ class ReportController extends Controller
             'reports.*.latitude' => 'required|numeric',
             'reports.*.longitude' => 'required|numeric',
             'reports.*.user_id' => 'nullable|string|max:255',
+            'reports.*.description' => 'nullable|string|max:5000',
+            'reports.*.report_type' => 'nullable|string|max:100',
         ]);
 
         $results = [];
