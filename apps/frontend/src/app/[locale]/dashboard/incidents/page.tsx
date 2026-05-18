@@ -91,7 +91,7 @@ export default function IncidentsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen overflow-hidden bg-background font-body">
+      <div className="flex h-dvh overflow-hidden bg-background font-body">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
@@ -101,12 +101,12 @@ export default function IncidentsPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
+    <div className="flex h-dvh overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
         <div className="smoke-overlay" />
         <AppHeader showBranding={false} />
-        <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
+        <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
           <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b-4 border-primary pb-4">
@@ -118,6 +118,7 @@ export default function IncidentsPage() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
                   <input
                     type="text"
+                    inputMode="search"
                     placeholder="Search ID, Category, Location, Status..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -175,7 +176,7 @@ export default function IncidentsPage() {
             </div>
 
             <div className="brutal-panel panel-surface p-0">
-              <div className="grid grid-cols-12 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2 border-[#081c15]" style={{ backgroundColor: "#1b4332", color: "#f8f9fa" }}>
+              <div className="hidden sm:grid grid-cols-12 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2 border-[#081c15]" style={{ backgroundColor: "#1b4332", color: "#f8f9fa" }}>
                 <div className="col-span-2">ID</div>
                 <div className="col-span-3">Category</div>
                 <div className="col-span-3">Location</div>
@@ -187,71 +188,93 @@ export default function IncidentsPage() {
                 filteredIncidents.map((ticket, i) => (
                   <div
                     key={ticket.id}
-                    className="grid grid-cols-12 items-center border-t-2 border-primary/20 p-4 hover:bg-secondary/10 transition-colors font-medium"
+                    className="border-t-2 border-primary/20 hover:bg-secondary/10 transition-colors font-medium"
                   >
-                    <div className="col-span-2 font-mono text-sm font-bold">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</div>
-                    <div className="col-span-3 flex items-center gap-2">
-                      {ticket.status === "Open" && (
-                        <AlertTriangle className="w-4 h-4 text-accent animate-pulse" />
-                      )}
-                      {ticket.title}
-                    </div>
-                    <div className="col-span-3 surface-muted">{ticket.location}</div>
-                    <div className="col-span-2">
-                      <span className={`px-3 py-1.5 rounded text-xs font-bold uppercase font-mono tracking-widest transition-all ${getStatusColor(ticket.status)}`}>
-                        {ticket.status}
-                      </span>
-                    </div>
-                    <div className="col-span-2 text-right">
-                      <div className="relative inline-block">
+                    {/* Mobile card layout */}
+                    <div className="sm:hidden p-4 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {ticket.status === "Open" && (
+                            <AlertTriangle className="w-4 h-4 text-accent animate-pulse shrink-0" />
+                          )}
+                          <span className="font-mono text-sm font-bold truncate">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</span>
+                        </div>
+                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase font-mono tracking-widest shrink-0 ${getStatusColor(ticket.status)}`}>
+                          {ticket.status}
+                        </span>
+                      </div>
+                      <div className="font-body text-sm font-semibold truncate">{ticket.title}</div>
+                      <div className="font-mono text-xs surface-muted truncate">{ticket.location}</div>
+                      <div className="flex justify-end">
                         <button
                           onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
-                          className="p-1 hover:bg-primary/10 rounded transition-colors"
+                          className="p-2 min-w-[44px] min-h-[44px] hover:bg-primary/10 rounded transition-colors"
                           aria-label="Row actions"
                           aria-expanded={openMenuId === ticket.id}
                         >
                           <MoreVertical className="w-5 h-5 text-primary" />
                         </button>
                         {openMenuId === ticket.id && (
-                          <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 w-48 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden">
-                            <button
-                              type="button"
-                              style={{ touchAction: "manipulation" }}
-                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
-                            >
-                              <Eye className="w-4 h-4 text-primary" />
-                              View Details
+                          <div ref={menuRef} className="absolute right-4 mt-10 z-50 w-48 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden">
+                            <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
+                              <Eye className="w-4 h-4 text-primary" /> View Details
                             </button>
-                            <button
-                              type="button"
-                              style={{ touchAction: "manipulation" }}
-                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
-                            >
-                              <UserCheck className="w-4 h-4 text-secondary" />
-                              Assign
+                            <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
+                              <UserCheck className="w-4 h-4 text-secondary" /> Assign
                             </button>
-                            <button
-                              type="button"
-                              style={{ touchAction: "manipulation" }}
-                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
-                            >
-                              <Flag className="w-4 h-4 text-accent" />
-                              Change Status
+                            <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
+                              <Flag className="w-4 h-4 text-accent" /> Change Status
                             </button>
-                            <button
-                              type="button"
-                              style={{ touchAction: "manipulation" }}
-                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-red-50 transition-colors text-accent"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              Remove
+                            <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-red-50 transition-colors text-accent">
+                              <Trash2 className="w-4 h-4" /> Remove
                             </button>
                           </div>
                         )}
+                      </div>
+                    </div>
+
+                    {/* Desktop table row */}
+                    <div className="hidden sm:grid grid-cols-12 items-center p-4">
+                      <div className="col-span-2 font-mono text-sm font-bold">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</div>
+                      <div className="col-span-3 flex items-center gap-2">
+                        {ticket.status === "Open" && (
+                          <AlertTriangle className="w-4 h-4 text-accent animate-pulse" />
+                        )}
+                        {ticket.title}
+                      </div>
+                      <div className="col-span-3 surface-muted">{ticket.location}</div>
+                      <div className="col-span-2">
+                        <span className={`px-3 py-1.5 rounded text-xs font-bold uppercase font-mono tracking-widest transition-all ${getStatusColor(ticket.status)}`}>
+                          {ticket.status}
+                        </span>
+                      </div>
+                      <div className="col-span-2 text-right">
+                        <div className="relative inline-block">
+                          <button
+                            onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
+                            className="p-1 hover:bg-primary/10 rounded transition-colors"
+                            aria-label="Row actions"
+                            aria-expanded={openMenuId === ticket.id}
+                          >
+                            <MoreVertical className="w-5 h-5 text-primary" />
+                          </button>
+                          {openMenuId === ticket.id && (
+                            <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 w-48 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden">
+                              <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
+                                <Eye className="w-4 h-4 text-primary" /> View Details
+                              </button>
+                              <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
+                                <UserCheck className="w-4 h-4 text-secondary" /> Assign
+                              </button>
+                              <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
+                                <Flag className="w-4 h-4 text-accent" /> Change Status
+                              </button>
+                              <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-red-50 transition-colors text-accent">
+                                <Trash2 className="w-4 h-4" /> Remove
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

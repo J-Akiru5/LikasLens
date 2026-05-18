@@ -22,6 +22,9 @@ RUN mkdir -p bootstrap/cache && chmod -R 775 bootstrap/cache storage
 RUN composer run-script post-autoload-dump
 RUN php artisan optimize
 
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 EXPOSE 8000
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["/app/start.sh"]

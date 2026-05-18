@@ -7,7 +7,7 @@ import { AppHeader } from "@/components/layout/header";
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10 font-body">
+    <div className="min-h-dvh bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10 font-body">
       <AppHeader />
       
       <main className="max-w-4xl mx-auto p-4 sm:p-8 pt-12 pb-24">

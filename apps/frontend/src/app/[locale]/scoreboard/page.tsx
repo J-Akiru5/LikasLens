@@ -39,7 +39,7 @@ export default function ScoreboardPage() {
       setError(null);
       try {
         const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
-        const res = await fetch(`${laravelUrl}/api/leaderboard`);
+        const res = await fetch(`${laravelUrl}/leaderboard`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         if (mounted) setData(json.data ?? json);
@@ -60,7 +60,7 @@ export default function ScoreboardPage() {
   const maxCredits = data ? Math.max(...data.map((u) => u.eco_credits ?? u.score), 1) : 1;
 
   return (
-    <main className="min-h-screen bg-background font-body selection:bg-accent/30 selection:text-current">
+    <main className="min-h-dvh bg-background font-body selection:bg-accent/30 selection:text-current">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
         {/* Header */}
         <div className="mb-10 sm:mb-12">
@@ -124,30 +124,50 @@ export default function ScoreboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-2 sm:space-y-1.5">
+<div className="space-y-2 sm:space-y-1.5">
                 {data.map((u, idx) => {
                   const credits = u.eco_credits ?? u.score;
                   const percent = (credits / maxCredits) * 100;
+                  const clampedPercent = Math.min(percent, 100);
                   return (
                     <motion.div
                       key={u.id}
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      className={`grid grid-cols-[auto_1fr] sm:grid-cols-[0.5fr_2fr_1.2fr_1fr] items-center gap-x-3 sm:gap-x-0 gap-y-1 sm:gap-y-0 px-4 sm:px-5 py-3 sm:py-4 rounded-lg border-2 transition-all hover:bg-secondary/5 ${rankBg(idx + 1)} ${idx === 0 ? "border-accent" : "border-primary/10"}`}
+                      className={`brutal-panel px-4 sm:px-5 py-3 sm:py-4 rounded-lg border-2 transition-all hover:bg-secondary/5 ${rankBg(idx + 1)} ${idx === 0 ? "border-accent" : "border-primary/10"}`}
                     >
-                      {/* Rank */}
-                      <div className="flex items-center gap-2 sm:block">
-                        <span className={`font-data text-xl sm:text-2xl font-black ${rankMedal(idx + 1)}`}>
-                          {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}
-                        </span>
-                      </div>
-
-                      {/* Name */}
-                      <div className="font-body text-sm sm:text-base font-bold text-primary sm:text-center sm:text-left truncate flex items-center gap-2">
-                        {u.name}
+                      {/* Mobile layout: card style */}
+                      <div className="sm:hidden space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className={`font-data text-xl font-black ${rankMedal(idx + 1)}`}>
+                              {idx === 0 ? "\uD83E\uDD47" : idx === 1 ? "\uD83E\uDD48" : idx === 2 ? "\uD83E\uDD49" : `#${idx + 1}`}
+                            </span>
+                            <span className="font-body text-sm font-bold text-primary truncate max-w-[140px]">
+                              {u.name}
+                            </span>
+                          </div>
+                          <span className="font-data text-lg font-black text-secondary shrink-0">
+                            {credits.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-widest">
+                          <span className="text-foreground/50">
+                            Eco Credits
+                          </span>
+                          <span className="text-foreground/40">
+                            {u.score.toLocaleString()} pts
+                          </span>
+                        </div>
+                        <div className="w-full h-1 bg-primary/10 rounded-full overflow-hidden border border-primary/10">
+                          <div
+                            className="h-full bg-secondary rounded-full transition-all duration-700"
+                            style={{ width: `${clampedPercent}%` }}
+                          />
+                        </div>
                         {u.level && (
-                          <span className={`hidden sm:inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest border ${
+                          <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest border ${
                             u.level === "Eco Champion" ? "border-accent/60 bg-accent/10 text-accent" :
                             u.level === "Guardian" ? "border-secondary/50 bg-secondary/10 text-secondary" :
                             "border-primary/30 bg-primary/10 text-primary"
@@ -157,28 +177,43 @@ export default function ScoreboardPage() {
                         )}
                       </div>
 
-                      {/* Eco Credits (mobile: inline with name) */}
-                      <div className="col-span-2 sm:col-span-1 sm:text-right mt-1 sm:mt-0">
-                        <span className="font-data text-lg sm:text-xl font-black text-secondary">
-                          {credits.toLocaleString()}
-                        </span>
-                        <span className="font-data text-xs text-foreground/50 ml-1 sm:hidden">eco</span>
-                        {/* Progress bar (desktop) */}
-                        <div className="hidden sm:block w-full h-1.5 bg-primary/10 rounded-full mt-1 overflow-hidden border border-primary/10">
-                          <div
-                            className="h-full bg-secondary rounded-full transition-all duration-700"
-                            style={{ width: `${Math.min(percent, 100)}%` }}
-                          />
+                      {/* Desktop layout: table row */}
+                      <div className="hidden sm:grid grid-cols-[0.5fr_2fr_1.2fr_1fr] items-center gap-x-3">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-data text-2xl font-black ${rankMedal(idx + 1)}`}>
+                            {idx === 0 ? "\uD83E\uDD47" : idx === 1 ? "\uD83E\uDD48" : idx === 2 ? "\uD83E\uDD49" : `#${idx + 1}`}
+                          </span>
                         </div>
-                      </div>
-
-                      {/* Score (desktop only) */}
-                      <div className="hidden sm:block text-right">
-                        <span className="font-data text-base font-bold text-foreground/70">
-                          {u.score.toLocaleString()}
-                        </span>
-                        <div className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest mt-0.5">
-                          pts
+                        <div className="font-body text-base font-bold text-primary truncate flex items-center gap-2">
+                          {u.name}
+                          {u.level && (
+                            <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest border ${
+                              u.level === "Eco Champion" ? "border-accent/60 bg-accent/10 text-accent" :
+                              u.level === "Guardian" ? "border-secondary/50 bg-secondary/10 text-secondary" :
+                              "border-primary/30 bg-primary/10 text-primary"
+                            }`}>
+                              {u.level}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <span className="font-data text-xl font-black text-secondary">
+                            {credits.toLocaleString()}
+                          </span>
+                          <div className="w-full h-1.5 bg-primary/10 rounded-full mt-1 overflow-hidden border border-primary/10">
+                            <div
+                              className="h-full bg-secondary rounded-full transition-all duration-700"
+                              style={{ width: `${clampedPercent}%` }}
+                            />
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-data text-base font-bold text-foreground/70">
+                            {u.score.toLocaleString()}
+                          </span>
+                          <div className="text-[10px] font-mono text-foreground/40 uppercase tracking-widest mt-0.5">
+                            pts
+                          </div>
                         </div>
                       </div>
                     </motion.div>

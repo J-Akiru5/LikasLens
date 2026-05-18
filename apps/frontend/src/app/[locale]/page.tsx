@@ -54,7 +54,7 @@ export default function Home() {
   }, [ghostMode]);
 
   return (
-    <main className="relative min-h-screen overflow-hidden selection:bg-accent/30 selection:text-current font-body">
+    <main className="relative min-h-dvh overflow-hidden selection:bg-accent/30 selection:text-current font-body">
       {/* Background Image for Hero Section */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-700"
@@ -72,28 +72,28 @@ export default function Home() {
       <div className="smoke-overlay" />
 
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-background/90 backdrop-blur-md border-b-2 border-primary/10">
-        <div className="flex items-center gap-2 text-primary">
-          <Leaf className="w-8 h-8" />
-          <span className="font-heading font-extrabold text-2xl tracking-tighter">
+      <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between bg-background/90 backdrop-blur-md border-b-2 border-primary/10 gap-2">
+        <div className="flex items-center gap-2 text-primary shrink-0">
+          <Leaf className="w-6 h-6 sm:w-8 sm:h-8" />
+          <span className="font-heading font-extrabold text-lg sm:text-2xl tracking-tighter">
             LikasLens
           </span>
         </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest surface-muted">
-          <a href="#platform" className="hover:text-primary transition-colors">
+        <div className="flex items-center gap-3 sm:gap-6 text-[10px] sm:text-sm font-bold uppercase tracking-widest surface-muted overflow-x-auto scrollbar-none">
+          <a href="#platform" className="hover:text-primary transition-colors shrink-0">
             Features
           </a>
           <a
             href="#scoreboard"
-            className="hover:text-primary transition-colors"
+            className="hover:text-primary transition-colors shrink-0"
           >
-            Public Records
+            Records
           </a>
           <button
             onClick={() => setGhostMode(!ghostMode)}
-            className={`flex items-center gap-1 transition-colors ${ghostMode ? "text-accent" : "hover:text-accent"}`}
+            className={`flex items-center gap-1 shrink-0 transition-colors ${ghostMode ? "text-accent" : "hover:text-accent"}`}
           >
-            <Fingerprint className="w-4 h-4" /> Ghost Mode
+            <Fingerprint className="w-3 h-3 sm:w-4 sm:h-4" /> Ghost
           </button>
         </div>
         <UserNav />
@@ -250,7 +250,7 @@ export default function Home() {
               </button>
             </div>
 
-            <div className="relative h-[400px] w-full bionic-frame p-8 flex flex-col justify-center items-center bg-background/40 backdrop-blur-md">
+            <div className="relative min-h-[280px] sm:min-h-[400px] w-full bionic-frame p-8 flex flex-col justify-center items-center bg-background/40 backdrop-blur-md">
               {ghostMode && <div className="ai-scan-line" />}
               <AnimatePresence mode="wait">
                 {ghostMode ? (

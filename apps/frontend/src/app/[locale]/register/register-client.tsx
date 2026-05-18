@@ -28,7 +28,7 @@ export function RegisterClient() {
   }, [searchParams]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden font-body selection:bg-accent/30 selection:text-current">
+    <main className="min-h-dvh flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-body selection:bg-accent/30 selection:text-current">
       <div
         className="absolute inset-0 z-0 bg-cover bg-center"
         style={{

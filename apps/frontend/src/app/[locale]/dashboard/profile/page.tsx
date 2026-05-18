@@ -90,7 +90,7 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen overflow-hidden bg-background font-body">
+      <div className="flex h-dvh overflow-hidden bg-background font-body">
         <Sidebar />
         <div className="flex-1 min-w-0 flex items-center justify-center">
           <Spinner size={32} className="text-primary" />
@@ -100,13 +100,13 @@ export default function ProfileSettingsPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
+    <div className="flex h-dvh overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
       <ToastContainer />
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
         <div className="smoke-overlay" />
         <AppHeader greeting={displayName || "Citizen"} />
-        <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
+        <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
           <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex items-center gap-3 mb-8">
