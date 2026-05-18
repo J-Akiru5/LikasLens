@@ -21,171 +21,109 @@ class LikasLensSeeder extends Seeder
 
         // ── Users ──────────────────────────────────────────────────────
         $users = [
-            'citizen' => User::create([
-                'supabase_auth_user_id' => (string) Str::uuid(),
-                'name' => 'Maria Santos',
-                'email' => 'citizen@likaslens.ph',
-                'password' => Hash::make('password'),
-                'role' => 'citizen',
-                'trust_score' => 85,
-                'reward_points_balance' => 1250,
-            ]),
-            'analyst' => User::create([
-                'supabase_auth_user_id' => (string) Str::uuid(),
-                'name' => 'Juan Dela Cruz',
-                'email' => 'analyst@likaslens.ph',
-                'password' => Hash::make('password'),
-                'role' => 'analyst',
-                'trust_score' => 92,
-                'reward_points_balance' => 3400,
-            ]),
-            'super_admin' => User::create([
-                'supabase_auth_user_id' => (string) Str::uuid(),
-                'name' => 'Admin Reyes',
-                'email' => 'admin@likaslens.ph',
-                'password' => Hash::make('password'),
-                'role' => 'super_admin',
-                'trust_score' => 100,
-                'reward_points_balance' => 5000,
-            ]),
-            'ghost' => User::create([
-                'supabase_auth_user_id' => '00000000-0000-0000-0000-000000000000',
-                'name' => 'Anonymous Ghost',
-                'email' => 'ghost@likaslens.local',
-                'password' => Hash::make('password'),
-                'role' => 'ghost',
-                'trust_score' => 0,
-                'reward_points_balance' => 0,
-            ]),
+            'citizen' => User::firstOrCreate(
+                ['email' => 'citizen@likaslens.ph'],
+                [
+                    'supabase_auth_user_id' => (string) Str::uuid(),
+                    'name' => 'Maria Santos',
+                    'password' => Hash::make('password'),
+                    'role' => 'citizen',
+                    'trust_score' => 85,
+                    'reward_points_balance' => 1250,
+                ]
+            ),
+            'analyst' => User::firstOrCreate(
+                ['email' => 'analyst@likaslens.ph'],
+                [
+                    'supabase_auth_user_id' => (string) Str::uuid(),
+                    'name' => 'Juan Dela Cruz',
+                    'password' => Hash::make('password'),
+                    'role' => 'analyst',
+                    'trust_score' => 92,
+                    'reward_points_balance' => 3400,
+                ]
+            ),
+            'super_admin' => User::firstOrCreate(
+                ['email' => 'admin@likaslens.ph'],
+                [
+                    'supabase_auth_user_id' => (string) Str::uuid(),
+                    'name' => 'Admin Reyes',
+                    'password' => Hash::make('password'),
+                    'role' => 'super_admin',
+                    'trust_score' => 100,
+                    'reward_points_balance' => 5000,
+                ]
+            ),
+            'ghost' => User::firstOrCreate(
+                ['email' => 'ghost@likaslens.local'],
+                [
+                    'supabase_auth_user_id' => '00000000-0000-0000-0000-000000000000',
+                    'name' => 'Anonymous Ghost',
+                    'password' => Hash::make('password'),
+                    'role' => 'ghost',
+                    'trust_score' => 0,
+                    'reward_points_balance' => 0,
+                ]
+            ),
         ];
 
         // Additional citizens
         for ($i = 1; $i <= 4; $i++) {
-            $user = User::create([
-                'supabase_auth_user_id' => (string) Str::uuid(),
-                'name' => fake('en_PH')->name(),
-                'email' => "citizen{$i}@likaslens.ph",
-                'password' => Hash::make('password'),
-                'role' => 'citizen',
-                'trust_score' => fake()->numberBetween(30, 95),
-                'reward_points_balance' => fake()->numberBetween(100, 2000),
-            ]);
+            $user = User::firstOrCreate(
+                ['email' => "citizen{$i}@likaslens.ph"],
+                [
+                    'supabase_auth_user_id' => (string) Str::uuid(),
+                    'name' => 'Citizen ' . $i,
+                    'password' => Hash::make('password'),
+                    'role' => 'citizen',
+                    'trust_score' => mt_rand(30, 95),
+                    'reward_points_balance' => mt_rand(100, 2000),
+                ]
+            );
             $users["citizen_{$i}"] = $user;
         }
 
         // ── User Achievements (Demo unlocks) ──────────────────────────
         $allAchievements = Achievement::all()->keyBy('name');
 
-        $nowForAchievements = now()->subDays(fake()->numberBetween(1, 30));
+        $nowForAchievements = now()->subDays(mt_rand(1, 30));
 
-        // Maria Santos: Steward level, has unlocked 6 achievements
+        // Helper: unlock or set progress for a user-achievement pair
+        $setAchievement = function (User $user, string $achievementName, ?int $progress, ?string $unlockedAt) use ($allAchievements) {
+            $ach = $allAchievements->get($achievementName);
+            if (! $ach) {
+                return;
+            }
+            UserAchievement::firstOrCreate(
+                ['user_id' => $user->id, 'achievement_id' => $ach->id],
+                [
+                    'progress_value' => $progress ?? ($ach->criteria_value['threshold'] ?? 1),
+                    'unlocked_at' => $unlockedAt,
+                ]
+            );
+        };
+
+        // Maria Santos: Steward level
         foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Pollution Buster', 'Community Watchdog', 'Sharp Shooter'] as $name) {
-            $ach = $allAchievements->get($name);
-            if ($ach) {
-                UserAchievement::create([
-                    'user_id' => $users['citizen']->id,
-                    'achievement_id' => $ach->id,
-                    'progress_value' => $ach->criteria_value['threshold'] ?? 1,
-                    'unlocked_at' => $nowForAchievements,
-                ]);
-            }
+            $setAchievement($users['citizen'], $name, null, $nowForAchievements);
         }
-        // Environmental Guardian: in progress (8/10)
-        $envGuardian = $allAchievements->get('Environmental Guardian');
-        if ($envGuardian) {
-            UserAchievement::create([
-                'user_id' => $users['citizen']->id,
-                'achievement_id' => $envGuardian->id,
-                'progress_value' => 8,
-                'unlocked_at' => null,
-            ]);
-        }
-        // Perimeter Patrol: in progress (3/5)
-        $perimeterPatrol = $allAchievements->get('Perimeter Patrol');
-        if ($perimeterPatrol) {
-            UserAchievement::create([
-                'user_id' => $users['citizen']->id,
-                'achievement_id' => $perimeterPatrol->id,
-                'progress_value' => 3,
-                'unlocked_at' => null,
-            ]);
-        }
+        $setAchievement($users['citizen'], 'Environmental Guardian', 8, null);
+        $setAchievement($users['citizen'], 'Perimeter Patrol', 3, null);
 
-        // Juan Dela Cruz: has unlocked 8 achievements
+        // Juan Dela Cruz: Steward level
         foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Air Watch', 'Offline Warrior', 'Community Watchdog', 'Sharp Shooter', 'Environmental Guardian'] as $name) {
-            $ach = $allAchievements->get($name);
-            if ($ach) {
-                UserAchievement::create([
-                    'user_id' => $users['analyst']->id,
-                    'achievement_id' => $ach->id,
-                    'progress_value' => $ach->criteria_value['threshold'] ?? 1,
-                    'unlocked_at' => $nowForAchievements->copy()->subDays(fake()->numberBetween(1, 60)),
-                ]);
-            }
+            $setAchievement($users['analyst'], $name, null, $nowForAchievements->copy()->subDays(mt_rand(1, 60)));
         }
-        // Truth Seeker: in progress (3/5)
-        $truthSeeker = $allAchievements->get('Truth Seeker');
-        if ($truthSeeker) {
-            UserAchievement::create([
-                'user_id' => $users['analyst']->id,
-                'achievement_id' => $truthSeeker->id,
-                'progress_value' => 3,
-                'unlocked_at' => null,
-            ]);
-        }
-        // Night Watcher: in progress (2/5)
-        $nightWatcher = $allAchievements->get('Night Watcher');
-        if ($nightWatcher) {
-            UserAchievement::create([
-                'user_id' => $users['analyst']->id,
-                'achievement_id' => $nightWatcher->id,
-                'progress_value' => 2,
-                'unlocked_at' => null,
-            ]);
-        }
+        $setAchievement($users['analyst'], 'Truth Seeker', 3, null);
+        $setAchievement($users['analyst'], 'Night Watcher', 2, null);
 
-        // Admin Reyes: has 10 achievements unlocked
+        // Admin Reyes: Guardian level
         foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Pollution Buster', 'Air Watch', 'Offline Warrior', 'Community Watchdog', 'Sharp Shooter', 'Environmental Guardian', 'Truth Seeker'] as $name) {
-            $ach = $allAchievements->get($name);
-            if ($ach) {
-                UserAchievement::create([
-                    'user_id' => $users['super_admin']->id,
-                    'achievement_id' => $ach->id,
-                    'progress_value' => $ach->criteria_value['threshold'] ?? 1,
-                    'unlocked_at' => $nowForAchievements->copy()->subDays(fake()->numberBetween(1, 90)),
-                ]);
-            }
+            $setAchievement($users['super_admin'], $name, null, $nowForAchievements->copy()->subDays(mt_rand(1, 90)));
         }
-        // Eco Champion: in progress (0/1 since rank is below Eco Champion)
-        $ecoChampion = $allAchievements->get('Eco Champion');
-        if ($ecoChampion) {
-            UserAchievement::create([
-                'user_id' => $users['super_admin']->id,
-                'achievement_id' => $ecoChampion->id,
-                'progress_value' => 0,
-                'unlocked_at' => null,
-            ]);
-        }
-        // Town Cryer: in progress (7/10)
-        $townCryer = $allAchievements->get('Town Cryer');
-        if ($townCryer) {
-            UserAchievement::create([
-                'user_id' => $users['super_admin']->id,
-                'achievement_id' => $townCryer->id,
-                'progress_value' => 7,
-                'unlocked_at' => null,
-            ]);
-        }
-        // Century Mark: in progress (42/100)
-        $centuryMark = $allAchievements->get('Century Mark');
-        if ($centuryMark) {
-            UserAchievement::create([
-                'user_id' => $users['super_admin']->id,
-                'achievement_id' => $centuryMark->id,
-                'progress_value' => 42,
-                'unlocked_at' => null,
-            ]);
-        }
+        $setAchievement($users['super_admin'], 'Eco Champion', 0, null);
+        $setAchievement($users['super_admin'], 'Town Cryer', 7, null);
+        $setAchievement($users['super_admin'], 'Century Mark', 42, null);
 
         // ── Tickets ─────────────────────────────────────────────────────
         $ticketData = [
@@ -212,7 +150,7 @@ class LikasLensSeeder extends Seeder
         $tickets = collect();
         foreach ($ticketData as $i => $data) {
             $ticket = Ticket::create([
-                'reporter_user_id' => fake()->randomElement($userIds),
+                'reporter_user_id' => $userIds[array_rand($userIds)],
                 'status' => $data['status'],
                 'title' => $data['title'],
                 'description' => $data['desc'],
@@ -221,9 +159,9 @@ class LikasLensSeeder extends Seeder
                 'address_text' => $data['address'],
                 'urgency_score' => $data['urgency'],
                 'ai_triage_summary' => $categories[$i % count($categories)],
-                'ai_confidence' => fake()->randomFloat(4, 0.85, 0.99),
-                'resolved_at' => in_array($data['status'], ['resolved']) ? $now->copy()->subHours(fake()->numberBetween(1, 72)) : null,
-                'created_at' => $now->copy()->subHours(fake()->numberBetween(1, 168)),
+                'ai_confidence' => round(mt_rand(8500, 9900) / 10000, 4),
+                'resolved_at' => in_array($data['status'], ['resolved']) ? $now->copy()->subHours(mt_rand(1, 72)) : null,
+                'created_at' => $now->copy()->subHours(mt_rand(1, 168)),
                 'updated_at' => $now,
             ]);
             $tickets->push($ticket);
@@ -239,10 +177,10 @@ class LikasLensSeeder extends Seeder
                 'storage_path' => 'evidence/'.$ticket->created_at->format('Y/m/d').'/'.Str::uuid7().'.jpg',
                 'checksum_sha256' => hash('sha256', (string) Str::uuid()),
                 'mime_type' => 'image/jpeg',
-                'file_size_bytes' => fake()->numberBetween(100000, 5000000),
+                'file_size_bytes' => mt_rand(100000, 5000000),
                 'captured_at' => $ticket->created_at,
                 'exif_removed_at' => $ticket->created_at,
-                'yolo_status' => fake()->randomElement(['pending', 'completed', 'completed']),
+                'yolo_status' => ['pending', 'completed', 'completed'][array_rand(['pending', 'completed', 'completed'])],
                 'created_at' => $ticket->created_at,
                 'updated_at' => $now,
             ]);

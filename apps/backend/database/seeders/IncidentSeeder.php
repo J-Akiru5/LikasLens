@@ -5,13 +5,16 @@ namespace Database\Seeders;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class IncidentSeeder extends Seeder
 {
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
         Ticket::truncate();
+        Schema::enableForeignKeyConstraints();
 
         $demoUser = User::firstOrCreate(
             ['supabase_auth_user_id' => '11111111-1111-1111-1111-111111111111'],

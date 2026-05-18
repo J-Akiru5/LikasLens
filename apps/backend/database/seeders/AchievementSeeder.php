@@ -207,7 +207,10 @@ class AchievementSeeder extends Seeder
         ];
 
         foreach ($achievements as $data) {
-            Achievement::create($data);
+            Achievement::firstOrCreate(
+                ['name' => $data['name']],
+                $data
+            );
         }
     }
 }

@@ -23,7 +23,10 @@ class CurrencySettingSeeder extends Seeder
         ];
 
         foreach ($countries as $data) {
-            CurrencySetting::create($data);
+            CurrencySetting::firstOrCreate(
+                ['country_code' => $data['country_code']],
+                $data
+            );
         }
     }
 }
