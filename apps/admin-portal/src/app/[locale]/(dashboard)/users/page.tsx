@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Users as UsersIcon,
 } from "lucide-react";
-import { laravelGet, laravelPut, laravelDelete, Spinner } from "@likaslens/shared";
+import { laravelGet, laravelPut, laravelDelete, Spinner, Button } from "@likaslens/shared";
 
 type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
@@ -162,7 +162,7 @@ export default function UsersPage() {
       {/* Loading */}
       {loading && (
         <div className="flex justify-center py-12">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+          <Spinner size="lg" />
         </div>
       )}
 
@@ -224,14 +224,16 @@ export default function UsersPage() {
                   >
                     {ROLE_ORDER.map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
-                  <button
+                  <Button
+                    variant="danger"
+                    size="sm"
                     onClick={() => handleDelete(user.id)}
                     disabled={!!user.deleted_at}
-                    className="p-1.5 rounded border-2 border-accent/30 text-accent hover:bg-accent/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     title="Deactivate user"
+                    className="shadow-[2px_2px_0px_#991b1b]"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

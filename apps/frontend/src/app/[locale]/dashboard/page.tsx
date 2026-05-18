@@ -10,6 +10,7 @@ import type { RecentAchievement, RankProgress } from "@likaslens/shared";
 
 interface ImpactData {
   eco_credits: number;
+  reward_points_balance: number;
   trust_score: number;
   community_rank: number;
   total_reports: number;

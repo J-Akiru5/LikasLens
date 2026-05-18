@@ -8,6 +8,7 @@ import type { RecentAchievement } from "@likaslens/shared";
 
 interface ImpactData {
   eco_credits: number;
+  reward_points_balance: number;
   trust_score: number;
   community_rank: number;
   total_reports: number;
@@ -57,6 +58,10 @@ export function CitizenDashboardClient({ impact, ghostModeActive }: Props) {
           <div className="brutal-panel p-4 sm:p-5 border-2 border-primary shadow-[3px_3px_0px_#1b4332]">
             <div className="font-mono text-xs font-bold uppercase tracking-widest text-foreground/60 mb-2">Eco-Credits</div>
             <div className="font-heading text-2xl sm:text-3xl font-black text-primary">{impact?.eco_credits ?? 0}</div>
+            <div className="mt-2 pt-2 border-t border-primary/20">
+              <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-accent mb-0.5">Reward Points</div>
+              <div className="font-heading text-lg font-black text-accent">{(impact?.reward_points_balance ?? 0).toLocaleString()} XP</div>
+            </div>
           </div>
           <div className="brutal-panel p-4 sm:p-5 border-2 border-secondary shadow-[3px_3px_0px_#2de1c2]">
             <div className="font-mono text-xs font-bold uppercase tracking-widest text-foreground/60 mb-2">Trust Score</div>

@@ -23,6 +23,7 @@ function ProfilePageContent() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [ecoCredits, setEcoCredits] = useState<number | null>(null);
+  const [rewardPoints, setRewardPoints] = useState<number | null>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -72,6 +73,7 @@ function ProfilePageContent() {
           let profileStatsData = { reports_filed: 0, reports_verified: 0, community_upvotes: 0 };
           if (profileRes?.success) {
             profileStatsData = profileRes.data.stats ?? profileStatsData;
+            setRewardPoints(profileRes.data.reward_points_balance ?? null);
           }
           setProfileStats(profileStatsData);
           if (leaderboardRes) {
@@ -203,14 +205,22 @@ function ProfilePageContent() {
                   <div className="font-heading text-5xl font-black text-primary mb-2">
                     {(ecoCredits ?? 0).toLocaleString()}
                   </div>
-                  <div className="text-xs font-mono uppercase surface-muted mb-6 tracking-widest">
-                    XP Points {userRank ? ` | Rank #${userRank}` : " | Contributor"}
+                  <div className="text-xs font-mono uppercase surface-muted mb-2 tracking-widest">
+                    Available Credits {userRank ? ` | Rank #${userRank}` : " | Contributor"}
                   </div>
                   {ecoCreditEquivalent && (
                     <div className="mb-4 p-3 border border-secondary/30 bg-secondary/5 rounded">
                       <p className="font-mono text-xs font-bold uppercase tracking-widest text-secondary">
                         ≈ {ecoCreditEquivalent}
                       </p>
+                    </div>
+                  )}
+                  {rewardPoints !== null && (
+                    <div className="mb-4 p-3 border border-accent/40 bg-accent/5 rounded">
+                      <div className="font-mono text-xs font-bold uppercase tracking-widest text-accent mb-1">Reward Points (XP)</div>
+                      <div className="font-heading text-2xl font-black text-accent">
+                        {(rewardPoints ?? 0).toLocaleString()} XP
+                      </div>
                     </div>
                   )}
                   <p className="text-sm font-semibold text-foreground/80">Earn more credits by submitting verified reports.</p>
@@ -234,7 +244,7 @@ function ProfilePageContent() {
                   </div>
                   <div className="p-4 bg-blue-500/10 rounded border border-blue-500 col-span-2 md:col-span-1">
                     <div className="font-mono text-xs uppercase text-blue-600 mb-2">XP Earned</div>
-                    <div className="font-heading text-3xl font-black text-blue-600">{(ecoCredits ?? 0).toLocaleString()}</div>
+                    <div className="font-heading text-3xl font-black text-blue-600">{(rewardPoints ?? 0).toLocaleString()}</div>
                   </div>
                 </div>
               </div>
