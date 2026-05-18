@@ -6,6 +6,7 @@ import Image from "next/image";
 import { User, LogOut, LayoutDashboard, UserCircle, ChevronDown } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { showToast } from "@likaslens/shared";
 import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 export function UserNav() {
@@ -30,8 +31,14 @@ export function UserNav() {
   }, [supabase]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/";
+    try {
+      await supabase.auth.signOut();
+      try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
+      try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
+      window.location.href = "/login";
+    } catch {
+      showToast("Failed to log out. Please try again.", "error");
+    }
   };
 
   if (loading) {
