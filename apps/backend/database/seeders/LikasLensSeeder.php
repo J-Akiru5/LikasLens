@@ -78,8 +78,8 @@ class LikasLensSeeder extends Seeder
 
         $nowForAchievements = now()->subDays(fake()->numberBetween(1, 30));
 
-        // Maria Santos: Steward level, has unlocked 4 achievements
-        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Community Watchdog'] as $name) {
+        // Maria Santos: Steward level, has unlocked 6 achievements
+        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Pollution Buster', 'Community Watchdog', 'Sharp Shooter'] as $name) {
             $ach = $allAchievements->get($name);
             if ($ach) {
                 UserAchievement::create([
@@ -100,9 +100,19 @@ class LikasLensSeeder extends Seeder
                 'unlocked_at' => null,
             ]);
         }
+        // Perimeter Patrol: in progress (3/5)
+        $perimeterPatrol = $allAchievements->get('Perimeter Patrol');
+        if ($perimeterPatrol) {
+            UserAchievement::create([
+                'user_id' => $users['citizen']->id,
+                'achievement_id' => $perimeterPatrol->id,
+                'progress_value' => 3,
+                'unlocked_at' => null,
+            ]);
+        }
 
-        // Juan Dela Cruz: has unlocked 6 achievements
-        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Offline Warrior', 'Community Watchdog', 'Environmental Guardian'] as $name) {
+        // Juan Dela Cruz: has unlocked 8 achievements
+        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Air Watch', 'Offline Warrior', 'Community Watchdog', 'Sharp Shooter', 'Environmental Guardian'] as $name) {
             $ach = $allAchievements->get($name);
             if ($ach) {
                 UserAchievement::create([
@@ -123,9 +133,19 @@ class LikasLensSeeder extends Seeder
                 'unlocked_at' => null,
             ]);
         }
+        // Night Watcher: in progress (2/5)
+        $nightWatcher = $allAchievements->get('Night Watcher');
+        if ($nightWatcher) {
+            UserAchievement::create([
+                'user_id' => $users['analyst']->id,
+                'achievement_id' => $nightWatcher->id,
+                'progress_value' => 2,
+                'unlocked_at' => null,
+            ]);
+        }
 
-        // Admin Reyes: has 7 achievements (all but Eco Champion)
-        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Offline Warrior', 'Community Watchdog', 'Environmental Guardian', 'Truth Seeker'] as $name) {
+        // Admin Reyes: has 10 achievements unlocked
+        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Pollution Buster', 'Air Watch', 'Offline Warrior', 'Community Watchdog', 'Sharp Shooter', 'Environmental Guardian', 'Truth Seeker'] as $name) {
             $ach = $allAchievements->get($name);
             if ($ach) {
                 UserAchievement::create([
@@ -136,13 +156,33 @@ class LikasLensSeeder extends Seeder
                 ]);
             }
         }
-        // Eco Champion: in progress (0/1 since rank is Guardian, not Eco Champion yet)
+        // Eco Champion: in progress (0/1 since rank is below Eco Champion)
         $ecoChampion = $allAchievements->get('Eco Champion');
         if ($ecoChampion) {
             UserAchievement::create([
                 'user_id' => $users['super_admin']->id,
                 'achievement_id' => $ecoChampion->id,
                 'progress_value' => 0,
+                'unlocked_at' => null,
+            ]);
+        }
+        // Town Cryer: in progress (7/10)
+        $townCryer = $allAchievements->get('Town Cryer');
+        if ($townCryer) {
+            UserAchievement::create([
+                'user_id' => $users['super_admin']->id,
+                'achievement_id' => $townCryer->id,
+                'progress_value' => 7,
+                'unlocked_at' => null,
+            ]);
+        }
+        // Century Mark: in progress (42/100)
+        $centuryMark = $allAchievements->get('Century Mark');
+        if ($centuryMark) {
+            UserAchievement::create([
+                'user_id' => $users['super_admin']->id,
+                'achievement_id' => $centuryMark->id,
+                'progress_value' => 42,
                 'unlocked_at' => null,
             ]);
         }
