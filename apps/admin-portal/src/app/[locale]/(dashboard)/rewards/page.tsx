@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { laravelGet } from "@likaslens/shared";
 import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
-import { Card } from "@likaslens/shared";
+import { Card, Spinner } from "@likaslens/shared";
 import { Gift, Package } from "lucide-react";
 
 interface Reward {
@@ -35,7 +35,7 @@ export default function RewardsPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+          <Spinner size="lg" />
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -58,7 +58,7 @@ export default function RewardsPage() {
                   <Package className="h-4 w-4 surface-muted" />
                   <span className="font-mono text-sm surface-muted">{reward.stock_quantity} in stock</span>
                 </div>
-                <span className="font-heading text-xl font-black text-secondary">{reward.points_cost} pts</span>
+                <span className="font-heading text-xl font-black text-primary">{reward.points_cost} pts</span>
               </div>
             </div>
           ))}

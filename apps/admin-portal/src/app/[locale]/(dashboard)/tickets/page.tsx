@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getTickets } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { Card } from "@likaslens/shared";
+import { Card, Spinner } from "@likaslens/shared";
 import { Ticket as TicketIcon, Search } from "lucide-react";
 
 export default function TicketsPage() {
@@ -25,8 +25,8 @@ export default function TicketsPage() {
 
   const getStatusClass = (status: string) => {
     const s = status.toLowerCase();
-    if (s === "open") return "border-accent bg-accent/15 text-accent";
-    if (s === "resolved" || s === "closed") return "border-secondary bg-secondary/15 text-secondary";
+    if (s === "open") return "border-amber-400 bg-amber-100 text-amber-800";
+    if (s === "resolved" || s === "closed") return "border-emerald-400 bg-emerald-100 text-emerald-700";
     if (s === "investigating" || s === "monitoring") return "border-primary bg-primary/15 text-primary";
     return "border-primary/30 bg-foreground/10 text-foreground/60";
   };
@@ -53,7 +53,7 @@ export default function TicketsPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+          <Spinner size="lg" />
         </div>
       ) : (
         <div className="space-y-3">
@@ -75,7 +75,7 @@ export default function TicketsPage() {
                     {ticket.status}
                   </span>
                   {ticket.urgency_score && (
-                    <span className={`font-mono text-xs font-bold ${ticket.urgency_score >= 4 ? "text-accent" : ticket.urgency_score >= 2 ? "text-secondary" : "surface-muted"}`}>
+                    <span className={`font-mono text-xs font-bold ${ticket.urgency_score >= 4 ? "text-amber-700" : ticket.urgency_score >= 2 ? "text-emerald-700" : "surface-muted"}`}>
                       Urgency: {ticket.urgency_score}/5
                     </span>
                   )}

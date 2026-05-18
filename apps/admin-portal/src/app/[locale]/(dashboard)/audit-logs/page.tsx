@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { laravelGet } from "@likaslens/shared";
 import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
-import { Card } from "@likaslens/shared";
+import { Card, Spinner } from "@likaslens/shared";
 import { ScrollText, Search } from "lucide-react";
 
 interface AuditLogEntry {
@@ -50,7 +50,7 @@ export default function AuditLogsPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+          <Spinner size="lg" />
         </div>
       ) : (
         <div className="space-y-2">
