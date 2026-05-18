@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth";
 import { Leaf, Eye, EyeOff } from "lucide-react";
@@ -8,15 +8,29 @@ export function LoginClient() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("remembered_email");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
       await signIn(email, password);
+      if (rememberMe) {
+        localStorage.setItem("remembered_email", email);
+      } else {
+        localStorage.removeItem("remembered_email");
+      }
       router.push("/dashboard");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "";
@@ -65,6 +79,21 @@ export function LoginClient() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                id="remember-me"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-5 h-5 border-2 border-primary rounded accent-secondary cursor-pointer"
+              />
+              <label
+                htmlFor="remember-me"
+                className="font-mono text-sm font-bold uppercase cursor-pointer select-none"
+              >
+                Remember Me
+              </label>
             </div>
             <button type="submit" disabled={loading}
               className="w-full brutal-button font-heading font-black uppercase tracking-wide py-3 rounded shadow-[3px_3px_0px_#1b4332] hover:brightness-105 disabled:opacity-50 transition-all">
