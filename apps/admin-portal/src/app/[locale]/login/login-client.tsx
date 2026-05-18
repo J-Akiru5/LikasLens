@@ -40,7 +40,7 @@ export function LoginClient() {
             <p className="font-mono text-sm surface-muted">Sign in with your admin account</p>
           </div>
           {error && (
-            <div className="mb-4 rounded border-2 border-accent bg-accent/10 p-3 font-mono text-sm text-accent">
+            <div className="mb-4 rounded border-2 border-amber-400 bg-amber-50 p-3 font-mono text-sm text-amber-800">
               {error}
             </div>
           )}

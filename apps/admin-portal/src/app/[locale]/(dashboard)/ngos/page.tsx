@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getAdminNgos, createAdminNgo, updateAdminNgo, deleteAdminNgo } from "@likaslens/shared";
 import type { NgoGroup } from "@likaslens/shared";
-import { Card, Button } from "@likaslens/shared";
+import { Card, Button, Spinner } from "@likaslens/shared";
 import { Building2, Plus } from "lucide-react";
 
 export default function NgosPage() {
@@ -138,7 +138,7 @@ export default function NgosPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+          <Spinner size="lg" />
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -162,7 +162,7 @@ export default function NgosPage() {
                   </div>
                 </div>
                 <span className={`rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 ${
-                  ngo.is_active ? "border-secondary bg-secondary/15 text-secondary" : "border-primary/30 bg-foreground/10 text-foreground/60"
+                  ngo.is_active ? "border-emerald-400 bg-emerald-100 text-emerald-700" : "border-primary/30 bg-foreground/10 text-foreground/60"
                 }`}>
                   {ngo.is_active ? "Active" : "Inactive"}
                 </span>

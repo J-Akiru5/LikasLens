@@ -52,7 +52,7 @@ function ProfilePageContent() {
           setDisplayName(user.user_metadata?.display_name ?? null);
         }
 
-        const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+        const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
         const supabaseUserId = user?.id;
 
         const [leaderboardRes, achievementsRes, rankRes, profileRes] = await Promise.all([

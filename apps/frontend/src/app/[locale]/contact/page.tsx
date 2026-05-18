@@ -15,7 +15,7 @@ export default function ContactPage() {
     setSubmitted(true);
     
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/contact-messages`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/contact-messages`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

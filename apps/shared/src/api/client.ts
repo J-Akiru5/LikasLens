@@ -8,7 +8,7 @@ export async function laravelFetch<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

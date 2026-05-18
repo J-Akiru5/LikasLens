@@ -69,7 +69,7 @@ function PlatformSection() {
             <label className="font-bold uppercase block mb-2">API Base URL</label>
             <input
               type="text"
-              defaultValue={process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}
+              defaultValue={process.env.NEXT_PUBLIC_API_URL || ""}
               className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-mono text-sm focus:outline-none focus:border-primary"
             />
           </div>
@@ -311,7 +311,7 @@ export default function SettingsPage() {
         <h3 className="font-heading text-xl font-black uppercase mb-4">System Information</h3>
         <div className="space-y-2 font-mono text-sm surface-muted">
           <p>LikasLens Admin Portal v0.1.0</p>
-          <p>API: {process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}</p>
+          <p>API: {process.env.NEXT_PUBLIC_API_URL || ""}</p>
           <p>Environment: {process.env.NODE_ENV}</p>
         </div>
       </Card>
