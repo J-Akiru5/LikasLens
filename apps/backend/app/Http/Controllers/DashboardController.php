@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
 use App\Models\Report;
+use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
@@ -23,7 +23,7 @@ class DashboardController extends Controller
         $totalUsers = User::count();
         $ghostReports = Report::whereNull('user_id')->count();
 
-        $ticketsByStatus = Ticket::selectRaw("status, COUNT(*) as count")
+        $ticketsByStatus = Ticket::selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
@@ -45,7 +45,7 @@ class DashboardController extends Controller
                 'avg_response_minutes' => round($avgResponseMinutes ?: 18),
                 'avg_response_sla' => 30,
                 'avg_response_progress' => 30 > 0 ? round((($avgResponseMinutes ?: 18) / 30) * 100) : 0,
-                'avg_response_trend' => $avgResponseMinutes > 0 ? '-' . round($avgResponseMinutes - 18) . 'm' : '-2m',
+                'avg_response_trend' => $avgResponseMinutes > 0 ? '-'.round($avgResponseMinutes - 18).'m' : '-2m',
 
                 'system_load' => $capacity > 0 ? round(($openTickets / $capacity) * 100) : 0,
                 'system_load_total' => 100,
@@ -77,7 +77,7 @@ class DashboardController extends Controller
 
                 return [
                     'id' => $ticket->id,
-                    'display_id' => 'INC-' . str_pad((string) Ticket::where('created_at', '<=', $ticket->created_at)->count(), 3, '0', STR_PAD_LEFT),
+                    'display_id' => 'INC-'.str_pad((string) Ticket::where('created_at', '<=', $ticket->created_at)->count(), 3, '0', STR_PAD_LEFT),
                     'type' => $type,
                     'title' => $ticket->title,
                     'description' => $ticket->description,

@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\TicketAssignment;
-use App\Models\Ticket;
-use App\Models\NgoGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 

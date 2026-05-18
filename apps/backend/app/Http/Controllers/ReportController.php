@@ -6,6 +6,8 @@ use App\Models\Report;
 use App\Models\Ticket;
 use App\Models\TicketEvidence;
 use App\Models\User;
+use App\Services\AchievementService;
+use App\Services\RankService;
 use App\Services\TriageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,8 +29,8 @@ class ReportController extends Controller
         ]);
 
         try {
-            $triage = app(TriageService::class)->analyze($validated['base64Image'], new Ticket());
-            
+            $triage = app(TriageService::class)->analyze($validated['base64Image'], new Ticket);
+
             return response()->json([
                 'success' => true,
                 'has_concern' => $triage['has_concern'] ?? false,
@@ -41,6 +43,7 @@ class ReportController extends Controller
             ], 500);
         }
     }
+
     /**
      * Store a newly created report in storage.
      */
@@ -105,6 +108,26 @@ class ReportController extends Controller
                 $triage = app(TriageService::class)->analyze($validated['base64Image'], $ticket);
 
                 $evidence = $ticket->fresh()->evidence->first();
+
+                if ($userId !== self::GHOST_USER_ID) {
+                    $reporter = User::find($userId);
+                    if ($reporter) {
+                        $previousPoints = $reporter->reward_points_balance;
+
+                        $achievementService = app(AchievementService::class);
+                        $achievementService->evaluate($reporter, 'report_count');
+
+                        $yoloClass = $triage['indicators'][0]['type'] ?? null;
+                        if ($yoloClass) {
+                            $achievementService->evaluate($reporter, 'yolov8_class', [
+                                'class' => strtolower(str_replace(' ', '_', $yoloClass)),
+                            ]);
+                        }
+
+                        $reporter->refresh();
+                        app(RankService::class)->handleRankUp($reporter, $previousPoints);
+                    }
+                }
 
                 return response()->json([
                     'success' => true,
@@ -209,10 +232,102 @@ class ReportController extends Controller
     {
         $config = config('filesystems.disks.supabase');
 
-        if (!empty($config['key']) && !empty($config['secret']) && !empty($config['endpoint'])) {
+        if (! empty($config['key']) && ! empty($config['secret']) && ! empty($config['endpoint'])) {
             return 'supabase';
         }
 
         return 'local';
+    }
+
+    /**
+     * LGU verification: mark a report as verified and trigger achievement hooks.
+     */
+    public function verify(Request $request)
+    {
+        $validated = $request->validate([
+            'report_id' => 'required|uuid|exists:reports,id',
+        ]);
+
+        $report = Report::findOrFail($validated['report_id']);
+        $report->status = 'verified';
+        $report->save();
+
+        $ticket = Ticket::where('reporter_user_id', $report->user_id)->latest()->first();
+        if ($ticket) {
+            $ticket->status = 'verified';
+            $ticket->save();
+        }
+
+        if ($report->user_id) {
+            $reporter = User::find($report->user_id);
+            if ($reporter) {
+                $previousPoints = $reporter->reward_points_balance;
+
+                app(AchievementService::class)->evaluate($reporter, 'lgu_verified_count');
+
+                $reporter->refresh();
+                app(RankService::class)->handleRankUp($reporter, $previousPoints);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Report verified successfully.',
+            'data' => [
+                'report_id' => $report->id,
+                'status' => $report->status,
+            ],
+        ]);
+    }
+
+    /**
+     * Batch sync: accept an array of queued offline reports and process them.
+     */
+    public function batchSync(Request $request)
+    {
+        $validated = $request->validate([
+            'reports' => 'required|array|min:1',
+            'reports.*.base64Image' => 'required|string',
+            'reports.*.latitude' => 'required|numeric',
+            'reports.*.longitude' => 'required|numeric',
+            'reports.*.user_id' => 'nullable|string|max:255',
+        ]);
+
+        $results = [];
+        $syncedCount = 0;
+
+        foreach ($validated['reports'] as $queuedReport) {
+            $subRequest = Request::create('/api/reports', 'POST', $queuedReport);
+            $response = $this->store($subRequest);
+            $result = json_decode($response->getContent(), true);
+
+            if ($result['success'] ?? false) {
+                $syncedCount++;
+            }
+
+            $results[] = $result;
+        }
+
+        if ($syncedCount > 0) {
+            $userId = $this->resolveUserId($validated['reports'][0]['user_id'] ?? null);
+            if ($userId !== self::GHOST_USER_ID) {
+                $user = User::find($userId);
+                if ($user) {
+                    app(AchievementService::class)->evaluate($user, 'offline_sync', [
+                        'increment' => $syncedCount,
+                    ]);
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Synced {$syncedCount} of ".count($validated['reports']).' offline reports.',
+            'data' => [
+                'synced' => $syncedCount,
+                'total' => count($validated['reports']),
+                'results' => $results,
+            ],
+        ]);
     }
 }

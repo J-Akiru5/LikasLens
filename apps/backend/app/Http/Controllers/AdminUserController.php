@@ -19,16 +19,16 @@ class AdminUserController extends Controller
         $serviceKey = env('SUPABASE_SERVICE_ROLE_KEY');
 
         // Safety check: Don't attempt to sync if keys aren't configured yet
-        if (!$supabaseUrl || !$serviceKey) {
+        if (! $supabaseUrl || ! $serviceKey) {
             return;
         }
 
         try {
             // Fetch users directly from the administrative Supabase Auth endpoint
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $serviceKey,
+                'Authorization' => 'Bearer '.$serviceKey,
                 'apikey' => $serviceKey,
-            ])->get($supabaseUrl . '/auth/v1/admin/users');
+            ])->get($supabaseUrl.'/auth/v1/admin/users');
 
             if ($response->successful() && isset($response->json()['users'])) {
                 $supabaseUsers = $response->json()['users'];
@@ -51,7 +51,7 @@ class AdminUserController extends Controller
             }
         } catch (\Exception $e) {
             // Silent catch to prevent the entire endpoint from breaking if Supabase is temporarily unreachable
-            logger('Supabase synchronization error: ' . $e->getMessage());
+            logger('Supabase synchronization error: '.$e->getMessage());
         }
     }
 
@@ -66,7 +66,7 @@ class AdminUserController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -115,7 +115,7 @@ class AdminUserController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
+            'email' => 'sometimes|email|unique:users,email,'.$id,
             'trust_score' => 'sometimes|integer|min:0|max:100',
             'reward_points_balance' => 'sometimes|integer|min:0',
         ]);
