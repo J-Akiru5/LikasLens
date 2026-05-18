@@ -97,6 +97,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Super admin only routes
     Route::middleware('role:super_admin')->group(function () {
+
+        // 1. INSERT THE NEW ROUTE SYNC GROUP HERE:
+        Route::prefix('v1/likaslens-admin')->group(function () {
+            Route::get('/users/sync', [AdminUserController::class, 'index']);
+        });
+        
         // Full NGO CRUD
         Route::post('/admin/ngos', [AdminNgoController::class, 'store']);
         Route::put('/admin/ngos/{id}', [AdminNgoController::class, 'update']);
