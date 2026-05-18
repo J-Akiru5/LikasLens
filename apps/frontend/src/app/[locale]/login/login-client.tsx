@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
-import { Leaf, ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Leaf, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { signIn } from "@/app/[locale]/actions/auth";
 
 export function LoginClient() {
   const searchParams = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
 
   const redirectTo = searchParams.get("redirect_to") || "/dashboard";
 
@@ -79,13 +80,23 @@ export function LoginClient() {
             <label className="block font-mono text-sm font-bold uppercase mb-2">
               Password
             </label>
-            <input
-              type="password"
-              name="password"
-              className="w-full brutal-panel theme-input px-4 py-3 font-medium"
-              placeholder="••••••••"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                className="w-full brutal-panel theme-input px-4 py-3 pr-12 font-medium"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
           <button
