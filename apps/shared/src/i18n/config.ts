@@ -11,4 +11,4 @@ export const localeNames: Record<Locale, { native: string; english: string }> = 
   ta: { native: "தமிழ்", english: "Tamil" },
 };
 
-export const localeCookieName = "likaslens-locale";
+export const localeCookieName = "NEXT_LOCALE";

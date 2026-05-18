@@ -17,6 +17,10 @@
   --secondary: #2de1c2;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -372,6 +376,13 @@ body {
 /* Bottom nav safe area for mobile */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

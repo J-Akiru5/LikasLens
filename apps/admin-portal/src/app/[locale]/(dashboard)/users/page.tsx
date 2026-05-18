@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Users as UsersIcon,
 } from "lucide-react";
-import { Spinner, showToast } from "@likaslens/shared";
+import { laravelGet, laravelPut, laravelDelete, Spinner, Button, showToast } from "@likaslens/shared";
 
 type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
@@ -148,7 +148,7 @@ export default function UsersPage() {
     if (role === "super_admin") return <ShieldAlert className="h-5 w-5 text-accent" />;
     if (role === "analyst") return <Shield className="h-5 w-5 text-secondary" />;
     return (
-      <span className="rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 border-primary/30 bg-primary/10 text-foreground/60">
+      <span className="rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 border-primary bg-primary/10 text-primary">
         {role}
       </span>
     );
@@ -188,8 +188,8 @@ export default function UsersPage() {
 
       {/* Error state */}
       {error && (
-        <div className="rounded border-2 border-amber-400 bg-amber-50 p-4 font-mono text-sm text-amber-800">
-          <span className="font-bold uppercase">Error: </span>
+        <div className="rounded border-2 border-accent bg-accent/10 p-4 font-mono text-sm">
+          <span className="font-bold text-accent uppercase">Error: </span>
           {error}
         </div>
       )}
@@ -232,8 +232,8 @@ export default function UsersPage() {
             {users.map((user) => (
               <div
                 key={user.id}
-                className={`grid grid-cols-12 gap-2 items-center border-t-2 p-4 font-medium hover:bg-primary/5 transition-colors ${
-                  user.deleted_at ? "opacity-40" : "border-primary/20"
+                className={`grid grid-cols-12 gap-2 items-center border-t-2 p-4 font-medium hover:bg-primary/10 transition-colors ${
+                  user.deleted_at ? "opacity-50" : "border-primary/20"
                 }`}
               >
                 <div className="col-span-4 sm:col-span-3 truncate">
@@ -246,7 +246,7 @@ export default function UsersPage() {
                   {roleBadge(user.role)}
                 </div>
                 <div className="hidden sm:block sm:col-span-2 font-mono text-sm">
-                  <span className={`font-bold ${user.trust_score >= 70 ? "text-emerald-700" : user.trust_score >= 40 ? "text-amber-700" : "surface-muted"}`}>
+                  <span className={`font-bold ${user.trust_score >= 70 ? "text-secondary" : user.trust_score >= 40 ? "text-accent" : "surface-muted"}`}>
                     {user.trust_score}
                   </span>
                 </div>
@@ -259,14 +259,16 @@ export default function UsersPage() {
                   >
                     {ROLE_ORDER.map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
-                  <button
+                  <Button
+                    variant="danger"
+                    size="sm"
                     onClick={() => handleDelete(user.id)}
                     disabled={!!user.deleted_at}
-                    className="p-1.5 rounded border-2 border-accent/30 text-accent hover:bg-accent/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                     title="Deactivate user"
+                    className="shadow-[2px_2px_0px_#991b1b]"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}

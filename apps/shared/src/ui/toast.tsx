@@ -51,9 +51,9 @@ export function ToastContainer() {
           key={t.id}
           className={`flex items-start gap-3 p-4 border-2 font-mono text-sm font-bold rounded-lg shadow-[4px_4px_0px_#1b4332] backdrop-blur-md ${
             t.type === "success"
-              ? "border-emerald-400 bg-emerald-50 text-emerald-800"
+              ? "border-secondary bg-secondary/10 text-secondary"
               : t.type === "error"
-              ? "border-amber-400 bg-amber-50 text-amber-800"
+              ? "border-accent bg-accent/10 text-accent"
               : t.type === "loading"
               ? "border-primary bg-primary/10 text-primary"
               : "border-primary bg-background/90 text-primary"

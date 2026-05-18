@@ -36,6 +36,10 @@ Route::post('/reports/triage', [ReportController::class, 'triage']);
 // Contact message endpoint (public)
 Route::post('/contact-messages', [ContactMessageController::class, 'store']);
 
+// Public law search (citizen-facing)
+Route::get('/laws', [AdminLawController::class, 'index']);
+Route::get('/laws/{id}', [AdminLawController::class, 'show']);
+
 // Chat proxy endpoint (public — proxies to internal AI service)
 Route::post('/v1/chat', [ChatController::class, 'send']);
 
@@ -51,6 +55,21 @@ Route::get('/settings/eco-credit-rate', [CurrencySettingController::class, 'show
 
 // Public profile stats (by Supabase auth user id)
 Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
+
+// Public read-only reference data (tickets = incidents)
+Route::get('/tickets', [TicketController::class, 'index']);
+Route::get('/tickets/{id}', [TicketController::class, 'show']);
+
+// Public users list (used by frontend Supabase workflow)
+Route::get('/admin/users', [AdminUserController::class, 'index']);
+
+// Public NGO catalog (admin portal reads)
+Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
+Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
+
+// Public law reference (admin portal reads)
+Route::get('/admin/laws', [AdminLawController::class, 'index']);
+Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
 
 // Auth endpoints
 Route::post('/auth/register', [AuthController::class, 'register']);
@@ -96,21 +115,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/dashboard/feed', [DashboardController::class, 'feed']);
 
-    // Tickets / Incidents
-    Route::get('/tickets', [TicketController::class, 'index']);
-    Route::get('/tickets/{id}', [TicketController::class, 'show']);
-
     // Analyst+ routes
     Route::middleware('role:analyst,super_admin')->group(function () {
         Route::apiResource('ticket-assignments', TicketAssignmentController::class);
-
-        // NGO management (analyst+ can view)
-        Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
-        Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
-
-        // Environmental laws (analyst+ can view)
-        Route::get('/admin/laws', [AdminLawController::class, 'index']);
-        Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
     });
 
     // Eco-Credit Engine
@@ -142,8 +149,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Currency settings
         Route::apiResource('/admin/currency-settings', CurrencySettingController::class);
 
-        // User management
-        Route::get('/admin/users', [AdminUserController::class, 'index']);
+        // User management (index is public above)
         Route::get('/admin/users/{id}', [AdminUserController::class, 'show']);
         Route::put('/admin/users/{id}', [AdminUserController::class, 'update']);
         Route::put('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);

@@ -24,7 +24,7 @@ import {
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { locales, localeNames, defaultLocale, showToast } from "@likaslens/shared";
+import { locales, localeNames, defaultLocale, showToast, ToastContainer } from "@likaslens/shared";
 import { createClient } from "@/utils/supabase/client";
 import { deleteAccount } from "@/app/[locale]/actions/account";
 
@@ -213,49 +213,52 @@ function AccountSection() {
   const supabase = createClient();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
   const resetPasswordForm = () => {
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
     setMessage(null);
   };
 
   const handleLogout = async () => {
     setActionLoading("logout");
-    await supabase.auth.signOut();
-    window.location.href = "/";
+    try {
+      await supabase.auth.signOut();
+      try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
+      try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
+      showToast("Logged out successfully", "success");
+      setTimeout(() => { window.location.href = "/login"; }, 500);
+    } catch {
+      showToast("Failed to log out. Please try again.", "error");
+      setActionLoading(null);
+    }
   };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
-
-    if (newPassword.length < 6) {
-      setMessage({ type: "error", text: "Password must be at least 6 characters." });
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setMessage({ type: "error", text: "Passwords do not match." });
-      return;
-    }
-
     setActionLoading("password");
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.email) {
+      setMessage({ type: "error", text: "Unable to retrieve your email. Please try again." });
+      setActionLoading(null);
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: `${window.location.origin}/login`,
+    });
 
     if (error) {
       setMessage({ type: "error", text: error.message });
     } else {
-      setMessage({ type: "success", text: "Password updated successfully." });
+      showToast("Check your email for a password reset link", "success");
+      setMessage({ type: "success", text: "Password reset email sent. Check your inbox." });
       setTimeout(() => {
         setShowPasswordModal(false);
         resetPasswordForm();
-      }, 1500);
+      }, 2000);
     }
     setActionLoading(null);
   };
@@ -339,7 +342,7 @@ function AccountSection() {
         </div>
       </div>
 
-      {/* Password Change Modal */}
+      {/* Password Reset Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
@@ -353,7 +356,7 @@ function AccountSection() {
             <div className="flex items-center justify-between p-6 border-b-2 border-primary/20">
               <div className="flex items-center gap-3">
                 <Key className="w-5 h-5 text-primary" />
-                <h3 className="font-heading text-xl font-black uppercase">Change Password</h3>
+                <h3 className="font-heading text-xl font-black uppercase">Reset Password</h3>
               </div>
               <button
                 type="button"
@@ -380,49 +383,9 @@ function AccountSection() {
                 </div>
               )}
 
-              <div>
-                <label className="block font-bold uppercase text-sm mb-1.5 surface-muted">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                  className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold focus:outline-none focus:border-primary transition-colors"
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold uppercase text-sm mb-1.5 surface-muted">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold focus:outline-none focus:border-primary transition-colors"
-                  placeholder="Min. 6 characters"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold uppercase text-sm mb-1.5 surface-muted">
-                  Confirm New Password
-                </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold focus:outline-none focus:border-primary transition-colors"
-                  placeholder="Re-enter new password"
-                />
-              </div>
+              <p className="font-bold uppercase text-sm leading-relaxed">
+                We&apos;ll send a password reset link to your registered email. Click the link in the email to set a new password.
+              </p>
 
               <div className="flex gap-3 pt-2">
                 <button
@@ -443,10 +406,10 @@ function AccountSection() {
                   {actionLoading === "password" ? (
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Updating...
+                      Sending...
                     </span>
                   ) : (
-                    "Update Password"
+                    "Send Reset Link"
                   )}
                 </button>
               </div>
@@ -543,12 +506,14 @@ function PlatformSection() {
     try { localStorage.setItem("likaslens-theme", value); } catch { /* ignore */ }
     document.documentElement.setAttribute("data-theme", value);
     window.dispatchEvent(new Event("themechange"));
+    showToast(`Theme switched to ${value === "civic" ? "Civic" : "Ghost"} mode`, "success");
   };
 
   const handleLocaleChange = (newLocale: string) => {
     if (newLocale === currentLocale) return;
     const newPath = pathname.replace(new RegExp(`^/${currentLocale}(/|$)`), `/${newLocale}$1`);
-    document.cookie = `likaslens-locale=${newLocale};path=/;max-age=31536000`;
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000;SameSite=Lax`;
+    showToast(`Language changed to ${localeNames[newLocale as keyof typeof localeNames]?.native || newLocale}`, "success");
     startTransition(() => {
       router.replace(newPath);
     });
@@ -644,11 +609,11 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
+    <div className="flex h-dvh overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-        <AppHeader />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6">
+        <AppHeader showBranding={false} />
+        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Back + Heading */}
             <div className="flex items-center gap-3">
@@ -666,7 +631,7 @@ export default function SettingsPage() {
 
             {/* Tab navigation — horizontal scroll on mobile */}
             <nav
-              className="flex gap-2 overflow-x-auto pb-1 scrollbar-none"
+              className="flex gap-2 overflow-x-auto pb-1"
               style={{ scrollbarWidth: "none", touchAction: "pan-x" }}
               data-debug-click="tab-nav"
             >
@@ -690,6 +655,7 @@ export default function SettingsPage() {
           </div>
         </main>
         <BottomNav />
+        <ToastContainer />
       </div>
     </div>
   );

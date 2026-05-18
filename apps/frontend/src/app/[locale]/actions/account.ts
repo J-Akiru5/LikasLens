@@ -3,7 +3,7 @@
 import { cookies } from "next/headers"
 import { createClient } from "@/utils/supabase/server"
 
-const LARAVEL_API = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://127.0.0.1:8000"
+const LARAVEL_API = process.env.NEXT_PUBLIC_API_URL || ""
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -21,7 +21,7 @@ export async function deleteAccount(): Promise<{ success: boolean; error?: strin
   try {
     const token = (await cookies()).get("laravel_token")?.value
     if (token) {
-      await fetch(`${LARAVEL_API}/api/user/delete`, {
+      await fetch(`${LARAVEL_API}/user/delete`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

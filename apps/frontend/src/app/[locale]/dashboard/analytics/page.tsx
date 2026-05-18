@@ -4,7 +4,7 @@ import { BarChart3, ArrowUpRight } from "lucide-react";
 
 export default function AnalyticsPage() {
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="flex items-center justify-center min-h-[60dvh]">
       <div className="text-center max-w-md">
         <div className="mx-auto w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
           <BarChart3 className="h-8 w-8 text-emerald-600" />

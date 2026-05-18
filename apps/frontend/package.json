@@ -16,6 +16,7 @@
     "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.14.0",
     "minimatch": "^10.2.5",
     "next": "16.2.2",

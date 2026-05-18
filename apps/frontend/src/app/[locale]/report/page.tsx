@@ -4,11 +4,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import NextImage from "next/image";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { ArrowLeft, Camera, MapPin, Fingerprint, Activity, RefreshCw } from "lucide-react";
+import { ArrowLeft, Camera, MapPin, Fingerprint, Activity, RefreshCw, FileText, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
 import { ToastContainer, showToast } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
+import { GeoTagMap } from "@/components/maps/geo-tag-map";
+
+const INCIDENT_TYPES = [
+  { value: "illegal_logging", label: "Illegal Logging" },
+  { value: "water_pollution", label: "Water Pollution" },
+  { value: "illegal_fishing", label: "Illegal Fishing" },
+  { value: "waste_dumping", label: "Waste Dumping" },
+  { value: "wildlife_poaching", label: "Wildlife Poaching" },
+  { value: "mining_violation", label: "Mining Violation" },
+  { value: "air_pollution", label: "Air Pollution" },
+  { value: "land_encroachment", label: "Land Encroachment" },
+  { value: "other", label: "Other" },
+];
 
 export default function ReportPage() {
 	const [base64Image, setBase64Image] = useState<string>("");
@@ -23,6 +36,9 @@ export default function ReportPage() {
 	const [showManualCoords, setShowManualCoords] = useState(false);
 	const [manualLat, setManualLat] = useState("");
 	const [manualLng, setManualLng] = useState("");
+	const [description, setDescription] = useState("");
+	const [reportType, setReportType] = useState("");
+	const [useMapPinning, setUseMapPinning] = useState(false);
 
 	const offlineQueueKey = "likaslens_offline_reports";
 	const offlineDbName = "likaslens-offline";
@@ -107,7 +123,7 @@ export default function ReportPage() {
 
 	const flushOfflineQueue = useCallback(async () => {
 		const laravelUrl =
-			process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://127.0.0.1:8000";
+			process.env.NEXT_PUBLIC_API_URL || "";
 		const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
 
 		try {
@@ -133,7 +149,7 @@ export default function ReportPage() {
 		const successfulIds: string[] = [];
 		for (const item of queued) {
 			try {
-				const response = await fetch(`${laravelUrl}/api/reports`, {
+				const response = await fetch(`${laravelUrl}/reports`, {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -223,13 +239,16 @@ export default function ReportPage() {
 		setShowManualCoords(false);
 		setManualLat("");
 		setManualLng("");
+		setDescription("");
+		setReportType("");
+		setUseMapPinning(false);
 		setTriageIndicators([]);
 		setIsModalOpen(false);
 		camera.stop();
 	};
 
 	const finalizeSubmission = async (cleanedImage: string) => {
-		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+		const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
 		
 		let userId: string | undefined = undefined;
 		if (!isGhostMode) {
@@ -250,6 +269,13 @@ export default function ReportPage() {
 			longitude,
 		};
 
+		if (description.trim()) {
+			payload["description"] = description.trim();
+		}
+		if (reportType) {
+			payload["report_type"] = reportType;
+		}
+
 		if (!isGhostMode && userId) {
 			payload["user_id"] = userId;
 		}
@@ -261,7 +287,7 @@ export default function ReportPage() {
 			return;
 		}
 
-		const response = await fetch(`${laravelUrl}/api/reports`, {
+		const response = await fetch(`${laravelUrl}/reports`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -288,7 +314,7 @@ export default function ReportPage() {
 		}
 		
 		setIsSubmitting(true);
-		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+		const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
 		try {
 			const cleanedImage = isGhostMode ? await stripExif(base64Image) : base64Image;
@@ -297,7 +323,7 @@ export default function ReportPage() {
 			if (!isGhostMode && navigator.onLine) {
 				setIsTriaging(true);
 				try {
-					const triageRes = await fetch(`${laravelUrl}/api/reports/triage`, {
+					const triageRes = await fetch(`${laravelUrl}/reports/triage`, {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 						body: JSON.stringify({ base64Image: cleanedImage }),
@@ -347,7 +373,7 @@ export default function ReportPage() {
 				}}
 			/>
 			
-			<main className={`min-h-screen font-body transition-all duration-700 ${
+			<main className={`min-h-dvh font-body transition-all duration-700 ${
 				isGhostMode 
 					? "bg-[#081c15]" 
 					: "bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10"
@@ -417,7 +443,7 @@ export default function ReportPage() {
 										autoPlay
 										playsInline
 										muted
-										className="w-full h-64 object-cover"
+										className="w-full aspect-video object-cover"
 									/>
 									<div className="absolute inset-0 border-2 border-secondary/50 pointer-events-none rounded" />
 									<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
@@ -493,6 +519,7 @@ export default function ReportPage() {
 									{showManualCoords && (
 										<input
 											type="number"
+											inputMode="decimal"
 											step="any"
 											placeholder="e.g. 11.7053"
 											value={manualLat}
@@ -513,6 +540,7 @@ export default function ReportPage() {
 									{showManualCoords && (
 										<input
 											type="number"
+											inputMode="decimal"
 											step="any"
 											placeholder="e.g. 122.2970"
 											value={manualLng}
@@ -537,11 +565,111 @@ export default function ReportPage() {
 							)}
 						</motion.div>
 
+						{/* Map Pinning */}
+						<motion.div 
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.15 }}
+							className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8"
+						>
+							<div className="flex items-center justify-between gap-3 mb-6">
+								<div className="flex items-center gap-3">
+									<MapPin className="w-6 h-6 text-secondary" />
+									<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
+										Pin on Map
+									</h2>
+								</div>
+								<label className="inline-flex items-center gap-2 cursor-pointer">
+									<input
+										type="checkbox"
+										checked={useMapPinning}
+										onChange={(e) => setUseMapPinning(e.target.checked)}
+										className="w-5 h-5 rounded border-2 cursor-pointer"
+										style={{ 
+											borderColor: "#1b4332",
+											accentColor: "#1b4332"
+										}}
+									/>
+									<span className="text-xs font-mono font-bold uppercase tracking-wider text-primary/70">
+										Enable Map
+									</span>
+								</label>
+							</div>
+							{useMapPinning ? (
+								<GeoTagMap
+									initialLat={latitude}
+									initialLng={longitude}
+									onLocationChange={(lat, lng) => {
+										setLatitude(lat);
+										setLongitude(lng);
+									}}
+									height="320px"
+								/>
+							) : (
+								<div className="bionic-frame p-6 bg-background/40 backdrop-blur-md border-2 border-primary/30 border-dashed rounded-lg text-center">
+									<MapPin className="w-10 h-10 text-primary/30 mx-auto mb-2" />
+									<p className="text-primary/50 font-mono text-sm">
+										Toggle &quot;Enable Map&quot; above to pin your exact location
+									</p>
+								</div>
+							)}
+						</motion.div>
+
+						{/* Report Details */}
+						<motion.div 
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.18 }}
+							className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8"
+						>
+							<div className="flex items-center gap-3 mb-6">
+								<FileText className="w-6 h-6 text-secondary" />
+								<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
+									Incident Details
+								</h2>
+							</div>
+							<div className="space-y-4">
+								<div>
+									<label className="block text-xs font-mono font-bold text-primary/70 uppercase mb-2">
+										Incident Type
+									</label>
+									<select
+										value={reportType}
+										onChange={(e) => setReportType(e.target.value)}
+										className="w-full brutal-panel theme-input px-4 py-3 rounded font-mono text-sm shadow-[3px_3px_0px_#1b4332] appearance-none bg-background"
+									>
+										<option value="">-- Select Incident Type --</option>
+										{INCIDENT_TYPES.map((t) => (
+											<option key={t.value} value={t.value}>
+												{t.label}
+											</option>
+										))}
+									</select>
+								</div>
+								<div>
+									<label className="block text-xs font-mono font-bold text-primary/70 uppercase mb-2">
+										Description
+									</label>
+									<textarea
+										value={description}
+										onChange={(e) => setDescription(e.target.value)}
+										placeholder="Describe what you observed — what, where, when, and any other relevant details..."
+										rows={5}
+										maxLength={2000}
+										className="w-full brutal-panel theme-input px-4 py-3 rounded font-mono text-sm shadow-[3px_3px_0px_#1b4332] resize-y min-h-[120px] bg-background"
+									/>
+									<p className="text-xs font-mono text-primary/50 mt-1 text-right">
+										{description.length}/2000
+									</p>
+								</div>
+							</div>
+						</motion.div>
+
 						{/* Ghost Mode Toggle */}
 						<motion.div 
 							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ delay: 0.2 }}
+							transition={{ delay: 0.25 }}
 							className={`brutal-panel border-4 p-4 sm:p-8 transition-colors duration-500 ${
 								isGhostMode 
 									? "border-accent bg-[#081c15]/80 shadow-[8px_8px_0px_#ffb703]" 

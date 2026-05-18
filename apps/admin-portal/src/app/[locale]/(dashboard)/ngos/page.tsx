@@ -24,13 +24,44 @@ export default function NgosPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (saving) return;
+
+    if (!form.name.trim() || !form.region.trim()) {
+      setError("Name and Region are required");
+      showToast("Name and Region are required", "error");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
     try {
-      if (editId) { await updateAdminNgo(editId, form); showToast("NGO updated successfully", "success"); }
-      else { await createAdminNgo(form); showToast("NGO created successfully", "success"); }
-      setShowForm(false); setEditId(null);
+      const payload = {
+        name: form.name.trim(),
+        region: form.region.trim(),
+        contact_email: form.contact_email.trim() || null,
+        contact_phone: form.contact_phone.trim() || null,
+      };
+
+      if (editId) {
+        await updateAdminNgo(editId, payload);
+        showToast("NGO updated successfully", "success");
+      } else {
+        await createAdminNgo(payload);
+        showToast("NGO created successfully", "success");
+      }
+
+      setShowForm(false);
+      setEditId(null);
       setForm({ name: "", region: "", contact_email: "", contact_phone: "" });
       loadNgos();
-    } catch (err) { console.error("Failed to save NGO:", err); showToast("Failed to save NGO", "error"); }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to save NGO record";
+      console.error("NGO save error:", err);
+      setError(message);
+      showToast(message, "error");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleEdit(ngo: NgoGroup) {
@@ -40,8 +71,15 @@ export default function NgosPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this NGO?")) return;
-    try { await deleteAdminNgo(id); showToast("NGO deleted successfully", "success"); loadNgos(); }
-    catch (err) { console.error("Failed to delete NGO:", err); showToast("Failed to delete NGO", "error"); }
+    try {
+      await deleteAdminNgo(id);
+      showToast("NGO deleted successfully", "success");
+      loadNgos();
+    }
+    catch (err) {
+      console.error("Failed to delete NGO:", err);
+      showToast("Failed to delete NGO", "error");
+    }
   }
 
   return (

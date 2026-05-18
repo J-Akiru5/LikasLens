@@ -1,0 +1,370 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Ticket;
+use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+
+class IncidentSeeder extends Seeder
+{
+    public function run(): void
+    {
+        Schema::disableForeignKeyConstraints();
+        Ticket::truncate();
+        Schema::enableForeignKeyConstraints();
+
+        $demoUser = User::firstOrCreate(
+            ['supabase_auth_user_id' => '11111111-1111-1111-1111-111111111111'],
+            [
+                'name'              => 'LikasLens Demo Citizen',
+                'email'             => 'demo@likaslens.ph',
+                'password'          => bcrypt('password'),
+                'role'              => 'citizen',
+                'trust_score'       => 90,
+                'reward_points_balance' => 1500,
+            ]
+        );
+
+        $now = now();
+
+        $tickets = [
+            // ── AKLAN (4) ──────────────────────────────────────────────────────
+            [
+                'title'            => 'Oil Spill Near Boracay Shoreline',
+                'status'           => 'investigating',
+                'description'      => 'Dark oil slick observed along the western shoreline of Boracay Island near Station 1. Approximately 200 meters of coastline affected. Dead fish and seabirds spotted. Coast Guard notified.',
+                'latitude'         => 11.9674,
+                'longitude'        => 121.9248,
+                'address_text'     => 'Station 1, White Beach, Malay, Aklan',
+                'urgency_score'    => 5,
+                'ai_triage_summary' => 'Coastal Pollution',
+                'ai_confidence'    => 0.96,
+            ],
+            [
+                'title'            => 'Mangrove Clearing in Kalibo Wetlands',
+                'status'           => 'open',
+                'description'      => 'Illegal mangrove clearing operation discovered along the Kalibo River estuary. At least 0.5 hectares of young mangroves have been cut down. Heavy equipment spotted on site.',
+                'latitude'         => 11.7077,
+                'longitude'        => 122.3643,
+                'address_text'     => 'Kalibo River Estuary, Kalibo, Aklan',
+                'urgency_score'    => 4,
+                'ai_triage_summary' => 'Wildlife Protection',
+                'ai_confidence'    => 0.91,
+            ],
+            [
+                'title'            => 'Numancia Landfill Leachate Contamination',
+                'status'           => 'monitoring',
+                'description'      => 'Leachate from the Numancia municipal landfill has breached containment and is seeping into adjacent farmland. Water samples collected show elevated heavy metal levels.',
+                'latitude'         => 11.7180,
+                'longitude'        => 122.3300,
+                'address_text'     => 'Municipal Landfill, Numancia, Aklan',
+                'urgency_score'    => 3,
+                'ai_triage_summary' => 'Waste Management',
+                'ai_confidence'    => 0.88,
+            ],
+            [
+                'title'            => 'Coral Bleaching at Boracay Marine Sanctuary',
+                'status'           => 'open',
+                'description'      => 'Significant coral bleaching event observed at the Boracay Marine Sanctuary dive site. Estimated 40% of coral cover affected. Water temperatures recorded at 2°C above normal for the season.',
+                'latitude'         => 11.9590,
+                'longitude'        => 121.9300,
+                'address_text'     => 'Boracay Marine Sanctuary, Malay, Aklan',
+                'urgency_score'    => 4,
+                'ai_triage_summary' => 'Coastal Pollution',
+                'ai_confidence'    => 0.94,
+            ],
+
+            // ── ANTIQUE (4) ────────────────────────────────────────────────────
+            [
+                'title'            => 'Sibalom Forest Illegal Logging Operation',
+                'status'           => 'investigating',
+                'description'      => 'Reports of unauthorized chainsaw operations within the Sibalom Natural Park buffer zone. Several old-growth Narra trees have been felled. DENR rangers deployed to assess damage.',
+                'latitude'         => 10.7900,
+                'longitude'        => 122.0170,
+                'address_text'     => 'Sibalom Natural Park, Sibalom, Antique',
+                'urgency_score'    => 5,
+                'ai_triage_summary' => 'Forestry Violation',
+                'ai_confidence'    => 0.97,
+            ],
+            [
+                'title'            => 'Fish Kill in San Jose Coastal Waters',
+                'status'           => 'open',
+                'description'      => 'Mass fish kill reported along a 3-kilometer stretch of coastline near San Jose. Local fishermen suspect toxic algal bloom or industrial discharge from nearby processing plant.',
+                'latitude'         => 10.7440,
+                'longitude'        => 121.9435,
+                'address_text'     => 'Barangay Funda-Dalipe Coastal, San Jose, Antique',
+                'urgency_score'    => 5,
+                'ai_triage_summary' => 'Water Quality',
+                'ai_confidence'    => 0.93,
+            ],
+            [
+                'title'            => 'Hamtic River Sedimentation Crisis',
+                'status'           => 'monitoring',
+                'description'      => 'Excessive siltation in the Hamtic River due to upstream quarry activities. River water has turned muddy brown affecting irrigation for 200+ hectares of rice paddies.',
+                'latitude'         => 10.7050,
+                'longitude'        => 121.9800,
+                'address_text'     => 'Hamtic River Bridge, Hamtic, Antique',
+                'urgency_score'    => 3,
+                'ai_triage_summary' => 'Water Quality',
+                'ai_confidence'    => 0.85,
+            ],
+            [
+                'title'            => 'Culasi Marine Turtle Nesting Site Disturbance',
+                'status'           => 'open',
+                'description'      => 'Marine turtle nesting site at Culasi beach disrupted by unauthorized beachfront construction. Freshly laid turtle eggs found crushed. Nesting season is currently active.',
+                'latitude'         => 11.4260,
+                'longitude'        => 122.0550,
+                'address_text'     => 'Barangay Malalison Beach, Culasi, Antique',
+                'urgency_score'    => 4,
+                'ai_triage_summary' => 'Wildlife Protection',
+                'ai_confidence'    => 0.92,
+            ],
+
+            // ── CAPIZ (4) ──────────────────────────────────────────────────────
+            [
+                'title'            => 'Roxas City Fish Port Waste Discharge',
+                'status'           => 'open',
+                'description'      => 'Untreated fish processing waste and bloodwater being discharged directly into the sea from the Roxas City fish port complex. Strong odor complaints from nearby residents.',
+                'latitude'         => 11.5853,
+                'longitude'        => 122.7511,
+                'address_text'     => 'Roxas City Fish Port, Roxas City, Capiz',
+                'urgency_score'    => 4,
+                'ai_triage_summary' => 'Pollution',
+                'ai_confidence'    => 0.89,
+            ],
+            [
+                'title'            => 'Panay Riverbank Collapse',
+                'status'           => 'resolved',
+                'description'      => 'A 50-meter section of the Panay River riverbank collapsed due to heavy monsoon rains and erosion. DPWH has completed rehabilitation and slope stabilization works.',
+                'latitude'         => 11.5560,
+                'longitude'        => 122.7920,
+                'address_text'     => 'Panay River, Panay, Capiz',
+                'urgency_score'    => 2,
+                'ai_triage_summary' => 'Land Use',
+                'ai_confidence'    => 0.95,
+                'resolved_at'      => '2026-05-15 10:30:00',
+            ],
+            [
+                'title'            => 'Pontevedra Sugarcane Field Burning',
+                'status'           => 'open',
+                'description'      => 'Widespread sugarcane field burning observed across Pontevedra during harvest season. Air quality index has reached hazardous levels. Nearby schools have suspended classes.',
+                'latitude'         => 11.4830,
+                'longitude'        => 122.8350,
+                'address_text'     => 'Barangay San Juan Farmlands, Pontevedra, Capiz',
+                'urgency_score'    => 3,
+                'ai_triage_summary' => 'Air Quality',
+                'ai_confidence'    => 0.87,
+            ],
+            [
+                'title'            => 'Dao Wetland Encroachment',
+                'status'           => 'investigating',
+                'description'      => 'Portions of the Dao municipal wetland have been illegally filled and converted to fishponds. Migratory bird populations have noticeably declined in the area.',
+                'latitude'         => 11.3950,
+                'longitude'        => 122.6850,
+                'address_text'     => 'Dao Wetland Conservation Area, Dao, Capiz',
+                'urgency_score'    => 4,
+                'ai_triage_summary' => 'Wildlife Protection',
+                'ai_confidence'    => 0.90,
+            ],
+
+            // ── GUIMARAS (4) ───────────────────────────────────────────────────
+            [
+                'title'            => 'Jordan Marine Protected Area Boundary Dispute',
+                'status'           => 'open',
+                'description'      => 'Commercial fishing vessels repeatedly encroaching into the Jordan Marine Protected Area. Local bantay dagat volunteers report inadequate enforcement resources.',
+                'latitude'         => 10.6598,
+                'longitude'        => 122.5959,
+                'address_text'     => 'Jordan MPA, Jordan, Guimaras',
+                'urgency_score'    => 3,
+                'ai_triage_summary' => 'Coastal Pollution',
+                'ai_confidence'    => 0.86,
+            ],
+            [
+                'title'            => 'Buenavista Open Dumpsite Fire',
+                'status'           => 'resolved',
+                'description'      => 'Spontaneous combustion fire at the Buenavista open dumpsite burned for 3 days, releasing toxic smoke over residential areas. Fire fully extinguished by BFP. Site now cordoned off.',
+                'latitude'         => 10.7030,
+                'longitude'        => 122.6270,
+                'address_text'     => 'Municipal Dumpsite, Buenavista, Guimaras',
+                'urgency_score'    => 2,
+                'ai_triage_summary' => 'Waste Management',
+                'ai_confidence'    => 0.91,
+                'resolved_at'      => '2026-05-12 08:00:00',
+            ],
+            [
+                'title'            => 'Nueva Valencia Sea Grass Degradation',
+                'status'           => 'monitoring',
+                'description'      => 'Sea grass beds in Nueva Valencia showing signs of significant degradation. Decline linked to increased boat traffic and anchor damage from tourism activities.',
+                'latitude'         => 10.5150,
+                'longitude'        => 122.5400,
+                'address_text'     => 'Tando Island Waters, Nueva Valencia, Guimaras',
+                'urgency_score'    => 3,
+                'ai_triage_summary' => 'Coastal Pollution',
+                'ai_confidence'    => 0.83,
+            ],
+            [
+                'title'            => 'San Lorenzo Mining Exploration Permit Concern',
+                'status'           => 'open',
+                'description'      => 'Mining exploration permit application filed covering 500 hectares in San Lorenzo. Local communities and the diocese have expressed strong opposition. Public hearing scheduled.',
+                'latitude'         => 10.6450,
+                'longitude'        => 122.6100,
+                'address_text'     => 'Barangay Cabano, San Lorenzo, Guimaras',
+                'urgency_score'    => 4,
+                'ai_triage_summary' => 'Land Use',
+                'ai_confidence'    => 0.88,
+            ],
+
+            // ── ILOILO (5) ─────────────────────────────────────────────────────
+            [
+                'title'            => 'Iloilo River Domestic Waste Pollution',
+                'status'           => 'monitoring',
+                'description'      => 'Elevated fecal coliform levels detected in Iloilo River water samples. Source traced to informal settlements along the riverbank lacking proper sanitation facilities.',
+                'latitude'         => 10.7202,
+                'longitude'        => 122.5621,
+                'address_text'     => 'Iloilo River, near Molo Bridge, Iloilo City',
+                'urgency_score'    => 3,
+                'ai_triage_summary' => 'Water Quality',
+                'ai_confidence'    => 0.92,
+            ],
+            [
+                'title'            => 'Dingle Watershed Flash Flood Damage',
+                'status'           => 'resolved',
+                'description'      => 'Flash flood caused by deforestation in the upper Dingle watershed damaged 30 homes and 3 irrigation canals. Relief operations completed. Reforestation plan proposed.',
+                'latitude'         => 10.9975,
+                'longitude'        => 122.6717,
+                'address_text'     => 'Barangay Lumboy, Dingle, Iloilo',
+                'urgency_score'    => 2,
+                'ai_triage_summary' => 'Environmental Hazard',
+                'ai_confidence'    => 0.93,
+                'resolved_at'      => '2026-05-10 16:00:00',
+            ],
+            [
+                'title'            => 'Miagao Coastal Road Construction Erosion',
+                'status'           => 'open',
+                'description'      => 'Ongoing coastal road construction in Miagao has caused severe hillside erosion. Landslides reported during heavy rains. Road debris entering marine habitat.',
+                'latitude'         => 10.6442,
+                'longitude'        => 122.2352,
+                'address_text'     => 'Coastal Road Project, Miagao, Iloilo',
+                'urgency_score'    => 4,
+                'ai_triage_summary' => 'Land Use',
+                'ai_confidence'    => 0.90,
+            ],
+            [
+                'title'            => 'Oton Shoreline Plastic Accumulation',
+                'status'           => 'open',
+                'description'      => 'Massive accumulation of plastic debris along the Oton shoreline following recent typhoon. Community cleanup drive organized but overwhelmed by volume. Estimated 5 tons collected so far.',
+                'latitude'         => 10.6930,
+                'longitude'        => 122.4740,
+                'address_text'     => 'Barangay Trapiche Shoreline, Oton, Iloilo',
+                'urgency_score'    => 3,
+                'ai_triage_summary' => 'Waste Management',
+                'ai_confidence'    => 0.84,
+            ],
+            [
+                'title'            => 'Leganes Fish Pen Water Quality Decline',
+                'status'           => 'monitoring',
+                'description'      => 'Dissolved oxygen levels in Leganes fish pen area dropping below critical threshold. Possible cause: accumulated fish feed waste and reduced water circulation.',
+                'latitude'         => 10.7380,
+                'longitude'        => 122.5750,
+                'address_text'     => 'Leganes Fish Pen Complex, Leganes, Iloilo',
+                'urgency_score'    => 3,
+                'ai_triage_summary' => 'Water Quality',
+                'ai_confidence'    => 0.86,
+            ],
+
+            // ── NEGROS OCCIDENTAL (5) ─────────────────────────────────────────
+            [
+                'title'            => 'Bacolod Smog Alert: Cane Field Burning',
+                'status'           => 'open',
+                'description'      => 'Air quality index in Bacolod City reached hazardous levels due to widespread sugar cane field burning in surrounding agricultural areas. Respiratory cases in hospitals up 40% this week.',
+                'latitude'         => 10.6713,
+                'longitude'        => 122.9511,
+                'address_text'     => 'Bacolod City Metro, Negros Occidental',
+                'urgency_score'    => 4,
+                'ai_triage_summary' => 'Air Quality',
+                'ai_confidence'    => 0.94,
+            ],
+            [
+                'title'            => 'Silay Northern Negros Natural Park Poaching',
+                'status'           => 'investigating',
+                'description'      => 'Suspected poaching activity inside the Northern Negros Natural Park near Silay. Traps and snares discovered. Critically endangered Visayan warty pig and Negros bleeding-heart pigeon at risk.',
+                'latitude'         => 10.8000,
+                'longitude'        => 123.0000,
+                'address_text'     => 'NNNP - Patag Sector, Silay, Negros Occidental',
+                'urgency_score'    => 5,
+                'ai_triage_summary' => 'Wildlife Protection',
+                'ai_confidence'    => 0.95,
+            ],
+            [
+                'title'            => 'Victorias Sugar Mill Wastewater Spill',
+                'status'           => 'investigating',
+                'description'      => 'Untreated molasses wastewater from the Victorias sugar mill overflowed into the Malihao River. Water has turned dark brown and strong foul odor reported for 5 kilometers downstream.',
+                'latitude'         => 10.9000,
+                'longitude'        => 123.0700,
+                'address_text'     => 'Malihao River, Victorias, Negros Occidental',
+                'urgency_score'    => 5,
+                'ai_triage_summary' => 'Pollution',
+                'ai_confidence'    => 0.97,
+            ],
+            [
+                'title'            => 'Bago City Irrigation Dam Siltation',
+                'status'           => 'monitoring',
+                'description'      => 'Bago River irrigation dam experiencing accelerated siltation, reducing water storage capacity by an estimated 15%. Threatens irrigation supply for 5,000 hectares of farmland.',
+                'latitude'         => 10.5400,
+                'longitude'        => 122.8400,
+                'address_text'     => 'Bago Irrigation Dam, Bago, Negros Occidental',
+                'urgency_score'    => 3,
+                'ai_triage_summary' => 'Water Quality',
+                'ai_confidence'    => 0.89,
+            ],
+            [
+                'title'            => 'Sipalay Mine Tailings Dam Integrity Concern',
+                'status'           => 'open',
+                'description'      => 'Structural cracks observed in the secondary tailings dam at the Sipalay mining complex. Heavy rainfall forecast for the coming week. Evacuation advisories issued for downstream communities.',
+                'latitude'         => 9.7510,
+                'longitude'        => 122.4000,
+                'address_text'     => 'Sipalay Mining Complex, Sipalay, Negros Occidental',
+                'urgency_score'    => 5,
+                'ai_triage_summary' => 'Environmental Hazard',
+                'ai_confidence'    => 0.96,
+            ],
+
+            // ── CROSS-REGIONAL ──────────────────────────────────────────────────
+            [
+                'title'            => 'Guimaras-Iloilo Ferry Oil Leak',
+                'status'           => 'resolved',
+                'description'      => 'Minor fuel leak from a ferry vessel in the Guimaras-Iloilo Strait. PCG deployed oil spill booms within 2 hours. Leak contained. Environmental impact assessment shows minimal damage.',
+                'latitude'         => 10.6300,
+                'longitude'        => 122.5800,
+                'address_text'     => 'Guimaras-Iloilo Strait, Panay Gulf',
+                'urgency_score'    => 2,
+                'ai_triage_summary' => 'Pollution',
+                'ai_confidence'    => 0.90,
+                'resolved_at'      => '2026-05-08 14:00:00',
+            ],
+        ];
+
+        foreach ($tickets as $data) {
+            Ticket::create(array_merge(
+                ['id' => (string) Str::uuid()],
+                [
+                'reporter_user_id'  => $demoUser->id,
+                'status'            => $data['status'],
+                'title'             => $data['title'],
+                'description'       => $data['description'],
+                'latitude'          => $data['latitude'],
+                'longitude'         => $data['longitude'],
+                'address_text'      => $data['address_text'],
+                'urgency_score'     => $data['urgency_score'],
+                'ai_triage_summary' => $data['ai_triage_summary'],
+                'ai_confidence'     => $data['ai_confidence'],
+                'resolved_at'       => $data['resolved_at'] ?? null,
+                'created_at'        => $now->copy()->subHours(rand(1, 360)),
+                'updated_at'        => $now,
+            ]));
+        }
+    }
+}

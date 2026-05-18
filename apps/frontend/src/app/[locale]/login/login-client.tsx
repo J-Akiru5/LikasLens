@@ -2,12 +2,23 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
-import { Leaf, ArrowRight } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Leaf, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { signIn } from "@/app/[locale]/actions/auth";
 
 export function LoginClient() {
   const searchParams = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("remembered_email");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const redirectTo = searchParams.get("redirect_to") || "/dashboard";
 
@@ -20,7 +31,7 @@ export function LoginClient() {
   }, [searchParams]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden font-body selection:bg-accent/30 selection:text-current">
+    <main className="min-h-dvh flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-body selection:bg-accent/30 selection:text-current">
       <div
         className="absolute inset-0 z-0 bg-cover bg-center"
         style={{
@@ -61,7 +72,17 @@ export function LoginClient() {
           </div>
         ) : null}
 
-        <form action={signIn} className="space-y-6">
+        <form
+          action={signIn}
+          onSubmit={() => {
+            if (rememberMe) {
+              localStorage.setItem("remembered_email", email);
+            } else {
+              localStorage.removeItem("remembered_email");
+            }
+          }}
+          className="space-y-6"
+        >
           <input type="hidden" name="redirect_to" value={redirectTo} />
           <div>
             <label className="block font-mono text-sm font-bold uppercase mb-2">
@@ -70,6 +91,8 @@ export function LoginClient() {
             <input
               type="email"
               name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full brutal-panel theme-input px-4 py-3 font-medium"
               placeholder="you@example.com"
               required
@@ -79,13 +102,39 @@ export function LoginClient() {
             <label className="block font-mono text-sm font-bold uppercase mb-2">
               Password
             </label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                className="w-full brutal-panel theme-input px-4 py-3 pr-12 font-medium"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
             <input
-              type="password"
-              name="password"
-              className="w-full brutal-panel theme-input px-4 py-3 font-medium"
-              placeholder="••••••••"
-              required
+              type="checkbox"
+              id="remember-me"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-5 h-5 border-2 border-primary rounded accent-secondary cursor-pointer"
             />
+            <label
+              htmlFor="remember-me"
+              className="font-mono text-sm font-bold uppercase cursor-pointer select-none"
+            >
+              Remember Me
+            </label>
           </div>
 
           <button

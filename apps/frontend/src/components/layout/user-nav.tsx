@@ -6,6 +6,7 @@ import Image from "next/image";
 import { User, LogOut, LayoutDashboard, UserCircle, ChevronDown } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { showToast, setLaravelAuthToken } from "@likaslens/shared";
 import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 export function UserNav() {
@@ -16,22 +17,32 @@ export function UserNav() {
 
   useEffect(() => {
     async function getUser() {
-      const { data: { user: fetchedUser } } = await supabase.auth.getUser();
-      setUser(fetchedUser ?? null);
+      const { data: { session } } = await supabase.auth.getSession();
+      const authUser = session?.user ?? null;
+      setUser(authUser);
+      setLaravelAuthToken(session?.access_token ?? null);
       setLoading(false);
     }
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null);
+      setLaravelAuthToken(session?.access_token ?? null);
     });
 
     return () => subscription.unsubscribe();
   }, [supabase]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/";
+    try {
+      setLaravelAuthToken(null);
+      await supabase.auth.signOut();
+      try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
+      try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
+      window.location.href = "/login";
+    } catch {
+      showToast("Failed to log out. Please try again.", "error");
+    }
   };
 
   if (loading) {

@@ -1,15 +1,39 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { getTickets } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { Card, Spinner } from "@likaslens/shared";
-import { Ticket as TicketIcon, Search } from "lucide-react";
+import { Card, Spinner, showToast } from "@likaslens/shared";
+import { Ticket as TicketIcon, Search, MoreVertical, Eye, CheckCheck, XCircle } from "lucide-react";
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const closeMenu = useCallback(() => setOpenMenuId(null), []);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [openMenuId, closeMenu]);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        closeMenu();
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [openMenuId, closeMenu]);
 
   useEffect(() => {
     const params: Record<string, string> = { per_page: "50" };
@@ -79,6 +103,44 @@ export default function TicketsPage() {
                       Urgency: {ticket.urgency_score}/5
                     </span>
                   )}
+                  <div className="relative">
+                    <button
+                      onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
+                      className="p-1 hover:bg-primary/10 rounded transition-colors"
+                      aria-label="Row actions"
+                      aria-expanded={openMenuId === ticket.id}
+                    >
+                      <MoreVertical className="w-5 h-5 text-primary" />
+                    </button>
+                    {openMenuId === ticket.id && (
+                      <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 w-44 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => { closeMenu(); showToast(`Viewing ticket ${ticket.display_id || ticket.id}`, "info"); }}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
+                        >
+                          <Eye className="w-4 h-4 text-primary" />
+                          View Details
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { closeMenu(); showToast(`Ticket ${ticket.display_id || ticket.id} verified`, "success"); }}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-secondary/10 transition-colors border-b border-primary/10"
+                        >
+                          <CheckCheck className="w-4 h-4 text-secondary" />
+                          Verify
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { closeMenu(); showToast(`Ticket ${ticket.display_id || ticket.id} rejected`, "error"); }}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-accent/10 transition-colors text-accent"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

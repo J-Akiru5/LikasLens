@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
-import { Leaf, ArrowRight } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Leaf, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { signUp } from "@/app/[locale]/actions/auth";
 
 export function RegisterClient() {
   const searchParams = useSearchParams();
+  const [showPassword, setShowPassword] = useState(false);
 
   const redirectTo = searchParams.get("redirect_to") || "/dashboard";
 
@@ -27,7 +28,7 @@ export function RegisterClient() {
   }, [searchParams]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden font-body selection:bg-accent/30 selection:text-current">
+    <main className="min-h-dvh flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-body selection:bg-accent/30 selection:text-current">
       <div
         className="absolute inset-0 z-0 bg-cover bg-center"
         style={{
@@ -86,13 +87,23 @@ export function RegisterClient() {
             <label className="block font-mono text-sm font-bold uppercase mb-2">
               Password
             </label>
-            <input
-              type="password"
-              name="password"
-              className="w-full brutal-panel theme-input px-4 py-3 font-medium"
-              placeholder="••••••••"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                className="w-full brutal-panel theme-input px-4 py-3 pr-12 font-medium"
+                placeholder="••••••••"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
 
           <label className="flex items-start gap-3 py-2 cursor-pointer">

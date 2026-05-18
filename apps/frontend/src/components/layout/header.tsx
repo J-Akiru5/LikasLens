@@ -26,7 +26,7 @@ const NOTIFICATION_STYLES: Record<NotificationType, string> = {
   info: "border-l-4 border-primary bg-primary/5",
 };
 
-export function AppHeader({ greeting }: { greeting?: string }) {
+export function AppHeader({ greeting, showBranding = true }: { greeting?: string; showBranding?: boolean }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -47,12 +47,12 @@ export function AppHeader({ greeting }: { greeting?: string }) {
           <h1 className="font-heading font-black text-lg sm:text-2xl uppercase tracking-tight text-primary m-0">
             Welcome back, <span className="text-secondary">{greeting}</span>
           </h1>
-        ) : (
+        ) : showBranding ? (
           <Link href="/" className="flex items-center gap-2 text-primary hover:text-secondary transition-colors">
             <Leaf className="w-6 h-6" />
             <span className="font-heading font-black text-xl uppercase">LikasLens</span>
           </Link>
-        )}
+        ) : null}
       </div>
       
       <div className="flex-1" />

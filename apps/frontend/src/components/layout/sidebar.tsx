@@ -15,6 +15,8 @@ import {
   Menu,
   X,
   MapPin,
+  Scale,
+  Camera,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { isAnalystOrSuperAdmin, getRole } from "@/lib/roles";
@@ -92,8 +94,10 @@ export function Sidebar() {
       roles: null,
     },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle, roles: null },
+    { href: "/report", label: "Report", icon: Camera, roles: null },
     { href: "/dashboard/reports", label: "Analytics", icon: FileText, roles: null },
     { href: "/dashboard/analytics", label: "Towns", icon: MapPin, roles: ["analyst", "super_admin"] },
+    { href: "/laws", label: "Laws", icon: Scale, roles: null },
     { href: "/profile", label: "Profile", icon: User, roles: null },
   ];
 
@@ -110,7 +114,7 @@ export function Sidebar() {
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+      <div className="flex-1 overflow-y-auto overscroll-contain py-6 px-4 space-y-2">
         {visibleNavItems.map((item) => {
           const isActive = item.exact
             ? pathname === item.href
@@ -214,9 +218,9 @@ export function Sidebar() {
         aria-label={mobileOpen ? "Close sidebar menu" : "Open sidebar menu"}
         aria-expanded={mobileOpen}
         onClick={() => setMobileOpen((prev) => !prev)}
-        className="lg:hidden fixed top-1/2 -translate-y-1/2 left-4 z-50 p-1.5 brutal-panel border-2 border-primary rounded-lg shadow-[2px_2px_0px_#1b4332] hover:bg-primary/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        className="lg:hidden fixed top-4 right-4 z-50 p-3 min-w-[48px] min-h-[48px] brutal-panel border-2 border-primary rounded-lg shadow-[2px_2px_0px_#1b4332] hover:bg-primary/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
       >
-        {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+        {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
       {/* Desktop sidebar — hidden on mobile, visible on lg+ */}
@@ -238,7 +242,7 @@ export function Sidebar() {
         />
         {/* Slide-in sidebar panel */}
         <aside
-          className={`absolute left-0 top-0 bottom-0 w-72 panel-surface border-r-4 border-primary flex flex-col font-body shadow-[8px_0_32px_rgba(0,0,0,0.3)] transition-transform duration-200 ${
+          className={`absolute left-0 top-0 bottom-0 w-72 panel-surface border-r-4 border-primary flex flex-col font-body shadow-[8px_0_32px_rgba(0,0,0,0.3)] transition-transform duration-200 pt-[env(safe-area-inset-top)] ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -246,7 +250,7 @@ export function Sidebar() {
             <button
               aria-label="Close sidebar"
               onClick={closeMobile}
-              className="p-1 rounded hover:bg-primary/10 transition-colors text-primary"
+              className="p-2 min-w-[44px] min-h-[44px] rounded hover:bg-primary/10 transition-colors text-primary"
             >
               <X className="w-5 h-5" />
             </button>

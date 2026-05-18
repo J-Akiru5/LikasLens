@@ -4,11 +4,32 @@ function getCookie(name: string): string | null {
   return match ? decodeURIComponent(match[2]) : null;
 }
 
+function normalizeBaseUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.origin + parsed.pathname.replace(/\/+$/, "");
+  } catch {
+    return `https://${trimmed.replace(/\/+$/, "")}`;
+  }
+}
+
+let _authToken: string | null = null;
+
+export function setLaravelAuthToken(token: string | null) {
+  _authToken = token;
+}
+
+export function getLaravelAuthToken(): string | null {
+  return _authToken;
+}
+
 export async function laravelFetch<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  const baseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL || "");
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -16,12 +37,14 @@ export async function laravelFetch<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  const token = getCookie("laravel_token");
+  const token = _authToken || getCookie("laravel_token");
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${baseUrl}${endpoint}`, {
+  const url = baseUrl + (baseUrl.endsWith("/") && endpoint.startsWith("/") ? endpoint.slice(1) : endpoint);
+
+  const res = await fetch(url, {
     ...options,
     headers,
     credentials: "include",
