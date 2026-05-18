@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\NgoGroup;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class NgoSeeder extends Seeder
@@ -505,6 +506,13 @@ class NgoSeeder extends Seeder
         ];
 
         $ngos = array_map(fn($ngo) => array_merge(['id' => (string) Str::uuid()], $ngo), $ngos);
+
+        // Strip columns that don't yet exist (migration may not have run)
+        $existingColumns = Schema::getColumnListing('ngo_groups');
+        $ngos = array_map(
+            fn($ngo) => array_intersect_key($ngo, array_flip($existingColumns)),
+            $ngos
+        );
 
         NgoGroup::insert($ngos);
     }
