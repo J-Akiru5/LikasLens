@@ -7,12 +7,17 @@ import { createClient } from "@/utils/supabase/server"
 const LARAVEL_API = process.env.NEXT_PUBLIC_API_URL || ""
 
 function safeUrl(base: string, path: string): string {
-  let url = base;
-  if (!/^https?:\/\//i.test(url)) {
-    url = `https://${url}`;
+  const trimmed = base.trim();
+  if (!trimmed) return path;
+  let fullUrl: string;
+  try {
+    const parsed = new URL(trimmed);
+    fullUrl = parsed.origin + parsed.pathname.replace(/\/+$/, "");
+  } catch {
+    fullUrl = `https://${trimmed.replace(/\/+$/, "")}`;
   }
-  url = url.replace(/\/+$/, "");
-  return `${url}${path}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${fullUrl}${normalizedPath}`;
 }
 
 async function syncUserToLaravel(supabaseUserId: string, email: string, name?: string, role?: string) {

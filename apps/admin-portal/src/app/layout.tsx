@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { LikasyChat } from "@likaslens/shared";
+import { LikasyChat, ToastContainer } from "@likaslens/shared";
 import { locales, type Locale } from "@likaslens/shared";
 
 export const metadata: Metadata = {
@@ -24,6 +24,7 @@ export default async function RootLayout({
     <html lang={resolvedParams?.locale === "ta" ? "ta" : (resolvedParams?.locale || "en")} className="h-full antialiased" data-theme="civic">
       <body className="min-h-full bg-background font-body flex flex-col">
         <div className="flex-1">
+          <ToastContainer />
           {children}
         </div>
         <LikasyChat persona="admin" locale={resolvedParams.locale} />

@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Users as UsersIcon,
 } from "lucide-react";
-import { laravelGet, laravelPut, laravelDelete, Spinner, Button } from "@likaslens/shared";
+import { laravelGet, laravelPut, laravelDelete, Spinner, Button, showToast } from "@likaslens/shared";
 
 type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
@@ -82,13 +82,13 @@ export default function UsersPage() {
     try {
       await laravelPut(`/admin/users/${userId}/role`, { role: newRole });
 
-      // Optimistic state updates
       setUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, role: newRole as Role } : u))
       );
+      showToast(`Role updated to ${newRole}`, "success");
     } catch (err) {
       console.error("Failed to update role:", err);
-      alert("Error altering authorization role tier balance allocation.");
+      showToast("Failed to update user role", "error");
     }
   }
 
@@ -97,15 +97,15 @@ export default function UsersPage() {
     try {
       await laravelDelete(`/admin/users/${userId}`);
 
-      // Optimistic state update for soft-deletions
       setUsers((prev) =>
         prev.map((u) =>
           u.id === userId ? { ...u, deleted_at: new Date().toISOString() } : u
         )
       );
+      showToast("User account deactivated", "success");
     } catch (err) {
       console.error("Failed to deactivate user row instance:", err);
-      alert("Failed execution status updates during deactivation routines.");
+      showToast("Failed to deactivate user account", "error");
     }
   }
 

@@ -4,6 +4,7 @@ import { Space_Grotesk } from "next/font/google";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { stripExif } from "@/utils/exifStripper";
+import { showToast } from "@likaslens/shared";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -219,8 +220,10 @@ export default function CameraTestPage() {
       }
 
       setSubmitStatus("Report submitted");
+      showToast("Report submitted successfully", "success");
     } catch {
       setSubmitStatus("Failed to submit report");
+      showToast("Failed to submit report", "error");
     }
   }, [capturedImage, isGhostMode, latitude, longitude]);
 
