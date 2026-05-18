@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "@/lib/auth";
+import { showToast } from "@likaslens/shared";
 import { Leaf } from "lucide-react";
 
 export function LoginClient() {
@@ -16,13 +17,16 @@ export function LoginClient() {
     setError(""); setLoading(true);
     try {
       await signIn(email, password);
+      showToast("Signed in successfully", "success");
       router.push("/dashboard");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "";
       if (message === "ACCESS_DENIED") {
         setError("Access denied. Only analysts and administrators can access this portal.");
+        showToast("Access denied", "error");
       } else {
         setError(message || "Invalid email or password.");
+        showToast(message || "Invalid email or password.", "error");
       }
     } finally { setLoading(false); }
   }

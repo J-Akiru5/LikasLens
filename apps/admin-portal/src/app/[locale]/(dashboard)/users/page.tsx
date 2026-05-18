@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Users as UsersIcon,
 } from "lucide-react";
-import { Spinner } from "@likaslens/shared";
+import { Spinner, showToast } from "@likaslens/shared";
 
 type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
@@ -111,13 +111,13 @@ export default function UsersPage() {
 
       if (!response.ok) throw new Error("Failed to update role layout parameters");
 
-      // Optimistic state updates
       setUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, role: newRole as Role } : u))
       );
+      showToast(`Role updated to ${newRole}`, "success");
     } catch (err) {
       console.error("Failed to update role:", err);
-      alert("Error altering authorization role tier balance allocation.");
+      showToast("Failed to update user role", "error");
     }
   }
 
@@ -132,15 +132,15 @@ export default function UsersPage() {
 
       if (!response.ok) throw new Error("Failed termination command on resource ID");
 
-      // Optimistic state update for soft-deletions
       setUsers((prev) =>
         prev.map((u) =>
           u.id === userId ? { ...u, deleted_at: new Date().toISOString() } : u
         )
       );
+      showToast("User account deactivated", "success");
     } catch (err) {
       console.error("Failed to deactivate user row instance:", err);
-      alert("Failed execution status updates during deactivation routines.");
+      showToast("Failed to deactivate user account", "error");
     }
   }
 
