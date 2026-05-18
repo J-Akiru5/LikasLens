@@ -137,7 +137,7 @@ export function GeoTagMap({ initialLat, initialLng, onLocationChange, height = "
       <button
         type="button"
         onClick={handleGPSLocate}
-        className="brutal-button px-4 py-2 text-sm font-bold uppercase flex items-center gap-2 hover:bg-primary hover:text-white transition-colors"
+        className="brutal-button px-4 py-2 text-sm font-bold uppercase flex items-center gap-2 hover:bg-primary hover:text-background transition-colors"
       >
         <Navigation className="w-4 h-4" /> Auto-Detect My Location
       </button>

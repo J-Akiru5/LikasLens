@@ -42,7 +42,7 @@ export function AnalyticsExportButton({
     <button
       onClick={handleClick}
       disabled={disabled}
-      className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 text-background rounded-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 text-[#081c15] rounded-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       title="Export Analytics & Reports as PDF"
     >
       <Download size={18} />

@@ -54,7 +54,7 @@ export function AnalyticsDashboardWithExport() {
         <button
           onClick={handleExport}
           disabled={isExporting}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 disabled:bg-accent/50 text-background rounded-sm font-semibold transition-colors disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 disabled:bg-accent/50 text-[#081c15] rounded-sm font-semibold transition-colors disabled:cursor-not-allowed"
         >
           {isExporting ? (
             <>
