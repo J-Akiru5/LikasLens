@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\NgoGroup;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class NgoSeeder extends Seeder
 {
@@ -502,6 +503,8 @@ class NgoSeeder extends Seeder
                 'updated_at'        => $now,
             ],
         ];
+
+        $ngos = array_map(fn($ngo) => array_merge(['id' => (string) Str::uuid()], $ngo), $ngos);
 
         NgoGroup::insert($ngos);
     }

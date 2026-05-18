@@ -345,7 +345,9 @@ class IncidentSeeder extends Seeder
         ];
 
         foreach ($tickets as $data) {
-            Ticket::create([
+            Ticket::create(array_merge(
+                ['id' => (string) Str::uuid()],
+                [
                 'reporter_user_id'  => $demoUser->id,
                 'status'            => $data['status'],
                 'title'             => $data['title'],
@@ -359,7 +361,7 @@ class IncidentSeeder extends Seeder
                 'resolved_at'       => $data['resolved_at'] ?? null,
                 'created_at'        => $now->copy()->subHours(rand(1, 360)),
                 'updated_at'        => $now,
-            ]);
+            ]));
         }
     }
 }
