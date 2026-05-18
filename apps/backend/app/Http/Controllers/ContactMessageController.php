@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\ContactMessage;
+use Illuminate\Http\Request;
 
 class ContactMessageController extends Controller
 {
@@ -23,7 +23,7 @@ class ContactMessageController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Contact message saved successfully.',
-            'data' => $message
+            'data' => $message,
         ], 201);
     }
 
@@ -34,6 +34,7 @@ class ContactMessageController extends Controller
     public function index(Request $request)
     {
         $messages = ContactMessage::orderBy('created_at', 'desc')->paginate(20);
+
         return response()->json([
             'success' => true,
             'data' => $messages->items(),
@@ -52,7 +53,7 @@ class ContactMessageController extends Controller
     public function markAsRead($id)
     {
         $message = ContactMessage::findOrFail($id);
-        
+
         if ($message->status !== 'read') {
             $message->update([
                 'status' => 'read',
@@ -63,7 +64,7 @@ class ContactMessageController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Contact message marked as read.',
-            'data' => $message
+            'data' => $message,
         ]);
     }
 }

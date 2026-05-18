@@ -63,3 +63,20 @@ export function laravelPatch<T>(endpoint: string, body?: unknown) {
     body: body ? JSON.stringify(body) : undefined,
   });
 }
+
+// Achievement API
+export function fetchAchievementCatalog<T>() {
+  return laravelGet<T>("/achievements");
+}
+
+export function fetchUserAchievements<T>() {
+  return laravelGet<T>("/user/achievements");
+}
+
+export function fetchRankProgress<T>() {
+  return laravelGet<T>("/user/rank-progress");
+}
+
+export function fetchEcoCreditRate<T>(countryCode: string) {
+  return laravelGet<T>(`/settings/eco-credit-rate?country_code=${countryCode}`);
+}

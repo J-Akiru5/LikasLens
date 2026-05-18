@@ -6,17 +6,67 @@ use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class AdminUserController extends Controller
 {
+    /**
+     * Synchronize local users table with Supabase Auth identities.
+     */
+    private function syncUsersWithSupabase(): void
+    {
+        $supabaseUrl = env('SUPABASE_URL');
+        $serviceKey = env('SUPABASE_SERVICE_ROLE_KEY');
+
+        // Safety check: Don't attempt to sync if keys aren't configured yet
+        if (!$supabaseUrl || !$serviceKey) {
+            return;
+        }
+
+        try {
+            // Fetch users directly from the administrative Supabase Auth endpoint
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $serviceKey,
+                'apikey' => $serviceKey,
+            ])->get($supabaseUrl . '/auth/v1/admin/users');
+
+            if ($response->successful() && isset($response->json()['users'])) {
+                $supabaseUsers = $response->json()['users'];
+
+                foreach ($supabaseUsers as $sUser) {
+                    // Sync by checking if the supabase user ID matches our local database record
+                    User::updateOrCreate(
+                        ['supabase_auth_user_id' => $sUser['id']], // Unique lookup column
+                        [
+                            'email' => $sUser['email'],
+                            // Use metadata name if available, otherwise fall back to email username splitting
+                            'name' => $sUser['user_metadata']['full_name'] ?? explode('@', $sUser['email'])[0],
+                            // Set default values for new profiles if they don't exist yet
+                            'role' => $sUser['user_metadata']['role'] ?? 'citizen',
+                            'trust_score' => 100, // Default starting value
+                            'reward_points_balance' => 50, // Default welcome grant values
+                        ]
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            // Silent catch to prevent the entire endpoint from breaking if Supabase is temporarily unreachable
+            logger('Supabase synchronization error: ' . $e->getMessage());
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
+        // 1. Run the sync process first to fetch fresh profiles from Supabase
+        $this->syncUsersWithSupabase();
+
+        // 2. Continue with your existing local database filtering, search, and pagination query logic
         $query = User::query()->orderBy('created_at', 'desc');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -26,6 +76,7 @@ class AdminUserController extends Controller
 
         $users = $query->paginate(min((int) $request->input('per_page', 20), 50));
 
+        // 3. Keep your existing structured response format exactly the same
         return response()->json([
             'success' => true,
             'data' => $users->items(),
@@ -64,7 +115,7 @@ class AdminUserController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
+            'email' => 'sometimes|email|unique:users,email,'.$id,
             'trust_score' => 'sometimes|integer|min:0|max:100',
             'reward_points_balance' => 'sometimes|integer|min:0',
         ]);

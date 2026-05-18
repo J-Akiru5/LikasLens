@@ -4,13 +4,14 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class AdminUserSeeder extends Seeder
 {
     private string $supabaseUrl;
+
     private string $supabaseServiceKey;
 
     public function __construct()
@@ -23,6 +24,7 @@ class AdminUserSeeder extends Seeder
     {
         if (empty($this->supabaseServiceKey)) {
             $this->command->error('SUPABASE_SERVICE_ROLE_KEY not set. Cannot create Supabase users.');
+
             return;
         }
 
@@ -62,15 +64,16 @@ class AdminUserSeeder extends Seeder
         $existing = User::where('email', $email)->first();
         if ($existing) {
             $this->command->warn("User {$email} already exists in Laravel DB. Skipping.");
+
             return;
         }
 
         // Create user in Supabase Auth via Admin API
         $response = Http::withHeaders([
             'apikey' => $this->supabaseServiceKey,
-            'Authorization' => 'Bearer ' . $this->supabaseServiceKey,
+            'Authorization' => 'Bearer '.$this->supabaseServiceKey,
             'Content-Type' => 'application/json',
-        ])->post(rtrim($this->supabaseUrl, '/') . '/auth/v1/admin/users', [
+        ])->post(rtrim($this->supabaseUrl, '/').'/auth/v1/admin/users', [
             'email' => $email,
             'password' => $data['password'],
             'email_confirm' => true,
@@ -86,9 +89,11 @@ class AdminUserSeeder extends Seeder
             if (str_contains($body, 'already been registered') || $response->status() === 422) {
                 $this->command->warn("User {$email} already exists in Supabase. Syncing to Laravel DB...");
                 $this->syncUserFromSupabase($email, $data);
+
                 return;
             }
             $this->command->error("Failed to create Supabase user {$email}: {$body}");
+
             return;
         }
 
@@ -116,22 +121,24 @@ class AdminUserSeeder extends Seeder
         // Fetch user from Supabase to get the auth ID
         $response = Http::withHeaders([
             'apikey' => $this->supabaseServiceKey,
-            'Authorization' => 'Bearer ' . $this->supabaseServiceKey,
+            'Authorization' => 'Bearer '.$this->supabaseServiceKey,
             'Content-Type' => 'application/json',
-        ])->get(rtrim($this->supabaseUrl, '/') . '/auth/v1/admin/users', [
+        ])->get(rtrim($this->supabaseUrl, '/').'/auth/v1/admin/users', [
             'email' => $email,
         ]);
 
         if ($response->failed()) {
             $this->command->error("Failed to fetch Supabase user {$email}: {$response->body()}");
+
             return;
         }
 
         $users = $response->json()['users'] ?? [];
         $supabaseUser = collect($users)->firstWhere('email', $email);
 
-        if (!$supabaseUser) {
+        if (! $supabaseUser) {
             $this->command->error("Could not find Supabase user {$email}");
+
             return;
         }
 

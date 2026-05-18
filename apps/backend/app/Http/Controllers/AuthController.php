@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -58,7 +57,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid email or password.',
@@ -94,7 +93,7 @@ class AuthController extends Controller
         $user = User::where('supabase_auth_user_id', $validated['supabase_auth_user_id'])->first();
         $role = $validated['role'] ?? 'citizen';
 
-        if (!$user) {
+        if (! $user) {
             $user = User::create([
                 'supabase_auth_user_id' => $validated['supabase_auth_user_id'],
                 'name' => $validated['name'] ?? 'Citizen',
