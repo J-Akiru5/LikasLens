@@ -11,7 +11,9 @@ class NgoSeeder extends Seeder
 {
     public function run(): void
     {
+        Schema::disableForeignKeyConstraints();
         NgoGroup::truncate();
+        Schema::enableForeignKeyConstraints();
 
         $now = now();
 
