@@ -1,0 +1,75 @@
+{
+  "sorted_middleware": [],
+  "middleware": {
+    "/": {
+      "files": [
+        "server/edge/chunks/node_modules_next_dist_0lpgzet._.js",
+        "server/edge/chunks/node_modules_@supabase_postgrest-js_dist_index_mjs_0k1nynl._.js",
+        "server/edge/chunks/node_modules_@supabase_auth-js_dist_module_08zxyu.._.js",
+        "server/edge/chunks/node_modules_0lta53~._.js",
+        "server/edge/chunks/[root-of-the-server]__0dzckdt._.js",
+        "server/edge/chunks/turbopack-node_modules_next_dist_esm_build_templates_edge-wrapper_05mn46b.js"
+      ],
+      "name": "middleware",
+      "page": "/",
+      "entrypoint": "server/edge/chunks/turbopack-node_modules_next_dist_esm_build_templates_edge-wrapper_05mn46b.js",
+      "matchers": [
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/(/?index|/?index\\\\.json)?",
+          "originalSource": "/"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/login{(\\\\.json)}?",
+          "originalSource": "/login"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/dashboard/:path*{(\\\\.json)}?",
+          "originalSource": "/dashboard/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/analytics/:path*{(\\\\.json)}?",
+          "originalSource": "/analytics/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/tickets/:path*{(\\\\.json)}?",
+          "originalSource": "/tickets/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/users/:path*{(\\\\.json)}?",
+          "originalSource": "/users/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/ngos/:path*{(\\\\.json)}?",
+          "originalSource": "/ngos/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/laws/:path*{(\\\\.json)}?",
+          "originalSource": "/laws/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/rewards/:path*{(\\\\.json)}?",
+          "originalSource": "/rewards/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/audit-logs/:path*{(\\\\.json)}?",
+          "originalSource": "/audit-logs/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/settings/:path*{(\\\\.json)}?",
+          "originalSource": "/settings/:path*"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "env": {
+        "__NEXT_BUILD_ID": "development",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "x8j5TyryQpjjtb7NsrahyeLWdJuFsTWoHNltDdiO3j0=",
+        "__NEXT_PREVIEW_MODE_ID": "a545d4f01768793696303fa3ac54ccfb",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "98b4ea10cb2fb31e75bf90da99d08f46d12f2b4e063342cf3742a76f61020168",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "58535c04b00c0dde3e058ba2e89e86f4bb353fef650d20ff87bcb9b0eef4ce09"
+      }
+    }
+  },
+  "instrumentation": null,
+  "functions": {}
+}
