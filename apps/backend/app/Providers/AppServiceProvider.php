@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\TicketAssignment;
+use App\Policies\TicketAssignmentPolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +22,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Gate::policy(\App\Models\TicketAssignment::class, \App\Policies\TicketAssignmentPolicy::class);
+        Gate::policy(TicketAssignment::class, TicketAssignmentPolicy::class);
     }
 }

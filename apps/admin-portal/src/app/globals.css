@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@source "../../../shared/src/**/*.{ts,tsx}";
+@source "../shared/src/**/*.{ts,tsx}";
+@source "./node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
+@source "../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
+@source "../../shared/src/**/*.{ts,tsx}";
+@import "@likaslens/shared/src/styles/civic-brutalism.css";
+
+:root {
+  --color-primary: #1B4332;
+  --color-secondary: #2DE1C2;
+  --color-accent: #FFB703;
+  --color-background: #F8F9FA;
+  --color-foreground: #081C15;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, "Helvetica Now", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}

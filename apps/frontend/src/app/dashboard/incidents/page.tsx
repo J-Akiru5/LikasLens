@@ -1,116 +1,113 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getTickets } from "@likaslens/shared";
+import type { Ticket } from "@likaslens/shared";
 import { Sidebar } from "@/components/layout/sidebar";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
-import {
-  AlertTriangle,
-  Filter,
-  MoreVertical,
-  Search,
-  Eye,
-  CheckCircle,
-  ArrowUpRight,
-  UserPlus,
-  X,
-} from "lucide-react";
-
-type IncidentStatus = "Critical" | "Investigating" | "Resolved" | "Monitoring";
-
-type Incident = {
-  id: string;
-  cat: string;
-  loc: string;
-  stat: IncidentStatus;
-};
-
-const ALL_INCIDENTS: Incident[] = [
-  { id: "INC-104", cat: "Deforestation", loc: "Northern Ridge", stat: "Critical" },
-  { id: "INC-103", cat: "Water Pollution", loc: "Lake View", stat: "Investigating" },
-  { id: "INC-102", cat: "Illegal Dumping", loc: "Highway 9", stat: "Resolved" },
-  { id: "INC-101", cat: "Wildfire Risk", loc: "Sector 7", stat: "Monitoring" },
-  { id: "INC-100", cat: "Wildlife Threat", loc: "National Park", stat: "Resolved" },
-  { id: "INC-099", cat: "Mining Spill", loc: "Copper Basin", stat: "Critical" },
-  { id: "INC-098", cat: "Air Pollution", loc: "Industrial Zone 4", stat: "Investigating" },
-  { id: "INC-097", cat: "Deforestation", loc: "Eastern Grove", stat: "Monitoring" },
-  { id: "INC-096", cat: "River Pollution", loc: "Crystal Creek", stat: "Critical" },
-  { id: "INC-095", cat: "Illegal Dumping", loc: "Backstreet Alley", stat: "Resolved" },
-  { id: "INC-094", cat: "Poaching", loc: "Reserve 9", stat: "Investigating" },
-  { id: "INC-093", cat: "Wildfire Risk", loc: "Hilltop Camp", stat: "Monitoring" },
-  { id: "INC-092", cat: "Water Pollution", loc: "Blue Lagoon", stat: "Resolved" },
-  { id: "INC-091", cat: "Toxic Waste", loc: "Warehouse 7", stat: "Critical" },
-  { id: "INC-090", cat: "Deforestation", loc: "Riverbank Trail", stat: "Investigating" },
-];
-
-const STATUSES: IncidentStatus[] = ["Critical", "Investigating", "Monitoring", "Resolved"];
-const CATEGORIES = [...new Set(ALL_INCIDENTS.map((i) => i.cat))];
-
-const ITEMS_PER_PAGE = 5;
+import { AlertTriangle, Filter, MoreVertical, Eye, UserCheck, Flag, Trash2, X, Search } from "lucide-react";
 
 export default function IncidentsPage() {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<IncidentStatus | "">("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenuId(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    getTickets({ per_page: "50" })
+      .then((res) => { if (res.success) setTickets(res.data); })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
-  const filtered = ALL_INCIDENTS.filter((inc) => {
-    const q = search.toLowerCase();
-    const matchesSearch =
-      !q ||
-      inc.id.toLowerCase().includes(q) ||
-      inc.cat.toLowerCase().includes(q) ||
-      inc.loc.toLowerCase().includes(q);
-    const matchesStatus = !statusFilter || inc.stat === statusFilter;
-    const matchesCategory = !categoryFilter || inc.cat === categoryFilter;
-    return matchesSearch && matchesStatus && matchesCategory;
-  });
-
-  const displayed = filtered.slice(0, visibleCount);
-  const hasMore = visibleCount < filtered.length;
-
-  const statusBadge = (stat: IncidentStatus) => {
-    const base =
-      "px-2 py-1 rounded text-xs font-bold border-2 uppercase font-mono tracking-widest";
-    if (stat === "Critical") return `${base} border-accent text-accent`;
-    if (stat === "Resolved") return `${base} border-secondary text-primary`;
-    return `${base} border-primary text-primary`;
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "resolved":
+      case "closed":
+        return "border-2 border-secondary bg-secondary/15 text-secondary shadow-[0_0_12px_rgba(45,225,194,0.5)]";
+      case "open":
+        return "border-2 border-accent bg-accent/25 text-accent shadow-[0_0_16px_rgba(255,183,3,0.7)] animate-pulse";
+      case "investigating":
+      case "monitoring":
+        return "border-2 border-accent bg-accent/15 text-accent shadow-[0_0_12px_rgba(255,183,3,0.5)]";
+      default:
+        return "border-2 border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(27,67,50,0.5)]";
+    }
   };
 
-  const handleAction = (action: string, id: string) => {
-    setOpenMenuId(null);
-    alert(`${action} triggered for ${id}`);
-  };
+  const filteredIncidents = useMemo(() => {
+    return tickets.filter((ticket) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        !q ||
+        ticket.display_id?.toLowerCase().includes(q) ||
+        ticket.title?.toLowerCase().includes(q) ||
+        ticket.location?.toLowerCase().includes(q) ||
+        ticket.status.toLowerCase().includes(q);
+      const matchesStatus = !selectedStatus || ticket.status === selectedStatus;
+      return matchesSearch && matchesStatus;
+    });
+  }, [tickets, searchQuery, selectedStatus]);
+
+  const statuses = useMemo(
+    () => [...new Set(tickets.map((t) => t.status))],
+    [tickets]
+  );
+
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const closeMenu = useCallback(() => setOpenMenuId(null), []);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMenu();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [openMenuId, closeMenu]);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        closeMenu();
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [openMenuId, closeMenu]);
 
   const clearFilters = () => {
-    setSearch("");
-    setStatusFilter("");
-    setCategoryFilter("");
+    setSearchQuery("");
+    setSelectedStatus(null);
     setShowFilters(false);
-    setVisibleCount(ITEMS_PER_PAGE);
   };
 
-  const hasActiveFilters = search || statusFilter || categoryFilter;
+  const hasActiveFilters = searchQuery || selectedStatus;
+
+  if (loading) {
+    return (
+      <div className="flex h-screen overflow-hidden bg-background font-body">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
       <Sidebar />
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
         <div className="smoke-overlay" />
         <AppHeader />
-        <main className="flex-1 overflow-y-auto p-6 relative z-10">
+        <main className="flex-1 overflow-y-auto p-6 pb-20 lg:pb-6 relative z-10">
+          <BottomNav />
           <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b-4 border-primary pb-4">
               <h1 className="font-heading text-4xl font-black uppercase">
@@ -118,16 +115,13 @@ export default function IncidentsPage() {
               </h1>
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
                   <input
                     type="text"
-                    placeholder="Search ID or Keyword..."
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      setVisibleCount(ITEMS_PER_PAGE);
-                    }}
-                    className="pl-9 pr-4 py-2 border-2 border-primary rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-secondary shadow-[2px_2px_0px_#1b4332] bg-background text-foreground"
+                    placeholder="Search ID, Category, Location, Status..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
                   />
                 </div>
                 <button
@@ -149,55 +143,39 @@ export default function IncidentsPage() {
             </div>
 
             {showFilters && (
-              <div className="brutal-panel bg-white p-4 flex flex-wrap gap-4 items-end">
-                <div className="flex flex-col gap-1">
-                  <label className="font-mono text-xs font-bold uppercase text-primary/70">
-                    Status
-                  </label>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => {
-                      setStatusFilter(e.target.value as IncidentStatus | "");
-                      setVisibleCount(ITEMS_PER_PAGE);
-                    }}
-                    className="border-2 border-primary rounded px-3 py-2 font-mono text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-secondary"
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => { setSelectedStatus(null); }}
+                  className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
+                    selectedStatus === null
+                      ? "bg-primary text-white border-primary shadow-[2px_2px_0px_#081c15]"
+                      : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
+                  }`}
+                >
+                  All
+                </button>
+                {statuses.map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setSelectedStatus(status)}
+                    className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
+                      selectedStatus === status
+                        ? getStatusColor(status)
+                        : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
+                    }`}
                   >
-                    <option value="">All Statuses</option>
-                    {STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="font-mono text-xs font-bold uppercase text-primary/70">
-                    Category
-                  </label>
-                  <select
-                    value={categoryFilter}
-                    onChange={(e) => {
-                      setCategoryFilter(e.target.value);
-                      setVisibleCount(ITEMS_PER_PAGE);
-                    }}
-                    className="border-2 border-primary rounded px-3 py-2 font-mono text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-secondary"
-                  >
-                    <option value="">All Categories</option>
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="font-mono text-xs text-primary/50 ml-auto self-end">
-                  {filtered.length} incident{filtered.length !== 1 ? "s" : ""} found
-                </div>
+                    {status}
+                  </button>
+                ))}
               </div>
             )}
 
-            <div className="brutal-panel bg-white p-0 overflow-hidden">
-              <div className="grid grid-cols-12 bg-primary text-white font-mono font-bold text-xs sm:text-sm uppercase p-4">
+            <div className="text-sm font-mono text-foreground/60 uppercase tracking-widest">
+              Showing {filteredIncidents.length} of {tickets.length} incidents
+            </div>
+
+            <div className="brutal-panel panel-surface p-0">
+              <div className="grid grid-cols-12 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2 border-[#081c15]" style={{ backgroundColor: "#1b4332", color: "#f8f9fa" }}>
                 <div className="col-span-2">ID</div>
                 <div className="col-span-3">Category</div>
                 <div className="col-span-3">Location</div>
@@ -205,102 +183,95 @@ export default function IncidentsPage() {
                 <div className="col-span-2 text-right">Actions</div>
               </div>
 
-              {displayed.length === 0 ? (
-                <div className="p-8 text-center font-mono text-primary/50">
-                  No incidents match your filters.
-                </div>
-              ) : (
-                displayed.map((inc) => (
+              {filteredIncidents.length > 0 ? (
+                filteredIncidents.map((ticket, i) => (
                   <div
-                    key={inc.id}
+                    key={ticket.id}
                     className="grid grid-cols-12 items-center border-t-2 border-primary/20 p-4 hover:bg-secondary/10 transition-colors font-medium"
                   >
-                    <div className="col-span-2 font-mono text-sm font-bold">
-                      {inc.id}
-                    </div>
+                    <div className="col-span-2 font-mono text-sm font-bold">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</div>
                     <div className="col-span-3 flex items-center gap-2">
-                      {inc.stat === "Critical" && (
-                        <AlertTriangle className="w-4 h-4 text-accent" />
+                      {ticket.status === "Open" && (
+                        <AlertTriangle className="w-4 h-4 text-accent animate-pulse" />
                       )}
-                      {inc.cat}
+                      {ticket.title}
                     </div>
-                    <div className="col-span-3 opacity-80">{inc.loc}</div>
+                    <div className="col-span-3 surface-muted">{ticket.location}</div>
                     <div className="col-span-2">
-                      <span className={statusBadge(inc.stat)}>{inc.stat}</span>
+                      <span className={`px-3 py-1.5 rounded text-xs font-bold uppercase font-mono tracking-widest transition-all ${getStatusColor(ticket.status)}`}>
+                        {ticket.status}
+                      </span>
                     </div>
-                    <div className="col-span-2 text-right relative">
-                      <button
-                        onClick={() =>
-                          setOpenMenuId(
-                            openMenuId === inc.id ? null : inc.id
-                          )
-                        }
-                        className="p-1 hover:bg-primary/10 rounded transition-colors cursor-pointer"
-                      >
-                        <MoreVertical className="w-5 h-5 text-primary" />
-                      </button>
-
-                      {openMenuId === inc.id && (
-                        <div
-                          ref={menuRef}
-                          className="absolute right-0 top-full mt-1 w-48 bg-white border-2 border-primary shadow-[4px_4px_0px_#1b4332] z-50 rounded font-mono text-sm"
+                    <div className="col-span-2 text-right">
+                      <div className="relative inline-block">
+                        <button
+                          onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
+                          className="p-1 hover:bg-primary/10 rounded transition-colors"
+                          aria-label="Row actions"
+                          aria-expanded={openMenuId === ticket.id}
                         >
-                          <button
-                            onClick={() => handleAction("View", inc.id)}
-                            className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-primary/10 transition-colors text-left cursor-pointer"
-                          >
-                            <Eye className="w-4 h-4" />
-                            View Details
-                          </button>
-                          {inc.stat !== "Resolved" && (
+                          <MoreVertical className="w-5 h-5 text-primary" />
+                        </button>
+                        {openMenuId === ticket.id && (
+                          <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 w-48 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden">
                             <button
-                              onClick={() => handleAction("Resolve", inc.id)}
-                              className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-primary/10 transition-colors text-left cursor-pointer border-t border-primary/10"
+                              type="button"
+                              style={{ touchAction: "manipulation" }}
+                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
                             >
-                              <CheckCircle className="w-4 h-4" />
-                              Mark Resolved
+                              <Eye className="w-4 h-4 text-primary" />
+                              View Details
                             </button>
-                          )}
-                          {inc.stat !== "Critical" && (
                             <button
-                              onClick={() => handleAction("Escalate", inc.id)}
-                              className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-primary/10 transition-colors text-left cursor-pointer border-t border-primary/10"
+                              type="button"
+                              style={{ touchAction: "manipulation" }}
+                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
                             >
-                              <ArrowUpRight className="w-4 h-4" />
-                              Escalate
+                              <UserCheck className="w-4 h-4 text-secondary" />
+                              Assign
                             </button>
-                          )}
-                          <button
-                            onClick={() => handleAction("Assign", inc.id)}
-                            className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-primary/10 transition-colors text-left cursor-pointer border-t border-primary/10"
-                          >
-                            <UserPlus className="w-4 h-4" />
-                            Assign
-                          </button>
-                        </div>
-                      )}
+                            <button
+                              type="button"
+                              style={{ touchAction: "manipulation" }}
+                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10"
+                            >
+                              <Flag className="w-4 h-4 text-accent" />
+                              Change Status
+                            </button>
+                            <button
+                              type="button"
+                              style={{ touchAction: "manipulation" }}
+                              onClick={(e) => { e.stopPropagation(); closeMenu(); }}
+                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-red-50 transition-colors text-accent"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
+              ) : (
+                <div className="grid grid-cols-12 p-8 text-center col-span-12">
+                  <div className="col-span-12 text-foreground/50 font-mono">
+                    No incidents match your search criteria.
+                  </div>
+                </div>
               )}
             </div>
 
-            <div className="flex justify-center mt-6">
-              {hasMore ? (
-                <button
-                  onClick={() => setVisibleCount((c) => c + ITEMS_PER_PAGE)}
-                  className="brutal-button px-6 py-3 rounded text-sm tracking-wider cursor-pointer"
-                >
-                  Load More Records ({filtered.length - displayed.length} remaining)
+            {filteredIncidents.length > 0 && (
+              <div className="flex justify-center mt-6">
+                <button className="brutal-button px-6 py-3 rounded text-sm tracking-wider">
+                  Load More Records
                 </button>
-              ) : (
-                filtered.length > ITEMS_PER_PAGE && (
-                  <span className="font-mono text-sm text-primary/50">
-                    All {filtered.length} records shown
-                  </span>
-                )
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </main>
       </div>

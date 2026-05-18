@@ -1,46 +1,50 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import NextImage from "next/image";
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { ArrowLeft, Camera, MapPin, Fingerprint, Activity, RefreshCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useCamera } from "@/hooks/useCamera";
+import { ToastContainer, showToast } from "@likaslens/shared";
+import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 
 export default function ReportPage() {
 	const [base64Image, setBase64Image] = useState<string>("");
 	const [latitude, setLatitude] = useState<number | null>(null);
 	const [longitude, setLongitude] = useState<number | null>(null);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [toastMessage, setToastMessage] = useState("");
 	const [isGhostMode, setIsGhostMode] = useState(false);
+	const [isOnline, setIsOnline] = useState(true);
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [isTriaging, setIsTriaging] = useState(false);
+	const [triageIndicators, setTriageIndicators] = useState<string[]>([]);
+	const [showManualCoords, setShowManualCoords] = useState(false);
+	const [manualLat, setManualLat] = useState("");
+	const [manualLng, setManualLng] = useState("");
+
 	const offlineQueueKey = "likaslens_offline_reports";
 	const offlineDbName = "likaslens-offline";
 	const offlineStoreName = "report-queue";
 
-	// Dummy test data
-	const mockBase64Image =
-		"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
-	const mockLatitude = 14.5994;
-	const mockLongitude = 120.9842;
+	const camera = useCamera("environment");
+	const videoRef = useRef<HTMLVideoElement>(null);
+	const canvasRef = useRef<HTMLCanvasElement>(null);
 
-	/**
-	 * Populate the form with safe, dummy values for quick UI testing.
-	 */
-	const populateWithTestData = () => {
-		setBase64Image(mockBase64Image);
-		setLatitude(mockLatitude);
-		setLongitude(mockLongitude);
-	};
+	useEffect(() => {
+		const video = videoRef.current;
+		if (!video || !camera.stream) return;
+		video.srcObject = camera.stream;
+		video.play().catch(() => {});
+	}, [camera.stream]);
 
-	/**
-	 * Clear all report fields to reset the form state.
-	 */
-	const clearForm = () => {
-		setBase64Image("");
-		setLatitude(null);
-		setLongitude(null);
-	};
+	// Sync local Ghost Mode with global theme
+	useEffect(() => {
+		const themeValue = isGhostMode ? "ghost" : "civic";
+		document.documentElement.setAttribute("data-theme", themeValue);
+	}, [isGhostMode]);
 
-	/**
-	 * Strip EXIF by re-encoding the image via canvas (browser-only).
-	 */
 	const stripExif = async (base64: string) => {
 		if (!base64) return base64;
 		return await new Promise<string>((resolve) => {
@@ -65,25 +69,22 @@ export default function ReportPage() {
 		});
 	};
 
-	/**
-	 * Open IndexedDB for offline report storage.
-	 */
-	const openOfflineDb = () =>
-		new Promise<IDBDatabase>((resolve, reject) => {
-			const request = indexedDB.open(offlineDbName, 1);
-			request.onupgradeneeded = () => {
-				const db = request.result;
-				if (!db.objectStoreNames.contains(offlineStoreName)) {
-					db.createObjectStore(offlineStoreName, { keyPath: "id" });
-				}
-			};
-			request.onsuccess = () => resolve(request.result);
-			request.onerror = () => reject(request.error);
-		});
+	const openOfflineDb = useCallback(
+		() =>
+			new Promise<IDBDatabase>((resolve, reject) => {
+				const request = indexedDB.open(offlineDbName, 1);
+				request.onupgradeneeded = () => {
+					const db = request.result;
+					if (!db.objectStoreNames.contains(offlineStoreName)) {
+						db.createObjectStore(offlineStoreName, { keyPath: "id" });
+					}
+				};
+				request.onsuccess = () => resolve(request.result);
+				request.onerror = () => reject(request.error);
+			}),
+		[offlineDbName, offlineStoreName]
+	);
 
-	/**
-	 * Persist a report payload when offline so it can sync later.
-	 */
 	const queueOfflineReport = async (payload: Record<string, unknown>) => {
 		const queuedPayload = { ...payload, queuedAt: new Date().toISOString() };
 		try {
@@ -104,11 +105,9 @@ export default function ReportPage() {
 		}
 	};
 
-	/**
-	 * Flush queued offline reports when connectivity returns.
-	 */
-	const flushOfflineQueue = async () => {
-		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL="http://127.0.0.1:8000";
+	const flushOfflineQueue = useCallback(async () => {
+		const laravelUrl =
+			process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://127.0.0.1:8000";
 		const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
 
 		try {
@@ -163,84 +162,168 @@ export default function ReportPage() {
 			const remaining = items.filter((_: unknown, idx: number) => !successfulIds.includes(String(idx)));
 			localStorage.setItem(offlineQueueKey, JSON.stringify(remaining));
 		}
-	};
+	}, [openOfflineDb, offlineQueueKey, offlineStoreName]);
 
 	useEffect(() => {
 		const handleOnline = () => {
+			setIsOnline(true);
 			void flushOfflineQueue();
+			showToast("Connection restored. Syncing queued reports.", "success");
+		};
+		const handleOffline = () => {
+			setIsOnline(false);
+			showToast("Connection lost. Reports will queue until you are back online.", "error");
 		};
 		window.addEventListener("online", handleOnline);
-		return () => window.removeEventListener("online", handleOnline);
-	}, []);
+		window.addEventListener("offline", handleOffline);
+		setIsOnline(navigator.onLine);
+		return () => {
+			window.removeEventListener("online", handleOnline);
+			window.removeEventListener("offline", handleOffline);
+		};
+	}, [flushOfflineQueue]);
 
-	/**
-	 * Validate, anonymize, and submit the report to the backend.
-	 */
+	const capturePhoto = useCallback(() => {
+		const video = videoRef.current;
+		const canvas = canvasRef.current;
+		if (!video || !canvas) return;
+		if (video.videoWidth === 0 || video.videoHeight === 0) return;
+
+		canvas.width = video.videoWidth;
+		canvas.height = video.videoHeight;
+		const ctx = canvas.getContext("2d");
+		if (!ctx) return;
+
+		ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+		const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+		setBase64Image(dataUrl);
+		camera.stop();
+
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					setLatitude(position.coords.latitude);
+					setLongitude(position.coords.longitude);
+				},
+				() => {
+					setShowManualCoords(true);
+					showToast("Could not get GPS location. Enter coordinates manually below.", "info");
+				},
+				{ enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+			);
+		} else {
+			setShowManualCoords(true);
+		}
+	}, [camera]);
+
+	const clearForm = () => {
+		setBase64Image("");
+		setLatitude(null);
+		setLongitude(null);
+		setShowManualCoords(false);
+		setManualLat("");
+		setManualLng("");
+		setTriageIndicators([]);
+		setIsModalOpen(false);
+		camera.stop();
+	};
+
+	const finalizeSubmission = async (cleanedImage: string) => {
+		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+		
+		let userId: string | undefined = undefined;
+		if (!isGhostMode) {
+			try {
+				const supabase = createClient();
+				const {
+					data: { user },
+				} = await supabase.auth.getUser();
+				userId = user?.id;
+			} catch {
+				// continue anonymously
+			}
+		}
+
+		const payload: Record<string, unknown> = {
+			base64Image: cleanedImage,
+			latitude,
+			longitude,
+		};
+
+		if (!isGhostMode && userId) {
+			payload["user_id"] = userId;
+		}
+
+		if (!navigator.onLine) {
+			await queueOfflineReport(payload);
+			showToast("You are offline. Report queued securely.", "info");
+			setIsSubmitting(false);
+			return;
+		}
+
+		const response = await fetch(`${laravelUrl}/api/reports`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify(payload),
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json().catch(() => ({}));
+			throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+		}
+
+		const responseData = await response.json();
+		showToast(responseData.message || "Report submitted successfully!", "success");
+		clearForm();
+	};
+
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		if (!base64Image) {
+			showToast("Please capture a photo first.", "error");
+			return;
+		}
+		
 		setIsSubmitting(true);
-		setToastMessage("");
+		const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
 
 		try {
-			const laravelUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000";
+			const cleanedImage = isGhostMode ? await stripExif(base64Image) : base64Image;
 
-			const cleanedImage = await stripExif(base64Image);
-
-			// Try to fetch Supabase user id unless Ghost Mode is enabled
-			let userId: string | undefined = undefined;
-			if (!isGhostMode) {
+			// Triage Pre-check if NOT already in Ghost Mode
+			if (!isGhostMode && navigator.onLine) {
+				setIsTriaging(true);
 				try {
-					const supabase = createClient();
-					const {
-						data: { user },
-					} = await supabase.auth.getUser();
-					userId = user?.id;
-				} catch {
-					// ignore, continue anonymously if not available
+					const triageRes = await fetch(`${laravelUrl}/api/reports/triage`, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ base64Image: cleanedImage }),
+					});
+					if (triageRes.ok) {
+						const triageData = await triageRes.json();
+						if (triageData.has_concern) {
+							setTriageIndicators(triageData.indicators.map((i: { label?: string; type?: string }) => i.label || i.type));
+							setIsModalOpen(true);
+							setIsSubmitting(false);
+							setIsTriaging(false);
+							return; // Intercept submission
+						}
+					}
+				} catch (err) {
+					console.error("Triage pre-check failed:", err);
+				} finally {
+					setIsTriaging(false);
 				}
 			}
 
-			const payload: Record<string, unknown> = {
-				base64Image: cleanedImage,
-				latitude,
-				longitude,
-			};
-
-			if (isGhostMode) {
-				payload["user_id"] = "ANONYMOUS_GHOST";
-			} else if (userId) {
-				payload["user_id"] = userId;
-			}
-
-			if (!navigator.onLine) {
-				await queueOfflineReport(payload);
-				setToastMessage(
-					"You are offline. Report queued securely and will sync when connection is restored."
-				);
-				setIsSubmitting(false);
-				return;
-			}
-
-			const response = await fetch(`${laravelUrl}/api/reports`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Accept: "application/json",
-				},
-				body: JSON.stringify(payload),
-			});
-
-			if (!response.ok) {
-				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-			}
-
-			const responseData = await response.json();
-			setToastMessage(responseData.message || "Report Submitted Successfully!");
-			clearForm();
+			await finalizeSubmission(cleanedImage);
 		} catch (error) {
-			setToastMessage(
-				error instanceof Error ? `Error: ${error.message}` : "Error submitting report. Check console and CORS."
+			showToast(
+				error instanceof Error ? error.message : "Error submitting report. Check console.",
+				"error"
 			);
 		} finally {
 			setIsSubmitting(false);
@@ -248,142 +331,276 @@ export default function ReportPage() {
 	};
 
 	return (
-		<main className="min-h-screen bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center p-4">
-			<div className="w-full max-w-2xl">
-				<div className="bg-white rounded-3xl shadow-2xl overflow-hidden p-8">
-					<h1 className="text-3xl font-bold text-gray-900 mb-2">Report Environmental Issue</h1>
-					<p className="text-gray-600 mb-6">
-						Help us protect the environment by reporting violations in your area.
-					</p>
+		<>
+			<ToastContainer />
+			<EdgeInterceptorModal 
+				isOpen={isModalOpen}
+				isLoading={isSubmitting}
+				indicators={triageIndicators}
+				onCancel={() => setIsModalOpen(false)}
+				onProceed={async () => {
+					setIsGhostMode(true);
+					setIsSubmitting(true);
+					const cleaned = await stripExif(base64Image);
+					await finalizeSubmission(cleaned);
+					setIsModalOpen(false);
+				}}
+			/>
+			
+			<main className={`min-h-screen font-body transition-all duration-700 ${
+				isGhostMode 
+					? "bg-[#081c15]" 
+					: "bg-gradient-to-br from-[#1b4332]/10 to-[#2de1c2]/10"
+			}`}>
+				<div className="max-w-2xl mx-auto p-4 sm:p-6">
+					{/* Back Navigation */}
+					<Link
+						href="/"
+						className="inline-flex items-center gap-2 mb-6 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors font-mono text-sm font-bold uppercase tracking-wider"
+					>
+						<ArrowLeft className="w-4 h-4" />
+						Back to Home
+					</Link>
 
-					{toastMessage && (
-						<div
-							className={`mb-6 rounded-lg p-4 text-sm font-medium ${
-								toastMessage.toLowerCase().includes("error")
-									? "bg-red-50 text-red-800 border border-red-200"
-									: "bg-green-50 text-green-800 border border-green-200"
-							}`}
-						>
-							{toastMessage}
+					{/* Header */}
+					<div className="mb-8">
+						<div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary mb-4 bg-background/50 rounded">
+							<span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
+							<span className="font-mono text-xs font-bold uppercase tracking-widest text-primary">
+								Report an Issue
+							</span>
+						</div>
+						<h1 className="font-heading text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-primary mb-2">
+							Document the Problem
+						</h1>
+						<p className="text-base sm:text-lg text-foreground/80 font-semibold">
+							Your evidence helps protect our earth. Every photo, every detail counts.
+						</p>
+					</div>
+
+					{/* Offline indicator */}
+					{!isOnline && (
+						<div className="mb-4 p-3 border-2 border-accent bg-accent/10 text-accent font-mono text-xs font-bold rounded flex items-center gap-2">
+							<span className="w-2 h-2 bg-accent rounded-full animate-pulse" />
+							Offline — reports will queue until connection returns.
 						</div>
 					)}
 
-					{/* Image Preview */}
-					<div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-						<h2 className="text-lg font-semibold text-gray-800 mb-4">📷 Image Preview</h2>
-						<div className="h-40 bg-white border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center overflow-auto">
+					<form onSubmit={handleSubmit} className="space-y-6">
+						{/* Image Preview */}
+						<motion.div 
+							initial={{ opacity: 0, x: -20 }}
+							animate={{ opacity: 1, x: 0 }}
+							className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8"
+						>
+							<div className="flex items-center gap-3 mb-6">
+								<Camera className="w-6 h-6 text-secondary" />
+								<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
+									Evidence Photo
+								</h2>
+							</div>
+
 							{base64Image ? (
-								<img
-									src={base64Image}
-									alt="Report"
-									className="max-h-full max-w-full rounded"
-								/>
+								<div className="bionic-frame p-6 bg-background/40 backdrop-blur-md border-2 border-primary rounded-lg">
+									<NextImage
+										src={base64Image}
+										alt="Report Evidence"
+										width={800}
+										height={600}
+										className="max-h-64 w-full object-contain rounded"
+									/>
+								</div>
+							) : camera.isActive ? (
+								<div className="relative bionic-frame bg-black/80 border-2 border-primary rounded-lg overflow-hidden">
+									<video
+										ref={videoRef}
+										autoPlay
+										playsInline
+										muted
+										className="w-full h-64 object-cover"
+									/>
+									<div className="absolute inset-0 border-2 border-secondary/50 pointer-events-none rounded" />
+									<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
+										<button
+											type="button"
+											onClick={capturePhoto}
+											className="brutal-button px-6 py-3 font-bold uppercase text-sm rounded-lg flex items-center gap-2 shadow-[4px_4px_0px_#1b4332]"
+										>
+											<Camera className="w-5 h-5" />
+											Capture
+										</button>
+										<button
+											type="button"
+											onClick={() => camera.stop()}
+											className="px-4 py-3 font-bold uppercase text-sm rounded-lg border-2 border-accent text-accent bg-background/80 hover:bg-accent/10 transition-colors"
+										>
+											Cancel
+										</button>
+									</div>
+								</div>
 							) : (
-								<p className="text-gray-400 text-center">No image yet</p>
+								<div className="bionic-frame p-6 bg-background/40 backdrop-blur-md border-2 border-primary rounded-lg h-48 flex items-center justify-center">
+									<div className="text-center">
+										<Camera className="w-12 h-12 text-primary/40 mx-auto mb-2" />
+										<p className="text-primary/60 font-mono text-sm mb-4">No image captured yet</p>
+										<button
+											type="button"
+											onClick={() => camera.start()}
+											disabled={camera.isLoading}
+											className="brutal-button px-6 py-3 font-bold uppercase text-sm rounded-lg inline-flex items-center gap-2 shadow-[4px_4px_0px_#1b4332] disabled:opacity-50"
+										>
+											{camera.isLoading ? (
+												<>
+													<RefreshCw className="w-5 h-5 animate-spin" />
+													Opening Camera...
+												</>
+											) : (
+												<>
+													<Camera className="w-5 h-5" />
+													Capture Photo
+												</>
+											)}
+										</button>
+										{camera.error && (
+											<p className="text-accent font-mono text-xs mt-3">
+												{camera.errorMessage}
+											</p>
+										)}
+									</div>
+								</div>
 							)}
-						</div>
-						<p className="text-xs text-gray-500 mt-2">
-							Base64 Length: <strong>{base64Image.length} characters</strong>
-						</p>
-					</div>
+						</motion.div>
 
-					{/* GPS Coordinates */}
-					<div className="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-						<h2 className="text-lg font-semibold text-gray-800 mb-4">📍 GPS Coordinates</h2>
+						{/* GPS Coordinates */}
+						<motion.div 
+							initial={{ opacity: 0, x: 20 }}
+							animate={{ opacity: 1, x: 0 }}
+							transition={{ delay: 0.1 }}
+							className="brutal-panel panel-surface border-4 border-primary p-4 sm:p-8"
+						>
+							<div className="flex items-center gap-3 mb-6">
+								<MapPin className="w-6 h-6 text-secondary" />
+								<h2 className="font-heading text-2xl font-black uppercase tracking-tight text-primary">
+									Location Data
+								</h2>
+							</div>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<div className="bionic-frame p-4 border-2 border-primary bg-background/50 rounded">
+									<p className="text-xs font-mono font-bold text-primary/70 uppercase mb-2">Latitude</p>
+									<p className="text-2xl font-mono font-bold text-primary">
+										{latitude?.toFixed(6) ?? "—"}
+									</p>
+									{showManualCoords && (
+										<input
+											type="number"
+											step="any"
+											placeholder="e.g. 11.7053"
+											value={manualLat}
+											onChange={(e) => {
+												setManualLat(e.target.value);
+												const val = parseFloat(e.target.value);
+												if (!isNaN(val) && val >= -90 && val <= 90) setLatitude(val);
+											}}
+											className="w-full mt-2 brutal-panel theme-input px-3 py-2 rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
+										/>
+									)}
+								</div>
+								<div className="bionic-frame p-4 border-2 border-primary bg-background/50 rounded">
+									<p className="text-xs font-mono font-bold text-primary/70 uppercase mb-2">Longitude</p>
+									<p className="text-2xl font-mono font-bold text-primary">
+										{longitude?.toFixed(6) ?? "—"}
+									</p>
+									{showManualCoords && (
+										<input
+											type="number"
+											step="any"
+											placeholder="e.g. 122.2970"
+											value={manualLng}
+											onChange={(e) => {
+												setManualLng(e.target.value);
+												const val = parseFloat(e.target.value);
+												if (!isNaN(val) && val >= -180 && val <= 180) setLongitude(val);
+											}}
+											className="w-full mt-2 brutal-panel theme-input px-3 py-2 rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
+										/>
+									)}
+								</div>
+							</div>
+							{!showManualCoords && (
+								<button
+									type="button"
+									onClick={() => setShowManualCoords(true)}
+									className="mt-4 text-xs font-mono font-bold uppercase tracking-wider text-secondary hover:underline"
+								>
+									Enter coordinates manually
+								</button>
+							)}
+						</motion.div>
+
+						{/* Ghost Mode Toggle */}
+						<motion.div 
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.2 }}
+							className={`brutal-panel border-4 p-4 sm:p-8 transition-colors duration-500 ${
+								isGhostMode 
+									? "border-accent bg-[#081c15]/80 shadow-[8px_8px_0px_#ffb703]" 
+									: "panel-surface border-primary shadow-[8px_8px_0px_#1b4332]"
+							}`}
+						>
+							<div className="flex items-center justify-between gap-6">
+								<div className="flex items-center gap-3">
+									<Fingerprint className={`w-6 h-6 ${isGhostMode ? "text-accent" : "text-primary"}`} />
+									<div>
+										<p className={`font-heading text-xl font-black uppercase tracking-tight ${
+											isGhostMode ? "text-accent" : "text-primary"
+										}`}>
+											Ghost Mode
+										</p>
+										<p className={`text-sm font-semibold ${isGhostMode ? "text-white/80" : "text-foreground/70"}`}>
+											Send anonymously. Remove all identifying data.
+										</p>
+									</div>
+								</div>
+								<label className="inline-flex items-center" aria-label="Toggle Ghost Mode">
+									<input
+										type="checkbox"
+										checked={isGhostMode}
+										onChange={(e) => setIsGhostMode(e.target.checked)}
+										className="w-6 h-6 rounded border-2 cursor-pointer"
+										style={{ 
+											borderColor: isGhostMode ? "#ffb703" : "#1b4332",
+											accentColor: isGhostMode ? "#ffb703" : "#1b4332"
+										}}
+									/>
+								</label>
+							</div>
+						</motion.div>
+
 						<div className="grid grid-cols-2 gap-4">
-							<div className="bg-white p-4 rounded-lg border border-gray-200">
-								<p className="text-sm font-medium text-gray-600 mb-1">Latitude</p>
-								<p className="text-xl font-bold text-green-700">
-									{latitude ?? "Not set"}
-								</p>
-							</div>
-							<div className="bg-white p-4 rounded-lg border border-gray-200">
-								<p className="text-sm font-medium text-gray-600 mb-1">Longitude</p>
-								<p className="text-xl font-bold text-green-700">
-									{longitude ?? "Not set"}
-								</p>
-							</div>
-						</div>
-					</div>
-
-					<div className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-						<div className="flex items-center justify-between gap-4">
-							<div>
-								<p className="text-sm font-semibold text-emerald-900">Ghost Mode</p>
-								<p className="text-xs text-emerald-700">
-									Send report anonymously and mask user identity.
-								</p>
-							</div>
-							<label className="inline-flex items-center gap-2">
-								<input
-									type="checkbox"
-									checked={isGhostMode}
-									onChange={(e) => setIsGhostMode(e.target.checked)}
-									className="h-5 w-5 accent-emerald-600"
-								/>
-								<span className="text-sm text-emerald-900">
-									{isGhostMode ? "ON" : "OFF"}
-								</span>
-							</label>
-						</div>
-					</div>
-
-					{/* Action Buttons */}
-					<form onSubmit={handleSubmit} className="space-y-4">
-						<div className="grid grid-cols-2 gap-4">
-							<button
-								type="button"
-								onClick={populateWithTestData}
-								className="px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-							>
-								✓ Test Data
-							</button>
 							<button
 								type="button"
 								onClick={clearForm}
-								className="px-4 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+								className="brutal-panel px-6 py-3 font-bold uppercase text-sm rounded-lg transition-all border-2 border-accent text-accent hover:bg-accent/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
 							>
-								✕ Clear Form
+								Clear Form
+							</button>
+							<button
+								type="submit"
+								disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
+								className={`brutal-button px-6 py-3 font-heading font-black uppercase text-lg rounded-lg transition-all border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
+									isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null
+										? "border-foreground/30 bg-foreground/10 text-foreground/40 cursor-not-allowed"
+										: "border-primary bg-primary text-background hover:shadow-[6px_6px_0px_#1b4332]"
+								}`}
+							>
+								{isSubmitting ? "⏳ Submitting..." : isTriaging ? "🧠 Analyzing..." : "🚀 Submit Report"}
 							</button>
 						</div>
-
-						<button
-							type="submit"
-							disabled={isSubmitting || !base64Image || latitude === null || longitude === null}
-							className={`w-full px-6 py-3 font-semibold rounded-lg transition-colors ${
-								isSubmitting || !base64Image || latitude === null || longitude === null
-									? "bg-gray-400 text-white cursor-not-allowed"
-									: "bg-green-700 text-white hover:bg-green-800"
-							}`}
-						>
-							{isSubmitting ? "⏳ Sending to LGU..." : "🚀 Submit Report"}
-						</button>
 					</form>
-
-					{/* Debug Info */}
-					<div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-						<h3 className="text-sm font-semibold text-blue-900 mb-2">Debug Info</h3>
-						<pre className="text-xs bg-white p-3 rounded border border-blue-200 overflow-auto max-h-40 text-gray-700">
-							{JSON.stringify(
-								{
-									base64ImageLength: base64Image.length,
-									latitude,
-									longitude,
-									isSubmitting,
-									isGhostMode,
-									laravelUrl: process.env.NEXT_PUBLIC_LARAVEL_API_URL || "http://localhost:8000",
-									toastMessage,
-								},
-								null,
-								2
-							)}
-						</pre>
-						<p className="text-xs text-blue-700 mt-2">
-							<strong>Env Check:</strong> Set <code className="bg-white px-2 py-1 rounded">NEXT_PUBLIC_LARAVEL_API_URL</code> in .env.local
-						</p>
-					</div>
 				</div>
-			</div>
-		</main>
+			</main>
+			<canvas ref={canvasRef} className="hidden" aria-hidden="true" />
+		</>
 	);
 }

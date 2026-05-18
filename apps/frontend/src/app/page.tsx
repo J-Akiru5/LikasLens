@@ -15,11 +15,38 @@ import {
   Camera,
   Globe,
   Bot,
+  Smartphone,
+  Download,
 } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
+import { PublicScoreboard, FaqSection } from "@likaslens/shared";
 
 export default function Home() {
   const [ghostMode, setGhostMode] = useState(false);
+  interface BeforeInstallPromptEvent extends Event {
+    prompt: () => void;
+    userChoice: Promise<{ outcome: string }>;
+  }
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handler = (e: BeforeInstallPromptEvent) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler as EventListener);
+    return () => window.removeEventListener("beforeinstallprompt", handler as EventListener);
+  }, []);
+
+  const handleInstall = async () => {
+    if (installPrompt) {
+      installPrompt.prompt();
+      const result = await installPrompt.userChoice;
+      if (result.outcome === "accepted") setInstallPrompt(null);
+    } else {
+      document.getElementById("install-guide")?.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     const themeValue = ghostMode ? "ghost" : "light";
@@ -52,7 +79,7 @@ export default function Home() {
             LikasLens
           </span>
         </div>
-        <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest text-primary/70">
+        <div className="hidden md:flex items-center gap-8 text-sm font-bold uppercase tracking-widest surface-muted">
           <a href="#platform" className="hover:text-primary transition-colors">
             Features
           </a>
@@ -79,7 +106,13 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="inline-flex items-center gap-2 px-4 py-2 brutal-panel mb-8"
         >
-          <span className="w-3 h-3 bg-secondary rounded-full border border-primary animate-pulse" />
+          <span
+            className={`w-3 h-3 rounded-full border transition-all duration-300 ${
+              ghostMode
+                ? "status-dot-glitch bg-accent border-accent"
+                : "bg-secondary border-primary animate-pulse"
+            }`}
+          />
           <span className="font-mono text-xs font-bold uppercase tracking-widest">
             Ready to help protect our earth
           </span>
@@ -114,7 +147,7 @@ export default function Home() {
           className="flex flex-col sm:flex-row items-center gap-6"
         >
           <Link
-            href="/dashboard"
+            href="/report"
             className="flex items-center gap-2 brutal-button px-8 py-4 rounded-lg text-lg"
           >
             Report an Issue <ArrowRight className="w-5 h-5" />
@@ -125,6 +158,12 @@ export default function Home() {
           >
             <Activity className="w-5 h-5 text-secondary" /> View Public Reports
           </a>
+          <button
+            onClick={handleInstall}
+            className="flex items-center gap-2 px-6 py-3 rounded-lg text-base font-bold border-2 border-secondary text-secondary hover:bg-secondary/10 transition-colors"
+          >
+            <Smartphone className="w-5 h-5" /> <Download className="w-4 h-4" /> Get the App
+          </button>
         </motion.div>
       </section>
 
@@ -133,6 +172,7 @@ export default function Home() {
         id="platform"
         className="relative z-10 max-w-7xl mx-auto px-6 py-20 bg-background/50 rounded-[3rem] mt-10 backdrop-blur-sm"
       >
+        <h2 className="sr-only">Platform Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <FeatureCard
             icon={<Bot className="w-8 h-8 text-secondary" />}
@@ -158,7 +198,7 @@ export default function Home() {
         className="relative z-10 max-w-7xl mx-auto px-6 py-32"
       >
         <div
-          className={`p-10 md:p-16 rounded-[2rem] transition-colors duration-500 border-4 relative overflow-hidden ${ghostMode ? "bg-[#081c15] border-accent shadow-[8px_8px_0px_#ffb703] text-white" : "bg-white border-primary shadow-[8px_8px_0px_#1b4332]"}`}
+          className={`p-10 md:p-16 rounded-[2rem] transition-colors duration-500 border-4 relative overflow-hidden ${ghostMode ? "ghost-panel border-accent shadow-[8px_8px_0px_#ffb703]" : "panel-surface border-primary shadow-[8px_8px_0px_#1b4332]"}`}
         >
           <div className="grid md:grid-cols-2 gap-12 items-center relative z-10">
             <div>
@@ -174,7 +214,7 @@ export default function Home() {
                 Report safely.
               </h2>
               <p
-                className={`text-lg mb-8 font-semibold ${ghostMode ? "text-white/90" : "text-primary/90"}`}
+                className={`text-lg mb-8 font-semibold ${ghostMode ? "text-white/90" : "text-foreground/90"}`}
               >
                 Need to report something dangerous, like illegal logging, but
                 worried about your safety? Turn on Ghost Mode. We will
@@ -183,7 +223,23 @@ export default function Home() {
               </p>
               <button
                 onClick={() => setGhostMode(!ghostMode)}
-                className={`flex items-center gap-3 px-6 py-4 rounded-xl font-bold uppercase transition-all duration-300 border-2 ${ghostMode ? "bg-accent text-[#081c15] border-accent shadow-[4px_4px_0px_rgba(255,255,255,0.5)]" : "bg-primary text-white border-primary shadow-[4px_4px_0px_#081c15]"}`}
+                aria-label={ghostMode ? "Turn off Ghost Mode" : "Turn on Ghost Mode"}
+                className="flex items-center gap-3 px-6 py-4 rounded-xl font-bold uppercase transition-all duration-300 border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                style={
+                  ghostMode
+                    ? {
+                        backgroundColor: "#ffb703",
+                        color: "#081c15",
+                        borderColor: "#ffb703",
+                        boxShadow: "4px 4px 0px rgba(248, 249, 250, 0.5)",
+                      }
+                    : {
+                        backgroundColor: "#1b4332",
+                        color: "#f8f9fa",
+                        borderColor: "#1b4332",
+                        boxShadow: "4px 4px 0px #081c15",
+                      }
+                }
               >
                 {ghostMode ? (
                   <ShieldAlert className="w-6 h-6" />
@@ -209,7 +265,7 @@ export default function Home() {
                     <div className="font-mono text-accent text-xl font-bold uppercase">
                       Identity Hidden
                     </div>
-                    <div className="font-mono text-white/70 text-sm mt-2 uppercase tracking-widest">
+                    <div className="font-mono text-white/80 text-sm mt-2 uppercase tracking-widest">
                       Photo location removed // Sent secretly
                     </div>
                   </motion.div>
@@ -225,7 +281,7 @@ export default function Home() {
                     <div className="font-mono text-primary text-xl font-bold uppercase">
                       Normal Report
                     </div>
-                    <div className="font-mono text-primary/70 text-sm mt-2 uppercase tracking-widest">
+                    <div className="font-mono text-primary font-bold text-sm mt-2 uppercase tracking-widest">
                       Your name is shown // Location saved
                     </div>
                   </motion.div>
@@ -244,49 +300,57 @@ export default function Home() {
         <h2 className="font-heading text-4xl font-black mb-8 uppercase border-b-4 border-primary pb-4">
           Public Records of Fixed Issues
         </h2>
-        <div className="brutal-panel p-0 overflow-hidden bg-white/90 backdrop-blur">
-          <div className="grid grid-cols-4 bg-primary text-white font-mono font-bold text-sm uppercase p-4">
-            <div>Agency in charge</div>
-            <div>What happened</div>
-            <div>Current Status</div>
-            <div className="text-right">Time to fix</div>
-          </div>
-          {[
-            {
-              j: "Dept. of Forestry",
-              i: "Illegal Logging",
-              s: "Fixed",
-              t: "12 mins",
-            },
-            {
-              j: "Coast Guard",
-              i: "Oil Spill",
-              s: "Checking it",
-              t: "45 mins",
-            },
-            {
-              j: "City Sanitation",
-              i: "Trash Dumping",
-              s: "Fixed",
-              t: "2 hours",
-            },
-          ].map((row, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-4 font-mono text-sm p-4 border-t-2 border-primary/20 hover:bg-secondary/10 transition-colors"
-            >
-              <div className="font-bold text-base">{row.j}</div>
-              <div className="text-base">{row.i}</div>
-              <div>
-                <span
-                  className={`px-2 py-1 rounded text-xs font-bold border-2 ${row.s === "Fixed" ? "border-secondary text-primary" : "border-accent text-accent"}`}
-                >
-                  {row.s}
-                </span>
+        <PublicScoreboard />
+      </section>
+
+      {/* FAQ Section */}
+      <FaqSection />
+
+      {/* Install Guide */}
+      <section id="install-guide" className="relative z-10 max-w-7xl mx-auto px-6 py-20">
+        <div className="brutal-panel panel-surface p-10 md:p-16 rounded-[2rem] border-4 border-primary shadow-[8px_8px_0px_#1b4332]">
+          <div className="flex flex-col md:flex-row items-center gap-10">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 font-mono text-sm font-bold mb-6 border-2 border-primary text-primary">
+                <Smartphone className="w-4 h-4" /> GET THE APP
               </div>
-              <div className="text-right font-bold text-base">{row.t}</div>
+              <h2 className="font-heading text-4xl md:text-5xl font-black tracking-tight mb-6 uppercase">
+                Install on Your Device
+              </h2>
+              <p className="text-lg font-semibold text-foreground/90 mb-8">
+                Use LikasLens like a native app. Take photos instantly, report even
+                when offline, and get push notifications when issues are resolved.
+              </p>
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded border-2 border-primary flex items-center justify-center flex-shrink-0 font-heading font-black text-sm">1</div>
+                  <div>
+                    <p className="font-bold uppercase text-sm">Open in your browser</p>
+                    <p className="text-sm text-foreground/70">Chrome, Edge, or Safari on your mobile device</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded border-2 border-primary flex items-center justify-center flex-shrink-0 font-heading font-black text-sm">2</div>
+                  <div>
+                    <p className="font-bold uppercase text-sm">Tap the share menu</p>
+                    <p className="text-sm text-foreground/70">Look for &ldquo;Add to Home Screen&rdquo; or &ldquo;Install App&rdquo;</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-8 h-8 rounded border-2 border-primary flex items-center justify-center flex-shrink-0 font-heading font-black text-sm">3</div>
+                  <div>
+                    <p className="font-bold uppercase text-sm">Start reporting</p>
+                    <p className="text-sm text-foreground/70">LikasLens appears on your home screen like any other app</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          ))}
+            <div className="flex-shrink-0">
+              <div className="w-48 h-48 rounded-[2rem] border-4 border-primary bg-primary/5 flex items-center justify-center shadow-[8px_8px_0px_#1b4332]">
+                <Smartphone className="w-24 h-24 text-primary" />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -310,7 +374,7 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="brutal-panel p-8 bg-white/90 backdrop-blur">
+    <div className="brutal-panel p-8 panel-surface">
       <div className="w-16 h-16 rounded border-2 border-primary flex items-center justify-center mb-6 bg-background">
         {icon}
       </div>

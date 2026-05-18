@@ -14,6 +14,7 @@ yarn-error.log*
 # Next.js
 # =========================
 apps/frontend/.next/
+apps/admin-portal/.next/
 apps/frontend/out/
 apps/frontend/.swc/
 apps/frontend/build/

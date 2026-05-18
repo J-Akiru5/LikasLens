@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { User, LogOut, LayoutDashboard, UserCircle, ChevronDown } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,7 +43,7 @@ export function UserNav() {
       <div className="flex items-center gap-4">
         <Link
           href="/login"
-          className="text-sm font-bold uppercase hover:text-primary transition-colors text-primary/70"
+          className="text-sm font-bold uppercase hover:text-primary transition-colors surface-muted"
         >
           Log In
         </Link>
@@ -64,7 +65,15 @@ export function UserNav() {
       >
         <div className="w-9 h-9 rounded-full border-2 border-primary bg-secondary/20 flex items-center justify-center overflow-hidden transition-all group-hover:shadow-[2px_2px_0px_#2de1c2] shadow-[1px_1px_0px_#1b4332]">
           {user.user_metadata?.avatar_url ? (
-            <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+            <Image
+              src={user.user_metadata.avatar_url}
+              alt="Avatar"
+              width={36}
+              height={36}
+              sizes="36px"
+              unoptimized
+              className="w-full h-full object-cover"
+            />
           ) : (
             <User className="w-5 h-5 text-primary" />
           )}
@@ -83,17 +92,17 @@ export function UserNav() {
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="absolute right-0 mt-3 w-64 brutal-panel bg-white border-4 border-primary z-50 overflow-hidden shadow-[8px_8px_0px_#1b4332]"
+              className="absolute right-0 mt-3 w-64 brutal-panel panel-surface border-4 border-primary z-50 overflow-hidden shadow-[8px_8px_0px_#1b4332]"
             >
               <div className="p-4 border-b-2 border-primary/10 bg-secondary/5">
-                <p className="text-xs font-mono font-bold text-primary/50 uppercase tracking-widest mb-1">Signed in as</p>
+                <p className="text-xs font-mono font-bold surface-muted uppercase tracking-widest mb-1">Signed in as</p>
                 <p className="text-sm font-bold truncate text-primary">{user.email}</p>
               </div>
               
               <div className="p-2">
                 <Link
                   href="/dashboard"
-                  className="flex items-center gap-3 px-3 py-2 text-sm font-bold text-primary/80 hover:bg-secondary/10 hover:text-primary transition-colors rounded uppercase tracking-tight"
+                  className="flex items-center gap-3 px-3 py-2 text-sm font-bold surface-muted hover:bg-secondary/10 hover:text-primary transition-colors rounded uppercase tracking-tight"
                   onClick={() => setIsOpen(false)}
                 >
                   <LayoutDashboard className="w-4 h-4" />
@@ -101,7 +110,7 @@ export function UserNav() {
                 </Link>
                 <Link
                   href="/dashboard/profile"
-                  className="flex items-center gap-3 px-3 py-2 text-sm font-bold text-primary/80 hover:bg-secondary/10 hover:text-primary transition-colors rounded uppercase tracking-tight"
+                  className="flex items-center gap-3 px-3 py-2 text-sm font-bold surface-muted hover:bg-secondary/10 hover:text-primary transition-colors rounded uppercase tracking-tight"
                   onClick={() => setIsOpen(false)}
                 >
                   <UserCircle className="w-4 h-4" />

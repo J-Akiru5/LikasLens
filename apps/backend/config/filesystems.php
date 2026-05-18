@@ -60,6 +60,20 @@ return [
             'report' => false,
         ],
 
+        'supabase' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_KEY', env('SUPABASE_S3_ACCESS_KEY')),
+            'secret' => env('SUPABASE_STORAGE_SECRET', env('SUPABASE_S3_SECRET_KEY')),
+            'region' => env('SUPABASE_STORAGE_REGION', env('SUPABASE_S3_REGION', 'auto')),
+            'bucket' => env('SUPABASE_STORAGE_BUCKET', env('SUPABASE_S3_BUCKET', 'likaslens-evidence')),
+            'url' => env('SUPABASE_STORAGE_URL'),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT', env('SUPABASE_S3_ENDPOINT')),
+            'use_path_style_endpoint' => filter_var(env('SUPABASE_STORAGE_PATH_STYLE', true), FILTER_VALIDATE_BOOLEAN),
+            'throw' => true,
+            'report' => false,
+            'visibility' => 'private',
+        ],
+
     ],
 
     /*
