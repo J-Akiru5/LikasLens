@@ -20,8 +20,6 @@ Your role:
 
 Keep responses brief (2-3 paragraphs max) and conversational.`;
 
-const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-
 export function useGeminiChat(customSystemPrompt?: string, customWelcomeMessage?: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -43,37 +41,29 @@ export function useGeminiChat(customSystemPrompt?: string, customWelcomeMessage?
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
 
-    // Cancel previous request if any
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
 
-    const history = messages
+    const historyMessages = messages
       .filter((m) => m.id !== "welcome")
       .slice(-10)
-      .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+      .map((m) => ({ role: m.role, content: m.content }));
 
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (!apiKey) throw new Error("Gemini API key not configured");
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) throw new Error("API URL not configured");
 
-      const res = await fetch(`${API_BASE}?key=${apiKey}`, {
+      const res = await fetch(`${apiUrl}/v1/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: customSystemPrompt || DEFAULT_SYSTEM_PROMPT }]
-          },
-          contents: [
-            ...history,
-            { role: "user", parts: [{ text }] },
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 2048,
-            topP: 0.9,
-          },
+          messages: [...historyMessages, { role: "user", content: text }],
+          system_prompt: customSystemPrompt || DEFAULT_SYSTEM_PROMPT,
+          temperature: 0.7,
+          max_output_tokens: 2048,
+          top_p: 0.9,
         }),
       });
 
@@ -83,7 +73,7 @@ export function useGeminiChat(customSystemPrompt?: string, customWelcomeMessage?
       }
 
       const data = await res.json();
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Sorry, I couldn't process that. Try again!";
+      const reply = data?.reply?.trim() || "Sorry, I couldn't process that. Try again!";
 
       const assistantMsg: ChatMessage = {
         id: crypto.randomUUID(),

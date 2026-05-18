@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminNgoController;
 use App\Http\Controllers\AdminRewardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EcoCreditController;
 use App\Http\Controllers\LeaderboardController;
@@ -31,6 +32,9 @@ Route::post('/reports/triage', [ReportController::class, 'triage']);
 
 // Contact message endpoint (public)
 Route::post('/contact-messages', [\App\Http\Controllers\ContactMessageController::class, 'store']);
+
+// Chat proxy endpoint (public — proxies to internal AI service)
+Route::post('/v1/chat', [ChatController::class, 'send']);
 
 // Public leaderboard endpoint
 Route::get('/leaderboard', [LeaderboardController::class, 'index']);
