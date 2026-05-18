@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { AppHeader } from "@/components/layout/header";
 import { Scale, Search, BookOpen, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { laravelGet, type PaginatedResponse } from "@likaslens/shared";
 
 interface Law {
   id: string;
@@ -27,13 +28,11 @@ export default function LawsPage() {
       setLoading(true);
       setError(null);
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-        const params = new URLSearchParams({ per_page: "50" });
-        if (search) params.set("search", search);
-        const res = await fetch(`${baseUrl}/laws?${params}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        if (json.success) setLaws(json.data);
+        const params: Record<string, string> = { per_page: "50" };
+        if (search) params.search = search;
+        const qs = "?" + new URLSearchParams(params).toString();
+        const res = await laravelGet<PaginatedResponse<Law>>(`/laws${qs}`);
+        if (res.success) setLaws(res.data);
       } catch (err) {
         console.error("Failed to fetch laws:", err);
         setError("Could not load environmental laws. Please try again later.");
