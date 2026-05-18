@@ -229,7 +229,7 @@ export default function CameraTestPage() {
 
   return (
     <main
-      className={`${spaceGrotesk.className} relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-950 p-6 text-white`}
+      className={`${spaceGrotesk.className} relative flex min-h-dvh items-center justify-center overflow-hidden bg-zinc-950 p-6 text-white`}
     >
       <div className="pointer-events-none absolute -top-24 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-emerald-400/20 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 right-0 h-72 w-72 translate-x-24 translate-y-24 rounded-full bg-sky-400/15 blur-3xl" />

@@ -609,11 +609,11 @@ export default function SettingsPage() {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
+    <div className="flex h-dvh overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
         <AppHeader showBranding={false} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 lg:pb-6">
+        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Back + Heading */}
             <div className="flex items-center gap-3">
@@ -631,7 +631,7 @@ export default function SettingsPage() {
 
             {/* Tab navigation — horizontal scroll on mobile */}
             <nav
-              className="flex gap-2 overflow-x-auto pb-1 scrollbar-none"
+              className="flex gap-2 overflow-x-auto pb-1"
               style={{ scrollbarWidth: "none", touchAction: "pan-x" }}
               data-debug-click="tab-nav"
             >

@@ -50,7 +50,7 @@ export default function LawsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background font-body">
+    <div className="min-h-dvh bg-background font-body">
       <AppHeader showBranding />
       <main className="max-w-5xl mx-auto p-4 sm:p-6 pb-20 lg:pb-6 space-y-6">
         <div className="flex items-center gap-3">
