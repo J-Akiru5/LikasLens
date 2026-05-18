@@ -2,13 +2,23 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Leaf, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { signIn } from "@/app/[locale]/actions/auth";
 
 export function LoginClient() {
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("remembered_email");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const redirectTo = searchParams.get("redirect_to") || "/dashboard";
 
@@ -62,7 +72,17 @@ export function LoginClient() {
           </div>
         ) : null}
 
-        <form action={signIn} className="space-y-6">
+        <form
+          action={signIn}
+          onSubmit={() => {
+            if (rememberMe) {
+              localStorage.setItem("remembered_email", email);
+            } else {
+              localStorage.removeItem("remembered_email");
+            }
+          }}
+          className="space-y-6"
+        >
           <input type="hidden" name="redirect_to" value={redirectTo} />
           <div>
             <label className="block font-mono text-sm font-bold uppercase mb-2">
@@ -71,6 +91,8 @@ export function LoginClient() {
             <input
               type="email"
               name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full brutal-panel theme-input px-4 py-3 font-medium"
               placeholder="you@example.com"
               required
@@ -97,6 +119,22 @@ export function LoginClient() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="remember-me"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-5 h-5 border-2 border-primary rounded accent-secondary cursor-pointer"
+            />
+            <label
+              htmlFor="remember-me"
+              className="font-mono text-sm font-bold uppercase cursor-pointer select-none"
+            >
+              Remember Me
+            </label>
           </div>
 
           <button
