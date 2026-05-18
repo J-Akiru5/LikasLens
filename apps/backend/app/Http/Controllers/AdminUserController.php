@@ -132,7 +132,7 @@ class AdminUserController extends Controller
     public function updateRole(Request $request, string $id): JsonResponse
     {
         $validated = $request->validate([
-            'role' => 'required|string|in:citizen,analyst,super_admin',
+            'role' => 'required|string|in:citizen,ghost,analyst,super_admin',
         ]);
 
         $user = User::findOrFail($id);
