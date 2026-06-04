@@ -101,15 +101,15 @@
                       stripped                                 agency → Gemini
                                                                writes summary
 
-  5. CLASSIFY         6. REWARD           7. ROUTE            8. RESOLVE
+  5. CLASSIFY         6. SCORE            7. ROUTE            8. RESOLVE
   ───────────         ────────            ───────             ─────────
-  TicketClassification AchievementService  Analyst reviews     NGO receives
+  TicketClassification CredentialService   Analyst reviews     NGO receives
   stored in DB        evaluates criteria   ticket, assigns     assignment,
-  (violation_type +   RankService checks   to NGO via          investigates,
-  confidence)         for rank-up          POST /ticket-       marks resolved
+  (violation_type +   TierService checks   to NGO via          investigates,
+  confidence)         for advancement      POST /ticket-       marks resolved
                       Eco-credits from     assignments         LGU verification
                       CreditPool awarded                       triggers citizen
-                                                               achievements
+                                                                credentials
 ```
 
 ## Neuro-Symbolic AI Pipeline
@@ -160,47 +160,46 @@
   └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Gamification & Rewards Flow
+## Impact & Credential Flow
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                       GAMIFICATION & REWARDS FLOW                               │
+│                       IMPACT & CREDENTIAL FLOW                                   │
 └─────────────────────────────────────────────────────────────────────────────────┘
 
   Report Submitted
         │
         ▼
   ┌───────────────┐     ┌───────────────┐     ┌───────────────┐
-  │  Achievement  │────>│  Unlock       │────>│  Reward       │
-  │  Service      │     │  Achievement  │     │  Points (XP)  │
+  │  Credential   │────>│  Earn         │────>│  Impact       │
+  │  Service      │     │  Credential   │     │  Score        │
   └───────────────┘     └───────────────┘     └───────┬───────┘
-                                                      │
-                                                      ▼
-                                                ┌───────────────┐
-                                                │  Rank Service │
-                                                └───────┬───────┘
-                                                        │
-                    ┌───────────────────────────────────┼───────────────────┐
-                    │               RANK TIERS          │                   │
-                    │                                   │                   │
-              ┌─────▼────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────▼─────┐
-              │ Citizen  │  │ Observer │  │ Steward  │  │ Guardian │  │   Eco    │
-              │ 0-99 XP  │  │100-999 XP│  │1K-4.9K  │  │5K-9.9K  │  │Champion  │
-              │          │  │ +25 cr   │  │ +75 cr   │  │ +200 cr  │  │ 10K+ XP │
-              └──────────┘  └──────────┘  └──────────┘  └──────────┘  │ +500 cr │
-                                                                       └──────────┘
-                                                        │
-                                                        ▼
-                                                ┌───────────────┐
-                                                │  CreditPool   │
-                                                │  (ESG Sponsor)│
-                                                └───────┬───────┘
-                                                        │
-                                                        ▼
-                                                ┌───────────────┐
-                                                │  Citizen      │
-                                                │  Wallet       │
-                                                └───────────────┘
+                                                       │
+                                                       ▼
+                                                 ┌───────────────┐
+                                                 │  Tier Service │
+                                                 └───────┬───────┘
+                                                         │
+                     ┌───────────────────────────────────┼───────────────────┐
+                     │           CONTRIBUTOR TIERS        │                   │
+                     │                                   │                   │
+               ┌─────▼────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────▼─────┐
+               │ Tier I   │  │ Tier II  │  │ Tier III │  │ Tier IV  │  │  Tier V  │
+               │ 0-99     │  │100-999   │  │1K-4.9K   │  │5K-9.9K   │  │ 10K+     │
+               │          │  │ +25 cr   │  │ +75 cr   │  │ +200 cr  │  │ +500 cr  │
+               └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘
+                                                         │
+                                                         ▼
+                                                 ┌───────────────┐
+                                                 │  CreditPool   │
+                                                 │  (ESG Sponsor)│
+                                                 └───────┬───────┘
+                                                         │
+                                                         ▼
+                                                 ┌───────────────┐
+                                                 │  Citizen      │
+                                                 │  Wallet       │
+                                                 └───────────────┘
 ```
 
 ## Authentication Flow

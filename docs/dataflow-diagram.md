@@ -37,8 +37,8 @@ flowchart TB
         AuthSync["Auth Sync<br/>Supabase → Sanctum"]
         ReportCtrl["Report Controller<br/>Store + Validate"]
         TriageSvc["Triage Service"]
-        AchieveSvc["Achievement Service"]
-        RankSvc["Rank Service"]
+        AchieveSvc["Credential Service"]
+        RankSvc["Tier Service"]
         TicketCtrl["Ticket Controller"]
         AssignCtrl["Assignment Controller"]
     end
@@ -76,7 +76,7 @@ flowchart TB
     Gemini -->|incident summary + routing| TriageSvc
     TriageSvc -->|classification results| SupabaseDB
 
-    %% Gamification
+    %% Impact & Credentials
     ReportCtrl -->|evaluate| AchieveSvc
     AchieveSvc -->|check thresholds| RankSvc
     RankSvc -->|award eco-credits| SupabaseDB
@@ -167,9 +167,9 @@ sequenceDiagram
     AI-->>API: Classification + routing
     API->>DB: Store TicketClassification
 
-    Note over API,DB: Gamification
-    API->>DB: Evaluate achievements
-    API->>DB: Check rank thresholds
+    Note over API,DB: Impact Scoring
+    API->>DB: Evaluate credentials
+    API->>DB: Check tier thresholds
     API->>DB: Award eco-credits
 
     API-->>PWA: { ticket_id, evidence_id, triage }
@@ -201,25 +201,25 @@ flowchart LR
     style Symbolic fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
 ```
 
-## Gamification & Rewards Flow
+## Impact & Credential Flow
 
 ```mermaid
 flowchart LR
-    Report["Report<br/>Submitted"] --> Achieve["Achievement<br/>Service"]
-    Achieve -->|evaluate criteria| Unlock["Unlock<br/>Achievement"]
-    Unlock -->|award XP| Points["Reward<br/>Points"]
-    Points -->|check thresholds| Rank["Rank<br/>Service"]
-    Rank -->|rank up| Credits["Eco-Credit<br/>Bonus"]
+    Report["Report<br/>Submitted"] --> Achieve["Credential<br/>Service"]
+    Achieve -->|evaluate criteria| Earn["Earn<br/>Credential"]
+    Earn -->|award score| Impact["Impact<br/>Score"]
+    Impact -->|check thresholds| Tier["Tier<br/>Service"]
+    Tier -->|advance| Credits["Eco-Credit<br/>Bonus"]
     Credits -->|from pool| Pool["CreditPool<br/>(ESG Sponsor)"]
     Credits -->|deposit| Wallet["Citizen<br/>Wallet"]
 
-    subgraph Ranks["Rank Tiers"]
-        R1["Citizen<br/>0-99 XP"]
-        R2["Observer<br/>100-999 XP"]
-        R3["Steward<br/>1000-4999 XP"]
-        R4["Guardian<br/>5000-9999 XP"]
-        R5["Eco Champion<br/>10000+ XP"]
+    subgraph Tiers["Contributor Tiers"]
+        T1["Tier I<br/>0-99"]
+        T2["Tier II<br/>100-999"]
+        T3["Tier III<br/>1000-4999"]
+        T4["Tier IV<br/>5000-9999"]
+        T5["Tier V<br/>10000+"]
     end
 
-    Rank --> Ranks
+    Tier --> Tiers
 ```
