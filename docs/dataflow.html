@@ -870,7 +870,7 @@
                         <ul>
                             <li>Report controller + validation</li>
                             <li>Triage service (AI integration)</li>
-                            <li>Achievement & rank evaluation</li>
+                            <li>Credential & tier evaluation</li>
                             <li>Ticket assignment to NGOs</li>
                             <li>Sanctum auth + RBAC middleware</li>
                         </ul>
@@ -1258,8 +1258,8 @@
                 <div class="sequence-step">
                     <div class="step-number">7</div>
                     <div class="step-content">
-                        <div class="step-title">Gamification</div>
-                        <div class="step-desc">AchievementService evaluates criteria (report_count, yolov8_class). RankService checks for rank-up. Eco-credit bonuses awarded from corporate-funded CreditPool. Credits deposited to CitizenWallet.</div>
+                        <div class="step-title">Impact Scoring</div>
+                        <div class="step-desc">Credential Service evaluates criteria (report_count, yolov8_class). Tier Service checks for tier advancement. Eco-credit bonuses awarded from corporate-funded CreditPool. Credits deposited to CitizenWallet.</div>
                         <div class="step-actors">
                             <span class="actor-tag tag-backend">Backend</span>
                             <span class="actor-tag tag-storage">PostgreSQL</span>
@@ -1295,41 +1295,41 @@
         </section>
 
         <!-- ═══════════════════════════════════════════════════════
-             SECTION 6: GAMIFICATION & RANKS
+             SECTION 6: IMPACT & CONTRIBUTOR TIERS
              ═══════════════════════════════════════════════════════ -->
         <section class="section">
-            <h2 class="section-title"><span class="icon">🏆</span> Gamification & Rank Tiers</h2>
+            <h2 class="section-title"><span class="icon">🏆</span> Impact & Contributor Tiers</h2>
             <p class="section-subtitle">Eco-credit reward system funded by corporate ESG sponsors</p>
 
             <div class="rank-tiers">
                 <div class="rank-tier tier-1">
                     <span class="rank-icon">👤</span>
-                    <div class="rank-name">Citizen</div>
-                    <div class="rank-xp">0–99 XP</div>
-                    <div class="rank-credits">Starting rank</div>
+                    <div class="rank-name">Tier I</div>
+                    <div class="rank-xp">0–99 Impact Score</div>
+                    <div class="rank-credits">Starting tier</div>
                 </div>
                 <div class="rank-tier tier-2">
                     <span class="rank-icon">👁️</span>
-                    <div class="rank-name">Observer</div>
-                    <div class="rank-xp">100–999 XP</div>
+                    <div class="rank-name">Tier II</div>
+                    <div class="rank-xp">100–999 Impact Score</div>
                     <div class="rank-credits">+25 eco-credits</div>
                 </div>
                 <div class="rank-tier tier-3">
                     <span class="rank-icon">🛡️</span>
-                    <div class="rank-name">Steward</div>
-                    <div class="rank-xp">1,000–4,999 XP</div>
+                    <div class="rank-name">Tier III</div>
+                    <div class="rank-xp">1,000–4,999 Impact Score</div>
                     <div class="rank-credits">+75 eco-credits</div>
                 </div>
                 <div class="rank-tier tier-4">
                     <span class="rank-icon">⚔️</span>
-                    <div class="rank-name">Guardian</div>
-                    <div class="rank-xp">5,000–9,999 XP</div>
+                    <div class="rank-name">Tier IV</div>
+                    <div class="rank-xp">5,000–9,999 Impact Score</div>
                     <div class="rank-credits">+200 eco-credits</div>
                 </div>
                 <div class="rank-tier tier-5">
                     <span class="rank-icon">🏆</span>
-                    <div class="rank-name">Eco Champion</div>
-                    <div class="rank-xp">10,000+ XP</div>
+                    <div class="rank-name">Tier V</div>
+                    <div class="rank-xp">10,000+ Impact Score</div>
                     <div class="rank-credits">+500 eco-credits</div>
                 </div>
             </div>
