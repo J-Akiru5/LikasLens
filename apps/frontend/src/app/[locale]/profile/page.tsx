@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState, useCallback} from "react";
-import { ArrowLeft, Trophy, Leaf, User, Mail, Calendar, Settings, Lock, Sparkles, ChevronDown, X, Crown, Star, Zap, ExternalLink, CheckCircle } from "lucide-react";
+import { Suspense, useEffect, useState } from "react";
+import { ArrowLeft, User, Envelope, CalendarBlank, Gear, Lock, Sparkle, CaretDown, X, Star, CheckCircle, Shield, SealCheck, Medal } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -10,24 +10,27 @@ import { AchievementCard, RankProgressCard } from "@likaslens/shared";
 import { fetchEcoCreditRate } from "@likaslens/shared";
 import type { Achievement, RankProgress, CurrencySetting, AchievementTier } from "@likaslens/shared";
 import { useTranslations } from "next-intl";
+import { Sidebar } from "@/components/layout/sidebar";
+import { AppHeader } from "@/components/layout/header";
+import { BottomNav } from "@/components/layout/bottom-nav";
 
 type TabKey = "overview" | "achievements";
 type FilterKey = "all" | "unlocked" | "locked";
 type TierFilter = "all" | AchievementTier;
 type SortKey = "default" | "progress" | "recent" | "tier";
 
-const tierIcons: Record<string, string> = {
-  common: "⚪",
-  rare: "💎",
-  epic: "⭐",
-  legendary: "👑",
+const tierIcons: Record<string, React.ReactNode> = {
+  basic: <SealCheck className="w-4 h-4" weight="fill" />,
+  verified: <Shield className="w-4 h-4" weight="fill" />,
+  advanced: <Star className="w-4 h-4" weight="fill" />,
+  authority: <Medal className="w-4 h-4" weight="fill" />,
 };
 
-const tierOrder: Record<AchievementTier, number> = {
-  legendary: 0,
-  epic: 1,
-  rare: 2,
-  common: 3,
+const tierOrder: Record<string, number> = {
+  authority: 0,
+  advanced: 1,
+  verified: 2,
+  basic: 3,
 };
 
 function ProfilePageContent() {
@@ -166,335 +169,287 @@ function ProfilePageContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background font-body flex items-center justify-center">
-        <Spinner size={32} className="text-primary" />
+      <div className="min-h-dvh flex items-center justify-center">
+        <Spinner size={32} className="text-ink/60" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background font-body p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <Link href="/dashboard" className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </Link>
-          <h1 className="font-heading text-3xl md:text-4xl font-black uppercase flex-1">Citizen Profile</h1>
-          <Link
-            href="/dashboard/profile"
-            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-secondary text-secondary hover:bg-secondary/10 rounded transition-colors font-bold uppercase text-sm"
-          >
-            <Settings className="w-4 h-4" />
-            Edit Profile
-          </Link>
+    <div className="flex h-dvh overflow-hidden bg-page">
+      <Sidebar />
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
+        <AppHeader />
+        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6 relative z-10">
+          <BottomNav />
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-12">
+        <div className="flex items-center gap-4">
+          <h1 className="font-semibold tracking-tight text-3xl text-ink">Profile</h1>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-b-4 border-primary mb-6">
+        <div className="flex border-b border-ink/10">
           {(["overview", "achievements"] as TabKey[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 font-heading text-sm font-black uppercase tracking-wider transition-colors ${
+              className={`px-5 pb-3 font-mono text-xs uppercase tracking-wide transition-colors ${
                 activeTab === tab
-                  ? "bg-primary text-background border-2 border-primary -mb-0.5"
-                  : "text-foreground/50 hover:text-foreground border-2 border-transparent"
+                  ? "text-ink border-b border-ink"
+                  : "text-ink/40 hover:text-ink/70"
               }`}
             >
               {tab === "overview" ? (
-                <span className="flex items-center gap-2"><User className="w-4 h-4" /> Overview</span>
+                <span className="flex items-center gap-2"><User className="w-3.5 h-3.5" /> Overview</span>
               ) : (
-                <span className="flex items-center gap-2"><Trophy className="w-4 h-4" /> Achievements</span>
+                <span className="flex items-center gap-2"><Medal className="w-3.5 h-3.5" /> Credentials</span>
               )}
             </button>
           ))}
+          <div className="ml-auto">
+            <Link
+              href="/dashboard/profile"
+              className="font-mono text-xs text-ink/40 hover:text-ink transition-colors flex items-center gap-1.5 pb-3"
+            >
+              <Gear className="w-3.5 h-3.5" /> Edit
+            </Link>
+          </div>
         </div>
 
-        {/* Overview Tab */}
         {activeTab === "overview" && (
           <>
-            <div className="grid md:grid-cols-3 gap-8 mb-8">
-              <div className="brutal-panel panel-surface p-8 md:col-span-1">
-                <div className="text-center">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-primary overflow-hidden flex items-center justify-center bg-primary/10">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <User className="w-10 h-10 text-primary" />
-                    )}
-                  </div>
-                  <div className="font-heading text-xl font-black text-primary mb-1">
-                    {displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")}
-                  </div>
-                  {userEmail && (
-                    <div className="flex items-center justify-center gap-2 text-xs font-mono surface-muted mb-4">
-                      <Mail className="w-3 h-3" />
-                      {userEmail}
-                    </div>
-                  )}
-                  {userCreated && (
-                    <div className="flex items-center justify-center gap-2 text-xs font-mono surface-muted mb-4">
-                      <Calendar className="w-3 h-3" />
-                      Joined {userCreated}
-                    </div>
+            <div className="grid md:grid-cols-3 gap-12">
+              <div className="space-y-6">
+                <div className="w-16 h-16 rounded-full bg-ink/[0.04] flex items-center justify-center">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className="w-16 h-16 rounded-full object-cover" />
+                  ) : (
+                    <User className="w-8 h-8 text-ink/40" />
                   )}
                 </div>
-                <div className="text-center border-t-2 border-primary/20 pt-6 mt-4">
-                  <div className="text-sm font-mono uppercase surface-muted mb-4">Eco-Credit Balance</div>
-                  <div className="font-heading text-5xl font-black text-primary mb-2">
-                    {(ecoCredits ?? 0).toLocaleString()}
-                  </div>
-                  <div className="text-xs font-mono uppercase surface-muted mb-2 tracking-widest">
-                    Available Credits {userRank ? ` | Rank #${userRank}` : " | Contributor"}
-                  </div>
-                  {ecoCreditEquivalent && (
-                    <div className="mb-4 p-3 border border-secondary/30 bg-secondary/5 rounded">
-                      <p className="font-mono text-xs font-bold uppercase tracking-widest text-secondary">
-                        ≈ {ecoCreditEquivalent}
-                      </p>
-                    </div>
+                <div>
+                  <h2 className="font-semibold tracking-tight text-3xl text-ink">{displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")}</h2>
+                  {userEmail && (
+                    <p className="font-mono text-sm text-ink/40 mt-1">{userEmail}</p>
                   )}
-                  {rewardPoints !== null && (
-                    <div className="mb-4 p-3 border border-accent/40 bg-accent/5 rounded">
-                      <div className="font-mono text-xs font-bold uppercase tracking-widest text-accent mb-1">Reward Points (XP)</div>
-                      <div className="font-heading text-2xl font-black text-accent">
-                        {(rewardPoints ?? 0).toLocaleString()} XP
-                      </div>
-                    </div>
+                  {userCreated && (
+                    <p className="font-mono text-xs text-ink/30 mt-2 flex items-center gap-1.5">
+                      <CalendarBlank className="w-3 h-3" />
+                      Joined {userCreated}
+                    </p>
                   )}
-                  <p className="text-sm font-semibold text-foreground/80">Earn more credits by submitting verified reports.</p>
                 </div>
               </div>
 
-              <div className="brutal-panel panel-surface p-8 md:col-span-2">
-                <h2 className="font-heading text-xl font-black uppercase mb-6 border-b-2 border-primary pb-3">Your Impact Stats</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-primary/10 rounded border border-primary">
-                    <div className="font-mono text-xs uppercase surface-muted mb-2">Reports Filed</div>
-                    <div className="font-heading text-3xl font-black text-primary">{profileStats.reports_filed}</div>
+              <div className="md:col-span-2">
+                <div className="grid grid-cols-3 gap-8 border-b border-ink/10 pb-8 mb-8">
+                  <div>
+                    <span className="font-semibold tracking-tight text-3xl text-ink block">{profileStats.reports_filed}</span>
+                    <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Filed</span>
                   </div>
-                  <div className="p-4 bg-secondary/10 rounded border border-secondary">
-                    <div className="font-mono text-xs uppercase text-secondary mb-2">Verified</div>
-                    <div className="font-heading text-3xl font-black text-secondary">{profileStats.reports_verified}</div>
+                  <div>
+                    <span className="font-semibold tracking-tight text-3xl text-green block">{profileStats.reports_verified}</span>
+                    <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Verified</span>
                   </div>
-                  <div className="p-4 bg-accent/10 rounded border border-accent">
-                    <div className="font-mono text-xs uppercase text-accent mb-2">{tp("achievementBadges")}</div>
-                    <div className="font-heading text-3xl font-black text-accent">{achievements.filter(a => a.unlocked).length}</div>
+                  <div>
+                    <span className="font-semibold tracking-tight text-3xl text-ink block">{achievements.filter(a => a.unlocked).length}</span>
+                    <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">{tp("achievementBadges")}</span>
                   </div>
-                  <div className="p-4 bg-blue-500/10 rounded border border-blue-500 col-span-2 md:col-span-1">
-                    <div className="font-mono text-xs uppercase text-blue-600 mb-2">XP Earned</div>
-                    <div className="font-heading text-3xl font-black text-blue-600">{(rewardPoints ?? 0).toLocaleString()}</div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-12">
+                  <div className="space-y-3">
+                    <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Eco-Credits</span>
+                    <span className="font-semibold tracking-tight text-4xl text-ink block">{(ecoCredits ?? 0).toLocaleString()}</span>
+                    {userRank && (
+                      <span className="font-mono text-xs text-ink/30 block">Rank #{userRank}</span>
+                    )}
+                    {ecoCreditEquivalent && (
+                      <div className="pt-4">
+                        <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Eco Value</span>
+                        <span className="font-semibold tracking-tight text-2xl text-ink/80 block">{ecoCreditEquivalent}</span>
+                      </div>
+                    )}
                   </div>
+                  {rewardPoints !== null && (
+                    <div className="space-y-3">
+                      <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Impact Score</span>
+                      <span className="font-semibold tracking-tight text-4xl text-ink block">{(rewardPoints ?? 0).toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
             {rankProgress && (
-              <div className="mb-8">
-                <RankProgressCard
-                  rankProgress={rankProgress}
-                  ecoCreditEquivalent={ecoCreditEquivalent}
-                />
-              </div>
+              <section className="border-t border-ink/10 pt-12">
+                <h2 className="font-semibold tracking-tight text-2xl text-ink mb-6">Contributor Tier</h2>
+                <RankProgressCard rankProgress={rankProgress} ecoCreditEquivalent={ecoCreditEquivalent} />
+              </section>
             )}
 
-            <div className="brutal-panel panel-surface p-8">
-              <h2 className="font-heading text-2xl font-black uppercase mb-6 border-b-2 border-primary pb-3">
-                <span className="flex items-center gap-2"><Leaf className="w-5 h-5" /> XP &amp; Credit Sources</span>
-              </h2>
-              <div className="space-y-4">
+            <section className="border-t border-ink/10 pt-12">
+              <h2 className="font-semibold tracking-tight text-2xl text-ink mb-6">Score Sources</h2>
+              <div className="space-y-5">
                 {(() => {
                   const unlockedAchievements = achievements.filter(a => a.unlocked);
                   const totalXp = unlockedAchievements.reduce((sum, a) => sum + a.points_awarded, 0) || 1;
                   const items = unlockedAchievements.length > 0
                     ? unlockedAchievements.map(a => ({
                         activity: a.name,
-                        amount: `+${a.points_awarded} XP`,
+                        amount: `+${a.points_awarded}`,
                         percentage: Math.round((a.points_awarded / totalXp) * 100),
                       }))
                     : [
-                        { activity: "Submit an environmental report", amount: "+50 XP", percentage: 25 },
-                        { activity: "Report verified by an LGU", amount: "+100 XP + Eco-Credits", percentage: 25 },
-                        { activity: "Community corroboration (500m geofence)", amount: "+150 XP", percentage: 25 },
-                        { activity: "Rank level up bonus", amount: "+Eco-Credits", percentage: 25 },
+                        { activity: "Submit an environmental report", amount: "+50", percentage: 25 },
+                        { activity: "Report verified by an LGU", amount: "+100 + Eco-Credits", percentage: 25 },
+                        { activity: "Community corroboration (500m geofence)", amount: "+150", percentage: 25 },
+                        { activity: "Tier advancement bonus", amount: "+Eco-Credits", percentage: 25 },
                       ];
                   return items.map((item, idx) => (
                     <div key={idx} className="flex items-center gap-6">
                       <div className="flex-1">
-                        <div className="font-semibold text-foreground mb-2">{item.activity}</div>
-                        <div className="h-2 bg-primary/10 rounded-full overflow-hidden">
-                          <div className="h-full bg-secondary rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(45,225,194,0.4)]" style={{ width: `${Math.max(item.percentage, 5)}%` }} />
+                        <div className="text-sm text-ink/70 mb-2">{item.activity}</div>
+                        <div className="h-1 bg-ink/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-ink/40 rounded-full transition-all duration-500" style={{ width: `${Math.max(item.percentage, 5)}%` }} />
                         </div>
                       </div>
-                      <div className="font-heading text-xl font-black text-secondary min-w-fit">{item.amount}</div>
+                      <div className="font-semibold tracking-tight text-xl text-ink/70 min-w-fit">{item.amount}</div>
                     </div>
                   ));
                 })()}
               </div>
-            </div>
+            </section>
           </>
         )}
 
-        {/* Achievements Tab */}
         {activeTab === "achievements" && (
           <>
-            {/* Achievements Summary */}
-            <div className="brutal-panel panel-surface p-5 mb-6 border-2">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-3 border border-primary/20 rounded bg-primary/5">
-                  <div className="font-heading text-3xl font-black text-primary">
-                    {achievements.filter(a => a.unlocked).length}<span className="text-lg text-foreground/40">/{achievements.length}</span>
-                  </div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-foreground/50 mt-1">
-                    {t("unlockedCount", { unlocked: achievements.filter(a => a.unlocked).length, total: achievements.length })}
-                  </div>
-                </div>
-                <div className="text-center p-3 border border-secondary/20 rounded bg-secondary/5">
-                  <div className="font-heading text-3xl font-black text-secondary">
-                    {achievements.filter(a => a.unlocked).reduce((sum, a) => sum + a.points_awarded, 0).toLocaleString()}
-                  </div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-secondary/60 mt-1">
-                    {t("xpEarned", { xp: achievements.filter(a => a.unlocked).reduce((sum, a) => sum + a.points_awarded, 0).toLocaleString() })}
-                  </div>
-                </div>
-                {(["common", "rare", "epic", "legendary"] as AchievementTier[]).map((tier) => {
-                  const tierAchievements = achievements.filter(a => a.tier === tier);
-                  const tierUnlocked = tierAchievements.filter(a => a.unlocked).length;
-                  return (
-                    <div key={tier} className="text-center p-3 border border-foreground/20 rounded bg-foreground/5">
-                      <div className="text-lg mb-0.5">{tierIcons[tier]}</div>
-                      <div className="font-heading text-xl font-black text-foreground/70">
-                        {tierUnlocked}<span className="text-sm text-foreground/30">/{tierAchievements.length}</span>
-                      </div>
-                      <div className="font-mono text-[9px] uppercase tracking-widest text-foreground/40 mt-0.5">
-                        {tier === "common" ? t("tierCommon") : tier === "rare" ? t("tierRare") : tier === "epic" ? t("tierEpic") : t("tierLegendary")}
-                      </div>
-                    </div>
-                  );
-                })}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-8 border-b border-ink/10">
+              <div>
+                <span className="font-semibold tracking-tight text-3xl text-ink block">
+                  {achievements.filter(a => a.unlocked).length}<span className="text-base text-ink/30">/{achievements.length}</span>
+                </span>
+                <span className="font-mono text-xs text-ink/40 uppercase tracking-wide mt-1 block">
+                  {t("unlockedCount", { unlocked: achievements.filter(a => a.unlocked).length, total: achievements.length })}
+                </span>
               </div>
+              <div>
+                <span className="font-semibold tracking-tight text-3xl text-ink block">
+                  {achievements.filter(a => a.unlocked).reduce((sum, a) => sum + a.points_awarded, 0).toLocaleString()}
+                </span>
+                <span className="font-mono text-xs text-ink/40 uppercase tracking-wide mt-1 block">
+                  {t("xpEarned", { xp: achievements.filter(a => a.unlocked).reduce((sum, a) => sum + a.points_awarded, 0).toLocaleString() })}
+                </span>
+              </div>
+              {(["basic", "verified", "advanced", "authority"] as AchievementTier[]).map((tier) => {
+                const tierAchievements = achievements.filter(a => a.tier === tier);
+                const tierUnlocked = tierAchievements.filter(a => a.unlocked).length;
+                return (
+                  <div key={tier}>
+                    <div className="flex items-center gap-2 mb-1 text-ink/40">{tierIcons[tier]}</div>
+                    <span className="font-semibold tracking-tight text-xl text-ink/70 block">
+                      {tierUnlocked}<span className="text-sm text-ink/30">/{tierAchievements.length}</span>
+                    </span>
+                    <span className="font-mono text-[10px] text-ink/40 uppercase tracking-wide mt-1 block">
+                      {tier === "basic" ? t("tierBasic") : tier === "verified" ? t("tierVerified") : tier === "advanced" ? t("tierAdvanced") : t("tierAuthority")}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Filter + Sort Row */}
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              {/* Unlock filter pills */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex gap-2 flex-wrap">
                 {(["all", "unlocked", "locked"] as FilterKey[]).map((f) => (
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`px-4 py-2 font-mono text-xs font-bold uppercase tracking-widest rounded border-2 transition-colors ${
-                      filter === f
-                        ? "bg-primary text-background border-primary shadow-[3px_3px_0px_#1b4332]"
-                        : "text-foreground/60 border-foreground/20 hover:border-primary/40"
+                    className={`font-mono text-xs uppercase tracking-wide transition-colors pb-1 ${
+                      filter === f ? "text-ink border-b border-ink" : "text-ink/40 hover:text-ink/70"
                     }`}
                   >
                     {f === "all" && t("all")}
-                    {f === "unlocked" && <span className="flex items-center gap-1"><Sparkles className="w-3 h-3" /> {t("unlocked")}</span>}
+                    {f === "unlocked" && <span className="flex items-center gap-1"><Sparkle className="w-3 h-3" weight="fill" /> {t("unlocked")}</span>}
                     {f === "locked" && <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> {t("locked")}</span>}
                   </button>
                 ))}
               </div>
 
-              {/* Tier filter */}
-              <div className="flex gap-1.5 flex-wrap">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-foreground/40 self-center mr-1">{t("filterByTier")}:</span>
-                {(["all", "common", "rare", "epic", "legendary"] as TierFilter[]).map((tf) => (
-                  <button
-                    key={tf}
-                    onClick={() => setTierFilter(tf)}
-                    className={`px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest rounded border transition-colors ${
-                      tierFilter === tf
-                        ? "bg-foreground/10 border-foreground/40 text-foreground"
-                        : "text-foreground/40 border-transparent hover:border-foreground/20"
-                    }`}
-                  >
-                    {tf === "all" ? t("all") : tf === "common" ? t("tierCommon") : tf === "rare" ? t("tierRare") : tf === "epic" ? t("tierEpic") : t("tierLegendary")}
-                  </button>
-                ))}
+              <div className="flex gap-2 items-center">
+                <span className="font-mono text-[10px] text-ink/40 uppercase tracking-wide">{t("filterByTier")}:</span>
+                <div className="flex gap-1">
+                  {(["all", "basic", "verified", "advanced", "authority"] as TierFilter[]).map((tf) => (
+                    <button
+                      key={tf}
+                      onClick={() => setTierFilter(tf)}
+                      className={`font-mono text-[10px] uppercase tracking-wide px-2 py-1 transition-colors ${
+                        tierFilter === tf ? "text-ink bg-ink/[0.04]" : "text-ink/40 hover:text-ink/70"
+                      }`}
+                    >
+                      {tf === "all" ? t("all") : tf === "basic" ? t("tierBasic") : tf === "verified" ? t("tierVerified") : tf === "advanced" ? t("tierAdvanced") : t("tierAuthority")}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* Sort dropdown */}
-              <div className="relative">
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value as SortKey)}
-                  className="appearance-none px-4 py-2 pr-8 font-mono text-xs font-bold uppercase tracking-widest rounded border-2 border-foreground/20 bg-background text-foreground cursor-pointer hover:border-primary/40 transition-colors"
-                >
-                  <option value="default">{t("sortDefault")}</option>
-                  <option value="progress">{t("sortProgress")}</option>
-                  <option value="recent">{t("sortRecentlyUnlocked")}</option>
-                  <option value="tier">{t("sortTier")}</option>
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-foreground/40 pointer-events-none" />
-              </div>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortKey)}
+                className="font-mono text-xs uppercase tracking-wide bg-transparent text-ink/60 border-0 cursor-pointer appearance-none"
+              >
+                <option value="default">{t("sortDefault")}</option>
+                <option value="progress">{t("sortProgress")}</option>
+                <option value="recent">{t("sortRecentlyUnlocked")}</option>
+                <option value="tier">{t("sortTier")}</option>
+              </select>
             </div>
 
             {filteredAchievements.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div>
                 {filteredAchievements.map((achievement) => (
-                  <div key={achievement.id} onClick={() => setSelectedAchievement(achievement)} className="cursor-pointer group">
-                    <AchievementCard achievement={achievement} />
-                    <div className="text-center mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="font-mono text-[9px] uppercase tracking-widest text-secondary/60 inline-flex items-center gap-1">
-                        <ExternalLink className="w-2.5 h-2.5" /> {t("detailTitle")}
-                      </span>
-                    </div>
+                  <div key={achievement.id} onClick={() => setSelectedAchievement(achievement)} className="cursor-pointer">
+                    <AchievementCard achievement={achievement} variant="compact" />
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="brutal-panel panel-surface p-12 text-center border-2 border-primary/20">
-                <Trophy className="w-12 h-12 text-primary/20 mx-auto mb-4" />
-                <p className="font-mono text-foreground/50 font-bold uppercase tracking-widest">
+              <div className="py-16 text-center">
+                <Medal className="w-10 h-10 text-ink/20 mx-auto mb-3" />
+                <p className="font-mono text-sm text-ink/50 uppercase tracking-wide">
                   {filter === "unlocked" ? t("noAchievementsUnlocked") : filter === "locked" ? t("noAchievementsLocked") : "No achievements found."}
                 </p>
-                <p className="font-mono text-foreground/40 text-sm mt-2">
+                <p className="font-mono text-xs text-ink/40 mt-1">
                   {filter === "unlocked" ? t("noAchievementsUnlockedDesc") : filter === "locked" ? t("noAchievementsLockedDesc") : "Try adjusting your filters."}
                 </p>
               </div>
             )}
 
-            {/* Achievement Detail Modal */}
             {selectedAchievement && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setSelectedAchievement(null)}>
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                <div className="relative w-full max-w-lg brutal-panel panel-surface p-6 border-2 border-primary shadow-[8px_8px_0px_#1b4332] animate-in" onClick={(e) => e.stopPropagation()}>
+                <div className="relative w-full max-w-lg bg-panel p-6 border border-ink/10 shadow-lg" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setSelectedAchievement(null)}
-                    className="absolute top-3 right-3 p-1 rounded hover:bg-foreground/10 transition-colors text-foreground/50"
+                    className="absolute top-3 right-3 p-1 text-ink/40 hover:text-ink transition-colors"
                   >
                     <X className="w-5 h-5" />
                   </button>
 
                   <div className="text-center mb-6">
-                    <div className={`w-16 h-16 mx-auto rounded-full border-2 flex items-center justify-center bg-background text-3xl mb-3 ${
-                      selectedAchievement.unlocked ? "border-secondary shadow-[3px_3px_0px_#2de1c2]" : "border-foreground/20"
-                    }`}>
-                      {selectedAchievement.unlocked || !selectedAchievement.is_hidden ? selectedAchievement.icon : "❓"}
-                    </div>
-                    <h2 className="font-heading text-2xl font-black uppercase text-foreground">
-                      {selectedAchievement.unlocked || !selectedAchievement.is_hidden ? selectedAchievement.name : "???"}
-                    </h2>
-                    <div className="flex items-center justify-center gap-2 mt-1">
-                      <span className="font-mono text-xs uppercase tracking-widest px-2 py-0.5 border rounded text-foreground/50 bg-foreground/5">
-                        {selectedAchievement.tier === "common" ? t("tierCommon") : selectedAchievement.tier === "rare" ? t("tierRare") : selectedAchievement.tier === "epic" ? t("tierEpic") : t("tierLegendary")}
-                      </span>
-                      <span className="font-mono text-xs text-secondary">+{selectedAchievement.points_awarded} XP</span>
-                    </div>
+                    <div className="text-3xl mb-3">{selectedAchievement.icon}</div>
+                    <h2 className="font-semibold tracking-tight text-2xl text-ink">{selectedAchievement.name}</h2>
+                    <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">
+                      {selectedAchievement.tier === "basic" ? t("tierBasic") : selectedAchievement.tier === "verified" ? t("tierVerified") : selectedAchievement.tier === "advanced" ? t("tierAdvanced") : t("tierAuthority")}
+                    </span>
                   </div>
 
-                  <p className="text-sm text-foreground/70 font-semibold mb-4 text-center">
-                    {selectedAchievement.unlocked || !selectedAchievement.is_hidden ? selectedAchievement.description : "This achievement remains shrouded in mystery..."}
-                  </p>
+                  <p className="text-sm text-ink/70 mb-4 text-center">{selectedAchievement.description}</p>
 
-                  <div className="space-y-3 border-t-2 border-foreground/10 pt-4">
+                  <div className="space-y-3 border-t border-ink/10 pt-4">
                     <div>
-                      <div className="font-mono text-[10px] uppercase tracking-widest text-foreground/50 mb-1">{t("detailCriteria")}</div>
-                      <div className="font-semibold text-sm text-foreground/80">
-                        {!selectedAchievement.unlocked && selectedAchievement.is_hidden
-                          ? "???"
-                          : (() => {
+                      <div className="font-mono text-[10px] text-ink/40 uppercase tracking-wide mb-1">{t("detailCriteria")}</div>
+                      <div className="text-sm text-ink/70">
+                        {(() => {
                               const cv = selectedAchievement.criteria_value as Record<string, string | number> | null;
                               if (!cv) return selectedAchievement.description;
                               switch (selectedAchievement.criteria_type) {
@@ -513,29 +468,29 @@ function ProfilePageContent() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <div className="font-mono text-[10px] uppercase tracking-widest text-foreground/50 mb-1">{t("detailProgress")}</div>
+                        <div className="font-mono text-[10px] text-ink/40 uppercase tracking-wide mb-1">{t("detailProgress")}</div>
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-foreground/10 rounded-full overflow-hidden border border-foreground/20">
+                          <div className="flex-1 h-1 bg-ink/10 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full transition-all duration-500 ${selectedAchievement.unlocked ? "bg-secondary" : "bg-secondary/60"}`}
+                              className={`h-full rounded-full transition-all duration-500 ${selectedAchievement.unlocked ? "bg-ink/60" : "bg-ink/40"}`}
                               style={{ width: `${selectedAchievement.threshold > 0 ? Math.min(100, Math.round((selectedAchievement.progress_value / selectedAchievement.threshold) * 100)) : 0}%` }}
                             />
                           </div>
-                          <span className="font-mono text-xs font-bold text-foreground/60">{selectedAchievement.progress_value}/{selectedAchievement.threshold}</span>
+                          <span className="font-mono text-xs text-ink/60">{selectedAchievement.progress_value}/{selectedAchievement.threshold}</span>
                         </div>
                       </div>
                       <div>
-                        <div className="font-mono text-[10px] uppercase tracking-widest text-foreground/50 mb-1">{t("detailReward")}</div>
-                        <div className="font-heading text-lg font-black text-secondary">+{selectedAchievement.points_awarded} XP</div>
+                        <div className="font-mono text-[10px] text-ink/40 uppercase tracking-wide mb-1">{t("detailReward")}</div>
+                        <div className="font-semibold tracking-tight text-lg text-ink/80">+{selectedAchievement.points_awarded}</div>
                       </div>
                     </div>
 
                     {selectedAchievement.unlocked && selectedAchievement.unlocked_at && (
                       <div>
-                        <div className="font-mono text-[10px] uppercase tracking-widest text-foreground/50 mb-1">{t("detailDate")}</div>
-                        <div className="flex items-center gap-2 text-secondary">
-                          <CheckCircle className="w-4 h-4" />
-                          <span className="font-mono text-xs font-bold uppercase tracking-widest">
+                        <div className="font-mono text-[10px] text-ink/40 uppercase tracking-wide mb-1">{t("detailDate")}</div>
+                        <div className="flex items-center gap-2 text-green">
+                          <CheckCircle className="w-4 h-4" weight="fill" />
+                          <span className="font-mono text-xs uppercase tracking-wide">
                             {new Date(selectedAchievement.unlocked_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
                           </span>
                         </div>
@@ -543,9 +498,9 @@ function ProfilePageContent() {
                     )}
 
                     {selectedAchievement.unlocked && (
-                      <div className="text-center pt-2 border-t-2 border-secondary/20">
-                        <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-secondary">
-                          <CheckCircle className="w-3 h-3" /> {t("unlocked")}
+                      <div className="text-center pt-2 border-t border-ink/10">
+                        <span className="inline-flex items-center gap-1 text-xs uppercase tracking-wide text-green">
+                          <CheckCircle className="w-3 h-3" weight="fill" /> {t("unlocked")}
                         </span>
                       </div>
                     )}
@@ -556,6 +511,8 @@ function ProfilePageContent() {
           </>
         )}
       </div>
+        </main>
+      </div>
     </div>
   );
 }
@@ -563,8 +520,8 @@ function ProfilePageContent() {
 export default function ProfilePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-background font-body flex items-center justify-center">
-        <Spinner size={32} className="text-primary" />
+      <div className="min-h-dvh flex items-center justify-center">
+        <Spinner size={32} className="text-ink/60" />
       </div>
     }>
       <ProfilePageContent />

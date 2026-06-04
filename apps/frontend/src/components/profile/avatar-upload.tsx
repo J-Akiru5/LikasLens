@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera, Upload, X } from "lucide-react";
+import { Camera, Upload, X } from "@phosphor-icons/react";
 import { Spinner } from "@/components/ui/spinner";
 import { uploadProfileImage, validateProfileImage } from "@/utils/supabase/storage";
 
@@ -49,7 +49,7 @@ export function AvatarUpload({ userId, currentUrl, onUploadComplete }: AvatarUpl
 
   return (
     <div className="flex items-center gap-6">
-      <div className="relative w-24 h-24 rounded-full border-2 border-primary overflow-hidden flex items-center justify-center bg-primary/10 flex-shrink-0">
+      <div className="relative w-24 h-24 rounded-full border-2 border-accent overflow-hidden flex items-center justify-center bg-accent/10 flex-shrink-0">
         {displayUrl ? (
           <img
             src={displayUrl}
@@ -57,11 +57,11 @@ export function AvatarUpload({ userId, currentUrl, onUploadComplete }: AvatarUpl
             className="w-full h-full object-cover"
           />
         ) : (
-          <Camera className="w-8 h-8 text-primary/60" />
+          <Camera className="w-8 h-8 text-accent/60" />
         )}
         {uploading && (
-          <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
-            <Spinner size={20} className="text-primary" />
+          <div className="absolute inset-0 bg-page/60 flex items-center justify-center">
+            <Spinner size={20} className="text-accent" />
           </div>
         )}
       </div>
@@ -78,14 +78,14 @@ export function AvatarUpload({ userId, currentUrl, onUploadComplete }: AvatarUpl
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="flex items-center gap-2 px-4 py-2 border-2 border-primary font-bold uppercase text-sm rounded hover:bg-primary/5 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 border border-border font-semibold uppercase text-sm rounded-lg hover:bg-accent/5 transition-colors disabled:opacity-50"
         >
           <Upload className="w-4 h-4" />
           {currentUrl ? "Change Photo" : "Upload Photo"}
         </button>
-        <p className="text-xs font-mono surface-muted mt-2">JPEG, PNG, or WebP. Max 25MB.</p>
+        <p className="text-xs font-mono text-muted mt-2">JPEG, PNG, or WebP. Max 25MB.</p>
         {error && (
-          <p className="text-xs font-mono text-accent mt-1">{error}</p>
+          <p className="text-xs font-mono text-[#b23b3b] mt-1">{error}</p>
         )}
       </div>
 
@@ -96,7 +96,7 @@ export function AvatarUpload({ userId, currentUrl, onUploadComplete }: AvatarUpl
             setPreview(null);
             setError(null);
           }}
-          className="p-2 border-2 border-accent text-accent rounded hover:bg-accent/10 transition-colors"
+          className="p-2 border border-border text-accent rounded-lg hover:bg-accent/10 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

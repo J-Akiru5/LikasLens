@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/layout/header";
 import { createClient } from "@/utils/supabase/server";
 import { laravelGet } from "@/utils/laravel-api";
 import { CitizenDashboardClient } from "./citizen-dashboard-client";
-import { GamifiedProfile } from "@/components/dashboard/gamified-profile";
+import { ContributorProfile } from "@/components/dashboard/contributor-profile";
 import type { RecentAchievement, RankProgress } from "@likaslens/shared";
 
 interface ImpactData {
@@ -32,15 +32,14 @@ export default async function DashboardPage() {
   } catch { /* defaults */ }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
+    <div className="flex h-dvh overflow-hidden bg-page">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <div className="smoke-overlay" />
         <AppHeader greeting={userGreeting} />
         <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
           <div className="max-w-4xl mx-auto space-y-8">
-            <GamifiedProfile />
+            <ContributorProfile />
             <CitizenDashboardClient impact={impactData} ghostModeActive={false} />
           </div>
         </main>

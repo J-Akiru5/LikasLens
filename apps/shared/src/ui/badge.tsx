@@ -1,31 +1,23 @@
 import { cn } from "../utils";
 
 interface BadgeProps {
-  variant?: "default" | "success" | "warning" | "error" | "info" | "brutal";
+  variant?: "default" | "success" | "warning" | "error" | "info" | "loading";
   children: React.ReactNode;
   className?: string;
 }
 
-const variants = {
-  default: "bg-gray-100 text-gray-800",
-  success: "bg-green-100 text-green-800",
-  warning: "bg-yellow-100 text-yellow-800",
-  error: "bg-red-100 text-red-800",
-  info: "bg-blue-100 text-blue-800",
-  brutal: "border-2 border-primary/30 bg-primary/10 text-foreground font-mono font-bold uppercase tracking-widest",
+const variants: Record<string, string> = {
+  default: "bg-ink/5 text-muted",
+  success: "text-green bg-green/10",
+  warning: "text-amber bg-amber/10",
+  error: "text-[#b23b3b] bg-[#b23b3b]/10",
+  info: "bg-accent/10 text-accent",
+  loading: "bg-ink/5 text-muted animate-pulse",
 };
 
 export function Badge({ variant = "default", children, className }: BadgeProps) {
   return (
-    <span
-      className={cn(
-        variant === "brutal"
-          ? "inline-flex items-center rounded px-2 py-1 text-xs"
-          : "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-        variants[variant],
-        className
-      )}
-    >
+    <span className={cn("inline-flex items-center rounded-full px-3 py-1 text-sm font-medium", variants[variant], className)}>
       {children}
     </span>
   );

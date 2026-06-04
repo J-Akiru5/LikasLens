@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { User, LogOut, LayoutDashboard, UserCircle, ChevronDown } from "lucide-react";
+import { User, SignOut, SquaresFour, UserCircle, CaretDown } from "@phosphor-icons/react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { showToast, setLaravelAuthToken } from "@likaslens/shared";
 import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
-export function UserNav() {
+export function UserNav({ invert = false }: { invert?: boolean } = {}) {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -46,21 +46,46 @@ export function UserNav() {
   };
 
   if (loading) {
-    return <div className="w-10 h-10 rounded-full bg-primary/10 animate-pulse border-2 border-primary/20" />;
+    return (
+      <div
+        className="w-9 h-9 rounded-full animate-pulse bg-ink/10"
+      />
+    );
   }
 
   if (!user) {
     return (
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <Link
           href="/login"
-          className="text-sm font-bold uppercase hover:text-primary transition-colors surface-muted"
+          style={{
+            fontFamily: "monospace",
+            fontSize: 11,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "rgba(240,237,232,0.55)",
+            textDecoration: "none",
+            transition: "color 0.2s",
+          }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#f0ede8")}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(240,237,232,0.55)")}
         >
           Log In
         </Link>
         <Link
           href="/register"
-          className="brutal-button px-5 py-2.5 rounded text-sm font-bold uppercase"
+          style={{
+            padding: "7px 16px",
+            background: "#2ee6c8",
+            color: "#0d1a12",
+            fontSize: 12,
+            fontWeight: 700,
+            borderRadius: 8,
+            textDecoration: "none",
+            transition: "background 0.2s",
+          }}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#40f0d4")}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#2ee6c8")}
         >
           Sign Up
         </Link>
@@ -72,66 +97,73 @@ export function UserNav() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 group focus:outline-none bg-primary/5 hover:bg-primary/10 transition-colors p-1 pr-3 rounded-full border-2 border-primary/20"
+        className="flex items-center gap-2 group"
       >
-        <div className="w-9 h-9 rounded-full border-2 border-primary bg-secondary/20 flex items-center justify-center overflow-hidden transition-all group-hover:shadow-[2px_2px_0px_#2de1c2] shadow-[1px_1px_0px_#1b4332]">
+        <div
+          className={`w-8 h-8 rounded-full flex items-center justify-center overflow-hidden border ${
+            invert ? "bg-white/10 border-white/20" : "bg-ink/5 border-ink/10"
+          }`}
+        >
           {user.user_metadata?.avatar_url ? (
             <Image
               src={user.user_metadata.avatar_url}
               alt="Avatar"
-              width={36}
-              height={36}
-              sizes="36px"
+              width={32}
+              height={32}
+              sizes="32px"
               unoptimized
               className="w-full h-full object-cover"
             />
           ) : (
-            <User className="w-5 h-5 text-primary" />
+            <User className={`w-4 h-4 ${invert ? "text-white/90" : "text-ink/70"}`} />
           )}
         </div>
-        <ChevronDown className={`w-4 h-4 text-primary transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <CaretDown
+          className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""} ${invert ? "text-white/70" : "text-ink/60"}`}
+        />
       </button>
 
       <AnimatePresence>
         {isOpen && (
           <>
-            <div 
-              className="fixed inset-0 z-40" 
-              onClick={() => setIsOpen(false)}
-            />
+            <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
             <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="absolute right-0 mt-3 w-64 brutal-panel panel-surface border-4 border-primary z-50 overflow-hidden shadow-[8px_8px_0px_#1b4332]"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              className="absolute right-0 mt-3 w-56 border border-ink/10 bg-page shadow-lg z-50"
+              style={{ borderRadius: 12 }}
             >
-              <div className="p-4 border-b-2 border-primary/10 bg-secondary/5">
-                <p className="text-xs font-mono font-bold surface-muted uppercase tracking-widest mb-1">Signed in as</p>
-                <p className="text-sm font-bold truncate text-primary">{user.email}</p>
+              <div className="p-3 border-b border-ink/10">
+                <p className="font-mono text-[10px] text-ink/40 uppercase tracking-wider">Signed in as</p>
+                <p className="text-sm text-ink mt-0.5 truncate">{user.email}</p>
               </div>
-              
-              <div className="p-2">
+
+              <div className="p-1.5">
                 <Link
                   href="/dashboard"
-                  className="flex items-center gap-3 px-3 py-2 text-sm font-bold surface-muted hover:bg-secondary/10 hover:text-primary transition-colors rounded uppercase tracking-tight"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors"
+                  style={{ borderRadius: 8 }}
                   onClick={() => setIsOpen(false)}
                 >
-                  <LayoutDashboard className="w-4 h-4" />
+                  <SquaresFour className="w-4 h-4" />
                   Dashboard
                 </Link>
                 <Link
                   href="/dashboard/profile"
-                  className="flex items-center gap-3 px-3 py-2 text-sm font-bold surface-muted hover:bg-secondary/10 hover:text-primary transition-colors rounded uppercase tracking-tight"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors"
+                  style={{ borderRadius: 8 }}
                   onClick={() => setIsOpen(false)}
                 >
                   <UserCircle className="w-4 h-4" />
                   Profile Settings
                 </Link>
                 <button
-                  className="flex items-center gap-3 px-3 py-2 text-sm font-bold text-accent hover:bg-accent/10 transition-colors rounded w-full text-left uppercase tracking-tight"
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors w-full text-left"
+                  style={{ borderRadius: 8 }}
                   onClick={handleLogout}
                 >
-                  <LogOut className="w-4 h-4" />
+                  <SignOut className="w-4 h-4" />
                   Logout
                 </button>
               </div>

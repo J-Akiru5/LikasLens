@@ -1,23 +1,23 @@
 import { cn } from "../utils";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "danger" | "brutal";
-  size?: "sm" | "md" | "lg";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
+  size?: "sm" | "md" | "lg" | "xl";
   loading?: boolean;
 }
 
-const variantStyles = {
-  primary: "bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500",
-  secondary: "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-emerald-500",
-  ghost: "text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:ring-gray-500",
-  danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
-  brutal: "brutal-button font-heading font-black uppercase tracking-wide shadow-[3px_3px_0px_#1b4332] hover:brightness-105",
+const variantStyles: Record<string, string> = {
+  primary: "bg-accent text-white hover:opacity-90",
+  secondary: "bg-panel text-ink border border-border hover:bg-ink/[0.02]",
+  ghost: "text-muted hover:text-ink hover:bg-ink/[0.04]",
+  danger: "bg-[#b23b3b] text-white hover:bg-[#962f2f]",
 };
 
-const sizeStyles = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-4 py-2 text-sm",
-  lg: "px-6 py-3 text-base",
+const sizeStyles: Record<string, string> = {
+  sm: "px-4 py-2 text-sm",
+  md: "px-5 py-2.5 text-base",
+  lg: "px-7 py-3.5 text-lg",
+  xl: "px-8 py-4 text-lg",
 };
 
 export function Button({

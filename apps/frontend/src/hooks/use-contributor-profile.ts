@@ -27,7 +27,7 @@ export interface UserStats {
   trust_score: number;
 }
 
-export interface GamifiedProfileState {
+export interface ContributorProfileState {
   stats: UserStats | null;
   allAchievements: AchievementRow[];
   unlocked: UnlockedMap;
@@ -62,8 +62,8 @@ function mapLaravelAchievementToRow(a: {
 
   return {
     id: a.id,
-    title: a.unlocked || !a.criteria_value ? a.name : "???",
-    description: a.unlocked || !a.criteria_value ? a.description : "This achievement remains shrouded in mystery...",
+    title: a.name,
+    description: a.description,
     icon_url: a.icon,
     category,
     threshold_type: thresholdType,
@@ -78,7 +78,7 @@ function calculateRankingTier(totalXp: number, reports: number): 1 | 2 | 3 {
   return 1;
 }
 
-export function useGamifiedProfile(): GamifiedProfileState {
+export function useContributorProfile(): ContributorProfileState {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [allAchievements, setAllAchievements] = useState<AchievementRow[]>([]);
   const [unlocked, setUnlocked] = useState<UnlockedMap>({});

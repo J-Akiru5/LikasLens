@@ -1,6 +1,16 @@
 export type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
-export type AchievementTier = "common" | "rare" | "epic" | "legendary";
+export type AchievementTier = "basic" | "verified" | "advanced" | "authority";
+
+export function mapLegacyTier(tier: string): AchievementTier {
+  const map: Record<string, AchievementTier> = {
+    common: "basic",
+    rare: "verified",
+    epic: "advanced",
+    legendary: "authority",
+  };
+  return map[tier] || tier as AchievementTier;
+}
 
 export interface User {
   id: string;
@@ -23,6 +33,20 @@ export interface UserProfile {
   role: Role;
   trust_score: number;
   reward_points_balance: number;
+  avatar_url?: string | null;
+  display_name?: string | null;
+  username?: string;
+  bio?: string | null;
+  location?: string | null;
+  website?: string | null;
+  created_at?: string;
+  impact_score?: number;
+  contribution_count?: number;
+  ticket_count?: number;
+  verification_score?: number;
+  rankProgress?: RankProgress;
+  achievements?: Achievement[];
+  eco_credit_equivalent?: string;
 }
 
 export interface Achievement {
@@ -103,9 +127,9 @@ export function hasMinRole(userRole: Role, minRole: Role): boolean {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[minRole];
 }
 
-export const TIER_COLORS: Record<AchievementTier, { border: string; bg: string; text: string; glow: string }> = {
-  common: { border: "border-foreground/30", bg: "bg-foreground/5", text: "text-foreground/70", glow: "" },
-  rare: { border: "border-secondary/50", bg: "bg-secondary/10", text: "text-secondary", glow: "shadow-[0_0_12px_rgba(45,225,194,0.3)]" },
-  epic: { border: "border-purple-500/50", bg: "bg-purple-500/10", text: "text-purple-400", glow: "shadow-[0_0_12px_rgba(168,85,247,0.3)]" },
-  legendary: { border: "border-accent/60", bg: "bg-accent/10", text: "text-accent", glow: "shadow-[0_0_16px_rgba(255,183,3,0.4)]" },
+export const TIER_COLORS: Record<string, { border: string; bg: string; text: string; glow: string }> = {
+  basic: { border: "border-foreground/30", bg: "bg-foreground/5", text: "text-foreground/70", glow: "" },
+  verified: { border: "border-secondary/50", bg: "bg-secondary/10", text: "text-secondary", glow: "" },
+  advanced: { border: "border-primary/50", bg: "bg-primary/10", text: "text-primary", glow: "" },
+  authority: { border: "border-accent/60", bg: "bg-accent/10", text: "text-accent", glow: "" },
 };

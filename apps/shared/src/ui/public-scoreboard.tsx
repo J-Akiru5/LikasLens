@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { CloudSlash, ArrowsClockwise } from "@phosphor-icons/react";
 interface PublicReportRow {
   rank: number;
   agency: string;
@@ -13,39 +13,41 @@ interface PublicReportRow {
 export function PublicScoreboard() {
   const [rows, setRows] = useState<PublicReportRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function fetchReports() {
+    setLoading(true);
+    setError(null);
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const res = await fetch(`${baseUrl}/tickets?per_page=10`, {
+        headers: { Accept: "application/json" },
+      });
+      if (res.ok) {
+        const body = await res.json();
+        const tickets = body.data || [];
+        setRows(
+          tickets.map((t: { display_id?: string; title?: string; location?: string; status?: string; resolved_at?: string; created_at?: string; reporter?: string }, i: number) => ({
+            rank: i + 1,
+            agency: t.reporter || t.location || "Unknown",
+            title: t.title || "Environmental Issue",
+            status: t.status || "Open",
+            time: t.resolved_at ? formatTimeSince(t.resolved_at) : t.created_at ? formatTimeSince(t.created_at) : "\u2014",
+          }))
+        );
+      } else {
+        setError("Failed to load reports");
+      }
+    } catch {
+      setError("Connection error — backend may be starting up");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function fetchReports() {
-      try {
-        const baseUrl =
-          process.env.NEXT_PUBLIC_API_URL || "";
-        const res = await fetch(`${baseUrl}/tickets?per_page=10&status=resolved,closed`, {
-          headers: { Accept: "application/json" },
-        });
-        if (res.ok) {
-          const body = await res.json();
-          const tickets = body.data || [];
-          setRows(
-            tickets.map((t: { display_id?: string; title?: string; location?: string; status?: string; resolved_at?: string; created_at?: string; reporter?: string }, i: number) => ({
-              rank: i + 1,
-              agency: t.reporter || t.location || "Unknown",
-              title: t.title || "Environmental Issue",
-              status: t.status || "Resolved",
-              time: t.resolved_at
-                ? formatTimeSince(t.resolved_at)
-                : t.created_at
-                ? formatTimeSince(t.created_at)
-                : "—",
-            }))
-          );
-        }
-      } catch {
-        // fallback to demo
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchReports();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fallback = [
@@ -54,52 +56,87 @@ export function PublicScoreboard() {
     { rank: 3, agency: "City Sanitation", title: "Trash Dumping", status: "Fixed", time: "2 hours" },
   ];
 
-  const displayRows = loading || rows.length === 0 ? fallback : rows;
+  if (loading) {
+    return (
+      <div className="space-y-3 animate-pulse">
+        <div className="grid grid-cols-[1fr_1.5fr_1fr_0.8fr] gap-4 pb-4 border-b border-border">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-4 rounded bg-ink/5" />
+          ))}
+        </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="grid grid-cols-[1fr_1.5fr_1fr_0.8fr] gap-4 py-4 border-b border-border last:border-0">
+            {[1, 2, 3, 4].map((j) => (
+              <div key={j} className="h-5 rounded bg-ink/5" />
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-  const getStatusColor = (status: string) => {
-    const s = status.toLowerCase();
-    if (s === "fixed" || s === "resolved" || s === "closed")
-      return "border-2 border-secondary bg-secondary/15 text-secondary shadow-[0_0_12px_rgba(45,225,194,0.5)]";
-    if (s === "checking it" || s === "in progress" || s === "investigating" || s === "monitoring")
-      return "border-2 border-accent bg-accent/15 text-accent shadow-[0_0_12px_rgba(255,183,3,0.5)]";
-    if (s === "pending" || s === "not started" || s === "open")
-      return "border-2 border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(27,67,50,0.5)]";
-    return "border-2 border-foreground/40 bg-foreground/5 text-foreground/60";
-  };
+  if (error) {
+    return (
+      <div className="rounded-xl border border-dashed border-border p-12 flex flex-col items-center justify-center text-center">
+        <div className="w-12 h-12 rounded-full bg-ink/[0.03] flex items-center justify-center mb-4">
+          <CloudSlash className="w-6 h-6 text-muted" />
+        </div>
+        <p className="text-sm font-medium text-ink mb-1">Data Unavailable</p>
+        <p className="text-xs text-muted mb-4 max-w-[250px]">We couldn't connect to the public records database. The systems might be syncing.</p>
+        <button
+          onClick={fetchReports}
+          className="flex items-center gap-2 text-xs font-medium text-ink bg-ink/[0.04] hover:bg-ink/[0.08] px-4 py-2 rounded-lg transition-colors"
+        >
+          <ArrowsClockwise className="w-3.5 h-3.5" />
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  const displayRows = rows.length === 0 ? fallback : rows;
+
+  if (displayRows.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border p-8 text-center">
+        <p className="text-sm text-muted">No reports yet</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="brutal-panel p-0 overflow-hidden panel-surface">
-      {loading && (
-        <div className="p-8 text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-secondary border-t-transparent mx-auto" />
-          <p className="font-mono text-sm surface-muted mt-2">Loading reports...</p>
-        </div>
-      )}
-      {!loading && (
-        <>
-          <div className="grid grid-cols-4 bg-[#1b4332] text-[#f8f9fa] font-mono font-bold text-sm uppercase p-4 border-b-2 border-[#081c15]">
-            <div>Agency / Location</div>
-            <div>Issue</div>
-            <div>Status</div>
-            <div className="text-right">Time to fix</div>
-          </div>
-          {displayRows.map((row, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-4 font-mono text-sm p-4 border-t-2 border-primary/20 hover:bg-secondary/10 transition-colors"
-            >
-              <div className="font-bold text-base truncate pr-2">{row.agency}</div>
-              <div className="text-base truncate pr-2">{row.title}</div>
-              <div>
-                <span className={`px-3 py-1.5 rounded font-bold uppercase text-xs tracking-widest transition-all ${getStatusColor(row.status)}`}>
-                  {row.status}
-                </span>
-              </div>
-              <div className="text-right font-bold text-base">{row.time}</div>
+    <div className="space-y-1">
+      <div className="grid grid-cols-[2fr_2fr_1fr_1fr] gap-4 px-4 pb-3 border-b border-border font-mono text-[10px] text-muted uppercase tracking-wider">
+        <div>Reporter / Location</div>
+        <div>Issue</div>
+        <div>Status</div>
+        <div className="text-right">Time</div>
+      </div>
+      {displayRows.map((row, idx) => {
+        const isResolved = row.status?.toLowerCase().includes("resolv") || row.status?.toLowerCase() === "fixed" || row.status?.toLowerCase() === "closed";
+        return (
+          <div
+            key={idx}
+            className="grid grid-cols-[2fr_2fr_1fr_1fr] gap-4 px-4 py-3.5 rounded-lg hover:bg-ink/3 transition-colors border border-transparent hover:border-border"
+          >
+            <div className="font-medium text-sm text-ink truncate">{row.agency}</div>
+            <div className="text-sm text-muted truncate">{row.title}</div>
+            <div>
+              <span
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full"
+                style={{
+                  background: isResolved ? "rgba(45,106,79,0.12)" : "rgba(184,134,11,0.12)",
+                  color: isResolved ? "#2d6a4f" : "#b8860b",
+                }}
+              >
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: isResolved ? "#2d6a4f" : "#b8860b", flexShrink: 0, display: "inline-block" }} />
+                {row.status}
+              </span>
             </div>
-          ))}
-        </>
-      )}
+            <div className="text-xs text-muted text-right font-mono">{row.time}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }

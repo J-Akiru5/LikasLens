@@ -6,16 +6,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: "#1B4332", // Forest Guard
-        secondary: "#2DE1C2", // Tech Cyan
-        accent: "#FFB703", // Ghost Amber
-        background: "#F8F9FA", // Concrete
-        foreground: "#081C15", // Night Shadow
+        primary: "#1B4332",
+        secondary: "#5A7D6A",
+        accent: "#FFB703",
+        background: "#F5F5F0",
+        foreground: "#1A1D1A",
       },
       fontFamily: {
-        heading: ["var(--font-heading)", "Montserrat", "Archivo Black", "sans-serif"],
-        body: ["var(--font-body)", "Inter", "Helvetica Now", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
-        data: ["var(--font-data)", "Space Mono", "JetBrains Mono", "Courier New", "monospace"],
+        body: ["var(--font-body)", "Geist", "Helvetica Neue", "Arial", "sans-serif"],
+        data: ["var(--font-data)", "JetBrains Mono", "monospace"],
       },
       spacing: {
         xs: "0.5rem",

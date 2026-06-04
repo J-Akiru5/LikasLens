@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Bell, Leaf, AlertTriangle, CheckCircle2, Info, X } from "lucide-react"
+import { Bell, Leaf, Warning, CheckCircle, Info, X } from "@phosphor-icons/react"
 import { UserNav } from "./user-nav"
 import { useEffect, useRef, useState } from "react"
 
@@ -13,18 +13,6 @@ const MOCK_NOTIFICATIONS: { id: string; type: NotificationType; title: string; d
   { id: "3", type: "info", title: "Ghost Mode Active", desc: "Your anonymous report was successfully submitted", time: "1h ago" },
   { id: "4", type: "critical", title: "High-Risk Alert", desc: "Deforestation detected in Northern Ridge sector", time: "2h ago" },
 ];
-
-const NOTIFICATION_ICONS = {
-  critical: AlertTriangle,
-  resolved: CheckCircle2,
-  info: Info,
-};
-
-const NOTIFICATION_STYLES: Record<NotificationType, string> = {
-  critical: "border-l-4 border-accent bg-accent/5",
-  resolved: "border-l-4 border-secondary bg-secondary/5",
-  info: "border-l-4 border-primary bg-primary/5",
-};
 
 export function AppHeader({ greeting, showBranding = true }: { greeting?: string; showBranding?: boolean }) {
   const [notifOpen, setNotifOpen] = useState(false);
@@ -41,20 +29,20 @@ export function AppHeader({ greeting, showBranding = true }: { greeting?: string
   }, [notifOpen]);
 
   return (
-    <header className="h-20 bg-background/80 backdrop-blur-md border-b-4 border-primary flex items-center justify-between px-4 sm:px-8 relative z-20 font-body">
+    <header className="h-16 bg-page/80 backdrop-blur-md border-b border-ink/10 flex items-center justify-between px-4 sm:px-8 relative z-20">
       <div className="flex items-center gap-4">
         {greeting ? (
-          <h1 className="font-heading font-black text-lg sm:text-2xl uppercase tracking-tight text-primary m-0">
-            Welcome back, <span className="text-secondary">{greeting}</span>
+          <h1 className="font-semibold tracking-tight text-lg sm:text-xl text-ink">
+            Welcome back, <span className="text-green">{greeting}</span>
           </h1>
         ) : showBranding ? (
-          <Link href="/" className="flex items-center gap-2 text-primary hover:text-secondary transition-colors">
-            <Leaf className="w-6 h-6" />
-            <span className="font-heading font-black text-xl uppercase">LikasLens</span>
+          <Link href="/" className="flex items-center gap-2 text-ink">
+            <Leaf className="w-5 h-5 text-green" weight="fill" />
+            <span className="font-semibold tracking-tight text-lg">LikasLens</span>
           </Link>
         ) : null}
       </div>
-      
+
       <div className="flex-1" />
 
       <div className="flex items-center gap-4">
@@ -63,39 +51,43 @@ export function AppHeader({ greeting, showBranding = true }: { greeting?: string
             aria-label="Notifications"
             aria-expanded={notifOpen}
             onClick={() => setNotifOpen((v) => !v)}
-            className="relative text-primary hover:text-accent transition-colors mr-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+            className="relative text-ink/40 hover:text-ink transition-colors"
           >
-            <Bell className="w-6 h-6" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-accent border-2 border-background rounded-full" aria-hidden="true" />
+            <Bell className="w-5 h-5" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green rounded-full" aria-hidden="true" />
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full mt-3 w-80 panel-surface border-2 border-primary shadow-[6px_6px_0px_#1b4332] rounded overflow-hidden z-50">
-              <div className="p-3 border-b-2 border-primary bg-primary/5 flex items-center justify-between">
-                <span className="font-heading font-black text-sm uppercase tracking-wider">Notifications</span>
-                <button onClick={() => setNotifOpen(false)} className="p-1 hover:bg-primary/10 rounded transition-colors">
+            <div ref={notifRef} className="absolute right-0 top-full mt-3 w-80 border border-ink/10 bg-page shadow-lg z-50">
+              <div className="p-3 border-b border-ink/10 flex items-center justify-between">
+                <span className="font-mono text-xs text-ink uppercase tracking-wider">Notifications</span>
+                <button onClick={() => setNotifOpen(false)} className="p-1 text-ink/40 hover:text-ink transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
               <div className="max-h-80 overflow-y-auto">
                 {MOCK_NOTIFICATIONS.map((n) => {
-                  const Icon = NOTIFICATION_ICONS[n.type];
+                  const iconMap: Record<NotificationType, React.ReactNode> = {
+                    critical: <Warning className="w-4 h-4 text-[#b23b3b]" />,
+                    resolved: <CheckCircle className="w-4 h-4 text-green" weight="fill" />,
+                    info: <Info className="w-4 h-4 text-green" weight="fill" />,
+                  };
                   return (
-                    <div key={n.id} className={`p-3 border-b border-primary/10 hover:bg-primary/5 transition-colors cursor-pointer ${NOTIFICATION_STYLES[n.type]}`}>
+                    <div key={n.id} className="p-3 border-b border-ink/10 last:border-0">
                       <div className="flex items-start gap-3">
-                        <Icon className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+                        <div className="mt-0.5 shrink-0">{iconMap[n.type]}</div>
                         <div className="min-w-0">
-                          <div className="font-bold text-sm">{n.title}</div>
-                          <div className="text-xs surface-muted mt-0.5">{n.desc}</div>
-                          <div className="text-xs font-mono surface-muted mt-1">{n.time}</div>
+                          <div className="text-sm text-ink">{n.title}</div>
+                          <div className="text-xs text-ink/50 mt-0.5">{n.desc}</div>
+                          <div className="text-xs text-ink/30 mt-1 font-mono">{n.time}</div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <div className="p-2 border-t-2 border-primary text-center">
-                <Link href="/dashboard/settings" className="text-xs font-mono font-bold uppercase tracking-wider text-secondary hover:underline" onClick={() => setNotifOpen(false)}>
+              <div className="p-2 border-t border-ink/10 text-center">
+                <Link href="/dashboard/settings" className="font-mono text-xs text-ink/50 hover:text-ink transition-colors" onClick={() => setNotifOpen(false)}>
                   Notification Settings
                 </Link>
               </div>

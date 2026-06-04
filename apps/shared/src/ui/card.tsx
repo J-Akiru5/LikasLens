@@ -4,20 +4,11 @@ interface CardProps {
   children: React.ReactNode;
   className?: string;
   padding?: boolean;
-  variant?: "default" | "brutal";
 }
 
-export function Card({ children, className, padding = true, variant = "default" }: CardProps) {
+export function Card({ children, className, padding = true }: CardProps) {
   return (
-    <div
-      className={cn(
-        variant === "brutal"
-          ? "brutal-panel panel-surface border-2 border-primary shadow-[4px_4px_0px_#1b4332]"
-          : "rounded-xl border border-gray-200 bg-white shadow-sm",
-        padding && "p-6",
-        className
-      )}
-    >
+    <div className={cn("rounded-xl border border-border bg-panel", padding && "p-6", className)}>
       {children}
     </div>
   );
@@ -28,5 +19,5 @@ export function CardHeader({ children, className }: { children: React.ReactNode;
 }
 
 export function CardTitle({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <h3 className={cn("text-lg font-semibold text-gray-900", className)}>{children}</h3>;
+  return <h3 className={cn("text-lg font-semibold text-ink", className)}>{children}</h3>;
 }

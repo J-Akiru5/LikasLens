@@ -6,7 +6,15 @@ import type { Ticket } from "@likaslens/shared";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
-import { AlertTriangle, Filter, MoreVertical, Eye, UserCheck, Flag, Trash2, X, Search } from "lucide-react";
+import { Funnel, DotsThreeVertical, Eye, UserCheck, Flag, Trash, X, MagnifyingGlass } from "@phosphor-icons/react";
+
+const statusDot: Record<string, string> = {
+  open: "bg-[#c27a2e]",
+  investigating: "bg-[#c27a2e]",
+  monitoring: "bg-[#2d6a4f]",
+  resolved: "bg-[#3a7d54]",
+  closed: "bg-[#3a7d54]",
+};
 
 export default function IncidentsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -21,21 +29,6 @@ export default function IncidentsPage() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "resolved":
-      case "closed":
-        return "border-2 border-secondary bg-secondary/15 text-secondary shadow-[0_0_12px_rgba(45,225,194,0.5)]";
-      case "open":
-        return "border-2 border-accent bg-accent/25 text-accent shadow-[0_0_16px_rgba(255,183,3,0.7)] animate-pulse";
-      case "investigating":
-      case "monitoring":
-        return "border-2 border-accent bg-accent/15 text-accent shadow-[0_0_12px_rgba(255,183,3,0.5)]";
-      default:
-        return "border-2 border-primary bg-primary/15 text-primary shadow-[0_0_12px_rgba(27,67,50,0.5)]";
-    }
-  };
 
   const filteredIncidents = useMemo(() => {
     return tickets.filter((ticket) => {
@@ -91,66 +84,63 @@ export default function IncidentsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-dvh overflow-hidden bg-background font-body">
+      <div className="flex h-dvh overflow-hidden bg-page">
         <Sidebar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink/20 border-t-ink/60" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
+    <div className="flex h-dvh overflow-hidden bg-page">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <div className="smoke-overlay" />
         <AppHeader showBranding={false} />
         <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
           <div className="max-w-7xl mx-auto space-y-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b-4 border-primary pb-4">
-              <h1 className="font-heading text-4xl font-black uppercase">
-                Reported Incidents
-              </h1>
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ink/10 pb-5">
+              <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Reported Incidents</h1>
+              <div className="flex items-center gap-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
+                  <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30" />
                   <input
                     type="text"
                     inputMode="search"
-                    placeholder="Search ID, Category, Location, Status..."
+                    placeholder="Search ID, title, location..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 pr-4 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
+                    className="pl-10 pr-4 py-2.5 text-base bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 rounded-lg"
                   />
                 </div>
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`brutal-panel p-2 transition-colors cursor-pointer border-2 border-primary shadow-[2px_2px_0px_#1b4332] ${showFilters ? "bg-primary text-white" : "hover:bg-primary hover:text-white"}`}
+                  className={`p-2.5 border transition-colors rounded-lg ${showFilters ? "bg-ink/[0.04] border-ink/30" : "border-ink/10 text-ink/40 hover:text-ink"}`}
                 >
-                  <Filter className="w-5 h-5" />
+                  <Funnel className="w-4 h-4" />
                 </button>
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="p-2 border-2 border-accent text-accent hover:bg-accent hover:text-white transition-colors rounded shadow-[2px_2px_0px_#1b4332]"
+                    className="p-2.5 border border-ink/10 text-ink/40 hover:text-ink transition-colors rounded-lg"
                     title="Clear all filters"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
             </div>
 
             {showFilters && (
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => { setSelectedStatus(null); }}
-                  className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
+                  onClick={() => setSelectedStatus(null)}
+                  className={`font-mono text-sm px-4 py-2 border transition-colors rounded-lg ${
                     selectedStatus === null
-                      ? "bg-primary text-white border-primary shadow-[2px_2px_0px_#081c15]"
-                      : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
+                      ? "border-ink/30 bg-ink/[0.04] text-ink"
+                      : "border-ink/10 text-ink/40 hover:text-ink"
                   }`}
                 >
                   All
@@ -159,10 +149,10 @@ export default function IncidentsPage() {
                   <button
                     key={status}
                     onClick={() => setSelectedStatus(status)}
-                    className={`px-4 py-2 rounded font-mono font-bold text-xs uppercase tracking-widest transition-all border-2 shadow-[2px_2px_0px_#081c15] ${
+                    className={`font-mono text-sm px-4 py-2 border transition-colors rounded-lg ${
                       selectedStatus === status
-                        ? getStatusColor(status)
-                        : "bg-transparent border-primary/40 text-primary hover:bg-primary/10 hover:border-primary"
+                        ? "border-ink/30 bg-ink/[0.04] text-ink"
+                        : "border-ink/10 text-ink/40 hover:text-ink"
                     }`}
                   >
                     {status}
@@ -171,12 +161,12 @@ export default function IncidentsPage() {
               </div>
             )}
 
-            <div className="text-sm font-mono text-foreground/60 uppercase tracking-widest">
+            <div className="font-mono text-sm text-ink/40">
               Showing {filteredIncidents.length} of {tickets.length} incidents
             </div>
 
-            <div className="brutal-panel panel-surface p-0">
-              <div className="hidden sm:grid grid-cols-12 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2 border-[#081c15]" style={{ backgroundColor: "#1b4332", color: "#f8f9fa" }}>
+            <div className="border border-ink/10 rounded-xl overflow-hidden">
+              <div className="hidden sm:grid grid-cols-12 font-mono text-sm text-ink/40 uppercase tracking-wider p-4 border-b border-ink/10">
                 <div className="col-span-2">ID</div>
                 <div className="col-span-3">Category</div>
                 <div className="col-span-3">Location</div>
@@ -188,89 +178,76 @@ export default function IncidentsPage() {
                 filteredIncidents.map((ticket, i) => (
                   <div
                     key={ticket.id}
-                    className="border-t-2 border-primary/20 hover:bg-secondary/10 transition-colors font-medium"
+                    className="border-b border-ink/10 last:border-0 hover:bg-ink/[0.02] transition-colors"
                   >
-                    {/* Mobile card layout */}
                     <div className="sm:hidden p-4 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
-                          {ticket.status === "Open" && (
-                            <AlertTriangle className="w-4 h-4 text-accent animate-pulse shrink-0" />
-                          )}
-                          <span className="font-mono text-sm font-bold truncate">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</span>
+                          <span className={`h-2 w-2 rounded-full ${statusDot[ticket.status.toLowerCase()] || "bg-ink/20"} shrink-0`} />
+                          <span className="font-mono text-sm text-ink truncate">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</span>
                         </div>
-                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase font-mono tracking-widest shrink-0 ${getStatusColor(ticket.status)}`}>
-                          {ticket.status}
-                        </span>
+                        <span className="font-mono text-sm text-ink/50 uppercase tracking-wider shrink-0">{ticket.status}</span>
                       </div>
-                      <div className="font-body text-sm font-semibold truncate">{ticket.title}</div>
-                      <div className="font-mono text-xs surface-muted truncate">{ticket.location}</div>
+                      <div className="text-base text-ink/80 truncate">{ticket.title}</div>
+                      <div className="font-mono text-sm text-ink/40 truncate">{ticket.location}</div>
                       <div className="flex justify-end">
                         <button
                           onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
-                          className="p-2 min-w-[44px] min-h-[44px] hover:bg-primary/10 rounded transition-colors"
+                          className="p-2 text-ink/40 hover:text-ink transition-colors"
                           aria-label="Row actions"
                           aria-expanded={openMenuId === ticket.id}
                         >
-                          <MoreVertical className="w-5 h-5 text-primary" />
+                          <DotsThreeVertical className="w-4 h-4" />
                         </button>
                         {openMenuId === ticket.id && (
-                          <div ref={menuRef} className="absolute right-4 mt-10 z-50 w-48 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden">
-                            <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
-                              <Eye className="w-4 h-4 text-primary" /> View Details
+                          <div ref={menuRef} className="absolute right-4 mt-8 z-50 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden">
+                            <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
+                              <Eye className="w-4 h-4" weight="bold" /> View Details
                             </button>
-                            <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
-                              <UserCheck className="w-4 h-4 text-secondary" /> Assign
+                            <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
+                              <UserCheck className="w-4 h-4" weight="bold" /> Assign
                             </button>
-                            <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
-                              <Flag className="w-4 h-4 text-accent" /> Change Status
+                            <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
+                              <Flag className="w-4 h-4" weight="bold" /> Change Status
                             </button>
-                            <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-red-50 transition-colors text-accent">
-                              <Trash2 className="w-4 h-4" /> Remove
+                            <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/50 hover:text-[#b23b3b] transition-colors">
+                              <Trash className="w-4 h-4" /> Remove
                             </button>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Desktop table row */}
                     <div className="hidden sm:grid grid-cols-12 items-center p-4">
-                      <div className="col-span-2 font-mono text-sm font-bold">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</div>
-                      <div className="col-span-3 flex items-center gap-2">
-                        {ticket.status === "Open" && (
-                          <AlertTriangle className="w-4 h-4 text-accent animate-pulse" />
-                        )}
-                        {ticket.title}
-                      </div>
-                      <div className="col-span-3 surface-muted">{ticket.location}</div>
+                      <div className="col-span-2 font-mono text-base text-ink">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</div>
+                      <div className="col-span-3 flex items-center gap-2 text-base text-ink/80">{ticket.title}</div>
+                      <div className="col-span-3 text-base text-ink/50">{ticket.location}</div>
                       <div className="col-span-2">
-                        <span className={`px-3 py-1.5 rounded text-xs font-bold uppercase font-mono tracking-widest transition-all ${getStatusColor(ticket.status)}`}>
-                          {ticket.status}
-                        </span>
+                        <span className="font-mono text-sm text-ink/50">{ticket.status}</span>
                       </div>
                       <div className="col-span-2 text-right">
                         <div className="relative inline-block">
                           <button
                             onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
-                            className="p-1 hover:bg-primary/10 rounded transition-colors"
+                            className="p-1 text-ink/40 hover:text-ink transition-colors"
                             aria-label="Row actions"
                             aria-expanded={openMenuId === ticket.id}
                           >
-                            <MoreVertical className="w-5 h-5 text-primary" />
+                            <DotsThreeVertical className="w-4 h-4" />
                           </button>
                           {openMenuId === ticket.id && (
-                            <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 w-48 rounded border-2 border-primary bg-background shadow-[4px_4px_0px_#081c15] overflow-hidden">
-                              <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
-                                <Eye className="w-4 h-4 text-primary" /> View Details
+                            <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden">
+                              <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
+                                <Eye className="w-4 h-4" weight="bold" /> View Details
                               </button>
-                              <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
-                                <UserCheck className="w-4 h-4 text-secondary" /> Assign
+                              <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
+                                <UserCheck className="w-4 h-4" weight="bold" /> Assign
                               </button>
-                              <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-primary/10 transition-colors border-b border-primary/10">
-                                <Flag className="w-4 h-4 text-accent" /> Change Status
+                              <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
+                                <Flag className="w-4 h-4" weight="bold" /> Change Status
                               </button>
-                              <button type="button" style={{ touchAction: "manipulation" }} onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-bold uppercase hover:bg-red-50 transition-colors text-accent">
-                                <Trash2 className="w-4 h-4" /> Remove
+                              <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/50 hover:text-[#b23b3b] transition-colors">
+                                <Trash className="w-4 h-4" /> Remove
                               </button>
                             </div>
                           )}
@@ -280,21 +257,11 @@ export default function IncidentsPage() {
                   </div>
                 ))
               ) : (
-                <div className="grid grid-cols-12 p-8 text-center col-span-12">
-                  <div className="col-span-12 text-foreground/50 font-mono">
-                    No incidents match your search criteria.
-                  </div>
+                <div className="p-10 text-center font-mono text-base text-ink/40">
+                  No incidents match your search criteria.
                 </div>
               )}
             </div>
-
-            {filteredIncidents.length > 0 && (
-              <div className="flex justify-center mt-6">
-                <button className="brutal-button px-6 py-3 rounded text-sm tracking-wider">
-                  Load More Records
-                </button>
-              </div>
-            )}
           </div>
         </main>
       </div>
