@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="civic">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LikasLens — Data Flow Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════════════
+           LIKASLENS DESIGN SYSTEM — "The Vigilant Earth"
+           Eco-Brutalism + Civic Tech
+           ═══════════════════════════════════════════════════════════ */
+
+        :root {
+            --primary: #1B4332;
+            --secondary: #2DE1C2;
+            --accent: #FFB703;
+            --background: #F8F9FA;
+            --foreground: #081C15;
+            --panel: #F8F9FA;
+            --panel-border: rgba(8, 28, 21, 0.2);
+            --muted-text: rgba(8, 28, 21, 0.85);
+            --font-heading: 'Montserrat', 'Archivo Black', Arial, sans-serif;
+            --font-body: 'Inter', 'Helvetica Now', Helvetica Neue, Helvetica, Arial, sans-serif;
+            --font-data: 'Space Mono', 'JetBrains Mono', Courier New, monospace;
+            --shadow-brutal: 8px 8px 0px #1B4332;
+            --shadow-brutal-sm: 4px 4px 0px #1B4332;
+            --shadow-brutal-xs: 2px 2px 0px #1B4332;
+            --shadow-glow-cyan: 0 0 12px rgba(45, 225, 194, 0.5);
+            --shadow-glow-amber: 0 0 16px rgba(255, 183, 3, 0.25);
+        }
+
+        [data-theme="ghost"] {
+            --primary: #2DE1C2;
+            --background: #081C15;
+            --foreground: #F8F9FA;
+            --panel: rgba(8, 28, 21, 0.9);
+            --panel-border: rgba(45, 225, 194, 0.35);
+            --muted-text: rgba(255, 255, 255, 0.75);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        *:focus-visible {
+            outline: 2px solid var(--secondary);
+            outline-offset: 2px;
+        }
+
+        ::selection {
+            background: rgba(255, 183, 3, 0.3);
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ═══ HERO ═══ */
+        .hero {
+            position: relative;
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 10% 5%, rgba(45, 225, 194, 0.14), transparent 38%),
+                radial-gradient(circle at 92% 12%, rgba(255, 183, 3, 0.12), transparent 34%),
+                linear-gradient(180deg, rgba(27, 67, 50, 0.14), transparent 40%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(45, 225, 194, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 225, 194, 0.08) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero h1 .accent { color: var(--secondary); }
+        .hero h1 .amber { color: var(--accent); }
+
+        .hero .subtitle {
+            font-family: var(--font-data);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--muted-text);
+            position: relative;
+        }
+
+        /* ═══ THEME TOGGLE ═══ */
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .theme-btn {
+            font-family: var(--font-data);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--panel-border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .theme-btn[data-theme="civic"] {
+            background: var(--primary);
+            color: #F8F9FA;
+        }
+
+        .theme-btn[data-theme="ghost"] {
+            background: #081C15;
+            color: var(--secondary);
+        }
+
+        .theme-btn:hover {
+            box-shadow: var(--shadow-brutal-xs);
+        }
+
+        .theme-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        /* ═══ CONTAINER ═══ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ═══ SECTION ═══ */
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title .icon {
+            font-size: 1.8rem;
+        }
+
+        .section-subtitle {
+            font-family: var(--font-data);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted-text);
+            margin-bottom: 2rem;
+        }
+
+        /* ═══ BRUTAL PANEL ═══ */
+        .brutal-panel {
+            background: var(--panel);
+            color: var(--foreground);
+            border: 4px solid var(--panel-border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-brutal);
+            backdrop-filter: blur(4px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="ghost"] .brutal-panel {
+            background-image:
+                radial-gradient(circle at 30% 20%, rgba(45, 225, 194, 0.14), transparent 40%),
+                radial-gradient(circle at 68% 66%, rgba(255, 183, 3, 0.22), transparent 42%),
+                linear-gradient(160deg, rgba(8, 28, 21, 0.96), rgba(27, 67, 50, 0.94));
+        }
+
+        .brutal-panel:hover {
+            box-shadow: 10px 10px 0px rgba(27, 67, 50, 0.25);
+        }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 2px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .panel-header h3 {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+        }
+
+        .panel-body {
+            padding: 1.5rem;
+        }
+
+        /* ═══ STAKEHOLDER GRID ═══ */
+        .stakeholder-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .stakeholder-card {
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            text-align: center;
+            box-shadow: var(--shadow-brutal-sm);
+            transition: all 0.15s;
+            cursor: default;
+        }
+
+        .stakeholder-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 8px 0px rgba(27, 67, 50, 0.2);
+        }
+
+        .stakeholder-card .emoji {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stakeholder-card .name {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stakeholder-card .role {
+            font-family: var(--font-data);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-text);
+        }
+
+        /* ═══ SERVICE ARCHITECTURE ═══ */
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .service-card {
+            border: 4px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-brutal);
+            transition: all 0.15s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .service-card .service-header {
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 2px solid var(--panel-border);
+        }
+
+        .service-card .service-header .port {
+            font-family: var(--font-data);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .service-card .service-header h3 {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .service-card .service-body {
+            padding: 1.25rem;
+        }
+
+        .service-card .service-body ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .service-card .service-body li {
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.4rem 0.6rem;
+            border-left: 3px solid var(--secondary);
+            background: rgba(45, 225, 194, 0.06);
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Service colors */
+        .service-frontend { border-color: #7b1fa2; }
+        .service-frontend .service-header { background: rgba(123, 31, 162, 0.08); }
+        .service-frontend .port { color: #7b1fa2; border-color: #7b1fa2; }
+        .service-frontend li { border-left-color: #7b1fa2; background: rgba(123, 31, 162, 0.06); }
+
+        .service-backend { border-color: #388e3c; }
+        .service-backend .service-header { background: rgba(56, 142, 60, 0.08); }
+        .service-backend .port { color: #388e3c; border-color: #388e3c; }
+        .service-backend li { border-left-color: #388e3c; background: rgba(56, 142, 60, 0.06); }
+
+        .service-ai { border-color: #f57c00; }
+        .service-ai .service-header { background: rgba(245, 124, 0, 0.08); }
+        .service-ai .port { color: #f57c00; border-color: #f57c00; }
+        .service-ai li { border-left-color: #f57c00; background: rgba(245, 124, 0, 0.06); }
+
+        .service-storage { border-color: #c62828; }
+        .service-storage .service-header { background: rgba(198, 40, 40, 0.08); }
+        .service-storage .port { color: #c62828; border-color: #c62828; }
+        .service-storage li { border-left-color: #c62828; background: rgba(198, 40, 40, 0.06); }
+
+        .service-admin { border-color: #6a1b9a; }
+        .service-admin .service-header { background: rgba(106, 27, 154, 0.08); }
+        .service-admin .port { color: #6a1b9a; border-color: #6a1b9a; }
+        .service-admin li { border-left-color: #6a1b9a; background: rgba(106, 27, 154, 0.06); }
+
+        /* ═══ FLOW DIAGRAM ═══ */
+        .flow-container {
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: nowrap;
+            min-width: fit-content;
+            margin-bottom: 1.5rem;
+        }
+
+        .flow-node {
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+            box-shadow: var(--shadow-brutal-sm);
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .flow-node .node-icon {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .flow-node .node-label {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+        }
+
+        .flow-node .node-sub {
+            font-family: var(--font-data);
+            font-size: 0.6rem;
+            font-weight: 400;
+            color: var(--muted-text);
+            margin-top: 0.15rem;
+        }
+
+        .flow-node.node-primary {
+            background: var(--primary);
+            color: #F8F9FA;
+            border-color: var(--primary);
+        }
+
+        .flow-node.node-secondary {
+            background: var(--secondary);
+            color: #081C15;
+            border-color: var(--secondary);
+        }
+
+        .flow-node.node-accent {
+            background: var(--accent);
+            color: #081C15;
+            border-color: var(--accent);
+        }
+
+        .flow-arrow {
+            font-family: var(--font-data);
+            font-size: 1.2rem;
+            color: var(--secondary);
+            padding: 0 0.5rem;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.15rem;
+        }
+
+        .flow-arrow .arrow-label {
+            font-size: 0.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted-text);
+            white-space: nowrap;
+        }
+
+        .flow-arrow-down {
+            display: flex;
+            justify-content: center;
+            padding: 0.5rem 0;
+        }
+
+        .flow-arrow-down .arrow-icon {
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+
+        /* ═══ PIPELINE DIAGRAM ═══ */
+        .pipeline-flow {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+
+        .pipeline-stage {
+            flex: 1;
+            min-width: 200px;
+            border: 3px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-brutal-sm);
+        }
+
+        .pipeline-stage .stage-header {
+            padding: 0.75rem 1rem;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            text-align: center;
+            border-bottom: 2px solid var(--panel-border);
+        }
+
+        .pipeline-stage .stage-body {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .pipeline-stage .stage-body .stage-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .pipeline-stage .stage-body .stage-name {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .pipeline-stage .stage-body .stage-desc {
+            font-family: var(--font-data);
+            font-size: 0.65rem;
+            color: var(--muted-text);
+        }
+
+        .pipeline-stage.stage-neural .stage-header { background: rgba(245, 124, 0, 0.1); color: #f57c00; }
+        .pipeline-stage.stage-neural { border-color: #f57c00; }
+
+        .pipeline-stage.stage-symbolic .stage-header { background: rgba(56, 142, 60, 0.1); color: #388e3c; }
+        .pipeline-stage.stage-symbolic { border-color: #388e3c; }
+
+        .pipeline-stage.stage-llm .stage-header { background: rgba(123, 31, 162, 0.1); color: #7b1fa2; }
+        .pipeline-stage.stage-llm { border-color: #7b1fa2; }
+
+        .pipeline-connector {
+            display: flex;
+            align-items: center;
+            padding: 0 0.25rem;
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+
+        /* ═══ SEQUENCE DIAGRAM ═══ */
+        .sequence {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .sequence-step {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .sequence-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 29px;
+            top: 40px;
+            bottom: -8px;
+            width: 2px;
+            background: var(--panel-border);
+        }
+
+        .sequence-step .step-number {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 1.2rem;
+            background: var(--primary);
+            color: #F8F9FA;
+            border-radius: 50%;
+            border: 3px solid var(--panel-border);
+            box-shadow: var(--shadow-brutal-xs);
+            position: relative;
+            z-index: 1;
+        }
+
+        .sequence-step .step-content {
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-brutal-xs);
+            margin-bottom: 0.75rem;
+        }
+
+        .sequence-step .step-title {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .sequence-step .step-desc {
+            font-size: 0.85rem;
+            color: var(--muted-text);
+            line-height: 1.5;
+        }
+
+        .sequence-step .step-actors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.5rem;
+        }
+
+        .sequence-step .actor-tag {
+            font-family: var(--font-data);
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .actor-tag.tag-frontend { color: #7b1fa2; border-color: #7b1fa2; background: rgba(123, 31, 162, 0.08); }
+        .actor-tag.tag-backend { color: #388e3c; border-color: #388e3c; background: rgba(56, 142, 60, 0.08); }
+        .actor-tag.tag-ai { color: #f57c00; border-color: #f57c00; background: rgba(245, 124, 0, 0.08); }
+        .actor-tag.tag-storage { color: #c62828; border-color: #c62828; background: rgba(198, 40, 40, 0.08); }
+        .actor-tag.tag-user { color: #0288d1; border-color: #0288d1; background: rgba(2, 136, 209, 0.08); }
+
+        /* ═══ RANK TIERS ═══ */
+        .rank-tiers {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+        }
+
+        .rank-tier {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 1.25rem 0.75rem;
+            border: 3px solid var(--panel-border);
+            position: relative;
+        }
+
+        .rank-tier:first-child { border-radius: 8px 0 0 8px; }
+        .rank-tier:last-child { border-radius: 0 8px 8px 0; }
+
+        .rank-tier .rank-icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+
+        .rank-tier .rank-name {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 0.15rem;
+        }
+
+        .rank-tier .rank-xp {
+            font-family: var(--font-data);
+            font-size: 0.6rem;
+            color: var(--muted-text);
+        }
+
+        .rank-tier .rank-credits {
+            font-family: var(--font-data);
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-top: 0.25rem;
+        }
+
+        .rank-tier.tier-1 { background: rgba(158, 158, 158, 0.1); }
+        .rank-tier.tier-2 { background: rgba(76, 175, 80, 0.1); }
+        .rank-tier.tier-3 { background: rgba(33, 150, 243, 0.1); }
+        .rank-tier.tier-4 { background: rgba(156, 39, 176, 0.1); }
+        .rank-tier.tier-5 {
+            background: linear-gradient(135deg, rgba(255, 183, 3, 0.15), rgba(255, 111, 0, 0.1));
+            box-shadow: var(--shadow-glow-amber);
+        }
+
+        /* ═══ GRAPH TOPOLOGY ═══ */
+        .graph-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: wrap;
+            padding: 1.5rem;
+        }
+
+        .graph-node {
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            box-shadow: var(--shadow-brutal-xs);
+            min-width: 100px;
+        }
+
+        .graph-node .g-icon { font-size: 1.2rem; display: block; }
+        .graph-node .g-label {
+            font-family: var(--font-data);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .graph-edge {
+            font-family: var(--font-data);
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.25rem 0.5rem;
+            color: var(--secondary);
+        }
+
+        .graph-edge .edge-arrow { font-size: 1rem; }
+
+        /* ═══ BADGE ═══ */
+        .badge {
+            font-family: var(--font-data);
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .badge-cyan { background: rgba(45, 225, 194, 0.15); color: var(--secondary); border: 2px solid var(--secondary); }
+        .badge-amber { background: rgba(255, 183, 3, 0.15); color: #92400E; border: 2px solid var(--accent); }
+        .badge-green { background: rgba(27, 67, 50, 0.1); color: var(--primary); border: 2px solid var(--primary); }
+
+        /* ═══ FOOTER ═══ */
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            text-align: center;
+            border-top: 4px solid var(--panel-border);
+        }
+
+        .footer p {
+            font-family: var(--font-data);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-text);
+        }
+
+        /* ═══ RESPONSIVE ═══ */
+        @media (max-width: 768px) {
+            .hero { padding: 3rem 1.5rem 2rem; }
+            .stakeholder-grid { grid-template-columns: repeat(2, 1fr); }
+            .service-grid { grid-template-columns: 1fr; }
+            .pipeline-flow { flex-direction: column; }
+            .pipeline-connector { transform: rotate(90deg); padding: 0.25rem 0; }
+            .rank-tiers { flex-direction: column; }
+            .rank-tier { border-radius: 8px !important; }
+            .flow-row { flex-wrap: wrap; justify-content: center; }
+        }
+
+        /* ═══ ANIMATIONS ═══ */
+        @keyframes ghost-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.97; }
+        }
+
+        [data-theme="ghost"] .brutal-panel {
+            animation: ghost-flicker 4.6s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button class="theme-btn" data-theme="civic" onclick="setTheme('civic')">Civic</button>
+        <button class="theme-btn" data-theme="ghost" onclick="setTheme('ghost')">Ghost</button>
+    </div>
+
+    <!-- Hero -->
+    <header class="hero">
+        <h1>Likas<span class="accent">Lens</span> Data <span class="amber">Flow</span></h1>
+        <p class="subtitle">Neuro-Symbolic Civic Reporting Platform — Architecture Overview</p>
+    </header>
+
+    <main class="container">
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 1: STAKEHOLDERS
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">👥</span> Stakeholders</h2>
+            <p class="section-subtitle">The actors in the LikasLens ecosystem</p>
+
+            <div class="stakeholder-grid">
+                <div class="stakeholder-card">
+                    <span class="emoji">👤</span>
+                    <div class="name">Citizen</div>
+                    <div class="role">Primary Reporter</div>
+                </div>
+                <div class="stakeholder-card">
+                    <span class="emoji">👻</span>
+                    <div class="name">Ghost User</div>
+                    <div class="role">Anonymous Reporter</div>
+                </div>
+                <div class="stakeholder-card">
+                    <span class="emoji">📊</span>
+                    <div class="name">Analyst</div>
+                    <div class="role">Ticket Manager</div>
+                </div>
+                <div class="stakeholder-card">
+                    <span class="emoji">🔧</span>
+                    <div class="name">Super Admin</div>
+                    <div class="role">Platform Admin</div>
+                </div>
+                <div class="stakeholder-card">
+                    <span class="emoji">🏛️</span>
+                    <div class="name">NGO / Gov</div>
+                    <div class="role">Incident Resolver</div>
+                </div>
+                <div class="stakeholder-card">
+                    <span class="emoji">💰</span>
+                    <div class="name">ESG Sponsor</div>
+                    <div class="role">Credit Funder</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 2: SERVICE ARCHITECTURE
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">🏗️</span> Service Architecture</h2>
+            <p class="section-subtitle">The three pillars of the LikasLens platform</p>
+
+            <div class="service-grid">
+                <div class="service-card service-frontend">
+                    <div class="service-header">
+                        <span class="port">:3000</span>
+                        <h3>Next.js Frontend</h3>
+                    </div>
+                    <div class="service-body">
+                        <ul>
+                            <li>Camera capture + GPS geolocation</li>
+                            <li>Ghost Mode EXIF stripping</li>
+                            <li>Citizen dashboard & leaderboard</li>
+                            <li>PWA with offline queue (IndexedDB)</li>
+                            <li>Supabase Auth integration</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="service-card service-backend">
+                    <div class="service-header">
+                        <span class="port">:8000</span>
+                        <h3>Laravel API</h3>
+                    </div>
+                    <div class="service-body">
+                        <ul>
+                            <li>Report controller + validation</li>
+                            <li>Triage service (AI integration)</li>
+                            <li>Achievement & rank evaluation</li>
+                            <li>Ticket assignment to NGOs</li>
+                            <li>Sanctum auth + RBAC middleware</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="service-card service-ai">
+                    <div class="service-header">
+                        <span class="port">:8001</span>
+                        <h3>FastAPI AI Service</h3>
+                    </div>
+                    <div class="service-body">
+                        <ul>
+                            <li>YOLOv8 object detection</li>
+                            <li>Gremlin graph traversal</li>
+                            <li>Gemini 2.5 Flash summaries</li>
+                            <li>Incident routing engine</li>
+                            <li>Likasy chatbot proxy</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="service-card service-storage">
+                    <div class="service-header">
+                        <span class="port">DATA</span>
+                        <h3>Data Stores</h3>
+                    </div>
+                    <div class="service-body">
+                        <ul>
+                            <li>Supabase PostgreSQL (tickets, users)</li>
+                            <li>Supabase Storage (evidence photos)</li>
+                            <li>Supabase Auth (identity)</li>
+                            <li>Cosmos DB Gremlin (graph routing)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="service-card service-admin">
+                    <div class="service-header">
+                        <span class="port">:3002</span>
+                        <h3>Admin Portal</h3>
+                    </div>
+                    <div class="service-body">
+                        <ul>
+                            <li>Ticket & user management</li>
+                            <li>NGO & law CRUD</li>
+                            <li>Rewards catalog management</li>
+                            <li>Audit log viewer</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 3: MAIN DATA FLOW
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">🔄</span> Main Data Flow</h2>
+            <p class="section-subtitle">How data moves through the system</p>
+
+            <div class="brutal-panel">
+                <div class="panel-body">
+                    <!-- Row 1: Capture -->
+                    <div class="flow-row">
+                        <div class="flow-node">
+                            <span class="node-icon">👤</span>
+                            <div class="node-label">Citizen</div>
+                            <div class="node-sub">Opens PWA</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">→</span>
+                            <span class="arrow-label">photo + GPS</span>
+                        </div>
+                        <div class="flow-node node-primary">
+                            <span class="node-icon">📱</span>
+                            <div class="node-label">Frontend</div>
+                            <div class="node-sub">Camera + Geolocation</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">→</span>
+                            <span class="arrow-label">EXIF strip</span>
+                        </div>
+                        <div class="flow-node node-accent">
+                            <span class="node-icon">👻</span>
+                            <div class="node-label">Ghost Mode</div>
+                            <div class="node-sub">Anonymous</div>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow-down"><span class="arrow-icon">↓</span></div>
+
+                    <!-- Row 2: Transmit -->
+                    <div class="flow-row">
+                        <div class="flow-node node-primary">
+                            <span class="node-icon">📤</span>
+                            <div class="node-label">POST</div>
+                            <div class="node-sub">/api/reports</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">→</span>
+                            <span class="arrow-label">base64 image + GPS</span>
+                        </div>
+                        <div class="flow-node node-secondary">
+                            <span class="node-icon">⚡</span>
+                            <div class="node-label">Laravel API</div>
+                            <div class="node-sub">ReportController::store()</div>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow-down"><span class="arrow-icon">↓</span></div>
+
+                    <!-- Row 3: Store -->
+                    <div class="flow-row">
+                        <div class="flow-node">
+                            <span class="node-icon">🗄️</span>
+                            <div class="node-label">PostgreSQL</div>
+                            <div class="node-sub">Ticket + Evidence</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">←</span>
+                            <span class="arrow-label">create records</span>
+                        </div>
+                        <div class="flow-node node-secondary">
+                            <span class="node-icon">⚡</span>
+                            <div class="node-label">Laravel API</div>
+                            <div class="node-sub">Validate + Store</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">→</span>
+                            <span class="arrow-label">upload image</span>
+                        </div>
+                        <div class="flow-node">
+                            <span class="node-icon">📸</span>
+                            <div class="node-label">Storage</div>
+                            <div class="node-sub">Evidence Photos</div>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow-down"><span class="arrow-icon">↓</span></div>
+
+                    <!-- Row 4: Analyze -->
+                    <div class="flow-row">
+                        <div class="flow-node node-secondary">
+                            <span class="node-icon">🔬</span>
+                            <div class="node-label">Triage Service</div>
+                            <div class="node-sub">AI Analysis</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">→</span>
+                            <span class="arrow-label">base64 image</span>
+                        </div>
+                        <div class="flow-node" style="border-color: #f57c00;">
+                            <span class="node-icon">👁️</span>
+                            <div class="node-label">YOLOv8</div>
+                            <div class="node-sub">Object Detection</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">→</span>
+                            <span class="arrow-label">detections</span>
+                        </div>
+                        <div class="flow-node" style="border-color: #388e3c;">
+                            <span class="node-icon">🔗</span>
+                            <div class="node-label">Gremlin</div>
+                            <div class="node-sub">Law Routing</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">→</span>
+                            <span class="arrow-label">structured data</span>
+                        </div>
+                        <div class="flow-node" style="border-color: #7b1fa2;">
+                            <span class="node-icon">✨</span>
+                            <div class="node-label">Gemini</div>
+                            <div class="node-sub">Summary</div>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow-down"><span class="arrow-icon">↓</span></div>
+
+                    <!-- Row 5: Resolve -->
+                    <div class="flow-row">
+                        <div class="flow-node">
+                            <span class="node-icon">📊</span>
+                            <div class="node-label">Analyst</div>
+                            <div class="node-sub">Reviews Ticket</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">→</span>
+                            <span class="arrow-label">assign</span>
+                        </div>
+                        <div class="flow-node" style="border-color: #0288d1;">
+                            <span class="node-icon">🏛️</span>
+                            <div class="node-label">NGO</div>
+                            <div class="node-sub">Resolves Incident</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="edge-arrow">→</span>
+                            <span class="arrow-label">verify</span>
+                        </div>
+                        <div class="flow-node node-accent">
+                            <span class="node-icon">🏆</span>
+                            <div class="node-label">Citizen</div>
+                            <div class="node-sub">Earns Eco-Credits</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 4: NEURO-SYMBOLIC AI PIPELINE
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">🧠</span> Neuro-Symbolic AI Pipeline</h2>
+            <p class="section-subtitle">Neural detection + Symbolic reasoning + LLM summarization</p>
+
+            <div class="pipeline-flow">
+                <div class="pipeline-stage stage-neural">
+                    <div class="stage-header">Neural Layer</div>
+                    <div class="stage-body">
+                        <span class="stage-icon">👁️</span>
+                        <div class="stage-name">YOLOv8</div>
+                        <div class="stage-desc">Object Detection<br>(yolov8n.pt)</div>
+                    </div>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-stage stage-symbolic">
+                    <div class="stage-header">Symbolic Layer</div>
+                    <div class="stage-body">
+                        <span class="stage-icon">🔗</span>
+                        <div class="stage-name">Gremlin Traversal</div>
+                        <div class="stage-desc">Hazard → Law → Agency<br>Graph Query</div>
+                    </div>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-stage stage-neural">
+                    <div class="stage-header">Neural Layer</div>
+                    <div class="stage-body">
+                        <span class="stage-icon">✨</span>
+                        <div class="stage-name">Gemini 2.5 Flash</div>
+                        <div class="stage-desc">Natural Language<br>Incident Summary</div>
+                    </div>
+                </div>
+                <div class="pipeline-connector">→</div>
+                <div class="pipeline-stage stage-symbolic">
+                    <div class="stage-header">Output</div>
+                    <div class="stage-body">
+                        <span class="stage-icon">📋</span>
+                        <div class="stage-name">Classification</div>
+                        <div class="stage-desc">Violation Type +<br>Routing + Summary</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graph Topology -->
+            <div class="brutal-panel" style="margin-top: 1.5rem;">
+                <div class="panel-header">
+                    <h3>Graph Topology — Cosmos DB Gremlin</h3>
+                    <span class="badge badge-green">Symbolic</span>
+                </div>
+                <div class="panel-body">
+                    <div class="graph-visual">
+                        <div class="graph-node">
+                            <span class="g-icon">👤</span>
+                            <span class="g-label">Citizen</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> REPORTED <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">🚨</span>
+                            <span class="g-label">Incident</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> CLASSIFIED_AS <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">⚖️</span>
+                            <span class="g-label">ViolationType</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> violates <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">📜</span>
+                            <span class="g-label">Law</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> enforced_by <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">🏛️</span>
+                            <span class="g-label">Agency</span>
+                        </div>
+                    </div>
+                    <div class="graph-visual" style="margin-top: 1rem;">
+                        <div class="graph-node">
+                            <span class="g-icon">🚨</span>
+                            <span class="g-label">Incident</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> ASSIGNED_TO <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">🏛️</span>
+                            <span class="g-label">NGO</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 5: REPORT SEQUENCE
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">📋</span> Report Submission Sequence</h2>
+            <p class="section-subtitle">Step-by-step flow from capture to resolution</p>
+
+            <div class="sequence">
+                <div class="sequence-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Capture</div>
+                        <div class="step-desc">Citizen opens /report page on PWA. Camera activates via getUserMedia API. GPS coordinates acquired via navigator.geolocation. Photo captured as base64 JPEG on canvas.</div>
+                        <div class="step-actors">
+                            <span class="actor-tag tag-user">Citizen</span>
+                            <span class="actor-tag tag-frontend">Frontend</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Ghost Mode Check</div>
+                        <div class="step-desc">If Ghost Mode active: EXIF metadata stripped via canvas re-encode. User ID not sent. Reports owned by sentinel anonymous UUID. UI switches to dark stealth theme.</div>
+                        <div class="step-actors">
+                            <span class="actor-tag tag-frontend">Frontend</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Pre-submission Triage</div>
+                        <div class="step-desc">POST /api/reports/triage sends image to AI Service. YOLOv8 runs inference, returns environmental_assessment. If high-risk detected, "Edge Interceptor" modal warns citizen and recommends Ghost Mode.</div>
+                        <div class="step-actors">
+                            <span class="actor-tag tag-frontend">Frontend</span>
+                            <span class="actor-tag tag-backend">Backend</span>
+                            <span class="actor-tag tag-ai">AI Service</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">Report Submission</div>
+                        <div class="step-desc">POST /api/reports with base64 image + GPS + user_id. Laravel validates payload, computes SHA-256 checksum, uploads image to Supabase Storage at evidence/YYYY/MM/DD/.</div>
+                        <div class="step-actors">
+                            <span class="actor-tag tag-backend">Backend</span>
+                            <span class="actor-tag tag-storage">Storage</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-title">Database Transaction</div>
+                        <div class="step-desc">Creates Ticket (status: open), TicketEvidence (storage path, checksum, MIME), and Report record. All within a single DB transaction for atomicity.</div>
+                        <div class="step-actors">
+                            <span class="actor-tag tag-backend">Backend</span>
+                            <span class="actor-tag tag-storage">PostgreSQL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <div class="step-title">AI Classification</div>
+                        <div class="step-desc">Outside transaction (report survives if AI is down). YOLOv8 detects objects → Gremlin traverses hazard→law→agency → Gemini generates 2-sentence incident summary. Results stored as TicketClassification.</div>
+                        <div class="step-actors">
+                            <span class="actor-tag tag-ai">YOLOv8</span>
+                            <span class="actor-tag tag-ai">Gremlin</span>
+                            <span class="actor-tag tag-ai">Gemini</span>
+                            <span class="actor-tag tag-backend">Backend</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-step">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <div class="step-title">Gamification</div>
+                        <div class="step-desc">AchievementService evaluates criteria (report_count, yolov8_class). RankService checks for rank-up. Eco-credit bonuses awarded from corporate-funded CreditPool. Credits deposited to CitizenWallet.</div>
+                        <div class="step-actors">
+                            <span class="actor-tag tag-backend">Backend</span>
+                            <span class="actor-tag tag-storage">PostgreSQL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-step">
+                    <div class="step-number">8</div>
+                    <div class="step-content">
+                        <div class="step-title">Analyst Review</div>
+                        <div class="step-desc">Analyst views ticket list, opens detail with evidence photos + AI classification. Assigns ticket to appropriate NGO via POST /api/ticket-assignments with assignment_reason.</div>
+                        <div class="step-actors">
+                            <span class="actor-tag tag-user">Analyst</span>
+                            <span class="actor-tag tag-backend">Backend</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sequence-step">
+                    <div class="step-number">9</div>
+                    <div class="step-content">
+                        <div class="step-title">Resolution</div>
+                        <div class="step-desc">NGO receives assignment, investigates, marks ticket resolved. LGU verification triggers "lgu_verified_count" achievement for citizen. Dashboard calculates average response time for public accountability.</div>
+                        <div class="step-actors">
+                            <span class="actor-tag tag-user">NGO</span>
+                            <span class="actor-tag tag-backend">Backend</span>
+                            <span class="actor-tag tag-frontend">Frontend</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 6: GAMIFICATION & RANKS
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">🏆</span> Gamification & Rank Tiers</h2>
+            <p class="section-subtitle">Eco-credit reward system funded by corporate ESG sponsors</p>
+
+            <div class="rank-tiers">
+                <div class="rank-tier tier-1">
+                    <span class="rank-icon">👤</span>
+                    <div class="rank-name">Citizen</div>
+                    <div class="rank-xp">0–99 XP</div>
+                    <div class="rank-credits">Starting rank</div>
+                </div>
+                <div class="rank-tier tier-2">
+                    <span class="rank-icon">👁️</span>
+                    <div class="rank-name">Observer</div>
+                    <div class="rank-xp">100–999 XP</div>
+                    <div class="rank-credits">+25 eco-credits</div>
+                </div>
+                <div class="rank-tier tier-3">
+                    <span class="rank-icon">🛡️</span>
+                    <div class="rank-name">Steward</div>
+                    <div class="rank-xp">1,000–4,999 XP</div>
+                    <div class="rank-credits">+75 eco-credits</div>
+                </div>
+                <div class="rank-tier tier-4">
+                    <span class="rank-icon">⚔️</span>
+                    <div class="rank-name">Guardian</div>
+                    <div class="rank-xp">5,000–9,999 XP</div>
+                    <div class="rank-credits">+200 eco-credits</div>
+                </div>
+                <div class="rank-tier tier-5">
+                    <span class="rank-icon">🏆</span>
+                    <div class="rank-name">Eco Champion</div>
+                    <div class="rank-xp">10,000+ XP</div>
+                    <div class="rank-credits">+500 eco-credits</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>LikasLens — Neuro-Symbolic Civic Reporting Platform — Data Flow Architecture</p>
+    </footer>
+
+    <script>
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+    </script>
+</body>
+</html>
