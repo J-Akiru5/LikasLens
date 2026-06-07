@@ -23,6 +23,21 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
     # Startup
     print("[startup] LikasLens AI Service starting...")
+    from image_analysis import load_coco_model, load_env_model
+
+    try:
+        load_coco_model()
+        print("[startup] COCO model loaded")
+    except Exception as exc:
+        print(f"[startup] WARNING: COCO model failed to load: {exc}")
+
+    try:
+        load_env_model()
+        print("[startup] Environmental model loaded")
+    except Exception as exc:
+        print(f"[startup] WARNING: Environmental model not loaded: {exc}")
+
+    print("[startup] Ready")
     yield
     # Shutdown
     print("[shutdown] LikasLens AI Service shutting down...")
@@ -36,13 +51,11 @@ app = FastAPI(
 )
 
 # Configure CORS
+_cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3002,http://localhost:8000")
+allow_origins = [o.strip() for o in _cors_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Next.js frontend
-        "http://localhost:3002",  # Next.js admin-portal
-        "http://localhost:8000",  # Laravel backend
-    ],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
