@@ -126,13 +126,23 @@ async def analyze_base64_image(payload: dict):
 
 @app.get("/analyze/model")
 async def analyze_model_status():
-    """Return the currently loaded YOLO model info."""
-    from image_analysis import ENVIRONMENTAL_KEYWORDS, _MODEL_NAME, get_model_path
+    """Return the currently loaded YOLO model info (COCO + environmental)."""
+    from image_analysis import (
+        ENV_MODEL_CLASS_MAP,
+        ENVIRONMENTAL_KEYWORDS,
+        _COCO_MODEL_NAME,
+        _ENV_MODEL_NAME,
+        get_coco_model_path,
+        get_env_model_path,
+    )
 
     return {
-        "model": _MODEL_NAME or "not loaded",
-        "model_path": get_model_path(),
-        "known_classes": len(ENVIRONMENTAL_KEYWORDS),
+        "coco_model": _COCO_MODEL_NAME or "not loaded",
+        "coco_model_path": get_coco_model_path(),
+        "environmental_model": _ENV_MODEL_NAME or "not loaded",
+        "environmental_model_path": get_env_model_path(),
+        "coco_classes": len(ENVIRONMENTAL_KEYWORDS),
+        "env_classes": len(ENV_MODEL_CLASS_MAP),
     }
 
 

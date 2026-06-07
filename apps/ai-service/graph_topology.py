@@ -34,6 +34,7 @@ EDGE_LABELS = [
     "RELATED_TO",
     "violates",
     "enforced_by",
+    "classified_from",
 ]
 
 
