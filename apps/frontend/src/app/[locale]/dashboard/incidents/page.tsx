@@ -6,7 +6,7 @@ import type { Ticket } from "@likaslens/shared";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
-import { Funnel, DotsThreeVertical, Eye, UserCheck, Flag, Trash, X, MagnifyingGlass } from "@phosphor-icons/react";
+import { Filter, MoreVertical, Eye, UserCheck, Flag, Trash2, X, Search } from "lucide-react";
 
 const statusDot: Record<string, string> = {
   open: "bg-[#c27a2e]",
@@ -105,7 +105,7 @@ export default function IncidentsPage() {
               <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Reported Incidents</h1>
               <div className="flex items-center gap-3">
                 <div className="relative">
-                  <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30" />
                   <input
                     type="text"
                     inputMode="search"
@@ -119,7 +119,7 @@ export default function IncidentsPage() {
                   onClick={() => setShowFilters(!showFilters)}
                   className={`p-2.5 border transition-colors rounded-lg ${showFilters ? "bg-ink/[0.04] border-ink/30" : "border-ink/10 text-ink/40 hover:text-ink"}`}
                 >
-                  <Funnel className="w-4 h-4" />
+                  <Filter className="w-4 h-4" />
                 </button>
                 {hasActiveFilters && (
                   <button
@@ -197,21 +197,21 @@ export default function IncidentsPage() {
                           aria-label="Row actions"
                           aria-expanded={openMenuId === ticket.id}
                         >
-                          <DotsThreeVertical className="w-4 h-4" />
+                          <MoreVertical className="w-4 h-4" />
                         </button>
                         {openMenuId === ticket.id && (
                           <div ref={menuRef} className="absolute right-4 mt-8 z-50 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden">
                             <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
-                              <Eye className="w-4 h-4" weight="bold" /> View Details
+                              <Eye className="w-4 h-4" /> View Details
                             </button>
                             <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
-                              <UserCheck className="w-4 h-4" weight="bold" /> Assign
+                              <UserCheck className="w-4 h-4" /> Assign
                             </button>
                             <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
-                              <Flag className="w-4 h-4" weight="bold" /> Change Status
+                              <Flag className="w-4 h-4" /> Change Status
                             </button>
                             <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/50 hover:text-[#b23b3b] transition-colors">
-                              <Trash className="w-4 h-4" /> Remove
+                              <Trash2 className="w-4 h-4" /> Remove
                             </button>
                           </div>
                         )}
@@ -233,21 +233,21 @@ export default function IncidentsPage() {
                             aria-label="Row actions"
                             aria-expanded={openMenuId === ticket.id}
                           >
-                            <DotsThreeVertical className="w-4 h-4" />
+                            <MoreVertical className="w-4 h-4" />
                           </button>
                           {openMenuId === ticket.id && (
                             <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden">
                               <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
-                                <Eye className="w-4 h-4" weight="bold" /> View Details
+                                <Eye className="w-4 h-4" /> View Details
                               </button>
                               <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
-                                <UserCheck className="w-4 h-4" weight="bold" /> Assign
+                                <UserCheck className="w-4 h-4" /> Assign
                               </button>
                               <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
-                                <Flag className="w-4 h-4" weight="bold" /> Change Status
+                                <Flag className="w-4 h-4" /> Change Status
                               </button>
                               <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/50 hover:text-[#b23b3b] transition-colors">
-                                <Trash className="w-4 h-4" /> Remove
+                                <Trash2 className="w-4 h-4" /> Remove
                               </button>
                             </div>
                           )}

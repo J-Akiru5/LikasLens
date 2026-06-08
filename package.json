@@ -8,9 +8,7 @@
     "build": "pnpm -r run build",
     "lint": "pnpm -r run lint",
     "syncpack:list": "syncpack list-mismatches",
-    "syncpack:fix": "syncpack fix-mismatches",
-    "check:health": "node scripts/integration-check.mjs",
-    "check:auth": "node scripts/auth-flow-test.mjs"
+    "syncpack:fix": "syncpack fix-mismatches"
   },
   "devDependencies": {
     "syncpack": "^14.3.0"

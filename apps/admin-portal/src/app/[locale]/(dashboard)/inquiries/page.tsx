@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { laravelGet, laravelPatch } from "@likaslens/shared";
 import type { PaginatedResponse, ApiResponse } from "@likaslens/shared";
 import { Spinner, showToast } from "@likaslens/shared";
-import { MessageSquare, Mail, User, Clock, CheckCircle2 } from "lucide-react";
+import { Mail, User, Clock, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ContactMessage {
@@ -70,7 +70,7 @@ export default function InquiriesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className={`brutal-panel panel-surface p-6 border-2 transition-all ${
                   msg.status === "unread"
-                    ? "border-emerald-400 shadow-[4px_4px_0px_#047857] bg-emerald-50"
+                    ? "border-green shadow-[4px_4px_0px_var(--green)] bg-green/5"
                     : "border-primary/20 shadow-[2px_2px_0px_rgba(27,67,50,0.2)] opacity-70"
                 }`}
               >

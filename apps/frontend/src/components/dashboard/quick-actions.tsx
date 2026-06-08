@@ -1,13 +1,13 @@
 "use client";
 
-import { Camera, MapPin, ShareNetwork, ShieldWarning } from "@phosphor-icons/react";
+import { Camera, MapPin, Share2, ShieldAlert } from "lucide-react";
 import { motion } from "framer-motion";
 
 const actions = [
   { icon: Camera, label: "New Report", desc: "Submit evidential data", color: "border-accent" },
   { icon: MapPin, label: "Geo-Tag", desc: "Mark hazard location", color: "border-secondary" },
-  { icon: ShareNetwork, label: "Broadcast", desc: "Alert local agencies", color: "border-accent" },
-  { icon: ShieldWarning, label: "Ghost Mode", desc: "Anonymous submission", color: "border-accent" },
+  { icon: Share2, label: "Broadcast", desc: "Alert local agencies", color: "border-accent" },
+  { icon: ShieldAlert, label: "Ghost Mode", desc: "Anonymous submission", color: "border-accent" },
 ];
 
 export function QuickActions() {

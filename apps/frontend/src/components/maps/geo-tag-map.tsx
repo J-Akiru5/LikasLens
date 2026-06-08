@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useState } from "react";
-import { MapPin, NavigationArrow } from "@phosphor-icons/react";
+import { MapPin, Navigation } from "lucide-react";
 import type L from "leaflet";
 
 interface GeoTagMapProps {
@@ -140,7 +140,7 @@ export function GeoTagMap({ initialLat, initialLng, onLocationChange, height = "
         onClick={handleGPSLocate}
         className="bg-accent text-white rounded-lg px-4 py-2 text-sm font-semibold uppercase flex items-center gap-2 hover:opacity-90 transition-opacity"
       >
-        <NavigationArrow className="w-4 h-4" /> Auto-Detect My Location
+        <Navigation className="w-4 h-4" /> Auto-Detect My Location
       </button>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChartBar, ArrowUpRight } from "@phosphor-icons/react";
+import { BarChart3, ArrowUpRight } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { AppHeader } from "@/components/layout/header";
 import { BottomNav } from "@/components/layout/bottom-nav";
@@ -16,7 +16,7 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-center min-h-[60dvh]">
       <div className="text-center max-w-md space-y-6">
         <div className="space-y-2">
-          <ChartBar className="w-8 h-8 text-muted mx-auto" />
+          <BarChart3 className="w-8 h-8 text-muted mx-auto" />
           <h2 className="font-semibold text-xl text-ink tracking-tight">Analytics Moved</h2>
         </div>
         <p className="font-mono text-sm text-muted leading-relaxed">

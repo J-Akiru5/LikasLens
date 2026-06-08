@@ -1,37 +1,24 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { signIn } from "@/lib/auth";
 import { showToast } from "@likaslens/shared";
-import { Leaf, Eye, EyeOff } from "lucide-react";
+import { Leaf, Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
 
 export function LoginClient() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    const savedEmail = localStorage.getItem("remembered_email");
-    if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
-    }
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
       await signIn(email, password);
-      if (rememberMe) {
-        localStorage.setItem("remembered_email", email);
-      } else {
-        localStorage.removeItem("remembered_email");
-      }
       showToast("Signed in successfully", "success");
       router.push("/dashboard");
     } catch (err: unknown) {
@@ -47,65 +34,115 @@ export function LoginClient() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background font-body px-4">
-      <div className="w-full max-w-sm">
-        <div className="brutal-panel panel-surface p-8 border-2 border-primary shadow-[8px_8px_0px_#1b4332]">
-          <div className="mb-6 text-center">
-            <div className="flex items-center justify-center gap-2 text-primary mb-4">
-              <Leaf className="w-8 h-8" />
-              <h1 className="font-heading text-2xl font-black uppercase tracking-tighter">LikasLens Admin</h1>
-            </div>
-            <p className="font-mono text-sm surface-muted">Sign in with your admin account</p>
+    <main className="min-h-dvh flex items-center justify-center p-4 sm:p-6 relative overflow-hidden selection:bg-[#FFB703]/30 selection:text-current">
+      {/* Background — forest with blur */}
+      <div className="absolute inset-0 z-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=3270&auto=format&fit=crop')",
+          }}
+        />
+        <div className="absolute inset-0 backdrop-blur-[2px] bg-background/50" />
+        {/* Mesh gradient */}
+        <div className="absolute inset-0 opacity-40" style={{
+          background: "radial-gradient(ellipse at 30% 20%, rgba(45,225,194,0.12) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(255,183,3,0.08) 0%, transparent 50%)",
+        }} />
+      </div>
+
+      <div className="relative z-10 w-full max-w-md">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <div className="w-16 h-16 rounded-full bg-[#1B4332] flex items-center justify-center shadow-[4px_4px_0px_#081c15]">
+            <Leaf className="w-8 h-8 text-[#2DE1C2]" />
           </div>
+        </div>
+
+        {/* Card */}
+        <div className="p-8 md:p-10 rounded-2xl border border-ink/10 bg-background/80 backdrop-blur-xl shadow-[8px_8px_0px_#1B4332]">
+          <div className="mb-8 text-center">
+            <h1 className="font-heading text-3xl font-black tracking-tight mb-2">
+              Welcome Back
+            </h1>
+            <p className="font-mono text-sm text-ink/50 uppercase tracking-widest">
+              Admin Portal Access
+            </p>
+          </div>
+
           {error && (
-            <div className="mb-4 rounded border-2 border-amber-400 bg-amber-50 p-3 font-mono text-sm text-amber-800">
-              {error}
+            <div className="mb-6 p-4 rounded-xl border-2 border-red bg-red/10 font-mono text-sm text-red flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" />
+              <span>{error}</span>
             </div>
           )}
-          <form onSubmit={handleSubmit} className="space-y-4">
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block font-mono text-sm font-bold uppercase mb-2">Email</label>
-              <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full brutal-panel theme-input px-3 py-2 font-mono text-sm rounded"
-                placeholder="admin@likaslens.ph" />
+              <label htmlFor="email" className="block font-mono text-sm font-bold uppercase mb-2 tracking-wider">
+                Email Address
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border-2 border-ink/10 bg-background font-medium focus:border-[#1B4332] focus:ring-0 outline-none transition-colors"
+                placeholder="admin@likaslens.ph"
+              />
             </div>
             <div>
-              <label htmlFor="password" className="block font-mono text-sm font-bold uppercase mb-2">Password</label>
+              <label htmlFor="password" className="block font-mono text-sm font-bold uppercase mb-2 tracking-wider">
+                Password
+              </label>
               <div className="relative">
-                <input id="password" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                  className="w-full brutal-panel theme-input px-3 py-2 pr-10 font-mono text-sm rounded" />
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-ink/10 bg-background font-medium focus:border-[#1B4332] focus:ring-0 outline-none transition-colors"
+                  placeholder="••••••••"
+                />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/30 hover:text-ink/60 transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="remember-me"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-5 h-5 border-2 border-primary rounded accent-secondary cursor-pointer"
-              />
-              <label
-                htmlFor="remember-me"
-                className="font-mono text-sm font-bold uppercase cursor-pointer select-none"
-              >
-                Remember Me
-              </label>
-            </div>
-            <button type="submit" disabled={loading}
-              className="w-full brutal-button font-heading font-black uppercase tracking-wide py-3 rounded shadow-[3px_3px_0px_#1b4332] hover:brightness-105 disabled:opacity-50 transition-all">
-              {loading ? "Signing in..." : "Sign in"}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#FFB703] text-[#081C15] font-black uppercase tracking-wide text-lg hover:bg-[#e6a503] disabled:opacity-50 transition-all shadow-[4px_4px_0px_#1B4332] hover:shadow-[6px_6px_0px_#1B4332] hover:-translate-y-0.5"
+            >
+              {loading ? (
+                <span className="animate-pulse">Signing in...</span>
+              ) : (
+                <>
+                  Sign In <ArrowRight className="w-5 h-5" />
+                </>
+              )}
             </button>
           </form>
         </div>
+
+        {/* Footer links */}
+        <div className="mt-8 text-center space-y-3">
+          <Link
+            href="/"
+            className="font-mono text-xs uppercase tracking-widest text-ink/40 hover:text-[#1B4332] transition-colors"
+          >
+            &larr; Back to Home
+          </Link>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

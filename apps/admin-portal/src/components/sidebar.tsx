@@ -21,6 +21,7 @@ import {
   Leaf,
   X,
   MessageSquare,
+  Fingerprint,
 } from "lucide-react";
 
 const navItems = [
@@ -42,6 +43,19 @@ export function Sidebar() {
   const [role, setRole] = useState<Role>("citizen");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isGhostMode, setIsGhostMode] = useState(false);
+
+  useEffect(() => {
+    const theme = document.documentElement.getAttribute("data-theme");
+    setIsGhostMode(theme === "ghost");
+
+    const observer = new MutationObserver(() => {
+      const current = document.documentElement.getAttribute("data-theme");
+      setIsGhostMode(current === "ghost");
+    });
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -52,8 +66,6 @@ export function Sidebar() {
     });
   }, []);
 
-  if (pathname === "/login") return null;
-
   const closeMobile = () => setMobileOpen(false);
 
   async function handleSignOut() {
@@ -63,6 +75,13 @@ export function Sidebar() {
   }
 
   const visibleItems = navItems.filter((item) => item.roles.includes(role));
+
+  const toggleGhostMode = () => {
+    const newTheme = isGhostMode ? "civic" : "ghost";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
+    setIsGhostMode(!isGhostMode);
+  };
 
   const sidebarContent = (
     <>
@@ -95,6 +114,33 @@ export function Sidebar() {
           );
         })}
       </nav>
+
+      <div className="px-4 py-2">
+        <button
+          onClick={toggleGhostMode}
+          className={`flex items-center justify-between w-full px-4 py-3 rounded transition-all ${
+            isGhostMode
+              ? "bg-[#2EE6C8]/10 border-2 border-[#2EE6C8]/30"
+              : "border-2 border-primary/20 hover:border-primary"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <Fingerprint className={`w-4 h-4 ${isGhostMode ? "text-[#2EE6C8]" : "text-primary/40"}`} />
+            {!collapsed && (
+              <span className={`font-mono text-xs uppercase tracking-wider ${isGhostMode ? "text-[#2EE6C8]" : "text-primary/50"}`}>
+                Ghost Mode
+              </span>
+            )}
+          </div>
+          <div className={`w-8 h-4 rounded-full border-2 flex items-center transition-colors ${
+            isGhostMode ? "bg-[#2EE6C8]/20 border-[#2EE6C8]" : "bg-primary/10 border-primary/20"
+          }`}>
+            <div className={`w-3 h-3 rounded-full transition-all ${
+              isGhostMode ? "ml-auto mr-0.5 bg-[#2EE6C8]" : "ml-0.5 mr-auto bg-primary/40"
+            }`} />
+          </div>
+        </button>
+      </div>
 
       <div className="p-6 border-t-4 border-primary">
         <button

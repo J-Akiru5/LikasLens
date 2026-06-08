@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { AppHeader } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
-import { Scales, MagnifyingGlass, ArrowSquareOut, Spinner } from "@phosphor-icons/react";
+import { Scale, Search, ExternalLink, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { laravelGet, type PaginatedResponse } from "@likaslens/shared";
 
@@ -67,7 +67,7 @@ export default function LawsPage() {
         </p>
 
         <div className="relative max-w-lg">
-          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
             placeholder="Search by title, law code, or keyword..."
@@ -79,7 +79,7 @@ export default function LawsPage() {
 
         {loading && (
           <div className="flex justify-center py-12">
-            <Spinner className="w-6 h-6 text-muted animate-spin" weight="bold" />
+            <Loader2 className="w-6 h-6 text-muted animate-spin" />
           </div>
         )}
 
@@ -93,7 +93,7 @@ export default function LawsPage() {
           <div className="space-y-4">
             {filtered.length === 0 ? (
               <div className="py-16 text-center space-y-3">
-                <Scales className="w-8 h-8 text-muted mx-auto" weight="bold" />
+                <Scale className="w-8 h-8 text-muted mx-auto" />
                 <p className="font-semibold tracking-tight text-lg text-ink/50">{search ? "No matching laws found" : "No laws available"}</p>
                 <p className="font-mono text-sm text-ink/40">{search ? "Try a different search term." : "Check back soon for Philippine environmental legislation."}</p>
               </div>
@@ -107,7 +107,7 @@ export default function LawsPage() {
                     <div key={law.id} className="border border-ink/10 p-5 hover:bg-ink/[0.02] transition-colors rounded-xl">
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 rounded border border-ink/10 flex items-center justify-center shrink-0">
-                          <Scales className="w-4 h-4 text-muted" />
+                           <Scale className="w-4 h-4 text-muted" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -127,7 +127,7 @@ export default function LawsPage() {
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1 font-mono text-xs text-ink/40 hover:text-ink transition-colors"
                               >
-                                <ArrowSquareOut className="w-3 h-3" />
+                                <ExternalLink className="w-3 h-3" />
                                 Source
                               </a>
                             )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CaretDown } from "@phosphor-icons/react";
+import { ChevronDown } from "lucide-react";
 
 const faqs = [
   {
@@ -61,10 +61,9 @@ export function FaqSection() {
                 aria-expanded={isOpen}
               >
                 <span className="text-lg md:text-xl text-ink font-medium pr-4">{faq.q}</span>
-                <CaretDown
-                  className={`w-5 h-5 shrink-0 text-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                  weight="bold"
-                />
+                  <ChevronDown
+                   className={`w-5 h-5 shrink-0 text-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                 />
               </button>
               {isOpen && (
                 <div className="pb-6">

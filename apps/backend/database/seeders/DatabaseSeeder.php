@@ -17,15 +17,12 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             EnvironmentalLawSeeder::class,
-            AseanLawSeeder::class,
-            ViolationTypeSeeder::class,
             LawSeeder::class,
             NgoSeeder::class,
             IncidentSeeder::class,
             AchievementSeeder::class,
             CurrencySettingSeeder::class,
             EcoCreditPoolSeeder::class,
-            DemoDataSeeder::class,
         ]);
 
         User::firstOrCreate(

@@ -1,11 +1,28 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Geist, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
-import { LikasyChat, ToastContainer } from "@likaslens/shared";
+import { LikasyChat } from "@likaslens/shared";
 import { locales, type Locale } from "@likaslens/shared";
+
+const bodyFont = Geist({
+  variable: "--font-body",
+  subsets: ["latin"],
+});
+
+const dataFont = JetBrains_Mono({
+  variable: "--font-data",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
 
 export const metadata: Metadata = {
   title: "LikasLens Admin",
   description: "Admin portal for LikasLens civic reporting platform",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1B4332",
 };
 
 export function generateStaticParams() {
@@ -21,10 +38,24 @@ export default async function RootLayout({
 }) {
   const resolvedParams = await params;
   return (
-    <html lang={resolvedParams?.locale === "ta" ? "ta" : (resolvedParams?.locale || "en")} className="h-full antialiased" data-theme="civic">
-      <body className="min-h-full bg-background font-body flex flex-col">
+    <html
+      lang={resolvedParams?.locale === "ta" ? "ta" : (resolvedParams?.locale || "en")}
+      className={`${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
+      data-theme="civic"
+      suppressHydrationWarning
+    >
+      <head>
+        <Script id="theme-initializer" strategy="beforeInteractive">
+          {`try {
+            var theme = localStorage.getItem('likaslens-theme');
+            if (theme === 'ghost') {
+              document.documentElement.setAttribute('data-theme', 'ghost');
+            }
+          } catch (e) {}`}
+        </Script>
+      </head>
+      <body className="min-h-full bg-page font-body flex flex-col antialiased">
         <div className="flex-1">
-          <ToastContainer />
           {children}
         </div>
         <LikasyChat persona="admin" locale={resolvedParams.locale} />

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { User, SignOut, SquaresFour, UserCircle, CaretDown } from "@phosphor-icons/react";
+import { User, LogOut, LayoutGrid, UserCircle2, ChevronDown } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { showToast, setLaravelAuthToken } from "@likaslens/shared";
@@ -118,7 +118,7 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
             <User className={`w-4 h-4 ${invert ? "text-white/90" : "text-ink/70"}`} />
           )}
         </div>
-        <CaretDown
+        <ChevronDown
           className={`w-3.5 h-3.5 transition-transform duration-300 ${isOpen ? "rotate-180" : ""} ${invert ? "text-white/70" : "text-ink/60"}`}
         />
       </button>
@@ -146,7 +146,7 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
                   style={{ borderRadius: 8 }}
                   onClick={() => setIsOpen(false)}
                 >
-                  <SquaresFour className="w-4 h-4" />
+                  <LayoutGrid className="w-4 h-4" />
                   Dashboard
                 </Link>
                 <Link
@@ -155,7 +155,7 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
                   style={{ borderRadius: 8 }}
                   onClick={() => setIsOpen(false)}
                 >
-                  <UserCircle className="w-4 h-4" />
+                  <UserCircle2 className="w-4 h-4" />
                   Profile Settings
                 </Link>
                 <button
@@ -163,7 +163,7 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
                   style={{ borderRadius: 8 }}
                   onClick={handleLogout}
                 >
-                  <SignOut className="w-4 h-4" />
+                  <LogOut className="w-4 h-4" />
                   Logout
                 </button>
               </div>
