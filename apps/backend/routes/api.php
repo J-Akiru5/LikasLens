@@ -4,6 +4,7 @@ use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\AdminAuditLogController;
 use App\Http\Controllers\AdminLawController;
 use App\Http\Controllers\AdminNgoController;
+use App\Http\Controllers\AdminPartnerStoreController;
 use App\Http\Controllers\AdminRewardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AuthController;
@@ -60,17 +61,6 @@ Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
 Route::get('/tickets', [TicketController::class, 'index']);
 Route::get('/tickets/{id}', [TicketController::class, 'show']);
 
-// Public users list (used by frontend Supabase workflow)
-Route::get('/admin/users', [AdminUserController::class, 'index']);
-
-// Public NGO catalog (admin portal reads)
-Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
-Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
-
-// Public law reference (admin portal reads)
-Route::get('/admin/laws', [AdminLawController::class, 'index']);
-Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
-
 // Auth endpoints
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -115,6 +105,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/dashboard/feed', [DashboardController::class, 'feed']);
 
+    // Authorised admin read endpoints (any authenticated role)
+    Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
+    Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
+    Route::get('/admin/laws', [AdminLawController::class, 'index']);
+    Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
+    Route::get('/admin/users', [AdminUserController::class, 'index']);
+    Route::get('/admin/partner-stores', [AdminPartnerStoreController::class, 'index']);
+    Route::get('/admin/partner-stores/{id}', [AdminPartnerStoreController::class, 'show']);
+
     // Analyst+ routes
     Route::middleware('role:analyst,super_admin')->group(function () {
         Route::apiResource('ticket-assignments', TicketAssignmentController::class);
@@ -128,38 +127,48 @@ Route::middleware('auth:sanctum')->group(function () {
     // Super admin only routes
     Route::middleware('role:super_admin')->group(function () {
 
-        // 1. INSERT THE NEW ROUTE SYNC GROUP HERE:
         Route::prefix('v1/likaslens-admin')->group(function () {
             Route::get('/users/sync', [AdminUserController::class, 'index']);
         });
 
-        // Full NGO CRUD
+        // ── NGO Management ──────────────────────────────────────────
         Route::post('/admin/ngos', [AdminNgoController::class, 'store']);
         Route::put('/admin/ngos/{id}', [AdminNgoController::class, 'update']);
+        Route::patch('/admin/ngos/{id}/toggle-active', [AdminNgoController::class, 'toggleActive']);
+        Route::patch('/admin/ngos/{id}/toggle-verified', [AdminNgoController::class, 'toggleVerified']);
         Route::delete('/admin/ngos/{id}', [AdminNgoController::class, 'destroy']);
 
-        // Full Laws CRUD
+        // ── Law Management ──────────────────────────────────────────
         Route::post('/admin/laws', [AdminLawController::class, 'store']);
         Route::put('/admin/laws/{id}', [AdminLawController::class, 'update']);
         Route::delete('/admin/laws/{id}', [AdminLawController::class, 'destroy']);
+        Route::patch('/admin/laws/{id}/restore', [AdminLawController::class, 'restore']);
+        Route::get('/admin/laws/trashed', [AdminLawController::class, 'trashed']);
 
-        // Rewards catalog
+        // ── Rewards Catalog ─────────────────────────────────────────
         Route::apiResource('/admin/rewards', AdminRewardController::class);
 
-        // Currency settings
+        // ── Partner Stores ──────────────────────────────────────────
+        Route::post('/admin/partner-stores', [AdminPartnerStoreController::class, 'store']);
+        Route::put('/admin/partner-stores/{id}', [AdminPartnerStoreController::class, 'update']);
+        Route::patch('/admin/partner-stores/{id}/toggle-active', [AdminPartnerStoreController::class, 'toggleActive']);
+        Route::delete('/admin/partner-stores/{id}', [AdminPartnerStoreController::class, 'destroy']);
+
+        // ── Currency Settings ───────────────────────────────────────
         Route::apiResource('/admin/currency-settings', CurrencySettingController::class);
 
-        // User management (index is public above)
+        // ── User Management ─────────────────────────────────────────
         Route::get('/admin/users/{id}', [AdminUserController::class, 'show']);
         Route::put('/admin/users/{id}', [AdminUserController::class, 'update']);
         Route::put('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);
         Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']);
+        Route::patch('/admin/users/{id}/restore', [AdminUserController::class, 'restore']);
 
-        // Audit logs
+        // ── Audit Logs ──────────────────────────────────────────────
         Route::get('/admin/audit-logs', [AdminAuditLogController::class, 'index']);
         Route::get('/admin/audit-logs/{id}', [AdminAuditLogController::class, 'show']);
 
-        // Contact messages (Inquiries)
+        // ── Contact Messages (Inquiries) ────────────────────────────
         Route::get('/admin/contact-messages', [ContactMessageController::class, 'index']);
         Route::patch('/admin/contact-messages/{id}/read', [ContactMessageController::class, 'markAsRead']);
     });
