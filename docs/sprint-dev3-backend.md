@@ -47,22 +47,184 @@
 
 ---
 
-### Task 1.2: Fix Azure Container App Environment Variables
+### Task 1.2: Fix Azure Container Apps — Switch Registry from ACR to ghcr.io
 **Time:** 3h | **Priority:** CRITICAL
 
-**Steps:**
-1. Log into Azure Portal → Container Apps
-2. Update backend Container App env vars:
-   - `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
-   - `APP_KEY` (generate with `php artisan key:generate`)
-   - `APP_ENV=production`
-   - `APP_DEBUG=false`
-   - `AI_SERVICE_URL` (internal URL for AI service)
-3. Restart backend Container App
-4. Test: `curl https://<backend-url>/api/health`
-5. Verify AI service Container App is running and accessible internally
+**Problem:** The Azure Container Registry (`likaslensregistry`) was deleted due to cost. Both Container Apps (backend + AI service) have `ImagePullBackOff` errors — they can't pull images from a registry that no longer exists.
+
+**Solution:** Switch CI/CD to push images to **GitHub Container Registry (ghcr.io)** instead. Since the LikasLens repo is public, ghcr.io is completely free — no ACR needed.
+
+---
+
+#### Step 1: Update the Backend GitHub Actions Workflow
+
+**File:** `.github/workflows/likaslens-backend-AutoDeployTrigger-03d66e26-917e-4e72-b9d3-b716a27a2988.yml`
+
+Replace the registry references:
+
+| Line | Current (broken) | New |
+|------|-------------------|-----|
+| permissions | `contents: read` | Add `packages: write` |
+| registryUrl | `likaslensregistry.azurecr.io` | `ghcr.io` |
+| registryUsername | `${{ secrets.LIKASLENSBACKEND_REGISTRY_USERNAME }}` | `${{ github.actor }}` |
+| registryPassword | `${{ secrets.LIKASLENSBACKEND_REGISTRY_PASSWORD }}` | `${{ secrets.GITHUB_TOKEN }}` |
+| imageToBuild | `likaslensregistry.azurecr.io/likaslens-backend:${{ github.sha }}` | `ghcr.io/${{ github.repository }}/likaslens-backend:${{ github.sha }}` |
+
+**Updated workflow should look like:**
+
+```yaml
+name: Trigger auto deployment for likaslens-backend
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/likaslens-backend-AutoDeployTrigger-*.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      packages: write    # Required for ghcr.io push
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.LIKASLENSBACKEND_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.LIKASLENSBACKEND_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.LIKASLENSBACKEND_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}/apps/backend
+          registryUrl: ghcr.io
+          registryUsername: ${{ github.actor }}
+          registryPassword: ${{ secrets.GITHUB_TOKEN }}
+          containerAppName: likaslens-backend
+          resourceGroup: likaslens
+          imageToBuild: ghcr.io/${{ github.repository }}/likaslens-backend:${{ github.sha }}
+```
+
+---
+
+#### Step 2: Update the AI Service GitHub Actions Workflow
+
+**File:** `.github/workflows/likaslens-ai-service-AutoDeployTrigger-246f1a2c-6c72-4a80-b0b8-906dda9f04e9.yml`
+
+Same changes as above:
+
+| Line | Current (broken) | New |
+|------|-------------------|-----|
+| permissions | `contents: read` | Add `packages: write` |
+| registryUrl | `likaslensregistry.azurecr.io` | `ghcr.io` |
+| registryUsername | `${{ secrets.LIKASLENSAISERVICE_REGISTRY_USERNAME }}` | `${{ github.actor }}` |
+| registryPassword | `${{ secrets.LIKASLENSAISERVICE_REGISTRY_PASSWORD }}` | `${{ secrets.GITHUB_TOKEN }}` |
+| imageToBuild | `likaslensregistry.azurecr.io/likaslens-ai-service:${{ github.sha }}` | `ghcr.io/${{ github.repository }}/likaslens-ai-service:${{ github.sha }}` |
+
+---
+
+#### Step 3: Push Changes to `main`
+
+Merge the updated workflow files to `main`. The GitHub Actions pipeline will:
+1. Build the Docker image from `apps/backend/Dockerfile`
+2. Push it to `ghcr.io/j-akiru5/likas-lens/likaslens-backend:<commit-sha>`
+3. Deploy it to the Azure Container App
+
+---
+
+#### Step 4: Set Container App Environment Variables (Backend)
+
+After the first successful deploy, set the backend env vars via Azure Cloud Shell:
+
+```bash
+az containerapp update \
+  --name likaslens-backend \
+  --resource-group likaslens \
+  --set-env-vars \
+    APP_ENV=production \
+    APP_DEBUG=false \
+    APP_KEY="base64:isMyFTXZYcT+KplXlw37lFSrpd8k95X3lzIS3G2nJiI=" \
+    DB_CONNECTION=pgsql \
+    DB_HOST="db.sfklmmtimelotqvrldni.supabase.co" \
+    DB_PORT=5432 \
+    DB_DATABASE=postgres \
+    DB_USERNAME="postgres.sfklmmtimelotqvrldni" \
+    DB_PASSWORD="RZCpSUDmyRJ1uKVH" \
+    LOG_CHANNEL=stderr \
+    LOG_LEVEL=warning \
+    CACHE_STORE=file \
+    SESSION_DRIVER=file \
+    AI_SERVICE_URL="http://likaslens-ai-service:8001"
+```
+
+---
+
+#### Step 5: Set Container App Environment Variables (AI Service)
+
+```bash
+az containerapp update \
+  --name likaslens-ai-service \
+  --resource-group likaslens \
+  --set-env-vars \
+    AI_SERVICE_PORT=8001 \
+    GOOGLE_API_KEY="<GOOGLE_API_KEY>" \
+    COSMOS_GREMLIN_ENDPOINT="wss://<account>.gremlin.cosmos.azure.com:443/" \
+    COSMOS_GREMLIN_KEY="<COSMOS_KEY>" \
+    COSMOS_GREMLIN_DATABASE=likaslens \
+    COSMOS_GREMLIN_GRAPH=routing_graph \
+    COSMOS_GREMLIN_PARTITION_KEY=likaslens-routing-seed \
+    ENVIRONMENT=production
+```
+
+---
+
+#### Step 6: Verify
+
+```bash
+# Check revision status
+az containerapp revision list \
+  --name likaslens-backend \
+  --resource-group likaslens \
+  --output table
+
+# Get the backend FQDN
+az containerapp show \
+  --name likaslens-backend \
+  --resource-group likaslens \
+  --query "properties.configuration.ingress.fqdn" \
+  --output tsv
+
+# Health check (replace <fQdn> with actual value)
+curl https://<fQdn>/api/health
+curl https://<fQdn>/api/tickets
+```
+
+---
+
+#### Step 7: Clean Up Old ACR Secrets (Optional)
+
+Remove obsolete secrets from GitHub repo settings:
+- `LIKASLENSBACKEND_REGISTRY_USERNAME`
+- `LIKASLENSBACKEND_REGISTRY_PASSWORD`
+- `LIKASLENSAISERVICE_REGISTRY_USERNAME`
+- `LIKASLENSAISERVICE_REGISTRY_PASSWORD`
+
+---
 
 **Acceptance Criteria:**
+- [ ] Backend workflow pushes image to ghcr.io successfully
+- [ ] AI service workflow pushes image to ghcr.io successfully
+- [ ] Backend Container App revision shows `Provisioned` → `Running` (not `ImagePullBackOff`)
+- [ ] AI service Container App revision shows `Provisioned` → `Running`
 - [ ] Backend returns 200 on `/api/health`
 - [ ] Backend can query Supabase (test `/api/tickets`)
 - [ ] Backend can reach AI service internally
@@ -268,6 +430,9 @@ curl -H "Authorization: Bearer <admin-token>" https://<backend>/api/admin/laws
 |------|-----------|
 | Supabase project permanently lost | Create new Supabase project, re-run all migrations |
 | Azure Container App won't start | Check logs with `az containerapp logs tail`; fix env vars |
+| ~~ACR deleted — ImagePullBackOff~~ | **RESOLVED:** Switched CI/CD to ghcr.io (free for public repos) |
+| ghcr.io push fails | Verify `packages: write` permission in workflow; check `GITHUB_TOKEN` scope |
+| Container App can't pull from ghcr.io | Ensure repo/package is public; for private repos, set image pull credentials on Container App |
 | Seeder fails on foreign keys | Ensure law seeder runs before violation type seeder |
 | CORS blocks APK | Add APK origin to `config/cors.php` allowed_origins |
 
@@ -276,7 +441,11 @@ curl -H "Authorization: Bearer <admin-token>" https://<backend>/api/admin/laws
 ## Definition of Done
 
 - [ ] Supabase connection working (local and production)
-- [ ] Azure backend deployed and healthy
+- [ ] CI/CD pipelines pushing to ghcr.io (backend + AI service)
+- [ ] Azure backend deployed and healthy (no ImagePullBackOff)
+- [ ] Azure AI service deployed and healthy
+- [ ] Backend Container App env vars set (Supabase, APP_KEY, AI_SERVICE_URL)
+- [ ] AI service Container App env vars set (Cosmos Gremlin, Google API key)
 - [ ] All 16 PH laws seeded with violation types
 - [ ] Demo data seeded (users, tickets, achievements, NGOs)
 - [ ] All admin CRUD endpoints functional

@@ -13,7 +13,7 @@
 |------------|------|-----------|-------|
 | Supabase connection | Dev 3 (Backend) | Thu evening | Need DB accessible for violation type seeding |
 | Test images | Dev 4 (Integration) | Sat | Demo images of environmental hazards for testing |
-| Azure AI Service deployment | Dev 3 (Backend) | Sun | Deploy updated model to production |
+| Azure AI Service deployment | Dev 3 (Backend) | Sun | Deploy updated model to production via ghcr.io (ACR deleted; CI/CD now pushes to GitHub Container Registry) |
 
 ---
 
