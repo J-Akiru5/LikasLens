@@ -17,14 +17,22 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'localhost:3000',
         'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:3002',
         'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+        'http://127.0.0.1:3002',
+        'https://likaslens.syntaxure.dev',
+        'https://likasadmin.syntaxure.dev',
     ],
 
     'allowed_origins_patterns' => [
         '/^http:\/\/localhost:\d+$/',
         '/^http:\/\/127\.0\.0\.1:\d+$/',
+        '/^https:\/\/.*\.vercel\.app$/',
+        '/^https:\/\/.*\.azurecontainerapps\.io$/',
+        '/^https:\/\/.*\.azurewebsites\.net$/',
     ],
 
     'allowed_headers' => ['*'],
@@ -33,5 +41,5 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 ];

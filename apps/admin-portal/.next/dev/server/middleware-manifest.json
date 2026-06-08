@@ -1,0 +1,40 @@
+{
+  "version": 3,
+  "middleware": {
+    "/": {
+      "files": [
+        "server/edge/chunks/0035_next_dist_esm_104ovep._.js",
+        "server/edge/chunks/0035_next_dist_compiled_06jm~i7._.js",
+        "server/edge/chunks/0035_next_dist_experimental_testmode_0sltd11._.js",
+        "server/edge/chunks/0035_tailwind-merge_dist_bundle-mjs_mjs_0s-0.ol._.js",
+        "server/edge/chunks/0035_@supabase_postgrest-js_dist_index_mjs_0uab03w._.js",
+        "server/edge/chunks/0035_@supabase_auth-js_dist_module_06aocut._.js",
+        "server/edge/chunks/0035_03fyhlc._.js",
+        "server/edge/chunks/[root-of-the-server]__01_bk7u._.js",
+        "server/edge/chunks/0wf5_next_dist_esm_build_templates_edge-wrapper_0oqoi_n.js"
+      ],
+      "name": "middleware",
+      "page": "/",
+      "entrypoint": "server/edge/chunks/0wf5_next_dist_esm_build_templates_edge-wrapper_0oqoi_n.js",
+      "matchers": [
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!api|_next|_vercel|.*\\..*).*))(\\\\.json)?[\\/#\\?]?$",
+          "originalSource": "/((?!api|_next|_vercel|.*\\..*).*)"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "env": {
+        "__NEXT_BUILD_ID": "development",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "x8j5TyryQpjjtb7NsrahyeLWdJuFsTWoHNltDdiO3j0=",
+        "__NEXT_PREVIEW_MODE_ID": "c1c05b646df298f8c71ca6575e77bc7d",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "099b177785daf02b5d267fc4643d3be6476e827c29518d8c1fcac89e415b1a9b",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "d3a84d5481b1ecce75adfe155501a44c851069dc99746cf749265002f1b6228c"
+      }
+    }
+  },
+  "sortedMiddleware": [
+    "/"
+  ],
+  "functions": {}
+}

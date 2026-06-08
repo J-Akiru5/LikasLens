@@ -1,0 +1,9 @@
+{
+  "git": {
+    "lfs": false
+  },
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm --filter frontend build",
+  "outputDirectory": ".next",
+  "framework": "nextjs"
+}

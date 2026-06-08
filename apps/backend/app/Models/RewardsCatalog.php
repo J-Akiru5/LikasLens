@@ -45,8 +45,10 @@ class RewardsCatalog extends Model
     {
         if ($this->stock_quantity >= $amount) {
             $this->decrement('stock_quantity', $amount);
+
             return true;
         }
+
         return false;
     }
 }

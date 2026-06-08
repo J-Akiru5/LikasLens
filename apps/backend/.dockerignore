@@ -1,0 +1,10 @@
+.env
+.git
+node_modules
+storage/logs/*
+!storage/logs/.gitkeep
+bootstrap/cache/*
+!bootstrap/cache/.gitkeep
+vendor
+tests
+docker-compose.yml

@@ -1,31 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Montserrat, Space_Mono } from "next/font/google";
+import { Geist, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
-import { OfflineBanner } from "@/components/ui/offline-banner";
+import { locales, type Locale } from "@likaslens/shared";
 
-const headingFont = Montserrat({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["700", "800"],
-});
-
-const bodyFont = Inter({
+const bodyFont = Geist({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
 });
 
-const dataFont = Space_Mono({
+const dataFont = JetBrains_Mono({
   variable: "--font-data",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
   title: "LikasLens",
   description: "Neuro-symbolic civic reporting platform",
   manifest: "/manifest.json",
-  themeColor: "#10b981",
   icons: {
     icon: [
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
@@ -42,21 +35,48 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#1B4332",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
-export default function RootLayout({
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
+export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ locale?: Locale }>;
 }>) {
+  const resolvedParams = await params;
   return (
     <html
-      lang="en"
-      className={`${headingFont.variable} ${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
+      lang={resolvedParams?.locale === "fil" ? "fil" : resolvedParams?.locale === "ta" ? "ta" : (resolvedParams?.locale || "en")}
+      className={`${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
       data-theme="civic"
+      suppressHydrationWarning
     >
+      <head>
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = localStorage.getItem('likaslens-theme');
+                if (theme === 'ghost') {
+                  document.documentElement.setAttribute('data-theme', 'ghost');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
-        <OfflineBanner />
         {children}
       </body>
     </html>

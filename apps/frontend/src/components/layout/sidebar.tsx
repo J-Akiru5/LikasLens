@@ -2,21 +2,56 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-  LayoutDashboard,
-  AlertCircle,
+  SquaresFour,
+  WarningCircle,
   FileText,
-  Settings,
+  Gear,
   Leaf,
-  Home,
+  House,
   User,
   Fingerprint,
-} from "lucide-react";
+  List,
+  X,
+  MapPin,
+  Scales,
+  Camera,
+} from "@phosphor-icons/react";
+import { createClient } from "@/utils/supabase/client";
+import { isAnalystOrSuperAdmin, getRole } from "@/lib/roles";
 
 export function Sidebar() {
   const pathname = usePathname();
   const [isGhostMode, setIsGhostMode] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  // closeMobile on pathname change
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeMobile();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [mobileOpen, closeMobile]);
+
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   useEffect(() => {
     const handleThemeChange = () => {
@@ -26,7 +61,7 @@ export function Sidebar() {
 
     handleThemeChange();
     window.addEventListener("themechange", handleThemeChange);
-    
+
     const observer = new MutationObserver(handleThemeChange);
     observer.observe(document.documentElement, { attributes: true });
 
@@ -36,118 +71,164 @@ export function Sidebar() {
     };
   }, []);
 
+  useEffect(() => {
+    async function fetchRole() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserRole(getRole(user?.user_metadata as Record<string, unknown> | null));
+    }
+    fetchRole();
+  }, []);
+
   const toggleGhostMode = () => {
     const newTheme = isGhostMode ? "civic" : "ghost";
     document.documentElement.setAttribute("data-theme", newTheme);
+    try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
     setIsGhostMode(!isGhostMode);
   };
 
   const navItems = [
-    {
-      href: "/dashboard",
-      label: "Dashboard",
-      icon: LayoutDashboard,
-      exact: true,
-    },
-    { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
-    { href: "/dashboard/reports", label: "Analytics", icon: FileText },
-    { href: "/profile", label: "Profile", icon: User },
+    { href: "/dashboard", label: "Dashboard", icon: SquaresFour, exact: true, roles: null },
+    { href: "/dashboard/incidents", label: "Incidents", icon: WarningCircle, roles: null },
+    { href: "/dashboard/reports", label: "Analytics", icon: FileText, roles: null },
+    { href: "/dashboard/analytics", label: "Towns", icon: MapPin, roles: ["analyst", "super_admin"] },
+    { divider: true, label: "Citizen Tools" },
+    { href: "/report", label: "Submit Report", icon: Camera, roles: null },
+    { href: "/laws", label: "Laws Database", icon: Scales, roles: null },
+    { href: "/profile", label: "Profile", icon: User, roles: null },
   ];
 
-  return (
-    <aside className="w-64 panel-surface border-r-4 border-primary flex flex-col h-full relative z-20 font-body">
-      <div className="p-6 border-b-4 border-primary flex items-center gap-2 text-primary">
-        <Leaf className="w-8 h-8" />
-        <span className="font-heading font-black text-2xl uppercase tracking-tighter">
-          LikasLens
-        </span>
+  const visibleNavItems = navItems.filter(
+    (item) => item.divider || !item.roles || (userRole && item.roles.includes(userRole))
+  );
+
+  const sidebarContent = (
+    <>
+      <div className="p-6 border-b border-ink/10 flex items-center gap-2 text-ink">
+        <Leaf className="w-6 h-6 text-green" weight="fill" />
+        <span className="font-semibold text-xl text-ink tracking-tight">LikasLens</span>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
-        {navItems.map((item) => {
-          const isActive = item.exact
-            ? pathname === item.href
-            : pathname.startsWith(item.href);
+      <div className="flex-1 overflow-y-auto overscroll-contain py-6 px-4 space-y-1">
+        {visibleNavItems.map((item, index) => {
+          if (item.divider) {
+            return (
+              <div key={`div-${index}`} className="pt-6 pb-2 px-3">
+                <p className="text-[10px] font-mono text-ink/40 uppercase tracking-widest">{item.label}</p>
+              </div>
+            );
+          }
 
-          const Icon = item.icon;
+          // Strip locale prefix (e.g. /en, /tl) from pathname for matching
+          const cleanPathname = pathname.replace(/^\/[^/]+/, "") || "/";
+          const isActive = item.exact
+            ? cleanPathname === item.href! || cleanPathname === `${item.href}/`
+            : cleanPathname.startsWith(item.href!);
+
+          const Icon = item.icon!;
 
           return (
             <Link
               key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all ${
+              href={item.href!}
+              onClick={closeMobile}
+              aria-current={isActive ? "page" : undefined}
+              className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
                 isActive
-                  ? "bg-primary text-white shadow-[4px_4px_0px_#081c15] transform translate-y-[-2px]"
-                  : "surface-muted border-2 border-transparent hover:border-primary"
+                  ? "text-ink bg-ink/[0.04] font-medium"
+                  : "text-ink/60 hover:text-ink hover:bg-ink/[0.04]"
               }`}
             >
-              <Icon className="w-5 h-5" /> {item.label}
+              <Icon className="w-4 h-4" /> {item.label}
             </Link>
           );
         })}
       </div>
 
-      {/* Ghost Mode Toggle */}
-      <div className="p-6 border-t-4 border-primary space-y-4">
-        <div
-          className={`brutal-panel border-4 p-4 transition-colors duration-500 cursor-pointer ${
-            isGhostMode
-              ? "border-accent bg-[#081c15]/80 shadow-[6px_6px_0px_#ffb703]"
-              : "panel-surface border-primary shadow-[6px_6px_0px_#1b4332]"
-          }`}
+      <div className="p-6 border-t border-ink/10 space-y-3">
+        <button
           onClick={toggleGhostMode}
+          className={`flex items-center justify-between w-full px-4 py-3 transition-colors ${
+            isGhostMode ? "bg-[#2EE6C8]/10 border border-[#2EE6C8]/20" : "border border-ink/10"
+          }`}
         >
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Fingerprint
-                className={`w-5 h-5 ${isGhostMode ? "text-accent" : "text-primary"}`}
-              />
-              <span
-                className={`font-heading font-black text-xs uppercase tracking-widest ${
-                  isGhostMode ? "text-accent" : "text-primary"
-                }`}
-              >
-                {isGhostMode ? "Ghost" : "Civic"}
-              </span>
-            </div>
-            <div
-              className={`w-8 h-4 rounded-full border-2 flex items-center transition-colors ${
-                isGhostMode
-                  ? "bg-accent/20 border-accent"
-                  : "bg-primary/20 border-primary"
-              }`}
-            >
-              <div
-                className={`w-3 h-3 rounded-full transition-all ${
-                  isGhostMode
-                    ? "ml-auto mr-0.5 bg-accent"
-                    : "ml-0.5 mr-auto bg-primary"
-                }`}
-              />
-            </div>
+          <div className="flex items-center gap-2">
+            <Fingerprint className={`w-4 h-4 ${isGhostMode ? "text-[#2EE6C8]" : "text-ink/40"}`} />
+            <span className={`font-mono text-xs uppercase tracking-wider ${isGhostMode ? "text-[#2EE6C8]" : "text-ink/50"}`}>
+              {isGhostMode ? "Ghost Mode" : "Ghost Mode"}
+            </span>
           </div>
-        </div>
+          <div className={`w-8 h-4 rounded-full border-2 flex items-center transition-colors ${
+            isGhostMode ? "bg-[#2EE6C8]/20 border-[#2EE6C8]" : "bg-ink/10 border-ink/20"
+          }`}>
+            <div className={`w-3 h-3 rounded-full transition-all ${
+              isGhostMode ? "ml-auto mr-0.5 bg-[#2EE6C8]" : "ml-0.5 mr-auto bg-ink/40"
+            }`} />
+          </div>
+        </button>
 
-        <div className="space-y-2">
-          <Link
-            href="/"
-            className="flex items-center gap-3 px-4 py-3 font-bold uppercase rounded surface-muted border-2 border-primary/20 hover:border-primary hover:bg-primary/5 transition-all group"
-          >
-            <Home className="w-5 h-5" />
-            <span>Back to Home</span>
-          </Link>
-          <Link
-            href="/dashboard/settings"
-            className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all ${
-              pathname.startsWith("/dashboard/settings")
-                ? "bg-primary text-white shadow-[4px_4px_0px_#081c15] transform translate-y-[-2px]"
-                : "surface-muted border-2 border-transparent hover:border-primary"
-            }`}
-          >
-            <Settings className="w-5 h-5" /> Settings
-          </Link>
-        </div>
+        <Link
+          href="/"
+          onClick={closeMobile}
+          className="flex items-center gap-3 px-3 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors"
+        >
+          <House className="w-4 h-4" /> Back to Home
+        </Link>
+        <Link
+          href="/dashboard/settings"
+          onClick={closeMobile}
+          aria-current={pathname.startsWith("/dashboard/settings") ? "page" : undefined}
+          className={`flex items-center gap-3 px-3 py-2 text-sm transition-colors ${
+            pathname.startsWith("/dashboard/settings")
+              ? "text-ink bg-ink/[0.04]"
+              : "text-ink/60 hover:text-ink hover:bg-ink/[0.02]"
+          }`}
+        >
+          <Gear className="w-4 h-4" /> Settings
+        </Link>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      <button
+        aria-label={mobileOpen ? "Close sidebar" : "Open sidebar"}
+        aria-expanded={mobileOpen}
+        onClick={() => setMobileOpen((prev) => !prev)}
+        className="lg:hidden fixed top-4 right-4 z-50 p-3 border border-ink/10 bg-page"
+      >
+        {mobileOpen ? <X className="w-5 h-5" /> : <List className="w-5 h-5" />}
+      </button>
+
+      <aside className="hidden lg:flex lg:w-64 shrink-0 border-r border-ink/10 flex-col h-full relative z-20 bg-page">
+        {sidebarContent}
+      </aside>
+
+      <div
+        className={`fixed inset-0 z-30 lg:hidden transition-opacity duration-200 ${
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        aria-hidden={!mobileOpen}
+      >
+        <div className="absolute inset-0 bg-black/40" onClick={closeMobile} />
+        <aside
+          className={`absolute left-0 top-0 bottom-0 w-72 bg-page border-r border-ink/10 flex flex-col transition-transform duration-200 pt-[env(safe-area-inset-top)] ${
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-end p-4 lg:hidden">
+            <button
+              aria-label="Close sidebar"
+              onClick={closeMobile}
+              className="p-2 text-ink/40 hover:text-ink transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          {sidebarContent}
+        </aside>
+      </div>
+    </>
   );
 }

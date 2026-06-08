@@ -1,0 +1,4 @@
+# Model files (downloaded from HuggingFace at build time)
+models/
+best.pt
+*.pt

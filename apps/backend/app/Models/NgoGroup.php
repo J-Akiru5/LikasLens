@@ -13,14 +13,20 @@ class NgoGroup extends Model
 
     protected $fillable = [
         'name',
+        'focus_area',
         'region',
+        'province',
+        'city_municipality',
         'contact_email',
         'contact_phone',
+        'contact_number',
         'is_active',
+        'is_verified',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_verified' => 'boolean',
     ];
 
     public function assignments(): HasMany

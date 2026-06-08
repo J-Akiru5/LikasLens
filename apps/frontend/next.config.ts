@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 import withPWA from "next-pwa";
 import runtimeCaching from "next-pwa/cache";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -20,4 +23,4 @@ const pwaConfig = withPWA({
   disable: !isProduction,
 });
 
-export default pwaConfig(nextConfig);
+export default withNextIntl(pwaConfig(nextConfig));

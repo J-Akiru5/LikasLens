@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { usePdfExport } from "@/hooks/usePdfExport";
 import { generateExportFilename } from "@/utils/pdf-export";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Spinner } from "@phosphor-icons/react";
 
 /**
  * Example: Analytics Dashboard with PDF Export
@@ -58,7 +58,7 @@ export function AnalyticsDashboardWithExport() {
         >
           {isExporting ? (
             <>
-              <Loader2 size={18} className="animate-spin" />
+              <Spinner size={18} className="animate-spin" weight="bold" />
               <span>Exporting...</span>
             </>
           ) : (
