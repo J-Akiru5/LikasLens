@@ -14,13 +14,13 @@ import {
   Shield,
   Key,
   UserCircle,
-  LogOut,
+  SignOut,
   Sun,
   Moon,
   X,
-  AlertTriangle,
-  Loader2,
-} from "lucide-react";
+  Warning,
+  Spinner,
+} from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -42,7 +42,7 @@ function loadPrefs(): Record<string, boolean> {
 function savePrefs(prefs: Record<string, boolean>) {
   try {
     localStorage.setItem("likaslens-prefs", JSON.stringify(prefs));
-  } catch { /* quota exceeded — ignore */ }
+  } catch { /* ignore */ }
 }
 
 function TabButton({
@@ -58,20 +58,18 @@ function TabButton({
   return (
     <button
       type="button"
-      onClick={(e) => {
-        e.currentTarget.blur();
-        onSelect(tab.id);
-      }}
-      style={{ touchAction: "manipulation" }}
-      className={`relative flex items-center gap-2 shrink-0 px-4 py-3 rounded-lg font-bold uppercase text-sm transition-all border-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
+      onClick={() => onSelect(tab.id)}
+      className={`font-mono text-xs uppercase tracking-wide px-4 py-2.5 border transition-colors ${
         isActive
-          ? "bg-primary text-white border-primary shadow-[3px_3px_0px_#081c15]"
-          : "bg-transparent text-primary border-primary/30 hover:border-primary hover:bg-primary/5"
+          ? "border-ink/30 bg-ink/[0.04] text-ink"
+          : "border-ink/10 text-ink/50 hover:text-ink"
       }`}
       aria-current={isActive ? "true" : undefined}
     >
-      <Icon className="w-4 h-4 shrink-0" />
-      <span>{tab.label}</span>
+      <span className="flex items-center gap-2">
+        <Icon className="w-3.5 h-3.5" />
+        {tab.label}
+      </span>
     </button>
   );
 }
@@ -87,14 +85,12 @@ function NotificationsSection() {
   };
 
   return (
-    <div className="brutal-panel panel-surface p-8">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-          <Bell className="w-6 h-6 text-primary" />
-        </div>
-        <h2 className="font-heading text-2xl font-black uppercase">{t("notifications")}</h2>
-      </div>
-      <div className="space-y-4">
+    <section className="space-y-5">
+      <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
+        <Bell className="w-4 h-4 text-ink/40" />
+        {t("notifications")}
+      </h2>
+      <div className="space-y-3">
         {[
           { key: "criticalAlerts", label: t("criticalAlerts"), desc: t("criticalAlertsDesc"), defaultVal: true },
           { key: "reportUpdates", label: t("reportUpdates"), desc: t("reportUpdatesDesc"), defaultVal: true },
@@ -104,23 +100,23 @@ function NotificationsSection() {
           return (
             <label
               key={item.key}
-              className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
+              className="flex items-center justify-between py-3 border-b border-ink/10 last:border-0 cursor-pointer"
             >
-              <div>
-                <div className="font-bold uppercase">{item.label}</div>
-                <div className="text-sm surface-muted">{item.desc}</div>
+              <div className="min-w-0">
+                <div className="text-sm text-ink">{item.label}</div>
+                <div className="font-mono text-xs text-ink/50 mt-0.5">{item.desc}</div>
               </div>
               <input
                 type="checkbox"
                 checked={checked}
                 onChange={(e) => updatePref(item.key, e.target.checked)}
-                className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
+                className="w-4 h-4 accent-green"
               />
             </label>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -135,16 +131,13 @@ function SecuritySection() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Privacy */}
-      <div className="brutal-panel panel-surface p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-            <Lock className="w-6 h-6 text-primary" />
-          </div>
-          <h2 className="font-heading text-2xl font-black uppercase">{t("privacy")}</h2>
-        </div>
-        <div className="space-y-4">
+    <div className="space-y-10">
+      <section className="space-y-5">
+        <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
+          <Lock className="w-4 h-4 text-ink/40" />
+          {t("privacy")}
+        </h2>
+        <div className="space-y-3">
           {[
             { key: "publicProfile", label: t("publicProfile"), desc: t("publicProfileDesc"), defaultVal: true },
             { key: "showReportCount", label: t("showReportCount"), desc: t("showReportCountDesc"), defaultVal: true },
@@ -153,33 +146,30 @@ function SecuritySection() {
             return (
               <label
                 key={item.key}
-                className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
+                className="flex items-center justify-between py-3 border-b border-ink/10 last:border-0 cursor-pointer"
               >
-                <div>
-                  <div className="font-bold uppercase">{item.label}</div>
-                  <div className="text-sm surface-muted">{item.desc}</div>
+                <div className="min-w-0">
+                  <div className="text-sm text-ink">{item.label}</div>
+                  <div className="font-mono text-xs text-ink/50 mt-0.5">{item.desc}</div>
                 </div>
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={(e) => updatePref(item.key, e.target.checked)}
-                  className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
+                  className="w-4 h-4 accent-green"
                 />
               </label>
             );
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Display */}
-      <div className="brutal-panel panel-surface p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-            <Eye className="w-6 h-6 text-primary" />
-          </div>
-          <h2 className="font-heading text-2xl font-black uppercase">{t("display")}</h2>
-        </div>
-        <div className="space-y-4">
+      <section className="space-y-5">
+        <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
+          <Eye className="w-4 h-4 text-ink/40" />
+          {t("display")}
+        </h2>
+        <div className="space-y-3">
           {[
             { key: "compactView", label: t("compactView"), desc: t("compactViewDesc"), defaultVal: false },
             { key: "reducedMotion", label: t("reducedMotion"), desc: t("reducedMotionDesc"), defaultVal: false },
@@ -188,23 +178,23 @@ function SecuritySection() {
             return (
               <label
                 key={item.key}
-                className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
+                className="flex items-center justify-between py-3 border-b border-ink/10 last:border-0 cursor-pointer"
               >
-                <div>
-                  <div className="font-bold uppercase">{item.label}</div>
-                  <div className="text-sm surface-muted">{item.desc}</div>
+                <div className="min-w-0">
+                  <div className="text-sm text-ink">{item.label}</div>
+                  <div className="font-mono text-xs text-ink/50 mt-0.5">{item.desc}</div>
                 </div>
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={(e) => updatePref(item.key, e.target.checked)}
-                  className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
+                  className="w-4 h-4 accent-green"
                 />
               </label>
             );
           })}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
@@ -277,49 +267,39 @@ function AccountSection() {
 
   return (
     <>
-      <div className="space-y-6">
-        {/* Credentials */}
-        <div className="brutal-panel panel-surface p-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-              <Key className="w-6 h-6 text-primary" />
-            </div>
-            <h2 className="font-heading text-2xl font-black uppercase">Credentials</h2>
-          </div>
-          <div className="space-y-4">
-            <button
-              type="button"
-              onClick={() => {
-                resetPasswordForm();
-                setShowPasswordModal(true);
-              }}
-              style={{ touchAction: "manipulation" }}
-              className="w-full p-4 border-2 border-primary text-primary hover:bg-primary hover:text-white transition-colors rounded font-bold uppercase"
-            >
-              Change Password
-            </button>
-          </div>
-        </div>
+      <div className="space-y-10">
+        <section className="space-y-5">
+          <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
+            <Key className="w-4 h-4 text-ink/40" />
+            Credentials
+          </h2>
+          <button
+            type="button"
+            onClick={() => {
+              resetPasswordForm();
+              setShowPasswordModal(true);
+            }}
+            className="w-full py-3 px-4 border border-ink/10 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors text-left rounded-lg"
+          >
+            Change Password
+          </button>
+        </section>
 
-        {/* Danger Zone */}
-        <div className="brutal-panel panel-surface p-8 border-accent/30">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 rounded border-2 border-accent flex items-center justify-center bg-background">
-              <LogOut className="w-6 h-6 text-accent" />
-            </div>
-            <h2 className="font-heading text-2xl font-black uppercase text-accent">Danger Zone</h2>
-          </div>
-          <div className="space-y-4">
+        <section className="space-y-5">
+          <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
+            <SignOut className="w-4 h-4 text-muted" />
+            Account
+          </h2>
+          <div className="space-y-3">
             <button
               type="button"
               onClick={handleLogout}
               disabled={actionLoading === "logout"}
-              style={{ touchAction: "manipulation" }}
-              className="w-full p-4 border-2 border-accent text-accent hover:bg-accent hover:text-[#081c15] transition-colors rounded font-bold uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 border border-ink/10 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
             >
               {actionLoading === "logout" ? (
                 <span className="inline-flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Spinner className="w-4 h-4 animate-spin" weight="bold" />
                   Logging out...
                 </span>
               ) : (
@@ -333,79 +313,61 @@ function AccountSection() {
                 setShowDeleteConfirm(true);
               }}
               disabled={actionLoading === "delete"}
-              style={{ touchAction: "manipulation" }}
-              className="w-full p-4 border-2 border-accent/50 text-accent/70 hover:border-accent hover:text-accent transition-colors rounded font-bold uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 px-4 border border-ink/10 text-sm text-ink/40 hover:text-ink transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
             >
               Delete Account
             </button>
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Password Reset Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-[#081c15]/60 backdrop-blur-sm"
-            onClick={() => {
-              setShowPasswordModal(false);
-              resetPasswordForm();
-            }}
-          />
-          <div className="relative w-full max-w-md brutal-panel panel-surface border-4 border-primary shadow-[8px_8px_0px_#1b4332] z-10">
-            <div className="flex items-center justify-between p-6 border-b-2 border-primary/20">
+          <div className="absolute inset-0 bg-black/40" onClick={() => { setShowPasswordModal(false); resetPasswordForm(); }} />
+          <div className="relative w-full max-w-md bg-page border border-ink/10 shadow-lg rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-ink/10">
               <div className="flex items-center gap-3">
-                <Key className="w-5 h-5 text-primary" />
-                <h3 className="font-heading text-xl font-black uppercase">Reset Password</h3>
+                <Key className="w-4 h-4 text-ink/40" />
+                <h3 className="font-semibold tracking-tight text-lg text-ink">Reset Password</h3>
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setShowPasswordModal(false);
-                  resetPasswordForm();
-                }}
-                className="p-1 hover:bg-primary/10 rounded transition-colors"
+                onClick={() => { setShowPasswordModal(false); resetPasswordForm(); }}
+                className="p-1 text-ink/40 hover:text-ink transition-colors"
               >
-                <X className="w-5 h-5 text-primary" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handlePasswordChange} className="p-6 space-y-5">
               {message && (
-                <div
-                  className={`p-3 border-2 rounded font-bold text-sm uppercase ${
-                    message.type === "error"
-                      ? "border-accent text-accent bg-accent/5"
-                      : "border-secondary text-secondary bg-secondary/5"
-                  }`}
-                >
+                <div className={`p-3 text-sm rounded-lg ${
+                  message.type === "error" ? "text-[#b23b3b] bg-[#b23b3b]/10" : "text-green bg-green/10"
+                }`}>
                   {message.text}
                 </div>
               )}
 
-              <p className="font-bold uppercase text-sm leading-relaxed">
-                We&apos;ll send a password reset link to your registered email. Click the link in the email to set a new password.
+              <p className="text-sm text-ink/60 leading-relaxed">
+                We&rsquo;ll send a password reset link to your registered email.
               </p>
 
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowPasswordModal(false);
-                    resetPasswordForm();
-                  }}
-                  className="flex-1 p-3 border-2 border-primary/30 text-primary rounded font-bold uppercase hover:bg-primary/5 transition-colors"
+                  onClick={() => { setShowPasswordModal(false); resetPasswordForm(); }}
+                  className="flex-1 py-3 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={actionLoading === "password"}
-                  className="flex-1 p-3 bg-primary text-white border-2 border-primary rounded font-bold uppercase hover:shadow-[3px_3px_0px_#081c15] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
                 >
                   {actionLoading === "password" ? (
                     <span className="inline-flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Spinner className="w-4 h-4 animate-spin" weight="bold" />
                       Sending...
                     </span>
                   ) : (
@@ -418,45 +380,38 @@ function AccountSection() {
         </div>
       )}
 
-      {/* Delete Account Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-[#081c15]/60 backdrop-blur-sm"
-            onClick={() => setShowDeleteConfirm(false)}
-          />
-          <div className="relative w-full max-w-md brutal-panel panel-surface border-4 border-accent shadow-[8px_8px_0px_#1b4332] z-10">
-            <div className="flex items-center justify-between p-6 border-b-2 border-accent/20">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="relative w-full max-w-md bg-page border border-ink/10 shadow-lg rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-ink/10">
               <div className="flex items-center gap-3">
-                <AlertTriangle className="w-5 h-5 text-accent" />
-                <h3 className="font-heading text-xl font-black uppercase text-accent">Delete Account</h3>
+                <Warning className="w-4 h-4 text-muted" />
+                <h3 className="font-semibold tracking-tight text-lg text-ink">Delete Account</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="p-1 hover:bg-accent/10 rounded transition-colors"
+                className="p-1 text-ink/40 hover:text-ink transition-colors"
               >
-                <X className="w-5 h-5 text-accent" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-6 space-y-5">
-              <p className="font-bold uppercase text-sm leading-relaxed">
-                This action is <span className="text-accent">permanent</span> and cannot be undone.
-                All your data, reports, and eco-credits will be erased.
+              <p className="text-sm text-ink/60 leading-relaxed">
+                This action is permanent and cannot be undone. All your data, reports, and eco-credits will be erased.
               </p>
 
               {message && (
-                <div className="p-3 border-2 border-accent text-accent bg-accent/5 rounded font-bold text-sm uppercase">
-                  {message.text}
-                </div>
+                <div className="p-3 text-sm text-[#b23b3b] bg-[#b23b3b]/10 rounded-lg">{message.text}</div>
               )}
 
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 p-3 border-2 border-primary/30 text-primary rounded font-bold uppercase hover:bg-primary/5 transition-colors"
+                  className="flex-1 py-3 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg"
                 >
                   Cancel
                 </button>
@@ -464,11 +419,11 @@ function AccountSection() {
                   type="button"
                   onClick={handleDeleteAccount}
                   disabled={actionLoading === "delete"}
-                  className="flex-1 p-3 bg-accent text-[#081c15] border-2 border-accent rounded font-bold uppercase hover:shadow-[3px_3px_0px_#1b4332] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-3 border border-[#b23b3b]/30 text-sm text-[#b23b3b] hover:bg-[#b23b3b]/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
                 >
                   {actionLoading === "delete" ? (
                     <span className="inline-flex items-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Spinner className="w-4 h-4 animate-spin" weight="bold" />
                       Deleting...
                     </span>
                   ) : (
@@ -493,13 +448,20 @@ function PlatformSection() {
 
   const currentLocale = locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) ?? defaultLocale;
 
-  const [theme, setTheme] = useState<string>(() => {
-    try {
-      const stored = localStorage.getItem("likaslens-theme");
-      if (stored === "civic" || stored === "ghost") return stored;
-    } catch { /* ignore */ }
-    return document.documentElement.getAttribute("data-theme") ?? "civic";
-  });
+  const [theme, setTheme] = useState<string>("civic");
+
+  useEffect(() => {
+    const current = document.documentElement.getAttribute("data-theme");
+    if (current === "ghost") setTheme("ghost");
+
+    const handleThemeChange = () => {
+      const t = document.documentElement.getAttribute("data-theme");
+      if (t === "ghost" || t === "civic") setTheme(t);
+    };
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   const handleThemeChange = (value: "civic" | "ghost") => {
     setTheme(value);
@@ -520,21 +482,19 @@ function PlatformSection() {
   };
 
   return (
-    <div className="brutal-panel panel-surface p-8">
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-          <Monitor className="w-6 h-6 text-primary" />
-        </div>
-        <h2 className="font-heading text-2xl font-black uppercase">{t("platform")}</h2>
-      </div>
-      <div className="space-y-6">
+    <section className="space-y-6">
+      <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
+        <Monitor className="w-4 h-4 text-ink/40" />
+        {t("platform")}
+      </h2>
+      <div className="space-y-5">
         <div>
-          <label className="font-bold uppercase block mb-2">{t("language")}</label>
+          <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">{t("language")}</label>
           <select
             value={currentLocale}
             onChange={(e) => handleLocaleChange(e.target.value)}
             disabled={isPending}
-            className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold uppercase text-sm focus:outline-none focus:border-primary disabled:opacity-50"
+            className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink focus:outline-none focus:border-ink/30 disabled:opacity-50"
           >
             {locales.map((loc) => (
               <option key={loc} value={loc}>
@@ -544,7 +504,7 @@ function PlatformSection() {
           </select>
         </div>
         <div>
-          <label className="font-bold uppercase block mb-2">{t("theme")}</label>
+          <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">{t("theme")}</label>
           <div className="flex gap-3">
             {([
               { value: "civic" as const, label: tn("civic"), icon: Sun },
@@ -557,11 +517,10 @@ function PlatformSection() {
                   key={opt.value}
                   type="button"
                   onClick={() => handleThemeChange(opt.value)}
-                  style={{ touchAction: "manipulation" }}
-                  className={`flex-1 flex items-center justify-center gap-2 p-4 border-2 rounded-lg font-bold uppercase text-sm transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium border transition-colors ${
                     isActive
-                      ? "bg-primary text-white border-primary shadow-[3px_3px_0px_#081c15]"
-                      : "border-primary/30 hover:border-primary hover:bg-primary/5"
+                      ? "border-ink/30 bg-ink/[0.04] text-ink"
+                      : "border-ink/10 text-ink/50 hover:text-ink"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -572,7 +531,7 @@ function PlatformSection() {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -589,52 +548,23 @@ export default function SettingsPage() {
     { id: "account", label: t("account"), icon: UserCircle },
   ];
 
-  // Debug: log interactions on data-debug-click elements in dev mode
-  useEffect(() => {
-    if (process.env.NODE_ENV !== "development") return;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      const el = target?.closest("[data-debug-click]");
-      if (!el) return;
-      console.log("[Settings] tap", {
-        tag: target?.tagName,
-        text: (target as HTMLElement)?.innerText?.slice(0, 40),
-        pointerEvents: target ? getComputedStyle(target).pointerEvents : null,
-        zIndex: target ? getComputedStyle(target).zIndex : null,
-        parentOverflow: target?.parentElement ? getComputedStyle(target.parentElement).overflow : null,
-      });
-    };
-    document.addEventListener("click", handler, true);
-    return () => document.removeEventListener("click", handler, true);
-  }, []);
-
   return (
-    <div className="flex h-dvh overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
+    <div className="flex h-dvh overflow-hidden bg-page">
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
+        <ToastContainer />
         <AppHeader showBranding={false} />
         <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6">
-          <div className="max-w-4xl mx-auto space-y-6">
-            {/* Back + Heading */}
-            <div className="flex items-center gap-3">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                {tc("back")}
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors">
+                &larr; {tc("back")}
               </Link>
-              <h1 className="font-heading text-3xl md:text-4xl font-black uppercase">
-                {t("title")}
-              </h1>
+              <span className="text-ink/20">/</span>
+              <h1 className="font-semibold tracking-tight text-3xl text-ink">{t("title")}</h1>
             </div>
 
-            {/* Tab navigation — horizontal scroll on mobile */}
-            <nav
-              className="flex gap-2 overflow-x-auto pb-1"
-              style={{ scrollbarWidth: "none", touchAction: "pan-x" }}
-              data-debug-click="tab-nav"
-            >
+            <nav className="flex gap-2 overflow-x-auto pb-1">
               {tabs.map((tab) => (
                 <TabButton
                   key={tab.id}
@@ -645,8 +575,7 @@ export default function SettingsPage() {
               ))}
             </nav>
 
-            {/* Active section content */}
-            <div data-debug-click="settings-content">
+            <div>
               {activeTab === "platform" && <PlatformSection />}
               {activeTab === "notifications" && <NotificationsSection />}
               {activeTab === "security" && <SecuritySection />}
@@ -655,7 +584,6 @@ export default function SettingsPage() {
           </div>
         </main>
         <BottomNav />
-        <ToastContainer />
       </div>
     </div>
   );

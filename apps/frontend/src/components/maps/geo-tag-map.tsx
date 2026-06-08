@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useState } from "react";
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, NavigationArrow } from "@phosphor-icons/react";
 import type L from "leaflet";
 
 interface GeoTagMapProps {
@@ -42,10 +42,11 @@ export function GeoTagMap({ initialLat, initialLng, onLocationChange, height = "
 
     const icon = leaflet.divIcon({
       className: "",
-      html: `<div style="position:relative;width:36px;height:36px;">
-        <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-bottom:28px solid #ffb703;filter:drop-shadow(2px 2px 2px rgba(0,0,0,0.4));">
-          <div style="position:absolute;top:6px;left:50%;transform:translateX(-50%);width:10px;height:10px;background:#1b4332;border-radius:50%;"></div>
-        </div>
+      html: `<div style="filter:drop-shadow(2px 4px 4px rgba(0,0,0,0.4));">
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 256 256">
+          <path fill="#ffb703" d="M236.8,188.09,149.35,36.22a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09Z"></path>
+          <path fill="#1b4332" d="M120,104v40a8,8,0,0,0,16,0V104a8,8,0,0,0-16,0Zm8,88a12,12,0,1,0-12-12A12,12,0,0,0,128,192Z"></path>
+        </svg>
       </div>`,
       iconSize: [36, 36],
       iconAnchor: [18, 28],
@@ -112,11 +113,11 @@ export function GeoTagMap({ initialLat, initialLng, onLocationChange, height = "
   if (!leaflet) {
     return (
       <div
-        className="flex items-center justify-center rounded-lg border-4 border-primary bg-primary/5"
+        className="flex items-center justify-center rounded-lg border border-border bg-accent/5"
         style={{ width: "100%", height }}
       >
-        <div className="flex flex-col items-center gap-2 text-primary/60 font-mono text-sm">
-          <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+        <div className="flex flex-col items-center gap-2 text-muted font-mono text-sm">
+          <div className="animate-spin w-6 h-6 border-2 border-accent border-t-transparent rounded-full" />
           Loading map...
         </div>
       </div>
@@ -125,21 +126,21 @@ export function GeoTagMap({ initialLat, initialLng, onLocationChange, height = "
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 text-sm font-mono font-bold uppercase tracking-widest text-primary/70">
+      <div className="flex items-center gap-2 text-sm font-mono font-semibold uppercase tracking-widest text-muted">
         <MapPin className="w-4 h-4" />
         Drag the pin or click the map to set exact location
       </div>
       <div
         ref={mapRef}
         style={{ width: "100%", height }}
-        className="rounded-lg border-4 border-primary shadow-[4px_4px_0px_#1b4332] z-0"
+        className="rounded-lg border border-border z-0"
       />
       <button
         type="button"
         onClick={handleGPSLocate}
-        className="brutal-button px-4 py-2 text-sm font-bold uppercase flex items-center gap-2 hover:bg-primary hover:text-white transition-colors"
+        className="bg-accent text-white rounded-lg px-4 py-2 text-sm font-semibold uppercase flex items-center gap-2 hover:opacity-90 transition-opacity"
       >
-        <Navigation className="w-4 h-4" /> Auto-Detect My Location
+        <NavigationArrow className="w-4 h-4" /> Auto-Detect My Location
       </button>
     </div>
   );

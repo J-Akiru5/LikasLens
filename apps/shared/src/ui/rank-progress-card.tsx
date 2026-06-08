@@ -1,15 +1,15 @@
 "use client";
 
 import { cn } from "../utils";
-import { TrendingUp, Zap } from "lucide-react";
+import { TrendUp, SealCheck, Shield, Trophy, Star } from "@phosphor-icons/react";
 import type { RankProgress } from "../types/user";
 
-const levelIcons: Record<number, string> = {
-  1: "🌱",
-  2: "👁️",
-  3: "🛡️",
-  4: "⚔️",
-  5: "👑",
+const levelIcons: Record<number, React.ReactNode> = {
+  1: <SealCheck className="w-5 h-5 text-accent" />,
+  2: <Shield className="w-5 h-5 text-secondary" />,
+  3: <Trophy className="w-5 h-5 text-secondary" />,
+  4: <Star className="w-5 h-5 text-amber" weight="fill" />,
+  5: <Trophy className="w-5 h-5 text-amber" weight="fill" />,
 };
 
 interface RankProgressCardProps {
@@ -30,77 +30,53 @@ export function RankProgressCard({ rankProgress, ecoCreditEquivalent, className 
     eco_credit_bonus,
   } = rankProgress;
 
-  const icon = levelIcons[level_number] ?? "🌱";
+  const icon = levelIcons[level_number] ?? levelIcons[1];
 
   return (
-    <div className={cn("brutal-panel panel-surface p-6 sm:p-8", className)}>
-      <div className="flex items-center gap-3 mb-5">
-        <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0 text-2xl">
+    <div className={cn("space-y-5", className)}>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-ink/[0.04] shrink-0">
           {icon}
         </div>
         <div>
-          <h2 className="font-heading text-2xl font-black uppercase text-primary">{current_level}</h2>
-          <p className="font-mono text-xs font-bold uppercase tracking-widest surface-muted">
-            Level {level_number}
-          </p>
+          <h2 className="text-2xl font-semibold text-ink tracking-tight">{current_level}</h2>
+          <p className="font-mono text-xs text-muted uppercase tracking-wider">Tier {level_number}</p>
         </div>
         {ecoCreditEquivalent && (
           <div className="ml-auto text-right">
-            <div className="font-mono text-[10px] font-bold uppercase tracking-widest text-secondary">Eco Value</div>
-            <div className="font-heading text-lg font-black text-secondary">{ecoCreditEquivalent}</div>
+            <p className="font-mono text-xs text-muted uppercase tracking-wider">Eco Value</p>
+            <p className="text-base font-semibold text-ink/80">{ecoCreditEquivalent}</p>
           </div>
         )}
       </div>
 
       {next_level ? (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-secondary" />
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-foreground/60">
-                Next: {next_level}
-              </span>
-            </div>
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-secondary">
-              {xp_to_next_level.toLocaleString()} XP to go
-            </span>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-xs text-muted">Next: {next_level}</span>
+            <span className="font-mono text-xs text-muted">{xp_to_next_level.toLocaleString()} to next tier</span>
           </div>
-
-          <div className="h-3 bg-foreground/10 rounded-full overflow-hidden border-2 border-foreground/20 mb-3">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-700 shadow-[0_0_12px_rgba(27,67,50,0.4),inset_0_0_4px_rgba(255,255,255,0.2)]"
-              style={{ width: `${Math.min(progress_percent, 100)}%` }}
-            />
+          <div className="h-2 bg-ink/10 rounded-full overflow-hidden">
+            <div className="h-full bg-accent/40 rounded-full transition-all duration-700" style={{ width: `${Math.min(progress_percent, 100)}%` }} />
           </div>
-
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-mono font-bold uppercase tracking-widest text-foreground/40">
-              {current_xp.toLocaleString()} XP
-            </span>
-            <span className="font-mono font-bold uppercase tracking-widest text-foreground/40">
-              {next_level_xp?.toLocaleString()} XP
-            </span>
+          <div className="flex items-center justify-between font-mono text-xs text-muted">
+            <span>{current_xp.toLocaleString()}</span>
+            <span>{next_level_xp?.toLocaleString()}</span>
           </div>
 
           {eco_credit_bonus > 0 && (
-            <div className="mt-4 p-3 border-2 border-secondary/30 bg-secondary/5 rounded flex items-center gap-2">
-              <Zap className="w-4 h-4 text-secondary" />
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-secondary">
-                +{eco_credit_bonus.toLocaleString()} Eco-Credits bonus on rank up!
-              </span>
+            <div className="pt-4 flex items-center gap-2 text-xs font-mono text-muted">
+              <TrendUp className="w-4 h-4" />
+              +{eco_credit_bonus.toLocaleString()} Eco-Credits on advancement
             </div>
           )}
         </div>
       ) : (
-        <div className="p-4 border-2 border-accent/30 bg-accent/5 rounded">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">{icon}</span>
-            <div>
-              <p className="font-heading text-lg font-black uppercase text-accent">Maximum Rank</p>
-              <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent/70">
-                You have reached the highest citizen level!
-              </p>
-            </div>
+        <div className="flex items-center gap-3 py-4 border-t border-border">
+          {icon}
+          <div>
+            <p className="text-base font-semibold text-ink">Highest Tier</p>
+            <p className="font-mono text-xs text-muted uppercase tracking-wider">Maximum contributor tier reached</p>
           </div>
         </div>
       )}

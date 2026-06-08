@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, CheckCircle, AlertCircle, Info, Loader2 } from "lucide-react";
+import { X, CheckCircle, WarningCircle, Info, Spinner } from "@phosphor-icons/react";
 
 type ToastType = "success" | "error" | "info" | "loading";
 
@@ -44,25 +44,24 @@ export function ToastContainer() {
 
   if (!toasts.length) return null;
 
+  const typeStyles: Record<ToastType, string> = {
+    success: "border-green bg-green/10 text-green",
+    error: "border-accent bg-accent/10 text-accent",
+    loading: "border-ink/20 bg-panel",
+    info: "border-accent bg-accent/10 text-accent",
+  };
+
   return (
     <div className="fixed top-4 right-4 z-50 flex flex-col gap-3 max-w-sm">
       {toasts.map((t) => (
         <div
           key={t.id}
-          className={`flex items-start gap-3 p-4 border-2 font-mono text-sm font-bold rounded-lg shadow-[4px_4px_0px_#1b4332] backdrop-blur-md ${
-            t.type === "success"
-              ? "border-secondary bg-secondary/10 text-secondary"
-              : t.type === "error"
-              ? "border-accent bg-accent/10 text-accent"
-              : t.type === "loading"
-              ? "border-primary bg-primary/10 text-primary"
-              : "border-primary bg-background/90 text-primary"
-          }`}
+          className={`flex items-start gap-3 rounded-xl border p-4 text-sm font-medium shadow-lg backdrop-blur-md ${typeStyles[t.type]}`}
         >
-          {t.type === "success" && <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-          {t.type === "error" && <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />}
-          {t.type === "loading" && <Loader2 className="w-5 h-5 flex-shrink-0 mt-0.5 animate-spin" />}
-          {t.type === "info" && <Info className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+          {t.type === "success" && <CheckCircle weight="fill" className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+          {t.type === "error" && <WarningCircle weight="fill" className="w-5 h-5 flex-shrink-0 mt-0.5" />}
+          {t.type === "loading" && <Spinner className="w-5 h-5 flex-shrink-0 mt-0.5 animate-spin" />}
+          {t.type === "info" && <Info weight="fill" className="w-5 h-5 flex-shrink-0 mt-0.5" />}
           <span className="flex-1">{t.message}</span>
           <button
             onClick={() => dismiss(t.id)}

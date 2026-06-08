@@ -23,6 +23,21 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
     # Startup
     print("[startup] LikasLens AI Service starting...")
+    from image_analysis import load_coco_model, load_env_model
+
+    try:
+        load_coco_model()
+        print("[startup] COCO model loaded")
+    except Exception as exc:
+        print(f"[startup] WARNING: COCO model failed to load: {exc}")
+
+    try:
+        load_env_model()
+        print("[startup] Environmental model loaded")
+    except Exception as exc:
+        print(f"[startup] WARNING: Environmental model not loaded: {exc}")
+
+    print("[startup] Ready")
     yield
     # Shutdown
     print("[shutdown] LikasLens AI Service shutting down...")
@@ -36,13 +51,11 @@ app = FastAPI(
 )
 
 # Configure CORS
+_cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3002,http://localhost:8000")
+allow_origins = [o.strip() for o in _cors_origins.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Next.js frontend
-        "http://localhost:3002",  # Next.js admin-portal
-        "http://localhost:8000",  # Laravel backend
-    ],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -126,13 +139,23 @@ async def analyze_base64_image(payload: dict):
 
 @app.get("/analyze/model")
 async def analyze_model_status():
-    """Return the currently loaded YOLO model info."""
-    from image_analysis import ENVIRONMENTAL_KEYWORDS, _MODEL_NAME, get_model_path
+    """Return the currently loaded YOLO model info (COCO + environmental)."""
+    from image_analysis import (
+        ENV_MODEL_CLASS_MAP,
+        ENVIRONMENTAL_KEYWORDS,
+        _COCO_MODEL_NAME,
+        _ENV_MODEL_NAME,
+        get_coco_model_path,
+        get_env_model_path,
+    )
 
     return {
-        "model": _MODEL_NAME or "not loaded",
-        "model_path": get_model_path(),
-        "known_classes": len(ENVIRONMENTAL_KEYWORDS),
+        "coco_model": _COCO_MODEL_NAME or "not loaded",
+        "coco_model_path": get_coco_model_path(),
+        "environmental_model": _ENV_MODEL_NAME or "not loaded",
+        "environmental_model_path": get_env_model_path(),
+        "coco_classes": len(ENVIRONMENTAL_KEYWORDS),
+        "env_classes": len(ENV_MODEL_CLASS_MAP),
     }
 
 

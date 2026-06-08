@@ -1,24 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Montserrat, Space_Mono } from "next/font/google";
+import { Geist, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { locales, type Locale } from "@likaslens/shared";
 
-const headingFont = Montserrat({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["700", "800"],
-});
-
-const bodyFont = Inter({
+const bodyFont = Geist({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
 });
 
-const dataFont = Space_Mono({
+const dataFont = JetBrains_Mono({
   variable: "--font-data",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -62,9 +56,26 @@ export default async function RootLayout({
   return (
     <html
       lang={resolvedParams?.locale === "fil" ? "fil" : resolvedParams?.locale === "ta" ? "ta" : (resolvedParams?.locale || "en")}
-      className={`${headingFont.variable} ${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
+      className={`${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
       data-theme="civic"
+      suppressHydrationWarning
     >
+      <head>
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var theme = localStorage.getItem('likaslens-theme');
+                if (theme === 'ghost') {
+                  document.documentElement.setAttribute('data-theme', 'ghost');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">
         {children}
       </body>

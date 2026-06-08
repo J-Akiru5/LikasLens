@@ -1,7 +1,6 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { OfflineBanner, LikasyChat, ToastContainer } from "@likaslens/shared";
-import { Footer } from "@/components/layout/footer";
 
 export default async function LocaleLayout({
   children,
@@ -17,7 +16,6 @@ export default async function LocaleLayout({
     <NextIntlClientProvider messages={messages} locale={locale}>
       <OfflineBanner />
       <div className="flex-1">{children}</div>
-      <Footer />
       <LikasyChat persona="citizen" locale={locale} />
       <ToastContainer />
     </NextIntlClientProvider>

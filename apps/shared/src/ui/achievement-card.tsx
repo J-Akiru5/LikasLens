@@ -1,29 +1,21 @@
 "use client";
 
 import { cn } from "../utils";
-import { Badge } from "./badge";
 import type { Achievement, AchievementTier } from "../types/user";
-import { Lock, CheckCircle } from "lucide-react";
+import { Lock, CheckCircle, SealCheck, Shield, Star, Medal } from "@phosphor-icons/react";
 
-const tierBadgeVariant: Record<AchievementTier, string> = {
-  common: "default",
-  rare: "info",
-  epic: "warning",
-  legendary: "success",
+const tierIcons: Record<AchievementTier, React.ReactNode> = {
+  basic: <SealCheck className="w-4 h-4" />,
+  verified: <Shield className="w-4 h-4" />,
+  advanced: <Star className="w-4 h-4" />,
+  authority: <Medal className="w-4 h-4" />,
 };
 
 const tierLabel: Record<AchievementTier, string> = {
-  common: "COMMON",
-  rare: "RARE",
-  epic: "EPIC",
-  legendary: "LEGENDARY",
-};
-
-const tierGlow: Record<AchievementTier, string> = {
-  common: "",
-  rare: "shadow-[0_0_12px_rgba(45,225,194,0.3)]",
-  epic: "shadow-[0_0_12px_rgba(168,85,247,0.3)]",
-  legendary: "shadow-[0_0_16px_rgba(255,183,3,0.4)]",
+  basic: "BASIC",
+  verified: "VERIFIED",
+  advanced: "ADVANCED",
+  authority: "AUTHORITY",
 };
 
 interface AchievementCardProps {
@@ -33,113 +25,56 @@ interface AchievementCardProps {
 }
 
 export function AchievementCard({ achievement, variant = "full", className }: AchievementCardProps) {
-  const { unlocked, progress_value, threshold, tier, icon, name, description, unlocked_at, points_awarded, is_hidden } = achievement;
+  const { unlocked, progress_value, threshold, tier, icon, name, description, unlocked_at, points_awarded } = achievement;
   const progressPercent = threshold > 0 ? Math.min(100, Math.round((progress_value / threshold) * 100)) : 0;
 
   if (variant === "compact") {
     return (
-      <div
-        className={cn(
-          "brutal-panel p-3 border-2 rounded transition-all shrink-0 w-52",
-          unlocked
-            ? `border-secondary/50 bg-secondary/5 ${tierGlow[tier]}`
-            : "border-foreground/15 bg-foreground/5 opacity-60",
-          className
-        )}
-      >
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-xl">{unlocked || !is_hidden ? icon : "❓"}</span>
-          <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-foreground/50">
-            {tierLabel[tier]}
-          </span>
+      <div className={cn("flex items-center gap-4 py-3 border-b border-border last:border-0", className)}>
+        <span className="text-xl text-muted shrink-0">{icon}</span>
+        <div className="min-w-0 flex-1">
+          <p className="font-mono text-xs text-muted uppercase tracking-wider">{tierLabel[tier]}</p>
+          <p className="text-sm font-medium text-ink truncate">{name}</p>
         </div>
-        <p className="font-heading text-xs font-black uppercase truncate">
-          {unlocked || !is_hidden ? name : "???"}
-        </p>
         {unlocked ? (
-          <div className="flex items-center gap-1 mt-1 text-secondary">
-            <CheckCircle className="w-3 h-3" />
-            <span className="font-mono text-[10px] font-bold uppercase tracking-widest">Unlocked</span>
-          </div>
+          <CheckCircle weight="fill" className="w-5 h-5 text-green shrink-0" />
         ) : (
-          <div className="flex items-center gap-1 mt-1 text-foreground/40">
-            <Lock className="w-3 h-3" />
-            <span className="font-mono text-[10px] font-bold uppercase tracking-widest">{progress_value}/{threshold}</span>
-          </div>
+          <span className="font-mono text-sm text-muted shrink-0">{progress_value}/{threshold}</span>
         )}
       </div>
     );
   }
 
   return (
-    <div
-      className={cn(
-        "brutal-panel panel-surface p-5 border-2 relative overflow-hidden group transition-all",
-        unlocked
-          ? `border-secondary/40 bg-secondary/5 ${tierGlow[tier]}`
-          : "border-foreground/15 bg-foreground/5 opacity-70",
-        className
-      )}
-    >
-      {unlocked && (
-        <div className="absolute -right-6 -bottom-6 opacity-5 group-hover:scale-110 transition-transform duration-300 text-8xl select-none pointer-events-none">
-          {icon}
-        </div>
-      )}
-
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-3">
-          <div
-            className={cn(
-              "w-12 h-12 rounded border-2 flex items-center justify-center bg-background shrink-0 text-2xl",
-              unlocked ? "border-secondary shadow-[3px_3px_0px_#2de1c2]" : "border-foreground/20"
-            )}
-          >
-            {unlocked || !is_hidden ? icon : "❓"}
+    <div className={cn("flex items-start gap-5 py-5 border-b border-border last:border-0 group", className)}>
+      <div className="flex items-center gap-2 shrink-0 w-36">
+        <div className="flex items-center gap-1.5 text-muted">{tierIcons[tier]}</div>
+        <span className="font-mono text-xs text-muted uppercase tracking-wider">{tierLabel[tier]}</span>
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <span className="text-xl text-muted mr-2">{icon}</span>
+            <h3 className={cn("text-base font-semibold inline", unlocked ? "text-ink" : "text-ink/50")}>{name}</h3>
           </div>
-          <Badge variant="brutal" className={cn(
-            unlocked ? "border-secondary/40 bg-secondary/15 text-secondary" : "border-foreground/20 bg-foreground/10 text-foreground/50"
-          )}>
-            {tierLabel[tier]}
-          </Badge>
-        </div>
-
-        <h3 className={cn(
-          "font-heading text-lg font-black uppercase mb-1",
-          unlocked ? "text-secondary" : "text-foreground/50"
-        )}>
-          {unlocked || !is_hidden ? name : "???"}
-        </h3>
-
-        <p className="text-sm text-foreground/70 font-semibold mb-4">
-          {unlocked || !is_hidden ? description : "This achievement remains shrouded in mystery..."}
-        </p>
-
-        {unlocked && unlocked_at ? (
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-secondary" />
-            <span className="font-mono text-xs font-bold uppercase tracking-widest text-secondary">
-              Unlocked {new Date(unlocked_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
-            </span>
-            <span className="font-mono text-xs text-foreground/40 ml-auto">+{points_awarded} XP</span>
-          </div>
-        ) : (
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="flex items-center gap-1.5 text-foreground/50">
-                <Lock className="w-3.5 h-3.5" />
-                <span className="font-mono text-xs font-bold uppercase tracking-widest">
-                  {progress_value}/{threshold}
-                </span>
+          <div className="shrink-0 text-right">
+            {unlocked && unlocked_at ? (
+              <div className="flex items-center gap-1.5 text-green">
+                <CheckCircle weight="fill" className="w-4 h-4" />
+                <span className="font-mono text-xs">{new Date(unlocked_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
               </div>
-              <span className="font-mono text-xs text-foreground/40">+{points_awarded} XP</span>
-            </div>
-            <div className="h-2 bg-foreground/10 rounded-full overflow-hidden border border-foreground/20">
-              <div
-                className="h-full bg-secondary rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(45,225,194,0.4)]"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-muted">
+                <Lock className="w-4 h-4" />
+                <span className="font-mono text-xs">{progress_value}/{threshold}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <p className="text-sm text-muted mt-1.5">{description}</p>
+        {!unlocked && threshold > 0 && (
+          <div className="mt-3 h-2 bg-ink/10 rounded-full overflow-hidden w-full max-w-[240px]">
+            <div className="h-full bg-accent/30 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
           </div>
         )}
       </div>

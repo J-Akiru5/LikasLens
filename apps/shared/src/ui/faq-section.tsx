@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { CaretDown } from "@phosphor-icons/react";
 
 const faqs = [
   {
@@ -42,34 +42,33 @@ export function FaqSection() {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   return (
-    <section className="relative z-10 max-w-7xl mx-auto px-6 py-20">
-      <h2 className="font-heading text-4xl font-black mb-8 uppercase border-b-4 border-primary pb-4">
-        Frequently Asked Questions
-      </h2>
-      <div className="brutal-panel panel-surface divide-y-4 divide-primary/20">
+    <section className="max-w-7xl mx-auto px-6 lg:px-8 py-28 space-y-10">
+      <div className="space-y-3">
+        <p className="text-sm text-muted">Support</p>
+        <h2 className="text-4xl md:text-5xl text-ink font-semibold tracking-tight">Frequently Asked Questions</h2>
+        <p className="text-base md:text-lg text-muted leading-relaxed max-w-xl">
+          Everything you need to know about reporting with LikasLens.
+        </p>
+      </div>
+      <div className="divide-y divide-border">
         {faqs.map((faq, idx) => {
           const isOpen = openIdx === idx;
           return (
             <div key={idx}>
               <button
                 onClick={() => setOpenIdx(isOpen ? null : idx)}
-                className="w-full flex items-center justify-between p-6 text-left hover:bg-primary/5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                className="w-full flex items-center justify-between py-6 text-left hover:bg-ink/[0.02] transition-colors"
                 aria-expanded={isOpen}
               >
-                <span className="font-heading text-lg font-black uppercase tracking-tight pr-4">
-                  {faq.q}
-                </span>
-                <ChevronDown
-                  className={`w-5 h-5 shrink-0 text-primary transition-transform duration-200 ${
-                    isOpen ? "rotate-180" : ""
-                  }`}
+                <span className="text-lg md:text-xl text-ink font-medium pr-4">{faq.q}</span>
+                <CaretDown
+                  className={`w-5 h-5 shrink-0 text-muted transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                  weight="bold"
                 />
               </button>
               {isOpen && (
-                <div className="px-6 pb-6">
-                  <p className="font-semibold text-base text-foreground/90 leading-relaxed max-w-3xl">
-                    {faq.a}
-                  </p>
+                <div className="pb-6">
+                  <p className="text-base md:text-lg text-muted leading-relaxed max-w-3xl">{faq.a}</p>
                 </div>
               )}
             </div>

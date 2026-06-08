@@ -12,5 +12,5 @@ export { ActivityFeed } from "./activity-feed";
 export { PublicScoreboard } from "./public-scoreboard";
 export { FaqSection } from "./faq-section";
 export { AchievementCard } from "./achievement-card";
-export { RecentUnlocksWidget } from "./recent-unlocks-widget";
+export { RecentMilestonesWidget } from "./recent-unlocks-widget";
 export { RankProgressCard } from "./rank-progress-card";

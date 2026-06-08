@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { AppHeader } from "@/components/layout/header";
-import { Scale, Search, BookOpen, ExternalLink } from "lucide-react";
+import { Sidebar } from "@/components/layout/sidebar";
+import { BottomNav } from "@/components/layout/bottom-nav";
+import { Scales, MagnifyingGlass, ArrowSquareOut, Spinner } from "@phosphor-icons/react";
 import Link from "next/link";
 import { laravelGet, type PaginatedResponse } from "@likaslens/shared";
 
@@ -49,45 +51,40 @@ export default function LawsPage() {
   );
 
   return (
-    <div className="min-h-dvh bg-background font-body">
-      <AppHeader showBranding />
-      <main className="max-w-5xl mx-auto p-4 sm:p-6 pb-20 lg:pb-6 space-y-6">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors"
-          >
-            <BookOpen className="w-4 h-4" />
-            Back
-          </Link>
-          <h1 className="font-heading text-3xl md:text-4xl font-black uppercase">
-            Environmental Laws
-          </h1>
+    <div className="flex h-dvh overflow-hidden bg-page">
+      <Sidebar />
+      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
+        <AppHeader showBranding />
+        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6 relative z-10">
+          <BottomNav />
+          <div className="max-w-5xl mx-auto space-y-8">
+        <div className="flex items-center gap-4">
+          <h1 className="font-semibold tracking-tight text-2xl text-ink">Environmental Laws</h1>
         </div>
 
-        <p className="font-mono text-sm surface-muted max-w-2xl">
+        <p className="font-mono text-sm text-ink/50 max-w-xl">
           Search Philippine environmental legislation. Browse active laws protecting our natural resources.
         </p>
 
         <div className="relative max-w-lg">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
+          <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
           <input
             type="text"
             placeholder="Search by title, law code, or keyword..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold text-sm focus:outline-none focus:border-primary transition-colors"
+            className="w-full pl-9 pr-4 py-3 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 rounded-lg"
           />
         </div>
 
         {loading && (
           <div className="flex justify-center py-12">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-secondary border-t-transparent" />
+            <Spinner className="w-6 h-6 text-muted animate-spin" weight="bold" />
           </div>
         )}
 
         {error && (
-          <div className="rounded border-2 border-accent bg-accent/10 p-4 font-mono text-sm text-accent font-bold uppercase">
+          <div className="p-4 border border-ink/10 font-mono text-sm text-ink/60 rounded-lg">
             {error}
           </div>
         )}
@@ -95,51 +92,42 @@ export default function LawsPage() {
         {!loading && !error && (
           <div className="space-y-4">
             {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Scale className="w-16 h-16 surface-muted mb-4" />
-                <p className="font-heading text-xl font-black uppercase surface-muted">
-                  {search ? "No matching laws found" : "No laws available"}
-                </p>
-                <p className="font-mono text-sm surface-muted mt-1">
-                  {search ? "Try a different search term." : "Check back soon for Philippine environmental legislation."}
-                </p>
+              <div className="py-16 text-center space-y-3">
+                <Scales className="w-8 h-8 text-muted mx-auto" weight="bold" />
+                <p className="font-semibold tracking-tight text-lg text-ink/50">{search ? "No matching laws found" : "No laws available"}</p>
+                <p className="font-mono text-sm text-ink/40">{search ? "Try a different search term." : "Check back soon for Philippine environmental legislation."}</p>
               </div>
             ) : (
               <>
-                <p className="font-mono text-xs surface-muted uppercase tracking-widest">
+                <p className="font-mono text-xs text-ink/40 uppercase tracking-wide">
                   Showing {filtered.length} active law{filtered.length !== 1 ? "s" : ""}
                 </p>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {filtered.map((law) => (
-                    <div
-                      key={law.id}
-                      className="brutal-panel panel-surface p-5 border-2 border-primary/20 hover:border-primary transition-colors"
-                    >
+                    <div key={law.id} className="border border-ink/10 p-5 hover:bg-ink/[0.02] transition-colors rounded-xl">
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">
-                          <Scale className="w-5 h-5 text-primary" />
+                        <div className="w-8 h-8 rounded border border-ink/10 flex items-center justify-center shrink-0">
+                          <Scales className="w-4 h-4 text-muted" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
-                            <h3 className="font-bold uppercase text-sm">{law.title}</h3>
+                            <h3 className="font-semibold tracking-tight text-sm text-ink">{law.title}</h3>
                           </div>
-                          <p className="font-mono text-xs text-secondary font-bold">{law.law_code}</p>
-                          <p className="font-mono text-sm mt-2 line-clamp-3">{law.summary}</p>
+                          <p className="font-mono text-xs text-ink/40">{law.law_code}</p>
+                          <p className="font-mono text-sm text-ink/60 mt-2 line-clamp-3">{law.summary}</p>
                           <div className="flex items-center gap-3 mt-3 flex-wrap">
-                            <p className="font-mono text-xs surface-muted">{law.issuing_agency}</p>
+                            <span className="font-mono text-xs text-ink/40">{law.issuing_agency}</span>
                             {law.jurisdiction_scope && (
-                              <span className="rounded px-2 py-0.5 text-xs font-bold uppercase font-mono tracking-widest border-2 border-primary/30 bg-primary/10 text-primary">
-                                {law.jurisdiction_scope}
-                              </span>
+                              <span className="font-mono text-[10px] text-ink/50 uppercase tracking-wide">{law.jurisdiction_scope}</span>
                             )}
                             {law.source_url && (
                               <a
                                 href={law.source_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 font-mono text-xs text-secondary hover:underline"
+                                className="inline-flex items-center gap-1 font-mono text-xs text-ink/40 hover:text-ink transition-colors"
                               >
-                                <ExternalLink className="w-3 h-3" />
+                                <ArrowSquareOut className="w-3 h-3" />
                                 Source
                               </a>
                             )}
@@ -153,7 +141,9 @@ export default function LawsPage() {
             )}
           </div>
         )}
-      </main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

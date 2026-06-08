@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Info, Map } from "lucide-react";
+import { Warning, Info, MapPin } from "@phosphor-icons/react";
 import { useState } from "react";
 
 interface FeedItem {
@@ -12,9 +12,21 @@ interface FeedItem {
   status: string;
 }
 
-export function ActivityFeed({ items }: { items?: FeedItem[] }) {
+const typeColor: Record<string, string> = {
+  Critical: "text-[#b23b3b]",
+  Warning: "text-[#b8860b]",
+  Info: "text-accent",
+};
+
+const typeDot: Record<string, string> = {
+  Critical: "bg-[#b23b3b]",
+  Warning: "bg-[#b8860b]",
+  Info: "bg-accent",
+};
+
+export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; loading?: boolean; error?: string }) {
   const [displayedCount, setDisplayedCount] = useState(3);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const allItems = items || [
     { id: "INC-092", type: "Critical" as const, title: "Illegal Dumping Detected", location: "Sector 4, Riverside", time: "10 mins ago", status: "Routing to Agency" },
@@ -28,83 +40,102 @@ export function ActivityFeed({ items }: { items?: FeedItem[] }) {
     { id: "INC-084", type: "Info" as const, title: "Air Quality Improved", location: "Downtown Core", time: "12 hours ago", status: "Resolved" },
   ];
 
+  if (loading) {
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center justify-between pb-5 border-b border-border mb-3">
+          <div className="h-7 w-48 rounded-lg bg-ink/5 animate-pulse" />
+          <div className="h-4 w-16 rounded bg-ink/5 animate-pulse" />
+        </div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="relative pl-7 pb-6 animate-pulse">
+            <div className="absolute left-0 top-1.5 w-[18px] h-[18px] rounded-full bg-ink/5" />
+            <div className="space-y-2">
+              <div className="h-4 w-32 rounded bg-ink/5" />
+              <div className="h-5 w-48 rounded bg-ink/5" />
+              <div className="h-4 w-36 rounded bg-ink/5" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-[#b23b3b]/20 bg-[#b23b3b]/5 p-6 text-center">
+        <WarningCircle weight="fill" className="mx-auto h-8 w-8 text-[#b23b3b] mb-2" />
+        <p className="text-sm text-[#b23b3b]">{error}</p>
+        <p className="text-xs text-muted mt-1">Try refreshing the page.</p>
+      </div>
+    );
+  }
+
+  if (!items || items.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-border p-8 text-center">
+        <Info weight="light" className="mx-auto h-8 w-8 text-muted mb-2" />
+        <p className="text-sm text-muted">No activity yet</p>
+      </div>
+    );
+  }
+
   const handleLoadMore = () => {
-    setIsLoading(true);
+    setIsLoadingMore(true);
     setTimeout(() => {
       setDisplayedCount((prev) => Math.min(prev + 3, allItems.length));
-      setIsLoading(false);
+      setIsLoadingMore(false);
     }, 500);
   };
 
   const displayed = allItems.slice(0, displayedCount);
 
   return (
-    <div className="brutal-panel panel-surface p-0 overflow-hidden h-full flex flex-col">
-      <div className="p-6 border-b-4 border-primary bg-background flex justify-between items-center">
-        <h2 className="font-heading text-2xl font-black uppercase">Live Intelligence Feed</h2>
-        <span className="flex h-3 w-3 relative items-center justify-center">
-          <span className="status-dot-glitch absolute inline-flex h-3 w-3 rounded-full opacity-75 live-indicator-glitch" />
-          <span className="relative inline-flex rounded-full h-3 w-3 border-2 live-indicator-ring" />
+    <div className="space-y-1">
+      <div className="flex items-center justify-between pb-5 border-b border-border mb-3">
+        <h2 className="text-2xl font-semibold text-ink">Live Intelligence Feed</h2>
+        <span className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-green animate-[breathe_4s_ease-in-out_infinite]" />
+          <span className="font-mono text-sm text-muted">Live</span>
         </span>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {displayed.map((item, idx) => (
-          <div key={item.id} className="p-6 border-b-2 border-primary/10 hover:bg-secondary/10 transition-colors flex gap-6 group">
-            <div className="hidden sm:flex flex-col items-center">
-              <div
-                className={`w-12 h-12 rounded border-2 flex items-center justify-center shadow-[2px_2px_0px_#1b4332] group-hover:scale-110 transition-transform font-heading font-black ${
-                  item.type === "Critical"
-                    ? "bg-accent/20 border-accent text-accent"
-                    : item.type === "Warning"
-                    ? "bg-secondary/20 border-secondary text-secondary"
-                    : "bg-primary/20 border-primary text-primary"
-                }`}
-              >
-                {item.type === "Critical" ? (
-                  <AlertTriangle className="w-6 h-6" />
-                ) : item.type === "Warning" ? (
-                  <Map className="w-6 h-6" />
-                ) : (
-                  <Info className="w-6 h-6" />
-                )}
-              </div>
-              <div className={`w-0.5 ${idx === displayed.length - 1 ? "hidden" : "h-full"} bg-primary/20 mt-4`} />
-            </div>
-
-            <div className="flex-1">
-              <div className="flex justify-between items-start mb-2">
-                <div className="font-mono text-xs font-bold surface-muted border border-primary/20 px-2 py-1 rounded inline-block surface-chip">{item.id}</div>
-                <div className="font-mono text-xs font-bold">{item.time}</div>
-              </div>
-              <h3 className="font-heading text-xl font-bold uppercase mb-1">{item.title}</h3>
-              <p className="font-mono text-sm opacity-80 mb-4">{item.location}</p>
-              <div className="flex items-center gap-2">
-                <div className="text-xs font-mono font-bold uppercase tracking-widest border-2 border-primary px-3 py-1 rounded surface-chip shadow-[2px_2px_0px_#1b4332]">
-                  Status: {item.status}
-                </div>
-              </div>
-            </div>
+      {displayed.map((item, idx) => (
+        <div key={item.id} className="relative pl-7 pb-6">
+          {idx < displayed.length - 1 && (
+            <div className="absolute left-[9px] top-3 bottom-0 w-px bg-border" />
+          )}
+          <div className={`absolute left-0 top-1.5 w-[18px] h-[18px] rounded-full border-2 border-border ${typeDot[item.type]} flex items-center justify-center`}>
+            <div className={`w-[8px] h-[8px] rounded-full ${typeDot[item.type]}`} />
           </div>
-        ))}
-
-        <div className="p-6 text-center border-t-2 border-primary/10">
-          {displayedCount < allItems.length && (
-            <button
-              onClick={handleLoadMore}
-              disabled={isLoading}
-              aria-label={`Load older logs, ${allItems.length - displayedCount} remaining`}
-              className="brutal-button px-6 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
-            >
-              {isLoading ? "Loading..." : `Load Older Logs (${allItems.length - displayedCount} more)`}
-            </button>
-          )}
-          {displayedCount >= allItems.length && (
-            <div className="font-mono text-xs text-foreground/60 uppercase tracking-widest">
-              ✓ All {allItems.length} incidents loaded
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="font-mono text-sm text-muted">{item.id}</span>
+                <span className={`font-mono text-sm font-medium ${typeColor[item.type]}`}>{item.type}</span>
+              </div>
+              <h3 className="text-lg font-semibold text-ink mb-1">{item.title}</h3>
+              <p className="font-mono text-sm text-muted mb-2">{item.location}</p>
+              <span className="font-mono text-sm text-muted">{item.status}</span>
             </div>
-          )}
+            <span className="font-mono text-sm text-muted shrink-0">{item.time}</span>
+          </div>
         </div>
+      ))}
+
+      <div className="pt-3">
+        {displayedCount < allItems.length && (
+          <button
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+            className="font-mono text-sm text-muted hover:text-ink transition-colors disabled:opacity-50"
+          >
+            {isLoadingMore ? "Loading..." : `Load Older Logs (${allItems.length - displayedCount} more)`}
+          </button>
+        )}
+        {displayedCount >= allItems.length && (
+          <span className="font-mono text-sm text-muted">All {allItems.length} incidents loaded</span>
+        )}
       </div>
     </div>
   );

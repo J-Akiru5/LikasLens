@@ -10,21 +10,16 @@ use Illuminate\Support\Facades\Http;
 
 class AdminUserController extends Controller
 {
-    /**
-     * Synchronize local users table with Supabase Auth identities.
-     */
     private function syncUsersWithSupabase(): void
     {
         $supabaseUrl = env('SUPABASE_URL');
         $serviceKey = env('SUPABASE_SERVICE_ROLE_KEY');
 
-        // Safety check: Don't attempt to sync if keys aren't configured yet
         if (! $supabaseUrl || ! $serviceKey) {
             return;
         }
 
         try {
-            // Fetch users directly from the administrative Supabase Auth endpoint
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer '.$serviceKey,
                 'apikey' => $serviceKey,
@@ -34,33 +29,27 @@ class AdminUserController extends Controller
                 $supabaseUsers = $response->json()['users'];
 
                 foreach ($supabaseUsers as $sUser) {
-                    // Sync by checking if the supabase user ID matches our local database record
                     User::updateOrCreate(
-                        ['supabase_auth_user_id' => $sUser['id']], // Unique lookup column
+                        ['supabase_auth_user_id' => $sUser['id']],
                         [
                             'email' => $sUser['email'],
-                            // Use metadata name if available, otherwise fall back to email username splitting
                             'name' => $sUser['user_metadata']['full_name'] ?? explode('@', $sUser['email'])[0],
-                            // Set default values for new profiles if they don't exist yet
                             'role' => $sUser['user_metadata']['role'] ?? 'citizen',
-                            'trust_score' => 100, // Default starting value
-                            'reward_points_balance' => 50, // Default welcome grant values
+                            'trust_score' => 100,
+                            'reward_points_balance' => 50,
                         ]
                     );
                 }
             }
         } catch (\Exception $e) {
-            // Silent catch to prevent the entire endpoint from breaking if Supabase is temporarily unreachable
             logger('Supabase synchronization error: '.$e->getMessage());
         }
     }
 
     public function index(Request $request): JsonResponse
     {
-        // 1. Run the sync process first to fetch fresh profiles from Supabase
         $this->syncUsersWithSupabase();
 
-        // 2. Continue with your existing local database filtering, search, and pagination query logic
         $query = User::query()->orderBy('created_at', 'desc');
 
         if ($search = $request->input('search')) {
@@ -74,9 +63,14 @@ class AdminUserController extends Controller
             $query->where('role', $role);
         }
 
+        if ($request->has('deactivated_only') && $request->boolean('deactivated_only')) {
+            $query->onlyTrashed();
+        } else {
+            $query->withTrashed();
+        }
+
         $users = $query->paginate(min((int) $request->input('per_page', 20), 50));
 
-        // 3. Keep your existing structured response format exactly the same
         return response()->json([
             'success' => true,
             'data' => $users->items(),
@@ -91,7 +85,7 @@ class AdminUserController extends Controller
 
     public function show(string $id): JsonResponse
     {
-        $user = User::findOrFail($id);
+        $user = User::withTrashed()->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -103,6 +97,9 @@ class AdminUserController extends Controller
                 'role' => $user->role,
                 'trust_score' => $user->trust_score,
                 'reward_points_balance' => $user->reward_points_balance,
+                'total_verified_reports' => $user->total_verified_reports,
+                'total_xp' => $user->total_xp,
+                'ranking_tier' => $user->ranking_tier,
                 'created_at' => $user->created_at,
                 'deleted_at' => $user->deleted_at,
             ],
@@ -112,6 +109,7 @@ class AdminUserController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $user = User::findOrFail($id);
+        $oldValues = $user->only(['name', 'email', 'trust_score', 'reward_points_balance']);
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -121,6 +119,8 @@ class AdminUserController extends Controller
         ]);
 
         $user->update($validated);
+
+        $this->audit($request, 'user_updated', 'user', $user->id, $oldValues, $user->fresh()->only(array_keys($oldValues)));
 
         return response()->json([
             'success' => true,
@@ -160,11 +160,45 @@ class AdminUserController extends Controller
     public function destroy(string $id): JsonResponse
     {
         $user = User::findOrFail($id);
+        $oldValues = $user->only(['name', 'email', 'role']);
         $user->delete();
+
+        $this->audit(request(), 'user_deactivated', 'user', $id, $oldValues, ['deleted_at' => $user->fresh()->deleted_at]);
 
         return response()->json([
             'success' => true,
             'message' => 'User deactivated.',
+        ]);
+    }
+
+    public function restore(Request $request, string $id): JsonResponse
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        $user->restore();
+
+        $this->audit($request, 'user_reactivated', 'user', $user->id,
+            ['deleted_at' => $user->deleted_at],
+            ['deleted_at' => null]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User reactivated.',
+            'data' => $user->fresh(),
+        ]);
+    }
+
+    private function audit(Request $request, string $action, string $entityType, string $entityId, ?array $oldValues, ?array $newValues): void
+    {
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => $action,
+            'entity_type' => $entityType,
+            'entity_id' => $entityId,
+            'old_values' => $oldValues,
+            'new_values' => $newValues,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
         ]);
     }
 }

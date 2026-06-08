@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Leaf, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Leaf, ArrowRight, Eye, EyeSlash } from "@phosphor-icons/react";
 import { signIn } from "@/app/[locale]/actions/auth";
 
 export function LoginClient() {
@@ -31,7 +31,7 @@ export function LoginClient() {
   }, [searchParams]);
 
   return (
-    <main className="min-h-dvh flex items-center justify-center p-4 sm:p-6 relative overflow-hidden font-body selection:bg-accent/30 selection:text-current">
+    <main className="min-h-dvh flex items-center justify-center p-4 sm:p-6 relative overflow-hidden selection:bg-accent/30 selection:text-current">
       <div
         className="absolute inset-0 z-0 bg-cover bg-center"
         style={{
@@ -39,10 +39,10 @@ export function LoginClient() {
             "url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=3270&auto=format&fit=crop')",
         }}
       >
-        <div className="absolute inset-0 backdrop-blur-[3px] bg-background/50" />
+        <div className="absolute inset-0 backdrop-blur-[3px] bg-page/50" />
       </div>
 
-      <div className="brutal-panel panel-surface relative z-10 w-full max-w-md p-8 border-4">
+      <div className="panel relative z-10 w-full max-w-md p-8">
         <div className="flex justify-center mb-8">
           <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center shadow-[4px_4px_0px_#1b4332]" style={{
             borderColor: "#ffb703",
@@ -53,10 +53,10 @@ export function LoginClient() {
           </div>
         </div>
 
-        <h1 className="font-heading text-3xl font-black text-center mb-2 uppercase">
+        <h1 className="font-semibold tracking-tight text-3xl text-center mb-2">
           Welcome Back
         </h1>
-        <p className="text-center font-mono text-sm surface-muted mb-8 uppercase tracking-widest">
+        <p className="text-center font-mono text-sm text-muted mb-8 uppercase tracking-widest">
           Log in to your account
         </p>
 
@@ -65,7 +65,7 @@ export function LoginClient() {
             className={`mb-6 p-4 rounded border-2 font-mono text-sm font-bold ${
               status.type === "error"
                 ? "theme-status border-accent text-accent"
-                : "theme-status border-secondary text-primary"
+                : "theme-status border-green text-green"
             }`}
           >
             {status.message}
@@ -113,10 +113,10 @@ export function LoginClient() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-accent/60 hover:text-accent transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
           </div>
@@ -139,18 +139,18 @@ export function LoginClient() {
 
           <button
             type="submit"
-            className="w-full brutal-button py-4 rounded font-heading text-lg tracking-wider flex items-center justify-center gap-2"
+            className="w-full bg-accent text-white rounded-lg py-4 font-semibold tracking-tight text-lg tracking-wider flex items-center justify-center gap-2"
           >
             Log In <ArrowRight className="w-5 h-5" />
           </button>
         </form>
 
-        <div className="mt-8 text-center border-t-2 border-primary/10 pt-6">
+        <div className="mt-8 text-center border-t border-border pt-6">
           <p className="font-mono text-sm">
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
-              className="font-bold underline hover:text-secondary transition-colors text-primary"
+              className="font-bold underline hover:text-green transition-colors text-accent"
             >
               Sign Up
             </Link>
@@ -158,7 +158,7 @@ export function LoginClient() {
           <div className="mt-4">
             <Link
               href="/"
-              className="font-mono text-xs uppercase tracking-widest surface-muted hover:text-primary transition-colors"
+              className="font-mono text-xs uppercase tracking-widest text-muted hover:text-accent transition-colors"
             >
               &larr; Back to Home
             </Link>

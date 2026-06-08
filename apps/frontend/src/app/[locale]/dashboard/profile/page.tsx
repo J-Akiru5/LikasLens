@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, Save, User, Globe } from "lucide-react";
+import { ArrowLeft, FloppyDisk, User, Globe } from "@phosphor-icons/react";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
+import { CustomSelect } from "@/components/ui/custom-select";
 import { Spinner } from "@/components/ui/spinner";
 import { showToast, ToastContainer } from "@/components/ui/toast";
 import { createClient } from "@/utils/supabase/client";
@@ -90,46 +91,34 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-dvh overflow-hidden bg-background font-body">
+      <div className="flex h-dvh overflow-hidden bg-page">
         <Sidebar />
         <div className="flex-1 min-w-0 flex items-center justify-center">
-          <Spinner size={32} className="text-primary" />
+          <Spinner size={32} className="text-ink/40" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-background font-body selection:bg-accent/30 selection:text-current">
+    <div className="flex h-dvh overflow-hidden bg-page">
       <ToastContainer />
       <Sidebar />
       <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <div className="smoke-overlay" />
         <AppHeader greeting={displayName || "Citizen"} />
         <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex items-center gap-3 mb-8">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 px-4 py-2 border-2 border-primary text-primary hover:bg-primary/5 rounded transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back
+          <div className="max-w-4xl mx-auto space-y-12">
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors">
+                &larr; Dashboard
               </Link>
-              <h1 className="font-heading text-3xl md:text-4xl font-black uppercase">
-                Profile Settings
-              </h1>
+              <span className="text-ink/20">/</span>
+              <h1 className="font-semibold tracking-tight text-3xl text-ink">Profile Settings</h1>
             </div>
 
-            {/* Avatar Section */}
-            <div className="brutal-panel panel-surface p-8">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-                  <User className="w-6 h-6 text-primary" />
-                </div>
-                <h2 className="font-heading text-2xl font-black uppercase">Profile Photo</h2>
-              </div>
+            <section className="space-y-6">
+              <h2 className="font-semibold tracking-tight text-xl text-ink">Profile Photo</h2>
               {userId && (
                 <AvatarUpload
                   userId={userId}
@@ -137,62 +126,47 @@ export default function ProfileSettingsPage() {
                   onUploadComplete={(url) => setAvatarUrl(url)}
                 />
               )}
-            </div>
+            </section>
 
-            {/* Profile Info */}
-            <div className="brutal-panel panel-surface p-8">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-                  <User className="w-6 h-6 text-primary" />
-                </div>
-                <h2 className="font-heading text-2xl font-black uppercase">Profile Information</h2>
-              </div>
-
-              <div className="space-y-6">
+            <section className="space-y-6">
+              <h2 className="font-semibold tracking-tight text-xl text-ink">Profile Information</h2>
+              <div className="space-y-5">
                 <div>
-                  <label className="block font-mono text-sm font-bold uppercase mb-2">
-                    Display Name
-                  </label>
+                  <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">Display Name</label>
                   <input
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="Your public name"
-                    className="w-full brutal-panel theme-input px-4 py-3 font-medium rounded"
+                    className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 rounded-lg"
                     maxLength={50}
                   />
                 </div>
 
                 <div>
-                  <label className="block font-mono text-sm font-bold uppercase mb-2">
-                    Bio
-                  </label>
+                  <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">Bio</label>
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Tell the community about yourself..."
-                    className="w-full brutal-panel theme-input px-4 py-3 font-medium rounded resize-none"
+                    className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 resize-none rounded-lg"
                     rows={4}
                     maxLength={300}
                   />
-                  <p className="text-xs font-mono surface-muted mt-1 text-right">{bio.length}/300</p>
+                  <p className="font-mono text-xs text-ink/30 mt-1 text-right">{bio.length}/300</p>
                 </div>
 
                 <div>
-                  <label className="block font-mono text-sm font-bold uppercase mb-2">
-                    <span className="flex items-center gap-2"><Globe className="w-4 h-4" /> Country / Region</span>
+                  <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">
+                    <span className="flex items-center gap-2"><Globe className="w-3.5 h-3.5" /> Country / Region</span>
                   </label>
-                  <select
+                  <CustomSelect
                     value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                    className="w-full brutal-panel theme-input px-4 py-3 font-medium rounded"
-                  >
-                    {ASEAN_COUNTRIES.map((c) => (
-                      <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
-                    ))}
-                  </select>
+                    onChange={setCountryCode}
+                    options={ASEAN_COUNTRIES.map((c) => ({ value: c.code, label: `${c.name} (${c.code})` }))}
+                  />
                   {currencyRate && (
-                    <p className="text-xs font-mono text-secondary font-bold uppercase tracking-widest mt-2">
+                    <p className="font-mono text-xs text-ink/40 mt-2">
                       Eco-Credit Rate: 1 Eco = {currencyRate.currency_code} {currencyRate.eco_credit_rate.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </p>
                   )}
@@ -201,13 +175,13 @@ export default function ProfileSettingsPage() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-3 px-8 py-4 brutal-button rounded-lg font-heading font-black uppercase text-lg disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
                 >
-                  <Save className="w-5 h-5" />
+                  <FloppyDisk className="w-4 h-4" />
                   {saving ? "Saving..." : "Save Changes"}
                 </button>
               </div>
-            </div>
+            </section>
           </div>
         </main>
       </div>
