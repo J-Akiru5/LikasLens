@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Achievement;
 use App\Models\CitizenWallet;
 use App\Models\CreditPool;
 use App\Models\NgoGroup;
@@ -10,6 +11,7 @@ use App\Models\TicketAssignment;
 use App\Models\TicketClassification;
 use App\Models\TicketEvidence;
 use App\Models\User;
+use App\Models\UserAchievement;
 use App\Models\ViolationType;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -269,7 +271,63 @@ class DemoDataSeeder extends Seeder
         );
 
         // ═══════════════════════════════════════════════════════════════
-        // 5. TICKETS (18) — Western Visayas, varied statuses & violation types
+        // 5. USER ACHIEVEMENTS (Demo unlocks for leaderboard depth)
+        // ═══════════════════════════════════════════════════════════════
+        $allAchievements = Achievement::all()->keyBy('name');
+        $achNow = $now->copy()->subDays(mt_rand(1, 30));
+
+        $setAchievement = function (User $user, string $achievementName, ?int $progress, ?string $unlockedAt) use ($allAchievements) {
+            $ach = $allAchievements->get($achievementName);
+            if (! $ach) {
+                return;
+            }
+            UserAchievement::firstOrCreate(
+                ['user_id' => $user->id, 'achievement_id' => $ach->id],
+                [
+                    'progress_value' => $progress ?? ($ach->criteria_value['threshold'] ?? 1),
+                    'unlocked_at' => $unlockedAt,
+                ]
+            );
+        };
+
+        // Maria Santos — top citizen, Steward level
+        foreach (['First Report', 'Hawk Eye', 'Water Guardian', 'Pollution Buster', 'Community Watchdog', 'Sharp Shooter'] as $name) {
+            $setAchievement($maria, $name, null, $achNow);
+        }
+        $setAchievement($maria, 'Environmental Guardian', 1, $achNow->copy()->subDays(3));
+        $setAchievement($maria, 'Forest Sentinel', 2, null);
+        $setAchievement($maria, 'Truth Seeker', 4, null);
+        $setAchievement($maria, 'Perimeter Patrol', 3, null);
+
+        // Juan dela Cruz — newbie citizen
+        $setAchievement($juan, 'First Report', 1, $achNow->copy()->subDays(14));
+
+        // Pedro Estrada — high-tier citizen
+        foreach (['First Report', 'Hawk Eye', 'Sharp Shooter'] as $name) {
+            $setAchievement($citizen3, $name, null, $achNow->copy()->subDays(mt_rand(5, 20)));
+        }
+        $setAchievement($citizen3, 'Environmental Guardian', 1, $achNow->copy()->subDays(5));
+        $setAchievement($citizen3, 'Pollution Buster', 1, $achNow->copy()->subDays(7));
+
+        // Ricardo Gomez — mid-tier citizen
+        foreach (['First Report', 'Pollution Buster', 'Sharp Shooter'] as $name) {
+            $setAchievement($citizen1, $name, null, $achNow->copy()->subDays(mt_rand(5, 25)));
+        }
+        $setAchievement($citizen1, 'Environmental Guardian', 1, $achNow->copy()->subDays(4));
+        $setAchievement($citizen1, 'Forest Sentinel', 2, null);
+
+        // Lorna Bautista — mid-tier citizen
+        foreach (['First Report', 'Water Guardian', 'Sharp Shooter'] as $name) {
+            $setAchievement($citizen2, $name, null, $achNow->copy()->subDays(mt_rand(7, 21)));
+        }
+
+        // Ana Reyes — ghost-mode citizen
+        $setAchievement($ana, 'First Report', 1, $achNow->copy()->subDays(28));
+        $setAchievement($ana, 'Offline Warrior', 1, $achNow->copy()->subDays(20));
+        $setAchievement($ana, 'Ghost in the Machine', 8, null);
+
+        // ═══════════════════════════════════════════════════════════════
+        // 6. TICKETS (18) — Western Visayas, varied statuses & violation types
         // ═══════════════════════════════════════════════════════════════
 
         // Only seed tickets if they don't already exist
@@ -624,7 +682,7 @@ class DemoDataSeeder extends Seeder
         }
 
         // ═══════════════════════════════════════════════════════════════
-        // 6. TICKET ASSIGNMENTS (8 tickets → NGOs)
+        // 7. TICKET ASSIGNMENTS (8 tickets → NGOs)
         // ═══════════════════════════════════════════════════════════════
         foreach ($ticketNgoMap as $ticketTitle => $ngoGroup) {
             if (! isset($createdTickets[$ticketTitle])) {
