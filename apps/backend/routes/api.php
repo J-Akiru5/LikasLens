@@ -30,9 +30,9 @@ Route::get('/health', function () {
     ]);
 });
 
-// Report submission endpoints (public)
-Route::post('/reports', [ReportController::class, 'store']);
-Route::post('/reports/triage', [ReportController::class, 'triage']);
+// Report submission endpoints (public — rate limited to 60/min per IP)
+Route::post('/reports', [ReportController::class, 'store'])->middleware('throttle:reports');
+Route::post('/reports/triage', [ReportController::class, 'triage'])->middleware('throttle:reports');
 
 // Contact message endpoint (public)
 Route::post('/contact-messages', [ContactMessageController::class, 'store']);

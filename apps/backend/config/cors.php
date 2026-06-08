@@ -25,6 +25,8 @@ return [
         'http://127.0.0.1:3002',
         'https://likaslens.syntaxure.dev',
         'https://likasadmin.syntaxure.dev',
+        // Android APK WebView / file:// origins (null origin)
+        'null',
     ],
 
     'allowed_origins_patterns' => [
@@ -33,6 +35,10 @@ return [
         '/^https:\/\/.*\.vercel\.app$/',
         '/^https:\/\/.*\.azurecontainerapps\.io$/',
         '/^https:\/\/.*\.azurewebsites\.net$/',
+        // Capacitor / Ionic mobile (APK testing)
+        '/^capacitor:\/\/localhost$/',
+        '/^ionic:\/\/localhost$/',
+        '/^https:\/\/localhost$/',
     ],
 
     'allowed_headers' => ['*'],
