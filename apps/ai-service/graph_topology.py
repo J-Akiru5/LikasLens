@@ -35,6 +35,7 @@ EDGE_LABELS = [
     "violates",
     "enforced_by",
     "classified_from",
+    "governed_by",         # Law → Jurisdiction (ASEAN expansion)
 ]
 
 
