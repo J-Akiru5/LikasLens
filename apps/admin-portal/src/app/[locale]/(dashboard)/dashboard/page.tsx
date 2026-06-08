@@ -35,10 +35,10 @@ export default function DashboardPage() {
   }
 
   const kpis = [
-    { label: "Active Incidents", value: stats?.active_incidents ?? 0, icon: AlertTriangle, cardClass: "border-amber-400 shadow-[3px_3px_0px_#92400e]", iconColor: "text-amber-600" },
-    { label: "Resolved Today", value: stats?.resolved_today ?? 0, icon: CheckCircle2, cardClass: "border-emerald-400 shadow-[3px_3px_0px_#047857]", iconColor: "text-emerald-600" },
-    { label: "Avg Response", value: `${stats?.avg_response_minutes ?? 0}m`, icon: Clock, cardClass: "border-primary shadow-[3px_3px_0px_#1b4332]", iconColor: "text-primary" },
-    { label: "Total Users", value: stats?.total_users ?? 0, icon: Users, cardClass: "border-primary shadow-[3px_3px_0px_#1b4332]", iconColor: "text-primary" },
+    { label: "Active Incidents", value: stats?.active_incidents ?? 0, icon: AlertTriangle, cardClass: "border-amber shadow-[3px_3px_0px_var(--amber)]", iconColor: "text-amber" },
+    { label: "Resolved Today", value: stats?.resolved_today ?? 0, icon: CheckCircle2, cardClass: "border-green shadow-[3px_3px_0px_var(--green)]", iconColor: "text-green" },
+    { label: "Avg Response", value: `${stats?.avg_response_minutes ?? 0}m`, icon: Clock, cardClass: "border-primary shadow-[3px_3px_0px_var(--primary)]", iconColor: "text-primary" },
+    { label: "Total Users", value: stats?.total_users ?? 0, icon: Users, cardClass: "border-primary shadow-[3px_3px_0px_var(--primary)]", iconColor: "text-primary" },
   ];
 
   return (
@@ -49,10 +49,14 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((kpi) => {
+        {kpis.map((kpi, index) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className={`brutal-panel panel-surface p-6 border-2 ${kpi.cardClass}`}>
+            <div
+              key={kpi.label}
+              className={`brutal-panel panel-surface p-6 border-2 ${kpi.cardClass} animate-fade-up`}
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
               <div className="flex items-center gap-4">
                 <Icon className={`h-8 w-8 ${kpi.iconColor}`} />
                 <div>
@@ -66,7 +70,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <Card variant="brutal">
+        <Card variant="brutal" className="animate-fade-up" style={{ animationDelay: "0.4s" }}>
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">
@@ -90,7 +94,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card variant="brutal">
+        <Card variant="brutal" className="animate-fade-up [animation-delay:0.5s]">
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">

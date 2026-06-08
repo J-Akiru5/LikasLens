@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CaretDown } from "@phosphor-icons/react";
+import { ChevronDown } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -83,7 +83,7 @@ export function CustomSelect({ value, onChange, options, placeholder = "Select a
         )}
       >
         <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
-        <CaretDown className={cn("w-4 h-4 text-ink/40 transition-transform duration-200", isOpen && "rotate-180")} />
+        <ChevronDown className={cn("w-4 h-4 text-ink/40 transition-transform duration-200", isOpen && "rotate-180")} />
       </button>
 
       <AnimatePresence>

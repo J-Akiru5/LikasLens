@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Leaf, ArrowRight, Eye, EyeSlash } from "@phosphor-icons/react";
+import { Leaf, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { signUp } from "@/app/[locale]/actions/auth";
 
 export function RegisterClient() {
@@ -101,7 +101,7 @@ export function RegisterClient() {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-accent/60 hover:text-accent transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeSlash className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
           </div>

@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SquaresFour, WarningCircle, Camera, User } from "@phosphor-icons/react";
+import { LayoutGrid, AlertCircle, Camera, User } from "lucide-react";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
-  { href: "/dashboard/incidents", label: "Incidents", icon: WarningCircle },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
+  { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
   { href: "/report", label: "Report", icon: Camera },
   { href: "/profile", label: "Profile", icon: User },
 ];

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CloudSlash, ArrowsClockwise } from "@phosphor-icons/react";
+import { CloudOff, RefreshCw } from "lucide-react";
 interface PublicReportRow {
   rank: number;
   agency: string;
@@ -79,7 +79,7 @@ export function PublicScoreboard() {
     return (
       <div className="rounded-xl border border-dashed border-border p-12 flex flex-col items-center justify-center text-center">
         <div className="w-12 h-12 rounded-full bg-ink/[0.03] flex items-center justify-center mb-4">
-          <CloudSlash className="w-6 h-6 text-muted" />
+           <CloudOff className="w-6 h-6 text-muted" />
         </div>
         <p className="text-sm font-medium text-ink mb-1">Data Unavailable</p>
         <p className="text-xs text-muted mb-4 max-w-[250px]">We couldn't connect to the public records database. The systems might be syncing.</p>
@@ -87,7 +87,7 @@ export function PublicScoreboard() {
           onClick={fetchReports}
           className="flex items-center gap-2 text-xs font-medium text-ink bg-ink/[0.04] hover:bg-ink/[0.08] px-4 py-2 rounded-lg transition-colors"
         >
-          <ArrowsClockwise className="w-3.5 h-3.5" />
+           <RefreshCw className="w-3.5 h-3.5" />
           Try again
         </button>
       </div>

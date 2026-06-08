@@ -1,7 +1,7 @@
 import { cn } from "../utils";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "brutal";
   size?: "sm" | "md" | "lg" | "xl";
   loading?: boolean;
 }
@@ -10,7 +10,8 @@ const variantStyles: Record<string, string> = {
   primary: "bg-accent text-white hover:opacity-90",
   secondary: "bg-panel text-ink border border-border hover:bg-ink/[0.02]",
   ghost: "text-muted hover:text-ink hover:bg-ink/[0.04]",
-  danger: "bg-[#b23b3b] text-white hover:bg-[#962f2f]",
+  danger: "bg-red text-white hover:bg-red/80",
+  brutal: "bg-primary text-white border-2 border-primary shadow-[3px_3px_0px_var(--primary)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_var(--primary)]",
 };
 
 const sizeStyles: Record<string, string> = {

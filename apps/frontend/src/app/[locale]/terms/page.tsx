@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Scales, Gavel, WarningCircle } from "@phosphor-icons/react";
+import { ArrowLeft, Scale, Hammer, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { AppHeader } from "@/components/layout/header";
 
@@ -23,7 +23,7 @@ export default function TermsPage() {
         {/* Header */}
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 border border-border mb-4 rounded-lg">
-            <Scales className="w-4 h-4 text-green" />
+            <Scale className="w-4 h-4 text-green" />
             <span className="font-mono text-xs font-medium uppercase tracking-widest text-accent">
               Civic Engagement Rules
             </span>
@@ -46,7 +46,7 @@ export default function TermsPage() {
           >
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 bg-green/10 rounded-lg border border-green">
-                <Gavel className="w-6 h-6 text-green" />
+                <Hammer className="w-6 h-6 text-green" />
               </div>
               <h2 className="font-semibold tracking-tight text-2xl sm:text-3xl text-ink">
                 Evidentiary Standards
@@ -72,7 +72,7 @@ export default function TermsPage() {
           >
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 bg-accent/20 rounded-lg border border-accent">
-                <WarningCircle className="w-6 h-6 text-accent" />
+                <AlertCircle className="w-6 h-6 text-accent" />
               </div>
               <h2 className="font-semibold tracking-tight text-2xl sm:text-3xl text-ink">
                 Code of Conduct

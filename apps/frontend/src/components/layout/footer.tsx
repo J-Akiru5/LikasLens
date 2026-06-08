@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Leaf } from "@phosphor-icons/react";
+import { Leaf } from "lucide-react";
 
 const FOOTER_LINKS = [
   { label: "Privacy Policy", href: "/privacy" },
@@ -40,7 +40,7 @@ export function Footer() {
       <div className="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-8 md:mb-12 relative z-10">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <Leaf className="w-5 h-5 text-accent" weight="fill" />
+            <Leaf className="w-5 h-5 text-accent fill-current" />
             <span className="font-mono text-xs tracking-widest uppercase opacity-70">
               LikasLens &copy; {new Date().getFullYear()}
             </span>

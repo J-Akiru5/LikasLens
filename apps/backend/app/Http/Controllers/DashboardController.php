@@ -2,29 +2,28 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Report;
 use App\Models\Ticket;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function stats(): JsonResponse
     {
-        $totalTickets = DB::table('tickets')->count();
-        $resolvedTickets = DB::table('tickets')->where('status', 'resolved')->count();
-        $openTickets = DB::table('tickets')->whereIn('status', ['open', 'investigating', 'monitoring'])->count();
+        $totalTickets = Ticket::count();
+        $resolvedTickets = Ticket::where('status', 'resolved')->count();
+        $openTickets = Ticket::whereIn('status', ['open', 'investigating', 'monitoring'])->count();
 
-        $avgResponseMinutes = DB::table('tickets')
-            ->whereNotNull('resolved_at')
-            ->selectRaw('COALESCE(AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)) / 60), 0) as avg_minutes')
+        $avgResponseMinutes = Ticket::whereNotNull('resolved_at')
+            ->selectRaw('COALESCE(AVG((JULIANDAY(resolved_at) - JULIANDAY(created_at)) * 1440), 0) as avg_minutes')
             ->value('avg_minutes');
 
-        $totalReports = DB::table('reports')->count();
-        $totalUsers = DB::table('users')->whereNull('deleted_at')->count();
-        $ghostReports = DB::table('reports')->whereNull('user_id')->count();
+        $totalReports = Report::count();
+        $totalUsers = User::count();
+        $ghostReports = Report::whereNull('user_id')->count();
 
-        $ticketsByStatus = DB::table('tickets')
-            ->selectRaw('status, COUNT(*) as count')
+        $ticketsByStatus = Ticket::selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status');
 
@@ -66,8 +65,6 @@ class DashboardController extends Controller
     public function feed(): JsonResponse
     {
         $tickets = Ticket::with('reporter')
-            ->select('*')
-            ->selectRaw('ROW_NUMBER() OVER (ORDER BY created_at) as row_number')
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
@@ -80,7 +77,7 @@ class DashboardController extends Controller
 
                 return [
                     'id' => $ticket->id,
-                    'display_id' => 'INC-'.str_pad((string) $ticket->row_number, 3, '0', STR_PAD_LEFT),
+                    'display_id' => 'INC-'.str_pad((string) Ticket::where('created_at', '<=', $ticket->created_at)->count(), 3, '0', STR_PAD_LEFT),
                     'type' => $type,
                     'title' => $ticket->title,
                     'description' => $ticket->description,
