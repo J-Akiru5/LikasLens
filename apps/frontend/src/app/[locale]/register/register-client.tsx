@@ -39,14 +39,10 @@ export function RegisterClient() {
         <div className="absolute inset-0 backdrop-blur-[3px] bg-page/50" />
       </div>
 
-      <div className="panel relative z-10 w-full max-w-md p-8 mt-10 mb-10">
+      <div className="panel relative z-10 w-full max-w-md p-8 my-8">
         <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center shadow-[4px_4px_0px_#1b4332]" style={{
-            borderColor: "#ffb703",
-            backgroundColor: "#ffb703",
-            color: "#081c15",
-          }}>
-            <Leaf className="w-8 h-8" />
+          <div className="w-16 h-16 rounded-full border border-accent flex items-center justify-center bg-transparent">
+            <Leaf className="w-6 h-6 text-accent" />
           </div>
         </div>
 
@@ -78,7 +74,7 @@ export function RegisterClient() {
             <input
               type="email"
               name="email"
-              className="w-full theme-input px-4 py-3 font-medium"
+              className="w-full theme-input px-4 py-3 font-medium bg-transparent border border-ink/20 rounded"
               placeholder="you@example.com"
               required
             />
@@ -91,7 +87,7 @@ export function RegisterClient() {
               <input
                 type={showPassword ? "text" : "password"}
                 name="password"
-                className="w-full brutal-panel theme-input px-4 py-3 pr-12 font-medium"
+                className="w-full theme-input px-4 py-3 pr-12 font-medium bg-transparent border border-ink/20 rounded"
                 placeholder="••••••••"
                 required
               />
@@ -106,24 +102,23 @@ export function RegisterClient() {
             </div>
           </div>
 
-          <label className="flex items-start gap-3 py-2 cursor-pointer">
-            <div className="mt-1">
+          <label className="flex items-start gap-3 py-2 cursor-pointer group">
+            <div className="mt-0.5">
               <input
                 type="checkbox"
                 name="agreeToUpdates"
-                className="w-5 h-5 rounded border border-border text-green focus:ring-green accent-green"
+                className="w-5 h-5 rounded border border-ink/20 text-accent focus:ring-accent accent-accent"
                 required
               />
             </div>
-            <span className="text-sm font-medium text-muted leading-snug">
-              I agree to help keep my community safe and only submit real,
-              accurate reports.
+            <span className="text-sm font-medium text-muted leading-snug group-hover:text-ink transition-colors">
+              I agree to help keep my community safe and only submit real, accurate reports.
             </span>
           </label>
 
           <button
             type="submit"
-            className="w-full bg-accent text-white rounded-lg py-4 font-semibold tracking-tight text-lg tracking-wider flex items-center justify-center gap-2"
+            className="w-full bg-accent text-white rounded-lg py-4 font-semibold tracking-wide text-lg flex items-center justify-center gap-2 hover:bg-accent/90 transition-colors"
           >
             Sign Up <ArrowRight className="w-5 h-5" />
           </button>

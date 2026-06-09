@@ -9,7 +9,7 @@ export default function RootPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const locale = navigator.language?.startsWith("tl") ? "tl" : "en";
+      const locale = navigator.language?.startsWith("tl") || navigator.language?.startsWith("fil") ? "fil" : "en";
       router.replace(`/${locale}/onboarding`);
     }, 2500);
 

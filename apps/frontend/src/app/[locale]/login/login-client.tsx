@@ -34,11 +34,7 @@ export function LoginClient() {
 
       <div className="panel relative z-10 w-full max-w-md p-8">
         <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center shadow-[4px_4px_0px_#1b4332]" style={{
-            borderColor: "#ffb703",
-            backgroundColor: "#ffb703",
-            color: "#081c15",
-          }}>
+          <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center shadow-[4px_4px_0px_var(--accent)] bg-amber text-page border-amber">
             <Leaf className="w-8 h-8" />
           </div>
         </div>
