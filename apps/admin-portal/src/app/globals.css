@@ -1,10 +1,10 @@
 @import "tailwindcss";
+@import "@likaslens/shared/src/styles/civic-brutalism.css";
 @source "../../../shared/src/**/*.{ts,tsx}";
 @source "../shared/src/**/*.{ts,tsx}";
 @source "./node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @source "../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @source "../../shared/src/**/*.{ts,tsx}";
-@import "@likaslens/shared/src/styles/civic-brutalism.css";
 
 :root {
   --page: #f5f5f0;
