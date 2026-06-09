@@ -5,6 +5,9 @@ import { cn } from "../utils";
 import { Leaf, Bell, Fingerprint } from "lucide-react";
 import Link from "next/link";
 
+import { locales } from "../i18n/config";
+import { usePathname } from "next/navigation";
+
 interface MobileLayoutProps {
   children: React.ReactNode;
   bottomNavItems: BottomNavItem[];
@@ -20,6 +23,12 @@ export function MobileLayout({
   onThemeToggle,
   className,
 }: MobileLayoutProps) {
+  const pathname = usePathname();
+  
+  const pathParts = pathname.split("/");
+  const hasLocale = locales.includes(pathParts[1] as any);
+  const localePrefix = hasLocale ? `/${pathParts[1]}` : "";
+
   return (
     <div
       className={cn(
@@ -29,7 +38,7 @@ export function MobileLayout({
     >
       {/* Top Bar */}
       <header className="h-14 bg-page/80 backdrop-blur-md border-b border-ink/10 flex items-center justify-between px-4 relative z-20 shrink-0">
-        <Link href="/" className="flex items-center gap-2 text-ink">
+        <Link href={`${localePrefix}/dashboard` || "/"} className="flex items-center gap-2 text-ink">
           <Leaf className="w-5 h-5 text-green" />
           <span className="font-semibold tracking-tight text-lg">
             LikasLens

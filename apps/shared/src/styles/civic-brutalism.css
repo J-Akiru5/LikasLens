@@ -51,13 +51,6 @@
   backdrop-filter: blur(4px);
 }
 
-.panel-surface {
-  background: var(--panel) !important;
-  color: var(--foreground) !important;
-  border-color: var(--panel-border) !important;
-  box-shadow: 8px 8px 0px rgba(8, 28, 21, 0.16);
-}
-
 .brutal-button {
   background: var(--secondary);
   color: #081c15;
@@ -79,36 +72,11 @@
   font-family: "Space Mono", "JetBrains Mono", "Courier New", monospace;
 }
 
-.surface-muted {
-  color: var(--muted-text) !important;
-}
-
-.theme-input {
-  background: var(--background);
-  color: var(--foreground);
-  border: 2px solid var(--panel-border);
-}
-.theme-input::placeholder {
-  color: var(--muted-text);
-}
-.theme-input:focus {
-  outline: none;
-  border-color: var(--secondary);
-  box-shadow: 0 0 0 2px rgba(45, 225, 194, 0.24);
-}
-
 /* ─────────────────────────────────────────
    PANEL SYSTEM
 ───────────────────────────────────────── */
 .panel {
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-}
-
-.panel-surface {
-  background: var(--panel);
-  color: var(--ink);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
 }

@@ -114,7 +114,7 @@ export function OnboardingSlider() {
             return (
               <div
                 key={index}
-                className="flex-1 min-w-0 flex flex-col items-center justify-center px-8 text-center"
+                className="flex-none w-full min-w-0 flex flex-col items-center justify-center px-8 text-center"
               >
                 <div
                   className={cn(

@@ -77,7 +77,7 @@ class DashboardController extends Controller
 
                 return [
                     'id' => $ticket->id,
-                    'display_id' => 'INC-'.str_pad((string) Ticket::where('created_at', '<=', $ticket->created_at)->count(), 3, '0', STR_PAD_LEFT),
+                    'display_id' => 'INC-'.strtoupper(substr($ticket->id, 0, 6)),
                     'type' => $type,
                     'title' => $ticket->title,
                     'description' => $ticket->description,
