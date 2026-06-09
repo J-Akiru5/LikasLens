@@ -3,8 +3,22 @@
 > **Sprint:** ASEAN AI Hackathon Prep
 > **Timeline:** June 5-8, 2026 (Thu-Sun)
 > **Total Hours:** 26h
+> **Assigned To:** Jeff
 > **Focus:** Environmental YOLOv8 model, Gremlin graph seeding, Gemini prompts
 > **Status:** ✅ **COMPLETE** — All tasks delivered
+
+---
+
+## Team Roster (Updated)
+
+| Dev | Name | Role | Focus |
+|-----|------|------|-------|
+| Dev 1 | Lou | Frontend/UI | Next.js UI, Tailwind, responsive design, Ghost Mode theme |
+| Dev 2 | Jeff | AI/Backend | FastAPI AI service, YOLOv8, Gremlin graph, Gemini |
+| Dev 3 | Charlyn | Backend/Infrastructure | Laravel API, Supabase, CI/CD, admin portal |
+| Dev 4 | Katherine | Integration/PWA/APK | E2E testing, PWA offline, Capacitor APK, demo prep |
+
+> **Note:** Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.
 
 ---
 
@@ -12,9 +26,9 @@
 
 | Dependency | From | Needed By | Status | Notes |
 |------------|------|-----------|--------|-------|
-| Supabase connection | Dev 3 (Backend) | Thu evening | ✅ Resolved | DB accessible, seeders running |
-| Test images | Dev 4 (Integration) | Sat | ✅ Resolved | Demo images tested |
-| Azure AI Service deployment | Dev 3 (Backend) | Sun | 🔄 In Progress | Deploy via ghcr.io (ACR deleted; CI/CD now pushes to GitHub Container Registry) |
+| Supabase connection | Dev 3 (Charlyn) | Thu evening | ✅ Resolved | DB accessible, seeders running |
+| Test images | Dev 4 (Katherine) | Sat | ✅ Resolved | Demo images tested |
+| Azure AI Service deployment | Dev 3 (Charlyn) | Sun | 🔄 In Progress | Deploy via ghcr.io (ACR deleted; CI/CD now pushes to GitHub Container Registry) |
 
 ---
 

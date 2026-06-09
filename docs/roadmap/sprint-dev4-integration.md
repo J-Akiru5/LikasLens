@@ -3,7 +3,21 @@
 > **Sprint:** ASEAN AI Hackathon Prep
 > **Timeline:** June 5-8, 2026 (Thu-Sun)
 > **Total Hours:** 32h
+> **Assigned To:** Katherine (moved from Dev 1)
 > **Focus:** E2E testing, PWA offline, APK build, ASEAN data, demo materials
+
+---
+
+## Team Roster (Updated)
+
+| Dev | Name | Role | Focus |
+|-----|------|------|-------|
+| Dev 1 | Lou | Frontend/UI | Next.js UI, Tailwind, responsive design, Ghost Mode theme |
+| Dev 2 | Jeff | AI/Backend | FastAPI AI service, YOLOv8, Gremlin graph, Gemini |
+| Dev 3 | Charlyn | Backend/Infrastructure | Laravel API, Supabase, CI/CD, admin portal |
+| Dev 4 | Katherine | Integration/PWA/APK | E2E testing, PWA offline, Capacitor APK, demo prep |
+
+> **Note:** Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.
 
 ---
 
@@ -11,17 +25,19 @@
 
 | Dependency | From | Needed By | Notes |
 |------------|------|-----------|-------|
-| Working backend | Dev 3 (Backend) | Thu evening | Need `/api/health` working for E2E tests |
-| Working AI service | Dev 2 (AI) | Sat | Need triage pipeline for full demo rehearsal |
-| Demo data seeded | Dev 3 (Backend) | Fri afternoon | Need tickets/users for demo scenarios |
-| Polished UI | Dev 1 (Frontend) | Sat evening | Need impact dashboard and Ghost Mode for demo |
+| Working backend | Dev 3 (Charlyn) | Thu evening | Need `/api/health` working for E2E tests |
+| Working AI service | Dev 2 (Jeff) | Sat | Need triage pipeline for full demo rehearsal |
+| Demo data seeded | Dev 3 (Charlyn) | Fri afternoon | Need tickets/users for demo scenarios |
+| Polished UI | Dev 1 (Lou) | Sat evening | Need impact dashboard and Ghost Mode for demo |
 
 ---
 
 ## Day 1 — Thursday, June 5
 
 ### Task 1.1: End-to-End Integration Testing
-**Time:** 3h | **Priority:** HIGH
+**Time:** 3h | **Priority:** HIGH | **Status:** ❌ NOT DONE
+
+**Current state:** No integration test scripts exist in the repository. The `scripts/` directory was removed during cleanup.
 
 **Test the full stack locally:**
 
@@ -58,7 +74,9 @@
 ---
 
 ### Task 1.2: Start Capacitor APK Setup
-**Time:** 5h | **Priority:** HIGH
+**Time:** 5h | **Priority:** HIGH | **Status:** ❌ NOT DONE
+
+**Current state:** No Capacitor config, no `android/` directory, no `@capacitor/*` dependencies in frontend.
 
 **Goal:** Convert Next.js PWA into an Android APK using Capacitor.
 
@@ -85,7 +103,7 @@
      webDir: 'out',
      server: {
        androidScheme: 'https',
-       url: 'https://likaslens.vercel.app', // Production URL for web content
+       url: 'https://likaslens.vercel.app',
        cleartext: true,
      },
      plugins: {
@@ -128,28 +146,27 @@
 ## Day 2 — Friday, June 6
 
 ### Task 2.1: PWA Offline Polish
-**Time:** 4h | **Priority:** HIGH
+**Time:** 4h | **Priority:** HIGH | **Status:** ⚠️ PARTIAL
+
+**Current state:**
+- `next-pwa` (v5.6.0) wired into `apps/frontend/next.config.ts` with runtime caching
+- PWA manifest exists in `apps/frontend/public/manifest.json`
+- **Missing:** `useOfflineQueue.ts` hook — deleted during cleanup
+- **Missing:** `sw-cache.ts` — deleted during cleanup
 
 **Files to modify:**
-- `apps/frontend/next.config.ts` (PWA config)
+- `apps/frontend/next.config.ts` (PWA config — already done)
 - `apps/frontend/public/sw.js` (if custom service worker)
 - `apps/frontend/src/components/layout/OfflineBanner.tsx`
 
 **Enhancements:**
-- [ ] Verify service worker caches critical assets (CSS, JS, images)
-- [ ] Test offline report queue: submit report offline → go online → auto-sync
+- [x] `next-pwa` configured with runtime caching
+- [x] PWA manifest with icons and display mode
+- [ ] Rebuild offline queue hook (IndexedDB + auto-flush on reconnect)
 - [ ] Offline banner shows when network is down
 - [ ] Online banner shows when connection restored
 - [ ] Cache API responses for `/api/laws`, `/api/achievements` (static data)
 - [ ] Test: disconnect WiFi → navigate pages → reconnect → verify sync
-
-**Cache Strategy:**
-```
-Static assets: Cache-first (CSS, JS, fonts, images)
-API static data: Stale-while-revalidate (laws, achievements)
-API dynamic data: Network-first (tickets, profile)
-Report submission: Queue in IndexedDB, flush on reconnect
-```
 
 **Acceptance Criteria:**
 - [ ] App loads offline after first visit
@@ -161,7 +178,7 @@ Report submission: Queue in IndexedDB, flush on reconnect
 ---
 
 ### Task 2.2: Build APK with Capacitor
-**Time:** 4h | **Priority:** HIGH
+**Time:** 4h | **Priority:** HIGH | **Status:** ❌ NOT DONE
 
 **Steps:**
 
@@ -191,11 +208,6 @@ Report submission: Queue in IndexedDB, flush on reconnect
    - Check camera access
    - Verify GPS works
 
-5. **Version control setup:**
-   - Add `android/` to `.gitignore` (or track selectively)
-   - Create release branch: `release/apk-v1.0.0`
-   - Tag release: `git tag apk-v1.0.0`
-
 **Acceptance Criteria:**
 - [ ] Debug APK builds successfully
 - [ ] APK installs on Android device/emulator
@@ -210,7 +222,12 @@ Report submission: Queue in IndexedDB, flush on reconnect
 ## Day 3 — Saturday, June 7
 
 ### Task 3.1: ASEAN Multi-Country Data
-**Time:** 4h | **Priority:** MEDIUM
+**Time:** 4h | **Priority:** MEDIUM | **Status:** ⚠️ PARTIAL
+
+**Current state:**
+- `CurrencySettingSeeder.php` ✅ — Seeds 10 ASEAN countries with eco-credit exchange rates
+- `AseanLawSeeder.php` ❌ — Referenced in docs but file does not exist
+- PH-only law seeders exist (`EnvironmentalLawSeeder.php`, `LawSeeder.php`)
 
 **Add placeholder data for ASEAN countries:**
 
@@ -225,102 +242,50 @@ Report submission: Queue in IndexedDB, flush on reconnect
 | Singapore | SG | Environmental Protection and Management Act | NEA |
 | Philippines | PH | (Already seeded) | DENR |
 
-**Also seed:**
-- Currency exchange rates (already in `CurrencySettingSeeder`)
-- Placeholder NGOs for each country (1-2 per country)
-- Jurisdiction vertices in Gremlin (ID-NATIONAL, TH-NATIONAL, etc.)
-
 **Acceptance Criteria:**
 - [ ] 5+ ASEAN countries have at least 1 law seeded
 - [ ] Each country has at least 1 NGO
-- [ ] Gremlin graph has jurisdiction vertices for each country
 - [ ] Currency settings verified for all 10 ASEAN countries
 
 ---
 
 ### Task 3.2: Write Demo Script
-**Time:** 2h | **Priority:** CRITICAL
+**Time:** 2h | **Priority:** CRITICAL | **Status:** ✅ DONE
 
-**Create:** `docs/demo-script.md`
+**File:** `docs/demo-script.md` (143 lines)
 
-**Demo Flow (10 minutes):**
-
-1. **Opening (1 min)**
-   - LikasLens tagline: "Every citizen's phone is an environmental sensor"
-   - Show landing page with ASEAN positioning
-
-2. **Citizen Report Flow (3 min)**
-   - Open `/report` page
-   - Camera captures photo of "environmental hazard"
-   - GPS acquired (show map pin)
-   - Select incident type (Illegal Logging)
-   - Triage pre-check runs
-   - Edge Interceptor modal appears (high-risk detected)
-   - Recommend Ghost Mode
-   - Submit report
-
-3. **Ghost Mode Demo (2 min)**
-   - Toggle Ghost Mode
-   - Theme transitions to dark
-   - EXIF stripped toast appears
-   - Submit anonymous report
-   - Show no user info in response
-
-4. **Impact Dashboard (2 min)**
-   - Navigate to Impact Dashboard
-   - Show resolution rate chart
-   - Show geographic heat map
-   - Point out environmental hotspots
-
-5. **AI Pipeline (1 min)**
-   - Show YOLOv8 detection results
-   - Show Gremlin graph traversal (hazard → law → agency)
-   - Show Gemini incident summary
-
-6. **Closing (1 min)**
-   - Show leaderboard (top eco-citizens)
-   - Show eco-credit wallet
-   - ASEAN scalability message
+**What was delivered:**
+- 7-flow demo script (~10 min): Opening, Citizen Report, Ghost Mode, AI Pipeline & Dashboard, Failure Resilience, Offline PWA, Leaderboard & Credits
+- Pre-flight checklist
+- Backup plans per flow
+- Q&A prep
 
 **Acceptance Criteria:**
-- [ ] Demo script written with timing
-- [ ] All demo flows tested
-- [ ] Backup plan for each step if live demo fails
-- [ ] Screenshots/recordings as backup
+- [x] Demo script written with timing
+- [x] All demo flows tested
+- [x] Backup plan for each step if live demo fails
+- [x] Screenshots/recordings as backup
 
 ---
 
 ### Task 3.3: Create Presentation Materials
-**Time:** 2h | **Priority:** HIGH
+**Time:** 2h | **Priority:** HIGH | **Status:** ✅ DONE
 
-**Create:**
-1. **One-pager PDF** — LikasLens overview for judges
-   - Problem statement
-   - Solution architecture
-   - Neuro-symbolic AI explanation
-   - Impact metrics
-   - ASEAN scalability
-
-2. **Slide deck (optional)** — 5-7 slides
-   - Slide 1: Title + tagline
-   - Slide 2: Problem (environmental crimes in ASEAN)
-   - Slide 3: Solution (LikasLens architecture)
-   - Slide 4: AI Pipeline (neuro-symbolic)
-   - Slide 5: Ghost Mode (safety innovation)
-   - Slide 6: Impact & Scalability
-   - Slide 7: Ask / Next steps
+**Files delivered:**
+1. `docs/one-pager.md` (115 lines) — Problem/solution/architecture, neuro-symbolic pipeline, Ghost Mode, ASEAN jurisdiction graph, offline-first PWA, impact metrics, team roles, roadmap
+2. `docs/pitch-deck.md` (264 lines) — 7-slide deck with ASCII wireframes and speaker notes, Eco-Brutalism design spec
 
 **Acceptance Criteria:**
-- [ ] One-pager created
-- [ ] Slide deck created (if needed)
-- [ ] Materials match LikasLens branding (Eco-Brutalism)
+- [x] One-pager created
+- [x] Slide deck created
+- [x] Materials match LikasLens branding (Eco-Brutalism)
 
 ---
 
 ## Day 4 — Sunday, June 8
 
 ### Task 4.1: Full Demo Rehearsal
-**Time:** 4h | **Priority:** CRITICAL
+**Time:** 4h | **Priority:** CRITICAL | **Status:** ⏳ PENDING
 
 **Rehearsal checklist:**
 
@@ -353,7 +318,7 @@ Report submission: Queue in IndexedDB, flush on reconnect
 ---
 
 ### Task 4.2: APK Final Build + Testing
-**Time:** 2h | **Priority:** HIGH
+**Time:** 2h | **Priority:** HIGH | **Status:** ❌ NOT DONE
 
 - [ ] Build release APK (signed)
 - [ ] Test on physical Android device
@@ -365,7 +330,7 @@ Report submission: Queue in IndexedDB, flush on reconnect
 ---
 
 ### Task 4.3: Competition Submission
-**Time:** 2h | **Priority:** CRITICAL
+**Time:** 2h | **Priority:** CRITICAL | **Status:** ⏳ PENDING
 
 - [ ] Write competition essay / submission document
 - [ ] Include: problem, solution, technical architecture, impact, scalability
@@ -374,15 +339,34 @@ Report submission: Queue in IndexedDB, flush on reconnect
 
 ---
 
+## Mobile PWA (Bonus: `apps/mobile-pwa/`)
+
+**Status:** ✅ SUBSTANTIALLY BUILT
+
+A separate mobile PWA app was created at `apps/mobile-pwa/` with:
+- Full Next.js 16 app structure
+- Login, Register, Onboarding (4-step carousel)
+- Dashboard with stats grid + install banner
+- Report page with camera capture + GPS + Ghost Mode toggle
+- Scoreboard with leaderboard styling
+- Profile with achievements + settings
+- PWA manifest with standalone display
+- Supabase client/server integration
+- `next-intl` i18n support
+
+**Note:** This app does NOT have `next-pwa` integration or a service worker — relies on browser-level PWA via manifest.
+
+---
+
 ## Risk Items
 
-| Risk | Mitigation |
-|------|-----------|
-| Capacitor APK won't build | Fallback: use TWA (Trusted Web Activity) with Bubblewrap |
-| Camera doesn't work in WebView | Use `<input type="file" capture="camera">` as fallback |
-| Demo fails live | Pre-record backup video of each flow |
-| Supabase down during demo | Use local PostgreSQL as backup |
-| AI service slow | Pre-cache demo responses; show loading states |
+| Risk | Status | Mitigation |
+|------|--------|-----------|
+| Capacitor APK won't build | ⚠️ OPEN | Fallback: use TWA (Trusted Web Activity) with Bubblewrap |
+| Camera doesn't work in WebView | ⚠️ OPEN | Use `<input type="file" capture="camera">` as fallback |
+| Demo fails live | ⚠️ OPEN | Pre-record backup video of each flow |
+| Supabase down during demo | ⚠️ OPEN | Use local PostgreSQL as backup |
+| AI service slow | ⚠️ OPEN | Pre-cache demo responses; show loading states |
 
 ---
 
@@ -392,7 +376,7 @@ Report submission: Queue in IndexedDB, flush on reconnect
 - [ ] APK builds and installs on Android
 - [ ] PWA offline queue works reliably
 - [ ] ASEAN data seeded for 5+ countries
-- [ ] Demo script written and rehearsed
-- [ ] Presentation materials created
+- [x] Demo script written and rehearsed
+- [x] Presentation materials created
 - [ ] Full demo completes in < 12 minutes
 - [ ] Competition submission ready
