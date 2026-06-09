@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getTickets } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { Card, Spinner, showToast } from "@likaslens/shared";
+import { Spinner, showToast } from "@likaslens/shared";
 import { Ticket as TicketIcon, Search, MoreVertical, Eye, CheckCheck, XCircle } from "lucide-react";
 
 export default function TicketsPage() {

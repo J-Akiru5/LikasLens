@@ -63,7 +63,7 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <Card variant="brutal">
+        <Card>
           <h3 className="font-heading text-xl font-black uppercase mb-6">Tickets by Status</h3>
           <div className="space-y-4">
             {Object.entries(statusCounts).map(([status, count]) => {
@@ -83,7 +83,7 @@ export default function AnalyticsPage() {
           </div>
         </Card>
 
-        <Card variant="brutal">
+        <Card>
           <h3 className="font-heading text-xl font-black uppercase mb-6">Ticket List</h3>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {tickets.map((ticket) => (

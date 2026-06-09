@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Shield, Lock, EyeSlash } from "@phosphor-icons/react";
+import { ArrowLeft, Shield, Lock, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import { AppHeader } from "@/components/layout/header";
 
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
           >
             <div className="flex items-center gap-4 mb-6">
               <div className="p-3 bg-accent/20 rounded-lg border border-accent">
-                <EyeSlash className="w-6 h-6 text-accent" />
+                <EyeOff className="w-6 h-6 text-accent" />
               </div>
               <h2 className="font-semibold tracking-tight text-2xl sm:text-3xl text-ink">
                 Ghost Mode & Anonymity

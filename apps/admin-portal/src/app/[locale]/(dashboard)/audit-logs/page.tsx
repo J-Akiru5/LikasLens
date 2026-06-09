@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { laravelGet } from "@likaslens/shared";
-import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
-import { Card, Spinner } from "@likaslens/shared";
+import type { PaginatedResponse } from "@likaslens/shared";
+import { Spinner } from "@likaslens/shared";
 import { ScrollText, Search } from "lucide-react";
 
 interface AuditLogEntry {

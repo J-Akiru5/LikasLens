@@ -1,15 +1,15 @@
 "use client";
 
 import { cn } from "../utils";
-import { TrendUp, SealCheck, Shield, Trophy, Star } from "@phosphor-icons/react";
+import { TrendingUp, BadgeCheck, Shield, Trophy, Star } from "lucide-react";
 import type { RankProgress } from "../types/user";
 
 const levelIcons: Record<number, React.ReactNode> = {
-  1: <SealCheck className="w-5 h-5 text-accent" />,
+  1: <BadgeCheck className="w-5 h-5 text-accent" />,
   2: <Shield className="w-5 h-5 text-secondary" />,
   3: <Trophy className="w-5 h-5 text-secondary" />,
-  4: <Star className="w-5 h-5 text-amber" weight="fill" />,
-  5: <Trophy className="w-5 h-5 text-amber" weight="fill" />,
+  4: <Star className="w-5 h-5 text-amber" />,
+  5: <Trophy className="w-5 h-5 text-amber" />,
 };
 
 interface RankProgressCardProps {
@@ -66,7 +66,7 @@ export function RankProgressCard({ rankProgress, ecoCreditEquivalent, className 
 
           {eco_credit_bonus > 0 && (
             <div className="pt-4 flex items-center gap-2 text-xs font-mono text-muted">
-              <TrendUp className="w-4 h-4" />
+               <TrendingUp className="w-4 h-4" />
               +{eco_credit_bonus.toLocaleString()} Eco-Credits on advancement
             </div>
           )}

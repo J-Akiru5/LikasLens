@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Bell, Leaf, Warning, CheckCircle, Info, X } from "@phosphor-icons/react"
+import { Bell, Leaf, AlertTriangle, CheckCircle, Info, X } from "lucide-react"
 import { UserNav } from "./user-nav"
 import { useEffect, useRef, useState } from "react"
 
@@ -16,7 +16,19 @@ const MOCK_NOTIFICATIONS: { id: string; type: NotificationType; title: string; d
 
 export function AppHeader({ greeting, showBranding = true }: { greeting?: string; showBranding?: boolean }) {
   const [notifOpen, setNotifOpen] = useState(false);
+  const [isGhostMode, setIsGhostMode] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleThemeChange = () => {
+      const theme = document.documentElement.getAttribute("data-theme");
+      setIsGhostMode(theme === "ghost");
+    };
+    handleThemeChange();
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -37,7 +49,7 @@ export function AppHeader({ greeting, showBranding = true }: { greeting?: string
           </h1>
         ) : showBranding ? (
           <Link href="/" className="flex items-center gap-2 text-ink">
-            <Leaf className="w-5 h-5 text-green" weight="fill" />
+            <Leaf className="w-5 h-5 text-green fill-green" />
             <span className="font-semibold tracking-tight text-lg">LikasLens</span>
           </Link>
         ) : null}
@@ -46,6 +58,15 @@ export function AppHeader({ greeting, showBranding = true }: { greeting?: string
       <div className="flex-1" />
 
       <div className="flex items-center gap-4">
+        {isGhostMode && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#2EE6C8]/10 border border-[#2EE6C8]/20">
+            <span className="w-2 h-2 rounded-full bg-[#FFB703] animate-[pulse-dot_2s_ease-in-out_infinite]" />
+            <span className="font-mono text-[10px] text-[#2EE6C8] uppercase tracking-wider">
+              Ghost
+            </span>
+          </div>
+        )}
+
         <div ref={notifRef} className="relative">
           <button
             aria-label="Notifications"
@@ -68,9 +89,9 @@ export function AppHeader({ greeting, showBranding = true }: { greeting?: string
               <div className="max-h-80 overflow-y-auto">
                 {MOCK_NOTIFICATIONS.map((n) => {
                   const iconMap: Record<NotificationType, React.ReactNode> = {
-                    critical: <Warning className="w-4 h-4 text-[#b23b3b]" />,
-                    resolved: <CheckCircle className="w-4 h-4 text-green" weight="fill" />,
-                    info: <Info className="w-4 h-4 text-green" weight="fill" />,
+                    critical: <AlertTriangle className="w-4 h-4 text-[#b23b3b]" />,
+                    resolved: <CheckCircle className="w-4 h-4 text-green fill-green" />,
+                    info: <Info className="w-4 h-4 text-green fill-green" />,
                   };
                   return (
                     <div key={n.id} className="p-3 border-b border-ink/10 last:border-0">

@@ -2,6 +2,7 @@ packages:
   - "apps/frontend"
   - "apps/backend"
   - "apps/admin-portal"
+  - "apps/mobile-pwa"
   - "apps/shared"
 allowBuilds:
   '@parcel/watcher': set this to true or false

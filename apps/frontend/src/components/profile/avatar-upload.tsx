@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera, Upload, X } from "@phosphor-icons/react";
+import { Camera, Upload, X } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { uploadProfileImage, validateProfileImage } from "@/utils/supabase/storage";
 

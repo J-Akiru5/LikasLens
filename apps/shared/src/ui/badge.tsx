@@ -10,7 +10,7 @@ const variants: Record<string, string> = {
   default: "bg-ink/5 text-muted",
   success: "text-green bg-green/10",
   warning: "text-amber bg-amber/10",
-  error: "text-[#b23b3b] bg-[#b23b3b]/10",
+  error: "text-red bg-red/10",
   info: "bg-accent/10 text-accent",
   loading: "bg-ink/5 text-muted animate-pulse",
 };

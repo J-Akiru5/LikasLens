@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChatCircle, X, PaperPlaneRight, Robot, User } from "@phosphor-icons/react";
+import { MessageCircle, X, Send, Bot, User } from "lucide-react";
 import { useGeminiChat, type ChatMessage } from "../../hooks/useGeminiChat";
 
 export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "citizen" | "admin"; locale?: string }) {
@@ -49,7 +49,7 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
           className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-accent text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
           aria-label="Open Likasy chat"
         >
-          <ChatCircle className="w-6 h-6" weight="fill" />
+           <MessageCircle className="w-6 h-6" />
         </button>
       )}
 
@@ -64,14 +64,14 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
           >
             <div className="flex items-center gap-2 px-4 py-3 shrink-0 bg-accent text-white">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                <Robot className="w-5 h-5" weight="fill" />
+                 <Bot className="w-5 h-5" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold">Likasy</div>
                 <div className="text-xs font-mono opacity-70">AI Assistant &bull; Online</div>
               </div>
               <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-white/20 transition-colors" aria-label="Close chat">
-                <X className="w-4 h-4" weight="bold" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
@@ -87,7 +87,7 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
               {loading && (
                 <div className="flex items-start gap-2">
                   <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-1 bg-accent">
-                    <Robot className="w-3.5 h-3.5 text-white" weight="fill" />
+                     <Bot className="w-3.5 h-3.5 text-white" />
                   </div>
                   <div className="flex items-center gap-1 px-3 py-2 rounded-xl bg-panel border border-border">
                     <span className="w-2 h-2 rounded-full bg-accent animate-bounce" />
@@ -115,7 +115,7 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
                   className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent text-white shrink-0 transition-all disabled:opacity-40"
                   aria-label="Send message"
                 >
-                  <PaperPlaneRight className="w-4 h-4" weight="fill" />
+                    <Send className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -172,7 +172,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   return (
     <div className={`flex items-start gap-2 ${isUser ? "flex-row-reverse" : ""}`}>
       <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-1" style={{ background: isUser ? "var(--ink)" : "var(--accent)" }}>
-        {isUser ? <User className="w-3.5 h-3.5 text-page" weight="fill" /> : <Robot className="w-3.5 h-3.5 text-white" weight="fill" />}
+         {isUser ? <User className="w-3.5 h-3.5 text-page" /> : <Bot className="w-3.5 h-3.5 text-white" />}
       </div>
       <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed ${isUser ? "bg-ink text-page" : "bg-panel text-ink border border-border"}`}>
         {isUser ? <div className="whitespace-pre-wrap break-words">{message.content}</div> : <MarkdownRenderer content={message.content} />}

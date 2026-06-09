@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Users as UsersIcon,
 } from "lucide-react";
-import { laravelGet, laravelPut, laravelDelete, Spinner, Button, showToast } from "@likaslens/shared";
+import { laravelGet, laravelPut, laravelDelete, Spinner, showToast, Button } from "@likaslens/shared";
 
 type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
@@ -183,8 +183,7 @@ export default function UsersPage() {
           <div className="brutal-panel panel-surface overflow-hidden">
             {/* Column headers */}
             <div
-              className="grid grid-cols-12 gap-2 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2"
-              style={{ backgroundColor: "#1b4332", color: "#f8f9fa" }}
+              className="grid grid-cols-12 gap-2 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2 bg-primary text-white"
             >
               <div className="col-span-4 sm:col-span-3">Name</div>
               <div className="hidden sm:block sm:col-span-3">Email</div>

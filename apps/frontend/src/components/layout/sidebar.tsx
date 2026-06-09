@@ -4,20 +4,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
-  SquaresFour,
-  WarningCircle,
+  LayoutGrid,
+  AlertCircle,
   FileText,
-  Gear,
+  Settings,
   Leaf,
-  House,
+  Home,
   User,
   Fingerprint,
-  List,
+  Menu,
   X,
   MapPin,
-  Scales,
+  Scale,
   Camera,
-} from "@phosphor-icons/react";
+  Trophy,
+  Users,
+  Building2,
+  Gift,
+  ScrollText,
+  BarChart3,
+} from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { isAnalystOrSuperAdmin, getRole } from "@/lib/roles";
 
@@ -88,14 +94,21 @@ export function Sidebar() {
   };
 
   const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: SquaresFour, exact: true, roles: null },
-    { href: "/dashboard/incidents", label: "Incidents", icon: WarningCircle, roles: null },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true, roles: null },
+    { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle, roles: null },
     { href: "/dashboard/reports", label: "Analytics", icon: FileText, roles: null },
+    { href: "/dashboard/impact", label: "Impact", icon: BarChart3, roles: null },
+    { href: "/scoreboard", label: "Scoreboard", icon: Trophy, roles: null },
     { href: "/dashboard/analytics", label: "Towns", icon: MapPin, roles: ["analyst", "super_admin"] },
     { divider: true, label: "Citizen Tools" },
     { href: "/report", label: "Submit Report", icon: Camera, roles: null },
-    { href: "/laws", label: "Laws Database", icon: Scales, roles: null },
+    { href: "/laws", label: "Laws Database", icon: Scale, roles: null },
     { href: "/profile", label: "Profile", icon: User, roles: null },
+    { divider: true, label: "Administration" },
+    { href: "/dashboard/users", label: "Users", icon: Users, roles: ["super_admin"] },
+    { href: "/dashboard/ngos", label: "NGOs", icon: Building2, roles: ["super_admin"] },
+    { href: "/dashboard/rewards", label: "Rewards", icon: Gift, roles: ["super_admin"] },
+    { href: "/dashboard/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["super_admin"] },
   ];
 
   const visibleNavItems = navItems.filter(
@@ -105,7 +118,7 @@ export function Sidebar() {
   const sidebarContent = (
     <>
       <div className="p-6 border-b border-ink/10 flex items-center gap-2 text-ink">
-        <Leaf className="w-6 h-6 text-green" weight="fill" />
+        <Leaf className="w-6 h-6 text-green fill-green" />
         <span className="font-semibold text-xl text-ink tracking-tight">LikasLens</span>
       </div>
 
@@ -172,7 +185,7 @@ export function Sidebar() {
           onClick={closeMobile}
           className="flex items-center gap-3 px-3 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors"
         >
-          <House className="w-4 h-4" /> Back to Home
+          <Home className="w-4 h-4" /> Back to Home
         </Link>
         <Link
           href="/dashboard/settings"
@@ -184,7 +197,7 @@ export function Sidebar() {
               : "text-ink/60 hover:text-ink hover:bg-ink/[0.02]"
           }`}
         >
-          <Gear className="w-4 h-4" /> Settings
+          <Settings className="w-4 h-4" /> Settings
         </Link>
       </div>
     </>
@@ -198,7 +211,7 @@ export function Sidebar() {
         onClick={() => setMobileOpen((prev) => !prev)}
         className="lg:hidden fixed top-4 right-4 z-50 p-3 border border-ink/10 bg-page"
       >
-        {mobileOpen ? <X className="w-5 h-5" /> : <List className="w-5 h-5" />}
+        {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
       <aside className="hidden lg:flex lg:w-64 shrink-0 border-r border-ink/10 flex-col h-full relative z-20 bg-page">
