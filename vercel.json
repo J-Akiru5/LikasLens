@@ -2,8 +2,9 @@
   "git": {
     "lfs": false
   },
+  "ignoreCommand": "bash vercel-ignore.sh",
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter frontend build",
-  "outputDirectory": ".next",
+  "outputDirectory": "apps/frontend/.next",
   "framework": "nextjs"
 }
