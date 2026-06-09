@@ -13,13 +13,16 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from ultralytics import YOLO
 
 logger = logging.getLogger(__name__)
 
 _MODEL: YOLO | None = None
 _MODEL_NAME: str = ""
+
+MAX_IMAGE_BYTES = 20 * 1024 * 1024  # 20 MB
+MAX_PIXELS = 4000 * 4000  # 16 MP
 
 # Environmental violation categories mapped from COCO / custom classes
 ENVIRONMENTAL_KEYWORDS: dict[int, str] = {
@@ -153,10 +156,33 @@ def classify_environmental_risk(detections: list[dict[str, Any]]) -> dict[str, A
 
 def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.25) -> dict[str, Any]:
     """Run YOLOv8 inference on image bytes and return structured results."""
+    if len(image_bytes) > MAX_IMAGE_BYTES:
+        raise ValueError(
+            f"Image too large: {len(image_bytes)} bytes (max {MAX_IMAGE_BYTES})"
+        )
+
+    try:
+        image = Image.open(BytesIO(image_bytes)).convert("RGB")
+    except UnidentifiedImageError:
+        raise ValueError("Invalid image format: unable to decode")
+    except Exception as exc:
+        raise ValueError(f"Failed to open image: {exc}") from exc
+
+    w, h = image.size
+    if w * h > MAX_PIXELS:
+        image.thumbnail((4000, 4000), Image.LANCZOS)
+        logger.info("Resized image from %dx%d to %dx%d", w, h, *image.size)
+
     model = load_model()
 
-    image = Image.open(BytesIO(image_bytes)).convert("RGB")
-    results = model(image, conf=confidence_threshold)
+    try:
+        results = model(image, conf=confidence_threshold)
+    except RuntimeError as exc:
+        if "out of memory" in str(exc).lower():
+            raise RuntimeError("YOLO inference failed: GPU out of memory") from exc
+        raise RuntimeError(f"YOLO inference failed: {exc}") from exc
+    except Exception as exc:
+        raise RuntimeError(f"YOLO inference failed: {exc}") from exc
 
     detections = []
     for result in results:
@@ -185,5 +211,10 @@ def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.25) -> dic
 
 def analyze_base64(base64_string: str, confidence_threshold: float = 0.25) -> dict[str, Any]:
     """Analyze a base64-encoded image."""
-    image_bytes = base64.b64decode(base64_string)
+    if len(base64_string) > MAX_IMAGE_BYTES * 2:
+        raise ValueError("Base64 payload too large")
+    try:
+        image_bytes = base64.b64decode(base64_string, validate=True)
+    except Exception as exc:
+        raise ValueError(f"Invalid base64 encoding: {exc}") from exc
     return analyze_image(image_bytes, confidence_threshold)
