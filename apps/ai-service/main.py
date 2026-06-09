@@ -3,19 +3,24 @@ LikasLens AI Service
 Neuro-symbolic processing microservice using FastAPI, YOLOv8, and Google Generative AI
 """
 
+import logging
 import os
+import traceback
 from contextlib import asynccontextmanager
 from datetime import datetime
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from gremlin_bootstrap import build_bootstrap_queries
 from graph_topology import build_seed_edges, build_seed_vertices, get_topology_config
 
 # Load environment variables
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -47,6 +52,34 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(
+        "Unhandled exception on %s %s: %s\n%s",
+        request.method,
+        request.url.path,
+        exc,
+        traceback.format_exc(),
+    )
+
+    if isinstance(exc, HTTPException):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"success": False, "error": exc.detail},
+        )
+
+    is_production = os.getenv("APP_ENV", "development") == "production"
+
+    body = {"success": False, "error": "Internal server error"}
+    if not is_production:
+        body["detail"] = str(exc)
+
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content=body,
+    )
 
 
 @app.get("/health")
