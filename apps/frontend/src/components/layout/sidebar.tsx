@@ -93,27 +93,26 @@ export function Sidebar() {
     setIsGhostMode(!isGhostMode);
   };
 
-  const navItems = [
+  const navItems: (
+    { divider: true; label: string } |
+    { href: string; label: string; icon: typeof LayoutGrid; exact?: boolean; roles: string[] | null }
+  )[] = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true, roles: null },
     { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle, roles: null },
     { href: "/dashboard/reports", label: "Analytics", icon: FileText, roles: null },
     { href: "/dashboard/impact", label: "Impact", icon: BarChart3, roles: null },
     { href: "/scoreboard", label: "Scoreboard", icon: Trophy, roles: null },
-    { href: "/dashboard/analytics", label: "Towns", icon: MapPin, roles: ["analyst", "super_admin"] },
     { divider: true, label: "Citizen Tools" },
     { href: "/report", label: "Submit Report", icon: Camera, roles: null },
     { href: "/laws", label: "Laws Database", icon: Scale, roles: null },
     { href: "/profile", label: "Profile", icon: User, roles: null },
-    { divider: true, label: "Administration" },
-    { href: "/dashboard/users", label: "Users", icon: Users, roles: ["super_admin"] },
-    { href: "/dashboard/ngos", label: "NGOs", icon: Building2, roles: ["super_admin"] },
-    { href: "/dashboard/rewards", label: "Rewards", icon: Gift, roles: ["super_admin"] },
-    { href: "/dashboard/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["super_admin"] },
   ];
 
-  const visibleNavItems = navItems.filter(
-    (item) => item.divider || !item.roles || (userRole && item.roles.includes(userRole))
-  );
+  const visibleNavItems = navItems.filter((item) => {
+    if ("divider" in item) return true;
+    if (!("roles" in item) || !item.roles) return true;
+    return userRole !== null && item.roles.includes(userRole);
+  });
 
   const sidebarContent = (
     <>
@@ -123,8 +122,8 @@ export function Sidebar() {
       </div>
 
       <div className="flex-1 overflow-y-auto overscroll-contain py-6 px-4 space-y-1">
-        {visibleNavItems.map((item, index) => {
-          if (item.divider) {
+        {visibleNavItems.map((item: typeof navItems[number], index) => {
+          if ("divider" in item) {
             return (
               <div key={`div-${index}`} className="pt-6 pb-2 px-3">
                 <p className="text-[10px] font-mono text-ink/40 uppercase tracking-widest">{item.label}</p>

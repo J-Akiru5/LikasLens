@@ -6,7 +6,7 @@ import type { Ticket } from "@likaslens/shared";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
-import { Filter, MoreVertical, Eye, UserCheck, Flag, Trash2, X, Search } from "lucide-react";
+import { Filter, MoreVertical, Eye, UserCheck, Flag, Trash2, X, Search, Clock, MapPin } from "lucide-react";
 
 const statusDot: Record<string, string> = {
   open: "bg-[#c27a2e]",
@@ -165,42 +165,32 @@ export default function IncidentsPage() {
               Showing {filteredIncidents.length} of {tickets.length} incidents
             </div>
 
-            <div className="border border-ink/10 rounded-xl overflow-hidden">
-              <div className="hidden sm:grid grid-cols-12 font-mono text-sm text-ink/40 uppercase tracking-wider p-4 border-b border-ink/10">
-                <div className="col-span-2">ID</div>
-                <div className="col-span-3">Category</div>
-                <div className="col-span-3">Location</div>
-                <div className="col-span-2">Status</div>
-                <div className="col-span-2 text-right">Actions</div>
-              </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredIncidents.length > 0 ? (
-                filteredIncidents.map((ticket, i) => (
-                  <div
-                    key={ticket.id}
-                    className="border-b border-ink/10 last:border-0 hover:bg-ink/[0.02] transition-colors"
-                  >
-                    <div className="sm:hidden p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className={`h-2 w-2 rounded-full ${statusDot[ticket.status.toLowerCase()] || "bg-ink/20"} shrink-0`} />
-                          <span className="font-mono text-sm text-ink truncate">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</span>
-                        </div>
-                        <span className="font-mono text-sm text-ink/50 uppercase tracking-wider shrink-0">{ticket.status}</span>
-                      </div>
-                      <div className="text-base text-ink/80 truncate">{ticket.title}</div>
-                      <div className="font-mono text-sm text-ink/40 truncate">{ticket.location}</div>
-                      <div className="flex justify-end">
+                filteredIncidents.map((ticket, i) => {
+                  const isResolved = ticket.status.toLowerCase() === 'resolved' || ticket.status.toLowerCase() === 'closed';
+                  const isMonitoring = ticket.status.toLowerCase() === 'monitoring';
+                  
+                  const statusPillBg = isResolved ? 'bg-green/10' : isMonitoring ? 'bg-green/10' : 'bg-amber/10';
+                  const statusPillText = isResolved ? 'text-green' : isMonitoring ? 'text-green' : 'text-amber';
+
+                  return (
+                    <div 
+                      key={ticket.id} 
+                      className="bg-panel rounded-[1.5rem] p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer flex flex-col h-full relative"
+                    >
+                      <div className="absolute top-4 right-4 z-10">
                         <button
-                          onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
-                          className="p-2 text-ink/40 hover:text-ink transition-colors"
-                          aria-label="Row actions"
-                          aria-expanded={openMenuId === ticket.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(openMenuId === ticket.id ? null : ticket.id);
+                          }}
+                          className="p-1.5 text-ink/40 hover:text-ink transition-colors rounded-full hover:bg-ink/[0.04]"
                         >
                           <MoreVertical className="w-4 h-4" />
                         </button>
                         {openMenuId === ticket.id && (
-                          <div ref={menuRef} className="absolute right-4 mt-8 z-50 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden">
+                          <div ref={menuRef} className="absolute right-0 mt-1 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden z-50">
                             <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
                               <Eye className="w-4 h-4" /> View Details
                             </button>
@@ -216,49 +206,42 @@ export default function IncidentsPage() {
                           </div>
                         )}
                       </div>
-                    </div>
 
-                    <div className="hidden sm:grid grid-cols-12 items-center p-4">
-                      <div className="col-span-2 font-mono text-base text-ink">{ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}</div>
-                      <div className="col-span-3 flex items-center gap-2 text-base text-ink/80">{ticket.title}</div>
-                      <div className="col-span-3 text-base text-ink/50">{ticket.location}</div>
-                      <div className="col-span-2">
-                        <span className="font-mono text-sm text-ink/50">{ticket.status}</span>
+                      <div className="flex justify-between items-center mb-4 pr-8">
+                        <span className="font-mono text-[10px] text-ink/40 font-bold tracking-widest uppercase">
+                          {ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}
+                        </span>
+                        <span className={`px-2.5 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${statusPillBg} ${statusPillText}`}>
+                          {ticket.status}
+                        </span>
                       </div>
-                      <div className="col-span-2 text-right">
-                        <div className="relative inline-block">
-                          <button
-                            onClick={() => setOpenMenuId(openMenuId === ticket.id ? null : ticket.id)}
-                            className="p-1 text-ink/40 hover:text-ink transition-colors"
-                            aria-label="Row actions"
-                            aria-expanded={openMenuId === ticket.id}
-                          >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-                          {openMenuId === ticket.id && (
-                            <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden">
-                              <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
-                                <Eye className="w-4 h-4" /> View Details
-                              </button>
-                              <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
-                                <UserCheck className="w-4 h-4" /> Assign
-                              </button>
-                              <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10">
-                                <Flag className="w-4 h-4" /> Change Status
-                              </button>
-                              <button type="button" onClick={(e) => { e.stopPropagation(); closeMenu(); }} className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/50 hover:text-[#b23b3b] transition-colors">
-                                <Trash2 className="w-4 h-4" /> Remove
-                              </button>
-                            </div>
-                          )}
+                      
+                      <h3 className="font-bold text-[17px] text-ink leading-snug mb-4 line-clamp-2 flex-1">
+                        {ticket.title}
+                      </h3>
+                      
+                      <div className="flex flex-col gap-2.5 pt-4 border-t border-ink/5">
+                        <div className="flex items-start gap-2.5 text-ink/60">
+                          <MapPin className="w-4 h-4 shrink-0 opacity-60" strokeWidth={2} />
+                          <span className="text-[14px] leading-tight line-clamp-2">{ticket.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2.5 text-ink/40">
+                          <Clock className="w-4 h-4 shrink-0 opacity-60" strokeWidth={2} />
+                          <span className="text-[11px] font-mono tracking-widest uppercase">Updated recently</span>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
-                <div className="p-10 text-center font-mono text-base text-ink/40">
-                  No incidents match your search criteria.
+                <div className="col-span-full p-16 bg-panel rounded-[2rem] border border-ink/5 text-center flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 rounded-full bg-ink/5 flex items-center justify-center">
+                    <Filter className="w-8 h-8 text-ink/40" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-ink">No incidents found</h3>
+                    <p className="text-sm text-ink/50 mt-1">Try adjusting your search criteria.</p>
+                  </div>
                 </div>
               )}
             </div>

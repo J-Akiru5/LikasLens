@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\NgoGroup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,6 +57,16 @@ class AdminNgoController extends Controller
 
         $ngo = NgoGroup::create($validated);
 
+        AuditLog::create([
+            'actor_user_id' => $request->user()->id,
+            'action' => 'ngo_created',
+            'entity_type' => 'ngo_group',
+            'entity_id' => $ngo->id,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'NGO created.',
@@ -75,7 +86,19 @@ class AdminNgoController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        $oldValues = $ngo->only(array_keys($validated));
         $ngo->update($validated);
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()->id,
+            'action' => 'ngo_updated',
+            'entity_type' => 'ngo_group',
+            'entity_id' => $ngo->id,
+            'old_values' => $oldValues,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -84,10 +107,21 @@ class AdminNgoController extends Controller
         ]);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $ngo = NgoGroup::findOrFail($id);
+        $ngoName = $ngo->name;
         $ngo->delete();
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()->id,
+            'action' => 'ngo_deleted',
+            'entity_type' => 'ngo_group',
+            'entity_id' => $id,
+            'old_values' => ['name' => $ngoName],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,

@@ -28,17 +28,7 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
   const [displayedCount, setDisplayedCount] = useState(3);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const allItems = items || [
-    { id: "INC-092", type: "Critical" as const, title: "Illegal Dumping Detected", location: "Sector 4, Riverside", time: "10 mins ago", status: "Routing to Agency" },
-    { id: "INC-091", type: "Warning" as const, title: "Air Quality Drop", location: "Downtown Core", time: "45 mins ago", status: "Monitoring" },
-    { id: "INC-090", type: "Info" as const, title: "Resolution Confirmed", location: "Park District", time: "2 hours ago", status: "Archived" },
-    { id: "INC-089", type: "Warning" as const, title: "Water Contamination Alert", location: "Riverside Industrial", time: "3 hours ago", status: "Investigating" },
-    { id: "INC-088", type: "Critical" as const, title: "Deforestation Zone Detected", location: "Northern Ridge Forest", time: "5 hours ago", status: "Critical Review" },
-    { id: "INC-087", type: "Info" as const, title: "Noise Level Normalized", location: "Downtown Core", time: "6 hours ago", status: "Resolved" },
-    { id: "INC-086", type: "Warning" as const, title: "Wildfire Risk Assessment", location: "Sector 7, Forest Zone", time: "8 hours ago", status: "Monitoring" },
-    { id: "INC-085", type: "Critical" as const, title: "Illegal Wildlife Trafficking", location: "National Park Boundary", time: "10 hours ago", status: "Active Investigation" },
-    { id: "INC-084", type: "Info" as const, title: "Air Quality Improved", location: "Downtown Core", time: "12 hours ago", status: "Resolved" },
-  ];
+  const allItems = items || [];
 
   if (loading) {
     return (

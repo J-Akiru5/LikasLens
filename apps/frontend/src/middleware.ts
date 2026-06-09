@@ -53,6 +53,32 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
+  // --- Role-Based Access Control (RBAC) ---
+  const userRole = (user.user_metadata?.role as string) || "citizen";
+
+  // 1. Super Admin Only Routes
+  const superAdminRoutes = [
+    "/dashboard/users",
+    "/dashboard/ngos",
+    "/dashboard/rewards",
+    "/dashboard/audit-logs"
+  ];
+  if (superAdminRoutes.some((route) => pathWithoutLocale.startsWith(route))) {
+    if (userRole !== "super_admin") {
+      const redirectUrl = new URL("/dashboard", request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // 2. Analyst / Super Admin Routes
+  const analystRoutes = ["/dashboard/analytics"];
+  if (analystRoutes.some((route) => pathWithoutLocale.startsWith(route))) {
+    if (userRole !== "super_admin" && userRole !== "analyst") {
+      const redirectUrl = new URL("/dashboard", request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   return supabaseResponse;
 }
 

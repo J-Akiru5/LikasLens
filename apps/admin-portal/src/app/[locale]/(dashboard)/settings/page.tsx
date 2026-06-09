@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@likaslens/shared";
+import { Dropdown } from "@likaslens/shared";
 import {
   Globe,
   Bell,
@@ -29,55 +29,51 @@ const TABS: TabCard[] = [
 function PlatformSection() {
   return (
     <div className="space-y-6">
-      <div className="brutal-panel panel-surface p-8 border-2 border-primary shadow-[4px_4px_0px_#1b4332]">
+      <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-            <Globe className="w-6 h-6 text-primary" />
+          <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
+            <Globe className="w-6 h-6 text-ink/40" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">General Settings</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink">General Settings</h2>
         </div>
         <div className="space-y-6">
           <div>
-            <label className="font-bold uppercase block mb-2">Platform Name</label>
-            <input
-              type="text"
-              defaultValue="LikasLens Admin"
-              className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold text-sm focus:outline-none focus:border-primary"
+            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Platform Name</label>
+            <input type="text" defaultValue="LikasLens Admin"
+              className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
+          </div>
+          <div>
+            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Default Language</label>
+            <Dropdown
+              value="en"
+              onChange={() => {}}
+              options={[
+                { value: "en", label: "English" },
+                { value: "fil", label: "Filipino" },
+              ]}
+              size="md"
             />
           </div>
           <div>
-            <label className="font-bold uppercase block mb-2">Default Language</label>
-            <select
-              defaultValue="en"
-              className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold uppercase text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="en">English</option>
-              <option value="fil">Filipino</option>
-            </select>
+            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Eco Credit Rate (PHP)</label>
+            <input type="number" defaultValue={100}
+              className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
           </div>
           <div>
-            <label className="font-bold uppercase block mb-2">Eco Credit Rate (PHP)</label>
-            <input
-              type="number"
-              defaultValue={100}
-              className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold text-sm focus:outline-none focus:border-primary"
-            />
-          </div>
-          <div>
-            <label className="font-bold uppercase block mb-2">API Base URL</label>
-            <div className="w-full p-3 border-2 border-primary/20 rounded bg-background font-mono text-sm truncate" title={process.env.NEXT_PUBLIC_API_URL || "Not configured"}>
+            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">API Base URL</label>
+            <div className="w-full p-3 border border-ink/10 rounded-xl bg-page font-mono text-sm text-ink/60 truncate" title={process.env.NEXT_PUBLIC_API_URL || "Not configured"}>
               {process.env.NEXT_PUBLIC_API_URL || "Not configured"}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="brutal-panel panel-surface p-8 border-2 border-primary shadow-[4px_4px_0px_#1b4332]">
+      <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-            <Clock className="w-6 h-6 text-primary" />
+          <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
+            <Clock className="w-6 h-6 text-ink/40" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">Maintenance</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink">Maintenance</h2>
         </div>
         <div className="space-y-4">
           {[
@@ -85,19 +81,14 @@ function PlatformSection() {
             { label: "AI Moderation", desc: "Enable AI-powered content moderation screening", defaultChecked: true },
             { label: "Maintenance Mode", desc: "Show maintenance banner to all users", defaultChecked: false },
           ].map((item) => (
-            <label
-              key={item.label}
-              className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
-            >
+            <label key={item.label}
+              className="flex items-center justify-between p-4 border border-ink/5 rounded-xl hover:bg-ink/[0.02] transition-colors cursor-pointer">
               <div>
-                <div className="font-bold uppercase">{item.label}</div>
-                <div className="text-sm surface-muted">{item.desc}</div>
+                <div className="font-medium text-sm text-ink">{item.label}</div>
+                <div className="text-sm text-muted">{item.desc}</div>
               </div>
-              <input
-                type="checkbox"
-                defaultChecked={item.defaultChecked}
-                className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
-              />
+              <input type="checkbox" defaultChecked={item.defaultChecked}
+                className="w-5 h-5 border border-ink/10 rounded text-green accent-green" />
             </label>
           ))}
         </div>
@@ -109,12 +100,12 @@ function PlatformSection() {
 function NotificationsSection() {
   return (
     <div className="space-y-6">
-      <div className="brutal-panel panel-surface p-8 border-2 border-primary shadow-[4px_4px_0px_#1b4332]">
+      <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-            <Bell className="w-6 h-6 text-primary" />
+          <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
+            <Bell className="w-6 h-6 text-ink/40" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">System Alerts</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink">System Alerts</h2>
         </div>
         <div className="space-y-4">
           {[
@@ -122,30 +113,25 @@ function NotificationsSection() {
             { label: "Critical Incident Reports", desc: "Immediate notification for urgent reports", defaultChecked: true },
             { label: "Report Escalations", desc: "Notify when a report is escalated by community", defaultChecked: true },
           ].map((item) => (
-            <label
-              key={item.label}
-              className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
-            >
+            <label key={item.label}
+              className="flex items-center justify-between p-4 border border-ink/5 rounded-xl hover:bg-ink/[0.02] transition-colors cursor-pointer">
               <div>
-                <div className="font-bold uppercase">{item.label}</div>
-                <div className="text-sm surface-muted">{item.desc}</div>
+                <div className="font-medium text-sm text-ink">{item.label}</div>
+                <div className="text-sm text-muted">{item.desc}</div>
               </div>
-              <input
-                type="checkbox"
-                defaultChecked={item.defaultChecked}
-                className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
-              />
+              <input type="checkbox" defaultChecked={item.defaultChecked}
+                className="w-5 h-5 border border-ink/10 rounded text-green accent-green" />
             </label>
           ))}
         </div>
       </div>
 
-      <div className="brutal-panel panel-surface p-8 border-2 border-primary shadow-[4px_4px_0px_#1b4332]">
+      <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-            <Users className="w-6 h-6 text-primary" />
+          <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
+            <Users className="w-6 h-6 text-ink/40" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">Admin Notifications</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink">Admin Notifications</h2>
         </div>
         <div className="space-y-4">
           {[
@@ -153,19 +139,14 @@ function NotificationsSection() {
             { label: "Weekly Digest", desc: "Receive a weekly summary of platform activity", defaultChecked: false },
             { label: "API Usage Alerts", desc: "Warn when API rate limits are approaching", defaultChecked: true },
           ].map((item) => (
-            <label
-              key={item.label}
-              className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
-            >
+            <label key={item.label}
+              className="flex items-center justify-between p-4 border border-ink/5 rounded-xl hover:bg-ink/[0.02] transition-colors cursor-pointer">
               <div>
-                <div className="font-bold uppercase">{item.label}</div>
-                <div className="text-sm surface-muted">{item.desc}</div>
+                <div className="font-medium text-sm text-ink">{item.label}</div>
+                <div className="text-sm text-muted">{item.desc}</div>
               </div>
-              <input
-                type="checkbox"
-                defaultChecked={item.defaultChecked}
-                className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
-              />
+              <input type="checkbox" defaultChecked={item.defaultChecked}
+                className="w-5 h-5 border border-ink/10 rounded text-green accent-green" />
             </label>
           ))}
         </div>
@@ -177,50 +158,46 @@ function NotificationsSection() {
 function SecuritySection() {
   return (
     <div className="space-y-6">
-      <div className="brutal-panel panel-surface p-8 border-2 border-primary shadow-[4px_4px_0px_#1b4332]">
+      <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-            <Lock className="w-6 h-6 text-primary" />
+          <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
+            <Lock className="w-6 h-6 text-ink/40" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">Access Controls</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink">Access Controls</h2>
         </div>
         <div className="space-y-6">
           <div>
-            <label className="font-bold uppercase block mb-2">Session Timeout (minutes)</label>
-            <input
-              type="number"
-              defaultValue={60}
-              className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold text-sm focus:outline-none focus:border-primary"
-            />
+            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Session Timeout (minutes)</label>
+            <input type="number" defaultValue={60}
+              className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
           </div>
           <div>
-            <label className="font-bold uppercase block mb-2">Max Login Attempts</label>
-            <input
-              type="number"
-              defaultValue={5}
-              className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold text-sm focus:outline-none focus:border-primary"
-            />
+            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Max Login Attempts</label>
+            <input type="number" defaultValue={5}
+              className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
           </div>
           <div>
-            <label className="font-bold uppercase block mb-2">Default Admin Role</label>
-            <select
-              defaultValue="moderator"
-              className="w-full p-3 border-2 border-primary/20 rounded bg-background text-foreground font-bold uppercase text-sm focus:outline-none focus:border-primary"
-            >
-              <option value="super_admin">Super Admin</option>
-              <option value="moderator">Moderator</option>
-              <option value="viewer">Viewer</option>
-            </select>
+            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Default Admin Role</label>
+            <Dropdown
+              value="moderator"
+              onChange={() => {}}
+              options={[
+                { value: "super_admin", label: "Super Admin" },
+                { value: "moderator", label: "Moderator" },
+                { value: "viewer", label: "Viewer" },
+              ]}
+              size="md"
+            />
           </div>
         </div>
       </div>
 
-      <div className="brutal-panel panel-surface p-8 border-2 border-primary shadow-[4px_4px_0px_#1b4332]">
+      <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded border-2 border-primary flex items-center justify-center bg-background">
-            <Shield className="w-6 h-6 text-primary" />
+          <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
+            <Shield className="w-6 h-6 text-ink/40" />
           </div>
-          <h2 className="font-heading text-2xl font-black uppercase">Security Policies</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink">Security Policies</h2>
         </div>
         <div className="space-y-4">
           {[
@@ -228,19 +205,14 @@ function SecuritySection() {
             { label: "IP Whitelist", desc: "Restrict admin access to whitelisted IP ranges", defaultChecked: false },
             { label: "Audit Logging", desc: "Log all admin actions for compliance review", defaultChecked: true },
           ].map((item) => (
-            <label
-              key={item.label}
-              className="flex items-center justify-between p-4 border-2 border-primary/20 rounded hover:bg-primary/5 transition-colors cursor-pointer"
-            >
+            <label key={item.label}
+              className="flex items-center justify-between p-4 border border-ink/5 rounded-xl hover:bg-ink/[0.02] transition-colors cursor-pointer">
               <div>
-                <div className="font-bold uppercase">{item.label}</div>
-                <div className="text-sm surface-muted">{item.desc}</div>
+                <div className="font-medium text-sm text-ink">{item.label}</div>
+                <div className="text-sm text-muted">{item.desc}</div>
               </div>
-              <input
-                type="checkbox"
-                defaultChecked={item.defaultChecked}
-                className="w-5 h-5 border-2 border-primary rounded text-secondary accent-secondary"
-              />
+              <input type="checkbox" defaultChecked={item.defaultChecked}
+                className="w-5 h-5 border border-ink/10 rounded text-green accent-green" />
             </label>
           ))}
         </div>
@@ -254,9 +226,9 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="border-b-4 border-primary pb-4">
-        <h1 className="font-heading text-4xl font-black uppercase">Settings</h1>
-        <p className="font-mono text-sm surface-muted mt-1">System configuration</p>
+      <div>
+        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Settings</h1>
+        <p className="font-mono text-base text-muted mt-1">System configuration</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -264,32 +236,22 @@ export default function SettingsPage() {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
           return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`brutal-panel panel-surface p-6 border-2 shadow-[4px_4px_0px_#1b4332] transition-all text-left ${
+            <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)}
+              className={`bg-panel rounded-3xl p-6 shadow-sm border text-left transition-all ${
                 isActive
-                  ? "border-secondary bg-secondary/10 shadow-[2px_2px_0px_#1b4332]"
-                  : "border-primary hover:bg-primary/5 cursor-pointer"
+                  ? "border-green/30 bg-green/[0.02]"
+                  : "border-ink/5 hover:bg-ink/[0.02]"
               }`}
-              aria-pressed={isActive}
-            >
+              aria-pressed={isActive}>
               <div className="flex items-center gap-4">
-                <div
-                  className={`w-12 h-12 rounded border-2 flex items-center justify-center shrink-0 ${
-                    isActive
-                      ? "border-secondary bg-secondary/20"
-                      : "border-primary bg-background"
-                  }`}
-                >
-                  <Icon
-                    className={`w-6 h-6 ${isActive ? "text-secondary" : "text-primary"}`}
-                  />
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
+                  isActive ? "bg-green/10" : "bg-ink/[0.04]"
+                }`}>
+                  <Icon className={`w-6 h-6 ${isActive ? "text-green" : "text-ink/40"}`} />
                 </div>
                 <div>
-                  <h3 className="font-bold uppercase">{tab.label}</h3>
-                  <p className="font-mono text-sm surface-muted">{tab.description}</p>
+                  <h3 className="font-medium text-sm text-ink">{tab.label}</h3>
+                  <p className="font-mono text-sm text-muted">{tab.description}</p>
                 </div>
               </div>
             </button>
@@ -303,14 +265,14 @@ export default function SettingsPage() {
         {activeTab === "security" && <SecuritySection />}
       </div>
 
-      <Card variant="brutal">
-        <h3 className="font-heading text-xl font-black uppercase mb-4">System Information</h3>
-        <div className="space-y-2 font-mono text-sm surface-muted">
+      <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+        <h3 className="font-semibold tracking-tight text-xl text-ink mb-4">System Information</h3>
+        <div className="space-y-2 font-mono text-sm text-muted">
           <p>LikasLens Admin Portal v0.1.0</p>
           <p>API: {process.env.NEXT_PUBLIC_API_URL || ""}</p>
           <p>Environment: {process.env.NODE_ENV}</p>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

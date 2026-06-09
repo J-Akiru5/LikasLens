@@ -247,20 +247,19 @@ class ReportController extends Controller
 
     private function ensureGhostUser(): string
     {
-        $ghost = User::where('supabase_auth_user_id', self::GHOST_USER_ID)->first();
-        if ($ghost) {
-            return $ghost->id;
-        }
+        $ghost = User::firstOrCreate(
+            ['supabase_auth_user_id' => self::GHOST_USER_ID],
+            [
+                'name' => 'Anonymous Ghost',
+                'email' => 'ghost@likaslens.local',
+                'role' => 'ghost',
+                'trust_score' => 0,
+                'reward_points_balance' => 0,
+                'password' => bcrypt(Str::random(32)),
+            ]
+        );
 
-        return User::create([
-            'supabase_auth_user_id' => self::GHOST_USER_ID,
-            'name' => 'Anonymous Ghost',
-            'email' => 'ghost@likaslens.local',
-            'role' => 'ghost',
-            'trust_score' => 0,
-            'reward_points_balance' => 0,
-            'password' => bcrypt(Str::random(32)),
-        ])->id;
+        return $ghost->id;
     }
 
     private function detectMimeType(string $data): string

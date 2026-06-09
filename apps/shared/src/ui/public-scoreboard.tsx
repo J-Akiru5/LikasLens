@@ -50,11 +50,7 @@ export function PublicScoreboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const fallback = [
-    { rank: 1, agency: "Dept. of Forestry", title: "Illegal Logging", status: "Fixed", time: "12 mins" },
-    { rank: 2, agency: "Coast Guard", title: "Oil Spill", status: "Checking it", time: "45 mins" },
-    { rank: 3, agency: "City Sanitation", title: "Trash Dumping", status: "Fixed", time: "2 hours" },
-  ];
+  const fallback: PublicReportRow[] = [];
 
   if (loading) {
     return (
@@ -94,7 +90,7 @@ export function PublicScoreboard() {
     );
   }
 
-  const displayRows = rows.length === 0 ? fallback : rows;
+  const displayRows = rows;
 
   if (displayRows.length === 0) {
     return (

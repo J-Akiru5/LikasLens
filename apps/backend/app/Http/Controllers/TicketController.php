@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\Ticket;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -68,6 +69,7 @@ class TicketController extends Controller
             'success' => true,
             'data' => [
                 'id' => $ticket->id,
+                'display_id' => 'INC-'.strtoupper(substr($ticket->id, 0, 6)),
                 'title' => $ticket->title,
                 'description' => $ticket->description,
                 'status' => $ticket->status,
@@ -82,6 +84,66 @@ class TicketController extends Controller
                 'classifications' => $ticket->classifications,
                 'assignments' => $ticket->assignments,
                 'created_at' => $ticket->created_at,
+                'resolved_at' => $ticket->resolved_at,
+            ],
+        ]);
+    }
+
+    /**
+     * Transition ticket status with validation.
+     */
+    public function updateStatus(Request $request, string $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:open,investigating,monitoring,resolved,closed,verified',
+        ]);
+
+        $ticket = Ticket::findOrFail($id);
+        $oldStatus = $ticket->status;
+        $newStatus = $validated['status'];
+
+        $allowedTransitions = [
+            'open' => ['investigating', 'closed'],
+            'investigating' => ['monitoring', 'resolved', 'closed'],
+            'monitoring' => ['resolved', 'investigating', 'closed'],
+            'resolved' => ['verified', 'closed'],
+            'pending_review' => ['open', 'investigating', 'closed'],
+            'verified' => ['closed'],
+            'closed' => [],
+        ];
+
+        if (! in_array($newStatus, $allowedTransitions[$oldStatus] ?? [])) {
+            return response()->json([
+                'success' => false,
+                'message' => "Cannot transition from '{$oldStatus}' to '{$newStatus}'.",
+            ], 422);
+        }
+
+        $updates = ['status' => $newStatus];
+        if (in_array($newStatus, ['resolved', 'closed'])) {
+            $updates['resolved_at'] = now();
+        }
+
+        $ticket->update($updates);
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()->id,
+            'action' => 'ticket_status_changed',
+            'entity_type' => 'ticket',
+            'entity_id' => $ticket->id,
+            'old_values' => ['status' => $oldStatus],
+            'new_values' => ['status' => $newStatus],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "Ticket status changed from '{$oldStatus}' to '{$newStatus}'.",
+            'data' => [
+                'id' => $ticket->id,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
                 'resolved_at' => $ticket->resolved_at,
             ],
         ]);

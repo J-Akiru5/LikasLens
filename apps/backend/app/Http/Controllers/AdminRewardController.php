@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\RewardsCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,16 @@ class AdminRewardController extends Controller
 
         $reward = RewardsCatalog::create($validated);
 
+        AuditLog::create([
+            'actor_user_id' => $request->user()->id,
+            'action' => 'reward_created',
+            'entity_type' => 'rewards_catalog',
+            'entity_id' => $reward->id,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Reward created.',
@@ -77,7 +88,19 @@ class AdminRewardController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        $oldValues = $reward->only(array_keys($validated));
         $reward->update($validated);
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()->id,
+            'action' => 'reward_updated',
+            'entity_type' => 'rewards_catalog',
+            'entity_id' => $reward->id,
+            'old_values' => $oldValues,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -86,10 +109,21 @@ class AdminRewardController extends Controller
         ]);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $reward = RewardsCatalog::findOrFail($id);
+        $rewardName = $reward->reward_name;
         $reward->delete();
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()->id,
+            'action' => 'reward_deleted',
+            'entity_type' => 'rewards_catalog',
+            'entity_id' => $id,
+            'old_values' => ['reward_name' => $rewardName],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,

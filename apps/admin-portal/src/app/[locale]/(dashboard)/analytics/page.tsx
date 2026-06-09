@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getTickets } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { Card, Spinner } from "@likaslens/shared";
+import { Spinner } from "@likaslens/shared";
 import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
 
 export default function AnalyticsPage() {
@@ -33,28 +33,30 @@ export default function AnalyticsPage() {
   const resolutionRate = totalTickets > 0 ? Math.round((resolvedTickets / totalTickets) * 100) : 0;
 
   const kpis = [
-    { label: "Total Tickets", value: totalTickets, icon: BarChart3, cardClass: "border-amber-400 shadow-[3px_3px_0px_#92400e]", iconColor: "text-amber-600" },
-    { label: "Resolution Rate", value: `${resolutionRate}%`, icon: TrendingUp, cardClass: "border-emerald-400 shadow-[3px_3px_0px_#047857]", iconColor: "text-emerald-600" },
-    { label: "Pending", value: pendingTickets, icon: TrendingDown, cardClass: "border-primary shadow-[3px_3px_0px_#1b4332]", iconColor: "text-primary" },
+    { label: "Total Tickets", value: totalTickets, icon: BarChart3, iconBg: "bg-ink/[0.04]", iconColor: "text-ink/60" },
+    { label: "Resolution Rate", value: `${resolutionRate}%`, icon: TrendingUp, iconBg: "bg-green/10", iconColor: "text-green" },
+    { label: "Pending", value: pendingTickets, icon: TrendingDown, iconBg: "bg-amber/10", iconColor: "text-amber" },
   ];
 
   return (
     <div className="space-y-8">
-      <div className="border-b-4 border-primary pb-4">
-        <h1 className="font-heading text-4xl font-black uppercase">Analytics</h1>
-        <p className="font-mono text-sm surface-muted mt-1">Platform-wide statistics and trends</p>
+      <div>
+        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Analytics</h1>
+        <p className="font-mono text-base text-muted mt-1">Platform-wide statistics and trends</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className={`brutal-panel panel-surface p-6 border-2 ${kpi.cardClass}`}>
+            <div key={kpi.label} className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
               <div className="flex items-center gap-4">
-                <Icon className={`h-8 w-8 ${kpi.iconColor}`} />
+                <div className={`w-12 h-12 rounded-2xl ${kpi.iconBg} flex items-center justify-center`}>
+                  <Icon className={`w-6 h-6 ${kpi.iconColor}`} />
+                </div>
                 <div>
-                  <p className="font-mono text-xs font-bold uppercase tracking-widest surface-muted">{kpi.label}</p>
-                  <p className="font-heading text-3xl font-black text-primary">{kpi.value}</p>
+                  <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">{kpi.label}</p>
+                  <p className="font-semibold tracking-tight text-3xl text-ink">{kpi.value}</p>
                 </div>
               </div>
             </div>
@@ -63,46 +65,46 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        <Card>
-          <h3 className="font-heading text-xl font-black uppercase mb-6">Tickets by Status</h3>
+        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+          <h3 className="font-semibold tracking-tight text-xl text-ink mb-6">Tickets by Status</h3>
           <div className="space-y-4">
             {Object.entries(statusCounts).map(([status, count]) => {
               const pct = totalTickets > 0 ? Math.round((count / totalTickets) * 100) : 0;
               return (
                 <div key={status}>
-                  <div className="flex justify-between font-mono text-sm font-bold uppercase mb-2">
-                    <span className="surface-muted">{status}</span>
-                    <span className="font-bold">{count}</span>
+                  <div className="flex justify-between font-mono text-sm mb-2">
+                    <span className="text-ink/70">{status}</span>
+                    <span className="text-ink/40">{count} ({pct}%)</span>
                   </div>
-                  <div className="w-full h-4 bg-foreground/10 rounded overflow-hidden border-2 border-foreground/30">
-                    <div className="h-full bg-secondary transition-all duration-500 shadow-[0_0_6px_rgba(45,225,194,0.4)]" style={{ width: `${pct}%` }} />
+                  <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-green rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
               );
             })}
           </div>
-        </Card>
+        </div>
 
-        <Card>
-          <h3 className="font-heading text-xl font-black uppercase mb-6">Ticket List</h3>
+        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+          <h3 className="font-semibold tracking-tight text-xl text-ink mb-6">Ticket List</h3>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {tickets.map((ticket) => (
-              <div key={ticket.id} className="flex items-center justify-between border-2 border-primary/20 p-3 hover:border-primary hover:bg-primary/5 transition-colors rounded">
+              <div key={ticket.id} className="flex items-center justify-between p-3 rounded-xl border border-ink/5 hover:bg-ink/[0.02] transition-colors">
                 <div className="min-w-0 flex-1">
-                  <p className="font-bold uppercase text-sm truncate">{ticket.title}</p>
-                  <p className="font-mono text-xs surface-muted">{ticket.location}</p>
+                  <p className="font-medium text-sm text-ink truncate">{ticket.title}</p>
+                  <p className="font-mono text-xs text-muted">{ticket.location}</p>
                 </div>
-                <span className={`ml-2 shrink-0 rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 ${
-                  ticket.status === "Open" ? "border-amber-400 bg-amber-100 text-amber-800" :
-                  ticket.status === "Resolved" ? "border-emerald-400 bg-emerald-100 text-emerald-700" :
-                  "border-primary bg-primary/15 text-primary"
+                <span className={`ml-2 shrink-0 rounded-full px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest font-bold ${
+                  ticket.status === "Open" ? "bg-amber/10 text-amber" :
+                  ticket.status === "Resolved" ? "bg-green/10 text-green" :
+                  "bg-ink/[0.04] text-ink/60"
                 }`}>
                   {ticket.status}
                 </span>
               </div>
             ))}
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { laravelGet } from "@/utils/laravel-api";
 import { CitizenDashboardClient } from "./citizen-dashboard-client";
 import { ContributorProfile } from "@/components/dashboard/contributor-profile";
-import type { RecentAchievement, RankProgress } from "@likaslens/shared";
+import type { RecentAchievement, RankProgress, DashboardStats, ActivityFeedItem } from "@likaslens/shared";
 
 interface ImpactData {
   eco_credits: number;
@@ -25,11 +25,18 @@ export default async function DashboardPage() {
   const userGreeting = user?.email ? user.email.split('@')[0] : "Citizen";
 
   let impactData: ImpactData | null = null;
+  let statsData: DashboardStats | null = null;
+  let feedData: ActivityFeedItem[] = [];
 
-  try {
-    const impactRes = await laravelGet<{ success: boolean; data: ImpactData }>("/user/impact");
-    if (impactRes.success) impactData = impactRes.data;
-  } catch { /* defaults */ }
+  const results = await Promise.allSettled([
+    laravelGet<{ success: boolean; data: ImpactData }>("/user/impact"),
+    laravelGet<{ success: boolean; data: DashboardStats }>("/dashboard/stats"),
+    laravelGet<{ success: boolean; data: ActivityFeedItem[] }>("/dashboard/feed"),
+  ]);
+
+  if (results[0].status === "fulfilled" && results[0].value.success) impactData = results[0].value.data;
+  if (results[1].status === "fulfilled" && results[1].value.success) statsData = results[1].value.data;
+  if (results[2].status === "fulfilled" && results[2].value.success) feedData = results[2].value.data;
 
   return (
     <div className="flex h-dvh overflow-hidden bg-page">
@@ -39,8 +46,40 @@ export default async function DashboardPage() {
         <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
           <div className="max-w-4xl mx-auto space-y-8">
-            <ContributorProfile />
-            <CitizenDashboardClient impact={impactData} ghostModeActive={false} />
+            {user?.user_metadata?.role === "super_admin" || user?.user_metadata?.role === "analyst" || user?.user_metadata?.role === "lgu" || user?.user_metadata?.role === "partner" ? (
+              <div className="bg-panel border border-ink/10 rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto mt-12 shadow-sm">
+                <div className="w-16 h-16 bg-green/10 text-green rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-ink mb-3" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>
+                  Citizen Portal Access
+                </h2>
+                <p className="text-ink/60 mb-8 max-w-md mx-auto leading-relaxed">
+                  You are currently viewing the frontend application as an Administrator. This portal is designed for regular citizens to submit reports and view public data.
+                </p>
+                <a 
+                  href="http://localhost:3002" 
+                  className="inline-flex items-center gap-2 bg-green text-page px-6 py-3 rounded-xl font-semibold tracking-wide hover:opacity-90 transition-opacity"
+                >
+                  Go to Admin Portal
+                  <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              </div>
+            ) : (
+              <>
+                <ContributorProfile />
+                <CitizenDashboardClient
+                  impact={impactData}
+                  stats={statsData}
+                  feed={feedData}
+                  ghostModeActive={false}
+                />
+              </>
+            )}
           </div>
         </main>
       </div>

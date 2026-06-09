@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { Spinner } from "@/components/ui/spinner";
-import { AchievementCard, RankProgressCard } from "@likaslens/shared";
+import { AchievementCard, RankProgressCard, Dropdown } from "@likaslens/shared";
 import { fetchEcoCreditRate } from "@likaslens/shared";
 import type { Achievement, RankProgress, CurrencySetting, AchievementTier } from "@likaslens/shared";
 import { useTranslations } from "next-intl";
@@ -183,10 +183,27 @@ function ProfilePageContent() {
         <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-12">
-        <div className="flex items-center gap-4">
-          <h1 className="font-semibold tracking-tight text-3xl text-ink">Profile</h1>
+        {/* Sweeping Neon Curved Header for Profile */}
+        <div className="bg-green text-page rounded-b-[40px] md:rounded-[40px] pt-12 pb-16 px-8 relative overflow-hidden shadow-xl mt-4 md:mt-0 mb-4">
+          <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 rounded-full border-[40px] border-page/5" />
+          <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-64 h-64 rounded-full border-[30px] border-page/5" />
+          
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <span className="text-sm font-mono uppercase tracking-widest opacity-80 mb-2 block">Citizen Account</span>
+              <h1 className="text-[3rem] md:text-[4rem] leading-none font-bold tracking-tighter" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>
+                My Profile
+              </h1>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="text-right hidden md:block">
+                <span className="text-xs font-mono uppercase tracking-widest opacity-80 block mb-1">Impact Score</span>
+                <span className="text-2xl font-bold tracking-tight">{(rewardPoints ?? 0).toLocaleString()} pts</span>
+              </div>
+            </div>
+          </div>
         </div>
-
         <div className="flex border-b border-ink/10">
           {(["overview", "achievements"] as TabKey[]).map((tab) => (
             <button
@@ -217,63 +234,71 @@ function ProfilePageContent() {
 
         {activeTab === "overview" && (
           <>
-            <div className="grid md:grid-cols-3 gap-12">
-              <div className="space-y-6">
-                <div className="w-16 h-16 rounded-full bg-ink/[0.04] flex items-center justify-center">
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="bg-panel rounded-3xl p-8 border border-ink/5 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center space-y-6">
+                <div className="w-24 h-24 rounded-3xl bg-green/10 flex items-center justify-center border border-green/20 shadow-inner">
                   {avatarUrl ? (
-                    <img src={avatarUrl} alt="" className="w-16 h-16 rounded-full object-cover" />
+                    <img src={avatarUrl} alt="" className="w-24 h-24 rounded-3xl object-cover" />
                   ) : (
-                    <User className="w-8 h-8 text-ink/40" />
+                    <User className="w-10 h-10 text-green" />
                   )}
                 </div>
                 <div>
-                  <h2 className="font-semibold tracking-tight text-3xl text-ink">{displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")}</h2>
+                  <h2 className="font-semibold tracking-tight text-3xl text-ink mb-1">{displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")}</h2>
                   {userEmail && (
-                    <p className="font-mono text-sm text-ink/40 mt-1">{userEmail}</p>
+                    <p className="font-mono text-sm text-ink/50">{userEmail}</p>
                   )}
                   {userCreated && (
-                    <p className="font-mono text-xs text-ink/30 mt-2 flex items-center gap-1.5">
-                      <Calendar className="w-3 h-3" />
+                    <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 bg-ink/5 rounded-full font-mono text-xs text-ink/50">
+                      <Calendar className="w-3.5 h-3.5" />
                       Joined {userCreated}
-                    </p>
+                    </div>
                   )}
                 </div>
               </div>
 
-              <div className="md:col-span-2">
-                <div className="grid grid-cols-3 gap-8 border-b border-ink/10 pb-8 mb-8">
-                  <div>
-                    <span className="font-semibold tracking-tight text-3xl text-ink block">{profileStats.reports_filed}</span>
-                    <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Filed</span>
+              <div className="lg:col-span-2 space-y-8">
+                <div className="bg-panel rounded-3xl p-8 border border-ink/5 shadow-sm grid grid-cols-3 gap-6 text-center">
+                  <div className="space-y-1">
+                    <span className="font-semibold tracking-tight text-4xl text-ink block">{profileStats.reports_filed}</span>
+                    <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold">Filed</span>
                   </div>
-                  <div>
-                    <span className="font-semibold tracking-tight text-3xl text-green block">{profileStats.reports_verified}</span>
-                    <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Verified</span>
+                  <div className="space-y-1 border-x border-ink/5">
+                    <span className="font-semibold tracking-tight text-4xl text-green block">{profileStats.reports_verified}</span>
+                    <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold">Verified</span>
                   </div>
-                  <div>
-                    <span className="font-semibold tracking-tight text-3xl text-ink block">{achievements.filter(a => a.unlocked).length}</span>
-                    <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">{tp("achievementBadges")}</span>
+                  <div className="space-y-1">
+                    <span className="font-semibold tracking-tight text-4xl text-ink block">{achievements.filter(a => a.unlocked).length}</span>
+                    <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold">{tp("achievementBadges")}</span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-12">
-                  <div className="space-y-3">
-                    <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Eco-Credits</span>
-                    <span className="font-semibold tracking-tight text-4xl text-ink block">{(ecoCredits ?? 0).toLocaleString()}</span>
+                <div className="bg-panel rounded-3xl p-8 border border-ink/5 shadow-sm grid sm:grid-cols-2 gap-8">
+                  <div className="space-y-2 relative">
+                    <span className="font-mono text-xs text-ink/50 uppercase tracking-widest font-bold flex items-center gap-2">
+                       Eco-Credits Balance
+                    </span>
+                    <span className="font-semibold tracking-tight text-5xl text-ink block">{(ecoCredits ?? 0).toLocaleString()}</span>
                     {userRank && (
-                      <span className="font-mono text-xs text-ink/30 block">Rank #{userRank}</span>
+                      <span className="inline-flex px-3 py-1 bg-green/10 text-green rounded-full font-mono text-[10px] uppercase tracking-widest font-bold mt-2">Rank #{userRank}</span>
                     )}
                     {ecoCreditEquivalent && (
-                      <div className="pt-4">
-                        <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Eco Value</span>
+                      <div className="pt-6 mt-4 border-t border-ink/5">
+                        <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest font-bold block mb-1">Eco Value (Fiat)</span>
                         <span className="font-semibold tracking-tight text-2xl text-ink/80 block">{ecoCreditEquivalent}</span>
                       </div>
                     )}
                   </div>
+                  
                   {rewardPoints !== null && (
-                    <div className="space-y-3">
-                      <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Impact Score</span>
-                      <span className="font-semibold tracking-tight text-4xl text-ink block">{(rewardPoints ?? 0).toLocaleString()}</span>
+                    <div className="space-y-2 relative sm:border-l sm:border-ink/5 sm:pl-8">
+                      <span className="font-mono text-xs text-ink/50 uppercase tracking-widest font-bold flex items-center gap-2">
+                        Total Impact Score
+                      </span>
+                      <span className="font-semibold tracking-tight text-5xl text-ink block">{(rewardPoints ?? 0).toLocaleString()}</span>
+                      <p className="font-mono text-xs text-ink/40 mt-4 leading-relaxed max-w-[200px]">
+                        Earn impact score by submitting accurate reports and verifying data.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -392,16 +417,18 @@ function ProfilePageContent() {
                 </div>
               </div>
 
-              <select
+              <Dropdown
                 value={sort}
-                onChange={(e) => setSort(e.target.value as SortKey)}
-                className="font-mono text-xs uppercase tracking-wide bg-transparent text-ink/60 border-0 cursor-pointer appearance-none"
-              >
-                <option value="default">{t("sortDefault")}</option>
-                <option value="progress">{t("sortProgress")}</option>
-                <option value="recent">{t("sortRecentlyUnlocked")}</option>
-                <option value="tier">{t("sortTier")}</option>
-              </select>
+                onChange={(val) => setSort(val as SortKey)}
+                options={[
+                  { value: "default", label: t("sortDefault") },
+                  { value: "progress", label: t("sortProgress") },
+                  { value: "recent", label: t("sortRecentlyUnlocked") },
+                  { value: "tier", label: t("sortTier") },
+                ]}
+                size="sm"
+                className="w-40"
+              />
             </div>
 
             {filteredAchievements.length > 0 ? (

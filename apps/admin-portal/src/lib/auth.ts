@@ -46,4 +46,5 @@ export async function signIn(email: string, password: string) {
 export async function signOut() {
   const supabase = createClient();
   await supabase.auth.signOut();
+  document.cookie = "laravel_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 }

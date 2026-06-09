@@ -25,14 +25,5 @@ class DatabaseSeeder extends Seeder
             EcoCreditPoolSeeder::class,
         ]);
 
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'supabase_auth_user_id' => '11111111-1111-1111-1111-111111111111',
-                'name' => 'Test User',
-                'password' => bcrypt('password'),
-                'role' => 'citizen',
-            ]
-        );
     }
 }

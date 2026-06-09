@@ -6,6 +6,7 @@ use App\Models\Report;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 
 class DashboardController extends Controller
 {
@@ -14,6 +15,11 @@ class DashboardController extends Controller
         $totalTickets = Ticket::count();
         $resolvedTickets = Ticket::where('status', 'resolved')->count();
         $openTickets = Ticket::whereIn('status', ['open', 'investigating', 'monitoring'])->count();
+
+        $todayStart = Carbon::today();
+        $resolvedToday = Ticket::where('status', 'resolved')
+            ->where('resolved_at', '>=', $todayStart)
+            ->count();
 
         $avgResponseMinutes = Ticket::whereNotNull('resolved_at')
             ->selectRaw('COALESCE(AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)) / 60), 0) as avg_minutes')
@@ -27,7 +33,10 @@ class DashboardController extends Controller
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        $capacity = 200;
+        $capacity = max($totalTickets, 200);
+        $resolvedSlaTarget = max($totalTickets, 50);
+        $avgMinutes = round($avgResponseMinutes ?: 18);
+        $slaTarget = 30;
 
         return response()->json([
             'success' => true,
@@ -35,17 +44,17 @@ class DashboardController extends Controller
                 'active_incidents' => $openTickets,
                 'active_incidents_total' => $capacity,
                 'active_incidents_progress' => $capacity > 0 ? round(($openTickets / $capacity) * 100) : 0,
-                'active_incidents_trend' => '+12%',
+                'active_incidents_trend' => $openTickets > 0 ? '+1' : '0',
 
-                'resolved_today' => $resolvedTickets,
-                'resolved_today_total' => 50,
-                'resolved_today_progress' => 50 > 0 ? round(($resolvedTickets / 50) * 100) : 0,
-                'resolved_today_trend' => '+5%',
+                'resolved_today' => $resolvedToday,
+                'resolved_today_total' => $resolvedSlaTarget,
+                'resolved_today_progress' => $resolvedSlaTarget > 0 ? round(($resolvedToday / $resolvedSlaTarget) * 100) : 0,
+                'resolved_today_trend' => $resolvedToday > 0 ? '+'.$resolvedToday : '0',
 
-                'avg_response_minutes' => round($avgResponseMinutes ?: 18),
-                'avg_response_sla' => 30,
-                'avg_response_progress' => 30 > 0 ? round((($avgResponseMinutes ?: 18) / 30) * 100) : 0,
-                'avg_response_trend' => $avgResponseMinutes > 0 ? '-'.round($avgResponseMinutes - 18).'m' : '-2m',
+                'avg_response_minutes' => $avgMinutes,
+                'avg_response_sla' => $slaTarget,
+                'avg_response_progress' => $slaTarget > 0 ? min(100, round(($avgMinutes / $slaTarget) * 100)) : 0,
+                'avg_response_trend' => $avgResponseMinutes > 0 ? round($avgResponseMinutes).'m' : 'N/A',
 
                 'system_load' => $capacity > 0 ? round(($openTickets / $capacity) * 100) : 0,
                 'system_load_total' => 100,

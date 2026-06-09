@@ -70,9 +70,40 @@ export default function ReportsPage() {
         <AppHeader showBranding={false} />
         <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
           <BottomNav />
-          <div className="max-w-7xl mx-auto space-y-16">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ink/10 pb-5">
-              <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Analytics & Reports</h1>
+          <div className="max-w-5xl mx-auto pb-20 space-y-8">
+            {/* Sweeping Neon Curved Header */}
+            <div className="bg-green text-page rounded-b-[40px] md:rounded-[40px] pt-12 pb-24 px-8 relative overflow-hidden shadow-xl mt-4 md:mt-0">
+              <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 rounded-full border-[40px] border-page/5" />
+              <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-64 h-64 rounded-full border-[30px] border-page/5" />
+              
+              <div className="relative z-10 flex flex-col items-center text-center mt-4">
+                <span className="text-sm font-mono uppercase tracking-widest opacity-80 mb-2">Platform Analytics</span>
+                <h1 className="text-[4rem] md:text-[5rem] leading-none font-bold tracking-tighter" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>
+                  {totalIncidents.toLocaleString()}
+                </h1>
+                <div className="bg-page/10 backdrop-blur-sm border border-page/10 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest mt-4 flex items-center gap-2">
+                  <span className="text-page">Total Reports Tracked</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative z-20 -mt-16 px-4">
+              <div className="bg-panel rounded-3xl p-6 shadow-xl border border-ink/5 grid grid-cols-1 md:grid-cols-3 gap-8">
+                {[
+                  { title: "Resolution Rate", value: `${avgResolutionRate}%`, label: "overall avg" },
+                  { title: "Open Incidents", value: `${stats?.active_incidents ?? 0}`, label: "currently active" },
+                  { title: "Resolved Today", value: `${stats?.resolved_today ?? 0}`, label: "last 24h" },
+                ].map((metric, i) => (
+                  <div key={i} className="flex flex-col items-center text-center">
+                    <span className="font-semibold tracking-tight text-3xl text-ink mb-1">{metric.value}</span>
+                    <span className="font-mono text-xs text-ink/60 uppercase tracking-widest mb-1">{metric.title}</span>
+                    <span className="font-mono text-[10px] text-ink/40 uppercase">{metric.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-center pt-4">
               <button
                 onClick={() => {
                   const htmlContent = `
@@ -107,39 +138,36 @@ export default function ReportsPage() {
                   if (w) { w.document.write(htmlContent); w.document.close(); }
                   else { alert("Please disable pop-up blocker to generate PDF"); }
                 }}
-                className="flex items-center gap-2 px-5 py-2.5 text-sm text-ink/50 hover:text-ink border border-ink/10 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-panel rounded-full font-mono text-xs uppercase tracking-widest text-ink hover:text-green border border-ink/5 shadow-sm hover:shadow-md transition-all"
               >
-                <Download className="w-4 h-4" /> Export Data
+                <Download className="w-4 h-4" /> Export Report Data
               </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              <section className="space-y-6">
-                <h2 className="font-semibold tracking-tight text-2xl md:text-3xl text-ink flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-muted" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+              <section className="bg-panel rounded-3xl p-6 md:p-8 shadow-sm border border-ink/5">
+                <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2 mb-6">
+                  <BarChart3 className="w-5 h-5 text-ink/40" />
                   Incident Types
                 </h2>
                 <div className="space-y-5">
                   {typeStats.map((stat, i) => (
                     <div key={i}>
-                      <div className="flex justify-between font-mono text-base mb-2">
-                        <span className="text-ink/70">{stat.label}</span>
-                        <span className="text-ink/40">{stat.count} ({stat.percent}%)</span>
+                      <div className="flex justify-between font-mono text-sm mb-2">
+                        <span className="text-ink/70 truncate mr-4">{stat.label}</span>
+                        <span className="text-ink/40 shrink-0">{stat.count} ({stat.percent}%)</span>
                       </div>
-                      <div className="h-1.5 bg-ink/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-ink/30 to-ink/50 rounded-full transition-all duration-500" style={{ width: `${stat.percent}%` }} />
+                      <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-green rounded-full transition-all duration-500" style={{ width: `${stat.percent}%` }} />
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="font-mono text-sm text-ink/40 pt-3 border-t border-ink/10">
-                  Total Tracked: <span className="text-ink/70">{totalIncidents}</span> incidents
-                </div>
               </section>
 
-              <section className="space-y-6">
-                <h2 className="font-semibold tracking-tight text-2xl md:text-3xl text-ink flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-muted" />
+              <section className="bg-panel rounded-3xl p-6 md:p-8 shadow-sm border border-ink/5">
+                <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2 mb-6">
+                  <TrendingUp className="w-5 h-5 text-ink/40" />
                   Status Breakdown
                 </h2>
                 <div className="space-y-5">
@@ -151,47 +179,19 @@ export default function ReportsPage() {
                       const pct = Math.round((count / maxCount) * 100);
                       return (
                         <div key={status}>
-                          <div className="flex justify-between font-mono text-base mb-2">
+                          <div className="flex justify-between font-mono text-sm mb-2">
                             <span className="text-ink/70">{status}</span>
                             <span className="text-ink/40">{count}</span>
                           </div>
-                          <div className="h-1.5 bg-ink/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-ink/30 to-ink/50 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                          <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
+                            <div className="h-full bg-green rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
                           </div>
                         </div>
                       );
                     });
                   })()}
                 </div>
-                <div className="font-mono text-sm text-ink/40 pt-3 border-t border-ink/10">
-                  Resolution Rate: <span className="text-ink/70">{avgResolutionRate}%</span>
-                </div>
               </section>
-            </div>
-
-            <section className="border-t border-ink/10 pt-10 space-y-4">
-              <h2 className="font-semibold tracking-tight text-2xl md:text-3xl text-ink">Summary</h2>
-              <p className="font-mono text-base md:text-lg text-ink/60 leading-relaxed max-w-3xl">
-                Total of <span className="text-ink">{totalIncidents} incidents</span> tracked, with <span className="text-ink">{stats?.resolved_today ?? 0} resolved</span> today. Resolution rate at <span className="text-ink">{avgResolutionRate}%</span>. {ghostModeUsage} reports ({Math.round((ghostModeUsage/Math.max(totalIncidents,1))*100)}%) submitted anonymously via Ghost Mode.
-              </p>
-            </section>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              {[
-                { title: "Total Tickets", value: `${stats?.total_tickets ?? totalIncidents}`, unit: "All Time", progress: 100, label: "platform total" },
-                { title: "Resolution Rate", value: `${avgResolutionRate}%`, unit: "Overall", progress: avgResolutionRate, label: "resolved vs total" },
-                { title: "Open Incidents", value: `${stats?.active_incidents ?? 0}`, unit: "Active", progress: stats?.active_incidents_total ? Math.min(Math.round((stats.active_incidents / stats.active_incidents_total) * 100), 100) : 0, label: "currently active" },
-              ].map((metric, i) => (
-                <div key={i} className="space-y-4">
-                  <span className="font-mono text-sm text-ink/40 uppercase tracking-wider block">{metric.unit}</span>
-                  <span className="font-semibold tracking-tight text-4xl md:text-5xl text-ink block">{metric.value}</span>
-                  <span className="font-mono text-base text-ink/60 block">{metric.title}</span>
-                  <div className="h-1.5 bg-ink/10 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-ink/30 to-ink/50 rounded-full transition-all" style={{ width: `${Math.min(metric.progress, 100)}%` }} />
-                  </div>
-                  <span className="font-mono text-sm text-ink/30">{metric.label}</span>
-                </div>
-              ))}
             </div>
           </div>
         </main>

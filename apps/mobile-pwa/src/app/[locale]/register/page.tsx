@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Leaf, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { setLaravelAuthToken } from "@likaslens/shared";
+import { setLaravelAuthToken, laravelPost } from "@likaslens/shared";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,9 +37,23 @@ export default function RegisterPage() {
       return;
     }
 
-    // Wire Supabase session token to shared API client (if session exists immediately)
-    if (data.session?.access_token) {
-      setLaravelAuthToken(data.session.access_token);
+    // Sync with Laravel to get Sanctum token
+    try {
+      const laravelData = await laravelPost<any>("/auth/sync", {
+        supabase_auth_user_id: data.user?.id,
+        email: data.user?.email,
+        name: name || data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0],
+      });
+      
+      if (laravelData?.data?.token) {
+        const token = laravelData.data.token;
+        setLaravelAuthToken(token);
+        document.cookie = `laravel_token=${token}; path=/; max-age=2592000`; // 30 days
+      } else {
+        console.error("No token returned from backend:", laravelData);
+      }
+    } catch (syncErr) {
+      console.error("Failed to sync with backend", syncErr);
     }
 
     router.push(`/${locale}/dashboard`);

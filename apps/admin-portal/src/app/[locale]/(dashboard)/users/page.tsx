@@ -10,7 +10,7 @@ import {
   ChevronRight,
   Users as UsersIcon,
 } from "lucide-react";
-import { laravelGet, laravelPut, laravelDelete, Spinner, showToast, Button } from "@likaslens/shared";
+import { laravelGet, laravelPut, laravelDelete, Spinner, showToast, Button, Dropdown } from "@likaslens/shared";
 
 type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
@@ -66,25 +66,19 @@ export default function UsersPage() {
       }
     } catch (err) {
       console.error("Laravel fetch error:", err);
-      setError(err instanceof Error ? err.message : "Failed to load users from backend engine");
+      setError(err instanceof Error ? err.message : "Failed to load users");
       setUsers([]);
     } finally {
       setLoading(false);
     }
   }, [page, search, roleFilter]);
 
-  // Handle data reload triggers
-  useEffect(() => { 
-    fetchUsers(); 
-  }, [fetchUsers]);
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
   async function handleRoleChange(userId: string, newRole: string) {
     try {
       await laravelPut(`/admin/users/${userId}/role`, { role: newRole });
-
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: newRole as Role } : u))
-      );
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole as Role } : u)));
       showToast(`Role updated to ${newRole}`, "success");
     } catch (err) {
       console.error("Failed to update role:", err);
@@ -96,170 +90,149 @@ export default function UsersPage() {
     if (!confirm("Deactivate this user account?")) return;
     try {
       await laravelDelete(`/admin/users/${userId}`);
-
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === userId ? { ...u, deleted_at: new Date().toISOString() } : u
-        )
-      );
+      setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, deleted_at: new Date().toISOString() } : u));
       showToast("User account deactivated", "success");
     } catch (err) {
-      console.error("Failed to deactivate user row instance:", err);
+      console.error("Failed to deactivate user:", err);
       showToast("Failed to deactivate user account", "error");
     }
   }
 
   const roleBadge = (role: Role) => {
-    if (role === "super_admin") return <ShieldAlert className="h-5 w-5 text-accent" />;
-    if (role === "analyst") return <Shield className="h-5 w-5 text-secondary" />;
-    return (
-      <span className="rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 border-primary bg-primary/10 text-primary">
-        {role}
-      </span>
-    );
+    if (role === "super_admin") return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-red/10 text-red"><ShieldAlert className="w-3 h-3" /> Admin</span>;
+    if (role === "analyst") return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-green/10 text-green"><Shield className="w-3 h-3" /> Analyst</span>;
+    return <span className="px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-ink/[0.04] text-ink/60">{role}</span>;
   };
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="border-b-4 border-primary pb-4">
-        <h1 className="font-heading text-4xl font-black uppercase">Users</h1>
-        <p className="font-mono text-sm surface-muted mt-1">
+      <div>
+        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Users</h1>
+        <p className="font-mono text-base text-muted mt-1">
           {total > 0 ? `${total} total accounts` : "Manage user accounts and roles"}
         </p>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 surface-muted" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30" />
           <input
             type="text"
-            placeholder="Search by name or email…"
+            placeholder="Search by name or email..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-            className="w-full pl-9 pr-4 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
+            className="w-full pl-9 pr-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
           />
         </div>
-        <select
+        <Dropdown
           value={roleFilter}
-          onChange={(e) => { setRoleFilter(e.target.value as Role | ""); setPage(0); }}
-          className="brutal-panel theme-input rounded px-3 py-2 font-mono text-sm shadow-[2px_2px_0px_#1b4332]"
-        >
-          <option value="">All roles</option>
-          {ROLE_ORDER.map((r) => <option key={r} value={r}>{r}</option>)}
-        </select>
+          onChange={(val) => { setRoleFilter(val as Role | ""); setPage(0); }}
+          options={[
+            { value: "", label: "All roles" },
+            ...ROLE_ORDER.map((r) => ({ value: r, label: r.charAt(0).toUpperCase() + r.slice(1) })),
+          ]}
+          size="md"
+          className="min-w-[160px]"
+        />
       </div>
 
-      {/* Error state */}
       {error && (
-        <div className="rounded border-2 border-accent bg-accent/10 p-4 font-mono text-sm">
-          <span className="font-bold text-accent uppercase">Error: </span>
-          {error}
+        <div className="rounded-xl border border-red/20 bg-red/5 p-4 font-mono text-sm">
+          <span className="font-bold text-red">Error: </span>
+          <span className="text-ink/70">{error}</span>
         </div>
       )}
 
-      {/* Loading */}
       {loading && (
-        <div className="flex justify-center py-12">
-          <Spinner size="lg" />
-        </div>
+        <div className="flex justify-center py-12"><Spinner size="lg" /></div>
       )}
 
-      {/* Empty state */}
       {!loading && !error && users.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <UsersIcon className="w-16 h-16 surface-muted mb-4" />
-          <p className="font-heading text-xl font-black uppercase surface-muted">No users found</p>
-          <p className="font-mono text-sm surface-muted mt-1">
+          <UsersIcon className="w-16 h-16 text-ink/20 mb-4" />
+          <p className="font-semibold text-lg text-ink">No users found</p>
+          <p className="font-mono text-sm text-muted mt-1">
             {search || roleFilter ? "Try adjusting your search or filters." : "No accounts have been created yet."}
           </p>
         </div>
       )}
 
-      {/* Data table */}
       {!loading && !error && users.length > 0 && (
         <>
-          <div className="brutal-panel panel-surface overflow-hidden">
-            {/* Column headers */}
-            <div
-              className="grid grid-cols-12 gap-2 font-mono font-bold text-xs sm:text-sm uppercase p-4 border-b-2 bg-primary text-white"
-            >
-              <div className="col-span-4 sm:col-span-3">Name</div>
-              <div className="hidden sm:block sm:col-span-3">Email</div>
-              <div className="col-span-3 sm:col-span-2">Role</div>
-              <div className="hidden sm:block sm:col-span-2">Trust</div>
-              <div className="col-span-3 sm:col-span-2 text-right">Actions</div>
+          <div className="bg-panel rounded-3xl shadow-sm border border-ink/5 overflow-hidden">
+            <div className="hidden sm:grid grid-cols-12 gap-2 font-mono text-xs text-ink/40 uppercase tracking-wider p-4 border-b border-ink/5">
+              <div className="col-span-3">Name</div>
+              <div className="col-span-3">Email</div>
+              <div className="col-span-2">Role</div>
+              <div className="col-span-2">Trust</div>
+              <div className="col-span-2 text-right">Actions</div>
             </div>
 
-            {/* Rows */}
             {users.map((user) => (
               <div
                 key={user.id}
-                className={`grid grid-cols-12 gap-2 items-center border-t-2 p-4 font-medium hover:bg-primary/10 transition-colors ${
-                  user.deleted_at ? "opacity-50" : "border-primary/20"
+                className={`grid grid-cols-12 gap-2 items-center p-4 border-b border-ink/5 last:border-0 hover:bg-ink/[0.02] transition-colors ${
+                  user.deleted_at ? "opacity-50" : ""
                 }`}
               >
                 <div className="col-span-4 sm:col-span-3 truncate">
-                  <span className="font-bold uppercase">{user.name || "Anonymous"}</span>
+                  <span className="font-medium text-sm text-ink">{user.name || "Anonymous"}</span>
                 </div>
-                <div className="hidden sm:block sm:col-span-3 truncate font-mono text-sm surface-muted">
+                <div className="hidden sm:block sm:col-span-3 truncate font-mono text-sm text-ink/50">
                   {user.email}
                 </div>
                 <div className="col-span-3 sm:col-span-2 flex items-center gap-2">
                   {roleBadge(user.role)}
                 </div>
                 <div className="hidden sm:block sm:col-span-2 font-mono text-sm">
-                  <span className={`font-bold ${user.trust_score >= 70 ? "text-secondary" : user.trust_score >= 40 ? "text-accent" : "surface-muted"}`}>
+                  <span className={`font-medium ${user.trust_score >= 70 ? "text-green" : user.trust_score >= 40 ? "text-ink" : "text-ink/40"}`}>
                     {user.trust_score}
                   </span>
                 </div>
                 <div className="col-span-3 sm:col-span-2 flex items-center justify-end gap-1">
-                  <select
+                  <Dropdown
                     value={user.role}
-                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                    onChange={(val) => handleRoleChange(user.id, val as string)}
+                    options={ROLE_ORDER.map((r) => ({
+                      value: r,
+                      label: r.charAt(0).toUpperCase() + r.slice(1),
+                    }))}
                     disabled={!!user.deleted_at}
-                    className="brutal-panel theme-input rounded px-2 py-1 text-xs font-mono shadow-[1px_1px_0px_#1b4332] max-w-[90px]"
-                  >
-                    {ROLE_ORDER.map((r) => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                  <Button
-                    variant="danger"
                     size="sm"
+                    className="w-32"
+                  />
+                  <button
                     onClick={() => handleDelete(user.id)}
                     disabled={!!user.deleted_at}
+                    className="p-1.5 text-ink/40 hover:text-red hover:bg-red/5 rounded-lg transition-colors disabled:opacity-30"
                     title="Deactivate user"
-                    className="shadow-[2px_2px_0px_#991b1b]"
                   >
                     <Trash2 className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between gap-4">
-              <p className="font-mono text-sm surface-muted">
+              <p className="font-mono text-sm text-muted">
                 Page {page + 1} of {totalPages}
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
                   disabled={page === 0}
-                  className="flex items-center gap-1 px-3 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[1px_1px_0px_#1b4332] disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
                 >
-                  <ChevronLeft className="w-4 h-4" />
-                  Prev
+                  <ChevronLeft className="w-4 h-4" /> Prev
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                   disabled={page >= totalPages - 1}
-                  className="flex items-center gap-1 px-3 py-2 brutal-panel theme-input rounded font-mono text-sm shadow-[1px_1px_0px_#1b4332] disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
                 >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
+                  Next <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>

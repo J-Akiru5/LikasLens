@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { getAdminNgos, createAdminNgo, updateAdminNgo, deleteAdminNgo } from "@likaslens/shared";
 import type { NgoGroup } from "@likaslens/shared";
-import { Card, Button, Spinner, showToast } from "@likaslens/shared";
+import { Spinner, showToast } from "@likaslens/shared";
 import { Building2, Plus } from "lucide-react";
 
 export default function NgosPage() {
@@ -79,8 +79,7 @@ export default function NgosPage() {
       await deleteAdminNgo(id);
       showToast("NGO deleted successfully", "success");
       loadNgos();
-    }
-    catch (err) {
+    } catch (err) {
       console.error("Failed to delete NGO:", err);
       showToast("Failed to delete NGO", "error");
     }
@@ -88,104 +87,107 @@ export default function NgosPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b-4 border-primary pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="font-heading text-4xl font-black uppercase">NGOs</h1>
-          <p className="font-mono text-sm surface-muted mt-1">Manage partner organizations</p>
+          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">NGOs</h1>
+          <p className="font-mono text-base text-muted mt-1">Manage partner organizations</p>
         </div>
-        <Button variant="brutal" onClick={() => { setShowForm(true); setEditId(null); setError(null); setForm({ name: "", region: "", contact_email: "", contact_phone: "" }); }}>
-          <Plus className="mr-1 h-4 w-4" /> Add NGO
-        </Button>
+        <button
+          onClick={() => { setShowForm(true); setEditId(null); setError(null); setForm({ name: "", region: "", contact_email: "", contact_phone: "" }); }}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink text-page rounded-xl font-mono text-xs uppercase tracking-widest font-bold hover:bg-ink/90 transition-colors"
+        >
+          <Plus className="w-4 h-4" /> Add NGO
+        </button>
       </div>
 
       {error && !showForm && (
-        <div className="rounded border-2 border-accent bg-accent/10 p-4 font-mono text-sm">
-          <span className="font-bold text-accent uppercase">Error: </span>
-          {error}
+        <div className="rounded-xl border border-red/20 bg-red/5 p-4 font-mono text-sm">
+          <span className="font-bold text-red">Error: </span>
+          <span className="text-ink/70">{error}</span>
         </div>
       )}
 
       {showForm && (
-        <Card variant="brutal">
+        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="rounded border-2 border-accent bg-accent/10 p-3 font-mono text-sm text-accent font-bold uppercase">
+              <div className="rounded-xl border border-red/20 bg-red/5 p-3 font-mono text-sm text-red">
                 {error}
               </div>
             )}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block font-mono text-sm font-bold uppercase mb-2">Name *</label>
+                <label className="block font-mono text-xs text-ink/50 uppercase tracking-widest mb-2">Name *</label>
                 <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full brutal-panel theme-input px-3 py-2 font-mono text-sm rounded" />
+                  className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
               </div>
               <div>
-                <label className="block font-mono text-sm font-bold uppercase mb-2">Region *</label>
+                <label className="block font-mono text-xs text-ink/50 uppercase tracking-widest mb-2">Region *</label>
                 <input required value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })}
-                  className="w-full brutal-panel theme-input px-3 py-2 font-mono text-sm rounded" />
+                  className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
               </div>
               <div>
-                <label className="block font-mono text-sm font-bold uppercase mb-2">Email</label>
+                <label className="block font-mono text-xs text-ink/50 uppercase tracking-widest mb-2">Email</label>
                 <input type="email" value={form.contact_email} onChange={(e) => setForm({ ...form, contact_email: e.target.value })}
-                  className="w-full brutal-panel theme-input px-3 py-2 font-mono text-sm rounded" />
+                  className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
               </div>
               <div>
-                <label className="block font-mono text-sm font-bold uppercase mb-2">Phone</label>
+                <label className="block font-mono text-xs text-ink/50 uppercase tracking-widest mb-2">Phone</label>
                 <input value={form.contact_phone} onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
-                  className="w-full brutal-panel theme-input px-3 py-2 font-mono text-sm rounded" />
+                  className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="brutal" type="submit" disabled={saving}>
+              <button type="submit" disabled={saving}
+                className="px-5 py-2.5 bg-ink text-page rounded-xl font-mono text-xs uppercase tracking-widest font-bold hover:bg-ink/90 transition-colors disabled:opacity-50">
                 {saving ? (editId ? "Updating..." : "Creating...") : (editId ? "Update" : "Create")}
-              </Button>
-              <Button variant="secondary" type="button" disabled={saving} onClick={() => { setShowForm(false); setError(null); }}>
+              </button>
+              <button type="button" disabled={saving} onClick={() => { setShowForm(false); setError(null); }}
+                className="px-5 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-xs uppercase tracking-widest text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-50">
                 Cancel
-              </Button>
+              </button>
             </div>
           </form>
-        </Card>
+        </div>
       )}
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <Spinner size="lg" />
-        </div>
+        <div className="flex justify-center py-12"><Spinner size="lg" /></div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {ngos.length === 0 ? (
             <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
-              <Building2 className="w-16 h-16 surface-muted mb-4" />
-              <p className="font-heading text-xl font-black uppercase surface-muted">No NGOs found</p>
-              <p className="font-mono text-sm surface-muted mt-1">Add a partner organization to get started.</p>
+              <Building2 className="w-16 h-16 text-ink/20 mb-4" />
+              <p className="font-semibold text-lg text-ink">No NGOs found</p>
+              <p className="font-mono text-sm text-muted mt-1">Add a partner organization to get started.</p>
             </div>
           ) : (
             ngos.map((ngo) => (
-            <div key={ngo.id} className="brutal-panel panel-surface p-6 border-2 border-primary/20 hover:border-primary transition-colors">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded border-2 border-primary flex items-center justify-center bg-background shrink-0">
-                    <Building2 className="w-5 h-5 text-primary" />
+              <div key={ngo.id} className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02]">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center">
+                      <Building2 className="w-5 h-5 text-ink/40" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-sm text-ink">{ngo.name}</h3>
+                      <p className="font-mono text-xs text-muted">{ngo.region}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold uppercase">{ngo.name}</h3>
-                    <p className="font-mono text-xs surface-muted">{ngo.region}</p>
-                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${
+                    ngo.is_active ? "bg-green/10 text-green" : "bg-ink/[0.04] text-ink/40"
+                  }`}>
+                    {ngo.is_active ? "Active" : "Inactive"}
+                  </span>
                 </div>
-                <span className={`rounded px-2 py-1 text-xs font-bold uppercase font-mono tracking-widest border-2 ${
-                  ngo.is_active ? "border-emerald-400 bg-emerald-100 text-emerald-700" : "border-primary/30 bg-foreground/10 text-foreground/60"
-                }`}>
-                  {ngo.is_active ? "Active" : "Inactive"}
-                </span>
+                {ngo.contact_email && <p className="mt-2 font-mono text-xs text-muted">{ngo.contact_email}</p>}
+                <div className="mt-4 flex gap-2">
+                  <button onClick={() => handleEdit(ngo)}
+                    className="px-3 py-1.5 text-xs font-mono text-ink/60 hover:text-ink border border-ink/10 rounded-lg hover:bg-ink/[0.02] transition-colors">Edit</button>
+                  <button onClick={() => handleDelete(ngo.id)}
+                    className="px-3 py-1.5 text-xs font-mono text-red/60 hover:text-red border border-red/10 rounded-lg hover:bg-red/5 transition-colors">Delete</button>
+                </div>
               </div>
-              {ngo.contact_email && <p className="mt-2 font-mono text-xs surface-muted">{ngo.contact_email}</p>}
-              <div className="mt-4 flex gap-2">
-                <button onClick={() => handleEdit(ngo)}
-                  className="px-3 py-1.5 text-xs font-bold uppercase font-mono tracking-widest border-2 border-primary text-primary hover:bg-primary/10 rounded transition-colors">Edit</button>
-                <button onClick={() => handleDelete(ngo.id)}
-                  className="px-3 py-1.5 text-xs font-bold uppercase font-mono tracking-widest border-2 border-accent/50 text-accent hover:bg-accent/10 rounded transition-colors">Delete</button>
-              </div>
-            </div>
             ))
           )}
         </div>

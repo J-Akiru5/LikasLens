@@ -24,7 +24,7 @@ import {
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { locales, localeNames, defaultLocale, showToast, ToastContainer } from "@likaslens/shared";
+import { locales, localeNames, defaultLocale, showToast, ToastContainer, Dropdown } from "@likaslens/shared";
 import { createClient } from "@/utils/supabase/client";
 import { deleteAccount } from "@/app/[locale]/actions/account";
 
@@ -490,18 +490,16 @@ function PlatformSection() {
       <div className="space-y-5">
         <div>
           <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">{t("language")}</label>
-          <select
+          <Dropdown
             value={currentLocale}
-            onChange={(e) => handleLocaleChange(e.target.value)}
+            onChange={(val) => handleLocaleChange(val as string)}
+            options={locales.map((loc) => ({
+              value: loc,
+              label: `${localeNames[loc].native} (${localeNames[loc].english})`,
+            }))}
             disabled={isPending}
-            className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink focus:outline-none focus:border-ink/30 disabled:opacity-50"
-          >
-            {locales.map((loc) => (
-              <option key={loc} value={loc}>
-                {localeNames[loc].native} ({localeNames[loc].english})
-              </option>
-            ))}
-          </select>
+            size="md"
+          />
         </div>
         <div>
           <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">{t("theme")}</label>

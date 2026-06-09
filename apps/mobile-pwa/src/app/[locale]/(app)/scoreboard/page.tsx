@@ -60,64 +60,74 @@ export default function ScoreboardPage() {
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-6">
-        <h1
-          className="text-2xl font-bold text-ink"
-          style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}
-        >
-          Public Records
-        </h1>
-        <p className="text-sm text-ink/50 mt-1 font-mono">
-          Top environmental reporters
-        </p>
+    <div className="min-h-full pb-20 bg-page">
+      {/* Sweeping Neon Curved Header */}
+      <div className="bg-green text-page rounded-b-[40px] pt-10 pb-16 px-6 relative overflow-hidden shadow-lg mb-8">
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 w-64 h-64 rounded-full border-[30px] border-page/5" />
+        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-40 h-40 rounded-full border-[20px] border-page/5" />
+        
+        <div className="relative z-10 text-center mt-2">
+          <h1
+            className="text-[2.5rem] leading-tight font-bold tracking-tighter"
+            style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}
+          >
+            Leaderboard
+          </h1>
+          <p className="text-xs font-mono uppercase tracking-widest opacity-80 mt-2">
+            Top environmental reporters
+          </p>
+        </div>
       </div>
 
-      <div className="space-y-3">
-        {entries.map((entry) => (
-          <div
-            key={entry.rank}
-            className={cn(
-              "p-4 rounded-2xl border transition-all",
-              getRankBg(entry.rank)
-            )}
-          >
-            <div className="flex items-center gap-4">
-              <div
-                className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg",
-                  getRankStyle(entry.rank)
-                )}
-                style={{ fontFamily: "var(--font-data), monospace" }}
-              >
-                {entry.rank <= 3 ? (
-                  <Trophy className="w-5 h-5" />
-                ) : (
-                  `#${entry.rank}`
-                )}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-ink text-sm truncate">
-                  {entry.name}
-                </p>
-                <p className="text-[10px] font-mono text-ink/40 uppercase">
-                  {entry.eco_credits} eco-credits
-                </p>
-              </div>
-
-              <div className="text-right">
-                <p
-                  className="text-lg font-bold text-ink"
+      <div className="px-6 space-y-4">
+        {entries.map((entry, index) => {
+          const rank = index + 1;
+          const score = entry.reward_points_balance || 0;
+          return (
+            <div
+              key={entry.id || rank}
+              className={cn(
+                "p-4 rounded-2xl border transition-all",
+                getRankBg(rank)
+              )}
+            >
+              <div className="flex items-center gap-4">
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg",
+                    getRankStyle(rank)
+                  )}
                   style={{ fontFamily: "var(--font-data), monospace" }}
                 >
-                  {entry.score.toLocaleString()}
-                </p>
-                <p className="text-[10px] font-mono text-ink/40">XP</p>
+                  {rank <= 3 ? (
+                    <Trophy className="w-5 h-5" />
+                  ) : (
+                    `#${rank}`
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-ink text-sm truncate">
+                    {entry.name || "Citizen"}
+                  </p>
+                  <p className="text-[10px] font-mono text-ink/40 uppercase">
+                    {score} eco-credits
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p
+                    className="text-lg font-bold text-ink"
+                    style={{ fontFamily: "var(--font-data), monospace" }}
+                  >
+                    {score.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] font-mono text-ink/40">XP</p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

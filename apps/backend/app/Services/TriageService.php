@@ -14,7 +14,7 @@ class TriageService
 
     public function __construct()
     {
-        $this->aiServiceUrl = rtrim(env('AI_SERVICE_URL', 'http://127.0.0.1:8001'), '/');
+        $this->aiServiceUrl = rtrim(config('services.ai.url', 'http://127.0.0.1:8001'), '/');
     }
 
     public function analyze(string $base64Image, Ticket $ticket): array

@@ -25,18 +25,41 @@ import {
   FileText,
 } from "lucide-react";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["analyst", "super_admin"] },
-  { href: "/analytics", label: "Analytics", icon: BarChart3, roles: ["analyst", "super_admin"] },
-  { href: "/tickets", label: "Tickets", icon: Ticket, roles: ["analyst", "super_admin"] },
-  { href: "/ngos", label: "NGOs", icon: Building2, roles: ["analyst", "super_admin"] },
-  { href: "/laws", label: "Laws", icon: Scale, roles: ["analyst", "super_admin"] },
-  { href: "/users", label: "Users", icon: Users, roles: ["super_admin"] },
-  { href: "/rewards", label: "Rewards", icon: Gift, roles: ["super_admin"] },
-  { href: "/inquiries", label: "Inquiries", icon: MessageSquare, roles: ["super_admin"] },
-  { href: "/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["super_admin"] },
-  { href: "/changelog", label: "Changelog", icon: FileText, roles: ["analyst", "super_admin"] },
-  { href: "/settings", label: "Settings", icon: Settings, roles: ["super_admin"] },
+type NavItem = { href: string; label: string; icon: any; roles: string[] };
+type NavGroup = { section: string; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  {
+    section: "Overview",
+    items: [
+      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["analyst", "super_admin", "lgu", "partner"] },
+      { href: "/analytics", label: "Analytics", icon: BarChart3, roles: ["analyst", "super_admin", "lgu"] },
+    ],
+  },
+  {
+    section: "Operations",
+    items: [
+      { href: "/tickets", label: "Tickets", icon: Ticket, roles: ["analyst", "super_admin", "lgu"] },
+      { href: "/ngos", label: "NGOs", icon: Building2, roles: ["analyst", "super_admin"] },
+      { href: "/laws", label: "Laws", icon: Scale, roles: ["analyst", "super_admin"] },
+    ],
+  },
+  {
+    section: "Community",
+    items: [
+      { href: "/users", label: "Users", icon: Users, roles: ["super_admin"] },
+      { href: "/rewards", label: "Rewards", icon: Gift, roles: ["super_admin", "partner"] },
+      { href: "/inquiries", label: "Inquiries", icon: MessageSquare, roles: ["super_admin"] },
+    ],
+  },
+  {
+    section: "System",
+    items: [
+      { href: "/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["super_admin"] },
+      { href: "/changelog", label: "Changelog", icon: FileText, roles: ["analyst", "super_admin"] },
+      { href: "/settings", label: "Settings", icon: Settings, roles: ["super_admin", "lgu", "partner"] },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -76,7 +99,12 @@ export function Sidebar() {
     router.push("/login");
   }
 
-  const visibleItems = navItems.filter((item) => item.roles.includes(role));
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.roles.includes(role)),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const toggleGhostMode = () => {
     const newTheme = isGhostMode ? "civic" : "ghost";
@@ -87,69 +115,74 @@ export function Sidebar() {
 
   const sidebarContent = (
     <>
-      <div className="p-6 border-b-4 border-primary flex items-center gap-2 text-primary">
-        <Leaf className="w-8 h-8" />
-        <span className="font-heading font-black text-2xl uppercase tracking-tighter">
+      <div className="p-6 border-b border-ink/10 flex items-center gap-2 text-ink">
+        <Leaf className="w-6 h-6 text-green" />
+        <span className="font-semibold tracking-tight text-xl">
           LikasLens
         </span>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
-        {visibleItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={closeMobile}
-              aria-current={isActive ? "page" : undefined}
-              className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
-                isActive
-                  ? "bg-primary !text-white shadow-[4px_4px_0px_var(--ink)]"
-                  : "text-primary border-2 border-transparent hover:border-primary hover:bg-primary/5"
-              }`}
-            >
-              <Icon className={`w-5 h-5 shrink-0 ${isActive ? "!text-white" : "text-primary"}`} />
-              {!collapsed && <span>{item.label}</span>}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+        {visibleGroups.map((group) => (
+          <div key={group.section} className="space-y-1">
+            {!collapsed && (
+              <h4 className="px-4 text-[10px] font-mono font-bold text-ink/40 uppercase tracking-widest mb-2">
+                {group.section}
+              </h4>
+            )}
+            {group.items.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={closeMobile}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`flex items-center gap-3 px-4 py-2.5 text-sm rounded-xl transition-all ${
+                    isActive
+                      ? "bg-ink text-page shadow-sm font-medium"
+                      : "text-ink/60 hover:bg-ink/[0.03] hover:text-ink"
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-page" : "text-ink/40"}`} />
+                  {!collapsed && <span>{item.label}</span>}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
-      <div className="px-4 py-2">
+      <div className="px-3 py-2">
         <button
           onClick={toggleGhostMode}
-          className={`flex items-center justify-between w-full px-4 py-3 rounded transition-all ${
+          className={`flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-sm transition-all ${
             isGhostMode
-              ? "bg-secondary/10 border-2 border-secondary/30"
-              : "border-2 border-primary/20 hover:border-primary"
+              ? "bg-green/10 text-green"
+              : "text-ink/50 hover:bg-ink/[0.03]"
           }`}
         >
           <div className="flex items-center gap-2">
-            <Fingerprint className={`w-4 h-4 ${isGhostMode ? "text-secondary" : "text-primary/40"}`} />
-            {!collapsed && (
-              <span className={`font-mono text-xs uppercase tracking-wider ${isGhostMode ? "text-secondary" : "text-primary/50"}`}>
-                Ghost Mode
-              </span>
-            )}
+            <Fingerprint className="w-4 h-4" />
+            {!collapsed && <span className="font-mono text-xs">Ghost Mode</span>}
           </div>
-          <div className={`w-8 h-4 rounded-full border-2 flex items-center transition-colors ${
-            isGhostMode ? "bg-secondary/20 border-secondary" : "bg-primary/10 border-primary/20"
+          <div className={`w-8 h-4 rounded-full flex items-center transition-colors ${
+            isGhostMode ? "bg-green" : "bg-ink/10"
           }`}>
-            <div className={`w-3 h-3 rounded-full transition-all ${
-              isGhostMode ? "ml-auto mr-0.5 bg-secondary" : "ml-0.5 mr-auto bg-primary/40"
+            <div className={`w-3 h-3 rounded-full bg-white transition-all ${
+              isGhostMode ? "ml-auto mr-0.5" : "ml-0.5 mr-auto"
             }`} />
           </div>
         </button>
       </div>
 
-      <div className="p-6 border-t-4 border-primary">
+      <div className="p-3 border-t border-ink/10">
         <button
           onClick={handleSignOut}
-          className="flex w-full items-center gap-3 px-4 py-3 font-bold uppercase rounded surface-muted border-2 border-primary/20 hover:border-primary transition-colors"
+          className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-ink/50 hover:text-ink hover:bg-ink/[0.03] rounded-xl transition-colors"
         >
-          <LogOut className="w-5 h-5 shrink-0" />
+          <LogOut className="w-4 h-4 shrink-0" />
           {!collapsed && <span>Sign out</span>}
         </button>
       </div>
@@ -163,20 +196,20 @@ export function Sidebar() {
         aria-label={mobileOpen ? "Close sidebar" : "Open sidebar"}
         aria-expanded={mobileOpen}
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 right-4 z-50 p-3 min-w-[48px] min-h-[48px] brutal-panel border-2 border-primary rounded-lg shadow-[2px_2px_0px_var(--accent)] hover:bg-primary/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        className="lg:hidden fixed top-4 right-4 z-50 p-3 min-w-[48px] min-h-[48px] bg-panel border border-ink/10 rounded-xl shadow-sm hover:bg-ink/[0.02] transition-colors"
       >
         {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
       {/* Desktop sidebar */}
-      <aside className={`hidden lg:flex flex-col panel-surface border-r-4 border-primary h-full fixed left-0 top-0 z-30 transition-all duration-200 ${collapsed ? "w-16" : "w-64"}`}>
+      <aside className={`hidden lg:flex flex-col bg-panel border-r border-ink/10 h-full fixed left-0 top-0 z-30 transition-all duration-200 ${collapsed ? "w-16" : "w-64"}`}>
         {sidebarContent}
       </aside>
 
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="hidden lg:flex fixed bottom-6 left-[264px] z-40 items-center justify-center w-7 h-7 rounded-full border-2 border-primary bg-background text-primary hover:bg-primary hover:text-white transition-colors shadow-[2px_2px_0px_var(--accent)]"
+        className="hidden lg:flex fixed bottom-6 z-40 items-center justify-center w-7 h-7 rounded-full border border-ink/10 bg-panel text-ink/40 hover:text-ink hover:bg-ink/[0.03] transition-colors"
         style={{ left: collapsed ? "calc(4rem + 8px)" : "calc(16rem + 8px)" }}
       >
         <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? "rotate-180" : ""}`} />
@@ -186,7 +219,7 @@ export function Sidebar() {
       {mobileOpen && (
         <div className="lg:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="absolute left-0 top-0 bottom-0 w-72 panel-surface border-r-4 border-primary flex flex-col shadow-[8px_0_32px_rgba(0,0,0,0.3)] animate-slide-in z-50">
+          <aside className="absolute left-0 top-0 bottom-0 w-72 bg-panel border-r border-ink/10 flex flex-col shadow-xl animate-slide-in z-50">
             {sidebarContent}
           </aside>
         </div>

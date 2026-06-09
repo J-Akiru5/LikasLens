@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@likaslens/shared/src/styles/civic-brutalism.css";
 @source "../../../shared/src/**/*.{ts,tsx}";
 @source "../shared/src/**/*.{ts,tsx}";
 @source "./node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
@@ -53,97 +52,22 @@ body {
   font-family: var(--font-body), "Helvetica Neue", Arial, sans-serif;
 }
 
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
 *:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-html {
-  transition: background-color 0.4s ease, color 0.4s ease;
-}
-
-html body {
-  transition: background-color 0.4s ease, color 0.4s ease;
-}
-
-/* Entrance animations */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-@keyframes slide-in {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-
-.animate-fade-up {
-  animation: fade-up 0.5s ease-out both;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.4s ease-out both;
-}
-
-/* Panel surfaces */
-.panel-surface {
-  background: var(--panel);
-}
-
-.surface-muted {
-  color: var(--muted);
-}
-
-/* Theme-aware inputs */
-.theme-input {
-  background: var(--panel);
-  border: 2px solid var(--border);
-  color: var(--ink);
-  transition: border-color 0.2s ease;
-}
-
-.theme-input:focus {
-  border-color: var(--accent);
-  outline: none;
-}
-
-.theme-input::placeholder {
-  color: var(--muted);
-}
-
-/* Theme-aware status */
-.theme-status {
-  border-radius: 8px;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
 }

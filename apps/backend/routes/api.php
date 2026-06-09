@@ -33,8 +33,8 @@ Route::get('/health', function () {
 Route::post('/reports', [ReportController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/reports/triage', [ReportController::class, 'triage'])->middleware('throttle:20,1');
 
-// Contact message endpoint (public)
-Route::post('/contact-messages', [ContactMessageController::class, 'store']);
+// Contact message endpoint (public, rate limited)
+Route::post('/contact-messages', [ContactMessageController::class, 'store'])->middleware('throttle:5,1');
 
 // Public law search (citizen-facing)
 Route::get('/laws', [AdminLawController::class, 'index']);
@@ -78,7 +78,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        $user = $request->user();
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'trust_score' => $user->trust_score,
+                'reward_points_balance' => $user->reward_points_balance,
+            ],
+        ]);
     });
 
     Route::get('/user/profile', function (Request $request) {
@@ -127,7 +138,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Super admin only routes
     Route::middleware('role:super_admin')->group(function () {
 
-        // 1. INSERT THE NEW ROUTE SYNC GROUP HERE:
+        // User sync
         Route::prefix('v1/likaslens-admin')->group(function () {
             Route::get('/users/sync', [AdminUserController::class, 'index']);
         });
@@ -162,5 +173,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // Contact messages (Inquiries)
         Route::get('/admin/contact-messages', [ContactMessageController::class, 'index']);
         Route::patch('/admin/contact-messages/{id}/read', [ContactMessageController::class, 'markAsRead']);
+    });
+
+    // Ticket status transition (analyst+ can update status)
+    Route::middleware('role:analyst,super_admin')->group(function () {
+        Route::patch('/tickets/{id}/status', [TicketController::class, 'updateStatus']);
     });
 });
