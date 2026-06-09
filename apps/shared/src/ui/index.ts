@@ -2,7 +2,7 @@ export { Spinner } from "./spinner";
 export { Badge } from "./badge";
 export { Card, CardHeader, CardTitle } from "./card";
 export { Button } from "./button";
-export * from "./chat/LikasyChat";
+export * from "./chat/likasy-chat";
 export { ToastContainer, showToast } from "./toast";
 export { OfflineBanner } from "./offline-banner";
 export { ThemeToggle } from "./theme-toggle";

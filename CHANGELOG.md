@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-06-09
+
+### Removed
+- **Frontend**: Deleted `Untitled-1.txt` (XAMPP config accidentally committed)
+- **Frontend**: Deleted stale `pnpm-lock.yaml` (workspace uses root lockfile)
+- **Frontend**: Deleted duplicate `tailwind.config.js` (`.ts` version already exists)
+- **Frontend**: Deleted 11 dead/orphaned files (theme-provider, quick-actions, mock-data, pdf-export-config, region6 data, duplicate re-exports)
+
+### Changed
+- **Docs**: Moved 16 root-level markdown files to `docs/archive/` (historical artifacts)
+- **Backend**: Moved `.sql` migration to `database/sql/` (was misleadingly in PHP migrations dir)
+- **Shared**: Renamed `LikasyChat.tsx` → `likasy-chat.tsx` (kebab-case consistency)
+- **Frontend**: Renamed `exifStripper.ts` → `exif-stripper.ts` (kebab-case consistency)
+
 ## [0.7.2] - 2026-06-09
 
 ### Fixed
@@ -288,7 +302,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.2...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.3...HEAD
+[0.7.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.3...v0.7.0
