@@ -7,16 +7,18 @@ const publicRoutes = ["/login", "/register", "/onboarding", "/splash"];
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const isPublicRoute = publicRoutes.some((route) =>
-    pathname.includes(route)
-  );
-
-  const isLocalePath = locales.some((locale) =>
-    pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)
-  );
-
   // Root page shows splash — always allow
-  if (pathname === "/" || isLocalePath || isPublicRoute) {
+  if (pathname === "/") {
+    return NextResponse.next();
+  }
+
+  // Check if this is a public route (exact segment match, not substring)
+  const isPublicRoute = publicRoutes.some((route) => {
+    const segments = pathname.split("/");
+    return segments.includes(route.replace("/", ""));
+  });
+
+  if (isPublicRoute) {
     return NextResponse.next();
   }
 
@@ -50,8 +52,10 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user) {
+    // Preserve locale when redirecting to login
+    const locale = locales.find((l) => pathname.startsWith(`/${l}/`)) || locales[0];
     const url = request.nextUrl.clone();
-    url.pathname = `/${locales[0]}/login`;
+    url.pathname = `/${locale}/login`;
     return NextResponse.redirect(url);
   }
 
