@@ -47,6 +47,15 @@ export async function laravelFetch<T>(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
 
+  // Chain caller's abort signal with our timeout controller
+  if (options.signal) {
+    if (options.signal.aborted) {
+      controller.abort();
+    } else {
+      options.signal.addEventListener("abort", () => controller.abort(), { once: true });
+    }
+  }
+
   try {
     const res = await fetch(url, {
       ...options,
