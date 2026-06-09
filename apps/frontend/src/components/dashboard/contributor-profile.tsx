@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import type { UserProfile, Achievement } from "@likaslens/shared";
 import { RankProgressCard, AchievementCard } from "@likaslens/shared";
+import { createClient } from "@/utils/supabase/client";
 import {
   MapPin, Crosshair, Globe, Eye, EyeOff, Loader2, ChevronRight, AlertCircle,
   BarChart3, User,
@@ -24,14 +25,27 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
   useEffect(() => {
     async function fetchProfile() {
       try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
         const endpoint = params?.userId
           ? `${baseUrl}/users/${params.userId}`
-          : `${baseUrl}/api/user/profile`;
+          : `${baseUrl}/user/profile`;
+
+        const headers: Record<string, string> = { Accept: "application/json" };
+        if (session?.access_token) {
+          headers["Authorization"] = `Bearer ${session.access_token}`;
+        }
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10_000);
+
         const res = await fetch(endpoint, {
-          headers: { Accept: "application/json" },
-          credentials: params ? "omit" : "include",
-        });
+          headers,
+          credentials: "include",
+          signal: controller.signal,
+        }).finally(() => clearTimeout(timeout));
+
         if (!res.ok) {
           if (res.status === 404) {
             setError("User not found");
@@ -42,8 +56,12 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
         }
         const body = await res.json();
         setProfile(body.data || body);
-      } catch {
-        setError("Unable to connect to server");
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") {
+          setError("Request timed out");
+        } else {
+          setError("Unable to connect to server");
+        }
       } finally {
         setLoading(false);
       }
