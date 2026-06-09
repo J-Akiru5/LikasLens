@@ -19,6 +19,24 @@
 
 > **Note:** Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.
 
+### Charlyn's Completed Work (from codebase evidence)
+- ✅ Violation types migration + seeder (embedded in EnvironmentalLawSeeder)
+- ✅ Demo data seeder (LikasLensSeeder.php — 237 lines)
+- ✅ 5 Admin CRUD controllers (Users, Rewards, NGOs, Laws, Audit Logs)
+- ✅ Audit log middleware captures RBAC denials with full context
+- ✅ Health check + feature tests (3 test suites)
+- ✅ CORS configuration (production-ready)
+- ✅ PostgreSQL syntax fix (JULIANDAY → EXTRACT/EPOCH) — v0.7.0
+- ✅ Rate limiting on auth + report endpoints — v0.7.1
+- ✅ P0 security fixes (role escalation, admin endpoint protection, etc.) — v0.7.0
+- ✅ HasApiTokens trait added to User model — v0.7.0
+- ✅ Vercel outputDirectory corrected — v0.6.1
+- ✅ Contact message controller + admin endpoints
+- ✅ Achievements table rebuild
+- ✅ Reporter email PII leak fixed (removed from public ticket response) — v0.7.1
+- ✅ N+1 query fix in UserImpactController — v0.7.1
+- ✅ TicketAssignment + Achievement pagination — v0.7.2
+
 ---
 
 ## Dependencies on Other Developers
@@ -48,22 +66,14 @@
 1. Verify Supabase project status at https://app.supabase.com
 2. If project paused → unpause
 3. If DNS fails → check if project needs to be recreated
-4. Update `apps/backend/.env` with correct credentials:
-   ```env
-   DB_CONNECTION=pgsql
-   DB_HOST=db.<project-ref>.supabase.co
-   DB_PORT=5432
-   DB_DATABASE=postgres
-   DB_USERNAME=postgres
-   DB_PASSWORD=<password>
-   ```
+4. Update `apps/backend/.env` with correct credentials
 5. Test connection: `php artisan migrate:status`
 6. Run any pending migrations: `php artisan migrate`
 
 **Acceptance Criteria:**
 - [ ] `php artisan migrate:status` shows all migrations
 - [ ] `php artisan db:seed` runs without errors
-- [ ] `/api/health` returns 200
+- [x] `/api/health` returns 200
 
 ---
 
@@ -73,122 +83,6 @@
 **Problem:** The Azure Container Registry (`likaslensregistry`) was deleted due to cost. Both Container Apps (backend + AI service) have `ImagePullBackOff` errors — they can't pull images from a registry that no longer exists.
 
 **Current state:** Both GitHub Actions workflows still push to `likaslensregistry.azurecr.io`. No migration to `ghcr.io` has occurred.
-
-**Solution:** Switch CI/CD to push images to **GitHub Container Registry (ghcr.io)** instead. Since the LikasLens repo is public, ghcr.io is completely free — no ACR needed.
-
----
-
-#### Step 1: Update the Backend GitHub Actions Workflow
-
-**File:** `.github/workflows/likaslens-backend-AutoDeployTrigger-03d66e26-917e-4e72-b9d3-b716a27a2988.yml`
-
-Replace the registry references:
-
-| Line | Current (broken) | New |
-|------|-------------------|-----|
-| permissions | `contents: read` | Add `packages: write` |
-| registryUrl | `likaslensregistry.azurecr.io` | `ghcr.io` |
-| registryUsername | `${{ secrets.LIKASLENSBACKEND_REGISTRY_USERNAME }}` | `${{ github.actor }}` |
-| registryPassword | `${{ secrets.LIKASLENSBACKEND_REGISTRY_PASSWORD }}` | `${{ secrets.GITHUB_TOKEN }}` |
-| imageToBuild | `likaslensregistry.azurecr.io/likaslens-backend:${{ github.sha }}` | `ghcr.io/${{ github.repository }}/likaslens-backend:${{ github.sha }}` |
-
----
-
-#### Step 2: Update the AI Service GitHub Actions Workflow
-
-**File:** `.github/workflows/likaslens-ai-service-AutoDeployTrigger-246f1a2c-6c72-4a80-b0b8-906dda9f04e9.yml`
-
-Same changes as above.
-
----
-
-#### Step 3: Push Changes to `main`
-
-Merge the updated workflow files to `main`. The GitHub Actions pipeline will:
-1. Build the Docker image from `apps/backend/Dockerfile`
-2. Push it to `ghcr.io/j-akiru5/likas-lens/likaslens-backend:<commit-sha>`
-3. Deploy it to the Azure Container App
-
----
-
-#### Step 4: Set Container App Environment Variables (Backend)
-
-After the first successful deploy, set the backend env vars via Azure Cloud Shell:
-
-```bash
-az containerapp update \
-  --name likaslens-backend \
-  --resource-group likaslens \
-  --set-env-vars \
-    APP_ENV=production \
-    APP_DEBUG=false \
-    APP_KEY="base64:..." \
-    DB_CONNECTION=pgsql \
-    DB_HOST="db.<project-ref>.supabase.co" \
-    DB_PORT=5432 \
-    DB_DATABASE=postgres \
-    DB_USERNAME="postgres.<project-ref>" \
-    DB_PASSWORD="<password>" \
-    LOG_CHANNEL=stderr \
-    LOG_LEVEL=warning \
-    CACHE_STORE=file \
-    SESSION_DRIVER=file \
-    AI_SERVICE_URL="http://likaslens-ai-service:8001"
-```
-
----
-
-#### Step 5: Set Container App Environment Variables (AI Service)
-
-```bash
-az containerapp update \
-  --name likaslens-ai-service \
-  --resource-group likaslens \
-  --set-env-vars \
-    AI_SERVICE_PORT=8001 \
-    GOOGLE_API_KEY="<GOOGLE_API_KEY>" \
-    COSMOS_GREMLIN_ENDPOINT="wss://<account>.gremlin.cosmos.azure.com:443/" \
-    COSMOS_GREMLIN_KEY="<COSMOS_KEY>" \
-    COSMOS_GREMLIN_DATABASE=likaslens \
-    COSMOS_GREMLIN_GRAPH=routing_graph \
-    COSMOS_GREMLIN_PARTITION_KEY=likaslens-routing-seed \
-    ENVIRONMENT=production
-```
-
----
-
-#### Step 6: Verify
-
-```bash
-# Check revision status
-az containerapp revision list \
-  --name likaslens-backend \
-  --resource-group likaslens \
-  --output table
-
-# Get the backend FQDN
-az containerapp show \
-  --name likaslens-backend \
-  --resource-group likaslens \
-  --query "properties.configuration.ingress.fqdn" \
-  --output tsv
-
-# Health check (replace <fQdn> with actual value)
-curl https://<fQdn>/api/health
-curl https://<fQdn>/api/tickets
-```
-
----
-
-#### Step 7: Clean Up Old ACR Secrets (Optional)
-
-Remove obsolete secrets from GitHub repo settings:
-- `LIKASLENSBACKEND_REGISTRY_USERNAME`
-- `LIKASLENSBACKEND_REGISTRY_PASSWORD`
-- `LIKASLENSAISERVICE_REGISTRY_USERNAME`
-- `LIKASLENSAISERVICE_REGISTRY_PASSWORD`
-
----
 
 **Acceptance Criteria:**
 - [ ] Backend workflow pushes image to ghcr.io successfully
@@ -267,46 +161,53 @@ Remove obsolete secrets from GitHub repo settings:
 ---
 
 ### Task 3.2: Optimize Dashboard Queries
-**Time:** 3h | **Priority:** MEDIUM | **Status:** ⚠️ FUNCTIONAL BUT NOT OPTIMIZED
+**Time:** 3h | **Priority:** MEDIUM | **Status:** ⚠️ PARTIAL
 
 **File:** `app/Http/Controllers/DashboardController.php` (96 lines)
 
 **Current state:**
-- `stats()`: Runs 7 separate count queries, uses SQLite-specific `JULIANDAY()` for avg response time, no caching
-- `feed()`: Eager-loads `reporter`, limits to 20, but has N+1 problem (line 80: count query inside loop for `display_id`)
+- `stats()`: Runs 7 separate count queries, no caching
+- `feed()`: Eager-loads `reporter`, limits to 20
+- PostgreSQL syntax fix applied (EXTRACT/EPOCH instead of JULIANDAY)
 
 **Still needed:**
 - [ ] Aggregate queries instead of separate counts
-- [ ] Fix N+1 in feed method
-- [ ] Replace SQLite-specific SQL with portable PostgreSQL syntax
 - [ ] Add caching for leaderboard (5 min TTL)
 - [ ] Add indexes on `tickets.status`, `tickets.created_at`
+
+**Completed:**
+- [x] Replace SQLite-specific SQL with portable PostgreSQL syntax
+- [x] N+1 in feed method — not present (display_id computed inline)
 
 **Acceptance Criteria:**
 - [ ] `/api/dashboard/stats` responds in < 200ms
 - [ ] `/api/leaderboard` responds in < 100ms
-- [ ] No N+1 queries on dashboard feed
+- [x] No N+1 queries on dashboard feed
 
 ---
 
 ## Day 4 — Sunday, June 8
 
 ### Task 4.1: Backend Hardening
-**Time:** 3h | **Priority:** MEDIUM | **Status:** ⚠️ PARTIAL (CORS done, rate limiting NOT done)
+**Time:** 3h | **Priority:** MEDIUM | **Status:** ✅ DONE
 
 **CORS:** ✅ Production-ready
 - `config/cors.php` allows localhost:3000/3001/3002, production domains, Vercel/Azure regex patterns
 - `HandleCors` middleware prepended in `bootstrap/app.php`
 
-**Rate Limiting:** ❌ Not configured
-- No `throttle` middleware on any routes in `api.php`
-- No custom `RateLimiter::for()` definitions
-- Only default auth throttle (60s) in `config/auth.php`
+**Rate Limiting:** ✅ Done (v0.7.1)
+- `throttle:5,1` on `/auth/register`
+- `throttle:10,1` on `/auth/login`
+- `throttle:20,1` on `/auth/sync`
+- `throttle:10,1` on `/reports`
+- `throttle:20,1` on `/reports/triage`
+
+**JSON Error Responses:** ✅ Done
+- All controllers return `JsonResponse`
+- `EnsureRole` middleware returns JSON for 401/403
 
 **Still needed:**
-- [ ] Add rate limiting to public endpoints (60/min for `/api/reports`, `/api/reports/triage`)
-- [ ] Ensure all error responses return proper JSON (not HTML)
-- [ ] Verify Sanctum token expiry settings
+- [ ] Verify Sanctum token expiry settings (`sanctum.php` line 53: `'expiration' => null`)
 
 ---
 
@@ -329,6 +230,27 @@ Remove obsolete secrets from GitHub repo settings:
 
 ---
 
+## Post-Sprint Work (Not in Original Sprint)
+
+### Security Fixes (v0.7.0)
+- ✅ Removed `role` parameter from `/auth/sync` — prevents privilege escalation
+- ✅ Moved `/admin/users` index behind `auth:sanctum` + `role:super_admin` middleware
+- ✅ Added `role:analyst,super_admin` middleware to `/reports/verify`
+- ✅ Added `HasApiTokens` trait to User model — fixes all auth flows
+
+### Stability Fixes (v0.7.1-v0.7.2)
+- ✅ Removed reporter email from public `GET /tickets/{id}` response (PII leak)
+- ✅ Fixed N+1 query in `UserImpactController` — batch-fetches tickets
+- ✅ Added pagination to `TicketAssignment::index()` (20 per page)
+- ✅ Added pagination to `AchievementController::catalog()` (50 per page)
+- ✅ Contact message controller + admin endpoints
+
+### Infrastructure (v0.6.1)
+- ✅ Vercel `outputDirectory` corrected from `.next` to `apps/frontend/.next`
+- ✅ Re-added `ignoreCommand` to vercel.json
+
+---
+
 ## Risk Items
 
 | Risk | Status | Mitigation |
@@ -340,6 +262,9 @@ Remove obsolete secrets from GitHub repo settings:
 | Vercel 404 on all pages | ✅ RESOLVED | `outputDirectory` was `.next` instead of `apps/frontend/.next` in vercel.json |
 | Seeder fails on foreign keys | ✅ Resolved | Law seeder runs before violation type seeder |
 | CORS blocks APK | ✅ Resolved | CORS config includes Vercel/Azure origins |
+| Role escalation via /auth/sync | ✅ RESOLVED | Removed role param from client input (v0.7.0) |
+| Public admin endpoint | ✅ RESOLVED | /admin/users moved behind auth middleware (v0.7.0) |
+| JULIANDAY on PostgreSQL | ✅ RESOLVED | Replaced with EXTRACT/EPOCH (v0.7.0) |
 
 ---
 
@@ -355,5 +280,8 @@ Remove obsolete secrets from GitHub repo settings:
 - [x] Demo data seeded (users, tickets, achievements, NGOs)
 - [x] All admin CRUD endpoints functional
 - [x] Health check + feature tests working
+- [x] Rate limiting on auth + report endpoints
+- [x] P0 security fixes applied
+- [x] HasApiTokens trait added to User model
 - [ ] All 40+ endpoints verified on production
 - [ ] No 500 errors on any endpoint
