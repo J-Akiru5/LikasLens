@@ -301,7 +301,7 @@ export default function ReportPage() {
     const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
     try {
-      const cleanedImage = isGhostMode ? await stripExif(base64Image) : base64Image;
+      const cleanedImage = await stripExif(base64Image);
 
       if (!isGhostMode && navigator.onLine) {
         setIsTriaging(true);

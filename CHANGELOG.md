@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-06-09
+
+### Fixed
+- **Backend**: Added rate limiting to auth endpoints (5/min register, 10/min login, 20/min sync)
+- **Backend**: Added rate limiting to report endpoints (10/min submit, 20/min triage)
+- **Backend**: Removed reporter email from public `GET /tickets/{id}` response (PII leak)
+- **Backend**: Fixed N+1 query in `UserImpactController` — batch-fetches tickets instead of per-report queries
+- **Frontend**: EXIF stripping now applied in all modes, not just Ghost Mode (AGENTS.md compliance)
+- **Mobile PWA**: Wired Supabase session token to shared API client after login/register
+- **Mobile PWA**: Created `.env.example` with required environment variables
+- **Shared**: Created missing `yolo-labels` JSON files for fil, vi, id, ms, ta locales
+
 ## [0.7.0] - 2026-06-09
 
 ### Fixed
@@ -265,7 +277,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.1...v0.6.2

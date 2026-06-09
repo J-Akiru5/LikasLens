@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Leaf, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { setLaravelAuthToken } from "@likaslens/shared";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function RegisterPage() {
     setError("");
 
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signUp({
+    const { error: authError, data } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -34,6 +35,11 @@ export default function RegisterPage() {
       setError(authError.message);
       setLoading(false);
       return;
+    }
+
+    // Wire Supabase session token to shared API client (if session exists immediately)
+    if (data.session?.access_token) {
+      setLaravelAuthToken(data.session.access_token);
     }
 
     router.push(`/${locale}/dashboard`);

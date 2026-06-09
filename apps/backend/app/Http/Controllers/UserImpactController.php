@@ -20,21 +20,25 @@ class UserImpactController extends Controller
         $reports = Report::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->limit(10)
-            ->get()
-            ->map(function ($report) {
-                $ticket = Ticket::where('reporter_user_id', $report->user_id)
-                    ->latest()
-                    ->first();
+            ->get();
 
-                return [
-                    'id' => $report->id,
-                    'image_path' => $report->image_path,
-                    'latitude' => $report->latitude,
-                    'longitude' => $report->longitude,
-                    'status' => $ticket?->status ?? 'pending_review',
-                    'created_at' => $report->created_at->toISOString(),
-                ];
-            });
+        $reportUserIds = $reports->pluck('user_id')->filter()->unique();
+        $tickets = Ticket::whereIn('reporter_user_id', $reportUserIds)
+            ->get()
+            ->keyBy('reporter_user_id');
+
+        $mappedReports = $reports->map(function ($report) use ($tickets) {
+            $ticket = $tickets->get($report->user_id);
+
+            return [
+                'id' => $report->id,
+                'image_path' => $report->image_path,
+                'latitude' => $report->latitude,
+                'longitude' => $report->longitude,
+                'status' => $ticket?->status ?? 'pending_review',
+                'created_at' => $report->created_at->toISOString(),
+            ];
+        });
 
         $communityRank = User::where('reward_points_balance', '>', $user->reward_points_balance)
             ->count() + 1;
@@ -66,7 +70,7 @@ class UserImpactController extends Controller
                 'total_citizens' => User::where('role', 'citizen')->count(),
                 'rank_progress' => $rankService->getRankProgress($user),
                 'recent_achievements' => $recentAchievements,
-                'reports' => $reports,
+                'reports' => $mappedReports,
             ],
         ]);
     }
