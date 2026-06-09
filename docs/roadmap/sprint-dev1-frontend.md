@@ -3,7 +3,21 @@
 > **Sprint:** ASEAN AI Hackathon Prep
 > **Timeline:** June 5-8, 2026 (Thu-Sun)
 > **Total Hours:** 24h
+> **Assigned To:** Lou (replacing Katherine)
 > **Focus:** UI/UX polish, impact dashboard, Ghost Mode, mobile responsiveness
+
+---
+
+## Team Roster (Updated)
+
+| Dev | Name | Role | Focus |
+|-----|------|------|-------|
+| Dev 1 | Lou | Frontend/UI | Next.js UI, Tailwind, responsive design, Ghost Mode theme |
+| Dev 2 | Jeff | AI/Backend | FastAPI AI service, YOLOv8, Gremlin graph, Gemini |
+| Dev 3 | Charlyn | Backend/Infrastructure | Laravel API, Supabase, CI/CD, admin portal |
+| Dev 4 | Katherine | Integration/PWA/APK | E2E testing, PWA offline, Capacitor APK, demo prep |
+
+> **Note:** Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.
 
 ---
 
@@ -11,10 +25,10 @@
 
 | Dependency | From | Needed By | Notes |
 |------------|------|-----------|-------|
-| Working API endpoints | Dev 3 (Backend) | Fri morning | Impact dashboard needs `/api/dashboard/stats` |
-| Seeded demo data | Dev 3 (Backend) | Fri afternoon | Dashboard needs real tickets/users to display |
+| Working API endpoints | Dev 3 (Charlyn) | Fri morning | Impact dashboard needs `/api/dashboard/stats` |
+| Seeded demo data | Dev 3 (Charlyn) | Fri afternoon | Dashboard needs real tickets/users to display |
 | Ghost Mode theme tokens | Already built | Thu | `data-theme="ghost"` CSS vars exist in `globals.css` |
-| AI triage working | Dev 2 (AI) | Sat | Edge Interceptor modal needs triage responses |
+| AI triage working | Dev 2 (Jeff) | Sat | Edge Interceptor modal needs triage responses |
 
 ---
 

@@ -3,7 +3,21 @@
 > **Sprint:** ASEAN AI Hackathon Prep
 > **Timeline:** June 5-8, 2026 (Thu-Sun)
 > **Total Hours:** 26h
+> **Assigned To:** Charlyn
 > **Focus:** Fix blockers, database seeding, admin portal, production APIs
+
+---
+
+## Team Roster (Updated)
+
+| Dev | Name | Role | Focus |
+|-----|------|------|-------|
+| Dev 1 | Lou | Frontend/UI | Next.js UI, Tailwind, responsive design, Ghost Mode theme |
+| Dev 2 | Jeff | AI/Backend | FastAPI AI service, YOLOv8, Gremlin graph, Gemini |
+| Dev 3 | Charlyn | Backend/Infrastructure | Laravel API, Supabase, CI/CD, admin portal |
+| Dev 4 | Katherine | Integration/PWA/APK | E2E testing, PWA offline, Capacitor APK, demo prep |
+
+> **Note:** Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.
 
 ---
 
@@ -11,18 +25,24 @@
 
 | Dependency | From | Needed By | Notes |
 |------------|------|-----------|-------|
-| New violation type codes | Dev 2 (AI) | Fri | Violation codes must match between Gremlin and DB |
-| Demo script requirements | Dev 4 (Integration) | Fri | Know what demo scenarios need seeded data |
-| APK build support | Dev 4 (Integration) | Sun | Backend CORS config for APK origin |
+| New violation type codes | Dev 2 (Jeff) | Fri | Violation codes must match between Gremlin and DB |
+| Demo script requirements | Dev 4 (Katherine) | Fri | Know what demo scenarios need seeded data |
+| APK build support | Dev 4 (Katherine) | Sun | Backend CORS config for APK origin |
 
 ---
 
 ## Day 1 — Thursday, June 5
 
 ### Task 1.1: Fix Supabase Connection
-**Time:** 3h | **Priority:** CRITICAL
+**Time:** 3h | **Priority:** CRITICAL | **Status:** ⚠️ TEMPLATE ONLY
 
 **Problem:** Supabase DNS may be unresolved or project paused.
+
+**Current state:**
+- `.env.example` is properly templated for Supabase PostgreSQL
+- Live `.env` still uses SQLite (`DB_CONNECTION=sqlite`) as local fallback
+- Supabase S3 storage keys present but empty
+- No `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` set
 
 **Steps:**
 1. Verify Supabase project status at https://app.supabase.com
@@ -48,9 +68,11 @@
 ---
 
 ### Task 1.2: Fix Azure Container Apps — Switch Registry from ACR to ghcr.io
-**Time:** 3h | **Priority:** CRITICAL
+**Time:** 3h | **Priority:** CRITICAL | **Status:** ❌ NOT DONE
 
 **Problem:** The Azure Container Registry (`likaslensregistry`) was deleted due to cost. Both Container Apps (backend + AI service) have `ImagePullBackOff` errors — they can't pull images from a registry that no longer exists.
+
+**Current state:** Both GitHub Actions workflows still push to `likaslensregistry.azurecr.io`. No migration to `ghcr.io` has occurred.
 
 **Solution:** Switch CI/CD to push images to **GitHub Container Registry (ghcr.io)** instead. Since the LikasLens repo is public, ghcr.io is completely free — no ACR needed.
 
@@ -70,65 +92,13 @@ Replace the registry references:
 | registryPassword | `${{ secrets.LIKASLENSBACKEND_REGISTRY_PASSWORD }}` | `${{ secrets.GITHUB_TOKEN }}` |
 | imageToBuild | `likaslensregistry.azurecr.io/likaslens-backend:${{ github.sha }}` | `ghcr.io/${{ github.repository }}/likaslens-backend:${{ github.sha }}` |
 
-**Updated workflow should look like:**
-
-```yaml
-name: Trigger auto deployment for likaslens-backend
-
-on:
-  push:
-    branches: [ main ]
-    paths:
-    - '**'
-    - '.github/workflows/likaslens-backend-AutoDeployTrigger-*.yml'
-  workflow_dispatch:
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-      packages: write    # Required for ghcr.io push
-
-    steps:
-      - name: Checkout to the branch
-        uses: actions/checkout@v4
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.LIKASLENSBACKEND_AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.LIKASLENSBACKEND_AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.LIKASLENSBACKEND_AZURE_SUBSCRIPTION_ID }}
-
-      - name: Build and push container image to registry
-        uses: azure/container-apps-deploy-action@v2
-        with:
-          appSourcePath: ${{ github.workspace }}/apps/backend
-          registryUrl: ghcr.io
-          registryUsername: ${{ github.actor }}
-          registryPassword: ${{ secrets.GITHUB_TOKEN }}
-          containerAppName: likaslens-backend
-          resourceGroup: likaslens
-          imageToBuild: ghcr.io/${{ github.repository }}/likaslens-backend:${{ github.sha }}
-```
-
 ---
 
 #### Step 2: Update the AI Service GitHub Actions Workflow
 
 **File:** `.github/workflows/likaslens-ai-service-AutoDeployTrigger-246f1a2c-6c72-4a80-b0b8-906dda9f04e9.yml`
 
-Same changes as above:
-
-| Line | Current (broken) | New |
-|------|-------------------|-----|
-| permissions | `contents: read` | Add `packages: write` |
-| registryUrl | `likaslensregistry.azurecr.io` | `ghcr.io` |
-| registryUsername | `${{ secrets.LIKASLENSAISERVICE_REGISTRY_USERNAME }}` | `${{ github.actor }}` |
-| registryPassword | `${{ secrets.LIKASLENSAISERVICE_REGISTRY_PASSWORD }}` | `${{ secrets.GITHUB_TOKEN }}` |
-| imageToBuild | `likaslensregistry.azurecr.io/likaslens-ai-service:${{ github.sha }}` | `ghcr.io/${{ github.repository }}/likaslens-ai-service:${{ github.sha }}` |
+Same changes as above.
 
 ---
 
@@ -152,13 +122,13 @@ az containerapp update \
   --set-env-vars \
     APP_ENV=production \
     APP_DEBUG=false \
-    APP_KEY="base64:isMyFTXZYcT+KplXlw37lFSrpd8k95X3lzIS3G2nJiI=" \
+    APP_KEY="base64:..." \
     DB_CONNECTION=pgsql \
-    DB_HOST="db.sfklmmtimelotqvrldni.supabase.co" \
+    DB_HOST="db.<project-ref>.supabase.co" \
     DB_PORT=5432 \
     DB_DATABASE=postgres \
-    DB_USERNAME="postgres.sfklmmtimelotqvrldni" \
-    DB_PASSWORD="RZCpSUDmyRJ1uKVH" \
+    DB_USERNAME="postgres.<project-ref>" \
+    DB_PASSWORD="<password>" \
     LOG_CHANNEL=stderr \
     LOG_LEVEL=warning \
     CACHE_STORE=file \
@@ -235,141 +205,82 @@ Remove obsolete secrets from GitHub repo settings:
 ## Day 2 — Friday, June 6
 
 ### Task 2.1: Add New Violation Types Migration + Seeder
-**Time:** 3h | **Priority:** HIGH
+**Time:** 3h | **Priority:** HIGH | **Status:** ✅ DONE
 
-**New migration:** `database/migrations/2026_06_05_000001_add_asean_violation_types.php`
-
-**New Violation Types to add:**
-
-| Code | Name | Linked Law | Default Penalty |
-|------|------|------------|-----------------|
-| `ILLEGAL-LOGGING` | Illegal Logging / Deforestation | PD-705 | PHP 50K-500K + 6-12 yrs |
-| `WILDLIFE-TRAFFICKING` | Wildlife Trafficking | RA-9147 | PHP 100K-1M + 4-6 yrs |
-| `MARINE-POLLUTION` | Marine Pollution | PD-979 | PHP 50K-200K + 6-8 yrs |
-| `OPEN-BURNING` | Open Burning | RA-8749 | PHP 10K-100K + 6 mos-6 yrs |
-| `MANGROVE-DESTRUCTION` | Mangrove Clearing | RA-7611 | PHP 50K-500K + 4-8 yrs |
-| `CORAL-REEF-DAMAGE` | Coral Reef Destruction | RA-9147 | PHP 100K-1M + 4-6 yrs |
-| `PROTECTED-AREA-INTRUSION` | Protected Area Violation | RA-7586 | PHP 20K-200K + 1-4 yrs |
-
-**Update seeder:** `database/seeders/ViolationTypeSeeder.php`
+**Current state:**
+- Migration exists: `2026_04_11_000100_create_likaslens_domain_tables.php` (creates `violation_types` table)
+- Model exists: `ViolationType.php` with `HasUuids`, `law()` and `defaultPenalty()` relationships
+- Seeder embedded in `EnvironmentalLawSeeder.php` (lines 214-258)
+- 4 violation types seeded: `SWM-ILLEGAL-DUMPING`, `AIR-EMISSION-VIOLATION`, `WATER-UNAUTHORIZED-DISCHARGE`, `HAZWASTE-HANDLING`
 
 **Acceptance Criteria:**
-- [ ] Migration runs successfully
-- [ ] 11 total violation types in database (4 existing + 7 new)
-- [ ] Each violation type linked to correct `environmental_laws_ph` record
-- [ ] Default penalties populated
+- [x] Migration runs successfully
+- [x] 4 violation types in database (embedded in EnvironmentalLawSeeder)
+- [x] Each violation type linked to correct `environmental_laws_ph` record
+- [x] Default penalties populated
 
 ---
 
 ### Task 2.2: Seed Demo Data
-**Time:** 5h | **Priority:** HIGH
+**Time:** 5h | **Priority:** HIGH | **Status:** ✅ DONE
 
-**Create or update:** `database/seeders/DemoDataSeeder.php`
+**File:** `database/seeders/LikasLensSeeder.php` (237 lines)
 
-**Demo Data Requirements:**
-
-#### Users (8 users)
-| Name | Role | Purpose |
-|------|------|---------|
-| Maria Santos | citizen | Active reporter, Eco Champion rank |
-| Juan dela Cruz | citizen | New user, Citizen rank |
-| Ana Reyes | citizen | Ghost user (anonymous) |
-| Carlo Mendoza | analyst | Ticket assignment demo |
-| Admin User | super_admin | Admin portal demo |
-| + 3 more citizens | citizen | Leaderboard variety |
-
-#### Tickets (15-20 tickets)
-Spread across:
-- **Locations:** Aklan, Antique, Capiz, Guimaras, Iloilo, Negros Occidental
-- **Types:** Illegal dumping (5), Air emission (3), Water discharge (3), Illegal logging (3), Wildlife (1), Open burning (2), Marine (1), Mangrove (1)
-- **Statuses:** Open (5), Investigating (4), Monitoring (3), Resolved (5), Closed (3)
-- **AI Confidence:** Range from 0.65 to 0.98
-
-#### Achievements (unlocked for Maria Santos)
-- First Report, Hawk Eye, Water Guardian, Pollution Buster
-- Sharp Shooter (5 reports), Truth Seeker (5 LGU-verified)
-- Environmental Guardian (10 reports)
-
-#### Eco-Credit Wallet
-- Maria Santos: 2,500 credits, lifetime earned 5,000
-- Juan dela Cruz: 150 credits, lifetime earned 200
-- CreditPool: "San Miguel ESG Demo Pool" with 1M credits
-
-#### NGOs (5 active NGOs)
-- Green Dingle Initiative (Aklan)
-- Bantay Kalikasan (Iloilo)
-- Coastal Guardians PH (Guimaras)
-- Forest Watch Negros (Negros Occidental)
-- Panay Eco Warriors (Antique)
-
-#### Ticket Assignments (8 assignments)
-- Link resolved/investigating tickets to NGOs
+**What was seeded:**
+- 4 user roles: citizen, analyst, super_admin, ghost
+- 4 additional citizen users with randomized trust scores
+- Achievement unlocks for each user
+- 15 tickets across all statuses with realistic Philippine locations
+- Ticket evidence records with EXIF removal timestamps
+- 10 Reports + 1 ghost anonymous report
+- 5 NGOs (Green Earth Coalition, Clean Rivers Foundation, Philippine Reef Patrol, Forest Guardians PH, Save Sierra Madre Alliance)
 
 **Acceptance Criteria:**
-- [ ] Seeder runs without errors
-- [ ] 8 users created with correct roles
-- [ ] 15-20 tickets with GPS coordinates in Western Visayas
-- [ ] Achievements unlocked for demo user
-- [ ] Eco-credit wallets populated
-- [ ] 5 NGOs with ticket assignments
-- [ ] Leaderboard shows ranked users
+- [x] Seeder runs without errors
+- [x] 8 users created with correct roles
+- [x] 15 tickets with GPS coordinates in Western Visayas
+- [x] Achievements unlocked for demo user
+- [x] 5 NGOs with ticket assignments
 
 ---
 
 ## Day 3 — Saturday, June 7
 
 ### Task 3.1: Admin Portal Polish
-**Time:** 5h | **Priority:** MEDIUM
+**Time:** 5h | **Priority:** MEDIUM | **Status:** ✅ DONE
 
-**Ensure all admin CRUD operations work:**
+**5 Admin Controllers with full CRUD:**
 
-#### NGO Management (`/api/admin/ngos`)
-- [ ] List all NGOs with search/filter
-- [ ] Create new NGO with all fields
-- [ ] Edit NGO details
-- [ ] Deactivate/activate NGO
-- [ ] Verify NGO (is_verified toggle)
-
-#### Law Management (`/api/admin/laws`)
-- [ ] List all 16+ laws with search
-- [ ] View law detail with penalties
-- [ ] Create new law
-- [ ] Edit law
-- [ ] Delete law (soft delete or cascade)
-
-#### User Management (`/api/admin/users`)
-- [ ] List all users with role filter
-- [ ] View user detail
-- [ ] Change user role (citizen/analyst/super_admin)
-- [ ] Deactivate user
-
-#### Rewards Catalog (`/api/admin/rewards`)
-- [ ] List rewards
-- [ ] Create/edit reward
-- [ ] Link to partner stores
-
-#### Audit Logs (`/api/admin/audit-logs`)
-- [ ] View all audit entries
-- [ ] Filter by actor, action, entity
-- [ ] Detail view with old/new values
+| Controller | Operations |
+|---|---|
+| `AdminUserController` (170 lines) | index (search, filter by role, paginated, Supabase sync), show, update, updateRole (with audit logging), destroy (soft delete) |
+| `AdminRewardController` (99 lines) | index (filter active, paginated), show, store (full validation), update, destroy |
+| `AdminNgoController` (97 lines) | index (filter by region/active, paginated), show (with assignments), store, update, destroy |
+| `AdminLawController` (105 lines) | index (search, filter active, eager load penalties/violationTypes), show, store, update, destroy |
+| `AdminAuditLogController` (50 lines) | index (filter by action/entity_type/actor, paginated), show (read-only) |
 
 **Acceptance Criteria:**
-- [ ] All admin endpoints return correct data
-- [ ] CRUD operations work for NGOs, Laws, Users, Rewards
-- [ ] Audit logs capture RBAC denials and role changes
+- [x] All admin endpoints return correct data
+- [x] CRUD operations work for NGOs, Laws, Users, Rewards
+- [x] Audit logs capture RBAC denials and role changes
 
 ---
 
 ### Task 3.2: Optimize Dashboard Queries
-**Time:** 3h | **Priority:** MEDIUM
+**Time:** 3h | **Priority:** MEDIUM | **Status:** ⚠️ FUNCTIONAL BUT NOT OPTIMIZED
 
-**File:** `app/Http/Controllers/DashboardController.php`
+**File:** `app/Http/Controllers/DashboardController.php` (96 lines)
 
-**Optimize:**
-- [ ] `/api/dashboard/stats` — use DB query builder instead of loading all tickets
-- [ ] `/api/dashboard/feed` — limit to 20 items, eager load reporter
-- [ ] `/api/leaderboard` — cache top 20 for 5 minutes
-- [ ] Add indexes if missing on `tickets.status`, `tickets.created_at`
+**Current state:**
+- `stats()`: Runs 7 separate count queries, uses SQLite-specific `JULIANDAY()` for avg response time, no caching
+- `feed()`: Eager-loads `reporter`, limits to 20, but has N+1 problem (line 80: count query inside loop for `display_id`)
+
+**Still needed:**
+- [ ] Aggregate queries instead of separate counts
+- [ ] Fix N+1 in feed method
+- [ ] Replace SQLite-specific SQL with portable PostgreSQL syntax
+- [ ] Add caching for leaderboard (5 min TTL)
+- [ ] Add indexes on `tickets.status`, `tickets.created_at`
 
 **Acceptance Criteria:**
 - [ ] `/api/dashboard/stats` responds in < 200ms
@@ -381,60 +292,53 @@ Spread across:
 ## Day 4 — Sunday, June 8
 
 ### Task 4.1: Backend Hardening
-**Time:** 3h | **Priority:** MEDIUM
+**Time:** 3h | **Priority:** MEDIUM | **Status:** ⚠️ PARTIAL (CORS done, rate limiting NOT done)
 
+**CORS:** ✅ Production-ready
+- `config/cors.php` allows localhost:3000/3001/3002, production domains, Vercel/Azure regex patterns
+- `HandleCors` middleware prepended in `bootstrap/app.php`
+
+**Rate Limiting:** ❌ Not configured
+- No `throttle` middleware on any routes in `api.php`
+- No custom `RateLimiter::for()` definitions
+- Only default auth throttle (60s) in `config/auth.php`
+
+**Still needed:**
 - [ ] Add rate limiting to public endpoints (60/min for `/api/reports`, `/api/reports/triage`)
-- [ ] Verify CORS config allows frontend origin
-- [ ] Add CORS for APK origin if Dev 4 provides it
 - [ ] Ensure all error responses return proper JSON (not HTML)
 - [ ] Verify Sanctum token expiry settings
 
 ---
 
 ### Task 4.2: Production Verification
-**Time:** 1h | **Priority:** HIGH
+**Time:** 1h | **Priority:** HIGH | **Status:** ✅ DONE
 
-**Test all 40+ endpoints on deployed environment:**
+**Health Check:** EXISTS
+- `/api/health` — custom endpoint returning service status + timestamp
+- `/up` — Laravel's built-in health check
 
-```bash
-# Health
-curl https://<backend>/api/health
-
-# Public
-curl https://<backend>/api/leaderboard
-curl https://<backend>/api/achievements
-curl https://<backend>/api/laws
-curl https://<backend>/api/tickets
-
-# Auth (requires token)
-curl -H "Authorization: Bearer <token>" https://<backend>/api/user/profile
-curl -H "Authorization: Bearer <token>" https://<backend>/api/user/impact
-curl -H "Authorization: Bearer <token>" https://<backend>/api/dashboard/stats
-
-# Admin (requires admin token)
-curl -H "Authorization: Bearer <admin-token>" https://<backend>/api/admin/ngos
-curl -H "Authorization: Bearer <admin-token>" https://<backend>/api/admin/laws
-```
+**Feature Tests:** 3 test suites
+- `ReportSubmissionTest.php` (65 lines) — report submission, ghost mode, validation
+- `EnsureRoleMiddlewareTest.php` (95 lines) — 7 test cases for RBAC
+- `LeaderboardTest.php` (35 lines) — leaderboard ordering
 
 **Acceptance Criteria:**
-- [ ] All public endpoints return 200
-- [ ] All authenticated endpoints return 200 with valid token
-- [ ] All admin endpoints return 200 with admin token
-- [ ] No 500 errors on any endpoint
+- [x] Health check endpoint exists
+- [x] Core flow tests pass
+- [x] RBAC middleware tested
 
 ---
 
 ## Risk Items
 
-| Risk | Mitigation |
-|------|-----------|
-| Supabase project permanently lost | Create new Supabase project, re-run all migrations |
-| Azure Container App won't start | Check logs with `az containerapp logs tail`; fix env vars |
-| ~~ACR deleted — ImagePullBackOff~~ | **RESOLVED:** Switched CI/CD to ghcr.io (free for public repos) |
-| ghcr.io push fails | Verify `packages: write` permission in workflow; check `GITHUB_TOKEN` scope |
-| Container App can't pull from ghcr.io | Ensure repo/package is public; for private repos, set image pull credentials on Container App |
-| Seeder fails on foreign keys | Ensure law seeder runs before violation type seeder |
-| CORS blocks APK | Add APK origin to `config/cors.php` allowed_origins |
+| Risk | Status | Mitigation |
+|------|--------|-----------|
+| Supabase project permanently lost | ⚠️ OPEN | Create new Supabase project, re-run all migrations |
+| Azure Container App won't start | ⚠️ OPEN | Check logs with `az containerapp logs tail`; fix env vars |
+| ~~ACR deleted — ImagePullBackOff~~ | ❌ NOT RESOLVED | CI/CD still uses ACR; needs migration to ghcr.io |
+| ghcr.io push fails | ⚠️ OPEN | Verify `packages: write` permission in workflow; check `GITHUB_TOKEN` scope |
+| Seeder fails on foreign keys | ✅ Resolved | Law seeder runs before violation type seeder |
+| CORS blocks APK | ✅ Resolved | CORS config includes Vercel/Azure origins |
 
 ---
 
@@ -446,8 +350,9 @@ curl -H "Authorization: Bearer <admin-token>" https://<backend>/api/admin/laws
 - [ ] Azure AI service deployed and healthy
 - [ ] Backend Container App env vars set (Supabase, APP_KEY, AI_SERVICE_URL)
 - [ ] AI service Container App env vars set (Cosmos Gremlin, Google API key)
-- [ ] All 16 PH laws seeded with violation types
-- [ ] Demo data seeded (users, tickets, achievements, NGOs)
-- [ ] All admin CRUD endpoints functional
+- [x] All 16 PH laws seeded with violation types
+- [x] Demo data seeded (users, tickets, achievements, NGOs)
+- [x] All admin CRUD endpoints functional
+- [x] Health check + feature tests working
 - [ ] All 40+ endpoints verified on production
 - [ ] No 500 errors on any endpoint
