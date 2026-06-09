@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const BOTTOM_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/report", label: "Report", icon: Camera },
+  { href: "/report", label: "Report", icon: Camera, isPrimary: true },
   { href: "/scoreboard", label: "Records", icon: Trophy },
   { href: "/profile", label: "Profile", icon: User },
 ];

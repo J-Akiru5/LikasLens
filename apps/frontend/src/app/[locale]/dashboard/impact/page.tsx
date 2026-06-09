@@ -32,8 +32,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+import { laravelGet } from "@likaslens/shared";
 
 interface Ticket {
   id: string;
@@ -136,11 +135,8 @@ export default function ImpactPage() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user?.email) setUserName(user.email.split("@")[0]);
 
-        const res = await fetch(`${API_URL}/tickets?per_page=100`);
-        if (res.ok) {
-          const json = await res.json();
-          setTickets(json.data ?? json ?? []);
-        }
+        const json = await laravelGet<any>("/tickets?per_page=100");
+        setTickets(json?.data ?? json ?? []);
       } catch {
         // Use empty state
       } finally {

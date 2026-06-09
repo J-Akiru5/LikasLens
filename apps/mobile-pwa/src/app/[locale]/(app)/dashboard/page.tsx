@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DashboardSkeleton } from "@likaslens/shared";
+import { DashboardSkeleton, laravelGet } from "@likaslens/shared";
 import { InstallBanner } from "@/components/install-banner";
 
 export default function DashboardPage() {
@@ -11,13 +11,8 @@ export default function DashboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/dashboard/stats`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data.data || data);
-        }
+        const data = await laravelGet<any>("/dashboard/stats");
+        setStats(data?.data || data);
       } catch (err) {
         console.error("Failed to load dashboard:", err);
       } finally {

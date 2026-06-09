@@ -19,9 +19,7 @@ import {
   Bot,
 } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
-import { PublicScoreboard, FaqSection } from "@likaslens/shared";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
+import { PublicScoreboard, FaqSection, laravelGet } from "@likaslens/shared";
 
 interface LiveMetric {
   label: string;
@@ -92,13 +90,13 @@ export default function Home() {
   useEffect(() => {
     async function fetchMetrics() {
       try {
-        const [ticketsRes, leaderboardRes] = await Promise.all([
-          fetch(`${API_URL}/tickets?per_page=50`),
-          fetch(`${API_URL}/leaderboard`),
+        const [ticketsData, leaderboardData] = await Promise.all([
+          laravelGet<any>("/tickets?per_page=50").catch(() => null),
+          laravelGet<any>("/leaderboard").catch(() => null),
         ]);
 
-        if (!ticketsRes.ok) return;
-        const ticketsData = await ticketsRes.json();
+        if (!ticketsData) return;
+        
         const meta = ticketsData?.meta;
         const tickets: Array<{ status: string; created_at: string; resolved_at?: string }> =
           ticketsData?.data ?? [];

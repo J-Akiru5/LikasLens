@@ -7,6 +7,11 @@ function getCookie(name: string): string | null {
 function normalizeBaseUrl(raw: string): string {
   const trimmed = raw.trim();
   if (!trimmed) return "";
+  
+  if (trimmed.startsWith("/")) {
+    return trimmed.replace(/\/+$/, "");
+  }
+  
   try {
     const parsed = new URL(trimmed);
     return parsed.origin + parsed.pathname.replace(/\/+$/, "");

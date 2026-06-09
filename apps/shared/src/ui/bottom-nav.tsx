@@ -12,6 +12,7 @@ export interface BottomNavItem {
   label: string;
   icon: LucideIcon;
   exact?: boolean;
+  isPrimary?: boolean;
 }
 
 interface BottomNavProps {
@@ -34,8 +35,8 @@ export function BottomNav({ items, className }: BottomNavProps) {
         className
       )}
     >
-      <div className="flex items-center justify-around h-16 px-2">
-        {items.map((item) => {
+      <div className="flex items-center justify-around h-16 px-2 relative">
+        {items.map((item, index) => {
           const cleanPathname = pathname.replace(/^\/[^/]+/, "") || "/";
           const isActive = item.exact
             ? cleanPathname === item.href ||
@@ -45,20 +46,40 @@ export function BottomNav({ items, className }: BottomNavProps) {
           const Icon = item.icon;
           const fullHref = `${localePrefix}${item.href === "/" ? "" : item.href}` || "/";
 
+          if (item.isPrimary) {
+            return (
+              <div key={item.href} className="relative flex justify-center w-16 h-full shrink-0">
+                <Link
+                  href={fullHref}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "absolute -top-6 flex items-center justify-center w-14 h-14 rounded-full shadow-lg shadow-green/20 transition-transform active:scale-95",
+                    "bg-gradient-to-tr from-green to-accent border-4 border-page"
+                  )}
+                >
+                  <Icon className="w-6 h-6 text-white" />
+                </Link>
+                <span className="absolute bottom-1.5 text-[9px] font-mono uppercase tracking-wider text-ink/40">
+                  {item.label}
+                </span>
+              </div>
+            );
+          }
+
           return (
             <Link
               key={item.href}
               href={fullHref}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center gap-1 px-3 py-2 text-[10px] font-mono uppercase tracking-wider transition-colors min-w-[60px]",
+                "flex flex-col items-center justify-center h-full gap-1 px-1 py-1 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider transition-colors min-w-[60px]",
                 isActive
                   ? "text-green"
                   : "text-ink/40 hover:text-ink/60"
               )}
             >
-              <Icon className="w-5 h-5" />
-              <span>{item.label}</span>
+              <Icon className="w-5 h-5 sm:w-6 sm:h-6 mb-0.5" />
+              <span className="truncate w-full text-center">{item.label}</span>
             </Link>
           );
         })}

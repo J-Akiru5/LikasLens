@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Trophy } from "lucide-react";
-import { cn } from "@likaslens/shared";
+import { cn, laravelGet } from "@likaslens/shared";
 import { ScoreboardSkeleton } from "@likaslens/shared";
 
 interface ScoreboardEntry {
@@ -19,13 +19,8 @@ export default function ScoreboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/leaderboard`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setEntries(data.data || data);
-        }
+        const data = await laravelGet<any>("/leaderboard");
+        setEntries(data?.data || data);
       } catch (err) {
         console.error("Failed to load scoreboard:", err);
       } finally {
