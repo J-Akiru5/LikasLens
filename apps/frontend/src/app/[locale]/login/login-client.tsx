@@ -3,8 +3,31 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Leaf, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { useFormStatus } from "react-dom";
+import { Leaf, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { signIn } from "@/app/[locale]/actions/auth";
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full bg-accent text-white rounded-lg py-4 font-semibold tracking-tight text-lg tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
+    >
+      {pending ? (
+        <>
+          <Loader2 className="w-5 h-5 animate-spin" />
+          Logging in...
+        </>
+      ) : (
+        <>
+          Log In <ArrowRight className="w-5 h-5" />
+        </>
+      )}
+    </button>
+  );
+}
 
 export function LoginClient() {
   const searchParams = useSearchParams();
@@ -95,12 +118,7 @@ export function LoginClient() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="w-full bg-accent text-white rounded-lg py-4 font-semibold tracking-tight text-lg tracking-wider flex items-center justify-center gap-2"
-          >
-            Log In <ArrowRight className="w-5 h-5" />
-          </button>
+          <SubmitButton />
         </form>
 
         <div className="mt-8 text-center border-t border-border pt-6">

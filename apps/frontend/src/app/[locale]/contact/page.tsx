@@ -2,18 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail, MessageCircle, MapPin, Send, CheckCircle } from "lucide-react";
+import { ArrowLeft, Mail, MessageCircle, MapPin, Send, CheckCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppHeader } from "@/components/layout/header";
 import { showToast } from "@likaslens/shared";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/contact-messages`, {
@@ -25,6 +26,7 @@ export default function ContactPage() {
         body: JSON.stringify(formData),
       });
       if (response.ok) {
+        setSubmitted(true);
         showToast("Message sent successfully", "success");
       } else {
         showToast("Failed to send message. Please try again.", "error");
@@ -32,12 +34,16 @@ export default function ContactPage() {
     } catch (error) {
       console.error("Failed to submit contact form", error);
       showToast("Failed to send message. Check your connection.", "error");
+    } finally {
+      setSubmitting(false);
     }
 
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: "", email: "", message: "" });
-    }, 5000);
+    if (submitted) {
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ name: "", email: "", message: "" });
+      }, 5000);
+    }
   };
 
   return (
@@ -142,10 +148,20 @@ export default function ContactPage() {
                   </div>
                   <button 
                     type="submit"
-                    className="w-full bg-accent text-white rounded-lg px-6 py-4 font-semibold tracking-tight text-lg flex items-center justify-center gap-2"
+                    disabled={submitting}
+                    className="w-full bg-accent text-white rounded-lg px-6 py-4 font-semibold tracking-tight text-lg flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
                   >
-                    <Send className="w-5 h-5" />
-                    Send Message
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-5 h-5" />
+                        Send Message
+                      </>
+                    )}
                   </button>
                 </motion.form>
               ) : (
