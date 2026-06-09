@@ -34,7 +34,7 @@ export function LoginClient() {
   }
 
   return (
-    <main className="min-h-dvh flex items-center justify-center p-4 sm:p-6 relative overflow-hidden selection:bg-[#FFB703]/30 selection:text-current">
+    <main className="min-h-dvh flex items-center justify-center p-4 sm:p-6 relative overflow-hidden selection:bg-amber/30 selection:text-current">
       {/* Background — forest with blur */}
       <div className="absolute inset-0 z-0">
         <div
@@ -54,13 +54,13 @@ export function LoginClient() {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-[#1B4332] flex items-center justify-center shadow-[4px_4px_0px_#081c15]">
-            <Leaf className="w-8 h-8 text-[#2DE1C2]" />
+          <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center shadow-[4px_4px_0px_var(--ink)]">
+            <Leaf className="w-8 h-8 text-secondary" />
           </div>
         </div>
 
         {/* Card */}
-        <div className="p-8 md:p-10 rounded-2xl border border-ink/10 bg-background/80 backdrop-blur-xl shadow-[8px_8px_0px_#1B4332]">
+        <div className="p-8 md:p-10 rounded-2xl border border-border bg-panel/80 backdrop-blur-xl shadow-[8px_8px_0px_var(--accent)]">
           <div className="mb-8 text-center">
             <h1 className="font-heading text-3xl font-black tracking-tight mb-2">
               Welcome Back
@@ -88,7 +88,7 @@ export function LoginClient() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-ink/10 bg-background font-medium focus:border-[#1B4332] focus:ring-0 outline-none transition-colors"
+                className="w-full px-4 py-3 rounded-xl theme-input font-medium"
                 placeholder="admin@likaslens.ph"
               />
             </div>
@@ -103,7 +103,7 @@ export function LoginClient() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border-2 border-ink/10 bg-background font-medium focus:border-[#1B4332] focus:ring-0 outline-none transition-colors"
+                  className="w-full px-4 py-3 pr-12 rounded-xl theme-input font-medium"
                   placeholder="••••••••"
                 />
                 <button
@@ -120,7 +120,7 @@ export function LoginClient() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#FFB703] text-[#081C15] font-black uppercase tracking-wide text-lg hover:bg-[#e6a503] disabled:opacity-50 transition-all shadow-[4px_4px_0px_#1B4332] hover:shadow-[6px_6px_0px_#1B4332] hover:-translate-y-0.5"
+              className="w-full flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-amber text-page font-black uppercase tracking-wide text-lg hover:opacity-90 disabled:opacity-50 transition-all shadow-[4px_4px_0px_var(--accent)] hover:shadow-[6px_6px_0px_var(--accent)] hover:-translate-y-0.5"
             >
               {loading ? (
                 <span className="animate-pulse">Signing in...</span>
@@ -137,7 +137,7 @@ export function LoginClient() {
         <div className="mt-8 text-center space-y-3">
           <Link
             href="/"
-            className="font-mono text-xs uppercase tracking-widest text-ink/40 hover:text-[#1B4332] transition-colors"
+            className="font-mono text-xs uppercase tracking-widest text-muted hover:text-accent transition-colors"
           >
             &larr; Back to Home
           </Link>

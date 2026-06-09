@@ -16,7 +16,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     try {
       if (typeof window === "undefined") return "civic";
-      const stored = localStorage.getItem("likas-theme") as Theme | null;
+      const stored = localStorage.getItem("likaslens-theme") as Theme | null;
       return stored || "civic";
     } catch {
       return "civic";
@@ -25,15 +25,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Sync DOM attribute when theme changes
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme === "ghost" ? "ghost" : "light");
+    document.documentElement.setAttribute("data-theme", theme === "ghost" ? "ghost" : "civic");
   }, [theme]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem("likas-theme", newTheme);
+    localStorage.setItem("likaslens-theme", newTheme);
     document.documentElement.setAttribute(
       "data-theme",
-      newTheme === "ghost" ? "ghost" : "light"
+      newTheme === "ghost" ? "ghost" : "civic"
     );
   };
 
