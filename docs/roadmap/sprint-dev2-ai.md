@@ -28,7 +28,7 @@
 |------------|------|-----------|--------|-------|
 | Supabase connection | Dev 3 (Charlyn) | Thu evening | ✅ Resolved | DB accessible, seeders running |
 | Test images | Dev 4 (Katherine) | Sat | ✅ Resolved | Demo images tested |
-| Azure AI Service deployment | Dev 3 (Charlyn) | Sun | 🔄 In Progress | Deploy via ghcr.io (ACR deleted; CI/CD now pushes to GitHub Container Registry) |
+| Azure AI Service deployment | Dev 3 (Charlyn) | Sun | ⚠️ Blocked | CI/CD still points to deleted ACR; needs ghcr.io migration |
 
 ---
 
@@ -124,30 +124,21 @@
 ## Day 3 — Saturday, June 7
 
 ### Task 3.1: Seed ASEAN-Relevant Hazard Types
-**Time:** 3h | **Priority:** MEDIUM | **Status:** ✅ COMPLETE
+**Time:** 3h | **Priority:** MEDIUM | **Status:** ⚠️ FILE REMOVED
 
 **File created:** `apps/ai-service/gremlin_upserts/asean_expansion.py` (391 lines)
 
-**What was built:**
+> **⚠️ WARNING:** This file was removed during codebase cleanup (commit `34d71c0`). The ASEAN hazard seeding code no longer exists in the repo. If ASEAN hazards need to be re-seeded, this file must be restored from git history.
+
+**What was built (before removal):**
 - 5 new ASEAN jurisdiction vertices (ID, TH, VN, MY, SG)
 - 1 anchor environmental law per country
 - 1 enforcement agency/NGO per country
 - `governed_by`, `enforced_by`, `violates` edges connecting ASEAN hazards → ASEAN laws
 - Supports `--dry-run` and `--gremlin` output modes
 
-**ASEAN Hazards Seeded:**
-
-| Hazard | Region | Laws (PH placeholder) |
-|--------|--------|----------------------|
-| `peatland_fire` | Indonesia, Malaysia | RA-8749 (air) |
-| `rubber_plantation_encroachment` | Thailand, Cambodia | PD-705 (forestry) |
-| `hydropower_displacement` | Laos, Vietnam | PD-1586 (EIA) |
-| `sand_dredging` | Cambodia, Vietnam | PD-1067 (water) |
-| `mangrove_conversion_aquaculture` | Vietnam, Thailand | RA-7611 (palawan) |
-| `transboundary_haze` | Indonesia, Malaysia, Singapore | RA-8749 (air) |
-
 **Acceptance Criteria:**
-- [x] 6+ ASEAN-specific HazardType vertices
+- [x] 6+ ASEAN-specific HazardType vertices (before file removal)
 - [x] Each linked to closest PH law equivalent
 - [x] Graph traversal returns ASEAN hazards
 
@@ -215,6 +206,29 @@
 
 ---
 
+## Post-Sprint Work (Not in Original Sprint)
+
+### AI Service Stability Hardening (v0.6.2-v0.6.3)
+- ✅ Comprehensive P0/P1 stability fixes (commit `1b56f32`)
+  - `analyze_image()`: try/except with proper error handling
+  - Image size validation: 20MB max, 16MP cap with auto-resize
+  - Gremlin injection protection: all IDs validated against safe pattern
+  - Gremlin timeouts: 30s via `asyncio.wait_for()`
+  - Gremlin reconnection: 2 retries on stale connection
+  - `analyze_image` moved to `asyncio.to_thread` (no longer blocks event loop)
+  - Global FastAPI exception handler with consistent JSON errors
+  - Gemini API timeouts (30s) in both `chat_proxy.py` and `hazard_analyzer.py`
+  - `genai.configure()` called once at startup
+  - Error messages no longer leak internal details
+  - CORS reads from `CORS_ORIGINS` env var
+  - Dependencies pinned with upper bounds
+  - Dockerfile: non-root user + `HEALTHCHECK`
+- ✅ Request logging middleware (commit `694cdef`)
+- ✅ Rate limiting middleware (60 req/min general, 10 req/min for expensive endpoints)
+- ✅ Synced `pyproject.toml` with `requirements.txt`
+
+---
+
 ## Risk Items
 
 | Risk | Status | Mitigation |
@@ -223,6 +237,7 @@
 | Model inference too slow | ✅ Resolved | Using `yolov8n` (nano) variant for speed |
 | Gremlin connection fails | ✅ Resolved | Fallback handling in `gremlin_client.py`; Cosmos DB online |
 | Gemini hallucinates laws | ✅ Resolved | System prompt explicitly forbids invented laws; tested |
+| `asean_expansion.py` removed | ⚠️ Open | File removed in cleanup commit; needs restoration if ASEAN seeding required |
 
 ---
 
@@ -231,7 +246,7 @@
 - [x] Environmental YOLOv8 model integrated and detecting hazards
 - [x] All 16 PH laws seeded in Gremlin graph
 - [x] 7+ violation types with hazard→law→agency edges
-- [x] 6+ ASEAN-specific hazard types seeded
+- [x] 6+ ASEAN-specific hazard types seeded (file removed, needs restoration)
 - [x] Gemini chatbot has environmental persona (Likasy)
 - [x] Full AI pipeline tested end-to-end
 - [x] No hallucinated laws in any output

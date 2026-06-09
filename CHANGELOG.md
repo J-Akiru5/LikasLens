@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-06-09
+
+### Changed
+- **Docs**: Updated all 4 sprint roadmap docs with accurate task completion status
+- **Docs**: Dev 1 (Lou) — 14 checkboxes flipped, 8 new items added (changelog, loading states, EXIF, offline queue, etc.)
+- **Docs**: Dev 2 (Jeff) — 3 new items added (rate limiting, logging, stability hardening); flagged missing `asean_expansion.py`
+- **Docs**: Dev 3 (Charlyn) — 2 checkboxes flipped, 8 new items added (security fixes, HasApiTokens, pagination, etc.)
+- **Docs**: Dev 4 (Katherine) — 3 checkboxes flipped, 4 new items added (mobile PWA, icons, i18n, .env.example)
+
 ## [0.7.3] - 2026-06-09
 
 ### Removed
@@ -302,7 +311,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.3...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.4...HEAD
+[0.7.4]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.0...v0.7.1
