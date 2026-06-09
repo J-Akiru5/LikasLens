@@ -48,6 +48,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 code, pre, .font-data { font-family: 'Space Mono', monospace; }
 .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* Theme Toggle */
 .theme-toggle {
   position: fixed; top: 1rem; right: 1rem; z-index: 1000;
   display: flex; align-items: center; gap: 0.5rem;
@@ -65,6 +67,8 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
 }
 [data-theme="ghost"] .theme-toggle .dot { background: var(--secondary); animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Hero */
 .hero {
   background: var(--primary);
   color: #F8F9FA;
@@ -82,6 +86,59 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
   font-family: 'Space Mono', monospace;
 }
+
+/* Progress Bar */
+.progress-container {
+  background: var(--panel);
+  border: 4px solid var(--foreground);
+  box-shadow: 8px 8px 0px var(--shadow-color);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.progress-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: var(--foreground);
+}
+.progress-pct {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--dev-accent);
+}
+.progress-track {
+  height: 12px;
+  background: rgba(8, 28, 21, 0.1);
+  border: 2px solid var(--foreground);
+  overflow: hidden;
+}
+[data-theme="ghost"] .progress-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+.progress-fill {
+  height: 100%;
+  background: var(--dev-accent);
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-detail {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted-text);
+  margin-top: 0.5rem;
+}
+
+/* Brutal Panel */
 .brutal-panel {
   background: var(--panel);
   border: 4px solid var(--foreground);
@@ -91,6 +148,8 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   transition: all 0.2s ease;
 }
 .brutal-panel:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0px var(--shadow-color); }
+
+/* Section Headers */
 .section-header {
   font-size: 1.5rem;
   color: var(--primary);
@@ -100,6 +159,8 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   display: inline-block;
 }
 [data-theme="ghost"] .section-header { color: var(--secondary); }
+
+/* Day Section */
 .day-section { margin: 2rem 0; }
 .day-header {
   background: var(--dev-accent);
@@ -118,6 +179,8 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   padding: 0.25rem 0.6rem;
   font-size: 0.85rem;
 }
+
+/* Task Card */
 .task-card { margin-bottom: 2rem; }
 .task-title {
   font-size: 1.1rem; font-weight: 800;
@@ -130,39 +193,43 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   padding: 0.15rem 0.5rem; font-size: 0.7rem;
   font-family: 'Space Mono', monospace;
 }
-.task-problem {
-  background: rgba(123, 31, 162, 0.08);
-  border-left: 4px solid var(--dev-accent);
-  padding: 0.75rem 1rem;
-  margin: 0.75rem 0;
-  font-size: 0.9rem;
-}
-.acceptance-list { list-style: none; padding: 0; margin: 0.75rem 0; }
-.acceptance-list li {
-  padding: 0.35rem 0;
-  padding-left: 1.75rem;
-  position: relative;
-  font-size: 0.9rem;
-}
-.acceptance-list li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.55rem;
-  width: 14px; height: 14px;
+
+/* Interactive Checkboxes */
+.task-check {
+  appearance: none;
+  width: 18px; height: 18px;
   border: 3px solid var(--foreground);
   background: transparent;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
 }
-.acceptance-list li.done::before {
+.task-check:checked {
   background: var(--secondary);
 }
-.acceptance-list li.done {
+.task-check:checked::after {
+  content: '\2713';
+  position: absolute;
+  top: -2px; left: 2px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--foreground);
+}
+.task-check-label {
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.task-check-label.done {
   text-decoration: line-through;
   opacity: 0.7;
 }
-.acceptance-list li.partial::before {
-  background: var(--accent);
-}
+
+/* Tags */
 .tag {
   display: inline-block;
   padding: 0.15rem 0.5rem;
@@ -176,6 +243,8 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
 .tag-done { background: rgba(45, 225, 194, 0.2); border-color: #2DE1C2; color: #1B4332; }
 .tag-pending { background: rgba(255, 183, 3, 0.15); border-color: #FFB703; color: #b8860b; }
 .tag-blocked { background: rgba(220, 53, 69, 0.1); border-color: #dc3545; color: #dc3545; }
+
+/* Tables */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -237,6 +306,7 @@ pre code {
   .brutal-panel { padding: 1rem; }
   table { font-size: 0.75rem; }
   th, td { padding: 0.35rem 0.5rem; }
+  .progress-container { position: static; }
 }
 </style>
 </head>
@@ -244,7 +314,7 @@ pre code {
 
 <button class="theme-toggle" onclick="toggleTheme()">
   <span class="dot"></span>
-  <span class="label">Ghost Mode</span>
+  <span class="label" id="theme-label">CIVIC</span>
 </button>
 
 <div class="hero">
@@ -262,7 +332,21 @@ pre code {
   </div>
 </div>
 
-<div class="container">
+<main class="container">
+
+  <div class="progress-container" id="progress-bar">
+    <div class="progress-header">
+      <span class="progress-title">Sprint Progress</span>
+      <span class="progress-pct" id="progress-pct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-detail">
+      <span id="progress-done">0</span> / <span id="progress-total">0</span> tasks completed
+    </div>
+  </div>
+
 <p>> <strong>Sprint:</strong> ASEAN AI Hackathon Prep</p>
 <p>> <strong>Timeline:</strong> June 5-8, 2026 (Thu-Sun)</p>
 <p>> <strong>Total Hours:</strong> 24h</p>
@@ -278,8 +362,8 @@ pre code {
 <tr><td>Dev 4</td><td>Katherine</td><td>Integration/PWA/APK</td><td>E2E testing, PWA offline, Capacitor APK, demo prep</td></tr>
 </table>
 <p>> <strong>Note:</strong> Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.</p>
-<div class="brutal-panel"><h3 style="margin-bottom:0.75rem">✅ Completed Work</h3><ul class="acceptance-list">
-</ul>
+<div class="brutal-panel"><h3 style="margin-bottom:0.75rem">✅ Completed Work</h3>
+</div>
 <p style="padding-left:1rem">• ✅ Impact dashboard significantly expanded (`dashboard/impact/page.tsx` — 977+ lines with charts, stats, activity feed)</p>
 <p style="padding-left:1rem">• ✅ Landing page updates (`page.tsx` — 88+ lines of changes)</p>
 <p style="padding-left:1rem">• ✅ Register form improvements</p>
@@ -312,13 +396,12 @@ pre code {
 <p style="padding-left:1rem">• `apps/frontend/src/components/layout/sidebar.tsx`</p>
 <p style="padding-left:1rem">• `apps/shared/src/ui/` (any shared nav components)</p>
 <p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<ul class="acceptance-list">
-<li class="done">Citizen sees: Dashboard, Report, Scoreboard, Laws, Profile</li>
-<li class="done">Analyst sees: + Incidents, Towns Analytics</li>
-<li>Super Admin sees: + Users, NGOs, Laws Admin, Rewards, Audit Logs</li>
-<li class="done">Role fetched from `/api/user/profile` and cached</li>
-<li>Loading state while role is being fetched</li>
-</ul>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-1" checked> Citizen sees: Dashboard, Report, Scoreboard, Laws, Profile</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-2" checked> Analyst sees: + Incidents, Towns Analytics</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-3"> Super Admin sees: + Users, NGOs, Laws Admin, Rewards, Audit Logs</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-4" checked> Role fetched from `/api/user/profile` and cached</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-5"> Loading state while role is being fetched</label>
+</div>
 <p style="font-weight:700;margin:0.75rem 0 0.25rem">Implementation Notes:</p>
 <p style="padding-left:1rem">• Role is fetched from Supabase `user_metadata` via `getRole(user?.user_metadata)` (not from Laravel API)</p>
 <p style="padding-left:1rem">• Stored in `useState`, not a context/zustand store</p>
@@ -332,14 +415,13 @@ pre code {
 <p style="padding-left:1rem">• `apps/frontend/src/app/[locale]/scoreboard/page.tsx`</p>
 <p style="padding-left:1rem">• `apps/shared/src/ui/public-scoreboard.tsx`</p>
 <p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<ul class="acceptance-list">
-<li class="done">Top 3 ranked users have special visual treatment (gold/silver/bronze)</li>
-<li class="done">Rank #1 has amber glow: `shadow-[0_0_16px_rgba(255,183,3,0.12)]`</li>
-<li class="done">Eco-credit balance visible per user</li>
-<li>Mobile layout is responsive (single column on small screens)</li>
-<li class="done">Loading skeleton matches Civic Brutalism style</li>
-<li class="done">Empty state message when no data</li>
-</ul>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-6" checked> Top 3 ranked users have special visual treatment (gold/silver/bronze)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-7" checked> Rank #1 has amber glow: `shadow-[0_0_16px_rgba(255,183,3,0.12)]`</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-8" checked> Eco-credit balance visible per user</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-9"> Mobile layout is responsive (single column on small screens)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-10" checked> Loading skeleton matches Civic Brutalism style</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-11" checked> Empty state message when no data</label>
+</div>
 <p style="font-weight:700;margin:0.75rem 0 0.25rem">Design Reference:</p>
 <p style="padding-left:1rem">• Uses `font-heading font-black uppercase` for rank names</p>
 <p style="padding-left:1rem">• Uses `font-data` for XP numbers</p>
@@ -377,15 +459,14 @@ pre code {
 <p style="padding-left:1rem">• Last 10 tickets with status, type, location</p>
 <p style="padding-left:1rem">• **Reuse `ActivityFeed`** from `apps/frontend/src/components/dashboard/`</p>
 <p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<ul class="acceptance-list">
-<li class="done">Page loads with real data from API</li>
-<li class="done">Stats cards show correct numbers</li>
-<li>Map renders with ticket markers (uses SVG ASEAN map instead of Leaflet)</li>
-<li class="done">Charts are responsive</li>
-<li class="done">Mobile layout stacks vertically</li>
-<li class="done">Loading states for each section</li>
-<li>Error states if API fails (falls back silently, no explicit error UI)</li>
-</ul>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-12" checked> Page loads with real data from API</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-13" checked> Stats cards show correct numbers</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-14"> Map renders with ticket markers (uses SVG ASEAN map instead of Leaflet)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-15" checked> Charts are responsive</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-16" checked> Mobile layout stacks vertically</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-17" checked> Loading states for each section</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-18"> Error states if API fails (falls back silently, no explicit error UI)</label>
+</div>
 <hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
 <div class="task-card"><div class="task-title"><span class="task-id">2.2</span>Install Chart Library</div>
 <p><strong>Time:</strong> 1h | <strong>Priority:</strong> HIGH</p>
@@ -402,13 +483,12 @@ pre code {
 <p style="padding-left:1rem">• `apps/frontend/src/components/modals/EdgeInterceptorModal.tsx`</p>
 <p style="padding-left:1rem">• `apps/frontend/src/app/globals.css`</p>
 <p style="font-weight:700;margin:0.75rem 0 0.25rem">Enhancements:</p>
-<ul class="acceptance-list">
-<li>Ghost Mode toggle has animated transition (dark theme fade-in)</li>
-<li class="done">Edge Interceptor modal copy is clear and compelling for demo</li>
-<li>Ghost Mode status indicator (pulsing amber dot) in header when active</li>
-<li>EXIF stripping confirmation toast: "Metadata stripped for your safety"</li>
-<li class="done">Stealth theme: all UI elements switch to dark palette</li>
-</ul>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-19"> Ghost Mode toggle has animated transition (dark theme fade-in)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-20" checked> Edge Interceptor modal copy is clear and compelling for demo</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-21"> Ghost Mode status indicator (pulsing amber dot) in header when active</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-22"> EXIF stripping confirmation toast: "Metadata stripped for your safety"</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-23" checked> Stealth theme: all UI elements switch to dark palette</label>
+</div>
 <p style="font-weight:700;margin:0.75rem 0 0.25rem">Ghost Mode CSS (already exists, verify):</p>
 <p><code>`</code>css</p>
 <p>[data-theme="ghost"] {</p>
@@ -433,12 +513,11 @@ pre code {
 <p style="padding-left:1rem">• `/laws` — law cards, search</p>
 <p style="padding-left:1rem">• `/contact` — form layout</p>
 <p style="font-weight:700;margin:0.75rem 0 0.25rem">Fixes:</p>
-<ul class="acceptance-list">
-<li>All pages work at 375px width (iPhone SE) — unverifiable, needs runtime testing</li>
-<li>No horizontal scroll on any page — unverifiable</li>
-<li>Touch targets are minimum 44px — unverifiable</li>
-<li class="done">Bottom nav doesn't overlap content — pages use `pb-20 lg:pb-6`</li>
-</ul>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-24"> All pages work at 375px width (iPhone SE) — unverifiable, needs runtime testing</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-25"> No horizontal scroll on any page — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-26"> Touch targets are minimum 44px — unverifiable</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-27" checked> Bottom nav doesn't overlap content — pages use `pb-20 lg:pb-6`</label>
+</div>
 <hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
 <div class="day-section"><div class="day-header"><span class="day-num">Day 4</span>Sunday, June 8</div>
 <div class="task-card"><div class="task-title"><span class="task-id">4.1</span>Demo Script UI Flows</div>
@@ -463,12 +542,11 @@ pre code {
 <p style="padding-left:1rem">3. Point out resolution rate</p>
 <p style="padding-left:1rem">4. Show geographic hotspots</p>
 <p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<ul class="acceptance-list">
-<li>All 3 flows complete without errors — unverifiable, needs runtime testing</li>
-<li>Each flow takes < 30 seconds — unverifiable</li>
-<li>UI looks polished at every step — unverifiable</li>
-<li>No console errors during demo — unverifiable</li>
-</ul>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-7-28"> All 3 flows complete without errors — unverifiable, needs runtime testing</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-7-29"> Each flow takes < 30 seconds — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-7-30"> UI looks polished at every step — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-7-31"> No console errors during demo — unverifiable</label>
+</div>
 <hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
 <div class="task-card"><div class="task-title"><span class="task-id">4.2</span>Final UI Fixes</div>
 <p><strong>Time:</strong> 1h | <strong>Priority:</strong> LOW</p>
@@ -487,27 +565,122 @@ pre code {
 </table>
 <hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
 <h2 class="section-header">Definition of Done</h2>
-<ul class="acceptance-list">
-<li class="done">Role-aware sidebar works for citizen/analyst/admin (missing Laws Admin for super_admin)</li>
-<li class="done">Impact dashboard shows real data with charts + map (SVG map, not Leaflet)</li>
-<li>Ghost Mode flow is polished and compelling (missing pulsing indicator + EXIF toast)</li>
-<li>All pages responsive at 375px — unverifiable</li>
-<li>All 3 demo flows complete without errors — unverifiable</li>
-<li>No console errors on any page — unverifiable</li>
-</ul>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-32" checked> Role-aware sidebar works for citizen/analyst/admin (missing Laws Admin for super_admin)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-33" checked> Impact dashboard shows real data with charts + map (SVG map, not Leaflet)</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-34"> Ghost Mode flow is polished and compelling (missing pulsing indicator + EXIF toast)</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-35"> All pages responsive at 375px — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-36"> All 3 demo flows complete without errors — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-37"> No console errors on any page — unverifiable</label>
+</div>
 
 <div class="footer">
   <p>LikasLens Sprint Roadmap — Generated 2026-06-09</p>
   <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a> · <a href="/">Home</a></p>
 </div>
-</div>
+</main>
 
 <script>
-function toggleTheme() {
-  const html = document.documentElement;
-  const current = html.getAttribute('data-theme');
-  html.setAttribute('data-theme', current === 'ghost' ? 'civic' : 'ghost');
-}
+(function() {
+  var STORAGE_KEY = 'likaslens-sprint-progress';
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch(e) {
+      return {};
+    }
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {
+      console.warn('Could not save progress to localStorage');
+    }
+  }
+
+  function updateProgress() {
+    var checks = document.querySelectorAll('.task-check');
+    var checked = document.querySelectorAll('.task-check:checked');
+    var total = checks.length;
+    var done = checked.length;
+    var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-done').textContent = done;
+    document.getElementById('progress-total').textContent = total;
+
+    var fill = document.getElementById('progress-fill');
+    if (pct >= 100) {
+      fill.style.background = '#4caf50';
+    } else if (pct >= 50) {
+      fill.style.background = 'var(--dev-accent)';
+    } else {
+      fill.style.background = 'var(--accent)';
+    }
+  }
+
+  function init() {
+    var state = loadState();
+    var checks = document.querySelectorAll('.task-check');
+
+    checks.forEach(function(cb) {
+      var id = cb.getAttribute('data-id');
+
+      if (state[id]) {
+        cb.checked = true;
+      }
+
+      cb.addEventListener('change', function() {
+        var currentState = loadState();
+        if (this.checked) {
+          currentState[id] = true;
+          this.parentElement.classList.add('done');
+        } else {
+          delete currentState[id];
+          this.parentElement.classList.remove('done');
+        }
+        saveState(currentState);
+        updateProgress();
+      });
+
+      // Set initial done class
+      if (cb.checked) {
+        cb.parentElement.classList.add('done');
+      }
+    });
+
+    updateProgress();
+  }
+
+  window.toggleTheme = function() {
+    var html = document.documentElement;
+    var label = document.getElementById('theme-label');
+    if (html.getAttribute('data-theme') === 'ghost') {
+      html.setAttribute('data-theme', 'civic');
+      label.textContent = 'CIVIC';
+      localStorage.setItem('likaslens-theme', 'civic');
+    } else {
+      html.setAttribute('data-theme', 'ghost');
+      label.textContent = 'GHOST';
+      localStorage.setItem('likaslens-theme', 'ghost');
+    }
+  };
+
+  var savedTheme = localStorage.getItem('likaslens-theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    var label = document.getElementById('theme-label');
+    if (label) label.textContent = savedTheme.toUpperCase();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
 </script>
 </body>
 </html>
