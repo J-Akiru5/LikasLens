@@ -337,6 +337,7 @@ Remove obsolete secrets from GitHub repo settings:
 | Azure Container App won't start | ⚠️ OPEN | Check logs with `az containerapp logs tail`; fix env vars |
 | ~~ACR deleted — ImagePullBackOff~~ | ❌ NOT RESOLVED | CI/CD still uses ACR; needs migration to ghcr.io |
 | ghcr.io push fails | ⚠️ OPEN | Verify `packages: write` permission in workflow; check `GITHUB_TOKEN` scope |
+| Vercel 404 on all pages | ✅ RESOLVED | `outputDirectory` was `.next` instead of `apps/frontend/.next` in vercel.json |
 | Seeder fails on foreign keys | ✅ Resolved | Law seeder runs before violation type seeder |
 | CORS blocks APK | ✅ Resolved | CORS config includes Vercel/Azure origins |
 

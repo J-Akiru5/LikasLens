@@ -353,6 +353,9 @@ A separate mobile PWA app was created at `apps/mobile-pwa/` with:
 - PWA manifest with standalone display
 - Supabase client/server integration
 - `next-intl` i18n support
+- PWA icons (192x192, 512x512, maskable, apple-touch) ✅ NEW
+- i18n messages for fil, id, ms, ta, vi locales ✅ NEW
+- Not-found page ✅ NEW
 
 **Note:** This app does NOT have `next-pwa` integration or a service worker — relies on browser-level PWA via manifest.
 

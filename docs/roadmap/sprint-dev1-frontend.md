@@ -19,6 +19,14 @@
 
 > **Note:** Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.
 
+### Lou's Completed Work (from codebase evidence)
+- ✅ Impact dashboard significantly expanded (`dashboard/impact/page.tsx` — 977+ lines with charts, stats, activity feed)
+- ✅ Landing page updates (`page.tsx` — 88+ lines of changes)
+- ✅ Register form improvements
+- ✅ Sidebar refinements
+- ✅ Theme provider updates
+- ✅ Global CSS adjustments
+
 ---
 
 ## Dependencies on Other Developers
