@@ -22,6 +22,7 @@ import {
   X,
   MessageSquare,
   Fingerprint,
+  FileText,
 } from "lucide-react";
 
 const navItems = [
@@ -34,6 +35,7 @@ const navItems = [
   { href: "/rewards", label: "Rewards", icon: Gift, roles: ["super_admin"] },
   { href: "/inquiries", label: "Inquiries", icon: MessageSquare, roles: ["super_admin"] },
   { href: "/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["super_admin"] },
+  { href: "/changelog", label: "Changelog", icon: FileText, roles: ["analyst", "super_admin"] },
   { href: "/settings", label: "Settings", icon: Settings, roles: ["super_admin"] },
 ];
 

@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-09
+
+### Added
+- **Frontend**: New `mobile-pwa` app with onboarding, dashboard, report, scoreboard, login/register
+- **Frontend**: Impact dashboard page with recharts bar charts and activity feed
+- **Frontend**: Public changelog page at `/changelog` parsing `CHANGELOG.md` at build time
+- **Shared**: New UI components — sidebar, skeleton, dashboard-layout, mobile-layout, app-header, bottom-nav
+- **Shared**: Civic Brutalism CSS design tokens
+- **Mobile PWA**: PWA icons (192x192, 512x512, maskable, apple-touch)
+- **Mobile PWA**: i18n messages for fil, id, ms, ta, vi locales
+- **Mobile PWA**: Not-found page
+- **Docs**: Restored sprint and hackathon docs under `docs/roadmap/`
+- **Docs**: Updated sprint roadmap with new team structure and task completion status
+
+### Fixed
+- **Frontend**: Recharts type errors in impact dashboard (Next.js 16 stricter type checking)
+- **Frontend**: Framer-motion `ease` type error on landing page (tuple vs readonly array)
+- **Frontend**: Added `next` as peer dependency to shared package
+- **Build**: Corrected `.gitignore` encoding (UTF-16 to UTF-8)
+- **Build**: Updated `pnpm-lock.yaml` for shared package changes
+- **Admin Portal**: Login client and sidebar improvements
+
+### Changed
+- **Team**: Roseby removed; Lou joined as Dev 1 (Frontend); Katherine moved to Dev 4 (Integration)
+- **Docs**: Sprint docs reorganized with new team roster (Lou=Dev1, Jeff=Dev2, Charlyn=Dev3, Katherine=Dev4)
+- **Docs**: Removed `.next` build cache directories from git tracking
+- **Shared**: API client improvements and mobile layout adjustments
+- **Shared**: Bottom nav component refinements
+
 ## [0.5.0] - 2026-06-08
 
 ### Added
@@ -187,7 +216,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.2.0...v0.3.0
