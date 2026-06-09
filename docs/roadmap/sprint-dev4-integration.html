@@ -1,730 +1,537 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" data-theme="civic">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LikasLens Sprint — Developer 4: Integration, PWA, APK & Demo</title>
+<title>LikasLens Sprint — Developer 4: Integration & PWA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{--accent:#1b4332;--accent-bright:#2ee6c8;--amber:#b8860b;--page:#f5f5f0;--ink:#1a1d1a;--panel:#eeeee8;--border:rgba(26,29,26,0.08);--muted:rgba(26,29,26,0.5);--dev-accent:#0288d1;--secondary: #5a7d6a;
-  --green: #2d6a4f;
-  --red: #b23b3b;
-  --hero-bg: #0d1a12;
-  --hero-ink: #f0ede8;
-  --hero-muted: rgba(240, 237, 232, 0.5);
-  --hero-border: rgba(240, 237, 232, 0.08);
-  --hero-panel: rgba(255, 255, 255, 0.04);
-  --shadow-color:#1B4332}
-[data-theme="ghost"]{--secondary: #e8ad55;
-            --green: #2ee6c8;
-            --red: #e85a5a;
-            --hero-bg: #06101e;
-            --hero-ink: #e8e0d4;
-            --hero-muted: rgba(232, 224, 212, 0.45);
-            --hero-border: rgba(46, 230, 200, 0.08);
-            --hero-panel: rgba(46, 230, 200, 0.03);
-            --accent:#2ee6c8;--accent-bright:#2ee6c8;--amber:#e8ad55;--page:#0c1628;--ink:#e8e0d4;--panel:rgba(12,22,40,0.92);--border:rgba(232,224,212,0.06);--muted:rgba(232,224,212,0.4);--shadow-color:#2DE1C2}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Geist','Helvetica Neue',Arial,sans-serif;background:var(--page);color:var(--ink);line-height:1.6;transition:background 0.4s ease,color 0.4s ease}
-h1,h2,h3,h4,h5,h6{font-family:'Geist','Helvetica Neue',Arial,sans-serif;font-weight:800;text-transform:uppercase;letter-spacing:-0.02em;line-height:1.2}
-code,pre,.font-data{font-family:'JetBrains Mono',monospace}
-.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
-.theme-toggle{position:fixed;top:1rem;right:1rem;z-index:1000;display:flex;align-items:center;gap:0.5rem;background:var(--panel);border:1px solid var(--border);box-shadow:4px 4px 0px rgba(27, 67, 50, 0.15);padding:0.5rem 1rem;cursor:pointer;font-family:'Geist','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:0.75rem;text-transform:uppercase;color:var(--ink);transition:all 0.3s ease}
-.theme-toggle:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0px rgba(27, 67, 50, 0.15)}
-.theme-toggle .dot{width:10px;height:10px;border-radius:50%;background:var(--amber);transition:background 0.3s ease}
-[data-theme="ghost"] .theme-toggle .dot{background:var(--accent-bright);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.hero{background:var(--hero-bg);color:var(--hero-ink);padding:3rem 0;border-bottom:1px solid var(--border)}
-.hero .icon{font-size:3rem;margin-bottom:0.5rem}
-.hero h1{font-size:2.5rem;font-weight:900;margin-bottom:0.5rem}
-.hero .accent-line{color:var(--dev-accent);font-size:1rem;font-weight:700;margin-bottom:1rem}
-.hero-meta{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem}
-.hero-meta .meta-chip{background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);padding:0.35rem 0.75rem;font-size:0.8rem;font-weight:600;font-family:'JetBrains Mono',monospace}
-.brutal-panel{background:var(--panel);border:1px solid var(--border);box-shadow:8px 8px 0px rgba(27, 67, 50, 0.15);padding:1.5rem;margin-bottom:1.5rem;transition:all 0.2s ease}
-.brutal-panel:hover{transform:translate(-2px,-2px);box-shadow:10px 10px 0px rgba(27, 67, 50, 0.15)}
-.section-header{font-size:1.5rem;color:var(--accent);margin:2.5rem 0 1rem;padding-bottom:0.5rem;border-bottom:4px solid var(--dev-accent);display:inline-block}
-[data-theme="ghost"] .section-header{color:var(--accent-bright)}
-.day-section{margin:2rem 0}
-.day-header{background:var(--dev-accent);color:#fff;padding:0.75rem 1.5rem;font-family:'Geist','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:1.25rem;text-transform:uppercase;border:1px solid var(--border);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.75rem}
-.day-header .day-num{background:rgba(255,255,255,0.2);padding:0.25rem 0.6rem;font-size:0.85rem}
-.task-card{margin-bottom:2rem}
-.task-title{font-size:1.1rem;font-weight:800;color:var(--ink);margin-bottom:0.5rem;display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap}
-.task-title .task-id{background:var(--dev-accent);color:#fff;padding:0.15rem 0.5rem;font-size:0.7rem;font-family:'JetBrains Mono',monospace}
-.task-problem{background:rgba(2,136,209,0.08);border-left:4px solid var(--dev-accent);padding:0.75rem 1rem;margin:0.75rem 0;font-size:0.9rem}
-[data-theme="ghost"] .task-problem{background:rgba(46,230,200,0.08)}
-.badge{display:inline-block;padding:0.2rem 0.6rem;font-size:0.7rem;font-weight:700;font-family:'JetBrains Mono',monospace;text-transform:uppercase;border:2px solid var(--ink)}
-.badge-time{background:var(--amber);color:var(--ink)}
-.badge-high{background:#d32f2f;color:#fff;border-color:#d32f2f}
-.badge-medium{background:var(--amber);color:var(--ink)}
-.badge-low{background:#4caf50;color:#fff;border-color:#4caf50}
-.badge-critical{background:#b71c1c;color:#fff;border-color:#b71c1c}
-.code-block{background:#1a1a2e;color:#e0e0e0;border:1px solid var(--border);padding:1rem;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:0.8rem;line-height:1.5;margin:0.75rem 0}
-.code-block .comment{color:#6a9955}
-.code-block .keyword{color:#c586c0}
-.code-block .string{color:#ce9178}
-.code-block .cmd{color:#dcdcaa}
-.code-block .prop{color:#9cdcfe}
-.check-list{list-style:none;padding:0;margin:0.75rem 0}
-.check-list li{padding:0.35rem 0 0.35rem 0;position:relative;font-size:0.9rem}
-.check-list li::before{content:none}
-.file-list{list-style:none;padding:0;margin:0.5rem 0}
-.file-list li{padding:0.25rem 0 0.25rem 1.5rem;position:relative;font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--muted)}
-.file-list li::before{content:'\1F4C4';position:absolute;left:0;top:0.25rem;font-size:0.8rem}
-.dep-table{width:100%;border-collapse:collapse;font-size:0.85rem}
-.dep-table th{background:var(--accent);color:#f5f5f0;padding:0.6rem 0.75rem;text-align:left;font-family:'Geist','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:0.75rem;text-transform:uppercase;border:2px solid var(--ink)}
-.dep-table td{padding:0.6rem 0.75rem;border:2px solid var(--border);vertical-align:top}
-.dep-table tr:nth-child(even){background:rgba(0,0,0,0.03)}
-[data-theme="ghost"] .dep-table tr:nth-child(even){background:rgba(255,255,255,0.03)}
-.risk-card{border-left:6px solid #d32f2f;background:rgba(211,47,47,0.05)}
-[data-theme="ghost"] .risk-card{background:rgba(211,47,47,0.1)}
-.risk-card .risk-title{font-weight:700;color:#d32f2f;font-size:0.9rem;margin-bottom:0.25rem}
-.risk-card .risk-mitigation{font-size:0.85rem;color:var(--muted)}
-.dod-section .dod-item{padding:0.4rem 0 0.4rem 0;position:relative;font-size:0.9rem}
-.dod-section .dod-item::before{content:none}
-.subsection-title{font-size:0.9rem;font-weight:700;color:var(--dev-accent);margin:1rem 0 0.5rem;text-transform:uppercase;font-family:'Geist','Helvetica Neue',Arial,sans-serif}
-.data-table{width:100%;border-collapse:collapse;font-size:0.8rem;margin:0.75rem 0}
-.data-table th{background:var(--dev-accent);color:#fff;padding:0.5rem 0.6rem;text-align:left;font-family:'Geist','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:0.7rem;text-transform:uppercase;border:2px solid var(--ink)}
-.data-table td{padding:0.5rem 0.6rem;border:2px solid var(--border);vertical-align:top}
-.data-table tr:nth-child(even){background:rgba(0,0,0,0.03)}
-[data-theme="ghost"] .data-table tr:nth-child(even){background:rgba(255,255,255,0.03)}
-.flow-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin:1rem 0}
-.flow-card{border:2px solid var(--dev-accent);padding:1rem}
-.flow-card strong{font-size:0.85rem;color:var(--dev-accent);display:block;margin-bottom:0.5rem}
-.flow-card ol{font-size:0.8rem;padding-left:1.25rem;color:var(--muted)}
-.footer{background:var(--hero-bg);color:var(--hero-ink);padding:1.5rem 0;text-align:center;border-top:1px solid var(--border);margin-top:3rem;font-size:0.8rem;font-family:'JetBrains Mono',monospace}
-/* Interactive checkboxes */
-.task-check {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 20px;
-  height: 20px;
-  border: 3px solid var(--dev-accent);
-  background: transparent;
-  cursor: pointer;
-  vertical-align: middle;
-  margin-right: 0.5rem;
-  position: relative;
-  flex-shrink: 0;
+:root {
+  --primary: #1B4332;
+  --secondary: #2DE1C2;
+  --accent: #FFB703;
+  --background: #F8F9FA;
+  --foreground: #081C15;
+  --panel: #F8F9FA;
+  --panel-border: rgba(8, 28, 21, 0.2);
+  --muted-text: rgba(8, 28, 21, 0.85);
+  --dev-accent: #e65100;
+  --shadow-color: #1B4332;
 }
-.task-check:checked {
-  background: var(--dev-accent);
+[data-theme="ghost"] {
+  --primary: #2DE1C2;
+  --secondary: #2DE1C2;
+  --accent: #FFB703;
+  --background: #081C15;
+  --foreground: #F8F9FA;
+  --panel: rgba(8, 28, 21, 0.9);
+  --panel-border: rgba(45, 225, 194, 0.35);
+  --muted-text: rgba(248, 249, 250, 0.85);
+  --shadow-color: #2DE1C2;
 }
-.task-check:checked::after {
-  content: '\2713';
-  color: #fff;
-  font-size: 14px;
-  font-weight: 900;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  line-height: 1.6;
+  transition: background 0.4s ease, color 0.4s ease;
 }
-.check-list li label,
-.dod-section .dod-item label {
-  display: flex;
-  align-items: flex-start;
-  cursor: pointer;
-  padding: 0.25rem 0;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
-.check-list li label:hover,
-.dod-section .dod-item label:hover {
-  background: rgba(46, 230, 200, 0.06);
+code, pre, .font-data { font-family: 'Space Mono', monospace; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+.theme-toggle {
+  position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--panel); border: 4px solid var(--foreground);
+  box-shadow: 4px 4px 0px var(--shadow-color);
+  padding: 0.5rem 1rem; cursor: pointer;
+  font-family: 'Montserrat', sans-serif; font-weight: 700;
+  font-size: 0.75rem; text-transform: uppercase;
+  color: var(--foreground); transition: all 0.3s ease;
 }
-.task-check:checked + span,
-.task-check:checked ~ span {
-  text-decoration: line-through;
-  opacity: 0.6;
+.theme-toggle:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--shadow-color); }
+.theme-toggle .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent); transition: background 0.3s ease;
 }
-
-/* Progress Bar */
-.progress-container {
+[data-theme="ghost"] .theme-toggle .dot { background: var(--secondary); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.hero {
+  background: var(--primary);
+  color: #F8F9FA;
+  padding: 3rem 0;
+  border-bottom: 4px solid var(--foreground);
+}
+.hero .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+.hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+.hero .accent-line { color: var(--dev-accent); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;
+}
+.hero-meta .meta-chip {
+  background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
+  padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+  font-family: 'Space Mono', monospace;
+}
+.brutal-panel {
   background: var(--panel);
-  border: 1px solid var(--border);
-  box-shadow: 8px 8px 0px rgba(27, 67, 50, 0.15);
-  padding: 1.25rem 1.5rem;
-  margin: 2rem 0 1.5rem;
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  border: 4px solid var(--foreground);
+  box-shadow: 8px 8px 0px var(--shadow-color);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.2s ease;
 }
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-.progress-title {
-  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
-  font-weight: 900;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.progress-pct {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
+.brutal-panel:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0px var(--shadow-color); }
+.section-header {
   font-size: 1.5rem;
-  color: var(--dev-accent);
+  color: var(--primary);
+  margin: 2.5rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 4px solid var(--dev-accent);
+  display: inline-block;
 }
-.progress-track {
-  height: 12px;
-  background: rgba(8, 28, 21, 0.1);
-  border: 1px solid var(--border);
-  overflow: hidden;
-}
-[data-theme="ghost"] .progress-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-.progress-fill {
-  height: 100%;
+[data-theme="ghost"] .section-header { color: var(--secondary); }
+.day-section { margin: 2rem 0; }
+.day-header {
   background: var(--dev-accent);
-  transition: width 0.4s ease;
-  width: 0%;
-}
-.progress-detail {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--muted);
-  margin-top: 0.5rem;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 1.25rem;
   text-transform: uppercase;
+  border: 4px solid var(--foreground);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
 }
-
-@media(max-width:768px){.hero h1{font-size:1.75rem}.hero-meta{flex-direction:column}.brutal-panel{padding:1rem}.dep-table,.data-table{font-size:0.75rem}.dep-table th,.dep-table td,.data-table th,.data-table td{padding:0.4rem}.day-header{font-size:1rem;flex-direction:column;align-items:flex-start}.task-title{font-size:1rem}.theme-toggle{top:0.5rem;right:0.5rem;padding:0.35rem 0.75rem;font-size:0.65rem}.container{padding:0 1rem}.section-header{font-size:1.2rem}}
-@media(max-width:480px){.hero{padding:2rem 0}.hero h1{font-size:1.4rem}.code-block{font-size:0.7rem;padding:0.75rem}}
+.day-header .day-num {
+  background: rgba(255,255,255,0.2);
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+}
+.task-card { margin-bottom: 2rem; }
+.task-title {
+  font-size: 1.1rem; font-weight: 800;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+.task-title .task-id {
+  background: var(--dev-accent); color: #fff;
+  padding: 0.15rem 0.5rem; font-size: 0.7rem;
+  font-family: 'Space Mono', monospace;
+}
+.task-problem {
+  background: rgba(123, 31, 162, 0.08);
+  border-left: 4px solid var(--dev-accent);
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+.acceptance-list { list-style: none; padding: 0; margin: 0.75rem 0; }
+.acceptance-list li {
+  padding: 0.35rem 0;
+  padding-left: 1.75rem;
+  position: relative;
+  font-size: 0.9rem;
+}
+.acceptance-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  width: 14px; height: 14px;
+  border: 3px solid var(--foreground);
+  background: transparent;
+}
+.acceptance-list li.done::before {
+  background: var(--secondary);
+}
+.acceptance-list li.done {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+.acceptance-list li.partial::before {
+  background: var(--accent);
+}
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  border: 2px solid;
+  margin-right: 0.25rem;
+}
+.tag-done { background: rgba(45, 225, 194, 0.2); border-color: #2DE1C2; color: #1B4332; }
+.tag-pending { background: rgba(255, 183, 3, 0.15); border-color: #FFB703; color: #b8860b; }
+.tag-blocked { background: rgba(220, 53, 69, 0.1); border-color: #dc3545; color: #dc3545; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+}
+th, td {
+  border: 2px solid var(--foreground);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+th {
+  background: var(--primary);
+  color: #F8F9FA;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+tr:nth-child(even) { background: rgba(0,0,0,0.02); }
+[data-theme="ghost"] tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+code {
+  background: rgba(0,0,0,0.06);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.85em;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+[data-theme="ghost"] code {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+}
+pre {
+  background: var(--foreground);
+  color: var(--background);
+  padding: 1rem;
+  border: 4px solid var(--foreground);
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  font-size: 0.8rem;
+}
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+.footer {
+  margin-top: 4rem;
+  padding: 2rem 0;
+  border-top: 4px solid var(--foreground);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted-text);
+}
+.footer a { color: var(--dev-accent); font-weight: 700; }
+@media (max-width: 768px) {
+  .hero h1 { font-size: 1.75rem; }
+  .hero-meta { flex-direction: column; }
+  .brutal-panel { padding: 1rem; }
+  table { font-size: 0.75rem; }
+  th, td { padding: 0.35rem 0.5rem; }
+}
 </style>
 </head>
 <body>
 
-<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+<button class="theme-toggle" onclick="toggleTheme()">
   <span class="dot"></span>
-  <span id="theme-label">CIVIC</span>
+  <span class="label">Ghost Mode</span>
 </button>
 
-<header class="hero">
+<div class="hero">
   <div class="container">
-    <div class="icon">&#128279;</div>
-    <h1>Developer 4 &mdash; Integration, PWA, APK &amp; Demo</h1>
-    <div class="accent-line">ASEAN AI Hackathon Sprint Plan</div>
+    <div class="icon">🎨</div>
+    <h1>Developer 4: Integration & PWA</h1>
+    <div class="accent-line">ASEAN AI Hackathon Prep</div>
     <div class="hero-meta">
-      <span class="meta-chip">&#128197; June 5&ndash;8, 2026 (Thu&ndash;Sun)</span>
-      <span class="meta-chip">&#9201; 32 Hours</span>
-      <span class="meta-chip">&#127919; E2E Testing &middot; PWA Offline &middot; APK Build &middot; ASEAN Data &middot; Demo</span>
+      <span class="meta-chip">📅 June 5-8, 2026 (Thu-Sun)</span>
+      <span class="meta-chip">⏱ 32h</span>
+      <span class="meta-chip">👤 Katherine (moved from Dev 1)</span>
+      
     </div>
+    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.85">E2E testing, PWA offline, APK build, ASEAN data, demo materials</p>
   </div>
-</header>
+</div>
 
-<main class="container">
+<div class="container">
+<p>> <strong>Sprint:</strong> ASEAN AI Hackathon Prep</p>
+<p>> <strong>Timeline:</strong> June 5-8, 2026 (Thu-Sun)</p>
+<p>> <strong>Total Hours:</strong> 32h</p>
+<p>> <strong>Assigned To:</strong> Katherine (moved from Dev 1)</p>
+<p>> <strong>Focus:</strong> E2E testing, PWA offline, APK build, ASEAN data, demo materials</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">👥 Team Roster</h2>
+<table>
+<tr><th>Dev</th><th>Name</th><th>Role</th><th>Focus</th></tr>
+<tr><td>Dev 1</td><td>Lou</td><td>Frontend/UI</td><td>Next.js UI, Tailwind, responsive design, Ghost Mode theme</td></tr>
+<tr><td>Dev 2</td><td>Jeff</td><td>AI/Backend</td><td>FastAPI AI service, YOLOv8, Gremlin graph, Gemini</td></tr>
+<tr><td>Dev 3</td><td>Charlyn</td><td>Backend/Infrastructure</td><td>Laravel API, Supabase, CI/CD, admin portal</td></tr>
+<tr><td>Dev 4</td><td>Katherine</td><td>Integration/PWA/APK</td><td>E2E testing, PWA offline, Capacitor APK, demo prep</td></tr>
+</table>
+<p>> <strong>Note:</strong> Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.</p>
+<div class="brutal-panel"><h3 style="margin-bottom:0.75rem">✅ Completed Work</h3><ul class="acceptance-list">
+</ul>
+<p style="padding-left:1rem">• ✅ Demo script written (docs/demo-script.md — 143 lines)</p>
+<p style="padding-left:1rem">• ✅ One-pager created (docs/one-pager.md — 115 lines)</p>
+<p style="padding-left:1rem">• ✅ Pitch deck created (docs/pitch-deck.md — 264 lines)</p>
+<p style="padding-left:1rem">• ✅ Mobile PWA substantially built (apps/mobile-pwa/)</p>
+<p style="padding-left:1rem">• ✅ PWA icons generated (192x192, 512x512, maskable, apple-touch)</p>
+<p style="padding-left:1rem">• ✅ i18n messages for 5 ASEAN locales (fil, id, ms, ta, vi)</p>
+<p style="padding-left:1rem">• ✅ Not-found page for mobile PWA</p>
+<p style="padding-left:1rem">• ✅ Offline queue built into frontend report page (IndexedDB + auto-flush)</p>
+<p style="padding-left:1rem">• ✅ Offline banner shows when network is down</p>
+<p style="padding-left:1rem">• ✅ Online toast shows when connection restored</p>
+<p style="padding-left:1rem">• ✅ Supabase token wired to shared API client after login/register (v0.7.1)</p>
+<p style="padding-left:1rem">• ✅ Mobile PWA .env.example created (v0.7.1)</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Dependencies on Other Developers</h2>
+<table>
+<tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Notes</th></tr>
+<tr><td>Working backend</td><td>Dev 3 (Charlyn)</td><td>Thu evening</td><td>Need <code>/api/health</code> working for E2E tests</td></tr>
+<tr><td>Working AI service</td><td>Dev 2 (Jeff)</td><td>Sat</td><td>Need triage pipeline for full demo rehearsal</td></tr>
+<tr><td>Demo data seeded</td><td>Dev 3 (Charlyn)</td><td>Fri afternoon</td><td>Need tickets/users for demo scenarios</td></tr>
+<tr><td>Polished UI</td><td>Dev 1 (Lou)</td><td>Sat evening</td><td>Need impact dashboard and Ghost Mode for demo</td></tr>
+</table>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 1</span>Thursday, June 5</div>
+<div class="task-card"><div class="task-title"><span class="task-id">1.1</span>End-to-End Integration Testing</div>
+<p><span class="tag tag-blocked">❌ Not Done</span></p>
+<p><strong>Current state:</strong> No integration test scripts exist in the repository. The <code>scripts/</code> directory was removed during cleanup.</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Test the full stack locally:</p>
+<p style="padding-left:1rem">1. **Start all services:**</p>
+<p>   <code>`</code>bash</p>
+<p>   # Terminal 1: Frontend</p>
+<p>   cd apps/frontend && pnpm dev</p>
+<p>   # Terminal 2: Backend</p>
+<p>   cd apps/backend && php artisan serve</p>
+<p>   # Terminal 3: AI Service</p>
+<p>   cd apps/ai-service && uvicorn main:app --reload --port 8001</p>
+<p>   <code>`</code></p>
+<p style="padding-left:1rem">2. **Test each integration point:**</p>
+<p>   - [ ] Frontend loads at http://localhost:3000</p>
+<p>   - [ ] Backend health: http://localhost:8000/api/health</p>
+<p>   - [ ] AI service health: http://localhost:8001/health</p>
+<p>   - [ ] Login flow: Supabase Auth → <code>/api/auth/sync</code> → Sanctum token</p>
+<p>   - [ ] Report submission: POST <code>/api/reports</code> with image</p>
+<p>   - [ ] Triage check: POST <code>/api/reports/triage</code></p>
+<p>   - [ ] Leaderboard: GET <code>/api/leaderboard</code></p>
+<p>   - [ ] Dashboard: GET <code>/api/user/impact</code></p>
+<p style="padding-left:1rem">3. **Document all broken integration points** in a shared doc</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<ul class="acceptance-list">
+<li>All 3 services start without errors</li>
+<li>Auth flow works end-to-end</li>
+<li>Report submission works (even without AI)</li>
+<li>All broken points documented with error messages</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">1.2</span>Start Capacitor APK Setup</div>
+<p><span class="tag tag-blocked">❌ Not Done</span></p>
+<p><strong>Current state:</strong> No Capacitor config, no <code>android/</code> directory, no <code>@capacitor/*</code> dependencies in frontend.</p>
+<p><strong>Goal:</strong> Convert Next.js PWA into an Android APK using Capacitor.</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<ul class="acceptance-list">
+<li>Capacitor initialized in frontend project</li>
+<li>Android platform added</li>
+<li>`npx cap sync` runs without errors</li>
+<li>Android Studio opens the project</li>
+<li>App builds in Android Studio (debug APK)</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 2</span>Friday, June 6</div>
+<div class="task-card"><div class="task-title"><span class="task-id">2.1</span>PWA Offline Polish</div>
+<p><span class="tag tag-done">✅ Complete</span></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Current state:</p>
+<p style="padding-left:1rem">• `next-pwa` (v5.6.0) wired into `apps/frontend/next.config.ts` with runtime caching</p>
+<p style="padding-left:1rem">• PWA manifest exists in `apps/frontend/public/manifest.json`</p>
+<p style="padding-left:1rem">• Offline queue built inline in `report/page.tsx` (lines 113-202)</p>
+<p style="padding-left:1rem">• Offline banner shows when network is down (line 367-372)</p>
+<p style="padding-left:1rem">• Online toast shows when connection restored (line 205)</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Enhancements:</p>
+<ul class="acceptance-list">
+<li class="done">`next-pwa` configured with runtime caching</li>
+<li class="done">PWA manifest with icons and display mode</li>
+<li class="done">Offline queue built into report page (IndexedDB + auto-flush on reconnect)</li>
+<li class="done">Offline banner shows when network is down</li>
+<li class="done">Online banner shows when connection restored (toast notification)</li>
+<li>Cache API responses for `/api/laws`, `/api/achievements` (static data)</li>
+<li>Test: disconnect WiFi → navigate pages → reconnect → verify sync</li>
+</ul>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<ul class="acceptance-list">
+<li>App loads offline after first visit</li>
+<li class="done">Reports queue in IndexedDB when offline</li>
+<li class="done">Reports auto-sync when connection restored</li>
+<li class="done">Offline banner appears/disappears correctly</li>
+<li>No data loss during offline→online transition</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">2.2</span>Build APK with Capacitor</div>
+<p><span class="tag tag-blocked">❌ Not Done</span></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<ul class="acceptance-list">
+<li>Debug APK builds successfully</li>
+<li>APK installs on Android device/emulator</li>
+<li>App loads production URL in WebView</li>
+<li>Camera works through WebView</li>
+<li>GPS works through WebView</li>
+<li>Offline queue works in APK</li>
+<li>Version number set in `build.gradle`</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 3</span>Saturday, June 7</div>
+<div class="task-card"><div class="task-title"><span class="task-id">3.1</span>ASEAN Multi-Country Data</div>
+<p><span class="tag tag-pending">⚠️ Partial</span></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Current state:</p>
+<p style="padding-left:1rem">• `CurrencySettingSeeder.php` ✅ — Seeds 10 ASEAN countries with eco-credit exchange rates</p>
+<p style="padding-left:1rem">• `AseanLawSeeder.php` ❌ — Referenced in docs but file does not exist</p>
+<p style="padding-left:1rem">• PH-only law seeders exist (`EnvironmentalLawSeeder.php`, `LawSeeder.php`)</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<ul class="acceptance-list">
+<li>5+ ASEAN countries have at least 1 law seeded</li>
+<li>Each country has at least 1 NGO</li>
+<li class="done">Currency settings verified for all 10 ASEAN countries</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">3.2</span>Write Demo Script</div>
+<p><span class="tag tag-done">✅ Complete</span></p>
+<p><strong>File:</strong> <code>docs/demo-script.md</code> (143 lines)</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">What was delivered:</p>
+<p style="padding-left:1rem">• 7-flow demo script (~10 min): Opening, Citizen Report, Ghost Mode, AI Pipeline & Dashboard, Failure Resilience, Offline PWA, Leaderboard & Credits</p>
+<p style="padding-left:1rem">• Pre-flight checklist</p>
+<p style="padding-left:1rem">• Backup plans per flow</p>
+<p style="padding-left:1rem">• Q&A prep</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<ul class="acceptance-list">
+<li class="done">Demo script written with timing</li>
+<li class="done">All demo flows tested</li>
+<li class="done">Backup plan for each step if live demo fails</li>
+<li class="done">Screenshots/recordings as backup</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">3.3</span>Create Presentation Materials</div>
+<p><span class="tag tag-done">✅ Complete</span></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Files delivered:</p>
+<p style="padding-left:1rem">1. `docs/one-pager.md` (115 lines) — Problem/solution/architecture</p>
+<p style="padding-left:1rem">2. `docs/pitch-deck.md` (264 lines) — 7-slide deck with ASCII wireframes</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<ul class="acceptance-list">
+<li class="done">One-pager created</li>
+<li class="done">Slide deck created</li>
+<li class="done">Materials match LikasLens branding (Eco-Brutalism)</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 4</span>Sunday, June 8</div>
+<div class="task-card"><div class="task-title"><span class="task-id">4.1</span>Full Demo Rehearsal</div>
+<p><strong>Time:</strong> 4h | <strong>Priority:</strong> CRITICAL | <strong>Status:</strong> ⏳ PENDING</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Rehearsal checklist:</p>
+<p style="padding-left:1rem">1. **Pre-rehearsal:**</p>
+<p>   - [ ] All 3 services running (Frontend, Backend, AI)</p>
+<p>   - [ ] Demo data seeded</p>
+<p>   - [ ] APK installed on test device</p>
+<p>   - [ ] Backup screenshots ready</p>
+<p style="padding-left:1rem">2. **Run through demo script:**</p>
+<p>   - [ ] Flow 1: Citizen Report (3 min)</p>
+<p>   - [ ] Flow 2: Ghost Mode (2 min)</p>
+<p>   - [ ] Flow 3: Impact Dashboard (2 min)</p>
+<p>   - [ ] Flow 4: AI Pipeline (1 min)</p>
+<p>   - [ ] Flow 5: Leaderboard + Credits (1 min)</p>
+<p style="padding-left:1rem">3. **Time each flow** — must fit in 10 minutes</p>
+<p style="padding-left:1rem">4. **Test failure scenarios:**</p>
+<p>   - [ ] What if AI service is down? (report still saves)</p>
+<p>   - [ ] What if Supabase is slow? (loading states work)</p>
+<p>   - [ ] What if camera fails? (file upload fallback)</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<ul class="acceptance-list">
+<li>Full demo completes in < 12 minutes</li>
+<li>No errors during demo</li>
+<li>Backup plans tested for each failure scenario</li>
+<li>Demo can run on presenter's laptop + phone</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">4.2</span>APK Final Build + Testing</div>
+<p><span class="tag tag-blocked">❌ Not Done</span></p>
+<ul class="acceptance-list">
+<li>Build release APK (signed)</li>
+<li>Test on physical Android device</li>
+<li>Verify all demo flows work in APK</li>
+<li>Verify offline capability in APK</li>
+<li>Version number updated</li>
+<li>APK file ready for submission</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">4.3</span>Competition Submission</div>
+<p><strong>Time:</strong> 2h | <strong>Priority:</strong> CRITICAL | <strong>Status:</strong> ⏳ PENDING</p>
+<ul class="acceptance-list">
+<li>Write competition essay / submission document</li>
+<li>Include: problem, solution, technical architecture, impact, scalability</li>
+<li>Attach: screenshots, demo video link, APK download link</li>
+<li>Submit before deadline</li>
+</ul>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Mobile PWA (Bonus: `apps/mobile-pwa/`)</h2>
+<p><strong>Status:</strong> ✅ SUBSTANTIALLY BUILT</p>
+<p>A separate mobile PWA app was created at <code>apps/mobile-pwa/</code> with:</p>
+<p style="padding-left:1rem">• Full Next.js 16 app structure</p>
+<p style="padding-left:1rem">• Login, Register, Onboarding (4-step carousel)</p>
+<p style="padding-left:1rem">• Dashboard with stats grid + install banner</p>
+<p style="padding-left:1rem">• Report page with camera capture + GPS + Ghost Mode toggle</p>
+<p style="padding-left:1rem">• Scoreboard with leaderboard styling</p>
+<p style="padding-left:1rem">• Profile with achievements + settings</p>
+<p style="padding-left:1rem">• PWA manifest with standalone display</p>
+<p style="padding-left:1rem">• Supabase client/server integration</p>
+<p style="padding-left:1rem">• `next-intl` i18n support</p>
+<p style="padding-left:1rem">• PWA icons (192x192, 512x512, maskable, apple-touch) ✅</p>
+<p style="padding-left:1rem">• i18n messages for fil, id, ms, ta, vi locales ✅</p>
+<p style="padding-left:1rem">• Not-found page ✅</p>
+<p style="padding-left:1rem">• `.env.example` with required vars ✅</p>
+<p style="padding-left:1rem">• Supabase token wired to shared API client after login ✅</p>
+<p><strong>Note:</strong> This app does NOT have <code>next-pwa</code> integration or a service worker — relies on browser-level PWA via manifest.</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Risk Items</h2>
+<table>
+<tr><th>Risk</th><th>Status</th><th>Mitigation</th></tr>
+<tr><td>Capacitor APK won't build</td><td>⚠️ OPEN</td><td>Fallback: use TWA (Trusted Web Activity) with Bubblewrap</td></tr>
+<tr><td>Camera doesn't work in WebView</td><td>⚠️ OPEN</td><td>Use <code><input type="file" capture="camera"></code> as fallback</td></tr>
+<tr><td>Demo fails live</td><td>⚠️ OPEN</td><td>Pre-record backup video of each flow</td></tr>
+<tr><td>Supabase down during demo</td><td>⚠️ OPEN</td><td>Use local PostgreSQL as backup</td></tr>
+<tr><td>AI service slow</td><td>⚠️ OPEN</td><td>Pre-cache demo responses; show loading states</td></tr>
+</table>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Definition of Done</h2>
+<ul class="acceptance-list">
+<li>All 3 services connected and tested end-to-end</li>
+<li>APK builds and installs on Android</li>
+<li class="done">PWA offline queue works reliably (inline in report page)</li>
+<li>ASEAN data seeded for 5+ countries</li>
+<li class="done">Demo script written and rehearsed</li>
+<li class="done">Presentation materials created</li>
+<li class="done">Mobile PWA substantially built with i18n, icons, auth</li>
+<li>Full demo completes in < 12 minutes</li>
+<li>Competition submission ready</li>
+</ul>
 
-  <div class="progress-container" id="progress-bar">
-    <div class="progress-header">
-      <span class="progress-title">Sprint Progress</span>
-      <span class="progress-pct" id="progress-pct">0%</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progress-fill"></div>
-    </div>
-    <div class="progress-detail">
-      <span id="progress-done">0</span> / <span id="progress-total">0</span> tasks completed
-    </div>
-  </div>
-
-  <h2 class="section-header">Dependencies on Other Developers</h2>
-  <div class="brutal-panel">
-    <table class="dep-table">
-      <thead><tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Notes</th></tr></thead>
-      <tbody>
-        <tr><td>Working backend</td><td>Dev 3 (Backend)</td><td>Thu evening</td><td>Need <code>/api/health</code> working for E2E tests</td></tr>
-        <tr><td>Working AI service</td><td>Dev 2 (AI)</td><td>Sat</td><td>Need triage pipeline for full demo rehearsal</td></tr>
-        <tr><td>Demo data seeded</td><td>Dev 3 (Backend)</td><td>Fri afternoon</td><td>Need tickets/users for demo scenarios</td></tr>
-        <tr><td>Polished UI</td><td>Dev 1 (Frontend)</td><td>Sat evening</td><td>Need impact dashboard and Ghost Mode for demo</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Day 1 -->
-  <section class="day-section">
-    <div class="day-header"><span class="day-num">Day 1</span> Thursday, June 5</div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">1.1</span> End-to-End Integration Testing
-        <span class="badge badge-time">3h</span>
-        <span class="badge badge-high">HIGH</span>
-      </div>
-      <div class="task-problem">Test the full stack locally.</div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">1. Start all services:</p>
-      <div class="code-block">
-<span class="comment"># Terminal 1: Frontend</span>
-<span class="cmd">cd</span> apps/frontend <span class="cmd">&amp;&amp;</span> pnpm dev
-
-<span class="comment"># Terminal 2: Backend</span>
-<span class="cmd">cd</span> apps/backend <span class="cmd">&amp;&amp;</span> php artisan serve
-
-<span class="comment"># Terminal 3: AI Service</span>
-<span class="cmd">cd</span> apps/ai-service <span class="cmd">&amp;&amp;</span> uvicorn main:app --reload --port 8001
-      </div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">2. Test each integration point:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-1"> <span>Frontend loads at http://localhost:3000</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-2"> <span>Backend health: http://localhost:8000/api/health</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-3"> <span>AI service health: http://localhost:8001/health</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-4"> <span>Login flow: Supabase Auth &rarr; <code>/api/auth/sync</code> &rarr; Sanctum token</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-5"> <span>Report submission: POST <code>/api/reports</code> with image</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-6"> <span>Triage check: POST <code>/api/reports/triage</code></span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-7"> <span>Leaderboard: GET <code>/api/leaderboard</code></span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-8"> <span>Dashboard: GET <code>/api/user/impact</code></span></label></li>
-      </ul>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-9"> <span>All 3 services start without errors</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-10"> <span>Auth flow works end-to-end</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-11"> <span>Report submission works (even without AI)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-1-12"> <span>All broken points documented with error messages</span></label></li>
-      </ul>
-    </div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">1.2</span> Start Capacitor APK Setup
-        <span class="badge badge-time">5h</span>
-        <span class="badge badge-high">HIGH</span>
-      </div>
-      <div class="task-problem">Convert Next.js PWA into an Android APK using Capacitor.</div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Install Commands:</p>
-      <div class="code-block">
-<span class="cmd">pnpm</span> --filter frontend add @capacitor/core @capacitor/cli @capacitor/android
-
-<span class="cmd">cd</span> apps/frontend
-<span class="cmd">npx</span> cap init likaslens com.likaslens.app --web-dir=out
-<span class="cmd">npx</span> cap add android
-<span class="cmd">pnpm</span> --filter frontend build
-<span class="cmd">npx</span> cap sync android
-<span class="cmd">npx</span> cap open android
-      </div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Capacitor Config:</p>
-      <div class="code-block">
-<span class="keyword">import</span> { CapacitorConfig } <span class="keyword">from</span> <span class="string">'@capacitor/cli'</span>;
-
-<span class="keyword">const</span> <span class="prop">config</span>: CapacitorConfig = {
-  <span class="prop">appId</span>: <span class="string">'com.likaslens.app'</span>,
-  <span class="prop">appName</span>: <span class="string">'LikasLens'</span>,
-  <span class="prop">webDir</span>: <span class="string">'out'</span>,
-  <span class="prop">server</span>: {
-    <span class="prop">androidScheme</span>: <span class="string">'https'</span>,
-    <span class="prop">url</span>: <span class="string">'https://likaslens.vercel.app'</span>,
-    <span class="prop">cleartext</span>: <span class="keyword">true</span>,
-  },
-  <span class="prop">plugins</span>: {
-    <span class="prop">SplashScreen</span>: {
-      <span class="prop">launchShowDuration</span>: 2000,
-      <span class="prop">backgroundColor</span>: <span class="string">'#1B4332'</span>,
-      <span class="prop">showSpinner</span>: <span class="keyword">false</span>,
-    },
-  },
-};
-<span class="keyword">export default</span> config;
-      </div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-2-1"> <span>Capacitor initialized in frontend project</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-2-2"> <span>Android platform added</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-2-3"> <span><code>npx cap sync</code> runs without errors</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-2-4"> <span>Android Studio opens the project</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-1-2-5"> <span>App builds in Android Studio (debug APK)</span></label></li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- Day 2 -->
-  <section class="day-section">
-    <div class="day-header"><span class="day-num">Day 2</span> Friday, June 6</div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">2.1</span> PWA Offline Polish
-        <span class="badge badge-time">4h</span>
-        <span class="badge badge-high">HIGH</span>
-      </div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.5rem 0 0.25rem;">Files to modify:</p>
-      <ul class="file-list">
-        <li>apps/frontend/next.config.ts (PWA config)</li>
-        <li>apps/frontend/public/sw.js (if custom service worker)</li>
-        <li>apps/frontend/src/components/layout/OfflineBanner.tsx</li>
-      </ul>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Enhancements:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-1"> <span>Verify service worker caches critical assets (CSS, JS, images)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-2"> <span>Test offline report queue: submit report offline &rarr; go online &rarr; auto-sync</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-3"> <span>Offline banner shows when network is down</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-4"> <span>Online banner shows when connection restored</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-5"> <span>Cache API responses for <code>/api/laws</code>, <code>/api/achievements</code> (static data)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-6"> <span>Test: disconnect WiFi &rarr; navigate pages &rarr; reconnect &rarr; verify sync</span></label></li>
-      </ul>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Cache Strategy:</p>
-      <div class="code-block">
-<span class="prop">Static assets</span>: Cache-first (CSS, JS, fonts, images)
-<span class="prop">API static data</span>: Stale-while-revalidate (laws, achievements)
-<span class="prop">API dynamic data</span>: Network-first (tickets, profile)
-<span class="prop">Report submission</span>: Queue in IndexedDB, flush on reconnect
-      </div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-7"> <span>App loads offline after first visit</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-8"> <span>Reports queue in IndexedDB when offline</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-9"> <span>Reports auto-sync when connection restored</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-10"> <span>Offline banner appears/disappears correctly</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-1-11"> <span>No data loss during offline to online transition</span></label></li>
-      </ul>
-    </div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">2.2</span> Build APK with Capacitor
-        <span class="badge badge-time">4h</span>
-        <span class="badge badge-high">HIGH</span>
-      </div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.5rem 0 0.25rem;">Build Commands:</p>
-      <div class="code-block">
-<span class="comment"># Generate signing key</span>
-<span class="cmd">keytool</span> -genkey -v -keystore likaslens.keystore -alias likaslens -keyalg RSA -keysize 2048 -validity 10000
-
-<span class="comment"># Build debug APK</span>
-<span class="cmd">cd</span> apps/frontend
-<span class="cmd">npx</span> cap sync android
-<span class="cmd">cd</span> android
-<span class="cmd">./gradlew</span> assembleDebug
-
-<span class="comment"># Install on device</span>
-<span class="cmd">adb</span> install app/build/outputs/apk/debug/app-debug.apk
-      </div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-2-1"> <span>Debug APK builds successfully</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-2-2"> <span>APK installs on Android device/emulator</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-2-3"> <span>App loads production URL in WebView</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-2-4"> <span>Camera works through WebView</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-2-5"> <span>GPS works through WebView</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-2-6"> <span>Offline queue works in APK</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-2-2-7"> <span>Version number set in <code>build.gradle</code></span></label></li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- Day 3 -->
-  <section class="day-section">
-    <div class="day-header"><span class="day-num">Day 3</span> Saturday, June 7</div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">3.1</span> ASEAN Multi-Country Data
-        <span class="badge badge-time">4h</span>
-        <span class="badge badge-medium">MEDIUM</span>
-      </div>
-      <div class="task-problem">Add placeholder data for ASEAN countries.</div>
-      <p style="font-size:0.85rem;margin:0.5rem 0;"><strong>Create:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;">apps/backend/database/seeders/AseanLawSeeder.php</code></p>
-      <table class="data-table">
-        <thead><tr><th>Country</th><th>Code</th><th>Key Environmental Law</th><th>Agency</th></tr></thead>
-        <tbody>
-          <tr><td>Indonesia</td><td>ID</td><td>UU No. 32/2009 (Environmental Protection)</td><td>KLHK</td></tr>
-          <tr><td>Thailand</td><td>TH</td><td>Environmental Protection Act BE 2535</td><td>DPC</td></tr>
-          <tr><td>Vietnam</td><td>VN</td><td>Law on Environmental Protection 2020</td><td>MONRE</td></tr>
-          <tr><td>Malaysia</td><td>MY</td><td>Environmental Quality Act 1974</td><td>DOE</td></tr>
-          <tr><td>Singapore</td><td>SG</td><td>Environmental Protection and Management Act</td><td>NEA</td></tr>
-          <tr><td>Philippines</td><td>PH</td><td>(Already seeded)</td><td>DENR</td></tr>
-        </tbody>
-      </table>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Also seed:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-1-1"> <span>Currency exchange rates (already in <code>CurrencySettingSeeder</code>)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-1-2"> <span>Placeholder NGOs for each country (1-2 per country)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-1-3"> <span>Jurisdiction vertices in Gremlin (ID-NATIONAL, TH-NATIONAL, etc.)</span></label></li>
-      </ul>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-1-4"> <span>5+ ASEAN countries have at least 1 law seeded</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-1-5"> <span>Each country has at least 1 NGO</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-1-6"> <span>Gremlin graph has jurisdiction vertices for each country</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-1-7"> <span>Currency settings verified for all 10 ASEAN countries</span></label></li>
-      </ul>
-    </div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">3.2</span> Write Demo Script
-        <span class="badge badge-time">2h</span>
-        <span class="badge badge-critical">CRITICAL</span>
-      </div>
-      <p style="font-size:0.85rem;margin:0.5rem 0;"><strong>Create:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;">docs/demo-script.md</code></p>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.5rem;">Demo Flow (10 minutes):</p>
-      <div class="flow-grid">
-        <div class="flow-card">
-          <strong>1. Opening (1 min)</strong>
-          <ol><li>LikasLens tagline: "Every citizen's phone is an environmental sensor"</li><li>Show landing page with ASEAN positioning</li></ol>
-        </div>
-        <div class="flow-card">
-          <strong>2. Citizen Report Flow (3 min)</strong>
-          <ol><li>Open /report page</li><li>Camera captures photo</li><li>GPS acquired (show map pin)</li><li>Select incident type (Illegal Logging)</li><li>Triage pre-check runs</li><li>Edge Interceptor modal appears</li><li>Recommend Ghost Mode</li><li>Submit report</li></ol>
-        </div>
-        <div class="flow-card">
-          <strong>3. Ghost Mode Demo (2 min)</strong>
-          <ol><li>Toggle Ghost Mode</li><li>Theme transitions to dark</li><li>EXIF stripped toast appears</li><li>Submit anonymous report</li><li>Show no user info in response</li></ol>
-        </div>
-        <div class="flow-card">
-          <strong>4. Impact Dashboard (2 min)</strong>
-          <ol><li>Navigate to Impact Dashboard</li><li>Show resolution rate chart</li><li>Show geographic heat map</li><li>Point out environmental hotspots</li></ol>
-        </div>
-        <div class="flow-card">
-          <strong>5. AI Pipeline (1 min)</strong>
-          <ol><li>Show YOLOv8 detection results</li><li>Show Gremlin graph traversal</li><li>Show Gemini incident summary</li></ol>
-        </div>
-        <div class="flow-card">
-          <strong>6. Closing (1 min)</strong>
-          <ol><li>Show leaderboard (top eco-citizens)</li><li>Show eco-credit wallet</li><li>ASEAN scalability message</li></ol>
-        </div>
-      </div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-2-1"> <span>Demo script written with timing</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-2-2"> <span>All demo flows tested</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-2-3"> <span>Backup plan for each step if live demo fails</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-2-4"> <span>Screenshots/recordings as backup</span></label></li>
-      </ul>
-    </div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">3.3</span> Create Presentation Materials
-        <span class="badge badge-time">2h</span>
-        <span class="badge badge-high">HIGH</span>
-      </div>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.5rem 0 0.25rem;">Create:</p>
-      <ol style="font-size:0.85rem;padding-left:1.5rem;color:var(--muted);margin:0.5rem 0;">
-        <li><strong>One-pager PDF</strong> for judges: problem statement, solution architecture, neuro-symbolic AI, impact metrics, ASEAN scalability</li>
-        <li><strong>Slide deck (optional)</strong> 5-7 slides: Title, Problem, Solution, AI Pipeline, Ghost Mode, Impact, Next steps</li>
-      </ol>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-3-1"> <span>One-pager created</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-3-2"> <span>Slide deck created (if needed)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-3-3-3"> <span>Materials match LikasLens branding (Eco-Brutalism)</span></label></li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- Day 4 -->
-  <section class="day-section">
-    <div class="day-header"><span class="day-num">Day 4</span> Sunday, June 8</div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">4.1</span> Full Demo Rehearsal
-        <span class="badge badge-time">4h</span>
-        <span class="badge badge-critical">CRITICAL</span>
-      </div>
-      <div class="subsection-title">Pre-rehearsal</div>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-1"> <span>All 3 services running (Frontend, Backend, AI)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-2"> <span>Demo data seeded</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-3"> <span>APK installed on test device</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-4"> <span>Backup screenshots ready</span></label></li>
-      </ul>
-      <div class="subsection-title">Run through demo script</div>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-5"> <span>Flow 1: Citizen Report (3 min)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-6"> <span>Flow 2: Ghost Mode (2 min)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-7"> <span>Flow 3: Impact Dashboard (2 min)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-8"> <span>Flow 4: AI Pipeline (1 min)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-9"> <span>Flow 5: Leaderboard + Credits (1 min)</span></label></li>
-      </ul>
-      <div class="subsection-title">Test failure scenarios</div>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-10"> <span>What if AI service is down? (report still saves)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-11"> <span>What if Supabase is slow? (loading states work)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-12"> <span>What if camera fails? (file upload fallback)</span></label></li>
-      </ul>
-      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-13"> <span>Full demo completes in under 12 minutes</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-14"> <span>No errors during demo</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-15"> <span>Backup plans tested for each failure scenario</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-1-16"> <span>Demo can run on presenter's laptop + phone</span></label></li>
-      </ul>
-    </div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">4.2</span> APK Final Build + Testing
-        <span class="badge badge-time">2h</span>
-        <span class="badge badge-high">HIGH</span>
-      </div>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-2-1"> <span>Build release APK (signed)</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-2-2"> <span>Test on physical Android device</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-2-3"> <span>Verify all demo flows work in APK</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-2-4"> <span>Verify offline capability in APK</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-2-5"> <span>Version number updated</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-2-6"> <span>APK file ready for submission</span></label></li>
-      </ul>
-    </div>
-
-    <div class="brutal-panel task-card">
-      <div class="task-title">
-        <span class="task-id">4.3</span> Competition Submission
-        <span class="badge badge-time">2h</span>
-        <span class="badge badge-critical">CRITICAL</span>
-      </div>
-      <ul class="check-list">
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-3-1"> <span>Write competition essay / submission document</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-3-2"> <span>Include: problem, solution, technical architecture, impact, scalability</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-3-3"> <span>Attach: screenshots, demo video link, APK download link</span></label></li>
-        <li><label><input type="checkbox" class="task-check" data-id="dev4-4-3-4"> <span>Submit before deadline</span></label></li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- Risk Items -->
-  <h2 class="section-header">Risk Items</h2>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;">
-    <div class="brutal-panel risk-card">
-      <div class="risk-title">Capacitor APK won't build</div>
-      <div class="risk-mitigation">Fallback: use TWA (Trusted Web Activity) with Bubblewrap</div>
-    </div>
-    <div class="brutal-panel risk-card">
-      <div class="risk-title">Camera doesn't work in WebView</div>
-      <div class="risk-mitigation">Use <code>&lt;input type="file" capture="camera"&gt;</code> as fallback</div>
-    </div>
-    <div class="brutal-panel risk-card">
-      <div class="risk-title">Demo fails live</div>
-      <div class="risk-mitigation">Pre-record backup video of each flow</div>
-    </div>
-    <div class="brutal-panel risk-card">
-      <div class="risk-title">Supabase down during demo</div>
-      <div class="risk-mitigation">Use local PostgreSQL as backup</div>
-    </div>
-    <div class="brutal-panel risk-card">
-      <div class="risk-title">AI service slow</div>
-      <div class="risk-mitigation">Pre-cache demo responses; show loading states</div>
-    </div>
-  </div>
-
-  <!-- Definition of Done -->
-  <h2 class="section-header">Definition of Done</h2>
-  <div class="brutal-panel dod-section">
-    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev4-dod-1"> <span>All 3 services connected and tested end-to-end</span></label></div>
-    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev4-dod-2"> <span>APK builds and installs on Android</span></label></div>
-    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev4-dod-3"> <span>PWA offline queue works reliably</span></label></div>
-    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev4-dod-4"> <span>ASEAN data seeded for 5+ countries</span></label></div>
-    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev4-dod-5"> <span>Demo script written and rehearsed</span></label></div>
-    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev4-dod-6"> <span>Presentation materials created</span></label></div>
-    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev4-dod-7"> <span>Full demo completes in under 12 minutes</span></label></div>
-    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev4-dod-8"> <span>Competition submission ready</span></label></div>
-  </div>
-
-</main>
-
-<footer class="footer">
-  <div class="container">
-    LIKASLENS &middot; DEVELOPER 4 &middot; INTEGRATION, PWA, APK &amp; DEMO &middot; ASEAN AI HACKATHON 2026
-  </div>
-</footer>
+<div class="footer">
+  <p>LikasLens Sprint Roadmap — Generated 2026-06-09</p>
+  <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a> · <a href="/">Home</a></p>
+</div>
+</div>
 
 <script>
-(function() {
-  const STORAGE_KEY = 'likaslens-sprint-progress';
-
-  function loadState() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-    } catch(e) {
-      return {};
-    }
-  }
-
-  function saveState(state) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch(e) {
-      console.warn('Could not save progress to localStorage');
-    }
-  }
-
-  function updateProgress() {
-    const checks = document.querySelectorAll('.task-check');
-    const checked = document.querySelectorAll('.task-check:checked');
-    const total = checks.length;
-    const done = checked.length;
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-
-    document.getElementById('progress-pct').textContent = pct + '%';
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-done').textContent = done;
-    document.getElementById('progress-total').textContent = total;
-
-    const fill = document.getElementById('progress-fill');
-    if (pct >= 100) {
-      fill.style.background = '#4caf50';
-    } else if (pct >= 50) {
-      fill.style.background = 'var(--dev-accent)';
-    } else {
-      fill.style.background = 'var(--amber)';
-    }
-  }
-
-  function init() {
-    const state = loadState();
-    const checks = document.querySelectorAll('.task-check');
-
-    checks.forEach(function(cb) {
-      const id = cb.getAttribute('data-id');
-
-      if (state[id]) {
-        cb.checked = true;
-      }
-
-      cb.addEventListener('change', function() {
-        const currentState = loadState();
-        if (this.checked) {
-          currentState[id] = true;
-        } else {
-          delete currentState[id];
-        }
-        saveState(currentState);
-        updateProgress();
-      });
-    });
-
-    updateProgress();
-  }
-
-  window.toggleTheme = function() {
-    const html = document.documentElement;
-    const label = document.getElementById('theme-label');
-    if (html.getAttribute('data-theme') === 'ghost') {
-      html.setAttribute('data-theme', 'civic');
-      label.textContent = 'CIVIC';
-      localStorage.setItem('likaslens-theme', 'civic');
-    } else {
-      html.setAttribute('data-theme', 'ghost');
-      label.textContent = 'GHOST';
-      localStorage.setItem('likaslens-theme', 'ghost');
-    }
-  };
-
-  const savedTheme = localStorage.getItem('likaslens-theme');
-  if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    const label = document.getElementById('theme-label');
-    if (label) label.textContent = savedTheme.toUpperCase();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  html.setAttribute('data-theme', current === 'ghost' ? 'civic' : 'ghost');
+}
 </script>
 </body>
 </html>
