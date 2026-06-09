@@ -77,7 +77,7 @@ class TicketController extends Controller
                 'urgency_score' => $ticket->urgency_score,
                 'ai_triage_summary' => $ticket->ai_triage_summary,
                 'ai_confidence' => $ticket->ai_confidence,
-                'reporter' => $ticket->reporter?->only(['id', 'name', 'email']),
+                'reporter' => $ticket->reporter?->only(['id', 'name']),
                 'evidence' => $ticket->evidence,
                 'classifications' => $ticket->classifications,
                 'assignments' => $ticket->assignments,
