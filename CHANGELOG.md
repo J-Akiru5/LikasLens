@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-06-09
+
+### Fixed
+- **Backend**: Removed `role` parameter from `/auth/sync` — prevents privilege escalation (CVE-like)
+- **Backend**: Moved `/admin/users` index behind `auth:sanctum` + `role:super_admin` middleware
+- **Backend**: Added `role:analyst,super_admin` middleware to `/reports/verify` — prevents self-verification fraud
+- **Backend**: Replaced `JULIANDAY()` with `EXTRACT(EPOCH FROM ...)` for PostgreSQL compatibility
+- **Frontend**: Fixed double `/api` prefix in dashboard `laravelGet("/api/user/impact")` → `laravelGet("/user/impact")`
+- **Frontend**: Fixed double `/api` prefix in auth sync URL
+- **Frontend**: Set `secure: true` on `laravel_token` cookie in production environments
+- **Mobile PWA**: Fixed middleware auth bypass — `isLocalePath` was skipping auth for ALL locale-prefixed routes
+- **Mobile PWA**: Public route matching now uses segment-based check instead of `includes()` substring match
+- **Mobile PWA**: Login redirect now preserves user's locale instead of hardcoding "en"
+
 ## [0.6.3] - 2026-06-09
 
 ### Added
@@ -251,7 +265,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.0...v0.6.1

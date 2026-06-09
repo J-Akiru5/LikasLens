@@ -60,9 +60,6 @@ Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
 Route::get('/tickets', [TicketController::class, 'index']);
 Route::get('/tickets/{id}', [TicketController::class, 'show']);
 
-// Public users list (used by frontend Supabase workflow)
-Route::get('/admin/users', [AdminUserController::class, 'index']);
-
 // Public NGO catalog (admin portal reads)
 Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
 Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
@@ -108,7 +105,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/rank-progress', [AchievementController::class, 'rankProgress']);
 
     // Report actions
-    Route::post('/reports/verify', [ReportController::class, 'verify']);
+    Route::middleware('role:analyst,super_admin')->group(function () {
+        Route::post('/reports/verify', [ReportController::class, 'verify']);
+    });
     Route::post('/reports/batch-sync', [ReportController::class, 'batchSync']);
 
     // Dashboard endpoints
@@ -149,7 +148,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Currency settings
         Route::apiResource('/admin/currency-settings', CurrencySettingController::class);
 
-        // User management (index is public above)
+        // User management
+        Route::get('/admin/users', [AdminUserController::class, 'index']);
         Route::get('/admin/users/{id}', [AdminUserController::class, 'show']);
         Route::put('/admin/users/{id}', [AdminUserController::class, 'update']);
         Route::put('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);
