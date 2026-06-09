@@ -63,6 +63,7 @@ Route::post('/auth/sync', [AuthController::class, 'sync'])->middleware('throttle
 
 // Authenticated user endpoints
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/auth/refresh', [AuthController::class, 'refresh'])->middleware('throttle:20,1');
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     Route::get('/user', function (Request $request) {
