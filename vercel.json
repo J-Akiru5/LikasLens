@@ -4,6 +4,5 @@
   },
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter frontend build",
-  "outputDirectory": "apps/frontend/.next",
-  "framework": "nextjs"
+  "outputDirectory": "apps/frontend/.next"
 }
