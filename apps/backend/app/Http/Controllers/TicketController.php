@@ -32,7 +32,7 @@ class TicketController extends Controller
         $tickets->getCollection()->transform(function (Ticket $ticket) {
             return [
                 'id' => $ticket->id,
-                'display_id' => 'INC-'.str_pad((string) Ticket::where('created_at', '<=', $ticket->created_at)->count(), 3, '0', STR_PAD_LEFT),
+                'display_id' => 'INC-'.strtoupper(substr($ticket->id, 0, 6)),
                 'category' => $ticket->ai_triage_summary ?? 'Uncategorized',
                 'title' => $ticket->title,
                 'description' => $ticket->description,
@@ -77,7 +77,7 @@ class TicketController extends Controller
                 'urgency_score' => $ticket->urgency_score,
                 'ai_triage_summary' => $ticket->ai_triage_summary,
                 'ai_confidence' => $ticket->ai_confidence,
-                'reporter' => $ticket->reporter?->only(['id', 'name', 'email']),
+                'reporter' => $ticket->reporter?->only(['id', 'name']),
                 'evidence' => $ticket->evidence,
                 'classifications' => $ticket->classifications,
                 'assignments' => $ticket->assignments,

@@ -22,7 +22,7 @@ function safeUrl(base: string, path: string): string {
 
 async function syncUserToLaravel(supabaseUserId: string, email: string, name?: string, role?: string) {
   try {
-    const res = await fetch(safeUrl(LARAVEL_API, "/api/auth/sync"), {
+    const res = await fetch(safeUrl(LARAVEL_API, "/auth/sync"), {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({
@@ -38,7 +38,7 @@ async function syncUserToLaravel(supabaseUserId: string, email: string, name?: s
       if (token) {
         (await cookies()).set("laravel_token", token, {
           httpOnly: true,
-          secure: false,
+          secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",
           maxAge: 60 * 60 * 24 * 30, // 30 days

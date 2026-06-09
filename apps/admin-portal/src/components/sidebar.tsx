@@ -22,6 +22,7 @@ import {
   X,
   MessageSquare,
   Fingerprint,
+  FileText,
 } from "lucide-react";
 
 const navItems = [
@@ -34,6 +35,7 @@ const navItems = [
   { href: "/rewards", label: "Rewards", icon: Gift, roles: ["super_admin"] },
   { href: "/inquiries", label: "Inquiries", icon: MessageSquare, roles: ["super_admin"] },
   { href: "/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["super_admin"] },
+  { href: "/changelog", label: "Changelog", icon: FileText, roles: ["analyst", "super_admin"] },
   { href: "/settings", label: "Settings", icon: Settings, roles: ["super_admin"] },
 ];
 
@@ -104,7 +106,7 @@ export function Sidebar() {
               aria-current={isActive ? "page" : undefined}
               className={`flex items-center gap-3 px-4 py-3 font-bold uppercase rounded transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary ${
                 isActive
-                  ? "bg-primary !text-white shadow-[4px_4px_0px_#081c15]"
+                  ? "bg-primary !text-white shadow-[4px_4px_0px_var(--ink)]"
                   : "text-primary border-2 border-transparent hover:border-primary hover:bg-primary/5"
               }`}
             >
@@ -120,23 +122,23 @@ export function Sidebar() {
           onClick={toggleGhostMode}
           className={`flex items-center justify-between w-full px-4 py-3 rounded transition-all ${
             isGhostMode
-              ? "bg-[#2EE6C8]/10 border-2 border-[#2EE6C8]/30"
+              ? "bg-secondary/10 border-2 border-secondary/30"
               : "border-2 border-primary/20 hover:border-primary"
           }`}
         >
           <div className="flex items-center gap-2">
-            <Fingerprint className={`w-4 h-4 ${isGhostMode ? "text-[#2EE6C8]" : "text-primary/40"}`} />
+            <Fingerprint className={`w-4 h-4 ${isGhostMode ? "text-secondary" : "text-primary/40"}`} />
             {!collapsed && (
-              <span className={`font-mono text-xs uppercase tracking-wider ${isGhostMode ? "text-[#2EE6C8]" : "text-primary/50"}`}>
+              <span className={`font-mono text-xs uppercase tracking-wider ${isGhostMode ? "text-secondary" : "text-primary/50"}`}>
                 Ghost Mode
               </span>
             )}
           </div>
           <div className={`w-8 h-4 rounded-full border-2 flex items-center transition-colors ${
-            isGhostMode ? "bg-[#2EE6C8]/20 border-[#2EE6C8]" : "bg-primary/10 border-primary/20"
+            isGhostMode ? "bg-secondary/20 border-secondary" : "bg-primary/10 border-primary/20"
           }`}>
             <div className={`w-3 h-3 rounded-full transition-all ${
-              isGhostMode ? "ml-auto mr-0.5 bg-[#2EE6C8]" : "ml-0.5 mr-auto bg-primary/40"
+              isGhostMode ? "ml-auto mr-0.5 bg-secondary" : "ml-0.5 mr-auto bg-primary/40"
             }`} />
           </div>
         </button>
@@ -161,7 +163,7 @@ export function Sidebar() {
         aria-label={mobileOpen ? "Close sidebar" : "Open sidebar"}
         aria-expanded={mobileOpen}
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 right-4 z-50 p-3 min-w-[48px] min-h-[48px] brutal-panel border-2 border-primary rounded-lg shadow-[2px_2px_0px_#1b4332] hover:bg-primary/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+        className="lg:hidden fixed top-4 right-4 z-50 p-3 min-w-[48px] min-h-[48px] brutal-panel border-2 border-primary rounded-lg shadow-[2px_2px_0px_var(--accent)] hover:bg-primary/10 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
       >
         {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -174,7 +176,7 @@ export function Sidebar() {
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="hidden lg:flex fixed bottom-6 left-[264px] z-40 items-center justify-center w-7 h-7 rounded-full border-2 border-primary bg-background text-primary hover:bg-primary hover:text-white transition-colors shadow-[2px_2px_0px_#1b4332]"
+        className="hidden lg:flex fixed bottom-6 left-[264px] z-40 items-center justify-center w-7 h-7 rounded-full border-2 border-primary bg-background text-primary hover:bg-primary hover:text-white transition-colors shadow-[2px_2px_0px_var(--accent)]"
         style={{ left: collapsed ? "calc(4rem + 8px)" : "calc(16rem + 8px)" }}
       >
         <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? "rotate-180" : ""}`} />

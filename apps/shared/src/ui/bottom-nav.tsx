@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { type LucideIcon } from "lucide-react";
 import { cn } from "../utils";
 
+import { locales } from "../i18n/config";
+
 export interface BottomNavItem {
   href: string;
   label: string;
@@ -19,6 +21,10 @@ interface BottomNavProps {
 
 export function BottomNav({ items, className }: BottomNavProps) {
   const pathname = usePathname();
+  
+  const pathParts = pathname.split("/");
+  const hasLocale = locales.includes(pathParts[1] as any);
+  const localePrefix = hasLocale ? `/${pathParts[1]}` : "";
 
   return (
     <nav
@@ -37,11 +43,12 @@ export function BottomNav({ items, className }: BottomNavProps) {
             : cleanPathname.startsWith(item.href);
 
           const Icon = item.icon;
+          const fullHref = `${localePrefix}${item.href === "/" ? "" : item.href}` || "/";
 
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={fullHref}
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex flex-col items-center gap-1 px-3 py-2 text-[10px] font-mono uppercase tracking-wider transition-colors min-w-[60px]",

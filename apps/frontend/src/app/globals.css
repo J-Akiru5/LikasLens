@@ -4,6 +4,7 @@
 @source "./node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @source "../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @source "../../shared/src/**/*.{ts,tsx}";
+@import "@likaslens/shared/src/styles/civic-brutalism.css";
 
 :root {
   --page: #f5f5f0;
@@ -25,6 +26,8 @@
   --hero-muted: rgba(240, 237, 232, 0.5);
   --hero-border: rgba(240, 237, 232, 0.08);
   --hero-panel: rgba(255, 255, 255, 0.04);
+  --ghost-accent: #2ee6c8;
+  --ghost-accent-hover: #40f0d4;
 }
 
 :root[data-theme="ghost"] {
@@ -46,6 +49,8 @@
   --hero-muted: rgba(232, 224, 212, 0.45);
   --hero-border: rgba(46, 230, 200, 0.08);
   --hero-panel: rgba(46, 230, 200, 0.03);
+  --ghost-accent: #facc15;
+  --ghost-accent-hover: #fde047;
 }
 
 @theme inline {
@@ -53,7 +58,7 @@
   --color-ink: var(--ink);
   --color-panel: var(--panel);
   --color-accent: var(--accent);
-  --color-secondary: var(--secondary);
+      --color-secondary: var(--accent-bright);
   --color-border: var(--border);
   --color-muted: var(--muted);
   --font-sans: var(--font-body);
@@ -280,7 +285,7 @@ body {
    GRADIENT TEXT
 ───────────────────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #2ee6c8 0%, #5aefb0 50%, #a8f5d0 100%);
+  background: linear-gradient(135deg, var(--accent-bright) 0%, #5aefb0 50%, #a8f5d0 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -329,7 +334,7 @@ body {
 .label-pill-dark {
   background: rgba(46, 230, 200, 0.1);
   border: 1px solid rgba(46, 230, 200, 0.2);
-  color: #2ee6c8;
+  color: var(--accent-bright);
 }
 
 .label-pill-light {
@@ -359,8 +364,8 @@ body {
   gap: 0.625rem;
   padding: 0.875rem 2rem;
   border-radius: 0.75rem;
-  background: #2ee6c8;
-  color: #0d1a12;
+  background: var(--accent-bright);
+  color: var(--hero-bg);
   font-weight: 700;
   font-size: 0.9rem;
   letter-spacing: -0.01em;
@@ -375,7 +380,7 @@ body {
 .btn-primary-dark:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px -8px rgba(46, 230, 200, 0.5);
-  background: #40f0d4;
+  background: var(--ghost-accent-hover);
 }
 
 .btn-secondary-dark {
@@ -396,7 +401,7 @@ body {
 
 .btn-secondary-dark:hover {
   border-color: rgba(46, 230, 200, 0.35);
-  color: #2ee6c8;
+  color: var(--accent-bright);
   background: rgba(46, 230, 200, 0.05);
 }
 

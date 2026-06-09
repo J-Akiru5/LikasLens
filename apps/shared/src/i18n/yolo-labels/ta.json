@@ -1,0 +1,12 @@
+{
+  "illegalDumping": "சட்டவிரோத கழிவு",
+  "deforestation": "காடழிப்பு",
+  "waterPollution": "நீர் மாசுபாடு",
+  "airPollution": "காற்று மாசுபாடு",
+  "wildlifeCrime": "வன உயிரின குற்றம்",
+  "oilSpill": "எண்ணெய் கசிவு",
+  "miningViolation": "சுரங்க மீறல்",
+  "coastalDamage": "கடலோர சேதம்",
+  "wasteBurning": "கழிவு எரிப்பு",
+  "unclassified": "வகைப்படுத்தப்படாத சுற்றுச்சூழல் பிரச்சனை"
+}

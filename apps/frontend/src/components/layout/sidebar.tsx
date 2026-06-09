@@ -162,20 +162,20 @@ export function Sidebar() {
         <button
           onClick={toggleGhostMode}
           className={`flex items-center justify-between w-full px-4 py-3 transition-colors ${
-            isGhostMode ? "bg-[#2EE6C8]/10 border border-[#2EE6C8]/20" : "border border-ink/10"
+            isGhostMode ? "bg-secondary/10 border border-secondary/20" : "border border-ink/10"
           }`}
         >
           <div className="flex items-center gap-2">
-            <Fingerprint className={`w-4 h-4 ${isGhostMode ? "text-[#2EE6C8]" : "text-ink/40"}`} />
-            <span className={`font-mono text-xs uppercase tracking-wider ${isGhostMode ? "text-[#2EE6C8]" : "text-ink/50"}`}>
+            <Fingerprint className={`w-4 h-4 ${isGhostMode ? "text-secondary" : "text-ink/40"}`} />
+            <span className={`font-mono text-xs uppercase tracking-wider ${isGhostMode ? "text-secondary" : "text-ink/50"}`}>
               {isGhostMode ? "Ghost Mode" : "Ghost Mode"}
             </span>
           </div>
           <div className={`w-8 h-4 rounded-full border-2 flex items-center transition-colors ${
-            isGhostMode ? "bg-[#2EE6C8]/20 border-[#2EE6C8]" : "bg-ink/10 border-ink/20"
+            isGhostMode ? "bg-secondary/20 border-secondary" : "bg-ink/10 border-ink/20"
           }`}>
             <div className={`w-3 h-3 rounded-full transition-all ${
-              isGhostMode ? "ml-auto mr-0.5 bg-[#2EE6C8]" : "ml-0.5 mr-auto bg-ink/40"
+              isGhostMode ? "ml-auto mr-0.5 bg-secondary" : "ml-0.5 mr-auto bg-ink/40"
             }`} />
           </div>
         </button>

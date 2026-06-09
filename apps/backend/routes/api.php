@@ -29,9 +29,9 @@ Route::get('/health', function () {
     ]);
 });
 
-// Report submission endpoints (public)
-Route::post('/reports', [ReportController::class, 'store']);
-Route::post('/reports/triage', [ReportController::class, 'triage']);
+// Report submission endpoints (public, rate limited)
+Route::post('/reports', [ReportController::class, 'store'])->middleware('throttle:10,1');
+Route::post('/reports/triage', [ReportController::class, 'triage'])->middleware('throttle:20,1');
 
 // Contact message endpoint (public)
 Route::post('/contact-messages', [ContactMessageController::class, 'store']);
@@ -60,9 +60,6 @@ Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
 Route::get('/tickets', [TicketController::class, 'index']);
 Route::get('/tickets/{id}', [TicketController::class, 'show']);
 
-// Public users list (used by frontend Supabase workflow)
-Route::get('/admin/users', [AdminUserController::class, 'index']);
-
 // Public NGO catalog (admin portal reads)
 Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
 Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
@@ -71,10 +68,10 @@ Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
 Route::get('/admin/laws', [AdminLawController::class, 'index']);
 Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
 
-// Auth endpoints
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
-Route::post('/auth/sync', [AuthController::class, 'sync']);
+// Auth endpoints (rate limited)
+Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+Route::post('/auth/sync', [AuthController::class, 'sync'])->middleware('throttle:20,1');
 
 // Authenticated user endpoints
 Route::middleware('auth:sanctum')->group(function () {
@@ -108,7 +105,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/rank-progress', [AchievementController::class, 'rankProgress']);
 
     // Report actions
-    Route::post('/reports/verify', [ReportController::class, 'verify']);
+    Route::middleware('role:analyst,super_admin')->group(function () {
+        Route::post('/reports/verify', [ReportController::class, 'verify']);
+    });
     Route::post('/reports/batch-sync', [ReportController::class, 'batchSync']);
 
     // Dashboard endpoints
@@ -149,7 +148,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Currency settings
         Route::apiResource('/admin/currency-settings', CurrencySettingController::class);
 
-        // User management (index is public above)
+        // User management
+        Route::get('/admin/users', [AdminUserController::class, 'index']);
         Route::get('/admin/users/{id}', [AdminUserController::class, 'show']);
         Route::put('/admin/users/{id}', [AdminUserController::class, 'update']);
         Route::put('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);

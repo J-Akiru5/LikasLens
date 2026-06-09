@@ -16,7 +16,7 @@ class DashboardController extends Controller
         $openTickets = Ticket::whereIn('status', ['open', 'investigating', 'monitoring'])->count();
 
         $avgResponseMinutes = Ticket::whereNotNull('resolved_at')
-            ->selectRaw('COALESCE(AVG((JULIANDAY(resolved_at) - JULIANDAY(created_at)) * 1440), 0) as avg_minutes')
+            ->selectRaw('COALESCE(AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)) / 60), 0) as avg_minutes')
             ->value('avg_minutes');
 
         $totalReports = Report::count();
@@ -77,7 +77,7 @@ class DashboardController extends Controller
 
                 return [
                     'id' => $ticket->id,
-                    'display_id' => 'INC-'.str_pad((string) Ticket::where('created_at', '<=', $ticket->created_at)->count(), 3, '0', STR_PAD_LEFT),
+                    'display_id' => 'INC-'.strtoupper(substr($ticket->id, 0, 6)),
                     'type' => $type,
                     'title' => $ticket->title,
                     'description' => $ticket->description,
