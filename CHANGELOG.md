@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.3] - 2026-06-09
+
+### Added
+- **AI Service**: Request logging middleware with timing, status codes, and request IDs
+- **AI Service**: Rate limiting middleware (60 req/min general, 10 req/min for expensive endpoints)
+- **AI Service**: Structured logging configuration with timestamps
+
+### Fixed
+- **AI Service**: Synced `pyproject.toml` with `requirements.txt` (was missing ultralytics, Pillow, numpy, python-multipart)
+- **AI Service**: Updated version to 0.2.0 in pyproject.toml
+
 ## [0.6.2] - 2026-06-09
 
 ### Fixed
@@ -240,7 +251,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.5.0...v0.6.0

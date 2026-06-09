@@ -6,6 +6,8 @@ Neuro-symbolic processing microservice using FastAPI, YOLOv8, and Google Generat
 import asyncio
 import logging
 import os
+import time
+import uuid
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
@@ -20,6 +22,11 @@ from graph_topology import build_seed_edges, build_seed_vertices, get_topology_c
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
+)
 
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 
@@ -109,6 +116,81 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ---------------------------------------------------------------------------
+# Request logging middleware
+# ---------------------------------------------------------------------------
+
+@app.middleware("http")
+async def request_logging_middleware(request: Request, call_next):
+    """Log every request with timing, status, and request ID."""
+    request_id = str(uuid.uuid4())[:8]
+    start = time.monotonic()
+
+    response = await call_next(request)
+
+    elapsed_ms = (time.monotonic() - start) * 1000
+    logger.info(
+        "%s %s → %d (%.1fms) [%s]",
+        request.method,
+        request.url.path,
+        response.status_code,
+        elapsed_ms,
+        request_id,
+    )
+
+    response.headers["X-Request-ID"] = request_id
+    return response
+
+
+# ---------------------------------------------------------------------------
+# Rate limiting (in-memory, per-IP)
+# ---------------------------------------------------------------------------
+
+_rate_limits: dict[str, list[float]] = {}
+RATE_LIMIT_WINDOW = 60.0  # seconds
+RATE_LIMIT_MAX_REQUESTS = 60  # per window
+RATE_LIMIT_MAX_REQUESTS_STRICT = 10  # for expensive endpoints
+
+
+def _check_rate_limit(key: str, max_requests: int) -> bool:
+    """Return True if request is allowed, False if rate limited."""
+    now = time.monotonic()
+    window_start = now - RATE_LIMIT_WINDOW
+
+    if key not in _rate_limits:
+        _rate_limits[key] = []
+
+    # Prune old entries
+    _rate_limits[key] = [t for t in _rate_limits[key] if t > window_start]
+
+    if len(_rate_limits[key]) >= max_requests:
+        return False
+
+    _rate_limits[key].append(now)
+    return True
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    """Apply rate limiting per IP address."""
+    client_ip = request.client.host if request.client else "unknown"
+    path = request.url.path
+
+    # Strict rate limit for expensive endpoints
+    if path in ("/analyze", "/analyze/base64", "/api/v1/chat", "/api/v1/analyze-hazard"):
+        limit = RATE_LIMIT_MAX_REQUESTS_STRICT
+    else:
+        limit = RATE_LIMIT_MAX_REQUESTS
+
+    if not _check_rate_limit(f"{client_ip}:{path}", limit):
+        return JSONResponse(
+            status_code=429,
+            content={"success": False, "error": "Rate limit exceeded. Try again later."},
+        )
+
+    return await call_next(request)
 
 
 # ---------------------------------------------------------------------------
