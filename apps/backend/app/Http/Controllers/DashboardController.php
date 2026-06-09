@@ -6,32 +6,46 @@ use App\Models\Report;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
+    /** Cache TTL for dashboard stats (minutes). */
+    private const STATS_CACHE_TTL = 5;
+
     public function stats(): JsonResponse
     {
-        $totalTickets = Ticket::count();
-        $resolvedTickets = Ticket::where('status', 'resolved')->count();
-        $openTickets = Ticket::whereIn('status', ['open', 'investigating', 'monitoring'])->count();
+        $data = Cache::remember('dashboard:stats', self::STATS_CACHE_TTL * 60, function () {
+            // Single aggregate query for ticket counts and avg response time
+            $ticketAgg = Ticket::selectRaw('
+                COUNT(*) as total,
+                COUNT(*) FILTER (WHERE status = \'resolved\') as resolved,
+                COUNT(*) FILTER (WHERE status IN (\'open\', \'investigating\', \'monitoring\')) as open,
+                COALESCE(
+                    AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)) / 60)
+                    FILTER (WHERE resolved_at IS NOT NULL),
+                    0
+                ) as avg_minutes
+            ')->first();
 
-        $avgResponseMinutes = Ticket::whereNotNull('resolved_at')
-            ->selectRaw('COALESCE(AVG(EXTRACT(EPOCH FROM (resolved_at - created_at)) / 60), 0) as avg_minutes')
-            ->value('avg_minutes');
+            // Single aggregate query for report counts
+            $reportAgg = Report::selectRaw('
+                COUNT(*) as total,
+                COUNT(*) FILTER (WHERE user_id IS NULL) as ghost
+            ')->first();
 
-        $totalReports = Report::count();
-        $totalUsers = User::count();
-        $ghostReports = Report::whereNull('user_id')->count();
+            $totalUsers = User::count();
 
-        $ticketsByStatus = Ticket::selectRaw('status, COUNT(*) as count')
-            ->groupBy('status')
-            ->pluck('count', 'status');
+            $ticketsByStatus = Ticket::selectRaw('status, COUNT(*) as count')
+                ->groupBy('status')
+                ->pluck('count', 'status');
 
-        $capacity = 200;
+            $capacity = 200;
+            $openTickets = (int) $ticketAgg->open;
+            $resolvedTickets = (int) $ticketAgg->resolved;
+            $avgResponseMinutes = (float) $ticketAgg->avg_minutes;
 
-        return response()->json([
-            'success' => true,
-            'data' => [
+            return [
                 'active_incidents' => $openTickets,
                 'active_incidents_total' => $capacity,
                 'active_incidents_progress' => $capacity > 0 ? round(($openTickets / $capacity) * 100) : 0,
@@ -52,13 +66,18 @@ class DashboardController extends Controller
                 'system_load_progress' => $capacity > 0 ? round(($openTickets / $capacity) * 100) : 0,
                 'system_load_trend' => 'Stable',
 
-                'total_tickets' => $totalTickets,
-                'total_reports' => $totalReports,
+                'total_tickets' => (int) $ticketAgg->total,
+                'total_reports' => (int) $reportAgg->total,
                 'total_users' => $totalUsers,
-                'ghost_reports' => $ghostReports,
+                'ghost_reports' => (int) $reportAgg->ghost,
 
                 'tickets_by_status' => $ticketsByStatus,
-            ],
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
         ]);
     }
 

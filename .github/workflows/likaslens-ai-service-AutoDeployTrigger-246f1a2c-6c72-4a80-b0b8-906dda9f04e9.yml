@@ -11,7 +11,7 @@ on:
     - '.github/workflows/likaslens-ai-service-AutoDeployTrigger-246f1a2c-6c72-4a80-b0b8-906dda9f04e9.yml'
 
   # Allow manual trigger 
-  workflow_dispatch:      
+  workflow_dispatch:     
 
 jobs:
   build-and-deploy:
@@ -19,6 +19,7 @@ jobs:
     permissions: 
       id-token: write #This is required for requesting the OIDC JWT Token
       contents: read #Required when GH token is used to authenticate with private repo
+      packages: write #Required for pushing to GitHub Container Registry
 
     steps:
       - name: Checkout to the branch
@@ -35,11 +36,9 @@ jobs:
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}/apps/ai-service
-          registryUrl: likaslensregistry.azurecr.io
-          registryUsername: ${{ secrets.LIKASLENSAISERVICE_REGISTRY_USERNAME }}
-          registryPassword: ${{ secrets.LIKASLENSAISERVICE_REGISTRY_PASSWORD }}
+          registryUrl: ghcr.io
+          registryUsername: ${{ github.actor }}
+          registryPassword: ${{ secrets.GITHUB_TOKEN }}
           containerAppName: likaslens-ai-service
           resourceGroup: likaslens
-          imageToBuild: likaslensregistry.azurecr.io/likaslens-ai-service:${{ github.sha }}
-
-
+          imageToBuild: ghcr.io/${{ github.repository }}/likaslens-ai-service:${{ github.sha }}
