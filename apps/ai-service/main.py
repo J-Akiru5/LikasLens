@@ -3,66 +3,130 @@ LikasLens AI Service
 Neuro-symbolic processing microservice using FastAPI, YOLOv8, and Google Generative AI
 """
 
+import asyncio
+import logging
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import UTC, datetime
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile, status
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from gremlin_bootstrap import build_bootstrap_queries
 from graph_topology import build_seed_edges, build_seed_vertices, get_topology_config
 
-# Load environment variables
 load_dotenv()
+
+logger = logging.getLogger(__name__)
+
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
-    # Startup
-    print("[startup] LikasLens AI Service starting...")
+    logger.info("LikasLens AI Service starting...")
+
+    try:
+        from image_analysis import load_model
+        await asyncio.to_thread(load_model)
+        logger.info("YOLO model preloaded")
+    except Exception as exc:
+        logger.warning("YOLO model preload failed (will load on first request): %s", exc)
+
     yield
-    # Shutdown
-    print("[shutdown] LikasLens AI Service shutting down...")
+
+    from gremlin_client import reset_client
+    reset_client()
+    logger.info("LikasLens AI Service shut down")
 
 
 app = FastAPI(
     title="LikasLens AI Service",
     description="Neuro-symbolic civic reporting AI microservice",
-    version="0.1.0",
+    version="0.2.0",
     lifespan=lifespan,
 )
 
-# Configure CORS
+
+# ---------------------------------------------------------------------------
+# Global exception handler — consistent JSON error responses
+# ---------------------------------------------------------------------------
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Catch-all handler returning consistent JSON error format."""
+    logger.error("Unhandled exception on %s %s: %s", request.method, request.url.path, exc, exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "error": "Internal server error",
+            "detail": str(exc) if os.getenv("APP_DEBUG", "").lower() == "true" else None,
+        },
+    )
+
+
+@app.exception_handler(ValueError)
+async def value_error_handler(request: Request, exc: ValueError) -> JSONResponse:
+    return JSONResponse(
+        status_code=400,
+        content={"success": False, "error": str(exc)},
+    )
+
+
+@app.exception_handler(RuntimeError)
+async def runtime_error_handler(request: Request, exc: RuntimeError) -> JSONResponse:
+    return JSONResponse(
+        status_code=502,
+        content={"success": False, "error": str(exc)},
+    )
+
+
+# ---------------------------------------------------------------------------
+# CORS — environment-driven
+# ---------------------------------------------------------------------------
+
+def _parse_cors_origins() -> list[str]:
+    """Parse CORS origins from env var, falling back to localhost defaults."""
+    env_origins = os.getenv("CORS_ORIGINS", "")
+    if env_origins:
+        return [o.strip() for o in env_origins.split(",") if o.strip()]
+    return [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://localhost:8000",
+    ]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Next.js frontend
-        "http://localhost:3002",  # Next.js admin-portal
-        "http://localhost:8000",  # Laravel backend
-    ],
+    allow_origins=_parse_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+# ---------------------------------------------------------------------------
+# Health & info
+# ---------------------------------------------------------------------------
+
 @app.get("/health")
 async def health_check():
-    """Health check endpoint for service monitoring."""
     return {
         "status": "ok",
         "service": "likaslens-ai-service",
-        "timestamp": datetime.utcnow().isoformat() + "Z",
-        "version": "0.1.0",
+        "timestamp": datetime.now(UTC).isoformat(),
+        "version": "0.2.0",
     }
 
 
 @app.get("/")
 async def root():
-    """Root endpoint with service information."""
     return {
         "name": "LikasLens AI Service",
         "description": "Neuro-symbolic civic reporting AI microservice",
@@ -71,9 +135,12 @@ async def root():
     }
 
 
+# ---------------------------------------------------------------------------
+# Graph topology
+# ---------------------------------------------------------------------------
+
 @app.get("/graph/topology")
 async def graph_topology():
-    """Return the canonical Gremlin graph topology used by LikasLens."""
     topology = get_topology_config()
     return {
         "vertex_labels": topology.vertex_labels,
@@ -85,7 +152,6 @@ async def graph_topology():
 
 @app.get("/graph/bootstrap-payload")
 async def graph_bootstrap_payload():
-    """Return deterministic seed payloads that can be upserted into Cosmos Gremlin."""
     return {
         "vertices": build_seed_vertices(),
         "edges": build_seed_edges(),
@@ -94,19 +160,31 @@ async def graph_bootstrap_payload():
 
 @app.get("/graph/bootstrap-queries")
 async def graph_bootstrap_queries():
-    """Return idempotent Gremlin upsert traversals for the seed graph."""
     vertices = build_seed_vertices()
     edges = build_seed_edges()
     return build_bootstrap_queries(vertices, edges)
 
 
+# ---------------------------------------------------------------------------
+# Image analysis
+# ---------------------------------------------------------------------------
+
 @app.post("/analyze")
 async def analyze_image_upload(file: UploadFile = File(...), confidence: float = Form(0.25)):
-    """Run YOLOv8 inference on an uploaded image and return detections."""
+    """Run YOLOv8 inference on an uploaded image."""
     from image_analysis import analyze_image
 
     image_bytes = await file.read()
-    result = analyze_image(image_bytes, confidence)
+    if len(image_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail=f"File too large (max {MAX_UPLOAD_BYTES // (1024*1024)}MB)")
+
+    try:
+        result = await asyncio.to_thread(analyze_image, image_bytes, confidence)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
     return {"success": True, "filename": file.filename, "analysis": result}
 
 
@@ -120,13 +198,18 @@ async def analyze_base64_image(payload: dict):
     if not base64_string:
         return {"success": False, "error": "Missing 'image' field"}
 
-    result = analyze_base64(base64_string, confidence)
+    try:
+        result = await asyncio.to_thread(analyze_base64, base64_string, confidence)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
     return {"success": True, "analysis": result}
 
 
 @app.get("/analyze/model")
 async def analyze_model_status():
-    """Return the currently loaded YOLO model info."""
     from image_analysis import ENVIRONMENTAL_KEYWORDS, _MODEL_NAME, get_model_path
 
     return {
@@ -136,9 +219,12 @@ async def analyze_model_status():
     }
 
 
+# ---------------------------------------------------------------------------
+# Routing
+# ---------------------------------------------------------------------------
+
 @app.get("/routing/status")
 async def routing_status():
-    """Check Cosmos Gremlin routing service status."""
     from gremlin_client import get_connection_params, is_configured
 
     params = get_connection_params()
@@ -152,7 +238,6 @@ async def routing_status():
 
 @app.post("/routing/incident")
 async def route_incident(payload: dict):
-    """Route an incident through the graph: Citizen -> Incident -> ViolationType -> NGO."""
     from gremlin_client import route_incident
 
     citizen_id = payload.get("citizen_id")
@@ -169,23 +254,25 @@ async def route_incident(payload: dict):
 
 @app.get("/routing/traversal")
 async def routing_traversal(citizen_id: str, incident_id: str, violation_code: str, ngo_id: str = ""):
-    """Preview the Gremlin traversal strings without executing them."""
     from gremlin_client import build_incident_routing_traversal
 
-    queries = build_incident_routing_traversal(
-        citizen_id, incident_id, violation_code, ngo_id or None
-    )
+    try:
+        queries = build_incident_routing_traversal(
+            citizen_id, incident_id, violation_code, ngo_id or None
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     return {"queries": queries}
 
 
+# ---------------------------------------------------------------------------
+# Hazard analysis & chat
+# ---------------------------------------------------------------------------
+
 @app.post("/api/v1/analyze-hazard")
 async def analyze_hazard(payload: dict):
-    """Neuro-symbolic hazard analysis: Gremlin graph traversal + Gemini LLM synthesis.
-
-    Accepts a JSON body with ``hazard_id`` (string), queries the Cosmos DB Gremlin
-    graph for strictly mapped Philippine laws and enforcing agencies, then passes
-    that data to Gemini 2.5 Flash to generate a natural-language incident summary.
-    """
+    """Neuro-symbolic hazard analysis: Gremlin graph traversal + Gemini LLM synthesis."""
     from hazard_analyzer import HazardRequest, HazardResponse, generate_incident_summary, query_hazard_laws_and_agencies
 
     try:
@@ -213,12 +300,7 @@ async def analyze_hazard(payload: dict):
 
 @app.post("/api/v1/chat")
 async def chat_proxy(payload: dict):
-    """Secure chat proxy for the Likasy chatbot.
-
-    Accepts chat messages from the frontend, calls Gemini 2.5 Flash
-    server-side, and returns the response. The GOOGLE_API_KEY never
-    leaves the server.
-    """
+    """Secure chat proxy for the Likasy chatbot."""
     from chat_proxy import ChatRequest, ChatResponse, generate_chat_reply
 
     try:
@@ -240,5 +322,4 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=int(os.getenv("AI_SERVICE_PORT", 8001)),
-        reload=True,
     )

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-06-09
+
+### Fixed
+- **AI Service**: Added try/except with proper error handling in `analyze_image()` — no more raw tracebacks to clients
+- **AI Service**: Added image size validation (20MB max, 16MP cap with auto-resize) to prevent OOM
+- **AI Service**: Fixed Gremlin injection vulnerability — all IDs validated against `^[a-zA-Z0-9_\-:.@]+$` pattern
+- **AI Service**: Added Gremlin query timeouts (30s) with `asyncio.wait_for()`
+- **AI Service**: Added Gremlin reconnection with retry logic (2 retries on stale connection)
+- **AI Service**: Moved `analyze_image()` to `asyncio.to_thread()` — no longer blocks the event loop
+- **AI Service**: Added global FastAPI exception handler with consistent JSON error responses
+- **AI Service**: Added Gemini API timeouts (30s) in both `chat_proxy.py` and `hazard_analyzer.py`
+- **AI Service**: `genai.configure()` called once at startup instead of on every request
+- **AI Service**: Error messages no longer leak internal details (connection strings, API keys)
+- **AI Service**: CORS now reads from `CORS_ORIGINS` env var (falls back to localhost defaults)
+- **AI Service**: Pinned all dependency versions with upper bounds
+- **AI Service**: Dockerfile now uses non-root user and includes `HEALTHCHECK`
+
 ## [0.6.1] - 2026-06-09
 
 ### Fixed
@@ -223,7 +240,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.2...HEAD
+[0.6.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.4.0...v0.5.0

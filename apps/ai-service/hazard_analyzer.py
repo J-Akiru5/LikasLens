@@ -15,9 +15,11 @@ import google.generativeai as genai
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
 
-from gremlin_client import get_client, is_configured
+from gremlin_client import get_client, is_configured, submit_query
 
 logger = logging.getLogger(__name__)
+
+GEMINI_TIMEOUT_SECONDS = 30
 
 # ---------------------------------------------------------------------------
 # Pydantic schemas
@@ -90,27 +92,27 @@ async def query_hazard_laws_and_agencies(hazard_id: str) -> dict[str, list[str]]
             detail="Cosmos Gremlin not configured",
         )
 
-    safe_id = hazard_id.replace("'", "\\'")
+    import re
+    if not re.match(r"^[a-zA-Z0-9_\-:.@]+$", hazard_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid hazard_id format",
+        )
+
     traversal = (
-        f"g.V('{safe_id}')"
+        f"g.V('{hazard_id}')"
         f".out('violates').as('law')"
         f".out('enforced_by').as('agency')"
         f".select('law', 'agency')"
     )
 
-    client = get_client()
-
-    def _submit() -> list:
-        result_set = client.submit(traversal)
-        return list(result_set)
-
     try:
-        results = await asyncio.to_thread(_submit)
+        results = await submit_query(traversal)
     except Exception as exc:
         logger.error("Gremlin traversal failed for hazard_id=%s: %s", hazard_id, exc)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Gremlin graph query failed: {exc}",
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Gremlin graph query failed",
         ) from exc
 
     laws: set[str] = set()
@@ -173,7 +175,10 @@ async def generate_incident_summary(
     )
 
     try:
-        response = await asyncio.to_thread(model.generate_content, prompt)
+        response = await asyncio.wait_for(
+            asyncio.to_thread(model.generate_content, prompt),
+            timeout=GEMINI_TIMEOUT_SECONDS,
+        )
         text = response.text
         if not text:
             raise HTTPException(
@@ -181,11 +186,17 @@ async def generate_incident_summary(
                 detail="Gemini returned an empty response",
             )
         return text.strip()
+    except asyncio.TimeoutError:
+        logger.error("Gemini timed out after %ds for hazard_id=%s", GEMINI_TIMEOUT_SECONDS, hazard_id)
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail=f"Gemini API timed out after {GEMINI_TIMEOUT_SECONDS}s",
+        )
     except HTTPException:
         raise
     except Exception as exc:
         logger.error("Gemini API call failed for hazard_id=%s: %s", hazard_id, exc)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Gemini API call failed: {exc}",
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Gemini API call failed",
         ) from exc
