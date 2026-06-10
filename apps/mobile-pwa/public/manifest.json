@@ -36,6 +36,21 @@
       "purpose": "maskable"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "Quick Report",
+      "short_name": "Report",
+      "description": "Take a photo and submit a quick report",
+      "url": "/report?quick=true",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
   "screenshots": [
     {
       "src": "/screenshots/dashboard.png",

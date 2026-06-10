@@ -17,6 +17,9 @@ import {
   LogOut,
   MessageSquare,
   FileText,
+  ShieldAlert,
+  Gauge,
+  MapPinned,
 } from "lucide-react";
 
 const SIDEBAR_NAV_ITEMS: NavItem[] = [
@@ -25,9 +28,12 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { href: "/analytics", label: "Analytics", icon: BarChart3, roles: ["analyst", "super_admin", "lgu"] },
 
   { divider: true, dividerLabel: "Operations" },
+  { href: "/predictions", label: "Predictions", icon: MapPinned, roles: ["analyst", "super_admin"] },
+  { href: "/triage", label: "Triage", icon: ShieldAlert, roles: ["analyst", "super_admin"] },
   { href: "/tickets", label: "Tickets", icon: Ticket, roles: ["analyst", "super_admin", "lgu"] },
   { href: "/ngos", label: "NGOs", icon: Building2, roles: ["analyst", "super_admin"] },
   { href: "/laws", label: "Laws", icon: Scale, roles: ["analyst", "super_admin"] },
+  { href: "/lgu-performance", label: "LGU Performance", icon: Gauge, roles: ["analyst", "super_admin"] },
 
   { divider: true, dividerLabel: "Community" },
   { href: "/users", label: "Users", icon: Users, roles: ["super_admin"] },

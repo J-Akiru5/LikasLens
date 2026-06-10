@@ -12,7 +12,7 @@ const intlMiddleware = createIntlMiddleware({
 
 const ADMIN_ONLY_ROUTES = ["/users", "/rewards", "/audit-logs", "/settings"];
 
-export default async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   let response = intlMiddleware(request);
 
   // If Supabase is not configured yet, skip auth checks and just do locale routing

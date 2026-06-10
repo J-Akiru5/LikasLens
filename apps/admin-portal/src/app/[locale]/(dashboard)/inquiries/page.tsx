@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { laravelGet, laravelPatch } from "@likaslens/shared";
 import type { PaginatedResponse, ApiResponse } from "@likaslens/shared";
 import { showToast, AdminTableSkeleton } from "@likaslens/shared";
-import { Mail, User, Clock, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Mail, User, Clock, CheckCircle2 } from "lucide-react";
 
 interface ContactMessage {
   id: number;
@@ -19,15 +19,20 @@ interface ContactMessage {
 export default function InquiriesPage() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
   useEffect(() => {
     fetchMessages();
-  }, []);
+  }, [page]);
 
   const fetchMessages = () => {
-    laravelGet<PaginatedResponse<ContactMessage>>(`/admin/contact-messages`)
+    laravelGet<PaginatedResponse<ContactMessage>>(`/admin/contact-messages?per_page=50&page=${page}`)
       .then((res) => {
-        if (res.success) setMessages(res.data);
+        if (res.success) {
+          setMessages(res.data);
+          setLastPage(res.meta?.last_page ?? 1);
+        }
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -138,6 +143,30 @@ export default function InquiriesPage() {
               No inquiries found
             </p>
           )}
+        </div>
+      )}
+
+      {lastPage > 1 && (
+        <div className="flex items-center justify-between gap-4">
+          <p className="font-mono text-sm text-muted">
+            Page {page} of {lastPage}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
+            >
+              <ChevronLeft className="w-4 h-4" /> Prev
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+              disabled={page >= lastPage}
+              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
+            >
+              Next <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
     </div>

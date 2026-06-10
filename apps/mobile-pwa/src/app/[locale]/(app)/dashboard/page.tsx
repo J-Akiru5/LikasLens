@@ -3,25 +3,36 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { DashboardSkeleton, laravelGet } from "@likaslens/shared";
-import { Camera, AlertTriangle, Scale, Activity } from "lucide-react";
+import { DashboardSkeleton, laravelGet, getDashboardFeed, showToast, EmptyFeed } from "@likaslens/shared";
+import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/shared";
+import { Camera, AlertTriangle, Scale, Activity, Zap } from "lucide-react";
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [feed, setFeed] = useState<ActivityFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
     async function load() {
       try {
-        const data = await laravelGet<any>("/dashboard/stats");
-        setStats(data?.data || data);
+        const [statsRes, feedRes] = await Promise.all([
+          laravelGet<ApiResponse<DashboardStats>>("/dashboard/stats", controller.signal),
+          getDashboardFeed(),
+        ]);
+        setStats(statsRes?.data ?? null);
+        setFeed(feedRes?.data ?? []);
       } catch (err) {
-        console.error("Failed to load dashboard:", err);
+        if (!controller.signal.aborted) {
+          console.error("Failed to load dashboard:", err);
+          showToast("Failed to load dashboard data", "error");
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
     load();
+    return () => controller.abort();
   }, []);
 
   const params = useParams<{ locale: string }>();
@@ -55,8 +66,20 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* Quick Report Button */}
+      <div className="relative z-20 -mt-12 px-6 mb-4">
+        <Link
+          href={`/${locale}/report?quick=true`}
+          className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-green text-white font-bold text-sm shadow-lg shadow-green/20 hover:bg-green/90 hover:shadow-green/30 active:scale-[0.98] transition-all"
+        >
+          <Camera className="w-5 h-5" />
+          Quick Report
+          <Zap className="w-4 h-4 text-white/70" />
+        </Link>
+      </div>
+
       {/* Floating Quick Actions */}
-      <div className="relative z-20 -mt-10 px-6">
+      <div className="relative z-10 px-6 mt-2">
         <div className="bg-panel rounded-3xl p-4 shadow-xl border border-ink/5 flex justify-between items-center">
           <Link href={`/${locale}/report`} className="flex flex-col items-center gap-2 flex-1 group">
             <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all group-hover:bg-green group-hover:text-page">
@@ -93,47 +116,34 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="bg-panel rounded-3xl p-4 shadow-sm border border-ink/5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-green/10 flex items-center justify-center shrink-0">
-              <span className="text-green font-bold">↗</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-ink truncate">Report Verified</p>
-              <p className="text-xs text-ink/50 mt-0.5 truncate">Brgy. 143 Dumping</p>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="font-bold text-green">+100</p>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-1">Today</p>
-            </div>
-          </div>
-          
-          <div className="bg-panel rounded-3xl p-4 shadow-sm border border-ink/5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber/10 flex items-center justify-center shrink-0">
-              <span className="text-amber font-bold">★</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-ink truncate">Badge Unlocked</p>
-              <p className="text-xs text-ink/50 mt-0.5 truncate">First Reporter</p>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="font-bold text-amber">+50</p>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-1">Yesterday</p>
-            </div>
-          </div>
+          {feed.length === 0 ? (
+            <EmptyFeed message="No recent activity" />
+          ) : (
+            feed.map((item) => {
+              const typeConfig: Record<string, { bg: string; text: string; icon: string }> = {
+                Critical: { bg: "bg-red/10", text: "text-red", icon: "↙" },
+                Warning: { bg: "bg-amber/10", text: "text-amber", icon: "★" },
+                Info: { bg: "bg-green/10", text: "text-green", icon: "↗" },
+              };
+              const config = typeConfig[item.type] ?? typeConfig.Info;
 
-          <div className="bg-panel rounded-3xl p-4 shadow-sm border border-ink/5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-red/10 flex items-center justify-center shrink-0">
-              <span className="text-red font-bold">↙</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-ink truncate">Redeemed Voucher</p>
-              <p className="text-xs text-ink/50 mt-0.5 truncate">₱50 GCash</p>
-            </div>
-            <div className="text-right shrink-0">
-              <p className="font-bold text-red">-500</p>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-1">Mar 12</p>
-            </div>
-          </div>
+              return (
+                <div key={item.id} className="bg-panel rounded-3xl p-4 shadow-sm border border-ink/5 flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-2xl ${config.bg} flex items-center justify-center shrink-0`}>
+                    <span className={`${config.text} font-bold`}>{config.icon}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-ink truncate">{item.title}</p>
+                    <p className="text-xs text-ink/50 mt-0.5 truncate">{item.location || item.description}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className={`font-bold ${config.text}`}>{item.status}</p>
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-1">{item.time}</p>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

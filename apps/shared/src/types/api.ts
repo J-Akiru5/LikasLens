@@ -50,3 +50,57 @@ export interface ActivityFeedItem {
   status: string;
   reporter: string;
 }
+
+export interface LguPerformanceRow {
+  lgu_id: string;
+  lgu_name: string;
+  region: string | null;
+  is_active: boolean;
+  total_assigned: number;
+  total_resolved: number;
+  resolution_rate: number;
+  avg_response_hours: number;
+  avg_resolution_hours: number;
+  sla_compliance_rate: number;
+  pending_count: number;
+  breached_count: number;
+  status: "green" | "amber" | "red";
+}
+
+export interface LguPlatformAverages {
+  total_lgus: number;
+  avg_resolution_rate: number;
+  avg_response_hours: number;
+  avg_resolution_hours: number;
+  sla_compliance_rate: number;
+  total_assigned: number;
+  total_resolved: number;
+}
+
+export interface LguPerformanceData {
+  lgus: LguPerformanceRow[];
+  platform_averages: LguPlatformAverages;
+}
+
+export interface VerifiedReport {
+  location: string;
+  status: string;
+  date: string;
+  title: string;
+}
+
+export interface TopBarangay {
+  name: string;
+  count: number;
+}
+
+export interface PublicImpactData {
+  total_reports: number;
+  total_resolved: number;
+  total_citizens: number;
+  total_ngos: number;
+  resolution_rate: number;
+  recent_verified: VerifiedReport[];
+  reports_by_type: Record<string, number>;
+  top_barangays: TopBarangay[];
+}

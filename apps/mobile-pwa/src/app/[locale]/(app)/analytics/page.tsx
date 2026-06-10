@@ -1,21 +1,66 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, BarChart3, TrendingUp, Users, Map } from "lucide-react";
+import { laravelGet, showToast, Skeleton } from "@likaslens/shared";
+import type { DashboardStats, ApiResponse } from "@likaslens/shared";
 
 export default function AnalyticsPage() {
-  return (
-    <div className="min-h-full pb-20 bg-page">
-      <div className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10">
-        <div className="flex items-center h-16 px-4">
-          <Link href=".." className="p-2 -ml-2 rounded-full hover:bg-ink/5 transition-colors">
-            <ChevronLeft className="w-6 h-6 text-ink" />
-          </Link>
-          <h1 className="flex-1 text-center text-lg font-bold font-mono tracking-widest uppercase text-ink -ml-8">
-            Analytics
-          </h1>
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    async function load() {
+      try {
+        const res = await laravelGet<ApiResponse<DashboardStats>>("/dashboard/stats", controller.signal);
+        setStats(res?.data ?? null);
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          console.error("Failed to load analytics:", err);
+          showToast("Failed to load analytics data", "error");
+        }
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }
+    load();
+    return () => controller.abort();
+  }, []);
+
+  const Header = () => (
+    <div className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10">
+      <div className="flex items-center h-16 px-4">
+        <Link href=".." className="p-2 -ml-2 rounded-full hover:bg-ink/5 transition-colors">
+          <ChevronLeft className="w-6 h-6 text-ink" />
+        </Link>
+        <h1 className="flex-1 text-center text-lg font-bold font-mono tracking-widest uppercase text-ink -ml-8">
+          Analytics
+        </h1>
+      </div>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-full pb-20 bg-page">
+        <Header />
+        <div className="p-4 space-y-4 mt-2">
+          <div className="grid grid-cols-2 gap-4">
+            <Skeleton className="h-36 rounded-3xl" />
+            <Skeleton className="h-36 rounded-3xl" />
+          </div>
+          <Skeleton className="h-40 rounded-[2rem]" />
+          <Skeleton className="h-48 rounded-[2rem]" />
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-full pb-20 bg-page">
+      <Header />
 
       <div className="p-4 space-y-4 mt-2">
         <div className="grid grid-cols-2 gap-4">
@@ -24,14 +69,18 @@ export default function AnalyticsPage() {
               <BarChart3 className="w-5 h-5 text-green" />
             </div>
             <span className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-2">Total Reports</span>
-            <span className="text-3xl font-bold text-ink tracking-tighter">1,204</span>
+            <span className="text-3xl font-bold text-ink tracking-tighter">
+              {stats?.total_reports?.toLocaleString() ?? "\u2014"}
+            </span>
           </div>
           <div className="bg-panel p-5 rounded-3xl border border-ink/5 flex flex-col gap-2 shadow-sm">
             <div className="w-10 h-10 rounded-2xl bg-amber/10 flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-amber" />
             </div>
             <span className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-2">Resolution Rate</span>
-            <span className="text-3xl font-bold text-ink tracking-tighter">84%</span>
+            <span className="text-3xl font-bold text-ink tracking-tighter">
+              {stats?.resolved_today_progress != null ? `${stats.resolved_today_progress}%` : "\u2014"}
+            </span>
           </div>
         </div>
 
@@ -43,8 +92,12 @@ export default function AnalyticsPage() {
                <h2 className="font-bold text-lg tracking-tight">Active Citizens</h2>
              </div>
              <div className="flex items-end gap-2">
-               <span className="text-5xl font-bold tracking-tighter">8,492</span>
-               <span className="text-sm font-mono opacity-80 mb-1">+12% this week</span>
+               <span className="text-5xl font-bold tracking-tighter">
+                 {stats?.total_users?.toLocaleString() ?? "\u2014"}
+               </span>
+               <span className="text-sm font-mono opacity-80 mb-1">
+                 {stats?.active_incidents_trend ?? ""} this week
+               </span>
              </div>
            </div>
         </div>

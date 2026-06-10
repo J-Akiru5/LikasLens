@@ -209,13 +209,40 @@ async def route_incident(
     violation_code: str,
     ngo_id: str | None = None,
 ) -> dict[str, Any]:
-    """Execute a full incident routing transaction."""
+    """Execute a full incident routing transaction.
+
+    Checks the routing learner for historically fast LGUs for this violation
+    type. If learned data exists and no explicit ngo_id was provided, uses the
+    best-performing LGU. Otherwise falls back to the default graph routing.
+    """
     if not is_configured():
         return {
             "success": False,
             "reason": "Cosmos Gremlin not configured",
             "traversal": build_incident_routing_traversal(citizen_id, incident_id, violation_code, ngo_id),
         }
+
+    routing_method = "default"
+    learned_lgu = None
+
+    # If no ngo_id was explicitly provided, check the routing learner
+    if not ngo_id:
+        try:
+            from routing_learner import get_best_lgu, has_data
+
+            if has_data(violation_code):
+                best = get_best_lgu(violation_code)
+                if best:
+                    ngo_id = best
+                    learned_lgu = best
+                    routing_method = "learned"
+                    logger.info(
+                        "Routing learner selected LGU '%s' for violation '%s'",
+                        best,
+                        violation_code,
+                    )
+        except Exception as exc:
+            logger.warning("Routing learner lookup failed, using default: %s", exc)
 
     try:
         queries = build_incident_routing_traversal(citizen_id, incident_id, violation_code, ngo_id)
@@ -227,4 +254,10 @@ async def route_incident(
         result = await submit_query(query)
         results.append(result)
 
-    return {"success": True, "queries_executed": len(results), "results": results}
+    return {
+        "success": True,
+        "queries_executed": len(results),
+        "results": results,
+        "routing_method": routing_method,
+        "learned_lgu": learned_lgu,
+    }

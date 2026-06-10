@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { StatsCards, ActivityFeed, PublicScoreboard } from "@likaslens/shared";
 import type { DashboardStats, ActivityFeedItem } from "@likaslens/shared";
 import { Camera, AlertTriangle, Scale, Activity, Clock, CheckCircle, TriangleAlert } from "lucide-react";
+import { HeatmapWidget } from "@/components/dashboard/heatmap-widget";
 import Link from "next/link";
 
 interface CitizenDashboardProps {
@@ -75,8 +76,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
               {points.toLocaleString()}
             </h1>
             <div className="bg-page/10 backdrop-blur-sm border border-page/10 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest mt-4 inline-flex items-center gap-2">
-              <span className="text-page">↑ 12%</span>
-              <span className="opacity-70">Last month</span>
+              <span className="text-page">Eco-Credits</span>
             </div>
           </div>
           
@@ -138,6 +138,11 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
         <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
           <PublicScoreboard />
         </div>
+      </section>
+
+      <section className="space-y-6 pt-4 px-4 md:px-0">
+        <h2 className="font-bold tracking-tight text-3xl text-ink">Report Heatmap</h2>
+        <HeatmapWidget />
       </section>
     </div>
   );

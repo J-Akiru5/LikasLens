@@ -9,16 +9,24 @@ import {
   ChevronLeft,
   ChevronRight,
   Users as UsersIcon,
+  Plus,
+  X,
+  CheckSquare,
+  UserCog,
 } from "lucide-react";
 import {
   laravelGet,
+  laravelPost,
   laravelPut,
   laravelDelete,
+  bulkUserRole,
+  bulkUserDeactivate,
   showToast,
-  Button,
   Dropdown,
   AdminTableSkeleton,
 } from "@likaslens/shared";
+import { useBulkSelect } from "@/hooks/use-bulk-select";
+import { BulkActionsBar } from "@/components/bulk-actions-bar";
 
 type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
@@ -37,6 +45,11 @@ interface UserRow {
 const PAGE_SIZE = 50;
 const ROLE_ORDER: Role[] = ["citizen", "ghost", "analyst", "super_admin"];
 
+const ROLE_OPTIONS = ROLE_ORDER.map((r) => ({
+  value: r,
+  label: r.charAt(0).toUpperCase() + r.slice(1),
+}));
+
 export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -45,8 +58,18 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState<Role | "">("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    name: "",
+    email: "",
+    role: "citizen" as Role,
+  });
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const bulk = useBulkSelect(users);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -86,6 +109,31 @@ export default function UsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createForm.name.trim()) {
+      showToast("Name is required", "error");
+      return;
+    }
+    if (!createForm.email.trim() || !createForm.email.includes("@")) {
+      showToast("A valid email is required", "error");
+      return;
+    }
+    setCreateLoading(true);
+    try {
+      await laravelPost("/admin/users", createForm);
+      showToast("User created successfully", "success");
+      setShowCreate(false);
+      setCreateForm({ name: "", email: "", role: "citizen" });
+      fetchUsers();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to create user", "error");
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   async function handleRoleChange(userId: string, newRole: string) {
     try {
       await laravelPut(`/admin/users/${userId}/role`, { role: newRole });
@@ -117,6 +165,45 @@ export default function UsersPage() {
     }
   }
 
+  async function handleBulkRoleChange(newRole: string) {
+    const ids = bulk.selectedItems.map((u) => u.id);
+    if (ids.length === 0) return;
+    setBulkLoading(true);
+    try {
+      const res = await bulkUserRole(ids, newRole);
+      if (res.success) {
+        showToast(res.message, "success");
+        bulk.clear();
+        await fetchUsers();
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to update user roles", "error");
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
+  async function handleBulkDeactivate() {
+    const ids = bulk.selectedItems.map((u) => u.id);
+    if (ids.length === 0) return;
+    if (!confirm(`Deactivate ${bulk.selectedCount} user(s)?`)) return;
+    setBulkLoading(true);
+    try {
+      const res = await bulkUserDeactivate(ids);
+      if (res.success) {
+        showToast(res.message, "success");
+        bulk.clear();
+        await fetchUsers();
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to deactivate users", "error");
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
   const roleBadge = (role: Role) => {
     if (role === "super_admin")
       return (
@@ -139,15 +226,24 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
-          Users
-        </h1>
-        <p className="font-mono text-base text-muted mt-1">
-          {total > 0
-            ? `${total} total accounts`
-            : "Manage user accounts and roles"}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+            Users
+          </h1>
+          <p className="font-mono text-base text-muted mt-1">
+            {total > 0
+              ? `${total} total accounts`
+              : "Manage user accounts and roles"}
+          </p>
+        </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-green text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
+        >
+          <Plus className="w-4 h-4" />
+          Create User
+        </button>
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row">
@@ -207,22 +303,57 @@ export default function UsersPage() {
 
       {!loading && !error && users.length > 0 && (
         <>
+          {/* Select all bar */}
+          <div className="flex items-center gap-3 px-1">
+            <button
+              onClick={bulk.toggleAll}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider font-bold transition-colors ${
+                bulk.isAllSelected
+                  ? "bg-ink text-page"
+                  : "bg-ink/[0.04] text-ink/60 hover:text-ink"
+              }`}
+            >
+              <CheckSquare className="w-3.5 h-3.5" />
+              {bulk.isAllSelected ? "Deselect all" : "Select all"}
+            </button>
+            {bulk.selectedCount > 0 && (
+              <span className="font-mono text-xs text-ink/40">
+                {bulk.selectedCount} of {users.length} selected
+              </span>
+            )}
+          </div>
+
           <div className="bg-panel rounded-3xl shadow-sm border border-ink/5 overflow-hidden">
             <div className="hidden sm:grid grid-cols-12 gap-2 font-mono text-xs text-ink/40 uppercase tracking-wider p-4 border-b border-ink/5">
+              <div className="col-span-1" />
               <div className="col-span-3">Name</div>
               <div className="col-span-3">Email</div>
               <div className="col-span-2">Role</div>
-              <div className="col-span-2">Trust</div>
+              <div className="col-span-1">Trust</div>
               <div className="col-span-2 text-right">Actions</div>
             </div>
 
             {users.map((user) => (
               <div
                 key={user.id}
-                className={`grid grid-cols-12 gap-2 items-center p-4 border-b border-ink/5 last:border-0 hover:bg-ink/[0.02] transition-colors ${
-                  user.deleted_at ? "opacity-50" : ""
-                }`}
+                onClick={() => bulk.toggle(user.id)}
+                className={`grid grid-cols-12 gap-2 items-center p-4 border-b border-ink/5 last:border-0 cursor-pointer transition-colors ${
+                  bulk.isSelected(user.id)
+                    ? "bg-green/5 hover:bg-green/10"
+                    : "hover:bg-ink/[0.02]"
+                } ${user.deleted_at ? "opacity-50" : ""}`}
               >
+                <div className="col-span-1 flex items-center">
+                  <div
+                    className={`w-4.5 h-4.5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                      bulk.isSelected(user.id)
+                        ? "bg-green border-green text-white"
+                        : "border-ink/20"
+                    }`}
+                  >
+                    {bulk.isSelected(user.id) && <CheckSquare className="w-3 h-3" />}
+                  </div>
+                </div>
                 <div className="col-span-4 sm:col-span-3 truncate">
                   <span className="font-medium text-sm text-ink">
                     {user.name || "Anonymous"}
@@ -234,7 +365,7 @@ export default function UsersPage() {
                 <div className="col-span-3 sm:col-span-2 flex items-center gap-2">
                   {roleBadge(user.role)}
                 </div>
-                <div className="hidden sm:block sm:col-span-2 font-mono text-sm">
+                <div className="hidden sm:block sm:col-span-1 font-mono text-sm">
                   <span
                     className={`font-medium ${user.trust_score >= 70 ? "text-green" : user.trust_score >= 40 ? "text-ink" : "text-ink/40"}`}
                   >
@@ -245,16 +376,16 @@ export default function UsersPage() {
                   <Dropdown
                     value={user.role}
                     onChange={(val) => handleRoleChange(user.id, val as string)}
-                    options={ROLE_ORDER.map((r) => ({
-                      value: r,
-                      label: r.charAt(0).toUpperCase() + r.slice(1),
-                    }))}
+                    options={ROLE_OPTIONS}
                     disabled={!!user.deleted_at}
                     size="sm"
                     className="w-32"
                   />
                   <button
-                    onClick={() => handleDelete(user.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(user.id);
+                    }}
                     disabled={!!user.deleted_at}
                     className="p-1.5 text-ink/40 hover:text-red hover:bg-red/5 rounded-lg transition-colors disabled:opacity-30"
                     title="Deactivate user"
@@ -293,6 +424,123 @@ export default function UsersPage() {
           )}
         </>
       )}
+
+      {showCreate && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 px-4 overflow-y-auto bg-black/50"
+          onClick={() => setShowCreate(false)}
+        >
+          <div
+            className="bg-panel p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowCreate(false)}
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-ink/10 hover:bg-ink/[0.02] rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4 text-ink/40" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center">
+                <UsersIcon className="w-5 h-5 text-ink/40" />
+              </div>
+              <div>
+                <h2 className="font-semibold tracking-tight text-xl text-ink">
+                  Create New User
+                </h2>
+                <p className="font-mono text-xs text-muted">
+                  Add a user account
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div>
+                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                  placeholder="Enter full name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  value={createForm.email}
+                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                  placeholder="user@example.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                  Role
+                </label>
+                <Dropdown
+                  value={createForm.role}
+                  onChange={(val) => setCreateForm({ ...createForm, role: val as Role })}
+                  options={ROLE_OPTIONS}
+                  size="md"
+                  className="w-full"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCreate(false)}
+                  className="px-5 py-2.5 bg-panel border border-ink/10 rounded-xl font-medium text-sm text-ink hover:bg-ink/[0.02] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createLoading}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-green text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {createLoading && (
+                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  )}
+                  Create User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <BulkActionsBar
+        selectedCount={bulk.selectedCount}
+        onClear={bulk.clear}
+        actions={[
+          {
+            label: "Change Role",
+            icon: <UserCog className="w-3.5 h-3.5" />,
+            options: ROLE_OPTIONS,
+            onOptionSelect: handleBulkRoleChange,
+            disabled: bulkLoading,
+          },
+          {
+            label: "Deactivate",
+            icon: <Trash2 className="w-3.5 h-3.5" />,
+            onClick: handleBulkDeactivate,
+            variant: "danger",
+            disabled: bulkLoading,
+          },
+        ]}
+      />
     </div>
   );
 }

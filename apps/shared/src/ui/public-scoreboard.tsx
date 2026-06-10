@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { CloudOff, RefreshCw } from "lucide-react";
+import { getTickets } from "../api/admin";
+import type { Ticket } from "../types/ticket";
+import type { PaginatedResponse } from "../types/api";
 
 interface PublicReportRow {
   rank: number;
@@ -30,24 +33,15 @@ export function PublicScoreboard() {
     setLoading(true);
     setError(null);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const res = await fetch(`${baseUrl}/tickets?per_page=10`, {
-        headers: { Accept: "application/json" },
-        signal: controller.signal,
-      });
-      if (!res.ok) {
-        setError("Failed to load reports");
-        return;
-      }
-      const body = await res.json();
-      const tickets: Record<string, unknown>[] = Array.isArray(body?.data) ? body.data : [];
+      const body = await getTickets({ per_page: "10" });
+      const tickets: Ticket[] = Array.isArray(body?.data) ? body.data : [];
       setRows(
         tickets.map((t, i) => ({
           rank: i + 1,
-          agency: (t.reporter as string) || (t.location as string) || "Unknown",
-          title: (t.title as string) || "Environmental Issue",
-          status: (t.status as string) || "Open",
-          time: t.resolved_at ? formatTimeSince(t.resolved_at as string) : t.created_at ? formatTimeSince(t.created_at as string) : "\u2014",
+          agency: t.reporter || t.location || "Unknown",
+          title: t.title || "Environmental Issue",
+          status: t.status || "Open",
+          time: t.resolved_at ? formatTimeSince(t.resolved_at) : t.created_at ? formatTimeSince(t.created_at) : "\u2014",
         }))
       );
     } catch (err) {

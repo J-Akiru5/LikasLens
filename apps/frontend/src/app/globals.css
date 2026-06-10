@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 @source "../../../shared/src/**/*.{ts,tsx}";
 @source "../shared/src/**/*.{ts,tsx}";
 @source "./node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
@@ -11,4 +12,19 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 body {
   position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEAFLET MAP OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
+.heatmap-tooltip {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-container {
+  border-radius: 1rem;
 }

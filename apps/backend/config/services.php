@@ -29,7 +29,12 @@ return [
     ],
 
     'supabase' => [
-        'url' => env('NEXT_PUBLIC_SUPABASE_URL', 'https://sfklmmtimelotqvrldni.supabase.co'),
+        'url' => env('NEXT_PUBLIC_SUPABASE_URL', ''),
+    ],
+
+    'ai' => [
+        'url' => env('AI_SERVICE_URL', 'http://127.0.0.1:8001'),
+        'api_key' => env('AI_SERVICE_API_KEY'),
     ],
 
     'slack' => [
@@ -37,6 +42,13 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
+    ],
+
+    'blockchain' => [
+        'network' => env('BLOCKCHAIN_NETWORK', 'sepolia'),
+        'rpc_url' => env('BLOCKCHAIN_RPC_URL', 'https://rpc.sepolia.org'),
+        'private_key' => env('BLOCKCHAIN_PRIVATE_KEY'),
+        'wallet_address' => env('BLOCKCHAIN_WALLET_ADDRESS'),
     ],
 
 ];

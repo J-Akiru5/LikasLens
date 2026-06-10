@@ -15,7 +15,7 @@ export interface Ticket {
   location: string;
   latitude?: number;
   longitude?: number;
-  status: string;
+  status: TicketStatus;
   urgency_score?: number;
   category?: string;
   reporter?: string;
@@ -66,9 +66,7 @@ export interface NgoGroup {
   is_active: boolean;
 }
 
-export type ReportStatus = "pending_review" | "verified" | "resolved";
-
-export const STATUS_LABELS: Record<string, string> = {
+export const STATUS_LABELS: Record<TicketStatus, string> = {
   open: "Open",
   investigating: "Investigating",
   monitoring: "Monitoring",
@@ -78,12 +76,37 @@ export const STATUS_LABELS: Record<string, string> = {
   verified: "Verified",
 };
 
-export const STATUS_COLORS: Record<string, string> = {
-  open: "bg-yellow-100 text-yellow-800",
-  investigating: "bg-blue-100 text-blue-800",
-  monitoring: "bg-purple-100 text-purple-800",
-  resolved: "bg-green-100 text-green-800",
-  closed: "bg-gray-100 text-gray-800",
-  pending_review: "bg-orange-100 text-orange-800",
-  verified: "bg-emerald-100 text-emerald-800",
+export const STATUS_COLORS: Record<TicketStatus, string> = {
+  open: "bg-amber/10 text-amber",
+  investigating: "bg-accent/10 text-accent",
+  monitoring: "bg-purple/10 text-purple",
+  resolved: "bg-green/10 text-green",
+  closed: "bg-ink/10 text-ink/60",
+  pending_review: "bg-amber/10 text-amber",
+  verified: "bg-green/10 text-green",
 };
+
+// Triage
+export interface TriageTicket {
+  id: string;
+  display_id: string;
+  title: string;
+  description: string;
+  status: string;
+  ai_confidence: number | null;
+  ai_triage_summary: string | null;
+  urgency_score: number | null;
+  location: string;
+  latitude?: number;
+  longitude?: number;
+  photo_url: string | null;
+  photo_mime: string | null;
+  classifications: {
+    id: string;
+    violation_type: string;
+    confidence: number | null;
+  }[];
+  reporter: string;
+  created_at: string;
+  time_since: string;
+}

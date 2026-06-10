@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TicketStatusChanged;
 use App\Models\AuditLog;
 use App\Models\Ticket;
+use App\Models\TicketTimeline;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TicketController extends Controller
 {
@@ -90,6 +94,54 @@ class TicketController extends Controller
     }
 
     /**
+     * Return the full status timeline for a ticket.
+     * Ghost-mode safe: reporter identity is not exposed.
+     */
+    public function timeline(string $id): JsonResponse
+    {
+        $ticket = Ticket::findOrFail($id);
+
+        $entries = TicketTimeline::forTicket($ticket->id)
+            ->with('actor:id,name,role')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function (TicketTimeline $entry) {
+                $data = [
+                    'id' => $entry->id,
+                    'from_status' => $entry->from_status,
+                    'to_status' => $entry->to_status,
+                    'transition_label' => $entry->transition_label,
+                    'actor_type' => $entry->actor_type,
+                    'note' => $entry->note,
+                    'metadata' => $entry->metadata,
+                    'created_at' => $entry->created_at->toISOString(),
+                ];
+
+                // Only expose actor details for non-ghost, non-system entries
+                if ($entry->actor && $entry->actor->role !== 'ghost') {
+                    $data['actor'] = [
+                        'id' => $entry->actor->id,
+                        'name' => $entry->actor->name,
+                        'role' => $entry->actor->role,
+                    ];
+                } else {
+                    $data['actor'] = null;
+                }
+
+                return $data;
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'ticket_id' => $ticket->id,
+                'display_id' => 'INC-' . strtoupper(substr($ticket->id, 0, 6)),
+                'timeline' => $entries,
+            ],
+        ]);
+    }
+
+    /**
      * Transition ticket status with validation.
      */
     public function updateStatus(Request $request, string $id): JsonResponse
@@ -137,6 +189,21 @@ class TicketController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        // Fire the status-changed event for timeline tracking + notifications
+        $actorType = in_array($request->user()->role, ['analyst', 'super_admin']) ? 'user' : 'lgu';
+        TicketStatusChanged::dispatch(
+            ticket: $ticket,
+            fromStatus: $oldStatus,
+            toStatus: $newStatus,
+            actorId: $request->user()->id,
+            actorType: $actorType,
+        );
+
+        // Notify AI routing learner when a ticket is resolved
+        if ($newStatus === 'resolved' && $ticket->created_at) {
+            $this->notifyRoutingLearner($ticket);
+        }
+
         return response()->json([
             'success' => true,
             'message' => "Ticket status changed from '{$oldStatus}' to '{$newStatus}'.",
@@ -147,5 +214,45 @@ class TicketController extends Controller
                 'resolved_at' => $ticket->resolved_at,
             ],
         ]);
+    }
+
+    /**
+     * Notify the AI service routing learner about a resolved ticket.
+     *
+     * Calculates hours from ticket creation to resolution and sends the
+     * resolution time so the learner can update its scoring table.
+     */
+    private function notifyRoutingLearner(Ticket $ticket): void
+    {
+        $aiUrl = config('services.ai.url');
+        $apiKey = config('services.ai.api_key');
+
+        if (! $aiUrl || ! $apiKey) {
+            return;
+        }
+
+        $violationType = $ticket->ai_triage_summary ?? 'unknown';
+        $lguId = $ticket->assignments()->first()?->ngo_group_id;
+
+        if (! $lguId) {
+            return;
+        }
+
+        $hours = $ticket->created_at->diffInMinutes(now()) / 60;
+
+        try {
+            Http::withHeaders(['X-API-Key' => $apiKey])
+                ->timeout(5)
+                ->post($aiUrl . '/routing/record-resolution', [
+                    'violation_type' => $violationType,
+                    'lgu_id' => (string) $lguId,
+                    'resolution_hours' => round($hours, 2),
+                ]);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to notify AI routing learner', [
+                'ticket_id' => $ticket->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

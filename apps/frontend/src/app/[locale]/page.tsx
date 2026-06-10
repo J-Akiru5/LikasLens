@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import { Footer } from "@/components/layout/footer";
 import {
   motion,
@@ -76,6 +78,7 @@ const fadeUp = {
 };
 
 export default function Home() {
+  const router = useRouter();
   const [ghostMode, setGhostMode] = useState(false);
   const [metricIndex, setMetricIndex] = useState(0);
   const [navScrolled, setNavScrolled] = useState(false);
@@ -156,6 +159,22 @@ export default function Home() {
     }
     fetchMetrics();
   }, []);
+
+  // Redirect logged-in users to dashboard
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          router.replace("/dashboard");
+        }
+      } catch {
+        // Not logged in, show landing page
+      }
+    }
+    checkAuth();
+  }, [router]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -319,6 +338,18 @@ export default function Home() {
           >
             Records
           </a>
+          <Link
+            href="/impact"
+            style={{ color: "inherit", textDecoration: "none" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = "var(--hero-ink)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "rgba(240,237,232,0.5)")
+            }
+          >
+            Impact
+          </Link>
           <a
             href="#ghost"
             style={{ color: "inherit", textDecoration: "none" }}

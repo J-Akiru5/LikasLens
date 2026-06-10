@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Leaf, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { setLaravelAuthToken, laravelPost } from "@likaslens/shared";
+import { laravelPost } from "@likaslens/shared";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,8 +43,7 @@ export default function LoginPage() {
       
       if (laravelData?.data?.token) {
         const token = laravelData.data.token;
-        setLaravelAuthToken(token);
-        document.cookie = `laravel_token=${token}; path=/; max-age=2592000`; // 30 days
+        document.cookie = `laravel_token=${token}; path=/; max-age=2592000; SameSite=Strict; Secure`; // 30 days
       } else {
         console.error("No token returned from backend:", laravelData);
       }

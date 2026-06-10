@@ -10,11 +10,16 @@ import {
   X,
   Check,
   ArrowLeft,
+  Mic,
+  MicOff,
+  Zap,
 } from "lucide-react";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { cn, showToast } from "@likaslens/shared";
+import { cn, laravelPost, showToast } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
-import { useParams, useRouter } from "next/navigation";
+import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useVoiceInput } from "@/hooks/use-voice-input";
 
 const INCIDENT_TYPES = [
   "Illegal Dumping",
@@ -32,7 +37,9 @@ type Step = "camera" | "preview" | "form";
 export default function ReportPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params?.locale as string) || "en";
+  const isQuickMode = searchParams.get("quick") === "true";
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -40,12 +47,21 @@ export default function ReportPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("camera");
-  const [incidentType, setIncidentType] = useState("");
+  const [incidentType, setIncidentType] = useState(isQuickMode ? "Illegal Dumping" : "");
   const [description, setDescription] = useState("");
   const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
   const [ghostMode, setGhostMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+
+  const {
+    isListening,
+    transcript,
+    error: voiceError,
+    isSupported: voiceSupported,
+    toggleListening,
+    setTranscript,
+  } = useVoiceInput();
 
   const startCamera = useCallback(async () => {
     try {
@@ -86,20 +102,18 @@ export default function ReportPage() {
   }, [stream, step]);
 
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return;
+    if (!videoRef.current) return;
     const video = videoRef.current;
-    const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.drawImage(video, 0, 0);
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-      setPhoto(dataUrl);
-      setStep("preview");
-      stopCamera();
-    }
-  }, [stopCamera]);
+
+    const dataUrl = captureWithStamp(video, {
+      latitude: gps?.lat ?? 0,
+      longitude: gps?.lng ?? 0,
+      ghostMode,
+    });
+    setPhoto(dataUrl);
+    setStep("preview");
+    stopCamera();
+  }, [stopCamera, gps, ghostMode]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -111,6 +125,17 @@ export default function ReportPage() {
     }
   }, []);
 
+  // Sync voice transcript into the description field
+  useEffect(() => {
+    if (transcript) {
+      setDescription((prev) => {
+        const trimmed = prev.trimEnd();
+        return trimmed ? `${trimmed} ${transcript}` : transcript;
+      });
+      setTranscript("");
+    }
+  }, [transcript, setTranscript]);
+
   useEffect(() => {
     if (step === "camera") {
       startCamera();
@@ -118,16 +143,9 @@ export default function ReportPage() {
     return () => stopCamera();
   }, [step, startCamera, stopCamera]);
 
-  useEffect(() => {
-    if (ghostMode) {
-      document.documentElement.setAttribute("data-theme", "ghost");
-    } else {
-      document.documentElement.removeAttribute("data-theme");
-    }
-    return () => {
-      document.documentElement.removeAttribute("data-theme");
-    };
-  }, [ghostMode]);
+  // Ghost Mode only affects submission metadata — the global theme toggle
+  // in the app layout handles the visual theme via localStorage + data-theme.
+  // No DOM manipulation here to avoid conflicting with the layout's theme toggle.
 
   async function handleSubmit() {
     if (!incidentType) {
@@ -135,11 +153,39 @@ export default function ReportPage() {
       return;
     }
 
+    if (!photo) {
+      showToast("No photo captured", "error");
+      return;
+    }
+
     setSubmitting(true);
     try {
       showToast("Submitting report...", "info");
 
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Extract base64 data from the data URL.
+      // canvas.toDataURL() returns a raw pixel raster, so EXIF metadata is
+      // already stripped at the point of capture. Ghost Mode additionally
+      // omits GPS coordinates from the payload below.
+      const base64Image = dataUrlToBase64(photo);
+
+      // Resolve the current user ID (optional) from Supabase session.
+      let userId: string | undefined;
+      try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        userId = session?.user?.id;
+      } catch {
+        // User not logged in — submit anonymously.
+      }
+
+      await laravelPost("/reports", {
+        base64Image,
+        latitude: ghostMode ? undefined : gps?.lat,
+        longitude: ghostMode ? undefined : gps?.lng,
+        user_id: userId,
+        description: description || undefined,
+        report_type: incidentType,
+      });
 
       if (ghostMode) {
         showToast(
@@ -156,7 +202,9 @@ export default function ReportPage() {
       setStep("camera");
       router.push(`/${locale}/dashboard`);
     } catch (err) {
-      showToast("Failed to submit report", "error");
+      const message =
+        err instanceof Error ? err.message : "Failed to submit report";
+      showToast(message, "error");
     } finally {
       setSubmitting(false);
     }
@@ -178,18 +226,26 @@ export default function ReportPage() {
             <X className="w-6 h-6" />
           </button>
 
-          <button
-            onClick={() => setGhostMode(!ghostMode)}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-mono uppercase transition-all backdrop-blur-md",
-              ghostMode
-                ? "bg-[#facc15]/90 text-black font-bold shadow-[0_0_15px_rgba(250,204,21,0.5)]"
-                : "bg-black/40 text-white/80 border border-white/20",
+          <div className="flex items-center gap-2">
+            {isQuickMode && (
+              <span className="flex items-center gap-1 px-3 py-2 rounded-full text-[10px] font-mono uppercase tracking-wider bg-[#facc15]/90 text-black font-bold backdrop-blur-md shadow-[0_0_10px_rgba(250,204,21,0.4)]">
+                <Zap className="w-3 h-3" />
+                Quick
+              </span>
             )}
-          >
-            <Fingerprint className="w-4 h-4" />
-            Ghost {ghostMode && "On"}
-          </button>
+            <button
+              onClick={() => setGhostMode(!ghostMode)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-mono uppercase transition-all backdrop-blur-md",
+                ghostMode
+                  ? "bg-[#facc15]/90 text-black font-bold shadow-[0_0_15px_rgba(250,204,21,0.5)]"
+                  : "bg-black/40 text-white/80 border border-white/20",
+              )}
+            >
+              <Fingerprint className="w-4 h-4" />
+              Ghost {ghostMode && "On"}
+            </button>
+          </div>
         </div>
 
         {/* Video or Image */}
@@ -256,7 +312,105 @@ export default function ReportPage() {
     );
   }
 
-  // Form View (Step 3)
+  // Quick Mode Form — minimal: photo, ghost toggle, submit
+  if (isQuickMode) {
+    return (
+      <div className="p-4 space-y-5 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setStep("preview")}
+            className="p-2 -ml-2 rounded-full hover:bg-ink/5"
+          >
+            <ArrowLeft className="w-6 h-6 text-ink" />
+          </button>
+          <div className="flex-1">
+            <h1
+              className="text-2xl font-bold text-ink"
+              style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}
+            >
+              Quick Report
+            </h1>
+            <p className="text-sm text-ink/50 mt-0.5 font-mono">
+              Illegal Dumping &middot; GPS {gps ? "detected" : "pending..."}
+            </p>
+          </div>
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-[#facc15]/20 text-[#facc15] font-bold border border-[#facc15]/30">
+            <Zap className="w-3 h-3" />
+            Quick
+          </span>
+        </div>
+
+        {/* Photo Thumbnail */}
+        <div className="relative rounded-2xl overflow-hidden bg-ink/5 aspect-[4/3] w-full max-h-56 shadow-inner ring-1 ring-ink/5">
+          <img
+            src={photo!}
+            alt="Captured Evidence"
+            className="w-full h-full object-cover"
+          />
+          <button
+            onClick={() => setStep("camera")}
+            className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-mono uppercase backdrop-blur-sm"
+          >
+            Retake
+          </button>
+          {gps && (
+            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-sm text-[10px] font-mono text-white/80">
+              <MapPin className="w-3 h-3" />
+              {gps.lat.toFixed(4)}, {gps.lng.toFixed(4)}
+            </div>
+          )}
+        </div>
+
+        {/* Ghost Mode Toggle */}
+        <div className="p-4 rounded-xl border border-secondary/20 bg-secondary/5 flex items-start gap-3">
+          <button
+            onClick={() => setGhostMode(!ghostMode)}
+            className={cn(
+              "mt-0.5 w-10 h-6 rounded-full transition-colors relative shrink-0",
+              ghostMode ? "bg-secondary" : "bg-ink/20",
+            )}
+          >
+            <div
+              className={cn(
+                "absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform",
+                ghostMode && "translate-x-4",
+              )}
+            />
+          </button>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-ink">Ghost Mode</p>
+            <p className="text-xs text-ink/50 mt-1 leading-relaxed">
+              Strip location data and metadata to protect your identity.
+            </p>
+          </div>
+        </div>
+
+        {/* Submit */}
+        <button
+          onClick={handleSubmit}
+          disabled={submitting}
+          className={cn(
+            "w-full h-14 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
+            submitting
+              ? "bg-ink/5 text-ink/30 cursor-not-allowed"
+              : "bg-green text-white shadow-lg shadow-green/20 hover:bg-green/90 hover:shadow-green/30",
+          )}
+        >
+          {submitting ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              <Send className="w-4 h-4" />
+              Submit Report
+            </>
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  // Full Form View (Step 3) — standard report flow
   return (
     <div className="p-4 space-y-6 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-300">
       {/* Header */}
@@ -358,13 +512,57 @@ export default function ReportPage() {
         <label className="block text-[10px] font-mono uppercase tracking-wider text-ink/40 mb-2 pl-1">
           Description (Optional)
         </label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Add any extra details about the location or situation..."
-          rows={4}
-          className="w-full px-4 py-3 rounded-xl bg-page border border-ink/10 text-sm text-ink placeholder:text-ink/30 shadow-sm focus:outline-none focus:border-green/50 focus:ring-2 focus:ring-green/10 resize-none transition-all"
-        />
+        <div className="relative">
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Add any extra details about the location or situation..."
+            rows={4}
+            className="w-full px-4 py-3 pr-14 rounded-xl bg-page border border-ink/10 text-sm text-ink placeholder:text-ink/30 shadow-sm focus:outline-none focus:border-green/50 focus:ring-2 focus:ring-green/10 resize-none transition-all"
+          />
+          {voiceSupported ? (
+            <button
+              type="button"
+              onClick={toggleListening}
+              className={cn(
+                "absolute bottom-3 right-3 p-2.5 rounded-full transition-all",
+                isListening
+                  ? "bg-red-500 text-white shadow-lg shadow-red-500/30 animate-pulse"
+                  : "bg-ink/5 text-ink/40 hover:bg-ink/10 hover:text-ink/60",
+              )}
+              title={isListening ? "Stop listening" : "Speak description"}
+            >
+              {isListening ? (
+                <Mic className="w-5 h-5" />
+              ) : (
+                <MicOff className="w-5 h-5" />
+              )}
+            </button>
+          ) : (
+            <div
+              className="absolute bottom-3 right-3 p-2.5 rounded-full bg-ink/5 text-ink/20 cursor-not-allowed"
+              title="Voice input not supported"
+            >
+              <MicOff className="w-5 h-5" />
+            </div>
+          )}
+        </div>
+        {isListening && (
+          <p className="text-xs text-red-500 mt-2 pl-1 flex items-center gap-1.5 font-mono">
+            <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            Listening...
+          </p>
+        )}
+        {voiceError && (
+          <p className="text-xs text-red-400 mt-2 pl-1 font-mono">
+            {voiceError}
+          </p>
+        )}
+        {!voiceSupported && (
+          <p className="text-xs text-ink/30 mt-2 pl-1 font-mono">
+            Voice input not supported in this browser
+          </p>
+        )}
       </div>
 
       {/* Ghost Mode Toggle in Form */}

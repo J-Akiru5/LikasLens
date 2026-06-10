@@ -6,7 +6,7 @@ import Image from "next/image";
 import { User, LogOut, LayoutGrid, UserCircle2, ChevronDown } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { showToast, setLaravelAuthToken } from "@likaslens/shared";
+import { showToast } from "@likaslens/shared";
 import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 export function UserNav({ invert = false }: { invert?: boolean } = {}) {
@@ -20,14 +20,12 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
       const { data: { session } } = await supabase.auth.getSession();
       const authUser = session?.user ?? null;
       setUser(authUser);
-      setLaravelAuthToken(session?.access_token ?? null);
       setLoading(false);
     }
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null);
-      setLaravelAuthToken(session?.access_token ?? null);
     });
 
     return () => subscription.unsubscribe();
@@ -35,7 +33,6 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
 
   const handleLogout = async () => {
     try {
-      setLaravelAuthToken(null);
       await supabase.auth.signOut();
       try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
       try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }

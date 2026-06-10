@@ -10,8 +10,23 @@ const intlMiddleware = createIntlMiddleware({
   localeDetection: true,
 });
 
-export default async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   let response = intlMiddleware(request);
+
+  // Multi-tenant: extract subdomain
+  const host = request.headers.get("host") || "";
+  let tenantSlug = null;
+  if (!host.includes("localhost") && !/^(\d+\.){3}\d+/.test(host)) {
+    const parts = host.split(".");
+    if (parts.length >= 3 && parts[0] !== "www" && parts[0] !== "api") {
+      tenantSlug = parts[0];
+    }
+  }
+
+  if (tenantSlug) {
+    response.headers.set("x-tenant-slug", tenantSlug);
+    request.headers.set("x-tenant-slug", tenantSlug);
+  }
 
   // If Supabase is not configured yet, skip auth checks and just do locale routing
   if (

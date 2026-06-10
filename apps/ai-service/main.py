@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -34,6 +34,16 @@ MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
     logger.info("LikasLens AI Service starting...")
+
+    # API key startup check
+    api_key = os.getenv("AI_SERVICE_API_KEY")
+    if api_key:
+        logger.info("AI_SERVICE_API_KEY is set — API key authentication is ENABLED")
+    else:
+        logger.warning(
+            "AI_SERVICE_API_KEY is NOT set — running in DEVELOPMENT MODE with "
+            "authentication DISABLED. Set AI_SERVICE_API_KEY in production!"
+        )
 
     try:
         from image_analysis import load_model
@@ -118,6 +128,28 @@ app.add_middleware(
 
 
 # ---------------------------------------------------------------------------
+# API key authentication dependency
+# ---------------------------------------------------------------------------
+
+def verify_api_key(request: Request):
+    """Validate X-API-Key header against the AI_SERVICE_API_KEY env var.
+
+    - If AI_SERVICE_API_KEY is not set, all requests are allowed (development mode).
+    - If set, requests must include a matching X-API-Key header or receive 401.
+    """
+    expected_key = os.getenv("AI_SERVICE_API_KEY")
+    if not expected_key:
+        return  # dev mode — no key configured, allow all
+
+    provided_key = request.headers.get("X-API-Key")
+    if provided_key != expected_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid API key. Provide a valid X-API-Key header.",
+        )
+
+
+# ---------------------------------------------------------------------------
 # Request logging middleware
 # ---------------------------------------------------------------------------
 
@@ -178,7 +210,7 @@ async def rate_limit_middleware(request: Request, call_next):
     path = request.url.path
 
     # Strict rate limit for expensive endpoints
-    if path in ("/analyze", "/analyze/base64", "/api/v1/chat", "/api/v1/analyze-hazard"):
+    if path in ("/analyze", "/analyze/base64", "/analyze/similarity", "/api/v1/chat", "/api/v1/analyze-hazard"):
         limit = RATE_LIMIT_MAX_REQUESTS_STRICT
     else:
         limit = RATE_LIMIT_MAX_REQUESTS
@@ -249,7 +281,7 @@ async def graph_bootstrap_queries():
 # Image analysis
 # ---------------------------------------------------------------------------
 
-@app.post("/analyze")
+@app.post("/analyze", dependencies=[Depends(verify_api_key)])
 async def analyze_image_upload(file: UploadFile = File(...), confidence: float = Form(0.25)):
     """Run YOLOv8 inference on an uploaded image."""
     from image_analysis import analyze_image
@@ -268,7 +300,7 @@ async def analyze_image_upload(file: UploadFile = File(...), confidence: float =
     return {"success": True, "filename": file.filename, "analysis": result}
 
 
-@app.post("/analyze/base64")
+@app.post("/analyze/base64", dependencies=[Depends(verify_api_key)])
 async def analyze_base64_image(payload: dict):
     """Run YOLOv8 inference on a base64-encoded image."""
     from image_analysis import analyze_base64
@@ -288,7 +320,7 @@ async def analyze_base64_image(payload: dict):
     return {"success": True, "analysis": result}
 
 
-@app.get("/analyze/model")
+@app.get("/analyze/model", dependencies=[Depends(verify_api_key)])
 async def analyze_model_status():
     from image_analysis import ENVIRONMENTAL_KEYWORDS, _MODEL_NAME, get_model_path
 
@@ -299,11 +331,95 @@ async def analyze_model_status():
     }
 
 
+@app.post("/analyze/similarity", dependencies=[Depends(verify_api_key)])
+async def analyze_similarity(payload: dict):
+    """Find visually similar reports by comparing image embeddings.
+
+    Request body::
+
+        {
+            "image": "<base64-encoded image>",
+            "report_id": "abc-123",          // optional
+            "violation_type": "solid_waste", // optional
+            "threshold": 0.85                // optional, default 0.85
+        }
+
+    Response::
+
+        {
+            "success": true,
+            "similar_reports": [
+                {"report_id": "xyz", "similarity": 0.92, "violation_type": "illegal_dumping"}
+            ],
+            "embedding_stored": true
+        }
+    """
+    import base64
+
+    from image_similarity import (
+        extract_features,
+        find_similar,
+        get_all_embeddings,
+        store_embedding,
+    )
+
+    base64_string = payload.get("image")
+    if not base64_string:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Missing 'image' field"},
+        )
+
+    # Strip data-URI prefix if present
+    if base64_string.startswith("data:"):
+        comma_pos = base64_string.find(",")
+        if comma_pos != -1:
+            base64_string = base64_string[comma_pos + 1 :]
+
+    try:
+        image_bytes = base64.b64decode(base64_string, validate=True)
+    except Exception as exc:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": f"Invalid base64 encoding: {exc}"},
+        )
+
+    if len(image_bytes) > MAX_UPLOAD_BYTES:
+        return JSONResponse(
+            status_code=413,
+            content={"success": False, "error": "Image too large (max 20 MB)"},
+        )
+
+    report_id = payload.get("report_id", str(uuid.uuid4()))
+    violation_type = payload.get("violation_type", "unknown")
+    threshold = float(payload.get("threshold", 0.85))
+
+    try:
+        embedding = await asyncio.to_thread(extract_features, image_bytes)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    # Compare against existing embeddings
+    existing = await asyncio.to_thread(get_all_embeddings)
+    similar = await asyncio.to_thread(find_similar, embedding, existing, threshold)
+
+    # Store the new embedding for future comparisons
+    stored = await asyncio.to_thread(store_embedding, report_id, embedding, violation_type)
+
+    return {
+        "success": True,
+        "similar_reports": similar,
+        "embedding_stored": stored,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Routing
 # ---------------------------------------------------------------------------
 
-@app.get("/routing/status")
+@app.get("/routing/status", dependencies=[Depends(verify_api_key)])
 async def routing_status():
     from gremlin_client import get_connection_params, is_configured
 
@@ -316,7 +432,7 @@ async def routing_status():
     }
 
 
-@app.post("/routing/incident")
+@app.post("/routing/incident", dependencies=[Depends(verify_api_key)])
 async def route_incident(payload: dict):
     from gremlin_client import route_incident
 
@@ -332,7 +448,7 @@ async def route_incident(payload: dict):
     return {"success": result["success"], "routing": result}
 
 
-@app.get("/routing/traversal")
+@app.get("/routing/traversal", dependencies=[Depends(verify_api_key)])
 async def routing_traversal(citizen_id: str, incident_id: str, violation_code: str, ngo_id: str = ""):
     from gremlin_client import build_incident_routing_traversal
 
@@ -346,11 +462,63 @@ async def routing_traversal(citizen_id: str, incident_id: str, violation_code: s
     return {"queries": queries}
 
 
+@app.get("/routing/stats", dependencies=[Depends(verify_api_key)])
+async def routing_stats():
+    """Return learned routing performance data across all violation types."""
+    from routing_learner import get_stats
+
+    return {"success": True, "data": get_stats()}
+
+
+@app.post("/routing/record-resolution", dependencies=[Depends(verify_api_key)])
+async def record_resolution(payload: dict):
+    """Feed the learning loop: record how long an LGU took to resolve a ticket.
+
+    Expected body:
+        {
+            "violation_type": "ILLEGAL_DUMPING",
+            "lgu_id": "uuid-of-ngo-group",
+            "resolution_hours": 48.5
+        }
+    """
+    from routing_learner import record_resolution
+
+    violation_type = payload.get("violation_type")
+    lgu_id = payload.get("lgu_id")
+    resolution_hours = payload.get("resolution_hours")
+
+    if not violation_type or not lgu_id or resolution_hours is None:
+        raise HTTPException(
+            status_code=422,
+            detail="violation_type, lgu_id, and resolution_hours are required",
+        )
+
+    try:
+        resolution_hours = float(resolution_hours)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=422, detail="resolution_hours must be a number")
+
+    if resolution_hours < 0:
+        raise HTTPException(status_code=422, detail="resolution_hours must be non-negative")
+
+    record_resolution(violation_type, lgu_id, resolution_hours)
+
+    return {
+        "success": True,
+        "message": "Resolution time recorded for routing learner",
+        "data": {
+            "violation_type": violation_type,
+            "lgu_id": lgu_id,
+            "resolution_hours": resolution_hours,
+        },
+    }
+
+
 # ---------------------------------------------------------------------------
 # Hazard analysis & chat
 # ---------------------------------------------------------------------------
 
-@app.post("/api/v1/analyze-hazard")
+@app.post("/api/v1/analyze-hazard", dependencies=[Depends(verify_api_key)])
 async def analyze_hazard(payload: dict):
     """Neuro-symbolic hazard analysis: Gremlin graph traversal + Gemini LLM synthesis."""
     from hazard_analyzer import HazardRequest, HazardResponse, generate_incident_summary, query_hazard_laws_and_agencies
@@ -378,7 +546,7 @@ async def analyze_hazard(payload: dict):
     )
 
 
-@app.post("/api/v1/chat")
+@app.post("/api/v1/chat", dependencies=[Depends(verify_api_key)])
 async def chat_proxy(payload: dict):
     """Secure chat proxy for the Likasy chatbot."""
     from chat_proxy import ChatRequest, ChatResponse, generate_chat_reply

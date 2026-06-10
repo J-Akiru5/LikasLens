@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             AchievementSeeder::class,
             CurrencySettingSeeder::class,
             EcoCreditPoolSeeder::class,
+            SlaConfigSeeder::class,
         ]);
 
     }

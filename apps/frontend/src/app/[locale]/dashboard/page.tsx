@@ -1,6 +1,7 @@
 import { DashboardContent } from "@/components/layout/dashboard-content";
 import { createClient } from "@/utils/supabase/server";
-import { laravelGet } from "@/utils/laravel-api";
+import { cookies } from "next/headers";
+import { laravelGet } from "@likaslens/shared";
 import { CitizenDashboardClient } from "./citizen-dashboard-client";
 import { ContributorProfile } from "@/components/dashboard/contributor-profile";
 import type { RecentAchievement, RankProgress, DashboardStats, ActivityFeedItem } from "@likaslens/shared";
@@ -23,14 +24,17 @@ export default async function DashboardPage() {
   const userGreeting = user?.email ? user.email.split('@')[0] : "Citizen";
   const userRole = user?.user_metadata?.role as string | undefined;
 
+  const cookieStore = await cookies();
+  const token = cookieStore.get("laravel_token")?.value;
+
   let impactData: ImpactData | null = null;
   let statsData: DashboardStats | null = null;
   let feedData: ActivityFeedItem[] = [];
 
   const results = await Promise.allSettled([
-    laravelGet<{ success: boolean; data: ImpactData }>("/user/impact"),
-    laravelGet<{ success: boolean; data: DashboardStats }>("/dashboard/stats"),
-    laravelGet<{ success: boolean; data: ActivityFeedItem[] }>("/dashboard/feed"),
+    laravelGet<{ success: boolean; data: ImpactData }>("/user/impact", undefined, token),
+    laravelGet<{ success: boolean; data: DashboardStats }>("/dashboard/stats", undefined, token),
+    laravelGet<{ success: boolean; data: ActivityFeedItem[] }>("/dashboard/feed", undefined, token),
   ]);
 
   if (results[0].status === "fulfilled" && results[0].value.success) impactData = results[0].value.data;
@@ -56,7 +60,7 @@ export default async function DashboardPage() {
               You are currently viewing the frontend application as an Administrator. This portal is designed for regular citizens to submit reports and view public data.
             </p>
             <a
-              href="http://localhost:3002"
+              href={process.env.NEXT_PUBLIC_ADMIN_PORTAL_URL || "/admin"}
               className="inline-flex items-center gap-2 bg-green text-page px-6 py-3 rounded-xl font-semibold tracking-wide hover:opacity-90 transition-opacity"
             >
               Go to Admin Portal

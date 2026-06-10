@@ -23,11 +23,11 @@ class ProfileController extends Controller
         $rankService = app(RankService::class);
         $rankProgress = $rankService->getRankProgress($user);
 
-        $reportsCount = Ticket::where('reporter_user_id', $user->id)->count();
-        $verifiedCount = Ticket::where('reporter_user_id', $user->id)
-            ->where('status', 'resolved')
-            ->count();
-        $totalUpvotes = 0;
+        $reportStats = Ticket::where('reporter_user_id', $user->id)
+            ->selectRaw('count(*) as total, count(case when status in (\'resolved\', \'verified\') then 1 end) as verified')
+            ->first();
+        $reportsCount = $reportStats->total ?? 0;
+        $verifiedCount = $reportStats->verified ?? 0;
 
         $badges = $user->achievements->filter(fn ($a) => $a->pivot->unlocked_at !== null)
             ->map(fn ($a) => [
@@ -53,7 +53,6 @@ class ProfileController extends Controller
                 'stats' => [
                     'reports_filed' => $reportsCount,
                     'reports_verified' => $verifiedCount,
-                    'community_upvotes' => $totalUpvotes,
                     'avg_response_minutes' => 0,
                 ],
                 'badges' => $badges,

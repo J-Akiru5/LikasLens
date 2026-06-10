@@ -24,7 +24,7 @@ export function BottomNav({ items, className }: BottomNavProps) {
   const pathname = usePathname();
   
   const pathParts = pathname.split("/");
-  const hasLocale = locales.includes(pathParts[1] as any);
+  const hasLocale = (locales as readonly string[]).includes(pathParts[1]);
   const localePrefix = hasLocale ? `/${pathParts[1]}` : "";
 
   const primaryItem = items.find((item) => item.isPrimary);

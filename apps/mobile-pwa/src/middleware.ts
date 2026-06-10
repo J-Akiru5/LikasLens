@@ -4,7 +4,7 @@ import { locales } from "@likaslens/shared";
 
 const publicRoutes = ["/login", "/register", "/onboarding", "/splash"];
 
-export default async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if this is a public route (exact segment match, not substring)

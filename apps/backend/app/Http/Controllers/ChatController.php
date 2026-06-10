@@ -16,7 +16,7 @@ class ChatController extends Controller
      */
     public function send(Request $request): JsonResponse
     {
-        $aiServiceUrl = rtrim(env('AI_SERVICE_URL', 'http://127.0.0.1:8001'), '/');
+        $aiServiceUrl = rtrim(config('services.ai.url', 'http://127.0.0.1:8001'), '/');
 
         $payload = $request->validate([
             'messages' => 'required|array|min:1',

@@ -85,6 +85,10 @@
     --text-4xl: 2.25rem; /* 36px */
     --text-display: clamp(2.5rem, 5vw, 4.5rem);
 
+    /* ── Font families ─────────────────────────────────────────────────────── */
+    --font-body: "Inter", system-ui, -apple-system, sans-serif;
+    --font-data: "JetBrains Mono", ui-monospace, monospace;
+
     /* ── Transitions ────────────────────────────────────────────────────────── */
     --transition-fast: 120ms ease-out;
     --transition-std: 180ms ease-out;

@@ -37,7 +37,7 @@ export default function WalletPage() {
                 <p className="font-mono text-sm tracking-widest">12/30</p>
               </div>
               <p className="font-mono text-lg tracking-[0.2em] opacity-90">
-                8240 5500 0835 3501
+                **** **** **** ****
               </p>
             </div>
           </div>

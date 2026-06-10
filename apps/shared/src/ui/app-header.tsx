@@ -34,36 +34,7 @@ interface AppHeaderProps {
   onMobileMenuToggle?: () => void;
 }
 
-const DEFAULT_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    type: "critical",
-    title: "Critical Incident Report",
-    desc: "Illegal dumping detected near Riverside Drive",
-    time: "2m ago",
-  },
-  {
-    id: "2",
-    type: "resolved",
-    title: "Report Resolved",
-    desc: "Water contamination at Lake View has been cleared",
-    time: "15m ago",
-  },
-  {
-    id: "3",
-    type: "info",
-    title: "Ghost Mode Active",
-    desc: "Your anonymous report was successfully submitted",
-    time: "1h ago",
-  },
-  {
-    id: "4",
-    type: "critical",
-    title: "High-Risk Alert",
-    desc: "Deforestation detected in Northern Ridge sector",
-    time: "2h ago",
-  },
-];
+const DEFAULT_NOTIFICATIONS: Notification[] = [];
 
 export function AppHeader({
   greeting,
