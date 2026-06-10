@@ -42,14 +42,17 @@ export function GeoTagMap({ initialLat, initialLng, onLocationChange, height = "
 
     const icon = leaflet.divIcon({
       className: "",
-      html: `<div style="filter:drop-shadow(2px 4px 4px rgba(0,0,0,0.4));">
-        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 256 256">
-          <path fill="#ffb703" d="M236.8,188.09,149.35,36.22a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09Z"></path>
-          <path fill="#1b4332" d="M120,104v40a8,8,0,0,0,16,0V104a8,8,0,0,0-16,0Zm8,88a12,12,0,1,0-12-12A12,12,0,0,0,128,192Z"></path>
-        </svg>
-      </div>`,
-      iconSize: [36, 36],
-      iconAnchor: [18, 28],
+      html: `
+        <div style="filter:drop-shadow(1px 3px 4px rgba(0,0,0,0.45));position:relative;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="44" viewBox="0 0 32 44">
+            <path d="M16 0 C7.163 0 0 7.163 0 16 C0 27 16 44 16 44 C16 44 32 27 32 16 C32 7.163 24.837 0 16 0Z" fill="#1b4332"/>
+            <circle cx="16" cy="16" r="7" fill="#2ee6c8"/>
+            <circle cx="16" cy="16" r="3" fill="#1b4332"/>
+          </svg>
+        </div>
+      `,
+      iconSize: [32, 44],
+      iconAnchor: [16, 44],
     });
 
     const map = leaflet.map(mapRef.current, {

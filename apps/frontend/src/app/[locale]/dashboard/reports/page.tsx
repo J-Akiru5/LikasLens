@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { getTickets, getDashboardStats } from "@likaslens/shared";
+import {
+  getTickets,
+  getDashboardStats,
+  AdminKPIsSkeleton,
+} from "@likaslens/shared";
 import type { Ticket, DashboardStats } from "@likaslens/shared";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { BarChart3, TrendingUp, Download } from "lucide-react";
@@ -21,8 +25,11 @@ export default function ReportsPage() {
         ]);
         if (ticketsRes.success) setTickets(ticketsRes.data);
         if (statsRes.success) setStats(statsRes.data);
-      } catch (err) { console.error("Failed to load data:", err); }
-      finally { setLoading(false); }
+      } catch (err) {
+        console.error("Failed to load data:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     load();
   }, []);
@@ -40,20 +47,51 @@ export default function ReportsPage() {
       .sort((a, b) => b.count - a.count);
     return sorted.map((item) => ({
       ...item,
-      percent: totalIncidents > 0 ? Math.round((item.count / totalIncidents) * 100) : 0,
+      percent:
+        totalIncidents > 0
+          ? Math.round((item.count / totalIncidents) * 100)
+          : 0,
     }));
   }, [tickets, totalIncidents]);
 
-  const avgResolutionRate = stats?.resolved_today && stats?.total_tickets
-    ? Math.round((stats.resolved_today / stats.total_tickets) * 100)
-    : 0;
+  const avgResolutionRate =
+    stats?.resolved_today && stats?.total_tickets
+      ? Math.round((stats.resolved_today / stats.total_tickets) * 100)
+      : 0;
   const ghostModeUsage = Math.max(1, Math.round((totalIncidents || 1) * 0.34));
 
   if (loading) {
     return (
       <DashboardLayoutWrapper>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink/20 border-t-ink/60" />
+        <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-20">
+          {/* Hero banner placeholder */}
+          <div className="rounded-[40px] h-48 bg-ink/5 animate-shimmer" />
+          {/* Stats card */}
+          <div className="relative -mt-16 px-4">
+            <div className="bg-panel rounded-3xl p-6 border border-ink/5">
+              <AdminKPIsSkeleton count={3} />
+            </div>
+          </div>
+          {/* Chart panels */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {[5, 4].map((rows, idx) => (
+              <div
+                key={idx}
+                className="bg-panel rounded-3xl p-6 border border-ink/5 space-y-4"
+              >
+                <div className="h-5 w-36 rounded bg-ink/5 animate-shimmer" />
+                {Array.from({ length: rows }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex justify-between">
+                      <div className="h-3 w-24 rounded bg-ink/5 animate-shimmer" />
+                      <div className="h-3 w-12 rounded bg-ink/5 animate-shimmer" />
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-ink/5 animate-shimmer" />
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </DashboardLayoutWrapper>
     );
@@ -63,42 +101,67 @@ export default function ReportsPage() {
     <DashboardLayoutWrapper>
       <ToastContainer />
       <div className="max-w-5xl mx-auto pb-20 space-y-8">
-            {/* Sweeping Neon Curved Header */}
-            <div className="bg-green text-page rounded-b-[40px] md:rounded-[40px] pt-12 pb-24 px-8 relative overflow-hidden shadow-xl mt-4 md:mt-0">
-              <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 rounded-full border-[40px] border-page/5" />
-              <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-64 h-64 rounded-full border-[30px] border-page/5" />
-              
-              <div className="relative z-10 flex flex-col items-center text-center mt-4">
-                <span className="text-sm font-mono uppercase tracking-widest opacity-80 mb-2">Platform Analytics</span>
-                <h1 className="text-[4rem] md:text-[5rem] leading-none font-bold tracking-tighter" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>
-                  {totalIncidents.toLocaleString()}
-                </h1>
-                <div className="bg-page/10 backdrop-blur-sm border border-page/10 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest mt-4 flex items-center gap-2">
-                  <span className="text-page">Total Reports Tracked</span>
-                </div>
-              </div>
-            </div>
+        {/* Sweeping Neon Curved Header */}
+        <div className="bg-green text-page rounded-b-[40px] md:rounded-[40px] pt-12 pb-24 px-8 relative overflow-hidden shadow-xl mt-4 md:mt-0">
+          <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 rounded-full border-[40px] border-page/5" />
+          <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-64 h-64 rounded-full border-[30px] border-page/5" />
 
-            <div className="relative z-20 -mt-16 px-4">
-              <div className="bg-panel rounded-3xl p-6 shadow-xl border border-ink/5 grid grid-cols-1 md:grid-cols-3 gap-8">
-                {[
-                  { title: "Resolution Rate", value: `${avgResolutionRate}%`, label: "overall avg" },
-                  { title: "Open Incidents", value: `${stats?.active_incidents ?? 0}`, label: "currently active" },
-                  { title: "Resolved Today", value: `${stats?.resolved_today ?? 0}`, label: "last 24h" },
-                ].map((metric, i) => (
-                  <div key={i} className="flex flex-col items-center text-center">
-                    <span className="font-semibold tracking-tight text-3xl text-ink mb-1">{metric.value}</span>
-                    <span className="font-mono text-xs text-ink/60 uppercase tracking-widest mb-1">{metric.title}</span>
-                    <span className="font-mono text-[10px] text-ink/40 uppercase">{metric.label}</span>
-                  </div>
-                ))}
-              </div>
+          <div className="relative z-10 flex flex-col items-center text-center mt-4">
+            <span className="text-sm font-mono uppercase tracking-widest opacity-80 mb-2">
+              Platform Analytics
+            </span>
+            <h1
+              className="text-[4rem] md:text-[5rem] leading-none font-bold tracking-tighter"
+              style={{
+                fontFamily: "var(--font-heading), Montserrat, sans-serif",
+              }}
+            >
+              {totalIncidents.toLocaleString()}
+            </h1>
+            <div className="bg-page/10 backdrop-blur-sm border border-page/10 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest mt-4 flex items-center gap-2">
+              <span className="text-page">Total Reports Tracked</span>
             </div>
+          </div>
+        </div>
 
-            <div className="flex justify-center pt-4">
-              <button
-                onClick={() => {
-                  const htmlContent = `
+        <div className="relative z-20 -mt-16 px-4">
+          <div className="bg-panel rounded-3xl p-6 shadow-xl border border-ink/5 grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Resolution Rate",
+                value: `${avgResolutionRate}%`,
+                label: "overall avg",
+              },
+              {
+                title: "Open Incidents",
+                value: `${stats?.active_incidents ?? 0}`,
+                label: "currently active",
+              },
+              {
+                title: "Resolved Today",
+                value: `${stats?.resolved_today ?? 0}`,
+                label: "last 24h",
+              },
+            ].map((metric, i) => (
+              <div key={i} className="flex flex-col items-center text-center">
+                <span className="font-semibold tracking-tight text-3xl text-ink mb-1">
+                  {metric.value}
+                </span>
+                <span className="font-mono text-xs text-ink/60 uppercase tracking-widest mb-1">
+                  {metric.title}
+                </span>
+                <span className="font-mono text-[10px] text-ink/40 uppercase">
+                  {metric.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={() => {
+              const htmlContent = `
                   <!DOCTYPE html>
                   <html><head><meta charset="utf-8"><title>LikasLens Report</title>
                   <style>body{font-family:sans-serif;padding:40px;color:#333}
@@ -126,65 +189,81 @@ export default function ReportsPage() {
                   </table>
                   <div class="footer">LikasLens 2026 | Environmental Monitoring Platform</div>
                   </body></html>`;
-                  const w = window.open("", "", "width=1200,height=800");
-                  if (w) { w.document.write(htmlContent); w.document.close(); }
-                  else { alert("Please disable pop-up blocker to generate PDF"); }
-                }}
-                className="flex items-center gap-2 px-6 py-3 bg-panel rounded-full font-mono text-xs uppercase tracking-widest text-ink hover:text-green border border-ink/5 shadow-sm hover:shadow-md transition-all"
-              >
-                <Download className="w-4 h-4" /> Export Report Data
-              </button>
-            </div>
+              const w = window.open("", "", "width=1200,height=800");
+              if (w) {
+                w.document.write(htmlContent);
+                w.document.close();
+              } else {
+                alert("Please disable pop-up blocker to generate PDF");
+              }
+            }}
+            className="flex items-center gap-2 px-6 py-3 bg-panel rounded-full font-mono text-xs uppercase tracking-widest text-ink hover:text-green border border-ink/5 shadow-sm hover:shadow-md transition-all"
+          >
+            <Download className="w-4 h-4" /> Export Report Data
+          </button>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-              <section className="bg-panel rounded-3xl p-6 md:p-8 shadow-sm border border-ink/5">
-                <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2 mb-6">
-                  <BarChart3 className="w-5 h-5 text-ink/40" />
-                  Incident Types
-                </h2>
-                <div className="space-y-5">
-                  {typeStats.map((stat, i) => (
-                    <div key={i}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+          <section className="bg-panel rounded-3xl p-6 md:p-8 shadow-sm border border-ink/5">
+            <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2 mb-6">
+              <BarChart3 className="w-5 h-5 text-ink/40" />
+              Incident Types
+            </h2>
+            <div className="space-y-5">
+              {typeStats.map((stat, i) => (
+                <div key={i}>
+                  <div className="flex justify-between font-mono text-sm mb-2">
+                    <span className="text-ink/70 truncate mr-4">
+                      {stat.label}
+                    </span>
+                    <span className="text-ink/40 shrink-0">
+                      {stat.count} ({stat.percent}%)
+                    </span>
+                  </div>
+                  <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-green rounded-full transition-all duration-500"
+                      style={{ width: `${stat.percent}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="bg-panel rounded-3xl p-6 md:p-8 shadow-sm border border-ink/5">
+            <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2 mb-6">
+              <TrendingUp className="w-5 h-5 text-ink/40" />
+              Status Breakdown
+            </h2>
+            <div className="space-y-5">
+              {(() => {
+                const statusCounts: Record<string, number> = {};
+                tickets.forEach((t) => {
+                  statusCounts[t.status] = (statusCounts[t.status] || 0) + 1;
+                });
+                const maxCount = Math.max(...Object.values(statusCounts), 1);
+                return Object.entries(statusCounts).map(([status, count]) => {
+                  const pct = Math.round((count / maxCount) * 100);
+                  return (
+                    <div key={status}>
                       <div className="flex justify-between font-mono text-sm mb-2">
-                        <span className="text-ink/70 truncate mr-4">{stat.label}</span>
-                        <span className="text-ink/40 shrink-0">{stat.count} ({stat.percent}%)</span>
+                        <span className="text-ink/70">{status}</span>
+                        <span className="text-ink/40">{count}</span>
                       </div>
                       <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-green rounded-full transition-all duration-500" style={{ width: `${stat.percent}%` }} />
+                        <div
+                          className="h-full bg-green rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%` }}
+                        />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="bg-panel rounded-3xl p-6 md:p-8 shadow-sm border border-ink/5">
-                <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2 mb-6">
-                  <TrendingUp className="w-5 h-5 text-ink/40" />
-                  Status Breakdown
-                </h2>
-                <div className="space-y-5">
-                  {(() => {
-                    const statusCounts: Record<string, number> = {};
-                    tickets.forEach((t) => { statusCounts[t.status] = (statusCounts[t.status] || 0) + 1; });
-                    const maxCount = Math.max(...Object.values(statusCounts), 1);
-                    return Object.entries(statusCounts).map(([status, count]) => {
-                      const pct = Math.round((count / maxCount) * 100);
-                      return (
-                        <div key={status}>
-                          <div className="flex justify-between font-mono text-sm mb-2">
-                            <span className="text-ink/70">{status}</span>
-                            <span className="text-ink/40">{count}</span>
-                          </div>
-                          <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
-                            <div className="h-full bg-green rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
-                          </div>
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              </section>
+                  );
+                });
+              })()}
             </div>
+          </section>
+        </div>
       </div>
     </DashboardLayoutWrapper>
   );

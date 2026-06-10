@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Footer } from "@/components/layout/footer";
-import { motion, useScroll, useMotionValueEvent, useTransform } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useMotionValueEvent,
+  useTransform,
+} from "framer-motion";
 import {
   Leaf,
   Fingerprint,
@@ -60,7 +65,14 @@ const staggerContainer = {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+    },
+  },
 };
 
 export default function Home() {
@@ -78,7 +90,8 @@ export default function Home() {
     prompt: () => void;
     userChoice: Promise<{ outcome: string }>;
   }
-  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [installPrompt, setInstallPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
 
   const { scrollY } = useScroll();
   const scrollOpacity = useTransform(scrollY, [0, 150], [1, 0]);
@@ -96,24 +109,36 @@ export default function Home() {
         ]);
 
         if (!ticketsData) return;
-        
+
         const meta = ticketsData?.meta;
-        const tickets: Array<{ status: string; created_at: string; resolved_at?: string }> =
-          ticketsData?.data ?? [];
+        const tickets: Array<{
+          status: string;
+          created_at: string;
+          resolved_at?: string;
+        }> = ticketsData?.data ?? [];
 
         const total: number = meta?.total ?? tickets.length;
-        const resolved = tickets.filter((t) => t.status?.toLowerCase() === "resolved").length;
+        const resolved = tickets.filter(
+          (t) => t.status?.toLowerCase() === "resolved",
+        ).length;
         const active = tickets.filter(
-          (t) => !["resolved", "closed"].includes(t.status?.toLowerCase() ?? "")
+          (t) =>
+            !["resolved", "closed"].includes(t.status?.toLowerCase() ?? ""),
         ).length;
 
         // Avg response time in hours
-        const resolvedTickets = tickets.filter((t) => t.resolved_at && t.created_at);
+        const resolvedTickets = tickets.filter(
+          (t) => t.resolved_at && t.created_at,
+        );
         let avgResponse = "—";
         if (resolvedTickets.length > 0) {
           const avgMs =
             resolvedTickets.reduce((sum, t) => {
-              return sum + (new Date(t.resolved_at!).getTime() - new Date(t.created_at).getTime());
+              return (
+                sum +
+                (new Date(t.resolved_at!).getTime() -
+                  new Date(t.created_at).getTime())
+              );
             }, 0) / resolvedTickets.length;
           const hours = Math.round(avgMs / 1000 / 60 / 60);
           avgResponse = hours < 24 ? `${hours}h` : `${Math.round(hours / 24)}d`;
@@ -145,7 +170,11 @@ export default function Home() {
       setInstallPrompt(e);
     };
     window.addEventListener("beforeinstallprompt", handler as EventListener);
-    return () => window.removeEventListener("beforeinstallprompt", handler as EventListener);
+    return () =>
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handler as EventListener,
+      );
   }, []);
 
   const handleInstall = async () => {
@@ -154,7 +183,9 @@ export default function Home() {
       const result = await installPrompt.userChoice;
       if (result.outcome === "accepted") setInstallPrompt(null);
     } else {
-      document.getElementById("install-guide")?.scrollIntoView({ behavior: "smooth" });
+      document
+        .getElementById("install-guide")
+        ?.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -187,20 +218,26 @@ export default function Home() {
     // When the user clicks the toggle ON THIS PAGE, update the global attribute
     if (ghostMode) {
       document.documentElement.setAttribute("data-theme", "ghost");
-      try { localStorage.setItem("likaslens-theme", "ghost"); } catch {}
+      try {
+        localStorage.setItem("likaslens-theme", "ghost");
+      } catch {}
     } else {
       // Don't override if it's explicitly set to civic somewhere else, just remove ghost
       const current = document.documentElement.getAttribute("data-theme");
       if (current === "ghost") {
         document.documentElement.setAttribute("data-theme", "civic");
-        try { localStorage.setItem("likaslens-theme", "civic"); } catch {}
+        try {
+          localStorage.setItem("likaslens-theme", "civic");
+        } catch {}
       }
     }
   }, [ghostMode]);
 
   return (
-    <main className="relative min-h-dvh" style={{ background: "var(--page)", color: "var(--ink)" }}>
-
+    <main
+      className="relative min-h-dvh"
+      style={{ background: "var(--page)", color: "var(--ink)" }}
+    >
       {/* ── NAVIGATION ─────────────────────────────────────── */}
       <motion.nav
         style={{
@@ -215,36 +252,85 @@ export default function Home() {
           padding: navScrolled ? "12px 40px" : "20px 40px",
           background: navScrolled ? "rgba(22,52,34,0.92)" : "transparent",
           backdropFilter: navScrolled ? "blur(20px)" : "none",
-          borderBottom: navScrolled ? "1px solid rgba(255,255,255,0.07)" : "none",
+          borderBottom: navScrolled
+            ? "1px solid rgba(255,255,255,0.07)"
+            : "none",
           transition: "all 0.3s ease",
         }}
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          <Leaf style={{ width: 20, height: 20, color: "var(--accent-bright)" }} />
-          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.03em", color: "var(--hero-ink)" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexShrink: 0,
+          }}
+        >
+          <Leaf
+            style={{ width: 20, height: 20, color: "var(--accent-bright)" }}
+          />
+          <span
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              letterSpacing: "-0.03em",
+              color: "var(--hero-ink)",
+            }}
+          >
             LikasLens
           </span>
         </div>
 
         <div
           className="hidden md:flex"
-          style={{ gap: 32, fontFamily: "monospace", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(240,237,232,0.5)" }}
+          style={{
+            gap: 32,
+            fontFamily: "monospace",
+            fontSize: 11,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            color: "rgba(240,237,232,0.5)",
+          }}
         >
-          <a href="#how-it-works" style={{ color: "inherit", textDecoration: "none" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "var(--hero-ink)")}
-            onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,237,232,0.5)")}
-          >Features</a>
-          <a href="#scoreboard" style={{ color: "inherit", textDecoration: "none" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "var(--hero-ink)")}
-            onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,237,232,0.5)")}
-          >Records</a>
-          <a href="#ghost" style={{ color: "inherit", textDecoration: "none" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "var(--hero-ink)")}
-            onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,237,232,0.5)")}
-          >Ghost Mode</a>
+          <a
+            href="#how-it-works"
+            style={{ color: "inherit", textDecoration: "none" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = "var(--hero-ink)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "rgba(240,237,232,0.5)")
+            }
+          >
+            Features
+          </a>
+          <a
+            href="#scoreboard"
+            style={{ color: "inherit", textDecoration: "none" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = "var(--hero-ink)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "rgba(240,237,232,0.5)")
+            }
+          >
+            Records
+          </a>
+          <a
+            href="#ghost"
+            style={{ color: "inherit", textDecoration: "none" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = "var(--hero-ink)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color = "rgba(240,237,232,0.5)")
+            }
+          >
+            Ghost Mode
+          </a>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -311,135 +397,246 @@ export default function Home() {
           }}
         />
 
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "96px 32px 80px", width: "100%" }}>
+        <div
+          style={{
+            maxWidth: 1280,
+            margin: "0 auto",
+            padding: "96px 32px 80px",
+            width: "100%",
+          }}
+        >
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-
             {/* Left — Copy */}
-            <motion.div variants={staggerContainer} initial="hidden" animate="show" style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+              style={{ display: "flex", flexDirection: "column", gap: 32 }}
+            >
               <motion.div variants={fadeUp}>
-                <span style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "4px 12px", borderRadius: 9999,
-                  background: "rgba(46,230,200,0.1)", border: "1px solid rgba(46,230,200,0.2)",
-                  fontFamily: "monospace", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase",
-                  color: "var(--accent-bright)",
-                }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-bright)", display: "inline-block", animation: "breathe 3s ease-in-out infinite" }} />
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "4px 12px",
+                    borderRadius: 9999,
+                    background: "rgba(46,230,200,0.1)",
+                    border: "1px solid rgba(46,230,200,0.2)",
+                    fontFamily: "monospace",
+                    fontSize: 10,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: "var(--accent-bright)",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: "var(--accent-bright)",
+                      display: "inline-block",
+                      animation: "breathe 3s ease-in-out infinite",
+                    }}
+                  />
                   Civic Environmental Intelligence · 2026
                 </span>
               </motion.div>
 
-              <motion.div variants={fadeUp} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                <h1 style={{
-                  fontSize: "clamp(2.8rem, 6vw, 5rem)",
-                  fontWeight: 800,
-                  letterSpacing: "-0.04em",
-                  lineHeight: 1.04,
-                  color: "var(--hero-ink)",
-                  margin: 0,
-                }}>
-                  The Environment{" "}
-                  <br />
+              <motion.div
+                variants={fadeUp}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <h1
+                  style={{
+                    fontSize: "clamp(2.8rem, 6vw, 5rem)",
+                    fontWeight: 800,
+                    letterSpacing: "-0.04em",
+                    lineHeight: 1.04,
+                    color: "var(--hero-ink)",
+                    margin: 0,
+                  }}
+                >
+                  The Environment <br />
                   Needs a{" "}
-                  <span style={{
-                    background: "linear-gradient(135deg, var(--accent-bright) 0%, #5aefb0 50%, #a8f5d0 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}>
+                  <span
+                    style={{
+                      background:
+                        "linear-gradient(135deg, var(--accent-bright) 0%, #5aefb0 50%, #a8f5d0 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }}
+                  >
                     Witness.
                   </span>
                 </h1>
-                <p style={{ fontSize: 17, color: "rgba(240,237,232,0.55)", maxWidth: 480, lineHeight: 1.65, margin: 0 }}>
-                  Snap. Report. Watch it get fixed. LikasLens connects citizens directly to government agencies through AI-powered environmental reporting.
+                <p
+                  style={{
+                    fontSize: 17,
+                    color: "rgba(240,237,232,0.55)",
+                    maxWidth: 480,
+                    lineHeight: 1.65,
+                    margin: 0,
+                  }}
+                >
+                  Snap. Report. Watch it get fixed. LikasLens connects citizens
+                  directly to government agencies through AI-powered
+                  environmental reporting.
                 </p>
               </motion.div>
 
               {/* CTAs */}
-              <motion.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+              <motion.div
+                variants={fadeUp}
+                style={{ display: "flex", flexWrap: "wrap", gap: 12 }}
+              >
                 <Link
                   href="/report"
                   style={{
-                    display: "inline-flex", alignItems: "center", gap: 8,
-                    padding: "14px 28px", borderRadius: 12,
-                    background: "var(--accent-bright)", color: "var(--hero-bg)",
-                    fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em",
-                    textDecoration: "none", border: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "14px 28px",
+                    borderRadius: 12,
+                    background: "var(--accent-bright)",
+                    color: "var(--hero-bg)",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    letterSpacing: "-0.01em",
+                    textDecoration: "none",
+                    border: "none",
                     boxShadow: "0 0 0 0 rgba(46,230,200,0)",
                     transition: "all 0.25s ease",
                   }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px -8px rgba(46,230,200,0.5)";
-                    (e.currentTarget as HTMLElement).style.background = "var(--ghost-accent-hover)";
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.transform =
+                      "translateY(-2px)";
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "0 8px 30px -8px rgba(46,230,200,0.5)";
+                    (e.currentTarget as HTMLElement).style.background =
+                      "var(--ghost-accent-hover)";
                   }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                    (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(46,230,200,0)";
-                    (e.currentTarget as HTMLElement).style.background = "var(--accent-bright)";
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.transform =
+                      "translateY(0)";
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "0 0 0 0 rgba(46,230,200,0)";
+                    (e.currentTarget as HTMLElement).style.background =
+                      "var(--accent-bright)";
                   }}
                 >
-                   Report an Issue <ArrowRight style={{ width: 16, height: 16 }} />
+                  Report an Issue{" "}
+                  <ArrowRight style={{ width: 16, height: 16 }} />
                 </Link>
                 <a
                   href="#scoreboard"
                   style={{
-                    display: "inline-flex", alignItems: "center", gap: 8,
-                    padding: "14px 28px", borderRadius: 12,
-                    background: "transparent", color: "var(--hero-ink)",
-                    fontWeight: 600, fontSize: 14, letterSpacing: "-0.01em",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "14px 28px",
+                    borderRadius: 12,
+                    background: "transparent",
+                    color: "var(--hero-ink)",
+                    fontWeight: 600,
+                    fontSize: 14,
+                    letterSpacing: "-0.01em",
                     textDecoration: "none",
                     border: "1px solid rgba(240,237,232,0.12)",
                     transition: "all 0.25s ease",
                   }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(46,230,200,0.4)";
-                    (e.currentTarget as HTMLElement).style.color = "var(--accent-bright)";
-                    (e.currentTarget as HTMLElement).style.background = "rgba(46,230,200,0.05)";
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor =
+                      "rgba(46,230,200,0.4)";
+                    (e.currentTarget as HTMLElement).style.color =
+                      "var(--accent-bright)";
+                    (e.currentTarget as HTMLElement).style.background =
+                      "rgba(46,230,200,0.05)";
                   }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(240,237,232,0.12)";
-                    (e.currentTarget as HTMLElement).style.color = "var(--hero-ink)";
-                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor =
+                      "rgba(240,237,232,0.12)";
+                    (e.currentTarget as HTMLElement).style.color =
+                      "var(--hero-ink)";
+                    (e.currentTarget as HTMLElement).style.background =
+                      "transparent";
                   }}
                 >
-                   <BarChart3 style={{ width: 16, height: 16 }} /> See Public Records
+                  <BarChart3 style={{ width: 16, height: 16 }} /> See Public
+                  Records
                 </a>
               </motion.div>
             </motion.div>
-
 
             {/* Right — Dashboard Card */}
             <motion.div
               initial={{ opacity: 0, scale: 0.93, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              transition={{
+                delay: 0.3,
+                duration: 0.7,
+                ease: [0.16, 1, 0.3, 1],
+              }}
               className="animate-float"
             >
-              <div style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(240,237,232,0.07)",
-                borderRadius: 16,
-                backdropFilter: "blur(20px)",
-                padding: 24,
-                boxShadow: "0 32px 64px -16px rgba(0,0,0,0.5)",
-                display: "flex",
-                flexDirection: "column",
-                gap: 20,
-              }}>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(240,237,232,0.07)",
+                  borderRadius: 16,
+                  backdropFilter: "blur(20px)",
+                  padding: 24,
+                  boxShadow: "0 32px 64px -16px rgba(0,0,0,0.5)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 20,
+                }}
+              >
                 {/* Card header */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent-bright)", display: "block", animation: "breathe 3s ease-in-out infinite" }} />
-                    <span style={{ fontFamily: "monospace", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,237,232,0.45)" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: "50%",
+                        background: "var(--accent-bright)",
+                        display: "block",
+                        animation: "breathe 3s ease-in-out infinite",
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 10,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        color: "rgba(240,237,232,0.45)",
+                      }}
+                    >
                       LikasLens · Live
                     </span>
                   </div>
-                  <span style={{
-                    fontFamily: "monospace", fontSize: 10, color: "rgba(240,237,232,0.4)",
-                    border: "1px solid rgba(240,237,232,0.1)", borderRadius: 4, padding: "2px 8px",
-                  }}>
+                  <span
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: 10,
+                      color: "rgba(240,237,232,0.4)",
+                      border: "1px solid rgba(240,237,232,0.1)",
+                      borderRadius: 4,
+                      padding: "2px 8px",
+                    }}
+                  >
                     SYS-ONLINE
                   </span>
                 </div>
@@ -452,19 +649,39 @@ export default function Home() {
                       animate={{ opacity: idx === metricIndex ? 1 : 0.3 }}
                       transition={{ duration: 0.5 }}
                       style={{
-                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
                         padding: "10px 0",
-                        borderBottom: idx < liveMetrics.length - 1 ? "1px solid rgba(240,237,232,0.06)" : "none",
+                        borderBottom:
+                          idx < liveMetrics.length - 1
+                            ? "1px solid rgba(240,237,232,0.06)"
+                            : "none",
                       }}
                     >
-                      <span style={{ fontFamily: "monospace", fontSize: 10, color: "rgba(240,237,232,0.4)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                      <span
+                        style={{
+                          fontFamily: "monospace",
+                          fontSize: 10,
+                          color: "rgba(240,237,232,0.4)",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
                         {metric.label}
                       </span>
-                      <span style={{
-                        fontFamily: "monospace", fontSize: 22, fontWeight: 700,
-                        color: idx === metricIndex ? "var(--accent-bright)" : "var(--hero-ink)",
-                        transition: "color 0.4s ease",
-                      }}>
+                      <span
+                        style={{
+                          fontFamily: "monospace",
+                          fontSize: 22,
+                          fontWeight: 700,
+                          color:
+                            idx === metricIndex
+                              ? "var(--accent-bright)"
+                              : "var(--hero-ink)",
+                          transition: "color 0.4s ease",
+                        }}
+                      >
                         {metric.value}
                       </span>
                     </motion.div>
@@ -472,43 +689,134 @@ export default function Home() {
                 </div>
 
                 {/* Pipeline */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  <p style={{ fontFamily: "monospace", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,237,232,0.35)", margin: 0 }}>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <p
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: 10,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                      color: "rgba(240,237,232,0.35)",
+                      margin: 0,
+                    }}
+                  >
                     AI Routing Pipeline
                   </p>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {["Capture", "Classify", "Route", "Notify"].map((step, i) => (
-                      <div key={step} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6 }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ height: 6, borderRadius: 9999, background: "rgba(46,230,200,0.15)", overflow: "hidden" }}>
-                            <motion.div
-                              style={{ height: "100%", borderRadius: 9999, background: "var(--accent-bright)" }}
-                              initial={{ width: "0%" }}
-                              animate={{ width: "100%" }}
-                              transition={{ duration: 1.2, delay: 0.8 + i * 0.3, ease: "easeOut" }}
-                            />
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
+                    {["Capture", "Classify", "Route", "Notify"].map(
+                      (step, i) => (
+                        <div
+                          key={step}
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                          }}
+                        >
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div
+                              style={{
+                                height: 6,
+                                borderRadius: 9999,
+                                background: "rgba(46,230,200,0.15)",
+                                overflow: "hidden",
+                              }}
+                            >
+                              <motion.div
+                                style={{
+                                  height: "100%",
+                                  borderRadius: 9999,
+                                  background: "var(--accent-bright)",
+                                }}
+                                initial={{ width: "0%" }}
+                                animate={{ width: "100%" }}
+                                transition={{
+                                  duration: 1.2,
+                                  delay: 0.8 + i * 0.3,
+                                  ease: "easeOut",
+                                }}
+                              />
+                            </div>
+                            <p
+                              style={{
+                                fontFamily: "monospace",
+                                fontSize: 9,
+                                color: "rgba(240,237,232,0.35)",
+                                margin: "4px 0 0",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {step}
+                            </p>
                           </div>
-                          <p style={{ fontFamily: "monospace", fontSize: 9, color: "rgba(240,237,232,0.35)", margin: "4px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                            {step}
-                          </p>
+                          {i < 3 && (
+                            <ArrowRight
+                              style={{
+                                width: 10,
+                                height: 10,
+                                color: "rgba(240,237,232,0.3)",
+                                flexShrink: 0,
+                              }}
+                            />
+                          )}
                         </div>
-                        {i < 3 && (
-                           <ArrowRight style={{ width: 10, height: 10, color: "rgba(240,237,232,0.3)", flexShrink: 0 }} />
-                        )}
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </div>
 
                 {/* Footer */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid rgba(240,237,232,0.06)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "monospace", fontSize: 10, color: "rgba(240,237,232,0.35)" }}>
-                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-bright)" }} />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingTop: 8,
+                    borderTop: "1px solid rgba(240,237,232,0.06)",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontFamily: "monospace",
+                      fontSize: 10,
+                      color: "rgba(240,237,232,0.35)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: "50%",
+                        background: "var(--accent-bright)",
+                      }}
+                    />
                     All systems operational
                   </div>
                   <button
                     onClick={handleInstall}
-                    style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", fontFamily: "monospace", fontSize: 10, color: "var(--accent-bright)", textDecoration: "underline" }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontFamily: "monospace",
+                      fontSize: 10,
+                      color: "var(--accent-bright)",
+                      textDecoration: "underline",
+                    }}
                   >
                     <Download style={{ width: 12, height: 12 }} /> Install App
                   </button>
@@ -534,22 +842,48 @@ export default function Home() {
             zIndex: 10,
           }}
         >
-          <span style={{ fontFamily: "monospace", fontSize: 10, color: "rgba(240,237,232,0.4)", textTransform: "uppercase", letterSpacing: "0.2em" }}>Scroll</span>
+          <span
+            style={{
+              fontFamily: "monospace",
+              fontSize: 10,
+              color: "rgba(240,237,232,0.4)",
+              textTransform: "uppercase",
+              letterSpacing: "0.2em",
+            }}
+          >
+            Scroll
+          </span>
           <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
-            <ArrowDown style={{ width: 16, height: 16, color: "var(--accent-bright)" }} />
+            <ArrowDown
+              style={{ width: 16, height: 16, color: "var(--accent-bright)" }}
+            />
           </motion.div>
         </motion.div>
 
         {/* Hero → wave divider */}
-        <div style={{ position: "absolute", bottom: -2, left: 0, right: 0, pointerEvents: "none", lineHeight: 0 }}>
+        <div
+          style={{
+            position: "absolute",
+            bottom: -2,
+            left: 0,
+            right: 0,
+            pointerEvents: "none",
+            lineHeight: 0,
+          }}
+        >
           <svg
             viewBox="0 0 1440 100"
             xmlns="http://www.w3.org/2000/svg"
             preserveAspectRatio="none"
-            style={{ display: "block", width: "100%", height: 100, transition: "fill 0.6s ease" }}
+            style={{
+              display: "block",
+              width: "100%",
+              height: 100,
+              transition: "fill 0.6s ease",
+            }}
           >
             <path
               d="M0,40 C180,90 360,10 540,50 C720,90 900,20 1080,55 C1260,90 1380,30 1440,50 L1440,100 L0,100 Z"
@@ -560,29 +894,68 @@ export default function Home() {
         </div>
       </section>
 
-
       {/* ── HOW IT WORKS ───────────────────────────────────── */}
-      <section id="how-it-works" style={{ maxWidth: 1280, margin: "0 auto", padding: "120px 32px" }}>
+      <section
+        id="how-it-works"
+        style={{ maxWidth: 1280, margin: "0 auto", padding: "120px 32px" }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6 }}
-          style={{ marginBottom: 64, display: "flex", flexDirection: "column", gap: 12, maxWidth: 640 }}
+          style={{
+            marginBottom: 64,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            maxWidth: 640,
+          }}
         >
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "4px 12px", borderRadius: 9999,
-            background: "color-mix(in srgb, var(--accent) 8%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)",
-            fontFamily: "monospace", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase",
-            color: "var(--accent)", width: "fit-content",
-          }}>Platform</span>
-          <h2 style={{ fontSize: "clamp(2.2rem, 4vw, 3.5rem)", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.1, color: "var(--ink)", margin: 0 }}>
-            From snapshot<br />to solution
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "4px 12px",
+              borderRadius: 9999,
+              background: "color-mix(in srgb, var(--accent) 8%, transparent)",
+              border:
+                "1px solid color-mix(in srgb, var(--accent) 20%, transparent)",
+              fontFamily: "monospace",
+              fontSize: 10,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--accent)",
+              width: "fit-content",
+            }}
+          >
+            Platform
+          </span>
+          <h2
+            style={{
+              fontSize: "clamp(2.2rem, 4vw, 3.5rem)",
+              fontWeight: 800,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.1,
+              color: "var(--ink)",
+              margin: 0,
+            }}
+          >
+            From snapshot
+            <br />
+            to solution
           </h2>
-          <p style={{ fontSize: 17, color: "var(--muted)", lineHeight: 1.65, margin: 0 }}>
-            Three steps turn every citizen report into measurable environmental action.
+          <p
+            style={{
+              fontSize: 17,
+              color: "var(--muted)",
+              lineHeight: 1.65,
+              margin: 0,
+            }}
+          >
+            Three steps turn every citizen report into measurable environmental
+            action.
           </p>
         </motion.div>
 
@@ -591,7 +964,11 @@ export default function Home() {
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-60px" }}
-          style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: 20,
+          }}
         >
           {HOW_IT_WORKS.map(({ step, Icon, title, description }, i) => (
             <motion.div
@@ -610,32 +987,93 @@ export default function Home() {
                 transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
                 cursor: "default",
               }}
-              whileHover={{ y: -6, boxShadow: "0 20px 48px -16px color-mix(in srgb, var(--accent) 18%, transparent)" }}
+              whileHover={{
+                y: -6,
+                boxShadow:
+                  "0 20px 48px -16px color-mix(in srgb, var(--accent) 18%, transparent)",
+              }}
             >
               {/* Accent bottom bar */}
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0, height: 2,
-                background: `linear-gradient(90deg, var(--accent), var(--secondary))`,
-                transform: "scaleX(0)", transformOrigin: "left",
-                transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
-              }} className="step-bottom-bar" />
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                <div style={{
-                  width: 56, height: 56, borderRadius: 16,
-                  background: `color-mix(in srgb, var(--accent) ${8 + i * 3}%, transparent)`,
-                  border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
-                }}>
-                   <Icon style={{ width: 28, height: 28, color: "var(--accent)" }} />
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 2,
+                  background: `linear-gradient(90deg, var(--accent), var(--secondary))`,
+                  transform: "scaleX(0)",
+                  transformOrigin: "left",
+                  transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+                }}
+                className="step-bottom-bar"
+              />
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 16,
+                    background: `color-mix(in srgb, var(--accent) ${8 + i * 3}%, transparent)`,
+                    border:
+                      "1px solid color-mix(in srgb, var(--accent) 20%, transparent)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon
+                    style={{ width: 28, height: 28, color: "var(--accent)" }}
+                  />
                 </div>
-                <span style={{ fontFamily: "monospace", fontSize: 40, fontWeight: 900, color: "var(--border)", lineHeight: 1 }}>
+                <span
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 40,
+                    fontWeight: 900,
+                    color: "var(--border)",
+                    lineHeight: 1,
+                  }}
+                >
                   {step}
                 </span>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
-                <h3 style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>{title}</h3>
-                <p style={{ fontSize: 14, color: "var(--muted)", lineHeight: 1.7, margin: 0 }}>{description}</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  flex: 1,
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: 20,
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    color: "var(--ink)",
+                    margin: 0,
+                  }}
+                >
+                  {title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: 14,
+                    color: "var(--muted)",
+                    lineHeight: 1.7,
+                    margin: 0,
+                  }}
+                >
+                  {description}
+                </p>
               </div>
             </motion.div>
           ))}
@@ -649,7 +1087,9 @@ export default function Home() {
           style={{
             borderColor: ghostMode ? "var(--ghost-accent)" : "var(--border)",
             borderWidth: ghostMode ? 2 : 1,
-            boxShadow: ghostMode ? "0 0 80px -20px rgba(250,204,21,0.15)" : "none",
+            boxShadow: ghostMode
+              ? "0 0 80px -20px rgba(250,204,21,0.15)"
+              : "none",
             background: ghostMode
               ? "linear-gradient(135deg, var(--hero-bg) 0%, var(--page) 100%)"
               : "var(--panel)",
@@ -657,140 +1097,303 @@ export default function Home() {
         >
           <div className="grid md:grid-cols-2 gap-0">
             <div className="p-10 md:p-16 space-y-6 flex flex-col justify-center">
-              <div className="flex items-center gap-2" style={{
-                border: ghostMode ? "1px solid var(--ghost-accent)" : "none",
-                padding: ghostMode ? "4px 8px" : "0",
-                borderRadius: 4,
-                alignSelf: "flex-start",
-                transition: "all 0.4s",
-              }}>
+              <div
+                className="flex items-center gap-2"
+                style={{
+                  border: ghostMode ? "1px solid var(--ghost-accent)" : "none",
+                  padding: ghostMode ? "4px 8px" : "0",
+                  borderRadius: 4,
+                  alignSelf: "flex-start",
+                  transition: "all 0.4s",
+                }}
+              >
                 <Fingerprint
-                  style={{ width: 20, height: 20, color: ghostMode ? "var(--ghost-accent)" : "var(--muted)", transition: "color 0.4s" }}
+                  style={{
+                    width: 20,
+                    height: 20,
+                    color: ghostMode ? "var(--ghost-accent)" : "var(--muted)",
+                    transition: "color 0.4s",
+                  }}
                 />
-                <span style={{
-                  fontFamily: "monospace", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em",
-                  color: ghostMode ? "var(--ghost-accent)" : "var(--muted)", transition: "color 0.4s",
-                }}>
+                <span
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 11,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    color: ghostMode ? "var(--ghost-accent)" : "var(--muted)",
+                    transition: "color 0.4s",
+                  }}
+                >
                   {ghostMode ? "Ghost Mode Active" : "Your Safety Matters"}
                 </span>
               </div>
 
-              <h2 style={{
-                fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.1,
-                color: ghostMode ? "var(--hero-ink)" : "var(--ink)", margin: 0, transition: "color 0.5s",
-              }}>
+              <h2
+                style={{
+                  fontSize: "clamp(2rem, 4vw, 3rem)",
+                  fontWeight: 700,
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1.1,
+                  color: ghostMode ? "var(--hero-ink)" : "var(--ink)",
+                  margin: 0,
+                  transition: "color 0.5s",
+                }}
+              >
                 Report sensitive issues{" "}
-                <span style={{ color: ghostMode ? "var(--ghost-accent)" : "var(--muted)", transition: "color 0.5s" }}>
+                <span
+                  style={{
+                    color: ghostMode ? "var(--ghost-accent)" : "var(--muted)",
+                    transition: "color 0.5s",
+                  }}
+                >
                   without revealing who you are.
                 </span>
               </h2>
 
-              <p style={{ fontSize: 15, lineHeight: 1.7, margin: 0, color: ghostMode ? "rgba(240,237,232,0.55)" : "var(--muted)", transition: "color 0.5s" }}>
-                Reporting illegal logging, toxic dumping, or dangerous violations?
-                Ghost Mode strips your identity, scrubs photo EXIF metadata,
-                and transmits your report with zero trace.
+              <p
+                style={{
+                  fontSize: 15,
+                  lineHeight: 1.7,
+                  margin: 0,
+                  color: ghostMode ? "rgba(240,237,232,0.55)" : "var(--muted)",
+                  transition: "color 0.5s",
+                }}
+              >
+                Reporting illegal logging, toxic dumping, or dangerous
+                violations? Ghost Mode strips your identity, scrubs photo EXIF
+                metadata, and transmits your report with zero trace.
               </p>
 
               <button
                 onClick={() => setGhostMode(!ghostMode)}
                 style={{
                   alignSelf: "flex-start",
-                  display: "flex", alignItems: "center", gap: 10,
-                  padding: "12px 24px", borderRadius: 12, border: "none", cursor: "pointer",
-                  fontSize: 14, fontWeight: 700,
-                  background: ghostMode ? "var(--ghost-accent)" : "var(--accent)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "12px 24px",
+                  borderRadius: 12,
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  background: ghostMode
+                    ? "var(--ghost-accent)"
+                    : "var(--accent)",
                   color: ghostMode ? "var(--hero-bg)" : "#fff",
-                  boxShadow: ghostMode ? "0 8px 24px -8px rgba(250,204,21,0.4)" : "0 8px 24px -8px rgba(27,67,50,0.3)",
+                  boxShadow: ghostMode
+                    ? "0 8px 24px -8px rgba(250,204,21,0.4)"
+                    : "0 8px 24px -8px rgba(27,67,50,0.3)",
                   transition: "all 0.3s ease",
                 }}
               >
                 {ghostMode ? (
-                   <><ShieldCheck style={{ width: 16, height: 16 }} /> Deactivate Ghost Mode</>
+                  <>
+                    <ShieldCheck style={{ width: 16, height: 16 }} /> Deactivate
+                    Ghost Mode
+                  </>
                 ) : (
-                   <><Eye style={{ width: 16, height: 16 }} /> Activate Ghost Mode</>
+                  <>
+                    <Eye style={{ width: 16, height: 16 }} /> Activate Ghost
+                    Mode
+                  </>
                 )}
               </button>
             </div>
 
             <div
               className="relative flex items-center justify-center p-10 md:p-16 min-h-[320px]"
-              style={{ borderLeft: ghostMode ? "1px solid rgba(250,204,21,0.2)" : "1px solid var(--border)", transition: "border-color 0.5s" }}
+              style={{
+                borderLeft: ghostMode
+                  ? "1px solid rgba(250,204,21,0.2)"
+                  : "1px solid var(--border)",
+                transition: "border-color 0.5s",
+              }}
             >
               {ghostMode && (
-                <div style={{
-                  position: "absolute", inset: 0, pointerEvents: "none",
-                  background: "radial-gradient(ellipse at center, rgba(250,204,21,0.08) 0%, transparent 70%)",
-                }} />
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    pointerEvents: "none",
+                    background:
+                      "radial-gradient(ellipse at center, rgba(250,204,21,0.08) 0%, transparent 70%)",
+                  }}
+                />
               )}
               <motion.div
                 key={ghostMode ? "ghost" : "normal"}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}
+                style={{
+                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 16,
+                }}
               >
                 {ghostMode ? (
                   <>
-                    <div style={{ position: "relative", display: "inline-block", overflow: "hidden", padding: 12 }}>
+                    <div
+                      style={{
+                        position: "relative",
+                        display: "inline-block",
+                        overflow: "hidden",
+                        padding: 12,
+                      }}
+                    >
                       <motion.div
-                        animate={{ 
-                          x: [0, -2, 2, 0, 0, 0, 0, 0], 
+                        animate={{
+                          x: [0, -2, 2, 0, 0, 0, 0, 0],
                           opacity: [1, 0.3, 1, 1, 1, 1, 1, 1],
                           filter: [
-                            "drop-shadow(0 0 0px #facc15)", 
-                            "drop-shadow(0 0 10px #facc15)", 
+                            "drop-shadow(0 0 0px #facc15)",
+                            "drop-shadow(0 0 10px #facc15)",
                             "drop-shadow(0 0 0px #facc15)",
                             "drop-shadow(0 0 0px #facc15)",
                             "drop-shadow(0 0 0px #facc15)",
                             "drop-shadow(0 0 0px #facc15)",
                             "drop-shadow(0 0 0px #facc15)",
-                            "drop-shadow(0 0 0px #facc15)"
-                          ]
+                            "drop-shadow(0 0 0px #facc15)",
+                          ],
                         }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                        transition={{
+                          duration: 2,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
                       >
-                         <Fingerprint style={{ width: 96, height: 96, color: "var(--ghost-accent)" }} />
+                        <Fingerprint
+                          style={{
+                            width: 96,
+                            height: 96,
+                            color: "var(--ghost-accent)",
+                          }}
+                        />
                       </motion.div>
-                      
+
                       {/* Scanning Line Effect */}
                       <motion.div
                         animate={{ top: ["-20%", "120%"] }}
-                        transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 0.5 }}
+                        transition={{
+                          duration: 2.5,
+                          repeat: Infinity,
+                          ease: "linear",
+                          repeatDelay: 0.5,
+                        }}
                         style={{
                           position: "absolute",
-                          left: 0, right: 0,
+                          left: 0,
+                          right: 0,
                           height: 12,
-                          background: "linear-gradient(to bottom, transparent, rgba(250,204,21,0.8), transparent)",
+                          background:
+                            "linear-gradient(to bottom, transparent, rgba(250,204,21,0.8), transparent)",
                           boxShadow: "0 0 10px rgba(250,204,21,0.5)",
                           pointerEvents: "none",
-                          zIndex: 10
+                          zIndex: 10,
                         }}
                       />
-                      <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "radial-gradient(circle, rgba(250,204,21,0.25) 0%, transparent 70%)", filter: "blur(12px)", pointerEvents: "none" }} />
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          borderRadius: "50%",
+                          background:
+                            "radial-gradient(circle, rgba(250,204,21,0.25) 0%, transparent 70%)",
+                          filter: "blur(12px)",
+                          pointerEvents: "none",
+                        }}
+                      />
                     </div>
                     <div>
-                      <p style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 700, color: "var(--ghost-accent)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>
+                      <p
+                        style={{
+                          fontFamily: "monospace",
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "var(--ghost-accent)",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.1em",
+                          margin: "0 0 4px",
+                        }}
+                      >
                         Identity Hidden
                       </p>
-                      <p style={{ fontFamily: "monospace", fontSize: 11, color: "rgba(240,237,232,0.6)", margin: 0 }}>
+                      <p
+                        style={{
+                          fontFamily: "monospace",
+                          fontSize: 11,
+                          color: "rgba(240,237,232,0.6)",
+                          margin: 0,
+                        }}
+                      >
                         PHOTO LOCATION REMOVED // SENT SECRETLY
                       </p>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, textAlign: "left" }}>
-                      {["Location data removed", "Device ID stripped", "Encrypted tunnel", "Zero-knowledge routing"].map((item) => (
-                        <div key={item} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                           <CheckCircle style={{ width: 14, height: 14, color: "var(--ghost-accent)", flexShrink: 0 }} />
-                          <span style={{ fontFamily: "monospace", fontSize: 10, color: "rgba(240,237,232,0.45)" }}>{item}</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                        textAlign: "left",
+                      }}
+                    >
+                      {[
+                        "Location data removed",
+                        "Device ID stripped",
+                        "Encrypted tunnel",
+                        "Zero-knowledge routing",
+                      ].map((item) => (
+                        <div
+                          key={item}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <CheckCircle
+                            style={{
+                              width: 14,
+                              height: 14,
+                              color: "var(--ghost-accent)",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontFamily: "monospace",
+                              fontSize: 10,
+                              color: "rgba(240,237,232,0.45)",
+                            }}
+                          >
+                            {item}
+                          </span>
                         </div>
                       ))}
                     </div>
                   </>
                 ) : (
                   <>
-                     <Camera style={{ width: 96, height: 96, color: "var(--muted)" }} />
+                    <Camera
+                      style={{ width: 96, height: 96, color: "var(--muted)" }}
+                    />
                     <div>
-                      <p className="font-mono text-sm text-muted uppercase tracking-widest" style={{ margin: "0 0 4px" }}>Standard Report</p>
-                      <p className="font-mono text-xs text-muted/60" style={{ margin: 0 }}>Identity visible · Location attached</p>
+                      <p
+                        className="font-mono text-sm text-muted uppercase tracking-widest"
+                        style={{ margin: "0 0 4px" }}
+                      >
+                        Standard Report
+                      </p>
+                      <p
+                        className="font-mono text-xs text-muted/60"
+                        style={{ margin: 0 }}
+                      >
+                        Identity visible · Location attached
+                      </p>
                     </div>
                   </>
                 )}
@@ -801,28 +1404,75 @@ export default function Home() {
       </section>
 
       {/* ── PUBLIC SCOREBOARD ──────────────────────────────── */}
-      <section id="scoreboard" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 32px" }}>
+      <section
+        id="scoreboard"
+        style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 32px" }}
+      >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6 }}
-          style={{ marginBottom: 40, display: "flex", flexDirection: "column", gap: 12 }}
+          style={{
+            marginBottom: 40,
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+          }}
         >
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "4px 12px", borderRadius: 9999,
-            background: "color-mix(in srgb, var(--accent) 8%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)",
-            fontFamily: "monospace", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase",
-            color: "var(--accent)", width: "fit-content",
-          }}>Community</span>
-          <h2 style={{ fontSize: "clamp(2.2rem, 4vw, 3.5rem)", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.1, color: "var(--ink)", margin: 0 }}>Public Records</h2>
-          <p style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.65, margin: 0, maxWidth: 480 }}>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "4px 12px",
+              borderRadius: 9999,
+              background: "color-mix(in srgb, var(--accent) 8%, transparent)",
+              border:
+                "1px solid color-mix(in srgb, var(--accent) 20%, transparent)",
+              fontFamily: "monospace",
+              fontSize: 10,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "var(--accent)",
+              width: "fit-content",
+            }}
+          >
+            Community
+          </span>
+          <h2
+            style={{
+              fontSize: "clamp(2.2rem, 4vw, 3.5rem)",
+              fontWeight: 800,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.1,
+              color: "var(--ink)",
+              margin: 0,
+            }}
+          >
+            Public Records
+          </h2>
+          <p
+            style={{
+              fontSize: 16,
+              color: "var(--muted)",
+              lineHeight: 1.65,
+              margin: 0,
+              maxWidth: 480,
+            }}
+          >
             Recent reports being tracked and resolved across the platform.
           </p>
         </motion.div>
-        <div style={{ background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 16, overflow: "hidden", padding: "8px 0" }}>
+        <div
+          style={{
+            background: "var(--panel)",
+            border: "1px solid var(--border)",
+            borderRadius: 16,
+            overflow: "hidden",
+            padding: "8px 0",
+          }}
+        >
           <PublicScoreboard />
         </div>
       </section>
@@ -831,82 +1481,366 @@ export default function Home() {
       <FaqSection />
 
       {/* ── INSTALL CTA ────────────────────────────────────── */}
-      <section id="install-guide" className="max-w-7xl mx-auto px-6 lg:px-8 py-20 pb-32">
+      <section
+        id="install-guide"
+        className="max-w-7xl mx-auto px-6 lg:px-8 py-20 pb-32"
+      >
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="relative rounded-3xl overflow-hidden"
-          style={{ background: "linear-gradient(135deg, var(--accent) 0%, var(--green) 50%, var(--accent) 100%)" }}
+          className="relative rounded-2xl overflow-hidden"
+          style={{
+            background: ghostMode
+              ? "var(--panel)"
+              : "linear-gradient(135deg, #1b4332 0%, #166534 50%, #1b4332 100%)",
+            border: ghostMode ? "1px solid rgba(46,230,200,0.14)" : "none",
+            transition: "background 0.5s ease, border-color 0.5s ease",
+          }}
         >
-          <div style={{ position: "absolute", top: 0, right: 0, width: 320, height: 320, pointerEvents: "none", background: "radial-gradient(circle, rgba(46,230,200,0.15) 0%, transparent 70%)", filter: "blur(40px)" }} />
-          <div style={{ position: "absolute", inset: 0, opacity: 0.06, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+          {/* Ambient glow — top-right corner */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              width: 320,
+              height: 320,
+              pointerEvents: "none",
+              background: ghostMode
+                ? "radial-gradient(circle, rgba(46,230,200,0.08) 0%, transparent 70%)"
+                : "radial-gradient(circle, rgba(46,230,200,0.15) 0%, transparent 70%)",
+              filter: "blur(40px)",
+              transition: "background 0.5s ease",
+            }}
+          />
+          {/* Grid texture — only in Civic Mode */}
+          {!ghostMode && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                opacity: 0.06,
+                pointerEvents: "none",
+                backgroundImage:
+                  "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
+                backgroundSize: "40px 40px",
+              }}
+            />
+          )}
 
           <div className="relative grid md:grid-cols-2 gap-0 items-center">
             <div className="p-10 md:p-16 space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                   <Smartphone style={{ width: 18, height: 18, color: "var(--accent-bright)" }} />
-                  <span style={{ fontFamily: "monospace", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.55)" }}>
+                  <Smartphone
+                    style={{
+                      width: 18,
+                      height: 18,
+                      color: ghostMode
+                        ? "var(--accent)"
+                        : "var(--accent-bright)",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: 10,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                      color: ghostMode
+                        ? "var(--muted)"
+                        : "rgba(255,255,255,0.55)",
+                      transition: "color 0.4s",
+                    }}
+                  >
                     Progressive Web App
                   </span>
                 </div>
-                <h2 style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 700, letterSpacing: "-0.03em", color: "#fff", margin: 0, lineHeight: 1.1 }}>
-                  Install on<br />Your Device
+                <h2
+                  style={{
+                    fontSize: "clamp(2rem,4vw,3rem)",
+                    fontWeight: 700,
+                    letterSpacing: "-0.03em",
+                    lineHeight: 1.1,
+                    margin: 0,
+                    color: ghostMode ? "var(--ink)" : "#fff",
+                    transition: "color 0.4s",
+                  }}
+                >
+                  Install on
+                  <br />
+                  Your Device
                 </h2>
-                <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", lineHeight: 1.7, margin: 0 }}>
-                  Use LikasLens like a native app. Take photos instantly, report even when offline, and receive push notifications.
+                <p
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 1.7,
+                    margin: 0,
+                    color: ghostMode
+                      ? "var(--muted)"
+                      : "rgba(255,255,255,0.65)",
+                    transition: "color 0.4s",
+                  }}
+                >
+                  Use LikasLens like a native app. Take photos instantly, report
+                  even when offline, and receive push notifications.
                 </p>
               </div>
               <div className="space-y-5">
                 {[
-                  { n: "1", title: "Open in your browser", sub: "Chrome, Edge, or Safari on your mobile device" },
-                  { n: "2", title: "Tap the share / menu button", sub: 'Look for "Add to Home Screen" or "Install App"' },
-                  { n: "3", title: "Start reporting", sub: "LikasLens appears on your home screen like any native app" },
+                  {
+                    n: "1",
+                    title: "Open in your browser",
+                    sub: "Chrome, Edge, or Safari on your mobile device",
+                  },
+                  {
+                    n: "2",
+                    title: "Tap the share / menu button",
+                    sub: 'Look for "Add to Home Screen" or "Install App"',
+                  },
+                  {
+                    n: "3",
+                    title: "Start reporting",
+                    sub: "LikasLens appears on your home screen like any native app",
+                  },
                 ].map(({ n, title, sub }) => (
                   <div key={n} className="flex items-start gap-4">
-                    <span style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--accent-bright)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontFamily: "monospace", fontWeight: 700, flexShrink: 0 }}>
+                    <span
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 6,
+                        flexShrink: 0,
+                        background: ghostMode
+                          ? "rgba(46,230,200,0.08)"
+                          : "rgba(255,255,255,0.10)",
+                        border: ghostMode
+                          ? "1px solid rgba(46,230,200,0.2)"
+                          : "1px solid rgba(255,255,255,0.15)",
+                        color: "#2ee6c8",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 12,
+                        fontFamily: "monospace",
+                        fontWeight: 700,
+                        transition: "background 0.4s, border-color 0.4s",
+                      }}
+                    >
                       {n}
                     </span>
                     <div>
-                      <p style={{ fontWeight: 600, fontSize: 14, color: "#fff", margin: "0 0 2px" }}>{title}</p>
-                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", margin: 0 }}>{sub}</p>
+                      <p
+                        style={{
+                          fontWeight: 600,
+                          fontSize: 14,
+                          margin: "0 0 2px",
+                          color: ghostMode ? "var(--ink)" : "#fff",
+                          transition: "color 0.4s",
+                        }}
+                      >
+                        {title}
+                      </p>
+                      <p
+                        style={{
+                          fontSize: 12,
+                          margin: 0,
+                          color: ghostMode
+                            ? "var(--muted)"
+                            : "rgba(255,255,255,0.55)",
+                          transition: "color 0.4s",
+                        }}
+                      >
+                        {sub}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
               <button
                 onClick={handleInstall}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 24px", borderRadius: 12, background: "var(--accent-bright)", color: "var(--hero-bg)", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", boxShadow: "0 8px 24px -8px rgba(46,230,200,0.35)", transition: "all 0.25s ease" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--ghost-accent-hover)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--accent-bright)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "14px 24px",
+                  borderRadius: 8,
+                  background: "#2ee6c8",
+                  color: "#0d1a12",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: "0 8px 24px -8px rgba(46,230,200,0.35)",
+                  transition: "all 0.25s ease",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "#40f0d4";
+                  (e.currentTarget as HTMLElement).style.transform =
+                    "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.background = "#2ee6c8";
+                  (e.currentTarget as HTMLElement).style.transform =
+                    "translateY(0)";
+                }}
               >
-                 <Download style={{ width: 16, height: 16 }} /> Install LikasLens
+                <Download style={{ width: 16, height: 16 }} /> Install LikasLens
               </button>
             </div>
 
             {/* Phone mockup */}
             <div className="flex items-center justify-center p-10 md:p-16">
               <div style={{ position: "relative" }}>
-                <div style={{ width: 192, height: 360, borderRadius: 40, border: "4px solid rgba(255,255,255,0.18)", background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)", position: "relative", overflow: "hidden", boxShadow: "0 32px 64px -16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)" }}>
-                  <div style={{ position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", width: 80, height: 20, borderRadius: 9999, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />
-                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 16px 24px", gap: 12 }}>
-                     <Leaf style={{ width: 32, height: 32, color: "var(--accent-bright)" }} />
-                    <p style={{ fontFamily: "monospace", fontSize: 9, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", textAlign: "center", margin: 0 }}>LikasLens</p>
-                    <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
-                      <div style={{ height: 7, borderRadius: 9999, background: "rgba(255,255,255,0.08)", width: "100%" }} />
-                      <div style={{ height: 7, borderRadius: 9999, background: "rgba(46,230,200,0.25)", width: "75%" }} />
-                      <div style={{ height: 7, borderRadius: 9999, background: "rgba(255,255,255,0.08)", width: "85%" }} />
+                <div
+                  style={{
+                    width: 192,
+                    height: 360,
+                    borderRadius: 40,
+                    border: ghostMode
+                      ? "4px solid rgba(46,230,200,0.2)"
+                      : "4px solid rgba(255,255,255,0.18)",
+                    background: "rgba(0,0,0,0.4)",
+                    position: "relative",
+                    overflow: "hidden",
+                    boxShadow: ghostMode
+                      ? "0 32px 64px -16px rgba(0,0,0,0.6), 0 0 0 1px rgba(46,230,200,0.08)"
+                      : "0 32px 64px -16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
+                    transition: "border-color 0.4s, box-shadow 0.4s",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 16,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 80,
+                      height: 20,
+                      borderRadius: 9999,
+                      background: "rgba(0,0,0,0.7)",
+                      zIndex: 10,
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "48px 16px 24px",
+                      gap: 12,
+                    }}
+                  >
+                    <Leaf style={{ width: 32, height: 32, color: "#2ee6c8" }} />
+                    <p
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 9,
+                        color: "rgba(255,255,255,0.5)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        textAlign: "center",
+                        margin: 0,
+                      }}
+                    >
+                      LikasLens
+                    </p>
+                    <div
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                        marginTop: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: 7,
+                          borderRadius: 9999,
+                          background: "rgba(255,255,255,0.08)",
+                          width: "100%",
+                        }}
+                      />
+                      <div
+                        style={{
+                          height: 7,
+                          borderRadius: 9999,
+                          background: "rgba(46,230,200,0.25)",
+                          width: "75%",
+                        }}
+                      />
+                      <div
+                        style={{
+                          height: 7,
+                          borderRadius: 9999,
+                          background: "rgba(255,255,255,0.08)",
+                          width: "85%",
+                        }}
+                      />
                     </div>
-                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(46,230,200,0.15)", border: "1px solid rgba(46,230,200,0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 8 }}>
-                       <Camera style={{ width: 24, height: 24, color: "var(--accent-bright)" }} />
+                    <div
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: "50%",
+                        background: "rgba(46,230,200,0.15)",
+                        border: "1px solid rgba(46,230,200,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginTop: 8,
+                      }}
+                    >
+                      <Camera
+                        style={{ width: 24, height: 24, color: "#2ee6c8" }}
+                      />
                     </div>
-                    <p style={{ fontFamily: "monospace", fontSize: 8, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Tap to report</p>
+                    <p
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 8,
+                        color: "rgba(255,255,255,0.3)",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        margin: 0,
+                      }}
+                    >
+                      Tap to report
+                    </p>
                   </div>
-                  <div style={{ position: "absolute", bottom: 12, left: "50%", transform: "translateX(-50%)", width: 64, height: 4, borderRadius: 9999, background: "rgba(255,255,255,0.25)" }} />
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: 12,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      width: 64,
+                      height: 4,
+                      borderRadius: 9999,
+                      background: "rgba(255,255,255,0.25)",
+                    }}
+                  />
                 </div>
-                <div style={{ position: "absolute", bottom: -16, left: "50%", transform: "translateX(-50%)", width: 128, height: 32, background: "radial-gradient(ellipse, rgba(46,230,200,0.3) 0%, transparent 70%)", filter: "blur(8px)", pointerEvents: "none" }} />
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: -16,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 128,
+                    height: 32,
+                    background:
+                      "radial-gradient(ellipse, rgba(46,230,200,0.3) 0%, transparent 70%)",
+                    filter: "blur(8px)",
+                    pointerEvents: "none",
+                  }}
+                />
               </div>
             </div>
           </div>

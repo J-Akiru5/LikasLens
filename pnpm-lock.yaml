@@ -65,7 +65,7 @@ importers:
         version: 9.39.4(jiti@2.6.1)
       eslint-config-next:
         specifier: 16.2.2
-        version: 16.2.2(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
+        version: 16.2.2(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
       tailwindcss:
         specifier: ^4
         version: 4.2.2
@@ -202,6 +202,9 @@ importers:
       framer-motion:
         specifier: ^12.38.0
         version: 12.38.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      leaflet:
+        specifier: ^1.9.4
+        version: 1.9.4
       lucide-react:
         specifier: ^1.14.0
         version: 1.14.0(react@19.2.4)
@@ -224,6 +227,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.2.2
+      '@types/leaflet':
+        specifier: ^1.9.21
+        version: 1.9.21
       '@types/node':
         specifier: ^20
         version: 20.19.39
@@ -238,7 +244,7 @@ importers:
         version: 9.39.4(jiti@2.6.1)
       eslint-config-next:
         specifier: 16.2.2
-        version: 16.2.2(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
+        version: 16.2.2(@typescript-eslint/parser@8.58.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
       tailwindcss:
         specifier: ^4
         version: 4.2.2

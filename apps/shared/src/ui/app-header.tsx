@@ -1,7 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Leaf, AlertCircle, CheckCircle, Info, X } from "lucide-react";
+import {
+  Bell,
+  Leaf,
+  AlertCircle,
+  CheckCircle,
+  Info,
+  X,
+  Menu,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils";
 
@@ -22,6 +30,8 @@ interface AppHeaderProps {
   notifications?: Notification[];
   children?: React.ReactNode;
   className?: string;
+  /** When provided, a hamburger button is rendered on mobile (lg:hidden) */
+  onMobileMenuToggle?: () => void;
 }
 
 const DEFAULT_NOTIFICATIONS: Notification[] = [
@@ -62,6 +72,7 @@ export function AppHeader({
   notifications = DEFAULT_NOTIFICATIONS,
   children,
   className,
+  onMobileMenuToggle,
 }: AppHeaderProps) {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -77,7 +88,7 @@ export function AppHeader({
   }, [notifOpen]);
 
   const iconMap: Record<NotificationType, React.ReactNode> = {
-     critical: <AlertCircle className="w-4 h-4 text-red" />,
+    critical: <AlertCircle className="w-4 h-4 text-red" />,
     resolved: <CheckCircle className="w-4 h-4 text-green" />,
     info: <Info className="w-4 h-4 text-green" />,
   };
@@ -86,14 +97,13 @@ export function AppHeader({
     <header
       className={cn(
         "h-16 bg-page/80 backdrop-blur-md border-b border-ink/10 flex items-center justify-between px-4 sm:px-8 relative z-20",
-        className
+        className,
       )}
     >
       <div className="flex items-center gap-4">
         {greeting ? (
           <h1 className="font-semibold tracking-tight text-lg sm:text-xl text-ink">
-            Welcome back,{" "}
-            <span className="text-green">{greeting}</span>
+            Welcome back, <span className="text-green">{greeting}</span>
           </h1>
         ) : showBranding ? (
           <Link href="/" className="flex items-center gap-2 text-ink">
@@ -110,6 +120,16 @@ export function AppHeader({
       <div className="flex items-center gap-4">
         {children}
 
+        {onMobileMenuToggle && (
+          <button
+            aria-label="Open navigation menu"
+            onClick={onMobileMenuToggle}
+            className="lg:hidden p-2 -mr-1 text-ink/50 hover:text-ink transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+
         <div ref={notifRef} className="relative">
           <button
             aria-label="Notifications"
@@ -121,7 +141,7 @@ export function AppHeader({
             <span
               className={cn(
                 "absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full",
-                isGhostMode ? "bg-[#2EE6C8]" : "bg-green"
+                isGhostMode ? "bg-[#2EE6C8]" : "bg-green",
               )}
               aria-hidden="true"
             />
@@ -147,9 +167,7 @@ export function AppHeader({
                     className="p-3 border-b border-ink/10 last:border-0"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="mt-0.5 shrink-0">
-                        {iconMap[n.type]}
-                      </div>
+                      <div className="mt-0.5 shrink-0">{iconMap[n.type]}</div>
                       <div className="min-w-0">
                         <div className="text-sm text-ink">{n.title}</div>
                         <div className="text-xs text-ink/50 mt-0.5">

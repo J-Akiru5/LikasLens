@@ -2,25 +2,46 @@
 import { useEffect, useState } from "react";
 import { laravelGet } from "@likaslens/shared";
 import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
-import { Spinner } from "@likaslens/shared";
-import { Scale, Search, X, ExternalLink, AlertTriangle, Gavel } from "lucide-react";
+import { AdminTableSkeleton } from "@likaslens/shared";
+import {
+  Scale,
+  Search,
+  X,
+  ExternalLink,
+  AlertTriangle,
+  Gavel,
+} from "lucide-react";
 
 interface Law {
-  id: string; law_code: string; title: string; summary: string;
-  issuing_agency: string; jurisdiction_scope: string | null;
-  source_url: string | null; is_active: boolean;
+  id: string;
+  law_code: string;
+  title: string;
+  summary: string;
+  issuing_agency: string;
+  jurisdiction_scope: string | null;
+  source_url: string | null;
+  is_active: boolean;
 }
 
 interface LawPenalty {
-  id: string; law_id: string; violation_name: string;
-  penalty_type: string; min_fine_php: number | null; max_fine_php: number | null;
-  min_imprisonment_yrs: number | null; max_imprisonment_yrs: number | null;
+  id: string;
+  law_id: string;
+  violation_name: string;
+  penalty_type: string;
+  min_fine_php: number | null;
+  max_fine_php: number | null;
+  min_imprisonment_yrs: number | null;
+  max_imprisonment_yrs: number | null;
   notes: string | null;
 }
 
 interface ViolationType {
-  id: string; law_id: string; code: string; name: string;
-  description: string; default_penalty_id: string | null;
+  id: string;
+  law_id: string;
+  code: string;
+  name: string;
+  description: string;
+  default_penalty_id: string | null;
 }
 
 interface LawDetail extends Law {
@@ -38,8 +59,12 @@ export default function LawsPage() {
   useEffect(() => {
     const params: Record<string, string> = { per_page: "50" };
     if (search) params.search = search;
-    laravelGet<PaginatedResponse<Law>>(`/admin/laws?${new URLSearchParams(params)}`)
-      .then((res) => { if (res.success) setLaws(res.data); })
+    laravelGet<PaginatedResponse<Law>>(
+      `/admin/laws?${new URLSearchParams(params)}`,
+    )
+      .then((res) => {
+        if (res.success) setLaws(res.data);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [search]);
@@ -59,61 +84,97 @@ export default function LawsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Environmental Laws</h1>
-        <p className="font-mono text-base text-muted mt-1">Philippine environmental legislation reference</p>
+        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+          Environmental Laws
+        </h1>
+        <p className="font-mono text-base text-muted mt-1">
+          Philippine environmental legislation reference
+        </p>
       </div>
 
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30" />
-        <input type="text" placeholder="Search laws..." value={search} onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
+        <input
+          type="text"
+          placeholder="Search laws..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+        />
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+        <AdminTableSkeleton rows={8} columns={4} showSearch={false} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {laws.map((law) => (
-            <div key={law.id} onClick={() => openDetail(law.id)}
-              className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer">
+            <div
+              key={law.id}
+              onClick={() => openDetail(law.id)}
+              className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer"
+            >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center shrink-0">
                   <Scale className="w-5 h-5 text-ink/40" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-medium text-sm text-ink truncate">{law.title}</h3>
-                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${
-                      law.is_active ? "bg-green/10 text-green" : "bg-ink/[0.04] text-ink/40"
-                    }`}>
+                    <h3 className="font-medium text-sm text-ink truncate">
+                      {law.title}
+                    </h3>
+                    <span
+                      className={`shrink-0 px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${
+                        law.is_active
+                          ? "bg-green/10 text-green"
+                          : "bg-ink/[0.04] text-ink/40"
+                      }`}
+                    >
                       {law.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>
                   <p className="font-mono text-xs text-muted">{law.law_code}</p>
-                  <p className="font-mono text-sm text-ink/70 mt-2 line-clamp-2">{law.summary}</p>
-                  <p className="font-mono text-xs text-muted mt-2">{law.issuing_agency}</p>
+                  <p className="font-mono text-sm text-ink/70 mt-2 line-clamp-2">
+                    {law.summary}
+                  </p>
+                  <p className="font-mono text-xs text-muted mt-2">
+                    {law.issuing_agency}
+                  </p>
                 </div>
               </div>
             </div>
           ))}
           {laws.length === 0 && (
-            <p className="col-span-full text-center font-mono text-sm text-muted py-12">No laws found</p>
+            <p className="col-span-full text-center font-mono text-sm text-muted py-12">
+              No laws found
+            </p>
           )}
         </div>
       )}
 
       {detailLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <Spinner size="lg" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-ink/10 border-t-accent animate-spin" />
+            <p className="font-mono text-xs text-white/60 uppercase tracking-widest">
+              Loading&hellip;
+            </p>
+          </div>
         </div>
       )}
 
       {selectedLaw && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 px-4 overflow-y-auto bg-black/50" onClick={() => setSelectedLaw(null)}>
-          <div className="bg-panel p-6 border border-ink/10 max-w-2xl w-full rounded-3xl shadow-xl relative"
-            onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setSelectedLaw(null)}
-              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-ink/10 hover:bg-ink/[0.02] rounded-lg transition-colors">
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 px-4 overflow-y-auto bg-black/50"
+          onClick={() => setSelectedLaw(null)}
+        >
+          <div
+            className="bg-panel p-6 border border-ink/10 max-w-2xl w-full rounded-3xl shadow-xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedLaw(null)}
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-ink/10 hover:bg-ink/[0.02] rounded-lg transition-colors"
+            >
               <X className="w-4 h-4 text-ink/40" />
             </button>
 
@@ -122,94 +183,149 @@ export default function LawsPage() {
                 <Scale className="w-6 h-6 text-ink/40" />
               </div>
               <div>
-                <h2 className="font-semibold tracking-tight text-2xl text-ink">{selectedLaw.title}</h2>
-                <p className="font-mono text-sm text-muted">{selectedLaw.law_code}</p>
+                <h2 className="font-semibold tracking-tight text-2xl text-ink">
+                  {selectedLaw.title}
+                </h2>
+                <p className="font-mono text-sm text-muted">
+                  {selectedLaw.law_code}
+                </p>
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">Summary</p>
-                <p className="font-mono text-sm text-ink/70">{selectedLaw.summary}</p>
+                <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">
+                  Summary
+                </p>
+                <p className="font-mono text-sm text-ink/70">
+                  {selectedLaw.summary}
+                </p>
               </div>
 
               <div className="flex flex-wrap gap-4">
                 <div>
-                  <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">Issuing Agency</p>
-                  <p className="font-mono text-sm font-medium text-ink">{selectedLaw.issuing_agency}</p>
+                  <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">
+                    Issuing Agency
+                  </p>
+                  <p className="font-mono text-sm font-medium text-ink">
+                    {selectedLaw.issuing_agency}
+                  </p>
                 </div>
                 {selectedLaw.jurisdiction_scope && (
                   <div>
-                    <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">Jurisdiction</p>
+                    <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">
+                      Jurisdiction
+                    </p>
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-ink/[0.04] text-ink/60">
                       {selectedLaw.jurisdiction_scope}
                     </span>
                   </div>
                 )}
                 <div>
-                  <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">Status</p>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold ${
-                    selectedLaw.is_active ? "bg-green/10 text-green" : "bg-ink/[0.04] text-ink/40"
-                  }`}>
+                  <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">
+                    Status
+                  </p>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold ${
+                      selectedLaw.is_active
+                        ? "bg-green/10 text-green"
+                        : "bg-ink/[0.04] text-ink/40"
+                    }`}
+                  >
                     {selectedLaw.is_active ? "Active" : "Inactive"}
                   </span>
                 </div>
               </div>
 
               {selectedLaw.source_url && (
-                <a href={selectedLaw.source_url} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-mono text-xs text-green hover:underline">
+                <a
+                  href={selectedLaw.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-mono text-xs text-green hover:underline"
+                >
                   <ExternalLink className="w-3 h-3" />
                   Official Source
                 </a>
               )}
 
-              {selectedLaw.violationTypes && selectedLaw.violationTypes.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4 text-amber" />
-                    <p className="font-semibold tracking-tight text-lg text-ink">Violation Types</p>
-                  </div>
-                  <div className="space-y-2">
-                    {selectedLaw.violationTypes.map((vt) => (
-                      <div key={vt.id} className="border border-ink/5 rounded-xl p-3">
-                        <div className="flex items-center gap-2">
-                          <p className="font-mono text-xs font-bold text-green">{vt.code}</p>
-                          <p className="font-medium text-sm text-ink">{vt.name}</p>
+              {selectedLaw.violationTypes &&
+                selectedLaw.violationTypes.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertTriangle className="w-4 h-4 text-amber" />
+                      <p className="font-semibold tracking-tight text-lg text-ink">
+                        Violation Types
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      {selectedLaw.violationTypes.map((vt) => (
+                        <div
+                          key={vt.id}
+                          className="border border-ink/5 rounded-xl p-3"
+                        >
+                          <div className="flex items-center gap-2">
+                            <p className="font-mono text-xs font-bold text-green">
+                              {vt.code}
+                            </p>
+                            <p className="font-medium text-sm text-ink">
+                              {vt.name}
+                            </p>
+                          </div>
+                          <p className="font-mono text-xs text-muted mt-1">
+                            {vt.description}
+                          </p>
                         </div>
-                        <p className="font-mono text-xs text-muted mt-1">{vt.description}</p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {selectedLaw.penalties && selectedLaw.penalties.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Gavel className="w-4 h-4 text-red" />
-                    <p className="font-semibold tracking-tight text-lg text-ink">Penalties</p>
+                    <p className="font-semibold tracking-tight text-lg text-ink">
+                      Penalties
+                    </p>
                   </div>
                   <div className="space-y-2">
                     {selectedLaw.penalties.map((p) => (
-                      <div key={p.id} className="border border-ink/5 rounded-xl p-3">
-                        <p className="font-medium text-sm text-ink">{p.violation_name}</p>
+                      <div
+                        key={p.id}
+                        className="border border-ink/5 rounded-xl p-3"
+                      >
+                        <p className="font-medium text-sm text-ink">
+                          {p.violation_name}
+                        </p>
                         <div className="flex flex-wrap gap-x-6 gap-y-1 mt-1 font-mono text-xs">
-                          <span className="text-muted">Type: <span className="font-bold text-ink">{p.penalty_type}</span></span>
+                          <span className="text-muted">
+                            Type:{" "}
+                            <span className="font-bold text-ink">
+                              {p.penalty_type}
+                            </span>
+                          </span>
                           {p.min_fine_php != null && (
                             <span className="text-muted">
                               Fine: PHP {p.min_fine_php.toLocaleString()}
-                              {p.max_fine_php != null && ` - ${p.max_fine_php.toLocaleString()}`}
+                              {p.max_fine_php != null &&
+                                ` - ${p.max_fine_php.toLocaleString()}`}
                             </span>
                           )}
                           {p.min_imprisonment_yrs != null && (
                             <span className="text-muted">
                               Imprisonment: {p.min_imprisonment_yrs}
-                              {p.max_imprisonment_yrs != null && ` - ${p.max_imprisonment_yrs}`} yrs
+                              {p.max_imprisonment_yrs != null &&
+                                ` - ${p.max_imprisonment_yrs}`}{" "}
+                              yrs
                             </span>
                           )}
                         </div>
-                        {p.notes && <p className="font-mono text-xs mt-1 text-muted">{p.notes}</p>}
+                        {p.notes && (
+                          <p className="font-mono text-xs mt-1 text-muted">
+                            {p.notes}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>

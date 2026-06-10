@@ -10,7 +10,15 @@ import {
   ChevronRight,
   Users as UsersIcon,
 } from "lucide-react";
-import { laravelGet, laravelPut, laravelDelete, Spinner, showToast, Button, Dropdown } from "@likaslens/shared";
+import {
+  laravelGet,
+  laravelPut,
+  laravelDelete,
+  showToast,
+  Button,
+  Dropdown,
+  AdminTableSkeleton,
+} from "@likaslens/shared";
 
 type Role = "citizen" | "ghost" | "analyst" | "super_admin";
 
@@ -52,9 +60,10 @@ export default function UsersPage() {
         ...(roleFilter && { role: roleFilter }),
       });
 
-      const result = await laravelGet<{ data: UserRow[]; meta: { total: number } }>(
-        `/admin/users?${params}`
-      );
+      const result = await laravelGet<{
+        data: UserRow[];
+        meta: { total: number };
+      }>(`/admin/users?${params}`);
 
       if (result && (result as { data: UserRow[] }).data) {
         const r = result as { data: UserRow[]; meta: { total: number } };
@@ -73,12 +82,18 @@ export default function UsersPage() {
     }
   }, [page, search, roleFilter]);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   async function handleRoleChange(userId: string, newRole: string) {
     try {
       await laravelPut(`/admin/users/${userId}/role`, { role: newRole });
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole as Role } : u)));
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, role: newRole as Role } : u,
+        ),
+      );
       showToast(`Role updated to ${newRole}`, "success");
     } catch (err) {
       console.error("Failed to update role:", err);
@@ -90,7 +105,11 @@ export default function UsersPage() {
     if (!confirm("Deactivate this user account?")) return;
     try {
       await laravelDelete(`/admin/users/${userId}`);
-      setUsers((prev) => prev.map((u) => u.id === userId ? { ...u, deleted_at: new Date().toISOString() } : u));
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId ? { ...u, deleted_at: new Date().toISOString() } : u,
+        ),
+      );
       showToast("User account deactivated", "success");
     } catch (err) {
       console.error("Failed to deactivate user:", err);
@@ -99,17 +118,35 @@ export default function UsersPage() {
   }
 
   const roleBadge = (role: Role) => {
-    if (role === "super_admin") return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-red/10 text-red"><ShieldAlert className="w-3 h-3" /> Admin</span>;
-    if (role === "analyst") return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-green/10 text-green"><Shield className="w-3 h-3" /> Analyst</span>;
-    return <span className="px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-ink/[0.04] text-ink/60">{role}</span>;
+    if (role === "super_admin")
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-red/10 text-red">
+          <ShieldAlert className="w-3 h-3" /> Admin
+        </span>
+      );
+    if (role === "analyst")
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-green/10 text-green">
+          <Shield className="w-3 h-3" /> Analyst
+        </span>
+      );
+    return (
+      <span className="px-2.5 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-ink/[0.04] text-ink/60">
+        {role}
+      </span>
+    );
   };
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Users</h1>
+        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+          Users
+        </h1>
         <p className="font-mono text-base text-muted mt-1">
-          {total > 0 ? `${total} total accounts` : "Manage user accounts and roles"}
+          {total > 0
+            ? `${total} total accounts`
+            : "Manage user accounts and roles"}
         </p>
       </div>
 
@@ -120,16 +157,25 @@ export default function UsersPage() {
             type="text"
             placeholder="Search by name or email..."
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
             className="w-full pl-9 pr-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
           />
         </div>
         <Dropdown
           value={roleFilter}
-          onChange={(val) => { setRoleFilter(val as Role | ""); setPage(0); }}
+          onChange={(val) => {
+            setRoleFilter(val as Role | "");
+            setPage(0);
+          }}
           options={[
             { value: "", label: "All roles" },
-            ...ROLE_ORDER.map((r) => ({ value: r, label: r.charAt(0).toUpperCase() + r.slice(1) })),
+            ...ROLE_ORDER.map((r) => ({
+              value: r,
+              label: r.charAt(0).toUpperCase() + r.slice(1),
+            })),
           ]}
           size="md"
           className="min-w-[160px]"
@@ -144,7 +190,7 @@ export default function UsersPage() {
       )}
 
       {loading && (
-        <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+        <AdminTableSkeleton rows={10} columns={6} showSearch={false} />
       )}
 
       {!loading && !error && users.length === 0 && (
@@ -152,7 +198,9 @@ export default function UsersPage() {
           <UsersIcon className="w-16 h-16 text-ink/20 mb-4" />
           <p className="font-semibold text-lg text-ink">No users found</p>
           <p className="font-mono text-sm text-muted mt-1">
-            {search || roleFilter ? "Try adjusting your search or filters." : "No accounts have been created yet."}
+            {search || roleFilter
+              ? "Try adjusting your search or filters."
+              : "No accounts have been created yet."}
           </p>
         </div>
       )}
@@ -176,7 +224,9 @@ export default function UsersPage() {
                 }`}
               >
                 <div className="col-span-4 sm:col-span-3 truncate">
-                  <span className="font-medium text-sm text-ink">{user.name || "Anonymous"}</span>
+                  <span className="font-medium text-sm text-ink">
+                    {user.name || "Anonymous"}
+                  </span>
                 </div>
                 <div className="hidden sm:block sm:col-span-3 truncate font-mono text-sm text-ink/50">
                   {user.email}
@@ -185,7 +235,9 @@ export default function UsersPage() {
                   {roleBadge(user.role)}
                 </div>
                 <div className="hidden sm:block sm:col-span-2 font-mono text-sm">
-                  <span className={`font-medium ${user.trust_score >= 70 ? "text-green" : user.trust_score >= 40 ? "text-ink" : "text-ink/40"}`}>
+                  <span
+                    className={`font-medium ${user.trust_score >= 70 ? "text-green" : user.trust_score >= 40 ? "text-ink" : "text-ink/40"}`}
+                  >
                     {user.trust_score}
                   </span>
                 </div>
@@ -228,7 +280,9 @@ export default function UsersPage() {
                   <ChevronLeft className="w-4 h-4" /> Prev
                 </button>
                 <button
-                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  onClick={() =>
+                    setPage((p) => Math.min(totalPages - 1, p + 1))
+                  }
                   disabled={page >= totalPages - 1}
                   className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
                 >

@@ -33,6 +33,10 @@ interface SidebarProps {
   logoLabel?: string;
   extraBottom?: React.ReactNode;
   className?: string;
+  /** Controlled mobile open state — passed from DashboardLayout */
+  mobileOpen?: boolean;
+  /** Called when sidebar wants to change its mobile open state */
+  onMobileOpenChange?: (open: boolean) => void;
 }
 
 export function Sidebar({
@@ -44,9 +48,17 @@ export function Sidebar({
   logoLabel = "LikasLens",
   extraBottom,
   className,
+  mobileOpen: mobileOpenProp,
+  onMobileOpenChange,
 }: SidebarProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const mobileOpen =
+    mobileOpenProp !== undefined ? mobileOpenProp : internalOpen;
+  const setMobileOpen = (v: boolean) => {
+    if (onMobileOpenChange) onMobileOpenChange(v);
+    else setInternalOpen(v);
+  };
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
@@ -78,7 +90,7 @@ export function Sidebar({
     (item) =>
       item.divider ||
       !item.roles ||
-      (userRole && item.roles.includes(userRole))
+      (userRole && item.roles.includes(userRole)),
   );
 
   const sidebarContent = (
@@ -106,8 +118,7 @@ export function Sidebar({
           const Icon = item.icon!;
           const cleanPathname = pathname.replace(/^\/[^/]+/, "") || "/";
           const isActive = item.exact
-            ? cleanPathname === href ||
-              cleanPathname === `${href}/`
+            ? cleanPathname === href || cleanPathname === `${href}/`
             : cleanPathname.startsWith(href);
 
           return (
@@ -120,7 +131,7 @@ export function Sidebar({
                 "flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all duration-150 relative",
                 isActive
                   ? "text-ink bg-accent/8 font-medium before:absolute before:left-0 before:top-1/4 before:-translate-y-1/4 before:h-1/2 before:w-0.5 before:rounded-full before:bg-accent"
-                  : "text-ink/60 hover:text-ink hover:bg-ink/[0.04]"
+                  : "text-ink/60 hover:text-ink hover:bg-ink/[0.04]",
               )}
             >
               <Icon className="w-4 h-4" /> {item.label}
@@ -136,20 +147,20 @@ export function Sidebar({
             "flex items-center justify-between w-full px-4 py-3 transition-colors",
             isGhostMode
               ? "bg-secondary/10 border border-secondary/20"
-              : "border border-ink/10"
+              : "border border-ink/10",
           )}
         >
           <div className="flex items-center gap-2">
             <Fingerprint
               className={cn(
                 "w-4 h-4",
-                isGhostMode ? "text-secondary" : "text-ink/40"
+                isGhostMode ? "text-secondary" : "text-ink/40",
               )}
             />
             <span
               className={cn(
                 "font-mono text-xs uppercase tracking-wider",
-                isGhostMode ? "text-secondary" : "text-ink/50"
+                isGhostMode ? "text-secondary" : "text-ink/50",
               )}
             >
               Ghost Mode
@@ -160,7 +171,7 @@ export function Sidebar({
               "w-8 h-4 rounded-full border-2 flex items-center transition-colors",
               isGhostMode
                 ? "bg-secondary/20 border-secondary"
-                : "bg-ink/10 border-ink/20"
+                : "bg-ink/10 border-ink/20",
             )}
           >
             <div
@@ -168,7 +179,7 @@ export function Sidebar({
                 "w-3 h-3 rounded-full transition-all",
                 isGhostMode
                   ? "ml-auto mr-0.5 bg-secondary"
-                  : "ml-0.5 mr-auto bg-ink/40"
+                  : "ml-0.5 mr-auto bg-ink/40",
               )}
             />
           </div>
@@ -181,7 +192,7 @@ export function Sidebar({
           onClick={closeMobile}
           className="flex items-center gap-3 px-3 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors"
         >
-           <Home className="w-4 h-4" /> Back to Home
+          <Home className="w-4 h-4" /> Back to Home
         </Link>
         <Link
           href="/dashboard/settings"
@@ -193,10 +204,10 @@ export function Sidebar({
             "flex items-center gap-3 px-3 py-2 text-sm transition-colors",
             pathname.startsWith("/dashboard/settings")
               ? "text-ink bg-ink/[0.04]"
-              : "text-ink/60 hover:text-ink hover:bg-ink/[0.02]"
+              : "text-ink/60 hover:text-ink hover:bg-ink/[0.02]",
           )}
         >
-           <Settings className="w-4 h-4" /> Settings
+          <Settings className="w-4 h-4" /> Settings
         </Link>
       </div>
     </>
@@ -204,19 +215,10 @@ export function Sidebar({
 
   return (
     <>
-      <button
-        aria-label={mobileOpen ? "Close sidebar" : "Open sidebar"}
-        aria-expanded={mobileOpen}
-        onClick={() => setMobileOpen((prev) => !prev)}
-        className="lg:hidden fixed top-4 right-4 z-50 p-3 border border-ink/10 bg-page"
-      >
-         {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
-
       <aside
         className={cn(
           "hidden lg:flex lg:w-64 shrink-0 border-r border-ink/10 flex-col h-full relative z-20 bg-page",
-          className
+          className,
         )}
       >
         {sidebarContent}
@@ -225,7 +227,7 @@ export function Sidebar({
       <div
         className={cn(
           "fixed inset-0 z-30 lg:hidden transition-opacity duration-200",
-          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         aria-hidden={!mobileOpen}
       >
@@ -233,7 +235,7 @@ export function Sidebar({
         <aside
           className={cn(
             "absolute left-0 top-0 bottom-0 w-72 bg-page border-r border-ink/10 flex flex-col transition-transform duration-200 pt-[env(safe-area-inset-top)]",
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
+            mobileOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
           <div className="flex items-center justify-end p-4 lg:hidden">

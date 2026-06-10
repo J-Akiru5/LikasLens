@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { laravelGet, laravelPatch } from "@likaslens/shared";
 import type { PaginatedResponse, ApiResponse } from "@likaslens/shared";
-import { Spinner, showToast } from "@likaslens/shared";
+import { showToast, AdminTableSkeleton } from "@likaslens/shared";
 import { Mail, User, Clock, CheckCircle2 } from "lucide-react";
 
 interface ContactMessage {
@@ -35,9 +35,14 @@ export default function InquiriesPage() {
 
   const markAsRead = async (id: number) => {
     try {
-      const res = await laravelPatch<ApiResponse<ContactMessage>>(`/admin/contact-messages/${id}/read`, {});
+      const res = await laravelPatch<ApiResponse<ContactMessage>>(
+        `/admin/contact-messages/${id}/read`,
+        {},
+      );
       if (res.success) {
-        setMessages((prev) => prev.map((msg) => (msg.id === id ? res.data : msg)));
+        setMessages((prev) =>
+          prev.map((msg) => (msg.id === id ? res.data : msg)),
+        );
         showToast("Message marked as read", "success");
       }
     } catch (error) {
@@ -49,16 +54,21 @@ export default function InquiriesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Inquiries</h1>
-        <p className="font-mono text-base text-muted mt-1">Manage contact messages from the public portal</p>
+        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+          Inquiries
+        </h1>
+        <p className="font-mono text-base text-muted mt-1">
+          Manage contact messages from the public portal
+        </p>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Spinner size="lg" /></div>
+        <AdminTableSkeleton rows={8} columns={4} showSearch={false} />
       ) : (
         <div className="space-y-4">
           {messages.map((msg) => (
-            <div key={msg.id}
+            <div
+              key={msg.id}
               className={`bg-panel rounded-3xl p-6 shadow-sm border transition-all ${
                 msg.status === "unread"
                   ? "border-green/20 bg-green/[0.02]"
@@ -70,15 +80,24 @@ export default function InquiriesPage() {
                   <div className="flex items-center gap-4 flex-wrap">
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4 text-ink/40" />
-                      <span className="font-medium text-lg text-ink">{msg.name}</span>
+                      <span className="font-medium text-lg text-ink">
+                        {msg.name}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-ink/40" />
-                      <a href={`mailto:${msg.email}`} className="font-mono text-sm text-ink/60 hover:text-green transition-colors">{msg.email}</a>
+                      <a
+                        href={`mailto:${msg.email}`}
+                        className="font-mono text-sm text-ink/60 hover:text-green transition-colors"
+                      >
+                        {msg.email}
+                      </a>
                     </div>
                     <div className="flex items-center gap-2 text-ink/40">
                       <Clock className="w-4 h-4" />
-                      <span className="font-mono text-sm">{new Date(msg.created_at).toLocaleString()}</span>
+                      <span className="font-mono text-sm">
+                        {new Date(msg.created_at).toLocaleString()}
+                      </span>
                     </div>
 
                     {msg.status === "unread" && (
@@ -105,7 +124,9 @@ export default function InquiriesPage() {
                   ) : (
                     <span className="inline-flex items-center gap-2 font-mono text-xs text-ink/40">
                       <CheckCircle2 className="w-4 h-4" />
-                      Read {msg.read_at && new Date(msg.read_at).toLocaleDateString()}
+                      Read{" "}
+                      {msg.read_at &&
+                        new Date(msg.read_at).toLocaleDateString()}
                     </span>
                   )}
                 </div>
@@ -113,7 +134,9 @@ export default function InquiriesPage() {
             </div>
           ))}
           {messages.length === 0 && (
-            <p className="text-center font-mono text-sm text-muted py-12">No inquiries found</p>
+            <p className="text-center font-mono text-sm text-muted py-12">
+              No inquiries found
+            </p>
           )}
         </div>
       )}

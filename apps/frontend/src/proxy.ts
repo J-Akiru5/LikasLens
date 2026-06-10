@@ -13,27 +13,50 @@ const intlMiddleware = createIntlMiddleware({
 export default async function proxy(request: NextRequest) {
   let response = intlMiddleware(request);
 
+  // If Supabase is not configured yet, skip auth checks and just do locale routing
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return response;
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
-        getAll() { return request.cookies.getAll(); },
+        getAll() {
+          return request.cookies.getAll();
+        },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
         },
       },
-    }
+    },
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Supabase unreachable — treat as unauthenticated
+    return response;
+  }
   const pathname = request.nextUrl.pathname;
   const pathWithoutLocale = pathname.replace(/^\/[a-z]{2,3}\b/, "") || "/";
 
   if (!user) {
     const protectedPaths = ["/dashboard", "/report"];
-    const needsAuth = protectedPaths.some((p) => pathWithoutLocale.startsWith(p));
+    const needsAuth = protectedPaths.some((p) =>
+      pathWithoutLocale.startsWith(p),
+    );
     if (needsAuth) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect_to", pathname);
@@ -51,7 +74,7 @@ export default async function proxy(request: NextRequest) {
     "/dashboard/users",
     "/dashboard/ngos",
     "/dashboard/rewards",
-    "/dashboard/audit-logs"
+    "/dashboard/audit-logs",
   ];
   if (superAdminRoutes.some((route) => pathWithoutLocale.startsWith(route))) {
     if (userRole !== "super_admin") {

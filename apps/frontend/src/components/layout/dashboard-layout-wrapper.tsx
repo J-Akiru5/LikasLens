@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { DashboardLayout } from "@likaslens/shared";
-import type { NavItem, BottomNavItem } from "@likaslens/shared";
+import type { NavItem } from "@likaslens/shared";
 import {
   LayoutGrid,
   AlertCircle,
@@ -24,13 +24,6 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { divider: true, dividerLabel: "Citizen Tools" },
   { href: "/report", label: "Submit Report", icon: Camera },
   { href: "/laws", label: "Laws Database", icon: Scale },
-  { href: "/profile", label: "Profile", icon: User },
-];
-
-const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true },
-  { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
-  { href: "/report", label: "Report", icon: Camera },
   { href: "/profile", label: "Profile", icon: User },
 ];
 
@@ -64,14 +57,15 @@ export function DashboardLayoutWrapper({
   const toggleGhostMode = () => {
     const newTheme = isGhostMode ? "civic" : "ghost";
     document.documentElement.setAttribute("data-theme", newTheme);
-    try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
+    try {
+      localStorage.setItem("likaslens-theme", newTheme);
+    } catch {}
     setIsGhostMode(!isGhostMode);
   };
 
   return (
     <DashboardLayout
       navItems={SIDEBAR_NAV_ITEMS}
-      bottomNavItems={BOTTOM_NAV_ITEMS}
       userRole={userRole ?? null}
       isGhostMode={isGhostMode}
       onThemeToggle={toggleGhostMode}

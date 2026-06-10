@@ -12,13 +12,25 @@ export default async function proxy(request: NextRequest) {
     const segments = pathname.split("/");
     return segments.includes(route.replace("/", ""));
   });
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+
+  const locale =
+    locales.find(
+      (loc) => pathname === `/${loc}` || pathname.startsWith(`/${loc}/`),
+    ) || locales[0];
+
+  let supabaseResponse = NextResponse.next({ request });
+
+  // If Supabase is not configured yet, apply simple public-route logic only
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return supabaseResponse;
+  }
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
@@ -26,23 +38,24 @@ export default async function proxy(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const locale = locales.find(
-    (loc) => pathname === `/${loc}` || pathname.startsWith(`/${loc}/`)
-  ) || locales[0];
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Supabase unreachable — treat as unauthenticated
+    return supabaseResponse;
+  }
 
   // If user is logged in
   if (user) {

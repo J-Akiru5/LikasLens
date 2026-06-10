@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Sidebar, type NavItem } from "./sidebar";
 import { AppHeader } from "./app-header";
 import { BottomNav, type BottomNavItem } from "./bottom-nav";
@@ -36,6 +37,8 @@ export function DashboardLayout({
   headerChildren,
   className,
 }: DashboardLayoutProps) {
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   return (
     <div className={cn("flex h-dvh overflow-hidden bg-page", className)}>
       <Sidebar
@@ -46,6 +49,8 @@ export function DashboardLayout({
         logoHref={logoHref}
         logoLabel={logoLabel}
         extraBottom={extraSidebarBottom}
+        mobileOpen={mobileSidebarOpen}
+        onMobileOpenChange={setMobileSidebarOpen}
       />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -53,6 +58,7 @@ export function DashboardLayout({
           greeting={greeting}
           showBranding={showBranding}
           isGhostMode={isGhostMode}
+          onMobileMenuToggle={() => setMobileSidebarOpen(true)}
           children={headerChildren}
         />
 

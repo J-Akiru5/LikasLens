@@ -11,6 +11,7 @@ import {
   Check,
   ArrowLeft,
 } from "lucide-react";
+import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { cn, showToast } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
 import { useParams, useRouter } from "next/navigation";
@@ -32,7 +33,7 @@ export default function ReportPage() {
   const router = useRouter();
   const params = useParams();
   const locale = (params?.locale as string) || "en";
-  
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -103,8 +104,9 @@ export default function ReportPage() {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => setGps({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setGps(null)
+        (pos) =>
+          setGps({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        () => setGps(null),
       );
     }
   }, []);
@@ -115,6 +117,17 @@ export default function ReportPage() {
     }
     return () => stopCamera();
   }, [step, startCamera, stopCamera]);
+
+  useEffect(() => {
+    if (ghostMode) {
+      document.documentElement.setAttribute("data-theme", "ghost");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+    return () => {
+      document.documentElement.removeAttribute("data-theme");
+    };
+  }, [ghostMode]);
 
   async function handleSubmit() {
     if (!incidentType) {
@@ -129,7 +142,10 @@ export default function ReportPage() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       if (ghostMode) {
-        showToast("Metadata stripped for your safety. Report submitted!", "success");
+        showToast(
+          "Metadata stripped for your safety. Report submitted!",
+          "success",
+        );
       } else {
         showToast("Report submitted successfully!", "success");
       }
@@ -152,20 +168,23 @@ export default function ReportPage() {
       <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-hidden">
         {/* Top Header */}
         <div className="absolute top-0 left-0 right-0 p-4 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between z-10 bg-gradient-to-b from-black/60 to-transparent">
-          <button 
-            onClick={() => { stopCamera(); router.push(`/${locale}/dashboard`); }}
+          <button
+            onClick={() => {
+              stopCamera();
+              router.push(`/${locale}/dashboard`);
+            }}
             className="p-3 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
-          
+
           <button
             onClick={() => setGhostMode(!ghostMode)}
             className={cn(
               "flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-mono uppercase transition-all backdrop-blur-md",
               ghostMode
                 ? "bg-[#facc15]/90 text-black font-bold shadow-[0_0_15px_rgba(250,204,21,0.5)]"
-                : "bg-black/40 text-white/80 border border-white/20"
+                : "bg-black/40 text-white/80 border border-white/20",
             )}
           >
             <Fingerprint className="w-4 h-4" />
@@ -186,7 +205,11 @@ export default function ReportPage() {
             <canvas ref={canvasRef} className="hidden" />
           </>
         ) : (
-          <img src={photo!} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
+          <img
+            src={photo!}
+            alt="Preview"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         )}
 
         {/* Bottom Bar */}
@@ -210,7 +233,9 @@ export default function ReportPage() {
                 <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform border border-white/10">
                   <X className="w-7 h-7" />
                 </div>
-                <span className="text-white/80 text-[10px] font-mono uppercase tracking-wider">Retake</span>
+                <span className="text-white/80 text-[10px] font-mono uppercase tracking-wider">
+                  Retake
+                </span>
               </button>
 
               <button
@@ -220,7 +245,9 @@ export default function ReportPage() {
                 <div className="w-16 h-16 rounded-full bg-green flex items-center justify-center text-white active:scale-95 transition-transform shadow-[0_0_20px_rgba(46,230,200,0.6)]">
                   <Check className="w-8 h-8" />
                 </div>
-                <span className="text-green font-bold text-[10px] font-mono uppercase tracking-wider">Use Photo</span>
+                <span className="text-green font-bold text-[10px] font-mono uppercase tracking-wider">
+                  Use Photo
+                </span>
               </button>
             </div>
           )}
@@ -234,13 +261,18 @@ export default function ReportPage() {
     <div className="p-4 space-y-6 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-300">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => setStep("preview")} className="p-2 -ml-2 rounded-full hover:bg-ink/5">
+        <button
+          onClick={() => setStep("preview")}
+          className="p-2 -ml-2 rounded-full hover:bg-ink/5"
+        >
           <ArrowLeft className="w-6 h-6 text-ink" />
         </button>
         <div>
           <h1
             className="text-2xl font-bold text-ink"
-            style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}
+            style={{
+              fontFamily: "var(--font-heading), Montserrat, sans-serif",
+            }}
           >
             Report Details
           </h1>
@@ -252,7 +284,11 @@ export default function ReportPage() {
 
       {/* Selected Photo Thumbnail */}
       <div className="relative rounded-2xl overflow-hidden bg-ink/5 aspect-[4/3] w-full max-h-64 shadow-inner ring-1 ring-ink/5">
-        <img src={photo!} alt="Captured Evidence" className="w-full h-full object-cover" />
+        <img
+          src={photo!}
+          alt="Captured Evidence"
+          className="w-full h-full object-cover"
+        />
         <button
           onClick={() => setStep("camera")}
           className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-mono uppercase backdrop-blur-sm"
@@ -261,13 +297,18 @@ export default function ReportPage() {
         </button>
       </div>
 
-      {/* GPS */}
-      {gps && (
-        <div className="flex items-center gap-2 text-xs text-ink/50 font-mono bg-ink/5 p-3 rounded-xl border border-ink/5">
-          <MapPin className="w-4 h-4 text-green" />
-          {gps.lat.toFixed(5)}, {gps.lng.toFixed(5)}
-        </div>
-      )}
+      {/* Map — shows GPS pin, draggable to refine location */}
+      <div>
+        <label className="block text-[10px] font-mono uppercase tracking-wider text-ink/40 mb-2 pl-1">
+          Location
+        </label>
+        <GeoTagMap
+          lat={gps?.lat ?? null}
+          lng={gps?.lng ?? null}
+          onLocationChange={(lat, lng) => setGps({ lat, lng })}
+          height="220px"
+        />
+      </div>
 
       {/* Incident Type */}
       <div className="relative">
@@ -278,13 +319,15 @@ export default function ReportPage() {
           onClick={() => setTypeDropdownOpen(!typeDropdownOpen)}
           className="w-full h-14 px-4 rounded-xl bg-page border border-ink/10 text-left text-sm flex items-center justify-between shadow-sm focus:border-green/50 transition-colors"
         >
-          <span className={incidentType ? "text-ink font-medium" : "text-ink/30"}>
+          <span
+            className={incidentType ? "text-ink font-medium" : "text-ink/30"}
+          >
             {incidentType || "Select classification..."}
           </span>
           <ChevronDown
             className={cn(
               "w-4 h-4 text-ink/40 transition-transform",
-              typeDropdownOpen && "rotate-180"
+              typeDropdownOpen && "rotate-180",
             )}
           />
         </button>
@@ -299,7 +342,8 @@ export default function ReportPage() {
                 }}
                 className={cn(
                   "w-full px-4 py-3.5 text-left text-sm hover:bg-ink/[0.04] transition-colors border-b border-ink/5 last:border-0",
-                  incidentType === type && "bg-green/5 text-green font-semibold"
+                  incidentType === type &&
+                    "bg-green/5 text-green font-semibold",
                 )}
               >
                 {type}
@@ -329,18 +373,21 @@ export default function ReportPage() {
           onClick={() => setGhostMode(!ghostMode)}
           className={cn(
             "mt-0.5 w-10 h-6 rounded-full transition-colors relative shrink-0",
-            ghostMode ? "bg-secondary" : "bg-ink/20"
+            ghostMode ? "bg-secondary" : "bg-ink/20",
           )}
         >
-          <div className={cn(
-            "absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform",
-            ghostMode && "translate-x-4"
-          )} />
+          <div
+            className={cn(
+              "absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform",
+              ghostMode && "translate-x-4",
+            )}
+          />
         </button>
         <div className="flex-1">
           <p className="text-sm font-semibold text-ink">Ghost Mode</p>
           <p className="text-xs text-ink/50 mt-1 leading-relaxed">
-            When enabled, location data and device metadata will be completely stripped from this report to protect your identity.
+            When enabled, location data and device metadata will be completely
+            stripped from this report to protect your identity.
           </p>
         </div>
       </div>
@@ -353,7 +400,7 @@ export default function ReportPage() {
           "w-full h-14 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
           submitting || !incidentType
             ? "bg-ink/5 text-ink/30 cursor-not-allowed"
-            : "bg-green text-white shadow-lg shadow-green/20 hover:bg-green/90 hover:shadow-green/30"
+            : "bg-green text-white shadow-lg shadow-green/20 hover:bg-green/90 hover:shadow-green/30",
         )}
       >
         {submitting ? (
