@@ -4,7 +4,7 @@ import { locales } from "@likaslens/shared";
 
 const publicRoutes = ["/login", "/register", "/onboarding", "/splash"];
 
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if this is a public route (exact segment match, not substring)
@@ -12,7 +12,6 @@ export async function middleware(request: NextRequest) {
     const segments = pathname.split("/");
     return segments.includes(route.replace("/", ""));
   });
-
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -29,7 +28,6 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );

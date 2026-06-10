@@ -1,16 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState, useTransition } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { BottomNav } from "@/components/layout/bottom-nav";
-import { AppHeader } from "@/components/layout/header";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import {
   Bell,
   Lock,
   Eye,
   Globe,
   Monitor,
-  ArrowLeft,
   Shield,
   Key,
   UserCircle2,
@@ -547,42 +544,35 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-        <ToastContainer />
-        <AppHeader showBranding={false} />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors">
-                &larr; {tc("back")}
-              </Link>
-              <span className="text-ink/20">/</span>
-              <h1 className="font-semibold tracking-tight text-3xl text-ink">{t("title")}</h1>
-            </div>
+    <DashboardLayoutWrapper>
+      <ToastContainer />
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors">
+            &larr; {tc("back")}
+          </Link>
+          <span className="text-ink/20">/</span>
+          <h1 className="font-semibold tracking-tight text-3xl text-ink">{t("title")}</h1>
+        </div>
 
-            <nav className="flex gap-2 overflow-x-auto pb-1">
-              {tabs.map((tab) => (
-                <TabButton
-                  key={tab.id}
-                  tab={tab}
-                  isActive={activeTab === tab.id}
-                  onSelect={onSelectTab}
-                />
-              ))}
-            </nav>
+        <nav className="flex gap-2 overflow-x-auto pb-1">
+          {tabs.map((tab) => (
+            <TabButton
+              key={tab.id}
+              tab={tab}
+              isActive={activeTab === tab.id}
+              onSelect={onSelectTab}
+            />
+          ))}
+        </nav>
 
-            <div>
-              {activeTab === "platform" && <PlatformSection />}
-              {activeTab === "notifications" && <NotificationsSection />}
-              {activeTab === "security" && <SecuritySection />}
-              {activeTab === "account" && <AccountSection />}
-            </div>
-          </div>
-        </main>
-        <BottomNav />
+        <div>
+          {activeTab === "platform" && <PlatformSection />}
+          {activeTab === "notifications" && <NotificationsSection />}
+          {activeTab === "security" && <SecuritySection />}
+          {activeTab === "account" && <AccountSection />}
+        </div>
       </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }

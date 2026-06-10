@@ -10,6 +10,8 @@ interface ScoreboardEntry {
   name: string;
   eco_credits: number;
   score: number;
+  reward_points_balance?: number;
+  id?: string | number;
 }
 
 export default function ScoreboardPage() {

@@ -1,25 +1,21 @@
+import { DashboardSkeleton } from "@likaslens/shared";
+
 export default function Loading() {
   return (
-    <div className="animate-pulse">
-      <div className="flex min-h-screen">
-        <div className="hidden w-64 space-y-4 border-r border-border p-6 lg:block">
-          <div className="h-5 w-32 rounded bg-ink/5" />
+    <div className="flex h-dvh overflow-hidden bg-page">
+      <div className="hidden lg:flex lg:w-64 shrink-0 border-r border-ink/10 bg-page p-6">
+        <div className="w-full space-y-4">
+          <div className="h-5 w-32 rounded bg-ink/5 animate-shimmer" />
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-4 w-full rounded bg-ink/5" />
+              <div key={i} className="h-4 w-full rounded bg-ink/5 animate-shimmer" />
             ))}
           </div>
-        </div>
-        <div className="flex-1 space-y-6 p-6">
-          <div className="h-7 w-56 rounded-lg bg-ink/5" />
-          <div className="grid grid-cols-3 gap-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-24 rounded-xl bg-ink/5" />
-            ))}
-          </div>
-          <div className="h-64 rounded-xl bg-ink/5" />
         </div>
       </div>
+      <div className="flex-1 overflow-y-auto p-6">
+        <DashboardSkeleton />
+      </div>
     </div>
-  )
+  );
 }

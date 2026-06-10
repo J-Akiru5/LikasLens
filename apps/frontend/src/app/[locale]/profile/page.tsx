@@ -10,9 +10,7 @@ import { AchievementCard, RankProgressCard, Dropdown } from "@likaslens/shared";
 import { fetchEcoCreditRate } from "@likaslens/shared";
 import type { Achievement, RankProgress, CurrencySetting, AchievementTier } from "@likaslens/shared";
 import { useTranslations } from "next-intl";
-import { Sidebar } from "@/components/layout/sidebar";
-import { AppHeader } from "@/components/layout/header";
-import { BottomNav } from "@/components/layout/bottom-nav";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 
 type TabKey = "overview" | "achievements";
 type FilterKey = "all" | "unlocked" | "locked";
@@ -176,13 +174,8 @@ function ProfilePageContent() {
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <AppHeader />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6 relative z-10">
-          <BottomNav />
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-12">
+    <DashboardLayoutWrapper>
+      <div className="max-w-5xl mx-auto space-y-12">
         {/* Sweeping Neon Curved Header for Profile */}
         <div className="bg-green text-page rounded-b-[40px] md:rounded-[40px] pt-12 pb-16 px-8 relative overflow-hidden shadow-xl mt-4 md:mt-0 mb-4">
           <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 rounded-full border-[40px] border-page/5" />
@@ -538,9 +531,7 @@ function ProfilePageContent() {
           </>
         )}
       </div>
-        </main>
-      </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, Scale, Hammer, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { AppHeader } from "@/components/layout/header";
+import { AppHeader } from "@likaslens/shared";
 
 export default function TermsPage() {
   return (

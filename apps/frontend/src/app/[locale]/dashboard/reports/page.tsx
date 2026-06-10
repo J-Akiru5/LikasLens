@@ -3,11 +3,9 @@
 import { useEffect, useState, useMemo } from "react";
 import { getTickets, getDashboardStats } from "@likaslens/shared";
 import type { Ticket, DashboardStats } from "@likaslens/shared";
-import { Sidebar } from "@/components/layout/sidebar";
-import { BottomNav } from "@/components/layout/bottom-nav";
-import { AppHeader } from "@/components/layout/header";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { BarChart3, TrendingUp, Download } from "lucide-react";
-import { ToastContainer } from "@/components/ui/toast";
+import { ToastContainer } from "@likaslens/shared";
 
 export default function ReportsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -53,24 +51,18 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-dvh overflow-hidden bg-page">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
+      <DashboardLayoutWrapper>
+        <div className="flex items-center justify-center min-h-[50vh]">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink/20 border-t-ink/60" />
         </div>
-      </div>
+      </DashboardLayoutWrapper>
     );
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
+    <DashboardLayoutWrapper>
       <ToastContainer />
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <AppHeader showBranding={false} />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
-          <BottomNav />
-          <div className="max-w-5xl mx-auto pb-20 space-y-8">
+      <div className="max-w-5xl mx-auto pb-20 space-y-8">
             {/* Sweeping Neon Curved Header */}
             <div className="bg-green text-page rounded-b-[40px] md:rounded-[40px] pt-12 pb-24 px-8 relative overflow-hidden shadow-xl mt-4 md:mt-0">
               <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 rounded-full border-[40px] border-page/5" />
@@ -193,9 +185,7 @@ export default function ReportsPage() {
                 </div>
               </section>
             </div>
-          </div>
-        </main>
       </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }

@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react";
 import { Save, Globe } from "lucide-react";
 import Link from "next/link";
-import { Sidebar } from "@/components/layout/sidebar";
-import { BottomNav } from "@/components/layout/bottom-nav";
-import { AppHeader } from "@/components/layout/header";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { CustomSelect } from "@/components/ui/custom-select";
 import { Spinner } from "@/components/ui/spinner";
@@ -91,24 +89,18 @@ export default function ProfileSettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-dvh overflow-hidden bg-page">
-        <Sidebar />
-        <div className="flex-1 min-w-0 flex items-center justify-center">
+      <DashboardLayoutWrapper>
+        <div className="flex items-center justify-center min-h-[50vh]">
           <Spinner size={32} className="text-ink/40" />
         </div>
-      </div>
+      </DashboardLayoutWrapper>
     );
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
+    <DashboardLayoutWrapper greeting={displayName || "Citizen"}>
       <ToastContainer />
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <AppHeader greeting={displayName || "Citizen"} />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
-          <BottomNav />
-          <div className="max-w-4xl mx-auto space-y-12">
+      <div className="max-w-4xl mx-auto space-y-12">
             <div className="flex items-center gap-4">
               <Link href="/dashboard" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors">
                 &larr; Dashboard
@@ -182,9 +174,7 @@ export default function ProfileSettingsPage() {
                 </button>
               </div>
             </section>
-          </div>
-        </main>
       </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }

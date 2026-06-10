@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendingUp, Trophy, User } from "lucide-react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { BottomNav } from "@/components/layout/bottom-nav";
-import { AppHeader } from "@/components/layout/header";
+import { useRouter } from "next/navigation";
+import { TrendingUp, Trophy } from "lucide-react";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
+import { EmptyLeaderboard, ErrorPage, ScoreboardSkeleton } from "@likaslens/shared";
 
 type LeaderboardEntry = {
   id: string;
@@ -16,6 +16,7 @@ type LeaderboardEntry = {
 };
 
 export default function ScoreboardPage() {
+  const router = useRouter();
   const [data, setData] = useState<LeaderboardEntry[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,13 +81,8 @@ export default function ScoreboardPage() {
   };
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <AppHeader />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6 relative z-10">
-          <BottomNav />
-          <div className="max-w-5xl mx-auto space-y-12">
+    <DashboardLayoutWrapper>
+      <div className="max-w-5xl mx-auto space-y-12">
             <div className="space-y-3">
               <h1 className="font-semibold tracking-tight text-4xl sm:text-5xl text-ink">Contributor Rankings</h1>
               <p className="font-mono text-sm text-ink/50 flex items-center gap-2">
@@ -95,28 +91,22 @@ export default function ScoreboardPage() {
               </p>
             </div>
 
-            {loading && (
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-10 bg-ink/[0.02] animate-pulse rounded" />
-                ))}
-              </div>
-            )}
+            {loading && <ScoreboardSkeleton />}
 
             {error && (
-              <div className="py-12 text-center">
-                <p className="font-mono text-sm text-ink/50 uppercase tracking-wide">{error}</p>
-              </div>
+              <ErrorPage
+                title="Unable to load leaderboard"
+                message="The leaderboard data couldn't be fetched. It may be a temporary network issue or the service might be down. Please try again later."
+              />
             )}
 
             {!loading && !error && data && (
               <>
                 {data.length === 0 ? (
-                  <div className="py-16 text-center">
-                    <User className="w-8 h-8 text-ink/20 mx-auto mb-3" />
-                    <p className="font-mono text-sm text-ink/50 uppercase tracking-wide">No rankings yet</p>
-                    <p className="font-mono text-xs text-ink/40 mt-1">Be the first to submit a report.</p>
-                  </div>
+                  <EmptyLeaderboard
+                    description="Be the first to submit a report and earn your place on the leaderboard."
+                    action={{ label: "Submit a report", onClick: () => router.push("/report") }}
+                  />
                 ) : (
                   <div>
                     <div className="grid grid-cols-[0.5fr_2fr_1fr_1fr] gap-4 pb-3 border-b border-ink/10 font-mono text-xs text-ink/40 uppercase tracking-wide">
@@ -167,8 +157,6 @@ export default function ScoreboardPage() {
               </>
             )}
           </div>
-        </main>
-      </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }

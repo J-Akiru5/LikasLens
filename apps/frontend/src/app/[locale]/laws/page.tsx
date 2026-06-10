@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { AppHeader } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
-import { BottomNav } from "@/components/layout/bottom-nav";
-import { Scale, Search, ExternalLink, Loader2 } from "lucide-react";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
+import { Scale, Search, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { laravelGet, type PaginatedResponse } from "@likaslens/shared";
+import { laravelGet, type PaginatedResponse, ErrorPage, EmptySearch, EmptyFeed, Skeleton } from "@likaslens/shared";
 
 interface Law {
   id: string;
@@ -51,13 +49,8 @@ export default function LawsPage() {
   );
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <AppHeader showBranding />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6 relative z-10">
-          <BottomNav />
-          <div className="max-w-5xl mx-auto space-y-8">
+    <DashboardLayoutWrapper showBranding>
+      <div className="max-w-5xl mx-auto space-y-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-ink/10 pb-6">
           <div>
             <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink mb-3">Environmental Laws</h1>
@@ -79,29 +72,51 @@ export default function LawsPage() {
         </div>
 
         {loading && (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 text-ink/20 animate-spin" />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-panel rounded-[1.5rem] p-6 border border-ink/5 space-y-4">
+                <div className="flex items-start gap-4">
+                  <Skeleton className="w-12 h-12 rounded-2xl shrink-0" />
+                  <div className="flex-1 space-y-3 pt-1">
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-5/6" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+                <div className="flex items-center gap-2 pt-4 border-t border-ink/5">
+                  <Skeleton className="h-6 w-20 rounded-md" />
+                  <Skeleton className="h-6 w-16 rounded-full ml-auto" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {error && (
-          <div className="p-6 bg-red/5 border border-red/20 font-mono text-sm text-red rounded-2xl">
-            {error}
-          </div>
+          <ErrorPage
+            title="Unable to load laws database"
+            message="The environmental laws data couldn't be fetched. It may be a temporary network issue or the service might be down. Please try again later."
+          />
         )}
 
         {!loading && !error && (
           <div className="space-y-6">
             {filtered.length === 0 ? (
-              <div className="py-20 text-center space-y-4 bg-panel rounded-[2rem] border border-ink/5">
-                <div className="w-20 h-20 rounded-full bg-ink/5 flex items-center justify-center mx-auto">
-                  <Scale className="w-10 h-10 text-ink/20" />
-                </div>
-                <div>
-                  <p className="font-bold text-xl text-ink">{search ? "No matching laws found" : "No laws available"}</p>
-                  <p className="font-mono text-sm text-ink/40 mt-1">{search ? "Try a different search term." : "Check back soon for Philippine environmental legislation."}</p>
-                </div>
-              </div>
+              search ? (
+                <EmptySearch
+                  query={search}
+                  onClear={() => setSearch("")}
+                />
+              ) : (
+                <EmptyFeed
+                  title="No laws available"
+                  description="Check back soon for Philippine environmental legislation."
+                />
+              )
             ) : (
               <>
                 <p className="font-mono text-xs text-ink/40 uppercase tracking-widest font-bold">
@@ -149,8 +164,6 @@ export default function LawsPage() {
           </div>
         )}
           </div>
-        </main>
-      </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }

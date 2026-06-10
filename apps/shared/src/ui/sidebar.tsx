@@ -15,9 +15,9 @@ import {
 import { cn } from "../utils";
 
 export interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
+  href?: string;
+  label?: string;
+  icon?: LucideIcon;
   exact?: boolean;
   roles?: string[] | null;
   divider?: boolean;
@@ -102,24 +102,24 @@ export function Sidebar({
             );
           }
 
+          const href = item.href ?? "#";
+          const Icon = item.icon!;
           const cleanPathname = pathname.replace(/^\/[^/]+/, "") || "/";
           const isActive = item.exact
-            ? cleanPathname === item.href ||
-              cleanPathname === `${item.href}/`
-            : cleanPathname.startsWith(item.href);
-
-          const Icon = item.icon;
+            ? cleanPathname === href ||
+              cleanPathname === `${href}/`
+            : cleanPathname.startsWith(href);
 
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={href}
+              href={href}
               onClick={closeMobile}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors",
+                "flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all duration-150 relative",
                 isActive
-                  ? "text-ink bg-ink/[0.04] font-medium"
+                  ? "text-ink bg-accent/8 font-medium before:absolute before:left-0 before:top-1/4 before:-translate-y-1/4 before:h-1/2 before:w-0.5 before:rounded-full before:bg-accent"
                   : "text-ink/60 hover:text-ink hover:bg-ink/[0.04]"
               )}
             >

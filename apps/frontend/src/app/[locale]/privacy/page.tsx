@@ -16,7 +16,7 @@ import {
   Mail,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { AppHeader } from "@/components/layout/header";
+import { AppHeader } from "@likaslens/shared";
 
 const sectionDelay = (i: number) => ({ delay: i * 0.08 });
 

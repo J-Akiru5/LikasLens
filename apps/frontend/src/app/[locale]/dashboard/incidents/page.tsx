@@ -3,9 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getTickets } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { Sidebar } from "@/components/layout/sidebar";
-import { BottomNav } from "@/components/layout/bottom-nav";
-import { AppHeader } from "@/components/layout/header";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { Filter, MoreVertical, Eye, UserCheck, Flag, Trash2, X, Search, Clock, MapPin } from "lucide-react";
 
 const statusDot: Record<string, string> = {
@@ -84,23 +82,17 @@ export default function IncidentsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-dvh overflow-hidden bg-page">
-        <Sidebar />
-        <div className="flex-1 flex items-center justify-center">
+      <DashboardLayoutWrapper>
+        <div className="flex items-center justify-center min-h-[50vh]">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-ink/20 border-t-ink/60" />
         </div>
-      </div>
+      </DashboardLayoutWrapper>
     );
   }
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <AppHeader showBranding={false} />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
-          <BottomNav />
-          <div className="max-w-7xl mx-auto space-y-8">
+    <DashboardLayoutWrapper>
+      <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ink/10 pb-5">
               <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Reported Incidents</h1>
               <div className="flex items-center gap-3">
@@ -245,9 +237,7 @@ export default function IncidentsPage() {
                 </div>
               )}
             </div>
-          </div>
-        </main>
       </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }

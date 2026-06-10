@@ -7,12 +7,10 @@ import { createClient } from "@/utils/supabase/client";
 import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
-import { ToastContainer, showToast } from "@likaslens/shared";
+import { ToastContainer, showToast, EmptyState, Skeleton } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { Sidebar } from "@/components/layout/sidebar";
-import { AppHeader } from "@/components/layout/header";
-import { BottomNav } from "@/components/layout/bottom-nav";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { CustomSelect } from "@/components/ui/custom-select";
 
 const INCIDENT_TYPES = [
@@ -348,13 +346,8 @@ export default function ReportPage() {
         }}
       />
 
-      <div className="flex h-dvh overflow-hidden bg-page">
-        <Sidebar />
-        <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-          <AppHeader />
-          <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6 relative z-10">
-            <BottomNav />
-        <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-8">
+      <DashboardLayoutWrapper>
+        <div className="max-w-2xl mx-auto space-y-8">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#3a7d54]" />
@@ -394,20 +387,26 @@ export default function ReportPage() {
                     </button>
                   </div>
                 </div>
-              ) : (
-                <div className="border border-ink/10 p-8 flex items-center justify-center rounded-xl">
-                  <div className="text-center space-y-4">
-                    <Camera className="w-10 h-10 text-ink/20 mx-auto" />
-                    <p className="font-mono text-sm text-ink/40">No image captured yet</p>
-                    <button type="button" onClick={() => camera.start()} disabled={camera.isLoading} className="px-5 py-2.5 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity inline-flex items-center gap-2 disabled:opacity-50 rounded-lg">
-                      {camera.isLoading ? (
-                         <><RefreshCw className="w-4 h-4 animate-spin" /> Opening Camera...</>
-                      ) : (
-                        <><Camera className="w-4 h-4" /> Capture Photo</>
-                      )}
-                    </button>
-                    {camera.error && <p className="font-mono text-xs text-ink/50">{camera.errorMessage}</p>}
+              ) : camera.isLoading ? (
+                <div className="border border-ink/10 rounded-xl overflow-hidden">
+                  <Skeleton className="w-full aspect-video rounded-none" />
+                  <div className="flex justify-center gap-3 p-4">
+                    <Skeleton className="h-10 w-24 rounded-lg" />
+                    <Skeleton className="h-10 w-20 rounded-lg" />
                   </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <EmptyState
+                    icon={Camera}
+                    title="No image captured yet"
+                    description="Capture a photo of the environmental issue to document it."
+                    action={{ label: "Capture Photo", onClick: () => camera.start() }}
+                    className="border border-ink/10 rounded-xl"
+                  />
+                  {camera.error && (
+                    <p className="font-mono text-xs text-ink/50 text-center">{camera.errorMessage}</p>
+                  )}
                 </div>
               )}
             </section>
@@ -470,10 +469,12 @@ export default function ReportPage() {
               {useMapPinning ? (
                 <GeoTagMap initialLat={latitude} initialLng={longitude} onLocationChange={(lat, lng) => { setLatitude(lat); setLongitude(lng); }} height="320px" />
               ) : (
-                <div className="border border-ink/10 p-8 text-center rounded-xl">
-                  <MapPin className="w-8 h-8 text-ink/20 mx-auto mb-2" />
-                  <p className="font-mono text-sm text-ink/40">Toggle Enable Map above to pin your exact location</p>
-                </div>
+                <EmptyState
+                  icon={MapPin}
+                  title="Map pinning is disabled"
+                  description={'Toggle "Enable Map" above to pin your exact location on the map.'}
+                  className="border border-ink/10 rounded-xl"
+                />
               )}
             </section>
 
@@ -536,9 +537,7 @@ export default function ReportPage() {
             </div>
           </form>
             </div>
-          </main>
-        </div>
-      </div>
+      </DashboardLayoutWrapper>
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
     </>
   );

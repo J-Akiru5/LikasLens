@@ -12,17 +12,8 @@ const intlMiddleware = createIntlMiddleware({
 
 const ADMIN_ONLY_ROUTES = ["/users", "/rewards", "/audit-logs", "/settings"];
 
-export async function middleware(request: NextRequest) {
-  const intlResponse = intlMiddleware(request);
-
-  if (intlResponse.headers.get("location")) {
-    return intlResponse;
-  }
-
-  let supabaseResponse = NextResponse.next({
-    request,
-    headers: intlResponse.headers,
-  });
+export default async function proxy(request: NextRequest) {
+  let response = intlMiddleware(request);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,8 +23,7 @@ export async function middleware(request: NextRequest) {
         getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options));
+          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
         },
       },
     }
@@ -53,7 +43,7 @@ export async function middleware(request: NextRequest) {
       }
       // Citizen/ghost users stay on login page — no redirect loop
     }
-    return supabaseResponse;
+    return response;
   }
 
   if (!user) {
@@ -74,7 +64,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard?error=forbidden", request.url));
   }
 
-  return supabaseResponse;
+  return response;
 }
 
 export const config = {

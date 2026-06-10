@@ -13,6 +13,7 @@ interface DashboardLayoutProps {
   isGhostMode: boolean;
   onThemeToggle: () => void;
   greeting?: string;
+  showBranding?: boolean;
   logoHref?: string;
   logoLabel?: string;
   extraSidebarBottom?: React.ReactNode;
@@ -28,6 +29,7 @@ export function DashboardLayout({
   isGhostMode,
   onThemeToggle,
   greeting,
+  showBranding = true,
   logoHref,
   logoLabel,
   extraSidebarBottom,
@@ -49,6 +51,7 @@ export function DashboardLayout({
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <AppHeader
           greeting={greeting}
+          showBranding={showBranding}
           isGhostMode={isGhostMode}
           children={headerChildren}
         />

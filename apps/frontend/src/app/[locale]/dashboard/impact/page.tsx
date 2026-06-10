@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { BottomNav } from "@/components/layout/bottom-nav";
-import { AppHeader } from "@/components/layout/header";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { createClient } from "@/utils/supabase/client";
 import {
   BarChart3,
@@ -176,13 +174,8 @@ export default function ImpactPage() {
   };
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <AppHeader greeting={userName} />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
-          <BottomNav />
-          <div className="max-w-7xl mx-auto space-y-8">
+    <DashboardLayoutWrapper greeting={userName}>
+      <div className="max-w-7xl mx-auto space-y-8">
 
             {loading ? (
               /* Loading Skeleton */
@@ -780,9 +773,7 @@ export default function ImpactPage() {
 
             </>
             )}
-          </div>
-        </main>
       </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }
