@@ -13,7 +13,9 @@ class AchievementController extends Controller
 {
     public function catalog(): JsonResponse
     {
-        $achievements = Achievement::orderBy('sort_order')->get()->map(function ($achievement) {
+        $achievements = Achievement::orderBy('sort_order')->paginate(50);
+
+        $mapped = $achievements->getCollection()->map(function ($achievement) {
             $data = [
                 'id' => $achievement->id,
                 'name' => $achievement->name,
@@ -35,6 +37,8 @@ class AchievementController extends Controller
 
             return $data;
         });
+
+        $achievements->setCollection($mapped);
 
         return response()->json([
             'success' => true,

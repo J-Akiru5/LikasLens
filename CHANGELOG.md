@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.4] - 2026-06-09
+
+### Changed
+- **Docs**: Updated all 4 sprint roadmap docs with accurate task completion status
+- **Docs**: Dev 1 (Lou) — 14 checkboxes flipped, 8 new items added (changelog, loading states, EXIF, offline queue, etc.)
+- **Docs**: Dev 2 (Jeff) — 3 new items added (rate limiting, logging, stability hardening); flagged missing `asean_expansion.py`
+- **Docs**: Dev 3 (Charlyn) — 2 checkboxes flipped, 8 new items added (security fixes, HasApiTokens, pagination, etc.)
+- **Docs**: Dev 4 (Katherine) — 3 checkboxes flipped, 4 new items added (mobile PWA, icons, i18n, .env.example)
+
+## [0.7.3] - 2026-06-09
+
+### Removed
+- **Frontend**: Deleted `Untitled-1.txt` (XAMPP config accidentally committed)
+- **Frontend**: Deleted stale `pnpm-lock.yaml` (workspace uses root lockfile)
+- **Frontend**: Deleted duplicate `tailwind.config.js` (`.ts` version already exists)
+- **Frontend**: Deleted 11 dead/orphaned files (theme-provider, quick-actions, mock-data, pdf-export-config, region6 data, duplicate re-exports)
+
+### Changed
+- **Docs**: Moved 16 root-level markdown files to `docs/archive/` (historical artifacts)
+- **Backend**: Moved `.sql` migration to `database/sql/` (was misleadingly in PHP migrations dir)
+- **Shared**: Renamed `LikasyChat.tsx` → `likasy-chat.tsx` (kebab-case consistency)
+- **Frontend**: Renamed `exifStripper.ts` → `exif-stripper.ts` (kebab-case consistency)
+
+## [0.7.2] - 2026-06-09
+
+### Fixed
+- **Frontend**: Added loading spinner to login form submit button via `useFormStatus`
+- **Frontend**: Contact form now shows success only after API responds (was showing before)
+- **Frontend**: Contact form submit button shows loading state during submission
+- **Frontend**: Fixed storage validation message from "2MB" to "25MB"
+- **Backend**: Added pagination to `TicketAssignment::index()` (20 per page)
+- **Backend**: Added pagination to `AchievementController::catalog()` (50 per page)
+- **Shared**: Fixed abort signal override in `laravelFetch` — caller's signal now properly chains with timeout controller
+
 ## [0.7.1] - 2026-06-09
 
 ### Fixed
@@ -277,7 +311,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.1...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.4...HEAD
+[0.7.4]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.3...v0.7.4
+[0.7.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.2...v0.7.3
+[0.7.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.3...v0.7.0
 [0.6.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.6.2...v0.6.3

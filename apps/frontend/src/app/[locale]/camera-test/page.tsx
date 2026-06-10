@@ -3,7 +3,7 @@
 import { Space_Grotesk } from "next/font/google";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { stripExif } from "@/utils/exifStripper";
+import { stripExif } from "@/utils/exif-stripper";
 import { showToast } from "@likaslens/shared";
 
 const spaceGrotesk = Space_Grotesk({
