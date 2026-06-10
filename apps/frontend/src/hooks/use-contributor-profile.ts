@@ -100,7 +100,7 @@ export function useContributorProfile(): ContributorProfileState {
         return;
       }
 
-      // 1. Try Laravel API first (standard production boundary)
+      // Fetch from Laravel API (single source of truth for achievements & rewards)
       try {
         const [impactRes, achievementsRes] = await Promise.all([
           fetch(`${LARAVEL_API}/user/impact`, { credentials: "include" })
@@ -117,8 +117,8 @@ export function useContributorProfile(): ContributorProfileState {
 
         if (cancelled) return;
 
-        if (impactRes?.success) {
-          const impact = impactRes.data;
+        const impact = impactRes?.data;
+        if (impact) {
           const verifiedReports = Math.round(impact.total_reports * 0.4);
 
           setStats({
@@ -127,76 +127,23 @@ export function useContributorProfile(): ContributorProfileState {
             ranking_tier: calculateRankingTier(impact.eco_credits, verifiedReports),
             trust_score: impact.trust_score,
           });
+        }
 
-          if (achievementsRes?.success) {
-            const rows = achievementsRes.data.map(mapLaravelAchievementToRow);
-            setAllAchievements(rows);
+        if (achievementsRes?.success) {
+          const rows = achievementsRes.data.map(mapLaravelAchievementToRow);
+          setAllAchievements(rows);
 
-            const map: UnlockedMap = {};
-            for (const item of achievementsRes.data) {
-              if (item.unlocked_at) map[item.id] = item.unlocked_at;
-            }
-            setUnlocked(map);
+          const map: UnlockedMap = {};
+          for (const item of achievementsRes.data) {
+            if (item.unlocked_at) map[item.id] = item.unlocked_at;
           }
-
-          setLoading(false);
-          return; // Success, exit early!
-        }
-      } catch (err) {
-        console.warn("Laravel API fetch failed or returned error, falling back to direct Supabase queries:", err);
-      }
-
-      // 2. Fallback: Fetch directly from Supabase (preserves developer's original implementation)
-      try {
-        const { data: userRow, error: userErr } = await supabase
-          .from("users")
-          .select("total_verified_reports, total_xp, ranking_tier, trust_score")
-          .eq("supabase_auth_user_id", authUser.id)
-          .maybeSingle();
-
-        const achievementsPromise = supabase
-          .from("achievements")
-          .select("*")
-          .order("threshold_value", { ascending: true });
-
-        const citizenPromise = userRow?.id
-          ? supabase
-              .from("citizen_achievements")
-              .select("achievement_id, unlocked_at")
-              .eq("user_id", userRow.id)
-          : Promise.resolve({ data: [], error: null });
-
-        const [{ data: achievementsData, error: achErr }, { data: citizenData, error: citErr }] = await Promise.all([
-          achievementsPromise,
-          citizenPromise,
-        ]);
-
-        if (cancelled) return;
-
-        const combinedErr = userErr ?? achErr ?? citErr;
-        if (combinedErr) {
-          setError(combinedErr.message);
-          setLoading(false);
-          return;
+          setUnlocked(map);
         }
 
-        setStats({
-          total_verified_reports: userRow?.total_verified_reports ?? 0,
-          total_xp: userRow?.total_xp ?? 0,
-          ranking_tier: (userRow?.ranking_tier ?? 1) as 1 | 2 | 3,
-          trust_score: userRow?.trust_score ?? 0,
-        });
-        setAllAchievements(achievementsData ?? []);
-
-        const map: UnlockedMap = {};
-        for (const c of citizenData ?? []) {
-          map[c.achievement_id] = c.unlocked_at;
-        }
-        setUnlocked(map);
         setLoading(false);
-      } catch (fallbackErr) {
+      } catch (err) {
         if (!cancelled) {
-          setError(fallbackErr instanceof Error ? fallbackErr.message : "Failed to load achievements and profile data");
+          setError(err instanceof Error ? err.message : "Failed to load achievements and profile data");
           setLoading(false);
         }
       }
