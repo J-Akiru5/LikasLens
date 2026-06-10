@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { laravelPost } from "../api/client";
 
 export interface ChatMessage {
   id: string;
@@ -44,8 +45,6 @@ const LOCALE_INSTRUCTION: Record<string, string> = {
   ta: "Respond in Tamil (தமிழ்). Use natural Tamil conversational style. Use Tamil script.",
 };
 
-const API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
-
 type Persona = "citizen" | "admin";
 
 export function useGeminiChat(persona: Persona = "citizen", locale: string = "en") {
@@ -72,30 +71,22 @@ export function useGeminiChat(persona: Persona = "citizen", locale: string = "en
     const history = messages
       .filter((m) => m.id !== "welcome")
       .slice(-10)
-      .map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }));
+      .map((m) => ({ role: m.role, content: m.content }));
 
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (!apiKey) throw new Error("Gemini API key not configured");
+      const data = await laravelPost<{ reply: string }>(
+        "/v1/chat",
+        {
+          messages: [...history, { role: "user", content: text }],
+          system_prompt: systemPrompt,
+          temperature: 0.7,
+          max_output_tokens: 2048,
+          top_p: 0.9,
+        },
+        60000
+      );
 
-      const res = await fetch(`${API_BASE}?key=${apiKey}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemPrompt }] },
-          contents: [...history, { role: "user", parts: [{ text }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 2048, topP: 0.9 },
-        }),
-      });
-
-      if (!res.ok) {
-        const errBody = await res.text();
-        throw new Error(errBody || `API error ${res.status}`);
-      }
-
-      const data = await res.json();
-      const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Sorry, I couldn't process that. Try again!";
+      const reply = data?.reply || "Sorry, I couldn't process that. Try again!";
       setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: reply }]);
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === "AbortError") return;

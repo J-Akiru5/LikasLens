@@ -31,7 +31,7 @@ class AuthController extends Controller
 
         UserCreated::dispatch($user);
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        $token = $user->createToken('api-token', ['*'], now()->addHours(24))->plainTextToken;
 
         return response()->json([
             'success' => true,
@@ -64,7 +64,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        $token = $user->createToken('api-token', ['*'], now()->addHours(24))->plainTextToken;
 
         return response()->json([
             'success' => true,
@@ -112,7 +112,7 @@ class AuthController extends Controller
             ]);
         }
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        $token = $user->createToken('api-token', ['*'], now()->addHours(24))->plainTextToken;
 
         return response()->json([
             'success' => true,
@@ -126,6 +126,26 @@ class AuthController extends Controller
                     'trust_score' => $user->trust_score,
                     'reward_points_balance' => $user->reward_points_balance,
                 ],
+                'token' => $token,
+            ],
+        ]);
+    }
+
+    public function refresh(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $accessToken = $user->currentAccessToken();
+
+        // Revoke the old token
+        $accessToken->delete();
+
+        // Issue a new token with fresh expiry
+        $token = $user->createToken('api-token', ['*'], now()->addHours(24))->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Token refreshed successfully.',
+            'data' => [
                 'token' => $token,
             ],
         ]);

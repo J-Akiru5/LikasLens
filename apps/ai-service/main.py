@@ -30,7 +30,6 @@ logging.basicConfig(
 
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
@@ -196,7 +195,6 @@ async def rate_limit_middleware(request: Request, call_next):
 # ---------------------------------------------------------------------------
 # Health & info
 # ---------------------------------------------------------------------------
-
 @app.get("/health")
 async def health_check():
     return {

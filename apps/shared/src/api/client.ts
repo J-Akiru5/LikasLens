@@ -32,7 +32,8 @@ export function getLaravelAuthToken(): string | null {
 
 export async function laravelFetch<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  timeoutMs: number = 10000
 ): Promise<T> {
   const baseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL || "");
 
@@ -50,7 +51,7 @@ export async function laravelFetch<T>(
   const url = baseUrl + (baseUrl.endsWith("/") && endpoint.startsWith("/") ? endpoint.slice(1) : endpoint);
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   // Chain caller's abort signal with our timeout controller
   if (options.signal) {
@@ -89,11 +90,15 @@ export function laravelGet<T>(endpoint: string, signal?: AbortSignal) {
   return laravelFetch<T>(endpoint, { method: "GET", signal });
 }
 
-export function laravelPost<T>(endpoint: string, body?: unknown) {
-  return laravelFetch<T>(endpoint, {
-    method: "POST",
-    body: body ? JSON.stringify(body) : undefined,
-  });
+export function laravelPost<T>(endpoint: string, body?: unknown, timeoutMs?: number) {
+  return laravelFetch<T>(
+    endpoint,
+    {
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+    },
+    timeoutMs
+  );
 }
 
 export function laravelPut<T>(endpoint: string, body?: unknown) {

@@ -15,6 +15,7 @@ class EnvironmentalLawPh extends Model
 
     protected $fillable = [
         'law_code',
+        'country_code',
         'title',
         'summary',
         'issuing_agency',

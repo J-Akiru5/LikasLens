@@ -34,39 +34,27 @@ Route::post('/reports', [ReportController::class, 'store'])->middleware('throttl
 Route::post('/reports/triage', [ReportController::class, 'triage'])->middleware('throttle:20,1');
 
 // Contact message endpoint (public, rate limited)
-Route::post('/contact-messages', [ContactMessageController::class, 'store'])->middleware('throttle:5,1');
+Route::post('/contact-messages', [ContactMessageController::class, 'store'])->middleware('throttle:10,1');
 
-// Public law search (citizen-facing)
-Route::get('/laws', [AdminLawController::class, 'index']);
-Route::get('/laws/{id}', [AdminLawController::class, 'show']);
+// Public read-only reference data — 60 req/min per IP
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/laws', [AdminLawController::class, 'index']);
+    Route::get('/laws/{id}', [AdminLawController::class, 'show']);
+    Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+    Route::get('/achievements', [AchievementController::class, 'catalog']);
+    Route::get('/achievements/user/{supabaseUserId}', [AchievementController::class, 'userAchievementsBySupabaseId']);
+    Route::get('/settings/eco-credit-rate', [CurrencySettingController::class, 'showRate']);
+    Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
+    Route::get('/tickets', [TicketController::class, 'index']);
+    Route::get('/tickets/{id}', [TicketController::class, 'show']);
+    Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
+    Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
+    Route::get('/admin/laws', [AdminLawController::class, 'index']);
+    Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
+});
 
-// Chat proxy endpoint (public — proxies to internal AI service)
-Route::post('/v1/chat', [ChatController::class, 'send']);
-
-// Public leaderboard endpoint
-Route::get('/leaderboard', [LeaderboardController::class, 'index']);
-
-// Public achievement catalog
-Route::get('/achievements', [AchievementController::class, 'catalog']);
-Route::get('/achievements/user/{supabaseUserId}', [AchievementController::class, 'userAchievementsBySupabaseId']);
-
-// Public eco-credit currency rate
-Route::get('/settings/eco-credit-rate', [CurrencySettingController::class, 'showRate']);
-
-// Public profile stats (by Supabase auth user id)
-Route::get('/profile/{supabaseUserId}', [ProfileController::class, 'show']);
-
-// Public read-only reference data (tickets = incidents)
-Route::get('/tickets', [TicketController::class, 'index']);
-Route::get('/tickets/{id}', [TicketController::class, 'show']);
-
-// Public NGO catalog (admin portal reads)
-Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
-Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
-
-// Public law reference (admin portal reads)
-Route::get('/admin/laws', [AdminLawController::class, 'index']);
-Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
+// Chat proxy endpoint (public, expensive — proxies to internal AI service, strict throttle)
+Route::post('/v1/chat', [ChatController::class, 'send'])->middleware('throttle:10,1');
 
 // Auth endpoints (rate limited)
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
@@ -75,6 +63,7 @@ Route::post('/auth/sync', [AuthController::class, 'sync'])->middleware('throttle
 
 // Authenticated user endpoints
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/auth/refresh', [AuthController::class, 'refresh'])->middleware('throttle:20,1');
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     Route::get('/user', function (Request $request) {

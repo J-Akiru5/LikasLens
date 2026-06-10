@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { CloudOff, RefreshCw } from "lucide-react";
+
 interface PublicReportRow {
   rank: number;
   agency: string;
@@ -10,45 +11,64 @@ interface PublicReportRow {
   time: string;
 }
 
+const FETCH_TIMEOUT_MS = 10_000;
+
 export function PublicScoreboard() {
   const [rows, setRows] = useState<PublicReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  async function fetchReports() {
+  const fetchReports = useCallback(async () => {
+    // Cancel any in-flight request first
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
     setLoading(true);
     setError(null);
     try {
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const res = await fetch(`${baseUrl}/tickets?per_page=10`, {
         headers: { Accept: "application/json" },
+        signal: controller.signal,
       });
-      if (res.ok) {
-        const body = await res.json();
-        const tickets = body.data || [];
-        setRows(
-          tickets.map((t: { display_id?: string; title?: string; location?: string; status?: string; resolved_at?: string; created_at?: string; reporter?: string }, i: number) => ({
-            rank: i + 1,
-            agency: t.reporter || t.location || "Unknown",
-            title: t.title || "Environmental Issue",
-            status: t.status || "Open",
-            time: t.resolved_at ? formatTimeSince(t.resolved_at) : t.created_at ? formatTimeSince(t.created_at) : "\u2014",
-          }))
-        );
-      } else {
+      if (!res.ok) {
         setError("Failed to load reports");
+        return;
       }
-    } catch {
+      const body = await res.json();
+      const tickets: unknown[] = Array.isArray(body?.data) ? body.data : [];
+      setRows(
+        tickets.map((t: Record<string, unknown>, i: number) => ({
+          rank: i + 1,
+          agency: (t.reporter as string) || (t.location as string) || "Unknown",
+          title: (t.title as string) || "Environmental Issue",
+          status: (t.status as string) || "Open",
+          time: t.resolved_at ? formatTimeSince(t.resolved_at as string) : t.created_at ? formatTimeSince(t.created_at as string) : "\u2014",
+        }))
+      );
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError("Connection error — backend may be starting up");
     } finally {
-      setLoading(false);
+      clearTimeout(timeoutId);
+      // Only clear loading if this is still the active request
+      // (not if a newer fetchReports call has superseded it)
+      if (abortRef.current === controller) {
+        setLoading(false);
+      }
     }
-  }
+  }, []);
 
   useEffect(() => {
     fetchReports();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, [fetchReports]);
 
   const fallback: PublicReportRow[] = [];
 
