@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\EnvironmentalLawPh;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -62,6 +63,16 @@ class AdminLawController extends Controller
 
         $law = EnvironmentalLawPh::create($validated);
 
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'law_created',
+            'entity_type' => 'EnvironmentalLawPh',
+            'entity_id' => $law->id,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Environmental law created.',
@@ -72,6 +83,7 @@ class AdminLawController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $law = EnvironmentalLawPh::findOrFail($id);
+        $old = $law->toArray();
 
         $validated = $request->validate([
             'law_code' => 'sometimes|string|max:50|unique:environmental_laws_ph,law_code,'.$id,
@@ -85,6 +97,17 @@ class AdminLawController extends Controller
 
         $law->update($validated);
 
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'law_updated',
+            'entity_type' => 'EnvironmentalLawPh',
+            'entity_id' => $law->id,
+            'old_values' => $old,
+            'new_values' => $law->fresh()->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Environmental law updated.',
@@ -92,10 +115,21 @@ class AdminLawController extends Controller
         ]);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $law = EnvironmentalLawPh::findOrFail($id);
+        $old = $law->toArray();
         $law->delete();
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'law_deleted',
+            'entity_type' => 'EnvironmentalLawPh',
+            'entity_id' => $id,
+            'old_values' => $old,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,

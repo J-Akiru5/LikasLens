@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\EnvironmentalLawPh;
+use App\Models\LawPenalty;
+use App\Models\ViolationType;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class EnvironmentalLawSeeder extends Seeder
 {
@@ -14,8 +14,6 @@ class EnvironmentalLawSeeder extends Seeder
      */
     public function run(): void
     {
-        $now = Carbon::now();
-
         $laws = [
             [
                 'law_code' => 'PD-1151',
@@ -113,29 +111,15 @@ class EnvironmentalLawSeeder extends Seeder
         $lawIdByCode = [];
 
         foreach ($laws as $law) {
-            $existing = DB::table('environmental_laws_ph')->where('law_code', $law['law_code'])->first();
-
-            if ($existing !== null) {
-                $lawIdByCode[$law['law_code']] = $existing->id;
-
-                continue;
-            }
-
-            $id = (string) Str::uuid();
-            $lawIdByCode[$law['law_code']] = $id;
-
-            DB::table('environmental_laws_ph')->insert([
-                'id' => $id,
-                'law_code' => $law['law_code'],
-                'title' => $law['title'],
-                'summary' => $law['summary'],
-                'issuing_agency' => $law['issuing_agency'],
-                'jurisdiction_scope' => 'national',
-                'source_url' => $law['source_url'],
-                'is_active' => true,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+            $record = EnvironmentalLawPh::updateOrCreate(
+                ['law_code' => $law['law_code']],
+                array_merge($law, [
+                    'jurisdiction_scope' => 'national',
+                    'country_code' => 'PH',
+                    'is_active' => true,
+                ])
+            );
+            $lawIdByCode[$law['law_code']] = $record->id;
         }
 
         $penalties = [
@@ -182,33 +166,21 @@ class EnvironmentalLawSeeder extends Seeder
                 continue;
             }
 
-            $existing = DB::table('law_penalties')
-                ->where('law_id', $lawIdByCode[$penalty['law_code']])
-                ->where('violation_name', $penalty['violation_name'])
-                ->first();
-
-            if ($existing !== null) {
-                $penaltyIdByLawCode[$penalty['law_code']] = $existing->id;
-
-                continue;
-            }
-
-            $id = (string) Str::uuid();
-            $penaltyIdByLawCode[$penalty['law_code']] = $id;
-
-            DB::table('law_penalties')->insert([
-                'id' => $id,
-                'law_id' => $lawIdByCode[$penalty['law_code']],
-                'violation_name' => $penalty['violation_name'],
-                'penalty_type' => $penalty['penalty_type'],
-                'min_fine_php' => $penalty['min_fine_php'] ?? null,
-                'max_fine_php' => $penalty['max_fine_php'] ?? null,
-                'min_imprisonment_days' => $penalty['min_imprisonment_days'] ?? null,
-                'max_imprisonment_days' => $penalty['max_imprisonment_days'] ?? null,
-                'notes' => $penalty['notes'] ?? null,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+            $record = LawPenalty::firstOrCreate(
+                [
+                    'law_id' => $lawIdByCode[$penalty['law_code']],
+                    'violation_name' => $penalty['violation_name'],
+                ],
+                [
+                    'penalty_type' => $penalty['penalty_type'],
+                    'min_fine_php' => $penalty['min_fine_php'] ?? null,
+                    'max_fine_php' => $penalty['max_fine_php'] ?? null,
+                    'min_imprisonment_days' => $penalty['min_imprisonment_days'] ?? null,
+                    'max_imprisonment_days' => $penalty['max_imprisonment_days'] ?? null,
+                    'notes' => $penalty['notes'] ?? null,
+                ]
+            );
+            $penaltyIdByLawCode[$penalty['law_code']] = $record->id;
         }
 
         $violationTypes = [
@@ -239,22 +211,15 @@ class EnvironmentalLawSeeder extends Seeder
         ];
 
         foreach ($violationTypes as $violationType) {
-            $existing = DB::table('violation_types')->where('code', $violationType['code'])->first();
-
-            if ($existing !== null) {
-                continue;
-            }
-
-            DB::table('violation_types')->insert([
-                'id' => (string) Str::uuid(),
-                'code' => $violationType['code'],
-                'name' => $violationType['name'],
-                'description' => $violationType['description'],
-                'law_id' => $lawIdByCode[$violationType['law_code']] ?? null,
-                'default_penalty_id' => $penaltyIdByLawCode[$violationType['law_code']] ?? null,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+            ViolationType::firstOrCreate(
+                ['code' => $violationType['code']],
+                [
+                    'name' => $violationType['name'],
+                    'description' => $violationType['description'],
+                    'law_id' => $lawIdByCode[$violationType['law_code']] ?? null,
+                    'default_penalty_id' => $penaltyIdByLawCode[$violationType['law_code']] ?? null,
+                ]
+            );
         }
     }
 }
