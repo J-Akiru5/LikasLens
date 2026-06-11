@@ -40,9 +40,9 @@ export function PublicScoreboard() {
         return;
       }
       const body = await res.json();
-      const tickets: unknown[] = Array.isArray(body?.data) ? body.data : [];
+      const tickets: Record<string, unknown>[] = Array.isArray(body?.data) ? body.data : [];
       setRows(
-        tickets.map((t: Record<string, unknown>, i: number) => ({
+        tickets.map((t, i) => ({
           rank: i + 1,
           agency: (t.reporter as string) || (t.location as string) || "Unknown",
           title: (t.title as string) || "Environmental Issue",
