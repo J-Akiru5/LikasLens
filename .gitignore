@@ -26,6 +26,12 @@ apps/frontend/public/workbox-*.js
 apps/frontend/public/workbox-*.js.map
 
 # =========================
+# AI Model Weights
+# =========================
+apps/ai-service/models/
+*.pt
+
+# =========================
 # Python / Poetry
 # =========================
 __pycache__/
