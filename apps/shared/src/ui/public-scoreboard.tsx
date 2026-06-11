@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { CloudOff, RefreshCw, Trophy } from "lucide-react";
 import { getTickets } from "../api/admin";
+import { cn } from "../utils";
 import type { Ticket } from "../types/ticket";
 import type { PaginatedResponse } from "../types/api";
 
@@ -137,13 +138,15 @@ export function PublicScoreboard() {
             <div className="text-sm text-muted truncate">{row.title}</div>
             <div>
               <span
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full"
-                style={{
-                  background: isResolved ? "rgba(45,106,79,0.12)" : "rgba(184,134,11,0.12)",
-                  color: isResolved ? "#2d6a4f" : "#b8860b",
-                }}
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full",
+                  isResolved ? "bg-[rgba(45,106,79,0.12)] text-[#2d6a4f]" : "bg-[rgba(184,134,11,0.12)] text-[#b8860b]"
+                )}
               >
-                <span style={{ width: 5, height: 5, borderRadius: "50%", background: isResolved ? "#2d6a4f" : "#b8860b", flexShrink: 0, display: "inline-block" }} />
+                <span className={cn(
+                  "w-[5px] h-[5px] rounded-full flex-shrink-0 inline-block",
+                  isResolved ? "bg-[#2d6a4f]" : "bg-[#b8860b]"
+                )} />
                 {row.status}
               </span>
             </div>
