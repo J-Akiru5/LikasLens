@@ -27,7 +27,8 @@ export function getLaravelAuthToken(): string | null {
 
 export async function laravelFetch<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  timeoutMs: number = 10000
 ): Promise<T> {
   const baseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL || "");
 
@@ -44,29 +45,55 @@ export async function laravelFetch<T>(
 
   const url = baseUrl + (baseUrl.endsWith("/") && endpoint.startsWith("/") ? endpoint.slice(1) : endpoint);
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    credentials: "include",
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    throw new Error(body?.message || `API error: ${res.status}`);
+  // Chain caller's abort signal with our timeout controller
+  if (options.signal) {
+    if (options.signal.aborted) {
+      controller.abort();
+    } else {
+      options.signal.addEventListener("abort", () => controller.abort(), { once: true });
+    }
   }
 
-  return res.json();
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include",
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.message || `API error: ${res.status}`);
+    }
+
+    return res.json();
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("API request timed out");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export function laravelGet<T>(endpoint: string, signal?: AbortSignal) {
   return laravelFetch<T>(endpoint, { method: "GET", signal });
 }
 
-export function laravelPost<T>(endpoint: string, body?: unknown) {
-  return laravelFetch<T>(endpoint, {
-    method: "POST",
-    body: body ? JSON.stringify(body) : undefined,
-  });
+export function laravelPost<T>(endpoint: string, body?: unknown, timeoutMs?: number) {
+  return laravelFetch<T>(
+    endpoint,
+    {
+      method: "POST",
+      body: body ? JSON.stringify(body) : undefined,
+    },
+    timeoutMs
+  );
 }
 
 export function laravelPut<T>(endpoint: string, body?: unknown) {

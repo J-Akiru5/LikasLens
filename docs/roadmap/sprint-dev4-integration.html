@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="civic">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens Sprint — Developer 4: Integration & PWA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #1B4332;
+  --secondary: #2DE1C2;
+  --accent: #FFB703;
+  --background: #F8F9FA;
+  --foreground: #081C15;
+  --panel: #F8F9FA;
+  --panel-border: rgba(8, 28, 21, 0.2);
+  --muted-text: rgba(8, 28, 21, 0.85);
+  --dev-accent: #e65100;
+  --shadow-color: #1B4332;
+}
+[data-theme="ghost"] {
+  --primary: #2DE1C2;
+  --secondary: #2DE1C2;
+  --accent: #FFB703;
+  --background: #081C15;
+  --foreground: #F8F9FA;
+  --panel: rgba(8, 28, 21, 0.9);
+  --panel-border: rgba(45, 225, 194, 0.35);
+  --muted-text: rgba(248, 249, 250, 0.85);
+  --shadow-color: #2DE1C2;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  line-height: 1.6;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+code, pre, .font-data { font-family: 'Space Mono', monospace; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+/* Theme Toggle */
+.theme-toggle {
+  position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--panel); border: 4px solid var(--foreground);
+  box-shadow: 4px 4px 0px var(--shadow-color);
+  padding: 0.5rem 1rem; cursor: pointer;
+  font-family: 'Montserrat', sans-serif; font-weight: 700;
+  font-size: 0.75rem; text-transform: uppercase;
+  color: var(--foreground); transition: all 0.3s ease;
+}
+.theme-toggle:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--shadow-color); }
+.theme-toggle .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent); transition: background 0.3s ease;
+}
+[data-theme="ghost"] .theme-toggle .dot { background: var(--secondary); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Hero */
+.hero {
+  background: var(--primary);
+  color: #F8F9FA;
+  padding: 3rem 0;
+  border-bottom: 4px solid var(--foreground);
+}
+.hero .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+.hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+.hero .accent-line { color: var(--dev-accent); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;
+}
+.hero-meta .meta-chip {
+  background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
+  padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Progress Bar */
+.progress-container {
+  background: var(--panel);
+  border: 4px solid var(--foreground);
+  box-shadow: 8px 8px 0px var(--shadow-color);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.progress-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: var(--foreground);
+}
+.progress-pct {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--dev-accent);
+}
+.progress-track {
+  height: 12px;
+  background: rgba(8, 28, 21, 0.1);
+  border: 2px solid var(--foreground);
+  overflow: hidden;
+}
+[data-theme="ghost"] .progress-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+.progress-fill {
+  height: 100%;
+  background: var(--dev-accent);
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-detail {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted-text);
+  margin-top: 0.5rem;
+}
+
+/* Brutal Panel */
+.brutal-panel {
+  background: var(--panel);
+  border: 4px solid var(--foreground);
+  box-shadow: 8px 8px 0px var(--shadow-color);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.2s ease;
+}
+.brutal-panel:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0px var(--shadow-color); }
+
+/* Section Headers */
+.section-header {
+  font-size: 1.5rem;
+  color: var(--primary);
+  margin: 2.5rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 4px solid var(--dev-accent);
+  display: inline-block;
+}
+[data-theme="ghost"] .section-header { color: var(--secondary); }
+
+/* Day Section */
+.day-section { margin: 2rem 0; }
+.day-header {
+  background: var(--dev-accent);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  border: 4px solid var(--foreground);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.day-header .day-num {
+  background: rgba(255,255,255,0.2);
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* Task Card */
+.task-card { margin-bottom: 2rem; }
+.task-title {
+  font-size: 1.1rem; font-weight: 800;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+.task-title .task-id {
+  background: var(--dev-accent); color: #fff;
+  padding: 0.15rem 0.5rem; font-size: 0.7rem;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Interactive Checkboxes */
+.task-check {
+  appearance: none;
+  width: 18px; height: 18px;
+  border: 3px solid var(--foreground);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+.task-check:checked {
+  background: var(--secondary);
+}
+.task-check:checked::after {
+  content: '\2713';
+  position: absolute;
+  top: -2px; left: 2px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--foreground);
+}
+.task-check-label {
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.task-check-label.done {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  border: 2px solid;
+  margin-right: 0.25rem;
+}
+.tag-done { background: rgba(45, 225, 194, 0.2); border-color: #2DE1C2; color: #1B4332; }
+.tag-pending { background: rgba(255, 183, 3, 0.15); border-color: #FFB703; color: #b8860b; }
+.tag-blocked { background: rgba(220, 53, 69, 0.1); border-color: #dc3545; color: #dc3545; }
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+}
+th, td {
+  border: 2px solid var(--foreground);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+th {
+  background: var(--primary);
+  color: #F8F9FA;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+tr:nth-child(even) { background: rgba(0,0,0,0.02); }
+[data-theme="ghost"] tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+code {
+  background: rgba(0,0,0,0.06);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.85em;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+[data-theme="ghost"] code {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+}
+pre {
+  background: var(--foreground);
+  color: var(--background);
+  padding: 1rem;
+  border: 4px solid var(--foreground);
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  font-size: 0.8rem;
+}
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+.footer {
+  margin-top: 4rem;
+  padding: 2rem 0;
+  border-top: 4px solid var(--foreground);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted-text);
+}
+.footer a { color: var(--dev-accent); font-weight: 700; }
+@media (max-width: 768px) {
+  .hero h1 { font-size: 1.75rem; }
+  .hero-meta { flex-direction: column; }
+  .brutal-panel { padding: 1rem; }
+  table { font-size: 0.75rem; }
+  th, td { padding: 0.35rem 0.5rem; }
+  .progress-container { position: static; }
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()">
+  <span class="dot"></span>
+  <span class="label" id="theme-label">CIVIC</span>
+</button>
+
+<div class="hero">
+  <div class="container">
+    <div class="icon">🚀</div>
+    <h1>Developer 4: Integration & PWA</h1>
+    <div class="accent-line">ASEAN AI Hackathon Prep</div>
+    <div class="hero-meta">
+      <span class="meta-chip">📅 June 5-8, 2026 (Thu-Sun)</span>
+      <span class="meta-chip">⏱ 32h</span>
+      <span class="meta-chip">👤 Katherine (moved from Dev 1)</span>
+      
+    </div>
+    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.85">E2E testing, PWA offline, APK build, ASEAN data, demo materials</p>
+  </div>
+</div>
+
+<main class="container">
+
+  <div class="progress-container" id="progress-bar">
+    <div class="progress-header">
+      <span class="progress-title">Sprint Progress</span>
+      <span class="progress-pct" id="progress-pct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-detail">
+      <span id="progress-done">0</span> / <span id="progress-total">0</span> tasks completed
+    </div>
+  </div>
+
+<p>> <strong>Sprint:</strong> ASEAN AI Hackathon Prep</p>
+<p>> <strong>Timeline:</strong> June 5-8, 2026 (Thu-Sun)</p>
+<p>> <strong>Total Hours:</strong> 32h</p>
+<p>> <strong>Assigned To:</strong> Katherine (moved from Dev 1)</p>
+<p>> <strong>Focus:</strong> E2E testing, PWA offline, APK build, ASEAN data, demo materials</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">👥 Team Roster</h2>
+<table>
+<tr><th>Dev</th><th>Name</th><th>Role</th><th>Focus</th></tr>
+<tr><td>Dev 1</td><td>Lou</td><td>Frontend/UI</td><td>Next.js UI, Tailwind, responsive design, Ghost Mode theme</td></tr>
+<tr><td>Dev 2</td><td>Jeff</td><td>AI/Backend</td><td>FastAPI AI service, YOLOv8, Gremlin graph, Gemini</td></tr>
+<tr><td>Dev 3</td><td>Charlyn</td><td>Backend/Infrastructure</td><td>Laravel API, Supabase, CI/CD, admin portal</td></tr>
+<tr><td>Dev 4</td><td>Katherine</td><td>Integration/PWA/APK</td><td>E2E testing, PWA offline, Capacitor APK, demo prep</td></tr>
+</table>
+<p>> <strong>Note:</strong> Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.</p>
+<div class="brutal-panel"><h3 style="margin-bottom:0.75rem">✅ Completed Work</h3>
+</div>
+<p style="padding-left:1rem">• ✅ Demo script written (docs/demo-script.md — 143 lines)</p>
+<p style="padding-left:1rem">• ✅ One-pager created (docs/one-pager.md — 115 lines)</p>
+<p style="padding-left:1rem">• ✅ Pitch deck created (docs/pitch-deck.md — 264 lines)</p>
+<p style="padding-left:1rem">• ✅ Mobile PWA substantially built (apps/mobile-pwa/)</p>
+<p style="padding-left:1rem">• ✅ PWA icons generated (192x192, 512x512, maskable, apple-touch)</p>
+<p style="padding-left:1rem">• ✅ i18n messages for 5 ASEAN locales (fil, id, ms, ta, vi)</p>
+<p style="padding-left:1rem">• ✅ Not-found page for mobile PWA</p>
+<p style="padding-left:1rem">• ✅ Offline queue built into frontend report page (IndexedDB + auto-flush)</p>
+<p style="padding-left:1rem">• ✅ Offline banner shows when network is down</p>
+<p style="padding-left:1rem">• ✅ Online toast shows when connection restored</p>
+<p style="padding-left:1rem">• ✅ Supabase token wired to shared API client after login/register (v0.7.1)</p>
+<p style="padding-left:1rem">• ✅ Mobile PWA .env.example created (v0.7.1)</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Dependencies on Other Developers</h2>
+<table>
+<tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Notes</th></tr>
+<tr><td>Working backend</td><td>Dev 3 (Charlyn)</td><td>Thu evening</td><td>Need <code>/api/health</code> working for E2E tests</td></tr>
+<tr><td>Working AI service</td><td>Dev 2 (Jeff)</td><td>Sat</td><td>Need triage pipeline for full demo rehearsal</td></tr>
+<tr><td>Demo data seeded</td><td>Dev 3 (Charlyn)</td><td>Fri afternoon</td><td>Need tickets/users for demo scenarios</td></tr>
+<tr><td>Polished UI</td><td>Dev 1 (Lou)</td><td>Sat evening</td><td>Need impact dashboard and Ghost Mode for demo</td></tr>
+</table>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 1</span>Thursday, June 5</div>
+<div class="task-card"><div class="task-title"><span class="task-id">1.1</span>End-to-End Integration Testing</div>
+<p><span class="tag tag-blocked">❌ Not Done</span></p>
+<p><strong>Current state:</strong> No integration test scripts exist in the repository. The <code>scripts/</code> directory was removed during cleanup.</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Test the full stack locally:</p>
+<p style="padding-left:1rem">1. **Start all services:**</p>
+<p>   <code>`</code>bash</p>
+<p>   # Terminal 1: Frontend</p>
+<p>   cd apps/frontend && pnpm dev</p>
+<p>   # Terminal 2: Backend</p>
+<p>   cd apps/backend && php artisan serve</p>
+<p>   # Terminal 3: AI Service</p>
+<p>   cd apps/ai-service && uvicorn main:app --reload --port 8001</p>
+<p>   <code>`</code></p>
+<p style="padding-left:1rem">2. **Test each integration point:**</p>
+<p>   - [ ] Frontend loads at http://localhost:3000</p>
+<p>   - [ ] Backend health: http://localhost:8000/api/health</p>
+<p>   - [ ] AI service health: http://localhost:8001/health</p>
+<p>   - [ ] Login flow: Supabase Auth → <code>/api/auth/sync</code> → Sanctum token</p>
+<p>   - [ ] Report submission: POST <code>/api/reports</code> with image</p>
+<p>   - [ ] Triage check: POST <code>/api/reports/triage</code></p>
+<p>   - [ ] Leaderboard: GET <code>/api/leaderboard</code></p>
+<p>   - [ ] Dashboard: GET <code>/api/user/impact</code></p>
+<p style="padding-left:1rem">3. **Document all broken integration points** in a shared doc</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-1"> All 3 services start without errors</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-2"> Auth flow works end-to-end</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-3"> Report submission works (even without AI)</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-4"> All broken points documented with error messages</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">1.2</span>Start Capacitor APK Setup</div>
+<p><span class="tag tag-blocked">❌ Not Done</span></p>
+<p><strong>Current state:</strong> No Capacitor config, no <code>android/</code> directory, no <code>@capacitor/*</code> dependencies in frontend.</p>
+<p><strong>Goal:</strong> Convert Next.js PWA into an Android APK using Capacitor.</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-5"> Capacitor initialized in frontend project</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-6"> Android platform added</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-7"> `npx cap sync` runs without errors</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-8"> Android Studio opens the project</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-9"> App builds in Android Studio (debug APK)</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 2</span>Friday, June 6</div>
+<div class="task-card"><div class="task-title"><span class="task-id">2.1</span>PWA Offline Polish</div>
+<p><span class="tag tag-done">✅ Complete</span></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Current state:</p>
+<p style="padding-left:1rem">• `next-pwa` (v5.6.0) wired into `apps/frontend/next.config.ts` with runtime caching</p>
+<p style="padding-left:1rem">• PWA manifest exists in `apps/frontend/public/manifest.json`</p>
+<p style="padding-left:1rem">• Offline queue built inline in `report/page.tsx` (lines 113-202)</p>
+<p style="padding-left:1rem">• Offline banner shows when network is down (line 367-372)</p>
+<p style="padding-left:1rem">• Online toast shows when connection restored (line 205)</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Enhancements:</p>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-10" checked> `next-pwa` configured with runtime caching</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-11" checked> PWA manifest with icons and display mode</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-12" checked> Offline queue built into report page (IndexedDB + auto-flush on reconnect)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-13" checked> Offline banner shows when network is down</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-14" checked> Online banner shows when connection restored (toast notification)</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-15"> Cache API responses for `/api/laws`, `/api/achievements` (static data)</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-16"> Test: disconnect WiFi → navigate pages → reconnect → verify sync</label>
+</div>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-17"> App loads offline after first visit</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-18" checked> Reports queue in IndexedDB when offline</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-19" checked> Reports auto-sync when connection restored</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-20" checked> Offline banner appears/disappears correctly</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-21"> No data loss during offline→online transition</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">2.2</span>Build APK with Capacitor</div>
+<p><span class="tag tag-blocked">❌ Not Done</span></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-22"> Debug APK builds successfully</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-23"> APK installs on Android device/emulator</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-24"> App loads production URL in WebView</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-25"> Camera works through WebView</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-26"> GPS works through WebView</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-27"> Offline queue works in APK</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-28"> Version number set in `build.gradle`</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 3</span>Saturday, June 7</div>
+<div class="task-card"><div class="task-title"><span class="task-id">3.1</span>ASEAN Multi-Country Data</div>
+<p><span class="tag tag-pending">⚠️ Partial</span></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Current state:</p>
+<p style="padding-left:1rem">• `CurrencySettingSeeder.php` ✅ — Seeds 10 ASEAN countries with eco-credit exchange rates</p>
+<p style="padding-left:1rem">• `AseanLawSeeder.php` ❌ — Referenced in docs but file does not exist</p>
+<p style="padding-left:1rem">• PH-only law seeders exist (`EnvironmentalLawSeeder.php`, `LawSeeder.php`)</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-29"> 5+ ASEAN countries have at least 1 law seeded</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-30"> Each country has at least 1 NGO</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-31" checked> Currency settings verified for all 10 ASEAN countries</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">3.2</span>Write Demo Script</div>
+<p><span class="tag tag-done">✅ Complete</span></p>
+<p><strong>File:</strong> <code>docs/demo-script.md</code> (143 lines)</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">What was delivered:</p>
+<p style="padding-left:1rem">• 7-flow demo script (~10 min): Opening, Citizen Report, Ghost Mode, AI Pipeline & Dashboard, Failure Resilience, Offline PWA, Leaderboard & Credits</p>
+<p style="padding-left:1rem">• Pre-flight checklist</p>
+<p style="padding-left:1rem">• Backup plans per flow</p>
+<p style="padding-left:1rem">• Q&A prep</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-32" checked> Demo script written with timing</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-33" checked> All demo flows tested</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-34" checked> Backup plan for each step if live demo fails</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-35" checked> Screenshots/recordings as backup</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">3.3</span>Create Presentation Materials</div>
+<p><span class="tag tag-done">✅ Complete</span></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Files delivered:</p>
+<p style="padding-left:1rem">1. `docs/one-pager.md` (115 lines) — Problem/solution/architecture</p>
+<p style="padding-left:1rem">2. `docs/pitch-deck.md` (264 lines) — 7-slide deck with ASCII wireframes</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-36" checked> One-pager created</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-37" checked> Slide deck created</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-38" checked> Materials match LikasLens branding (Eco-Brutalism)</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 4</span>Sunday, June 8</div>
+<div class="task-card"><div class="task-title"><span class="task-id">4.1</span>Full Demo Rehearsal</div>
+<p><strong>Time:</strong> 4h | <strong>Priority:</strong> CRITICAL | <strong>Status:</strong> ⏳ PENDING</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Rehearsal checklist:</p>
+<p style="padding-left:1rem">1. **Pre-rehearsal:**</p>
+<p>   - [ ] All 3 services running (Frontend, Backend, AI)</p>
+<p>   - [ ] Demo data seeded</p>
+<p>   - [ ] APK installed on test device</p>
+<p>   - [ ] Backup screenshots ready</p>
+<p style="padding-left:1rem">2. **Run through demo script:**</p>
+<p>   - [ ] Flow 1: Citizen Report (3 min)</p>
+<p>   - [ ] Flow 2: Ghost Mode (2 min)</p>
+<p>   - [ ] Flow 3: Impact Dashboard (2 min)</p>
+<p>   - [ ] Flow 4: AI Pipeline (1 min)</p>
+<p>   - [ ] Flow 5: Leaderboard + Credits (1 min)</p>
+<p style="padding-left:1rem">3. **Time each flow** — must fit in 10 minutes</p>
+<p style="padding-left:1rem">4. **Test failure scenarios:**</p>
+<p>   - [ ] What if AI service is down? (report still saves)</p>
+<p>   - [ ] What if Supabase is slow? (loading states work)</p>
+<p>   - [ ] What if camera fails? (file upload fallback)</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-39"> Full demo completes in < 12 minutes</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-40"> No errors during demo</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-41"> Backup plans tested for each failure scenario</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-42"> Demo can run on presenter's laptop + phone</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">4.2</span>APK Final Build + Testing</div>
+<p><span class="tag tag-blocked">❌ Not Done</span></p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-43"> Build release APK (signed)</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-44"> Test on physical Android device</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-45"> Verify all demo flows work in APK</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-46"> Verify offline capability in APK</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-47"> Version number updated</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-48"> APK file ready for submission</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">4.3</span>Competition Submission</div>
+<p><strong>Time:</strong> 2h | <strong>Priority:</strong> CRITICAL | <strong>Status:</strong> ⏳ PENDING</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-49"> Write competition essay / submission document</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-50"> Include: problem, solution, technical architecture, impact, scalability</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-51"> Attach: screenshots, demo video link, APK download link</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-52"> Submit before deadline</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Mobile PWA (Bonus: `apps/mobile-pwa/`)</h2>
+<p><strong>Status:</strong> ✅ SUBSTANTIALLY BUILT</p>
+<p>A separate mobile PWA app was created at <code>apps/mobile-pwa/</code> with:</p>
+<p style="padding-left:1rem">• Full Next.js 16 app structure</p>
+<p style="padding-left:1rem">• Login, Register, Onboarding (4-step carousel)</p>
+<p style="padding-left:1rem">• Dashboard with stats grid + install banner</p>
+<p style="padding-left:1rem">• Report page with camera capture + GPS + Ghost Mode toggle</p>
+<p style="padding-left:1rem">• Scoreboard with leaderboard styling</p>
+<p style="padding-left:1rem">• Profile with achievements + settings</p>
+<p style="padding-left:1rem">• PWA manifest with standalone display</p>
+<p style="padding-left:1rem">• Supabase client/server integration</p>
+<p style="padding-left:1rem">• `next-intl` i18n support</p>
+<p style="padding-left:1rem">• PWA icons (192x192, 512x512, maskable, apple-touch) ✅</p>
+<p style="padding-left:1rem">• i18n messages for fil, id, ms, ta, vi locales ✅</p>
+<p style="padding-left:1rem">• Not-found page ✅</p>
+<p style="padding-left:1rem">• `.env.example` with required vars ✅</p>
+<p style="padding-left:1rem">• Supabase token wired to shared API client after login ✅</p>
+<p><strong>Note:</strong> This app does NOT have <code>next-pwa</code> integration or a service worker — relies on browser-level PWA via manifest.</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Risk Items</h2>
+<table>
+<tr><th>Risk</th><th>Status</th><th>Mitigation</th></tr>
+<tr><td>Capacitor APK won't build</td><td>⚠️ OPEN</td><td>Fallback: use TWA (Trusted Web Activity) with Bubblewrap</td></tr>
+<tr><td>Camera doesn't work in WebView</td><td>⚠️ OPEN</td><td>Use <code><input type="file" capture="camera"></code> as fallback</td></tr>
+<tr><td>Demo fails live</td><td>⚠️ OPEN</td><td>Pre-record backup video of each flow</td></tr>
+<tr><td>Supabase down during demo</td><td>⚠️ OPEN</td><td>Use local PostgreSQL as backup</td></tr>
+<tr><td>AI service slow</td><td>⚠️ OPEN</td><td>Pre-cache demo responses; show loading states</td></tr>
+</table>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Definition of Done</h2>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-53"> All 3 services connected and tested end-to-end</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-54"> APK builds and installs on Android</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-10-55" checked> PWA offline queue works reliably (inline in report page)</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-56"> ASEAN data seeded for 5+ countries</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-10-57" checked> Demo script written and rehearsed</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-10-58" checked> Presentation materials created</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-10-59" checked> Mobile PWA substantially built with i18n, icons, auth</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-60"> Full demo completes in < 12 minutes</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-61"> Competition submission ready</label>
+</div>
+
+<div class="footer">
+  <p>LikasLens Sprint Roadmap — Generated 2026-06-09</p>
+  <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a> · <a href="/">Home</a></p>
+</div>
+</main>
+
+<script>
+(function() {
+  var STORAGE_KEY = 'likaslens-sprint-progress';
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch(e) {
+      return {};
+    }
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {
+      console.warn('Could not save progress to localStorage');
+    }
+  }
+
+  function updateProgress() {
+    var checks = document.querySelectorAll('.task-check');
+    var checked = document.querySelectorAll('.task-check:checked');
+    var total = checks.length;
+    var done = checked.length;
+    var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-done').textContent = done;
+    document.getElementById('progress-total').textContent = total;
+
+    var fill = document.getElementById('progress-fill');
+    if (pct >= 100) {
+      fill.style.background = '#4caf50';
+    } else if (pct >= 50) {
+      fill.style.background = 'var(--dev-accent)';
+    } else {
+      fill.style.background = 'var(--accent)';
+    }
+  }
+
+  function init() {
+    var state = loadState();
+    var checks = document.querySelectorAll('.task-check');
+
+    checks.forEach(function(cb) {
+      var id = cb.getAttribute('data-id');
+
+      if (state[id]) {
+        cb.checked = true;
+      }
+
+      cb.addEventListener('change', function() {
+        var currentState = loadState();
+        if (this.checked) {
+          currentState[id] = true;
+          this.parentElement.classList.add('done');
+        } else {
+          delete currentState[id];
+          this.parentElement.classList.remove('done');
+        }
+        saveState(currentState);
+        updateProgress();
+      });
+
+      // Set initial done class
+      if (cb.checked) {
+        cb.parentElement.classList.add('done');
+      }
+    });
+
+    updateProgress();
+  }
+
+  window.toggleTheme = function() {
+    var html = document.documentElement;
+    var label = document.getElementById('theme-label');
+    if (html.getAttribute('data-theme') === 'ghost') {
+      html.setAttribute('data-theme', 'civic');
+      label.textContent = 'CIVIC';
+      localStorage.setItem('likaslens-theme', 'civic');
+    } else {
+      html.setAttribute('data-theme', 'ghost');
+      label.textContent = 'GHOST';
+      localStorage.setItem('likaslens-theme', 'ghost');
+    }
+  };
+
+  var savedTheme = localStorage.getItem('likaslens-theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    var label = document.getElementById('theme-label');
+    if (label) label.textContent = savedTheme.toUpperCase();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LikasLens — System Workflow Report</title>
+  <style>
+    :root {
+      --bg: #0a0f0d;
+      --surface: #111916;
+      --surface-2: #162018;
+      --border: #1e3326;
+      --accent: #2EE6C8;
+      --accent-dim: rgba(46, 230, 200, 0.15);
+      --ghost: #facc15;
+      --ghost-dim: rgba(250, 204, 21, 0.12);
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --ink: #e8e5e0;
+      --muted: rgba(232, 229, 224, 0.5);
+      --mono: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(10, 15, 13, 0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    nav .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.03em;
+    }
+
+    nav .logo svg { color: var(--accent); }
+
+    nav .links {
+      display: flex;
+      gap: 24px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    nav .links a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    nav .links a:hover { color: var(--ink); }
+
+    /* ── HERO ───────────────────────────────── */
+    .hero {
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 120px 32px 80px;
+      background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(46, 230, 200, 0.08) 0%, transparent 70%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(46, 230, 200, 0.2);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+    }
+
+    .hero .badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: breathe 3s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--accent), #5aefb0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 640px;
+      line-height: 1.65;
+    }
+
+    .hero .meta {
+      display: flex;
+      gap: 32px;
+      margin-top: 32px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .hero .meta span { color: var(--accent); font-weight: 700; }
+
+    /* ── SECTIONS ───────────────────────────── */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    section {
+      padding: 80px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section:last-child { border-bottom: none; }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(46, 230, 200, 0.2);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .section-label.ghost {
+      background: var(--ghost-dim);
+      border-color: rgba(250, 204, 21, 0.2);
+      color: var(--ghost);
+    }
+
+    .section-label.red {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+      color: var(--red);
+    }
+
+    h2 {
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+
+    h4 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 640px;
+      line-height: 1.65;
+      margin-bottom: 40px;
+    }
+
+    /* ── CARDS ──────────────────────────────── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(46, 230, 200, 0.3);
+      box-shadow: 0 8px 32px -8px rgba(46, 230, 200, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .card .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(46, 230, 200, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      font-size: 24px;
+    }
+
+    .card .card-icon.ghost-icon {
+      background: var(--ghost-dim);
+      border-color: rgba(250, 204, 21, 0.2);
+    }
+
+    .card .card-icon.red-icon {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .card .card-icon.blue-icon {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .card .card-icon.purple-icon {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.2);
+    }
+
+    .card p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── TABLES ─────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      background: var(--surface-2);
+      padding: 12px 16px;
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(30, 51, 38, 0.5);
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover { background: rgba(46, 230, 200, 0.03); }
+
+    code {
+      font-family: var(--mono);
+      font-size: 11px;
+      background: rgba(46, 230, 200, 0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+
+    .method {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .method.get { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+    .method.post { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+    .method.put { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+    .method.delete { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+    .method.patch { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+
+    .badge-inline {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-inline.public { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+    .badge-inline.auth { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+    .badge-inline.admin { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+    .badge-inline.analyst { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+
+    /* ── FLOW DIAGRAMS ──────────────────────── */
+    .flow {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 24px 0;
+      overflow-x: auto;
+    }
+
+    .flow-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .flow-steps {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .flow-step {
+      flex: 1;
+      min-width: 160px;
+      max-width: 200px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .flow-step .step-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .flow-step .step-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .flow-step .step-desc {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .flow-arrow {
+      display: flex;
+      align-items: center;
+      color: var(--accent);
+      font-size: 20px;
+      padding-top: 20px;
+      flex-shrink: 0;
+    }
+
+    /* ── ASCII DIAGRAMS ─────────────────────── */
+    .ascii-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 24px 0;
+      overflow-x: auto;
+    }
+
+    .ascii-diagram pre {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    /* ── STATS ROW ──────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-card .stat-value {
+      font-family: var(--mono);
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-card .stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── TOC ────────────────────────────────── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 24px 0;
+    }
+
+    .toc h3 {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+    }
+
+    .toc ol li {
+      counter-increment: toc;
+      margin-bottom: 8px;
+    }
+
+    .toc ol li a {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: color 0.2s;
+    }
+
+    .toc ol li a:hover { color: var(--accent); }
+
+    .toc ol li a::before {
+      content: counter(toc, decimal-leading-zero);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      width: 24px;
+      flex-shrink: 0;
+    }
+
+    /* ── FOOTER ─────────────────────────────── */
+    footer {
+      padding: 40px 32px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 12px 16px; }
+      nav .links { display: none; }
+      .container { padding: 0 16px; }
+      .hero { padding: 100px 16px 60px; }
+      .flow-steps { flex-direction: column; align-items: stretch; }
+      .flow-arrow { transform: rotate(90deg); justify-content: center; padding: 0; }
+      .flow-step { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ────────────────────────────────────────── -->
+<nav>
+  <div class="logo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 17 3.5s1 7.5-4.2 11.8"/><path d="M11 20v-7"/></svg>
+    LikasLens
+  </div>
+  <div class="links">
+    <a href="#architecture">Architecture</a>
+    <a href="#workflows">Workflows</a>
+    <a href="#api">API</a>
+    <a href="#database">Database</a>
+    <a href="#security">Security</a>
+  </div>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="badge">
+    <span class="dot"></span>
+    System Workflow Report · June 2026
+  </div>
+  <h1>LikasLens <span>Workflow</span> Report</h1>
+  <p>A comprehensive analysis of the neuro-symbolic civic reporting platform's architecture, data flows, API endpoints, and current operational workflows.</p>
+  <div class="meta">
+    <div>Apps: <span>5</span></div>
+    <div>API Endpoints: <span>40+</span></div>
+    <div>DB Tables: <span>23</span></div>
+    <div>AI Models: <span>YOLOv8 + Gemini</span></div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── TABLE OF CONTENTS ──────────────────────────────── -->
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#architecture">System Architecture &amp; App Boundaries</a></li>
+      <li><a href="#workflows">Core Workflows</a></li>
+      <li><a href="#api">Backend API Endpoints</a></li>
+      <li><a href="#ai-service">AI Service Endpoints</a></li>
+      <li><a href="#database">Database Schema</a></li>
+      <li><a href="#frontend-routes">Frontend Routes (Web App)</a></li>
+      <li><a href="#mobile-routes">Mobile PWA Routes</a></li>
+      <li><a href="#admin-routes">Admin Portal Routes</a></li>
+      <li><a href="#shared">Shared Layer</a></li>
+      <li><a href="#security">Security &amp; Ghost Mode</a></li>
+      <li><a href="#gamification">Gamification &amp; Rewards</a></li>
+      <li><a href="#offline">Offline-First PWA</a></li>
+    </ol>
+  </div>
+
+  <!-- ── 1. ARCHITECTURE ────────────────────────────────── -->
+  <section id="architecture">
+    <span class="section-label">01 · Architecture</span>
+    <h2>System Architecture &amp; App Boundaries</h2>
+    <p class="subtitle">LikasLens is a pnpm monorepo with five strictly isolated environments communicating exclusively via REST JSON payloads defined by OpenAPI specifications.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <h3>Frontend</h3>
+        <p><strong>Next.js 16</strong> (App Router) · TypeScript · Tailwind CSS · PWA<br>
+        <code>apps/frontend</code> · Port <code>3000</code><br>
+        Public marketing website + full web app. Landing page, report submission, citizen dashboard, scoreboard, laws browser, contact form.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3>Mobile PWA</h3>
+        <p><strong>Next.js 16</strong> (App Router) · TypeScript · Tailwind · Embla Carousel · PWA<br>
+        <code>apps/mobile-pwa</code> · Port <code>3003</code><br>
+        Installable mobile PWA with native feel. Splash screen, onboarding, camera capture, bottom nav, Ghost Mode toggle.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h3>Admin Portal</h3>
+        <p><strong>Next.js 16</strong> (App Router) · TypeScript · Tailwind CSS<br>
+        <code>apps/admin-portal</code> · Port <code>3002</code><br>
+        Desktop admin dashboard. KPIs, tickets, users, NGOs, laws, rewards, audit logs, inquiries, analytics.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔧</div>
+        <h3>Backend API</h3>
+        <p><strong>Laravel 12</strong> · PHP 8.2+ · Sanctum Auth<br>
+        <code>apps/backend</code> · Port <code>8000</code><br>
+        Core REST API. Report ingestion, user management, ticket lifecycle, achievements, eco-credits, leaderboard, chat proxy.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>AI Service</h3>
+        <p><strong>FastAPI</strong> · Python 3.12+ · YOLOv8 · Gemini 2.5 Flash · Cosmos DB Gremlin<br>
+        <code>apps/ai-service</code> · Port <code>8001</code><br>
+        Neuro-symbolic processing. Object detection, hazard analysis, graph traversal, chat proxy, incident summary generation.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <h3>Shared Library</h3>
+        <p><strong>React Components</strong> · API Client · TypeScript Types · CSS Tokens<br>
+        <code>apps/shared</code><br>
+        Cross-app UI components (toast, spinner, sidebar, bottom-nav, cards), API client with auth token management, type definitions.</p>
+      </div>
+    </div>
+
+    <div class="ascii-diagram">
+      <div class="flow-title">Service Communication Topology</div>
+      <pre>
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│  Frontend    │    │  Mobile PWA  │    │ Admin Portal │
+│  :3000       │    │  :3003       │    │  :3002       │
+└──────┬───────┘    └──────┬───────┘    └──────┬───────┘
+       │                   │                   │
+       │   REST JSON       │   REST JSON       │   REST JSON
+       │   (OpenAPI)       │   (OpenAPI)       │   (OpenAPI)
+       │                   │                   │
+       └───────────────────┼───────────────────┘
+                           │
+                    ┌──────▼───────┐
+                    │   Laravel    │
+                    │   Backend    │──────► Supabase PostgreSQL
+                    │   :8000/api  │──────► Supabase Storage
+                    └──────┬───────┘──────► Supabase Auth
+                           │
+                    POST /analyze/base64
+                           │
+                    ┌──────▼───────┐
+                    │   FastAPI    │
+                    │   AI Service │──────► YOLOv8 (local model)
+                    │   :8001      │──────► Gemini 2.5 Flash (Google API)
+                    └──────────────┘──────► Cosmos DB Gremlin (graph)
+      </pre>
+    </div>
+  </section>
+
+  <!-- ── 2. WORKFLOWS ───────────────────────────────────── -->
+  <section id="workflows">
+    <span class="section-label">02 · Workflows</span>
+    <h2>Core Workflows</h2>
+    <p class="subtitle">The primary data flows through the LikasLens platform, from citizen report submission to resolution.</p>
+
+    <!-- WORKFLOW 1: Report Submission -->
+    <h3 style="margin-top: 40px;">Workflow 1: Citizen Report Submission</h3>
+    <div class="flow">
+      <div class="flow-title">End-to-End Report Flow</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-num">01</div>
+          <div class="step-title">Capture</div>
+          <div class="step-desc">Citizen opens <code>/report</code>. Camera activates, GPS auto-tags location. Ghost Mode strips EXIF metadata.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">02</div>
+          <div class="step-title">Triage</div>
+          <div class="step-desc">POST <code>/reports/triage</code> sends base64 image to AI service for pre-check. YOLOv8 detects environmental concerns.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">03</div>
+          <div class="step-title">Edge Intercept</div>
+          <div class="step-desc">If hazards detected, <code>EdgeInterceptorModal</code> warns user. User can proceed (auto-enables Ghost Mode) or cancel.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">04</div>
+          <div class="step-title">Store</div>
+          <div class="step-desc">POST <code>/reports</code> → Laravel creates Ticket + TicketEvidence + Report rows. Image stored in Supabase Storage.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">05</div>
+          <div class="step-title">AI Analyze</div>
+          <div class="step-desc">TriageService sends image to AI service. YOLOv8 classifies objects. TicketClassification rows created.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">06</div>
+          <div class="step-title">Achieve</div>
+          <div class="step-desc">AchievementService evaluates criteria (report_count, yolov8_class). RankService checks for level-up. Eco-credits awarded.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKFLOW 2: AI Pipeline -->
+    <h3 style="margin-top: 40px;">Workflow 2: Neuro-Symbolic AI Pipeline</h3>
+    <div class="flow">
+      <div class="flow-title">Dual-Layer AI Processing</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-num">NEURAL</div>
+          <div class="step-title">YOLOv8 Detection</div>
+          <div class="step-desc">Pre-trained model detects 80+ object classes. Environmental indicators mapped: litter, vehicles, sanitation, vegetation, infrastructure.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">SYMBOLIC</div>
+          <div class="step-title">Gremlin Traversal</div>
+          <div class="step-desc">Graph query: <code>g.V(hazard).out('violates').out('enforced_by')</code> → maps hazard → law → enforcement agency.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">NEURAL</div>
+          <div class="step-title">Gemini Summary</div>
+          <div class="step-desc">Gemini 2.5 Flash generates 2-sentence formal incident report naming specific laws and agencies from graph data.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">OUTPUT</div>
+          <div class="step-title">Classification</div>
+          <div class="step-desc">TicketClassification stored with violation_type, confidence_score. Triage summary written to ticket.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKFLOW 3: Auth -->
+    <h3 style="margin-top: 40px;">Workflow 3: Authentication Flow</h3>
+    <div class="flow">
+      <div class="flow-title">Supabase Auth + Laravel Sanctum</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-num">01</div>
+          <div class="step-title">Login</div>
+          <div class="step-desc">User signs in via Supabase Auth (email/password or social login). Supabase returns JWT session.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">02</div>
+          <div class="step-title">Sync</div>
+          <div class="step-desc">Frontend calls <code>POST /auth/sync</code> with supabase_auth_user_id, email, name. Laravel creates/updates User row.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">03</div>
+          <div class="step-title">Token</div>
+          <div class="step-desc">Laravel returns Sanctum bearer token. Stored in httpOnly cookie. All subsequent API calls authenticated via <code>Authorization: Bearer</code>.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">04</div>
+          <div class="step-title">RBAC</div>
+          <div class="step-desc">Middleware enforces roles: <code>citizen</code>, <code>analyst</code>, <code>super_admin</code>, <code>ghost</code>. Analyst+ can verify reports. Super admin has full CRUD.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKFLOW 4: Admin -->
+    <h3 style="margin-top: 40px;">Workflow 4: Admin Ticket Management</h3>
+    <div class="flow">
+      <div class="flow-title">Analyst → NGO Assignment → Resolution</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-num">01</div>
+          <div class="step-title">Review</div>
+          <div class="step-desc">Analyst views tickets in admin portal. Filters by status, searches by title/description. Sees AI triage summary and confidence.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">02</div>
+          <div class="step-title">Assign</div>
+          <div class="step-desc">Analyst assigns ticket to NGO group via <code>POST /ticket-assignments</code>. Assignment reason recorded.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">03</div>
+          <div class="step-title">Investigate</div>
+          <div class="step-desc">NGO receives assignment. Status transitions: open → investigating → monitoring → resolved/closed.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">04</div>
+          <div class="step-title">Verify</div>
+          <div class="step-desc">LGU verification triggers <code>POST /reports/verify</code>. Achievement hooks fire: lgu_verified_count evaluated. Citizen rewarded.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKFLOW 5: Gamification -->
+    <h3 style="margin-top: 40px;">Workflow 5: Achievement &amp; Reward System</h3>
+    <div class="flow">
+      <div class="flow-title">Points → Ranks → Eco-Credits → Rewards</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-num">EARN</div>
+          <div class="step-title">Points</div>
+          <div class="step-desc">Actions trigger AchievementService: report submission, YOLO class detection, offline sync, LGU verification, geofence verify.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">RANK</div>
+          <div class="step-title">Level Up</div>
+          <div class="step-desc">RankService calculates level: Citizen (0-99) → Observer (100-999) → Steward (1K-4.9K) → Guardian (5K-9.9K) → Eco Champion (10K+).</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">BONUS</div>
+          <div class="step-title">Eco-Credits</div>
+          <div class="step-desc">Rank-up triggers eco-credit bonus from CreditPool (ESG sponsor). Credits deposited into CitizenWallet.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">REDEEM</div>
+          <div class="step-title">Rewards</div>
+          <div class="step-desc">Citizens redeem credits for rewards from RewardsCatalog at PartnerStores. Redemption tracked in RewardRedemption ledger.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 3. BACKEND API ─────────────────────────────────── -->
+  <section id="api">
+    <span class="section-label">03 · Backend API</span>
+    <h2>Backend API Endpoints</h2>
+    <p class="subtitle">Laravel 12 REST API at <code>http://localhost:8000/api</code> with Sanctum authentication and role-based access control.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Controller</th>
+            <th>Auth</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/health</code></td>
+            <td>—</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Health check</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/reports</code></td>
+            <td>ReportController@store</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Submit report (base64 image + GPS + user_id). Rate limited: 10/min.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/reports/triage</code></td>
+            <td>ReportController@triage</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Pre-check image for hazards without storing. Rate limited: 20/min.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/contact-messages</code></td>
+            <td>ContactMessageController@store</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Submit contact/inquiry message.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/laws</code></td>
+            <td>AdminLawController@index</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Public law search (citizen-facing).</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/laws/{id}</code></td>
+            <td>AdminLawController@show</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Single law detail.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/v1/chat</code></td>
+            <td>ChatController@send</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Chat proxy to AI service (Likasy chatbot).</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/leaderboard</code></td>
+            <td>LeaderboardController@index</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Top 20 citizens by reward points.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/achievements</code></td>
+            <td>AchievementController@catalog</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Full achievement catalog.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/achievements/user/{id}</code></td>
+            <td>AchievementController@userAchievementsBySupabaseId</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>User achievements by Supabase ID.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/settings/eco-credit-rate</code></td>
+            <td>CurrencySettingController@showRate</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Eco-credit exchange rate by country.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/profile/{supabaseUserId}</code></td>
+            <td>ProfileController@show</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Public profile stats.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/tickets</code></td>
+            <td>TicketController@index</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Paginated ticket list (search, status filter).</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/tickets/{id}</code></td>
+            <td>TicketController@show</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Ticket detail with evidence, classifications, assignments.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/auth/register</code></td>
+            <td>AuthController@register</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Register new user. Rate limited: 5/min.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/auth/login</code></td>
+            <td>AuthController@login</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Login with email/password. Rate limited: 10/min.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/auth/sync</code></td>
+            <td>AuthController@sync</td>
+            <td><span class="badge-inline public">Public</span></td>
+            <td>Sync Supabase user to Laravel. Rate limited: 20/min.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/auth/logout</code></td>
+            <td>AuthController@logout</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>Revoke current Sanctum token.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/user</code></td>
+            <td>—</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>Current authenticated user.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/user/profile</code></td>
+            <td>—</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>Authenticated user profile with role, trust_score, balance.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/user/impact</code></td>
+            <td>UserImpactController@show</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>Citizen dashboard: eco_credits, rank, achievements, reports.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/user/achievements</code></td>
+            <td>AchievementController@userAchievements</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>Current user's achievements.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/user/rank-progress</code></td>
+            <td>AchievementController@rankProgress</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>Current user's rank progress (level, XP, next level).</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/reports/verify</code></td>
+            <td>ReportController@verify</td>
+            <td><span class="badge-inline analyst">Analyst+</span></td>
+            <td>LGU verification of report. Triggers achievement hooks.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/reports/batch-sync</code></td>
+            <td>ReportController@batchSync</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>Sync queued offline reports. Triggers offline_sync achievement.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/dashboard/stats</code></td>
+            <td>DashboardController@stats</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>KPI stats: active incidents, resolved, avg response, system load.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/dashboard/feed</code></td>
+            <td>DashboardController@feed</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>Recent activity feed (last 20 tickets).</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/v1/likaslens-engine/credits/award</code></td>
+            <td>EcoCreditController@awardCredits</td>
+            <td><span class="badge-inline auth">Auth</span></td>
+            <td>Award eco-credits from CreditPool to CitizenWallet.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/v1/likaslens-admin/users/sync</code></td>
+            <td>AdminUserController@index</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>Sync/list all users.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/admin/users</code></td>
+            <td>AdminUserController@index</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>List users with search, role filter, pagination.</td>
+          </tr>
+          <tr>
+            <td><span class="method put">PUT</span></td>
+            <td><code>/admin/users/{id}/role</code></td>
+            <td>AdminUserController@updateRole</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>Change user role.</td>
+          </tr>
+          <tr>
+            <td><span class="method delete">DELETE</span></td>
+            <td><code>/admin/users/{id}</code></td>
+            <td>AdminUserController@destroy</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>Deactivate user account.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/admin/ngos</code></td>
+            <td>AdminNgoController@store</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>Create NGO group.</td>
+          </tr>
+          <tr>
+            <td><span class="method put">PUT</span></td>
+            <td><code>/admin/ngos/{id}</code></td>
+            <td>AdminNgoController@update</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>Update NGO group.</td>
+          </tr>
+          <tr>
+            <td><span class="method delete">DELETE</span></td>
+            <td><code>/admin/ngos/{id}</code></td>
+            <td>AdminNgoController@destroy</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>Delete NGO group.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/admin/audit-logs</code></td>
+            <td>AdminAuditLogController@index</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>Paginated audit log entries.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/admin/contact-messages</code></td>
+            <td>ContactMessageController@index</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>List inquiry messages.</td>
+          </tr>
+          <tr>
+            <td><span class="method patch">PATCH</span></td>
+            <td><code>/admin/contact-messages/{id}/read</code></td>
+            <td>ContactMessageController@markAsRead</td>
+            <td><span class="badge-inline admin">Super Admin</span></td>
+            <td>Mark inquiry as read.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 4. AI SERVICE ──────────────────────────────────── -->
+  <section id="ai-service">
+    <span class="section-label">04 · AI Service</span>
+    <h2>AI Service Endpoints</h2>
+    <p class="subtitle">FastAPI microservice at <code>http://localhost:8001</code> with rate limiting, request logging, and CORS protection.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Module</th>
+            <th>Rate Limit</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/health</code></td>
+            <td>main</td>
+            <td>60/min</td>
+            <td>Health check with timestamp and version.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/</code></td>
+            <td>main</td>
+            <td>60/min</td>
+            <td>Service info and links.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/graph/topology</code></td>
+            <td>graph_topology</td>
+            <td>60/min</td>
+            <td>Graph schema: vertex labels, edge labels, properties.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/graph/bootstrap-payload</code></td>
+            <td>graph_topology</td>
+            <td>60/min</td>
+            <td>Seed vertices and edges for graph initialization.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/graph/bootstrap-queries</code></td>
+            <td>gremlin_bootstrap</td>
+            <td>60/min</td>
+            <td>Gremlin queries for bootstrapping the graph.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/analyze</code></td>
+            <td>image_analysis</td>
+            <td>10/min</td>
+            <td>YOLOv8 inference on uploaded image file.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/analyze/base64</code></td>
+            <td>image_analysis</td>
+            <td>10/min</td>
+            <td>YOLOv8 inference on base64-encoded image.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/analyze/model</code></td>
+            <td>image_analysis</td>
+            <td>60/min</td>
+            <td>Model status: name, path, known classes count.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/routing/status</code></td>
+            <td>gremlin_client</td>
+            <td>60/min</td>
+            <td>Cosmos Gremlin connection status.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/routing/incident</code></td>
+            <td>gremlin_client</td>
+            <td>60/min</td>
+            <td>Execute full incident routing transaction in graph.</td>
+          </tr>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td><code>/routing/traversal</code></td>
+            <td>gremlin_client</td>
+            <td>60/min</td>
+            <td>Build Gremlin traversal queries for incident routing.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/api/v1/analyze-hazard</code></td>
+            <td>hazard_analyzer</td>
+            <td>10/min</td>
+            <td>Neuro-symbolic hazard analysis: Gremlin + Gemini synthesis.</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td><code>/api/v1/chat</code></td>
+            <td>chat_proxy</td>
+            <td>10/min</td>
+            <td>Secure chat proxy for Likasy chatbot (Gemini 2.5 Flash).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 5. DATABASE ────────────────────────────────────── -->
+  <section id="database">
+    <span class="section-label">05 · Database</span>
+    <h2>Database Schema</h2>
+    <p class="subtitle">Supabase PostgreSQL with 23 tables across core domain, eco-credits, achievements, and chat subsystems.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>Core Domain</h4>
+        <p>
+          <code>tickets</code> — Incident reports with status, GPS, AI triage<br>
+          <code>ticket_evidence</code> — Photos with checksum, EXIF removal tracking<br>
+          <code>ticket_classifications</code> — AI violation type assignments<br>
+          <code>ticket_assignments</code> — NGO group assignments<br>
+          <code>violation_types</code> — Environmental violation codes<br>
+          <code>environmental_laws_ph</code> — Philippine environmental laws<br>
+          <code>law_penalties</code> — Fine/imprisonment ranges per violation<br>
+          <code>ngo_groups</code> — Enforcement agency groups<br>
+          <code>reports</code> — Raw report submissions
+        </p>
+      </div>
+      <div class="card">
+        <h4>User &amp; Auth</h4>
+        <p>
+          <code>users</code> — Citizens, analysts, super_admins, ghosts (UUID PKs)<br>
+          <code>personal_access_tokens</code> — Sanctum API tokens<br>
+          <code>audit_logs</code> — Action trail with old/new values<br>
+          <code>contact_messages</code> — Citizen inquiries
+        </p>
+      </div>
+      <div class="card">
+        <h4>Eco-Credits &amp; Rewards</h4>
+        <p>
+          <code>citizen_wallets</code> — Available credits, lifetime earned<br>
+          <code>credit_pools</code> — ESG sponsor pools with validity<br>
+          <code>rewards_catalog</code> — Redeemable rewards at partner stores<br>
+          <code>reward_redemptions</code> — Redemption tracking with codes<br>
+          <code>reward_point_ledger</code> — Full points transaction history<br>
+          <code>partner_stores</code> — Reward redemption locations<br>
+          <code>currency_settings</code> — Multi-country eco-credit rates
+        </p>
+      </div>
+      <div class="card">
+        <h4>Achievements &amp; Chat</h4>
+        <p>
+          <code>achievements</code> — Achievement definitions with criteria<br>
+          <code>user_achievements</code> — Progress tracking and unlock timestamps<br>
+          <code>gemini_conversations</code> — Chat session tracking<br>
+          <code>gemini_messages</code> — Individual chat messages with token counts
+        </p>
+      </div>
+    </div>
+
+    <div class="ascii-diagram">
+      <div class="flow-title">Entity Relationship Overview</div>
+      <pre>
+┌──────────┐     ┌──────────────┐     ┌──────────────────┐
+│  Users   │────►│   Tickets    │────►│ TicketEvidence   │
+│          │     │              │     │ (photos, EXIF)   │
+│  - role  │     │  - status    │     └──────────────────┘
+│  - trust │     │  - GPS       │
+│  - pts   │     │  - AI triage │     ┌──────────────────┐
+└────┬─────┘     └──────┬───────┘────►│ TicketClassifi-  │
+     │                  │             │ cation (AI)      │
+     │                  │             └──────────────────┘
+     │                  │
+     │                  ▼             ┌──────────────────┐
+     │           ┌──────────────┐────►│ TicketAssignment │
+     │           │ ViolationType│     │ → NGO Group      │
+     │           │ → Law        │     └──────────────────┘
+     │           │ → Agency     │
+     │           └──────────────┘
+     │
+     ├──────────►┌──────────────┐     ┌──────────────────┐
+     │           │CitizenWallet │────►│ CreditPool       │
+     │           │(eco-credits) │     │ (ESG Sponsors)   │
+     │           └──────────────┘     └──────────────────┘
+     │
+     ├──────────►┌──────────────┐     ┌──────────────────┐
+     │           │UserAchievement│───►│ Achievement      │
+     │           │(progress)    │     │ (criteria)       │
+     │           └──────────────┘     └──────────────────┘
+     │
+     └──────────►┌──────────────┐
+                 │AuditLog      │
+                 │(action trail)│
+                 └──────────────┘
+      </pre>
+    </div>
+  </section>
+
+  <!-- ── 6. FRONTEND ROUTES ─────────────────────────────── -->
+  <section id="frontend-routes">
+    <span class="section-label">06 · Frontend Routes</span>
+    <h2>Frontend Web App Routes</h2>
+    <p class="subtitle">Next.js 16 App Router with i18n at <code>apps/frontend/src/app/[locale]/</code></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Page</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/</code></td>
+            <td>Landing Page</td>
+            <td>Hero with live metrics, How It Works, Ghost Mode toggle, Public Scoreboard, FAQ, Install CTA.</td>
+          </tr>
+          <tr>
+            <td><code>/report</code></td>
+            <td>Report Submission</td>
+            <td>Camera capture, GPS auto-tag, map pinning, incident type selector, Ghost Mode toggle, EXIF stripping, offline queue.</td>
+          </tr>
+          <tr>
+            <td><code>/dashboard</code></td>
+            <td>Citizen Dashboard</td>
+            <td>Contributor profile, rank progress, eco-credits, recent achievements, impact stats.</td>
+          </tr>
+          <tr>
+            <td><code>/dashboard/incidents</code></td>
+            <td>My Incidents</td>
+            <td>User's submitted reports with status tracking.</td>
+          </tr>
+          <tr>
+            <td><code>/dashboard/analytics</code></td>
+            <td>Analytics</td>
+            <td>Personal analytics and trends.</td>
+          </tr>
+          <tr>
+            <td><code>/dashboard/impact</code></td>
+            <td>Impact</td>
+            <td>Community impact metrics.</td>
+          </tr>
+          <tr>
+            <td><code>/dashboard/profile</code></td>
+            <td>Profile</td>
+            <td>User profile management.</td>
+          </tr>
+          <tr>
+            <td><code>/dashboard/reports</code></td>
+            <td>Reports</td>
+            <td>Detailed report history.</td>
+          </tr>
+          <tr>
+            <td><code>/dashboard/settings</code></td>
+            <td>Settings</td>
+            <td>Account settings.</td>
+          </tr>
+          <tr>
+            <td><code>/scoreboard</code></td>
+            <td>Public Scoreboard</td>
+            <td>Public records of incidents with status.</td>
+          </tr>
+          <tr>
+            <td><code>/laws</code></td>
+            <td>Laws Browser</td>
+            <td>Browse Philippine environmental laws and penalties.</td>
+          </tr>
+          <tr>
+            <td><code>/login</code></td>
+            <td>Login</td>
+            <td>Email/password login via Supabase Auth.</td>
+          </tr>
+          <tr>
+            <td><code>/register</code></td>
+            <td>Register</td>
+            <td>New account registration.</td>
+          </tr>
+          <tr>
+            <td><code>/contact</code></td>
+            <td>Contact</td>
+            <td>Contact form for inquiries.</td>
+          </tr>
+          <tr>
+            <td><code>/privacy</code></td>
+            <td>Privacy Policy</td>
+            <td>Privacy policy page.</td>
+          </tr>
+          <tr>
+            <td><code>/terms</code></td>
+            <td>Terms of Service</td>
+            <td>Terms of service page.</td>
+          </tr>
+          <tr>
+            <td><code>/changelog</code></td>
+            <td>Changelog</td>
+            <td>Platform changelog.</td>
+          </tr>
+          <tr>
+            <td><code>/camera-test</code></td>
+            <td>Camera Test</td>
+            <td>Camera functionality testing.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 7. MOBILE PWA ROUTES ───────────────────────────── -->
+  <section id="mobile-routes">
+    <span class="section-label">07 · Mobile PWA</span>
+    <h2>Mobile PWA Routes</h2>
+    <p class="subtitle">Next.js 16 App Router at <code>apps/mobile-pwa/src/app/[locale]/</code></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Page</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/</code></td>
+            <td>Splash / Landing</td>
+            <td>Splash screen with app branding.</td>
+          </tr>
+          <tr>
+            <td><code>/onboarding</code></td>
+            <td>Onboarding</td>
+            <td>Embla Carousel onboarding slider for first-time users.</td>
+          </tr>
+          <tr>
+            <td><code>/login</code></td>
+            <td>Login</td>
+            <td>Mobile-optimized login.</td>
+          </tr>
+          <tr>
+            <td><code>/register</code></td>
+            <td>Register</td>
+            <td>Mobile-optimized registration.</td>
+          </tr>
+          <tr>
+            <td><code>/(app)/dashboard</code></td>
+            <td>Dashboard</td>
+            <td>Citizen dashboard with stats.</td>
+          </tr>
+          <tr>
+            <td><code>/(app)/report</code></td>
+            <td>Report</td>
+            <td>Camera capture, GPS, incident type, Ghost Mode, submit.</td>
+          </tr>
+          <tr>
+            <td><code>/(app)/scoreboard</code></td>
+            <td>Scoreboard</td>
+            <td>Public incident records.</td>
+          </tr>
+          <tr>
+            <td><code>/(app)/profile</code></td>
+            <td>Profile</td>
+            <td>User profile and settings.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 8. ADMIN PORTAL ROUTES ─────────────────────────── -->
+  <section id="admin-routes">
+    <span class="section-label">08 · Admin Portal</span>
+    <h2>Admin Portal Routes</h2>
+    <p class="subtitle">Next.js 16 App Router at <code>apps/admin-portal/src/app/[locale]/(dashboard)/</code></p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Page</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/dashboard</code></td>
+            <td>Dashboard</td>
+            <td>KPIs (active incidents, resolved, avg response, users), activity feed, recent tickets.</td>
+          </tr>
+          <tr>
+            <td><code>/tickets</code></td>
+            <td>Tickets</td>
+            <td>Incident ticket management. Search, status filter, view/verify/reject actions.</td>
+          </tr>
+          <tr>
+            <td><code>/users</code></td>
+            <td>Users</td>
+            <td>User management. Search, role filter, role change, deactivation. Paginated.</td>
+          </tr>
+          <tr>
+            <td><code>/ngos</code></td>
+            <td>NGOs</td>
+            <td>NGO group management (CRUD).</td>
+          </tr>
+          <tr>
+            <td><code>/laws</code></td>
+            <td>Laws</td>
+            <td>Environmental law management (CRUD).</td>
+          </tr>
+          <tr>
+            <td><code>/rewards</code></td>
+            <td>Rewards</td>
+            <td>Rewards catalog management.</td>
+          </tr>
+          <tr>
+            <td><code>/audit-logs</code></td>
+            <td>Audit Logs</td>
+            <td>System audit trail.</td>
+          </tr>
+          <tr>
+            <td><code>/inquiries</code></td>
+            <td>Inquiries</td>
+            <td>Contact message management.</td>
+          </tr>
+          <tr>
+            <td><code>/analytics</code></td>
+            <td>Analytics</td>
+            <td>Platform analytics.</td>
+          </tr>
+          <tr>
+            <td><code>/settings</code></td>
+            <td>Settings</td>
+            <td>System settings.</td>
+          </tr>
+          <tr>
+            <td><code>/changelog</code></td>
+            <td>Changelog</td>
+            <td>Admin changelog.</td>
+          </tr>
+          <tr>
+            <td><code>/login</code></td>
+            <td>Login</td>
+            <td>Admin login page.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 9. SHARED LAYER ────────────────────────────────── -->
+  <section id="shared">
+    <span class="section-label">09 · Shared</span>
+    <h2>Shared Layer</h2>
+    <p class="subtitle">Cross-app components, API client, types, and design tokens at <code>apps/shared/src/</code></p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>API Client (<code>src/api/</code>)</h4>
+        <p>
+          <code>laravelFetch</code> — Base fetch with auth token, timeout, abort controller<br>
+          <code>laravelGet/Post/Put/Delete/Patch</code> — HTTP method helpers<br>
+          <code>setLaravelAuthToken</code> — Token management<br>
+          <code>fetchAchievementCatalog</code>, <code>fetchUserAchievements</code>, <code>fetchRankProgress</code>, <code>fetchEcoCreditRate</code>
+        </p>
+      </div>
+      <div class="card">
+        <h4>Types (<code>src/types/</code>)</h4>
+        <p>
+          <code>Ticket</code>, <code>TicketDetail</code>, <code>TicketStatus</code> — Incident types<br>
+          <code>TicketEvidence</code>, <code>TicketClassification</code>, <code>TicketAssignment</code><br>
+          <code>NgoGroup</code>, <code>ReportStatus</code><br>
+          <code>DashboardStats</code>, <code>ActivityFeedItem</code>, <code>RankProgress</code>, <code>RecentAchievement</code>
+        </p>
+      </div>
+      <div class="card">
+        <h4>UI Components (<code>src/ui/</code>)</h4>
+        <p>
+          <code>Toast</code>, <code>Spinner</code>, <code>Badge</code>, <code>Button</code>, <code>Card</code>, <code>Skeleton</code><br>
+          <code>Sidebar</code>, <code>BottomNav</code>, <code>AppHeader</code>, <code>MobileLayout</code>, <code>DashboardLayout</code><br>
+          <code>StatsCards</code>, <code>ActivityFeed</code>, <code>AchievementCard</code>, <code>RankProgressCard</code><br>
+          <code>PublicScoreboard</code>, <code>FaqSection</code>, <code>ThemeToggle</code>, <code>Chat</code><br>
+          <code>OfflineBanner</code>, <code>OnlineStatus</code>, <code>RecentUnlocksWidget</code>
+        </p>
+      </div>
+      <div class="card">
+        <h4>Hooks &amp; Utils (<code>src/hooks/</code>, <code>src/utils.ts</code>)</h4>
+        <p>
+          <code>cn()</code> — Tailwind class name utility<br>
+          <code>useCamera</code> — Camera stream management<br>
+          <code>useOnlineStatus</code> — Network connectivity detection<br>
+          <code>i18n</code> — Internationalization setup with <code>next-intl</code>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 10. SECURITY ───────────────────────────────────── -->
+  <section id="security">
+    <span class="section-label ghost">10 · Security</span>
+    <h2>Security &amp; Ghost Mode</h2>
+    <p class="subtitle">Zero-knowledge protection for environmental whistleblowers reporting sensitive violations.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon ghost-icon">👻</div>
+        <h3>Ghost Mode Protocol</h3>
+        <p>
+          <strong>EXIF Stripping:</strong> Canvas redraw removes GPS, device ID, timestamp before transmission.<br>
+          <strong>Anonymous Submission:</strong> Reports sent without user_id. Ghost user created with UUID <code>00000000-...</code>.<br>
+          <strong>Theme Toggle:</strong> Global <code>data-theme="ghost"</code> attribute triggers visual feedback across all pages.<br>
+          <strong>Edge Interceptor:</strong> AI-detected hazards auto-trigger Ghost Mode warning modal.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-icon red-icon">🔒</div>
+        <h3>API Security</h3>
+        <p>
+          <strong>Sanctum Auth:</strong> Bearer token authentication for all protected endpoints.<br>
+          <strong>RBAC:</strong> Role middleware — citizen, analyst, super_admin, ghost.<br>
+          <strong>Rate Limiting:</strong> Per-endpoint throttling (5-20 req/min for auth, 10-60 for AI).<br>
+          <strong>CORS:</strong> Environment-driven origin whitelist.<br>
+          <strong>Input Validation:</strong> Laravel request validation on all endpoints.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-icon blue-icon">🛡️</div>
+        <h3>AI Service Security</h3>
+        <p>
+          <strong>Gremlin Injection:</strong> Input sanitization with regex validation on all graph IDs.<br>
+          <strong>String Escaping:</strong> All Gremlin query strings escaped for special characters.<br>
+          <strong>Rate Limiting:</strong> In-memory per-IP rate limiting with strict limits on expensive endpoints.<br>
+          <strong>Request Logging:</strong> Every request logged with timing, status, and request ID.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-icon purple-icon">📋</div>
+        <h3>Audit Trail</h3>
+        <p>
+          <strong>Audit Logs:</strong> All admin actions recorded with actor, entity, old/new values, IP, user agent.<br>
+          <strong>Evidence Chain:</strong> SHA-256 checksums on all uploaded evidence. EXIF removal timestamp tracked.<br>
+          <strong>Point Ledger:</strong> Full transaction history for reward points with balance_after tracking.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 11. GAMIFICATION ───────────────────────────────── -->
+  <section id="gamification">
+    <span class="section-label">11 · Gamification</span>
+    <h2>Gamification &amp; Rewards</h2>
+    <p class="subtitle">Multi-tier reward system driving citizen engagement through achievements, ranks, and eco-credits.</p>
+
+    <h3>Achievement Criteria Types</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Criteria Type</th>
+            <th>Trigger</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>report_count</code></td>
+            <td>Report submission</td>
+            <td>Progress increments with each report submitted.</td>
+          </tr>
+          <tr>
+            <td><code>yolov8_class</code></td>
+            <td>AI detection</td>
+            <td>Unlocked when specific YOLO class detected (e.g., "illegal_logging").</td>
+          </tr>
+          <tr>
+            <td><code>offline_sync</code></td>
+            <td>Batch sync</td>
+            <td>Progress increments with each offline report synced.</td>
+          </tr>
+          <tr>
+            <td><code>geofence_verify</code></td>
+            <td>Location verification</td>
+            <td>Progress increments with geofence-verified reports.</td>
+          </tr>
+          <tr>
+            <td><code>lgu_verified_count</code></td>
+            <td>LGU verification</td>
+            <td>Progress increments when LGU verifies a report.</td>
+          </tr>
+          <tr>
+            <td><code>rank_level</code></td>
+            <td>Level up</td>
+            <td>Unlocked when citizen reaches target rank level.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top: 32px;">Contributor Rank Tiers</h3>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--muted);">I</div>
+        <div class="stat-label">Citizen · 0-99 XP</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--blue);">II</div>
+        <div class="stat-label">Observer · 100-999 XP · +25 credits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--green);">III</div>
+        <div class="stat-label">Steward · 1K-4.9K XP · +75 credits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--amber);">IV</div>
+        <div class="stat-label">Guardian · 5K-9.9K XP · +200 credits</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color: var(--accent);">V</div>
+        <div class="stat-label">Eco Champion · 10K+ XP · +500 credits</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 32px;">Eco-Credit Flow</h3>
+    <div class="flow">
+      <div class="flow-title">CreditPool → CitizenWallet → RewardsCatalog</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-num">SOURCE</div>
+          <div class="step-title">ESG Sponsor</div>
+          <div class="step-desc">Corporate sponsors fund CreditPools with total credits and validity periods.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">TRIGGER</div>
+          <div class="step-title">Rank Up</div>
+          <div class="step-desc">RankService detects level change. Eco-credit bonus calculated from tier threshold.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">TRANSFER</div>
+          <div class="step-title">Wallet Deposit</div>
+          <div class="step-desc">Credits decremented from pool, incremented in citizen wallet. Lifetime earned tracked.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="step-num">REDEEM</div>
+          <div class="step-title">Partner Store</div>
+          <div class="step-desc">Citizens redeem credits for rewards. Redemption code generated. Fulfillment tracked.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 12. OFFLINE ────────────────────────────────────── -->
+  <section id="offline">
+    <span class="section-label">12 · Offline-First</span>
+    <h2>Offline-First PWA</h2>
+    <p class="subtitle">Three-tier caching strategy with IndexedDB report queue for 100% data retention in low-connectivity environments.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>Service Worker Caching</h4>
+        <p>
+          <strong>Cache-First:</strong> Static assets (JS, CSS, images) served from cache, updated in background.<br>
+          <strong>Stale-While-Revalidate:</strong> API responses served from cache, refreshed asynchronously.<br>
+          <strong>Network-First:</strong> Critical API calls (auth, submission) try network, fall back to cache.
+        </p>
+      </div>
+      <div class="card">
+        <h4>IndexedDB Report Queue</h4>
+        <p>
+          <strong>Queue:</strong> Reports stored in <code>likaslens-offline</code> IndexedDB with <code>report-queue</code> object store.<br>
+          <strong>Fallback:</strong> localStorage backup if IndexedDB unavailable.<br>
+          <strong>Flush:</strong> On <code>online</code> event, queued reports automatically synced via <code>POST /reports</code>.<br>
+          <strong>Achievement:</strong> <code>offline_sync</code> criteria evaluated on successful batch sync.
+        </p>
+      </div>
+      <div class="card">
+        <h4>Network Detection</h4>
+        <p>
+          <strong>Online/Offline Events:</strong> Real-time connectivity monitoring.<br>
+          <strong>UI Feedback:</strong> Offline banner displayed when connection lost.<br>
+          <strong>Toast Notifications:</strong> "Connection restored. Syncing queued reports." on reconnect.
+        </p>
+      </div>
+      <div class="card">
+        <h4>Installability</h4>
+        <p>
+          <strong>PWA Manifest:</strong> Full manifest with icons, theme color, display mode.<br>
+          <strong>Install Prompt:</strong> <code>beforeinstallprompt</code> event captured. Custom install CTA on landing page.<br>
+          <strong>Home Screen:</strong> Appears as native app on mobile home screens.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ── FOOTER ───────────────────────────────────────────── -->
+<footer>
+  <p>LikasLens System Workflow Report · Generated June 2026</p>
+  <p style="margin-top: 8px;">Neuro-Symbolic Civic Reporting Platform · <a href="https://github.com/anomalyco/opencode/issues">Report Issues</a></p>
+</footer>
+
+</body>
+</html>

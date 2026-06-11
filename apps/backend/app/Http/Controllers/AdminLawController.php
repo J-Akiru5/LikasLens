@@ -63,7 +63,15 @@ class AdminLawController extends Controller
 
         $law = EnvironmentalLawPh::create($validated);
 
-        $this->audit($request, 'law_created', 'environmental_law', $law->id, null, $law->toArray());
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'law_created',
+            'entity_type' => 'EnvironmentalLawPh',
+            'entity_id' => $law->id,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -75,7 +83,7 @@ class AdminLawController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $law = EnvironmentalLawPh::findOrFail($id);
-        $oldValues = $law->toArray();
+        $old = $law->toArray();
 
         $validated = $request->validate([
             'law_code' => 'sometimes|string|max:50|unique:environmental_laws_ph,law_code,'.$id,
@@ -89,7 +97,16 @@ class AdminLawController extends Controller
 
         $law->update($validated);
 
-        $this->audit($request, 'law_updated', 'environmental_law', $law->id, $oldValues, $law->fresh()->toArray());
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'law_updated',
+            'entity_type' => 'EnvironmentalLawPh',
+            'entity_id' => $law->id,
+            'old_values' => $old,
+            'new_values' => $law->fresh()->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -101,63 +118,22 @@ class AdminLawController extends Controller
     public function destroy(Request $request, string $id): JsonResponse
     {
         $law = EnvironmentalLawPh::findOrFail($id);
-        $oldValues = $law->toArray();
+        $old = $law->toArray();
         $law->delete();
 
-        $this->audit($request, 'law_deleted', 'environmental_law', $id, $oldValues, null);
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'law_deleted',
+            'entity_type' => 'EnvironmentalLawPh',
+            'entity_id' => $id,
+            'old_values' => $old,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Environmental law deleted.',
-        ]);
-    }
-
-    public function restore(Request $request, string $id): JsonResponse
-    {
-        $law = EnvironmentalLawPh::withTrashed()->findOrFail($id);
-        $law->restore();
-
-        $this->audit($request, 'law_restored', 'environmental_law', $law->id,
-            ['deleted_at' => $law->deleted_at],
-            ['deleted_at' => null]
-        );
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Environmental law restored.',
-            'data' => $law->fresh()->load('penalties', 'violationTypes'),
-        ]);
-    }
-
-    public function trashed(Request $request): JsonResponse
-    {
-        $query = EnvironmentalLawPh::onlyTrashed()->with('penalties', 'violationTypes')->orderBy('deleted_at', 'desc');
-
-        $laws = $query->paginate(min((int) $request->input('per_page', 20), 50));
-
-        return response()->json([
-            'success' => true,
-            'data' => $laws->items(),
-            'meta' => [
-                'current_page' => $laws->currentPage(),
-                'last_page' => $laws->lastPage(),
-                'per_page' => $laws->perPage(),
-                'total' => $laws->total(),
-            ],
-        ]);
-    }
-
-    private function audit(Request $request, string $action, string $entityType, string $entityId, ?array $oldValues, ?array $newValues): void
-    {
-        AuditLog::create([
-            'actor_user_id' => $request->user()?->id,
-            'action' => $action,
-            'entity_type' => $entityType,
-            'entity_id' => $entityId,
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
         ]);
     }
 }

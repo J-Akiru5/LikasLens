@@ -17,20 +17,6 @@ class AdminRewardController extends Controller
             $query->where('is_active', true);
         }
 
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('reward_name', 'like', "%{$search}%")
-                    ->orWhere('reward_type', 'like', "%{$search}%")
-                    ->orWhereHas('partnerStore', function ($sq) use ($search) {
-                        $sq->where('name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        if ($partnerStoreId = $request->input('partner_store_id')) {
-            $query->where('partner_store_id', $partnerStoreId);
-        }
-
         $rewards = $query->paginate(min((int) $request->input('per_page', 20), 50));
 
         return response()->json([
@@ -70,7 +56,15 @@ class AdminRewardController extends Controller
 
         $reward = RewardsCatalog::create($validated);
 
-        $this->audit($request, 'reward_created', 'reward', $reward->id, null, $reward->toArray());
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'reward_created',
+            'entity_type' => 'RewardsCatalog',
+            'entity_id' => $reward->id,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -82,7 +76,7 @@ class AdminRewardController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $reward = RewardsCatalog::findOrFail($id);
-        $oldValues = $reward->toArray();
+        $old = $reward->toArray();
 
         $validated = $request->validate([
             'partner_store_id' => 'sometimes|string|exists:partner_stores,id',
@@ -97,7 +91,16 @@ class AdminRewardController extends Controller
 
         $reward->update($validated);
 
-        $this->audit($request, 'reward_updated', 'reward', $reward->id, $oldValues, $reward->fresh()->toArray());
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'reward_updated',
+            'entity_type' => 'RewardsCatalog',
+            'entity_id' => $reward->id,
+            'old_values' => $old,
+            'new_values' => $reward->fresh()->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -109,28 +112,22 @@ class AdminRewardController extends Controller
     public function destroy(Request $request, string $id): JsonResponse
     {
         $reward = RewardsCatalog::findOrFail($id);
-        $oldValues = $reward->toArray();
+        $old = $reward->toArray();
         $reward->delete();
 
-        $this->audit($request, 'reward_deleted', 'reward', $id, $oldValues, null);
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'reward_deleted',
+            'entity_type' => 'RewardsCatalog',
+            'entity_id' => $id,
+            'old_values' => $old,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Reward deleted.',
-        ]);
-    }
-
-    private function audit(Request $request, string $action, string $entityType, string $entityId, ?array $oldValues, ?array $newValues): void
-    {
-        AuditLog::create([
-            'actor_user_id' => $request->user()?->id,
-            'action' => $action,
-            'entity_type' => $entityType,
-            'entity_id' => $entityId,
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
         ]);
     }
 }

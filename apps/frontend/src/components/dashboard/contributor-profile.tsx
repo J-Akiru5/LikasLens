@@ -4,10 +4,11 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import type { UserProfile, Achievement } from "@likaslens/shared";
 import { RankProgressCard, AchievementCard } from "@likaslens/shared";
+import { createClient } from "@/utils/supabase/client";
 import {
-  MapPin, Crosshair, Globe, Eye, EyeSlash, Spinner, CaretRight, WarningCircle,
-  ChartBar, User,
-} from "@phosphor-icons/react";
+  MapPin, Crosshair, Globe, Eye, EyeOff, Loader2, ChevronRight, AlertCircle,
+  BarChart3, User,
+} from "lucide-react";
 
 interface ContributorProfileProps {
   locale?: string;
@@ -24,14 +25,27 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
   useEffect(() => {
     async function fetchProfile() {
       try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
         const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
         const endpoint = params?.userId
           ? `${baseUrl}/users/${params.userId}`
-          : `${baseUrl}/api/user/profile`;
+          : `${baseUrl}/user/profile`;
+
+        const headers: Record<string, string> = { Accept: "application/json" };
+        if (session?.access_token) {
+          headers["Authorization"] = `Bearer ${session.access_token}`;
+        }
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 10_000);
+
         const res = await fetch(endpoint, {
-          headers: { Accept: "application/json" },
-          credentials: params ? "omit" : "include",
-        });
+          headers,
+          credentials: "include",
+          signal: controller.signal,
+        }).finally(() => clearTimeout(timeout));
+
         if (!res.ok) {
           if (res.status === 404) {
             setError("User not found");
@@ -42,8 +56,12 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
         }
         const body = await res.json();
         setProfile(body.data || body);
-      } catch {
-        setError("Unable to connect to server");
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") {
+          setError("Request timed out");
+        } else {
+          setError("Unable to connect to server");
+        }
       } finally {
         setLoading(false);
       }
@@ -56,7 +74,7 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Spinner className="w-6 h-6 text-muted animate-spin" weight="bold" />
+        <Loader2 className="w-6 h-6 text-muted animate-spin" />
       </div>
     );
   }
@@ -65,7 +83,7 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
     return (
       <div className="py-24 text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <WarningCircle className="w-5 h-5 text-amber" />
+          <AlertCircle className="w-5 h-5 text-amber" />
           <h2 className="font-semibold tracking-tight text-xl text-ink">{error}</h2>
         </div>
       </div>
@@ -125,7 +143,7 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
                 Joined {new Date(profile?.created_at || Date.now()).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
               </span>
               <span className="flex items-center gap-1.5">
-                <ChartBar className="w-3.5 h-3.5" />
+                <BarChart3 className="w-3.5 h-3.5" />
                 Impact Score: {profile?.impact_score?.toLocaleString() ?? "—"}
               </span>
               {profile?.website && (
@@ -146,7 +164,7 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
             onClick={() => setGhostMode(!ghostMode)}
             className="flex items-center gap-1.5 font-mono text-xs text-ink/40 hover:text-ink transition-colors"
           >
-            {ghostMode ? <Eye className="w-3.5 h-3.5" /> : <EyeSlash className="w-3.5 h-3.5" />}
+            {ghostMode ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             {ghostMode ? "Reveal Identity" : "Ghost Mode"}
           </button>
         </div>
@@ -180,7 +198,7 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
               href={`/${locale || ""}/profile/${params.userId}/achievements`}
               className="flex items-center gap-1 font-mono text-xs text-ink/40 hover:text-ink transition-colors"
             >
-              View All <CaretRight className="w-3 h-3" />
+              View All <ChevronRight className="w-3 h-3" />
             </Link>
           )}
         </div>

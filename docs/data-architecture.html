@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="civic">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LikasLens — Data Architecture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════════════
+           LIKASLENS DESIGN SYSTEM — "The Vigilant Earth"
+           Eco-Brutalism + Civic Tech
+           ═══════════════════════════════════════════════════════════ */
+
+        :root {
+            --primary: #1B4332;
+            --secondary: #2DE1C2;
+            --accent: #FFB703;
+            --background: #F8F9FA;
+            --foreground: #081C15;
+            --panel: #F8F9FA;
+            --panel-border: rgba(8, 28, 21, 0.2);
+            --muted-text: rgba(8, 28, 21, 0.85);
+            --font-heading: 'Montserrat', 'Archivo Black', Arial, sans-serif;
+            --font-body: 'Inter', 'Helvetica Now', Helvetica Neue, Helvetica, Arial, sans-serif;
+            --font-data: 'Space Mono', 'JetBrains Mono', Courier New, monospace;
+            --shadow-brutal: 8px 8px 0px #1B4332;
+            --shadow-brutal-sm: 4px 4px 0px #1B4332;
+            --shadow-brutal-xs: 2px 2px 0px #1B4332;
+            --shadow-glow-cyan: 0 0 12px rgba(45, 225, 194, 0.5);
+            --shadow-glow-amber: 0 0 16px rgba(255, 183, 3, 0.25);
+        }
+
+        [data-theme="ghost"] {
+            --primary: #2DE1C2;
+            --background: #081C15;
+            --foreground: #F8F9FA;
+            --panel: rgba(8, 28, 21, 0.9);
+            --panel-border: rgba(45, 225, 194, 0.35);
+            --muted-text: rgba(255, 255, 255, 0.75);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        *:focus-visible {
+            outline: 2px solid var(--secondary);
+            outline-offset: 2px;
+        }
+
+        ::selection {
+            background: rgba(255, 183, 3, 0.3);
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--background);
+            color: var(--foreground);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ═══ HERO ═══ */
+        .hero {
+            position: relative;
+            padding: 4rem 2rem 3rem;
+            text-align: center;
+            overflow: hidden;
+            background-image:
+                radial-gradient(circle at 10% 5%, rgba(45, 225, 194, 0.14), transparent 38%),
+                radial-gradient(circle at 92% 12%, rgba(255, 183, 3, 0.12), transparent 34%),
+                linear-gradient(180deg, rgba(27, 67, 50, 0.14), transparent 40%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(45, 225, 194, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 225, 194, 0.08) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+        }
+
+        .hero h1 {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero h1 .accent { color: var(--secondary); }
+        .hero h1 .amber { color: var(--accent); }
+
+        .hero .subtitle {
+            font-family: var(--font-data);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--muted-text);
+            position: relative;
+        }
+
+        /* ═══ THEME TOGGLE ═══ */
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 100;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .theme-btn {
+            font-family: var(--font-data);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--panel-border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .theme-btn[data-theme="civic"] {
+            background: var(--primary);
+            color: #F8F9FA;
+        }
+
+        .theme-btn[data-theme="ghost"] {
+            background: #081C15;
+            color: var(--secondary);
+        }
+
+        .theme-btn:hover {
+            box-shadow: var(--shadow-brutal-xs);
+        }
+
+        .theme-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        /* ═══ CONTAINER ═══ */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* ═══ SECTION ═══ */
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title .icon {
+            font-size: 1.8rem;
+        }
+
+        .section-subtitle {
+            font-family: var(--font-data);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted-text);
+            margin-bottom: 2rem;
+        }
+
+        /* ═══ BRUTAL PANEL ═══ */
+        .brutal-panel {
+            background: var(--panel);
+            color: var(--foreground);
+            border: 4px solid var(--panel-border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-brutal);
+            backdrop-filter: blur(4px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="ghost"] .brutal-panel {
+            background-image:
+                radial-gradient(circle at 30% 20%, rgba(45, 225, 194, 0.14), transparent 40%),
+                radial-gradient(circle at 68% 66%, rgba(255, 183, 3, 0.22), transparent 42%),
+                linear-gradient(160deg, rgba(8, 28, 21, 0.96), rgba(27, 67, 50, 0.94));
+        }
+
+        .brutal-panel:hover {
+            box-shadow: 10px 10px 0px rgba(27, 67, 50, 0.25);
+        }
+
+        .panel-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 2px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .panel-header h3 {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+        }
+
+        .panel-body {
+            padding: 1.5rem;
+        }
+
+        /* ═══ TABLE ═══ */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+        }
+
+        .data-table thead th {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 3px solid var(--primary);
+            background: rgba(27, 67, 50, 0.08);
+        }
+
+        [data-theme="ghost"] .data-table thead th {
+            background: rgba(45, 225, 194, 0.12);
+            border-bottom-color: var(--secondary);
+        }
+
+        .data-table tbody td {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid var(--panel-border);
+            vertical-align: top;
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(45, 225, 194, 0.06);
+        }
+
+        .data-table code {
+            font-family: var(--font-data);
+            font-size: 0.75rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            background: rgba(45, 225, 194, 0.12);
+            border: 1px solid rgba(45, 225, 194, 0.25);
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        [data-theme="ghost"] .data-table code {
+            background: rgba(45, 225, 194, 0.15);
+            border-color: rgba(45, 225, 194, 0.3);
+            color: var(--secondary);
+        }
+
+        /* ═══ BADGE ═══ */
+        .badge {
+            font-family: var(--font-data);
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .badge-cyan { background: rgba(45, 225, 194, 0.15); color: #081C15; border: 2px solid var(--secondary); }
+        .badge-amber { background: rgba(255, 183, 3, 0.15); color: #92400E; border: 2px solid var(--accent); }
+        .badge-green { background: rgba(27, 67, 50, 0.1); color: var(--primary); border: 2px solid var(--primary); }
+        .badge-purple { background: rgba(123, 31, 162, 0.1); color: #7b1fa2; border: 2px solid #7b1fa2; }
+        .badge-orange { background: rgba(245, 124, 0, 0.1); color: #f57c00; border: 2px solid #f57c00; }
+        .badge-red { background: rgba(198, 40, 40, 0.1); color: #c62828; border: 2px solid #c62828; }
+
+        /* ═══ DUAL DB CARDS ═══ */
+        .db-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .db-card {
+            border: 4px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-brutal);
+            transition: all 0.15s;
+            background: var(--panel);
+        }
+
+        .db-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .db-card .db-header {
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 2px solid var(--panel-border);
+        }
+
+        .db-card .db-header .db-icon {
+            font-size: 2rem;
+        }
+
+        .db-card .db-header h3 {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .db-card .db-header .db-type {
+            font-family: var(--font-data);
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 2px solid;
+            margin-left: auto;
+        }
+
+        .db-card .db-body {
+            padding: 1.25rem;
+        }
+
+        .db-card .db-body ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .db-card .db-body li {
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.4rem 0.6rem;
+            border-left: 3px solid var(--secondary);
+            background: rgba(45, 225, 194, 0.06);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .db-card.db-supabase .db-header { background: rgba(56, 142, 60, 0.08); }
+        .db-card.db-supabase .db-type { color: #388e3c; border-color: #388e3c; }
+        .db-card.db-supabase li { border-left-color: #388e3c; background: rgba(56, 142, 60, 0.06); }
+
+        .db-card.db-cosmos .db-header { background: rgba(245, 124, 0, 0.08); }
+        .db-card.db-cosmos .db-type { color: #f57c00; border-color: #f57c00; }
+        .db-card.db-cosmos li { border-left-color: #f57c00; background: rgba(245, 124, 0, 0.06); }
+
+        /* ═══ SERVICE USAGE TABLE ═══ */
+        .service-usage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .service-usage-card {
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            box-shadow: var(--shadow-brutal-sm);
+            transition: all 0.15s;
+        }
+
+        .service-usage-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 6px 8px 0px rgba(27, 67, 50, 0.2);
+        }
+
+        .service-usage-card .svc-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-usage-card .svc-name {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            margin-bottom: 0.25rem;
+        }
+
+        .service-usage-card .svc-tech {
+            font-family: var(--font-data);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-text);
+            margin-bottom: 0.5rem;
+        }
+
+        .service-usage-card .svc-desc {
+            font-size: 0.8rem;
+            color: var(--muted-text);
+            line-height: 1.5;
+        }
+
+        /* ═══ GRAPH TOPOLOGY ═══ */
+        .graph-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: wrap;
+            padding: 1.5rem;
+        }
+
+        .graph-node {
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            box-shadow: var(--shadow-brutal-xs);
+            min-width: 100px;
+        }
+
+        .graph-node .g-icon { font-size: 1.2rem; display: block; }
+        .graph-node .g-label {
+            font-family: var(--font-data);
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .graph-edge {
+            font-family: var(--font-data);
+            font-size: 0.55rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.25rem 0.5rem;
+            color: var(--secondary);
+        }
+
+        .graph-edge .edge-arrow { font-size: 1rem; }
+
+        /* ═══ FLOW DIAGRAM ═══ */
+        .flow-container {
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: nowrap;
+            min-width: fit-content;
+            margin-bottom: 1.5rem;
+        }
+
+        .flow-node {
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            text-align: center;
+            box-shadow: var(--shadow-brutal-sm);
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .flow-node .node-icon {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .flow-node .node-label {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+        }
+
+        .flow-node .node-sub {
+            font-family: var(--font-data);
+            font-size: 0.6rem;
+            font-weight: 400;
+            color: var(--muted-text);
+            margin-top: 0.15rem;
+        }
+
+        .flow-node.node-primary {
+            background: var(--primary);
+            color: #F8F9FA;
+            border-color: var(--primary);
+        }
+
+        .flow-node.node-secondary {
+            background: var(--secondary);
+            color: #081C15;
+            border-color: var(--secondary);
+        }
+
+        .flow-node.node-accent {
+            background: var(--accent);
+            color: #081C15;
+            border-color: var(--accent);
+        }
+
+        .flow-arrow {
+            font-family: var(--font-data);
+            font-size: 1.2rem;
+            color: var(--secondary);
+            padding: 0 0.5rem;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.15rem;
+        }
+
+        .flow-arrow .arrow-label {
+            font-size: 0.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted-text);
+            white-space: nowrap;
+        }
+
+        .flow-arrow-down {
+            display: flex;
+            justify-content: center;
+            padding: 0.5rem 0;
+        }
+
+        .flow-arrow-down .arrow-icon {
+            font-size: 1.5rem;
+            color: var(--secondary);
+        }
+
+        /* ═══ ENV VAR PANEL ═══ */
+        .env-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .env-group-title {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .env-group-title .group-icon {
+            font-size: 1.2rem;
+        }
+
+        .env-item {
+            display: grid;
+            grid-template-columns: 280px 1fr 1fr;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--panel-border);
+            font-size: 0.8rem;
+            align-items: center;
+        }
+
+        .env-item:last-child {
+            border-bottom: none;
+        }
+
+        .env-item:hover {
+            background: rgba(45, 225, 194, 0.06);
+        }
+
+        .env-var {
+            font-family: var(--font-data);
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        [data-theme="ghost"] .env-var {
+            color: var(--secondary);
+        }
+
+        .env-files {
+            font-size: 0.75rem;
+            color: var(--muted-text);
+        }
+
+        .env-value {
+            font-family: var(--font-data);
+            font-size: 0.65rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            background: rgba(45, 225, 194, 0.1);
+            border: 1px solid rgba(45, 225, 194, 0.2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ═══ SUMMARY CARDS ═══ */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .summary-card {
+            border: 4px solid var(--panel-border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow-brutal);
+            background: var(--panel);
+            transition: all 0.15s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-card .summary-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 2px solid var(--panel-border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .summary-card .summary-header .s-icon {
+            font-size: 1.5rem;
+        }
+
+        .summary-card .summary-header h3 {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .summary-card .summary-body {
+            padding: 1.25rem;
+        }
+
+        .summary-card .summary-body p {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--muted-text);
+        }
+
+        .summary-card .summary-body .highlight {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            color: var(--foreground);
+        }
+
+        .summary-card.card-supabase .summary-header { background: rgba(56, 142, 60, 0.08); }
+        .summary-card.card-supabase { border-color: #388e3c; }
+
+        .summary-card.card-cosmos .summary-header { background: rgba(245, 124, 0, 0.08); }
+        .summary-card.card-cosmos { border-color: #f57c00; }
+
+        /* ═══ FOOTER ═══ */
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem;
+            text-align: center;
+            border-top: 4px solid var(--panel-border);
+        }
+
+        .footer p {
+            font-family: var(--font-data);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted-text);
+        }
+
+        /* ═══ RESPONSIVE ═══ */
+        @media (max-width: 768px) {
+            .hero { padding: 3rem 1.5rem 2rem; }
+            .db-grid { grid-template-columns: 1fr; }
+            .service-usage-grid { grid-template-columns: repeat(2, 1fr); }
+            .env-item { grid-template-columns: 1fr; gap: 0.25rem; }
+            .flow-row { flex-wrap: wrap; justify-content: center; }
+            .summary-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .service-usage-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ═══ ANIMATIONS ═══ */
+        @keyframes ghost-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.97; }
+        }
+
+        [data-theme="ghost"] .brutal-panel {
+            animation: ghost-flicker 4.6s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button class="theme-btn" data-theme="civic" onclick="setTheme('civic')">Civic</button>
+        <button class="theme-btn" data-theme="ghost" onclick="setTheme('ghost')">Ghost</button>
+    </div>
+
+    <!-- Hero -->
+    <header class="hero">
+        <h1>Likas<span class="accent">Lens</span> Data <span class="amber">Architecture</span></h1>
+        <p class="subtitle">Dual-Database System — Supabase + Cosmos DB Gremlin — Auto-generated from codebase</p>
+    </header>
+
+    <main class="container">
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 1: OVERVIEW
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">🗄️</span> Overview</h2>
+            <p class="section-subtitle">LikasLens uses a dual-database architecture</p>
+
+            <div class="summary-grid">
+                <div class="summary-card card-supabase">
+                    <div class="summary-header">
+                        <span class="s-icon">🐘</span>
+                        <h3>Supabase</h3>
+                        <span class="badge badge-green" style="margin-left: auto;">PostgreSQL</span>
+                    </div>
+                    <div class="summary-body">
+                        <p><span class="highlight">Relational Database</span> — Users, reports, incidents, sessions, laws, queue, cache, file storage. The primary data store for all CRUD operations.</p>
+                    </div>
+                </div>
+
+                <div class="summary-card card-cosmos">
+                    <div class="summary-header">
+                        <span class="s-icon">🔗</span>
+                        <h3>Cosmos DB Gremlin</h3>
+                        <span class="badge badge-orange" style="margin-left: auto;">Graph DB</span>
+                    </div>
+                    <div class="summary-body">
+                        <p><span class="highlight">Graph Database (Azure)</span> — Citizen → Incident → Violation → Law → Agency relationship graph. The symbolic layer for the neuro-symbolic AI pipeline.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 2: SUPABASE — PRIMARY RELATIONAL DATABASE
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">🐘</span> Supabase — Primary Relational Database</h2>
+            <p class="section-subtitle">PostgreSQL-powered relational data store for all core app operations</p>
+
+            <div class="brutal-panel">
+                <div class="panel-header">
+                    <h3>Service Usage</h3>
+                    <span class="badge badge-green">Relational</span>
+                </div>
+                <div class="panel-body">
+                    <div class="service-usage-grid">
+                        <div class="service-usage-card">
+                            <span class="svc-icon">⚡</span>
+                            <div class="svc-name">Backend (Laravel)</div>
+                            <div class="svc-tech">PHP · :8000</div>
+                            <div class="svc-desc">Primary database for all app data — users, reports, incidents, sessions, etc.</div>
+                        </div>
+                        <div class="service-usage-card">
+                            <span class="svc-icon">📱</span>
+                            <div class="svc-name">Frontend</div>
+                            <div class="svc-tech">Next.js · :3000</div>
+                            <div class="svc-desc">Supabase client for public web app with auth integration.</div>
+                        </div>
+                        <div class="service-usage-card">
+                            <span class="svc-icon">🔧</span>
+                            <div class="svc-name">Admin Portal</div>
+                            <div class="svc-tech">Next.js · :3002</div>
+                            <div class="svc-desc">Supabase client for admin dashboard and management.</div>
+                        </div>
+                        <div class="service-usage-card">
+                            <span class="svc-icon">📲</span>
+                            <div class="svc-name">Mobile PWA</div>
+                            <div class="svc-tech">Next.js · PWA</div>
+                            <div class="svc-desc">Supabase client for mobile data with offline queue.</div>
+                        </div>
+                        <div class="service-usage-card">
+                            <span class="svc-icon">📸</span>
+                            <div class="svc-name">Supabase Storage</div>
+                            <div class="svc-tech">S3-Compatible</div>
+                            <div class="svc-desc">Evidence photo storage — bucket: <code>likaslens-evidence</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="brutal-panel" style="margin-top: 1.5rem;">
+                <div class="panel-header">
+                    <h3>What Lives Here</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="db-grid">
+                        <div class="db-card db-supabase">
+                            <div class="db-header">
+                                <span class="db-icon">👤</span>
+                                <h3>Authentication & Users</h3>
+                            </div>
+                            <div class="db-body">
+                                <ul>
+                                    <li>User accounts & profiles</li>
+                                    <li>Supabase Auth integration</li>
+                                    <li>Role-based access control</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="db-card db-supabase">
+                            <div class="db-header">
+                                <span class="db-icon">🚨</span>
+                                <h3>Reports & Incidents</h3>
+                            </div>
+                            <div class="db-body">
+                                <ul>
+                                    <li>Incident reports & submissions</li>
+                                    <li>Ticket management</li>
+                                    <li>Classification results</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="db-card db-supabase">
+                            <div class="db-header">
+                                <span class="db-icon">📜</span>
+                                <h3>Environmental Laws</h3>
+                            </div>
+                            <div class="db-body">
+                                <ul>
+                                    <li>Environmental law records</li>
+                                    <li>NGO & agency data</li>
+                                    <li>Violation type mappings</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="db-card db-supabase">
+                            <div class="db-header">
+                                <span class="db-icon">⚙️</span>
+                                <h3>System & Cache</h3>
+                            </div>
+                            <div class="db-body">
+                                <ul>
+                                    <li>Sessions, queues, cache</li>
+                                    <li>Achievements & rewards</li>
+                                    <li>All relational CRUD data</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 3: COSMOS DB GREMLIN — GRAPH DATABASE
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">🔗</span> Cosmos DB Gremlin — Graph Database</h2>
+            <p class="section-subtitle">Azure-powered graph database for symbolic relationship mapping</p>
+
+            <div class="brutal-panel">
+                <div class="panel-header">
+                    <h3>Service Usage</h3>
+                    <span class="badge badge-orange">Graph</span>
+                </div>
+                <div class="panel-body">
+                    <div class="service-usage-grid">
+                        <div class="service-usage-card">
+                            <span class="svc-icon">🧠</span>
+                            <div class="svc-name">AI Service</div>
+                            <div class="svc-tech">Python · FastAPI · :8001</div>
+                            <div class="svc-desc">Connected via <code>gremlin_client.py</code> to Azure Cosmos DB Gremlin endpoint.</div>
+                        </div>
+                        <div class="service-usage-card">
+                            <span class="svc-icon">📊</span>
+                            <div class="svc-name">Graph Topology</div>
+                            <div class="svc-tech">routing_graph</div>
+                            <div class="svc-desc">Database: <code>likaslens</code> · Graph: <code>routing_graph</code> · Partition: <code>likaslens-routing-seed</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="brutal-panel" style="margin-top: 1.5rem;">
+                <div class="panel-header">
+                    <h3>Graph Topology — Vertex & Edge Relationships</h3>
+                    <span class="badge badge-orange">Symbolic Layer</span>
+                </div>
+                <div class="panel-body">
+                    <div class="graph-visual">
+                        <div class="graph-node">
+                            <span class="g-icon">👤</span>
+                            <span class="g-label">Citizen</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> REPORTED <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">🚨</span>
+                            <span class="g-label">Incident</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> CLASSIFIED_AS <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">⚖️</span>
+                            <span class="g-label">ViolationType</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> violates <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">📜</span>
+                            <span class="g-label">Law</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> enforced_by <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">🏛️</span>
+                            <span class="g-label">Agency</span>
+                        </div>
+                    </div>
+                    <div class="graph-visual" style="margin-top: 1rem;">
+                        <div class="graph-node">
+                            <span class="g-icon">🚨</span>
+                            <span class="g-label">Incident</span>
+                        </div>
+                        <div class="graph-edge"><span class="edge-arrow">──</span> ASSIGNED_TO <span class="edge-arrow">──→</span></div>
+                        <div class="graph-node">
+                            <span class="g-icon">🏛️</span>
+                            <span class="g-label">NGO</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="brutal-panel" style="margin-top: 1.5rem;">
+                <div class="panel-header">
+                    <h3>Graph Relationships</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Vertex / Edge</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Citizen</strong> → <code>REPORTED</code> → <strong>Incident</strong></td>
+                                <td>A citizen reports an incident</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Incident</strong> → <code>CLASSIFIED_AS</code> → <strong>ViolationType</strong></td>
+                                <td>An incident is classified by violation type</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ViolationType</strong> → <code>violates</code> → <strong>Law</strong></td>
+                                <td>A violation type is linked to a law</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Law</strong> → <code>enforced_by</code> → <strong>Agency</strong></td>
+                                <td>A law is enforced by an agency</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Incident</strong> → <code>ASSIGNED_TO</code> → <strong>NGO</strong></td>
+                                <td>An incident may be assigned to an NGO</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 4: ENVIRONMENT VARIABLES
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">🔐</span> Environment Variables</h2>
+            <p class="section-subtitle">Configuration references across all services</p>
+
+            <div class="brutal-panel">
+                <div class="panel-header">
+                    <h3>Supabase & API Configuration</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="env-group">
+                        <div class="env-group-title"><span class="group-icon">🐘</span> Supabase</div>
+                        <div class="env-item">
+                            <span class="env-var">NEXT_PUBLIC_SUPABASE_URL</span>
+                            <span class="env-files">frontend, admin-portal, mobile-pwa</span>
+                            <span class="env-value">https://sfklmmtimelotqvrldni.supabase.co</span>
+                        </div>
+                    </div>
+                    <div class="env-group">
+                        <div class="env-group-title"><span class="group-icon">⚡</span> Laravel Backend</div>
+                        <div class="env-item">
+                            <span class="env-var">NEXT_PUBLIC_LARAVEL_API_URL</span>
+                            <span class="env-files">frontend/.env.local</span>
+                            <span class="env-value">http://127.0.0.1:8000</span>
+                        </div>
+                        <div class="env-item">
+                            <span class="env-var">DB_CONNECTION</span>
+                            <span class="env-files">backend/.env.example</span>
+                            <span class="env-value">pgsql (Supabase PostgreSQL)</span>
+                        </div>
+                        <div class="env-item">
+                            <span class="env-var">DB_HOST</span>
+                            <span class="env-files">backend/.env.example</span>
+                            <span class="env-value">db.your-project-ref.supabase.co</span>
+                        </div>
+                    </div>
+                    <div class="env-group">
+                        <div class="env-group-title"><span class="group-icon">🧠</span> AI Service</div>
+                        <div class="env-item">
+                            <span class="env-var">NEXT_PUBLIC_AI_SERVICE_URL</span>
+                            <span class="env-files">frontend/.env.local, frontend/.env.example</span>
+                            <span class="env-value">http://localhost:8001</span>
+                        </div>
+                        <div class="env-item">
+                            <span class="env-var">AI_SERVICE_URL</span>
+                            <span class="env-files">backend/.env.example, backend/.env.production</span>
+                            <span class="env-value">http://127.0.0.1:8001 / http://likaslens-ai-service:8001</span>
+                        </div>
+                    </div>
+                    <div class="env-group">
+                        <div class="env-group-title"><span class="group-icon">🔗</span> Cosmos DB Gremlin</div>
+                        <div class="env-item">
+                            <span class="env-var">COSMOS_GREMLIN_ENDPOINT</span>
+                            <span class="env-files">ai-service/.env.example</span>
+                            <span class="env-value">wss://&lt;account&gt;.gremlin.cosmos.azure.com:443/</span>
+                        </div>
+                        <div class="env-item">
+                            <span class="env-var">COSMOS_GREMLIN_DATABASE</span>
+                            <span class="env-files">ai-service/.env.example</span>
+                            <span class="env-value">likaslens</span>
+                        </div>
+                        <div class="env-item">
+                            <span class="env-var">COSMOS_GREMLIN_GRAPH</span>
+                            <span class="env-files">ai-service/.env.example</span>
+                            <span class="env-value">routing_graph</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 5: DATA FLOW DIAGRAM
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">🔄</span> Data Flow Diagram</h2>
+            <p class="section-subtitle">How data moves through the dual-database architecture</p>
+
+            <div class="brutal-panel">
+                <div class="panel-header">
+                    <h3>System Data Flow</h3>
+                </div>
+                <div class="panel-body">
+                    <!-- Row 1: Frontend -->
+                    <div class="flow-row">
+                        <div class="flow-node node-primary">
+                            <span class="node-icon">📱</span>
+                            <div class="node-label">Frontend</div>
+                            <div class="node-sub">Mobile PWA</div>
+                        </div>
+                        <div class="flow-node node-primary">
+                            <span class="node-icon">🌐</span>
+                            <div class="node-label">Web App</div>
+                            <div class="node-sub">:3000</div>
+                        </div>
+                        <div class="flow-node node-primary">
+                            <span class="node-icon">🔧</span>
+                            <div class="node-label">Admin Portal</div>
+                            <div class="node-sub">:3002</div>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow-down"><span class="arrow-icon">↓</span></div>
+
+                    <!-- Row 2: Backend -->
+                    <div class="flow-row">
+                        <div class="flow-arrow">
+                            <span class="arrow-label">REST API</span>
+                        </div>
+                        <div class="flow-node node-secondary">
+                            <span class="node-icon">⚡</span>
+                            <div class="node-label">Laravel Backend</div>
+                            <div class="node-sub">:8000 · Core API</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="arrow-label">POST /analyze</span>
+                        </div>
+                        <div class="flow-node node-accent">
+                            <span class="node-icon">🧠</span>
+                            <div class="node-label">AI Service</div>
+                            <div class="node-sub">:8001 · FastAPI</div>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow-down"><span class="arrow-icon">↓</span></div>
+
+                    <!-- Row 3: Databases -->
+                    <div class="flow-row">
+                        <div class="flow-arrow">
+                            <span class="arrow-label">PostgreSQL</span>
+                        </div>
+                        <div class="flow-node" style="border-color: #388e3c; background: rgba(56, 142, 60, 0.08);">
+                            <span class="node-icon">🐘</span>
+                            <div class="node-label">Supabase</div>
+                            <div class="node-sub">Users · Reports · Laws · Cache</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="arrow-label">Gremlin</span>
+                        </div>
+                        <div class="flow-node" style="border-color: #f57c00; background: rgba(245, 124, 0, 0.08);">
+                            <span class="node-icon">🔗</span>
+                            <div class="node-label">Cosmos DB</div>
+                            <div class="node-sub">Graph: Citizen → Agency</div>
+                        </div>
+                    </div>
+
+                    <div class="flow-arrow-down"><span class="arrow-icon">↓</span></div>
+
+                    <!-- Row 4: AI Pipeline -->
+                    <div class="flow-row">
+                        <div class="flow-arrow">
+                            <span class="arrow-label">detect</span>
+                        </div>
+                        <div class="flow-node" style="border-color: #f57c00;">
+                            <span class="node-icon">👁️</span>
+                            <div class="node-label">YOLOv8</div>
+                            <div class="node-sub">Object Detection</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="arrow-label">traverse</span>
+                        </div>
+                        <div class="flow-node" style="border-color: #388e3c;">
+                            <span class="node-icon">🔗</span>
+                            <div class="node-label">Gremlin</div>
+                            <div class="node-sub">Hazard → Law → Agency</div>
+                        </div>
+                        <div class="flow-arrow">
+                            <span class="arrow-label">summarize</span>
+                        </div>
+                        <div class="flow-node" style="border-color: #7b1fa2;">
+                            <span class="node-icon">✨</span>
+                            <div class="node-label">Gemini</div>
+                            <div class="node-sub">AI Summary</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 6: KEY TAKEAWAY
+             ═══════════════════════════════════════════════════════ -->
+        <section class="section">
+            <h2 class="section-title"><span class="icon">💡</span> Key Takeaway</h2>
+            <p class="section-subtitle">Both databases are actively used for different purposes</p>
+
+            <div class="summary-grid">
+                <div class="summary-card card-supabase">
+                    <div class="summary-header">
+                        <span class="s-icon">🐘</span>
+                        <h3>Supabase</h3>
+                    </div>
+                    <div class="summary-body">
+                        <p><span class="highlight">Relational data</span> — Users, reports, CRUD operations, sessions, queues, cache, file storage. The backbone of all core application functionality.</p>
+                    </div>
+                </div>
+
+                <div class="summary-card card-cosmos">
+                    <div class="summary-header">
+                        <span class="s-icon">🔗</span>
+                        <h3>Cosmos DB Gremlin</h3>
+                    </div>
+                    <div class="summary-body">
+                        <p><span class="highlight">Graph relationships</span> — Hazard → Law → Agency mapping for the AI pipeline. The symbolic reasoning layer that powers intelligent incident classification.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>LikasLens — Neuro-Symbolic Civic Reporting Platform — Data Architecture Documentation</p>
+    </footer>
+
+    <script>
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+    </script>
+</body>
+</html>

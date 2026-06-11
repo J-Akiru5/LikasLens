@@ -1,4 +1,4 @@
-import { Download } from "@phosphor-icons/react";
+import { Download } from "lucide-react";
 import { usePdfExport } from "@/hooks/usePdfExport";
 import { generateExportFilename } from "@/utils/pdf-export";
 

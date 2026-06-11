@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldWarning, X } from "@phosphor-icons/react";
+import { ShieldAlert, X } from "lucide-react";
 import { useEffect } from "react";
 
 interface EdgeInterceptorModalProps {
@@ -51,7 +51,7 @@ export function EdgeInterceptorModal({
               <div className="p-6 border-b border-ink/10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <ShieldWarning className="w-6 h-6 text-ink/40" weight="fill" />
+                    <ShieldAlert className="w-6 h-6 text-ink/40 fill-current" />
                     <h2 className="font-semibold tracking-tight text-lg text-ink">Edge Alert</h2>
                   </div>
                   <button onClick={onCancel} className="p-1 text-ink/40 hover:text-ink transition-colors" aria-label="Close">

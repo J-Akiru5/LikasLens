@@ -1,37 +1,24 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { signIn } from "@/lib/auth";
 import { showToast } from "@likaslens/shared";
-import { Leaf, Eye, EyeOff } from "lucide-react";
+import { Leaf, Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
 
 export function LoginClient() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    const savedEmail = localStorage.getItem("remembered_email");
-    if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
-    }
-  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(""); setLoading(true);
     try {
       await signIn(email, password);
-      if (rememberMe) {
-        localStorage.setItem("remembered_email", email);
-      } else {
-        localStorage.removeItem("remembered_email");
-      }
       showToast("Signed in successfully", "success");
       router.push("/dashboard");
     } catch (err: unknown) {
@@ -47,65 +34,107 @@ export function LoginClient() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background font-body px-4">
-      <div className="w-full max-w-sm">
-        <div className="brutal-panel panel-surface p-8 border-2 border-primary shadow-[8px_8px_0px_#1b4332]">
-          <div className="mb-6 text-center">
-            <div className="flex items-center justify-center gap-2 text-primary mb-4">
-              <Leaf className="w-8 h-8" />
-              <h1 className="font-heading text-2xl font-black uppercase tracking-tighter">LikasLens Admin</h1>
-            </div>
-            <p className="font-mono text-sm surface-muted">Sign in with your admin account</p>
+    <main className="min-h-dvh flex items-center justify-center p-4 sm:p-6 relative overflow-hidden selection:bg-amber/30 selection:text-current">
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=3270&auto=format&fit=crop')",
+        }}
+      >
+        <div className="absolute inset-0 backdrop-blur-[3px] bg-page/50" />
+      </div>
+
+      <div className="panel relative z-10 w-full max-w-md p-8">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <div className="w-16 h-16 rounded-full border border-accent flex items-center justify-center bg-transparent">
+            <Leaf className="w-6 h-6 text-accent" />
           </div>
-          {error && (
-            <div className="mb-4 rounded border-2 border-amber-400 bg-amber-50 p-3 font-mono text-sm text-amber-800">
-              {error}
-            </div>
-          )}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block font-mono text-sm font-bold uppercase mb-2">Email</label>
-              <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                className="w-full brutal-panel theme-input px-3 py-2 font-mono text-sm rounded"
-                placeholder="admin@likaslens.ph" />
-            </div>
-            <div>
-              <label htmlFor="password" className="block font-mono text-sm font-bold uppercase mb-2">Password</label>
-              <div className="relative">
-                <input id="password" type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)}
-                  className="w-full brutal-panel theme-input px-3 py-2 pr-10 font-mono text-sm rounded" />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-primary/60 hover:text-primary transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
+        </div>
+
+        {/* Card */}
+        <div className="mb-8 text-center">
+          <h1 className="font-semibold tracking-tight text-3xl mb-2">
+            Welcome Back
+          </h1>
+          <p className="font-mono text-sm text-muted uppercase tracking-widest">
+            Log in to your account
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 rounded border-2 theme-status border-accent text-accent font-mono text-sm font-bold flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block font-mono text-sm font-bold uppercase mb-2">
+              Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full theme-input px-4 py-3 font-medium bg-transparent border border-ink/20 rounded"
+              placeholder="you@example.com"
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block font-mono text-sm font-bold uppercase mb-2">
+              Password
+            </label>
+            <div className="relative">
               <input
-                type="checkbox"
-                id="remember-me"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-5 h-5 border-2 border-primary rounded accent-secondary cursor-pointer"
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full theme-input px-4 py-3 pr-12 font-medium bg-transparent border border-ink/20 rounded"
+                placeholder="••••••••"
               />
-              <label
-                htmlFor="remember-me"
-                className="font-mono text-sm font-bold uppercase cursor-pointer select-none"
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-accent/60 hover:text-accent transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                Remember Me
-              </label>
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
             </div>
-            <button type="submit" disabled={loading}
-              className="w-full brutal-button font-heading font-black uppercase tracking-wide py-3 rounded shadow-[3px_3px_0px_#1b4332] hover:brightness-105 disabled:opacity-50 transition-all">
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-accent text-white rounded-lg py-4 font-semibold tracking-wide text-lg flex items-center justify-center gap-2 hover:bg-accent/90 disabled:opacity-50 transition-colors"
+          >
+            {loading ? (
+              <span className="animate-pulse">Logging in...</span>
+            ) : (
+              <>
+                Log In <ArrowRight className="w-5 h-5" />
+              </>
+            )}
+          </button>
+        </form>
+
+        {/* Footer links */}
+        <div className="mt-8 text-center space-y-3">
+          <Link
+            href="/"
+            className="font-mono text-xs uppercase tracking-widest text-muted hover:text-accent transition-colors"
+          >
+            &larr; Back to Home
+          </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

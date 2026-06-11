@@ -14,7 +14,9 @@ class TicketAssignmentController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => TicketAssignment::with(['ticket', 'ngoGroup', 'assignedBy'])->get(),
+            'data' => TicketAssignment::with(['ticket', 'ngoGroup', 'assignedBy'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(20),
         ]);
     }
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { StatsCards, ActivityFeed, PublicScoreboard, Card } from "@likaslens/shared";
-import { Sidebar } from "@phosphor-icons/react";
+import { PanelLeftClose } from "lucide-react";
 
 interface CitizenDashboardProps {
   locale?: string;
@@ -43,9 +43,9 @@ export function CitizenDashboardClient({ locale, impact, ghostModeActive }: Citi
             className="flex items-center gap-1.5 font-mono text-sm text-muted hover:text-ink transition-colors"
           >
             {panelOpen && activePanel === "feed" ? (
-              <><Sidebar className="w-3.5 h-3.5" /> Close</>
+              <><PanelLeftClose className="w-3.5 h-3.5" /> Close</>
             ) : (
-              <><Sidebar className="w-3.5 h-3.5" /> Details</>
+              <><PanelLeftClose className="w-3.5 h-3.5" /> Details</>
             )}
           </button>
         </div>

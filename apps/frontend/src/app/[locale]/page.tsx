@@ -11,13 +11,13 @@ import {
   ArrowDown,
   Eye,
   Camera,
-  DeviceMobile,
+  Smartphone,
   Download,
-  ChartBar,
+  BarChart3,
   ShieldCheck,
   CheckCircle,
-  Robot,
-} from "@phosphor-icons/react";
+  Bot,
+} from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
 import { PublicScoreboard, FaqSection } from "@likaslens/shared";
 
@@ -38,7 +38,7 @@ const HOW_IT_WORKS = [
   },
   {
     step: "02",
-    Icon: Robot,
+    Icon: Bot,
     title: "AI Routes It",
     description:
       "Our YOLOv8-powered vision model identifies the issue type and severity, then intelligently dispatches the report to the exact government agency responsible.",
@@ -62,7 +62,7 @@ const staggerContainer = {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
 };
 
 export default function Home() {
@@ -225,8 +225,8 @@ export default function Home() {
         transition={{ duration: 0.5 }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          <Leaf style={{ width: 20, height: 20, color: "#2ee6c8" }} weight="fill" />
-          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.03em", color: "#f0ede8" }}>
+          <Leaf style={{ width: 20, height: 20, color: "var(--accent-bright)" }} />
+          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.03em", color: "var(--hero-ink)" }}>
             LikasLens
           </span>
         </div>
@@ -236,15 +236,15 @@ export default function Home() {
           style={{ gap: 32, fontFamily: "monospace", fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(240,237,232,0.5)" }}
         >
           <a href="#how-it-works" style={{ color: "inherit", textDecoration: "none" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#f0ede8")}
+            onMouseEnter={e => (e.currentTarget.style.color = "var(--hero-ink)")}
             onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,237,232,0.5)")}
           >Features</a>
           <a href="#scoreboard" style={{ color: "inherit", textDecoration: "none" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#f0ede8")}
+            onMouseEnter={e => (e.currentTarget.style.color = "var(--hero-ink)")}
             onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,237,232,0.5)")}
           >Records</a>
           <a href="#ghost" style={{ color: "inherit", textDecoration: "none" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "#f0ede8")}
+            onMouseEnter={e => (e.currentTarget.style.color = "var(--hero-ink)")}
             onMouseLeave={e => (e.currentTarget.style.color = "rgba(240,237,232,0.5)")}
           >Ghost Mode</a>
         </div>
@@ -263,11 +263,11 @@ export default function Home() {
               fontSize: 11,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: ghostMode ? "#facc15" : "rgba(240,237,232,0.5)",
+              color: ghostMode ? "var(--ghost-accent)" : "var(--hero-muted)",
               transition: "color 0.2s",
             }}
           >
-            <Fingerprint style={{ width: 14, height: 14 }} weight={ghostMode ? "fill" : "bold"} />
+            <Fingerprint style={{ width: 14, height: 14 }} />
             Ghost
           </button>
           <UserNav invert />
@@ -278,7 +278,7 @@ export default function Home() {
       <section
         style={{
           minHeight: "100svh",
-          backgroundColor: ghostMode ? "#06101e" : "#1a3828",
+          backgroundColor: ghostMode ? "var(--hero-bg)" : "var(--accent)",
           backgroundImage: ghostMode
             ? `
               radial-gradient(ellipse 70% 60% at 10% 10%, rgba(46,230,200,0.15) 0%, transparent 55%),
@@ -325,9 +325,9 @@ export default function Home() {
                   padding: "4px 12px", borderRadius: 9999,
                   background: "rgba(46,230,200,0.1)", border: "1px solid rgba(46,230,200,0.2)",
                   fontFamily: "monospace", fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase",
-                  color: "#2ee6c8",
+                  color: "var(--accent-bright)",
                 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2ee6c8", display: "inline-block", animation: "breathe 3s ease-in-out infinite" }} />
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-bright)", display: "inline-block", animation: "breathe 3s ease-in-out infinite" }} />
                   Civic Environmental Intelligence · 2026
                 </span>
               </motion.div>
@@ -338,14 +338,14 @@ export default function Home() {
                   fontWeight: 800,
                   letterSpacing: "-0.04em",
                   lineHeight: 1.04,
-                  color: "#f0ede8",
+                  color: "var(--hero-ink)",
                   margin: 0,
                 }}>
                   The Environment{" "}
                   <br />
                   Needs a{" "}
                   <span style={{
-                    background: "linear-gradient(135deg, #2ee6c8 0%, #5aefb0 50%, #a8f5d0 100%)",
+                    background: "linear-gradient(135deg, var(--accent-bright) 0%, #5aefb0 50%, #a8f5d0 100%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
@@ -365,7 +365,7 @@ export default function Home() {
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
                     padding: "14px 28px", borderRadius: 12,
-                    background: "#2ee6c8", color: "#0d1a12",
+                    background: "var(--accent-bright)", color: "var(--hero-bg)",
                     fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em",
                     textDecoration: "none", border: "none",
                     boxShadow: "0 0 0 0 rgba(46,230,200,0)",
@@ -374,22 +374,22 @@ export default function Home() {
                   onMouseEnter={e => {
                     (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
                     (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px -8px rgba(46,230,200,0.5)";
-                    (e.currentTarget as HTMLElement).style.background = "#40f0d4";
+                    (e.currentTarget as HTMLElement).style.background = "var(--ghost-accent-hover)";
                   }}
                   onMouseLeave={e => {
                     (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
                     (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(46,230,200,0)";
-                    (e.currentTarget as HTMLElement).style.background = "#2ee6c8";
+                    (e.currentTarget as HTMLElement).style.background = "var(--accent-bright)";
                   }}
                 >
-                  Report an Issue <ArrowRight style={{ width: 16, height: 16 }} weight="bold" />
+                   Report an Issue <ArrowRight style={{ width: 16, height: 16 }} />
                 </Link>
                 <a
                   href="#scoreboard"
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
                     padding: "14px 28px", borderRadius: 12,
-                    background: "transparent", color: "#f0ede8",
+                    background: "transparent", color: "var(--hero-ink)",
                     fontWeight: 600, fontSize: 14, letterSpacing: "-0.01em",
                     textDecoration: "none",
                     border: "1px solid rgba(240,237,232,0.12)",
@@ -397,16 +397,16 @@ export default function Home() {
                   }}
                   onMouseEnter={e => {
                     (e.currentTarget as HTMLElement).style.borderColor = "rgba(46,230,200,0.4)";
-                    (e.currentTarget as HTMLElement).style.color = "#2ee6c8";
+                    (e.currentTarget as HTMLElement).style.color = "var(--accent-bright)";
                     (e.currentTarget as HTMLElement).style.background = "rgba(46,230,200,0.05)";
                   }}
                   onMouseLeave={e => {
                     (e.currentTarget as HTMLElement).style.borderColor = "rgba(240,237,232,0.12)";
-                    (e.currentTarget as HTMLElement).style.color = "#f0ede8";
+                    (e.currentTarget as HTMLElement).style.color = "var(--hero-ink)";
                     (e.currentTarget as HTMLElement).style.background = "transparent";
                   }}
                 >
-                  <ChartBar style={{ width: 16, height: 16 }} /> See Public Records
+                   <BarChart3 style={{ width: 16, height: 16 }} /> See Public Records
                 </a>
               </motion.div>
             </motion.div>
@@ -433,7 +433,7 @@ export default function Home() {
                 {/* Card header */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#2ee6c8", display: "block", animation: "breathe 3s ease-in-out infinite" }} />
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent-bright)", display: "block", animation: "breathe 3s ease-in-out infinite" }} />
                     <span style={{ fontFamily: "monospace", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,237,232,0.45)" }}>
                       LikasLens · Live
                     </span>
@@ -464,7 +464,7 @@ export default function Home() {
                       </span>
                       <span style={{
                         fontFamily: "monospace", fontSize: 22, fontWeight: 700,
-                        color: idx === metricIndex ? "#2ee6c8" : "#f0ede8",
+                        color: idx === metricIndex ? "var(--accent-bright)" : "var(--hero-ink)",
                         transition: "color 0.4s ease",
                       }}>
                         {metric.value}
@@ -484,7 +484,7 @@ export default function Home() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ height: 6, borderRadius: 9999, background: "rgba(46,230,200,0.15)", overflow: "hidden" }}>
                             <motion.div
-                              style={{ height: "100%", borderRadius: 9999, background: "#2ee6c8" }}
+                              style={{ height: "100%", borderRadius: 9999, background: "var(--accent-bright)" }}
                               initial={{ width: "0%" }}
                               animate={{ width: "100%" }}
                               transition={{ duration: 1.2, delay: 0.8 + i * 0.3, ease: "easeOut" }}
@@ -495,7 +495,7 @@ export default function Home() {
                           </p>
                         </div>
                         {i < 3 && (
-                          <ArrowRight style={{ width: 10, height: 10, color: "rgba(240,237,232,0.3)", flexShrink: 0 }} weight="bold" />
+                           <ArrowRight style={{ width: 10, height: 10, color: "rgba(240,237,232,0.3)", flexShrink: 0 }} />
                         )}
                       </div>
                     ))}
@@ -505,12 +505,12 @@ export default function Home() {
                 {/* Footer */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 8, borderTop: "1px solid rgba(240,237,232,0.06)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "monospace", fontSize: 10, color: "rgba(240,237,232,0.35)" }}>
-                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2ee6c8" }} />
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent-bright)" }} />
                     All systems operational
                   </div>
                   <button
                     onClick={handleInstall}
-                    style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", fontFamily: "monospace", fontSize: 10, color: "#2ee6c8", textDecoration: "underline" }}
+                    style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", fontFamily: "monospace", fontSize: 10, color: "var(--accent-bright)", textDecoration: "underline" }}
                   >
                     <Download style={{ width: 12, height: 12 }} /> Install App
                   </button>
@@ -541,7 +541,7 @@ export default function Home() {
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           >
-            <ArrowDown style={{ width: 16, height: 16, color: "#2ee6c8" }} />
+            <ArrowDown style={{ width: 16, height: 16, color: "var(--accent-bright)" }} />
           </motion.div>
         </motion.div>
 
@@ -555,7 +555,7 @@ export default function Home() {
           >
             <path
               d="M0,40 C180,90 360,10 540,50 C720,90 900,20 1080,55 C1260,90 1380,30 1440,50 L1440,100 L0,100 Z"
-              fill={ghostMode ? "#0c1628" : "#f5f5f0"}
+              fill="var(--page)"
               style={{ transition: "fill 0.6s ease" }}
             />
           </svg>
@@ -629,7 +629,7 @@ export default function Home() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   flexShrink: 0,
                 }}>
-                  <Icon style={{ width: 28, height: 28, color: "var(--accent)" }} weight="duotone" />
+                   <Icon style={{ width: 28, height: 28, color: "var(--accent)" }} />
                 </div>
                 <span style={{ fontFamily: "monospace", fontSize: 40, fontWeight: 900, color: "var(--border)", lineHeight: 1 }}>
                   {step}
@@ -649,30 +649,29 @@ export default function Home() {
         <div
           className="rounded-3xl border overflow-hidden transition-all duration-700"
           style={{
-            borderColor: ghostMode ? "#facc15" : "var(--border)",
+            borderColor: ghostMode ? "var(--ghost-accent)" : "var(--border)",
             borderWidth: ghostMode ? 2 : 1,
             boxShadow: ghostMode ? "0 0 80px -20px rgba(250,204,21,0.15)" : "none",
             background: ghostMode
-              ? "linear-gradient(135deg, #0d1a12 0%, #0c1628 100%)"
+              ? "linear-gradient(135deg, var(--hero-bg) 0%, var(--page) 100%)"
               : "var(--panel)",
           }}
         >
           <div className="grid md:grid-cols-2 gap-0">
             <div className="p-10 md:p-16 space-y-6 flex flex-col justify-center">
               <div className="flex items-center gap-2" style={{
-                border: ghostMode ? "1px solid #facc15" : "none",
+                border: ghostMode ? "1px solid var(--ghost-accent)" : "none",
                 padding: ghostMode ? "4px 8px" : "0",
                 borderRadius: 4,
                 alignSelf: "flex-start",
                 transition: "all 0.4s",
               }}>
                 <Fingerprint
-                  style={{ width: 20, height: 20, color: ghostMode ? "#facc15" : "var(--muted)", transition: "color 0.4s" }}
-                  weight="fill"
+                  style={{ width: 20, height: 20, color: ghostMode ? "var(--ghost-accent)" : "var(--muted)", transition: "color 0.4s" }}
                 />
                 <span style={{
                   fontFamily: "monospace", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em",
-                  color: ghostMode ? "#facc15" : "var(--muted)", transition: "color 0.4s",
+                  color: ghostMode ? "var(--ghost-accent)" : "var(--muted)", transition: "color 0.4s",
                 }}>
                   {ghostMode ? "Ghost Mode Active" : "Your Safety Matters"}
                 </span>
@@ -680,10 +679,10 @@ export default function Home() {
 
               <h2 style={{
                 fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.1,
-                color: ghostMode ? "#f0ede8" : "var(--ink)", margin: 0, transition: "color 0.5s",
+                color: ghostMode ? "var(--hero-ink)" : "var(--ink)", margin: 0, transition: "color 0.5s",
               }}>
                 Report sensitive issues{" "}
-                <span style={{ color: ghostMode ? "#facc15" : "var(--muted)", transition: "color 0.5s" }}>
+                <span style={{ color: ghostMode ? "var(--ghost-accent)" : "var(--muted)", transition: "color 0.5s" }}>
                   without revealing who you are.
                 </span>
               </h2>
@@ -701,16 +700,16 @@ export default function Home() {
                   display: "flex", alignItems: "center", gap: 10,
                   padding: "12px 24px", borderRadius: 12, border: "none", cursor: "pointer",
                   fontSize: 14, fontWeight: 700,
-                  background: ghostMode ? "#facc15" : "var(--accent)",
-                  color: ghostMode ? "#0d1a12" : "#fff",
+                  background: ghostMode ? "var(--ghost-accent)" : "var(--accent)",
+                  color: ghostMode ? "var(--hero-bg)" : "#fff",
                   boxShadow: ghostMode ? "0 8px 24px -8px rgba(250,204,21,0.4)" : "0 8px 24px -8px rgba(27,67,50,0.3)",
                   transition: "all 0.3s ease",
                 }}
               >
                 {ghostMode ? (
-                  <><ShieldCheck style={{ width: 16, height: 16 }} weight="fill" /> Deactivate Ghost Mode</>
+                   <><ShieldCheck style={{ width: 16, height: 16 }} /> Deactivate Ghost Mode</>
                 ) : (
-                  <><Eye style={{ width: 16, height: 16 }} weight="fill" /> Activate Ghost Mode</>
+                   <><Eye style={{ width: 16, height: 16 }} /> Activate Ghost Mode</>
                 )}
               </button>
             </div>
@@ -752,7 +751,7 @@ export default function Home() {
                         }}
                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                       >
-                        <Fingerprint style={{ width: 96, height: 96, color: "#facc15" }} weight="bold" />
+                         <Fingerprint style={{ width: 96, height: 96, color: "var(--ghost-accent)" }} />
                       </motion.div>
                       
                       {/* Scanning Line Effect */}
@@ -772,7 +771,7 @@ export default function Home() {
                       <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "radial-gradient(circle, rgba(250,204,21,0.25) 0%, transparent 70%)", filter: "blur(12px)", pointerEvents: "none" }} />
                     </div>
                     <div>
-                      <p style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 700, color: "#facc15", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>
+                      <p style={{ fontFamily: "monospace", fontSize: 13, fontWeight: 700, color: "var(--ghost-accent)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>
                         Identity Hidden
                       </p>
                       <p style={{ fontFamily: "monospace", fontSize: 11, color: "rgba(240,237,232,0.6)", margin: 0 }}>
@@ -782,7 +781,7 @@ export default function Home() {
                     <div style={{ display: "flex", flexDirection: "column", gap: 6, textAlign: "left" }}>
                       {["Location data removed", "Device ID stripped", "Encrypted tunnel", "Zero-knowledge routing"].map((item) => (
                         <div key={item} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <CheckCircle style={{ width: 14, height: 14, color: "#facc15", flexShrink: 0 }} weight="fill" />
+                           <CheckCircle style={{ width: 14, height: 14, color: "var(--ghost-accent)", flexShrink: 0 }} />
                           <span style={{ fontFamily: "monospace", fontSize: 10, color: "rgba(240,237,232,0.45)" }}>{item}</span>
                         </div>
                       ))}
@@ -790,7 +789,7 @@ export default function Home() {
                   </>
                 ) : (
                   <>
-                    <Camera style={{ width: 96, height: 96, color: "var(--muted)" }} weight="thin" />
+                     <Camera style={{ width: 96, height: 96, color: "var(--muted)" }} />
                     <div>
                       <p className="font-mono text-sm text-muted uppercase tracking-widest" style={{ margin: "0 0 4px" }}>Standard Report</p>
                       <p className="font-mono text-xs text-muted/60" style={{ margin: 0 }}>Identity visible · Location attached</p>
@@ -841,7 +840,7 @@ export default function Home() {
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="relative rounded-3xl overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #1b4332 0%, #2d6a4f 50%, #1b4332 100%)" }}
+          style={{ background: "linear-gradient(135deg, var(--accent) 0%, var(--green) 50%, var(--accent) 100%)" }}
         >
           <div style={{ position: "absolute", top: 0, right: 0, width: 320, height: 320, pointerEvents: "none", background: "radial-gradient(circle, rgba(46,230,200,0.15) 0%, transparent 70%)", filter: "blur(40px)" }} />
           <div style={{ position: "absolute", inset: 0, opacity: 0.06, pointerEvents: "none", backgroundImage: "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
@@ -850,7 +849,7 @@ export default function Home() {
             <div className="p-10 md:p-16 space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <DeviceMobile style={{ width: 18, height: 18, color: "#2ee6c8" }} weight="bold" />
+                   <Smartphone style={{ width: 18, height: 18, color: "var(--accent-bright)" }} />
                   <span style={{ fontFamily: "monospace", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.55)" }}>
                     Progressive Web App
                   </span>
@@ -869,7 +868,7 @@ export default function Home() {
                   { n: "3", title: "Start reporting", sub: "LikasLens appears on your home screen like any native app" },
                 ].map(({ n, title, sub }) => (
                   <div key={n} className="flex items-start gap-4">
-                    <span style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", color: "#2ee6c8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontFamily: "monospace", fontWeight: 700, flexShrink: 0 }}>
+                    <span style={{ width: 32, height: 32, borderRadius: 8, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", color: "var(--accent-bright)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontFamily: "monospace", fontWeight: 700, flexShrink: 0 }}>
                       {n}
                     </span>
                     <div>
@@ -881,11 +880,11 @@ export default function Home() {
               </div>
               <button
                 onClick={handleInstall}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 24px", borderRadius: 12, background: "#2ee6c8", color: "#0d1a12", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", boxShadow: "0 8px 24px -8px rgba(46,230,200,0.35)", transition: "all 0.25s ease" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#40f0d4"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#2ee6c8"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 24px", borderRadius: 12, background: "var(--accent-bright)", color: "var(--hero-bg)", fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", boxShadow: "0 8px 24px -8px rgba(46,230,200,0.35)", transition: "all 0.25s ease" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--ghost-accent-hover)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "var(--accent-bright)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
               >
-                <Download style={{ width: 16, height: 16 }} weight="bold" /> Install LikasLens
+                 <Download style={{ width: 16, height: 16 }} /> Install LikasLens
               </button>
             </div>
 
@@ -895,7 +894,7 @@ export default function Home() {
                 <div style={{ width: 192, height: 360, borderRadius: 40, border: "4px solid rgba(255,255,255,0.18)", background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)", position: "relative", overflow: "hidden", boxShadow: "0 32px 64px -16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)" }}>
                   <div style={{ position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", width: 80, height: 20, borderRadius: 9999, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />
                   <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 16px 24px", gap: 12 }}>
-                    <Leaf style={{ width: 32, height: 32, color: "#2ee6c8" }} weight="fill" />
+                     <Leaf style={{ width: 32, height: 32, color: "var(--accent-bright)" }} />
                     <p style={{ fontFamily: "monospace", fontSize: 9, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", textAlign: "center", margin: 0 }}>LikasLens</p>
                     <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
                       <div style={{ height: 7, borderRadius: 9999, background: "rgba(255,255,255,0.08)", width: "100%" }} />
@@ -903,7 +902,7 @@ export default function Home() {
                       <div style={{ height: 7, borderRadius: 9999, background: "rgba(255,255,255,0.08)", width: "85%" }} />
                     </div>
                     <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(46,230,200,0.15)", border: "1px solid rgba(46,230,200,0.3)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 8 }}>
-                      <Camera style={{ width: 24, height: 24, color: "#2ee6c8" }} weight="duotone" />
+                       <Camera style={{ width: 24, height: 24, color: "var(--accent-bright)" }} />
                     </div>
                     <p style={{ fontFamily: "monospace", fontSize: 8, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>Tap to report</p>
                   </div>

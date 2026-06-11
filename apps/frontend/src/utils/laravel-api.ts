@@ -48,7 +48,11 @@ export async function laravelFetch<T = unknown>(path: string, options: FetchOpti
     headers["Content-Type"] = "application/json"
   }
 
-  const res = await fetch(url.toString(), { ...fetchOpts, headers })
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10_000)
+
+  const res = await fetch(url.toString(), { ...fetchOpts, headers, signal: controller.signal })
+    .finally(() => clearTimeout(timeout))
 
   if (!res.ok) {
     const text = await res.text().catch(() => "")

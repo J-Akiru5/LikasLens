@@ -12,7 +12,7 @@ export type UploadResult =
 
 export function validateProfileImage(file: File): string | null {
   if (file.size > MAX_FILE_SIZE) {
-    return "Image must be under 2MB.";
+    return "Image must be under 25MB.";
   }
   if (!ALLOWED_TYPES.includes(file.type)) {
     return "Only JPEG, PNG, and WebP images are allowed.";

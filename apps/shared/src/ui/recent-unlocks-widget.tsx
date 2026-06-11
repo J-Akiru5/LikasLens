@@ -2,7 +2,7 @@
 
 import { cn } from "../utils";
 import { AchievementCard } from "./achievement-card";
-import { Trophy, CaretRight } from "@phosphor-icons/react";
+import { Trophy, ChevronRight } from "lucide-react";
 import type { RecentAchievement, Achievement } from "../types/user";
 
 interface RecentMilestonesWidgetProps {
@@ -33,7 +33,7 @@ export function RecentMilestonesWidget({ achievements, className, onViewAll }: R
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg border border-accent/20 bg-accent/5 flex items-center justify-center">
-            <Trophy className="w-5 h-5 text-accent" weight="fill" />
+            <Trophy className="w-5 h-5 text-accent" />
           </div>
           <h2 className="text-lg font-semibold text-ink">Recent Milestones</h2>
         </div>
@@ -43,7 +43,7 @@ export function RecentMilestonesWidget({ achievements, className, onViewAll }: R
             className="flex items-center gap-1 font-mono text-xs font-medium uppercase tracking-widest text-muted hover:text-ink transition-colors"
           >
             View All
-            <CaretRight className="w-4 h-4" weight="bold" />
+             <ChevronRight className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -56,7 +56,7 @@ export function RecentMilestonesWidget({ achievements, className, onViewAll }: R
         </div>
       ) : (
         <div className="text-center py-8 border border-dashed border-border rounded-xl">
-          <Trophy className="mx-auto h-8 w-8 text-muted mb-2" weight="light" />
+          <Trophy className="mx-auto h-8 w-8 text-muted mb-2" />
           <p className="text-sm font-medium text-muted">No credentials earned yet</p>
           <p className="text-xs text-muted mt-1">
             Submit verified reports to earn contributor credentials.

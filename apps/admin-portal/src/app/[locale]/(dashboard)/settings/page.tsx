@@ -3,13 +3,11 @@
 import { useState } from "react";
 import { Card } from "@likaslens/shared";
 import {
-  Settings as SettingsIcon,
   Globe,
   Bell,
   Shield,
   Clock,
   Lock,
-  Key,
   Users,
 } from "lucide-react";
 

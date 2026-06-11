@@ -29,8 +29,8 @@
     "i18n:generate": "npx tsx src/i18n/generate.ts"
   },
   "dependencies": {
-    "@phosphor-icons/react": "^2.1.10",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^1.14.0",
     "tailwind-merge": "^3.5.0"
   },
@@ -42,6 +42,7 @@
     "typescript": "^5"
   },
   "peerDependencies": {
+    "next": ">=15",
     "react": "^19",
     "react-dom": "^19"
   }

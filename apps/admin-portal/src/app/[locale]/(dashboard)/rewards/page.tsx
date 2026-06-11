@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { laravelGet } from "@likaslens/shared";
-import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
+import type { PaginatedResponse } from "@likaslens/shared";
 import { Card, Spinner } from "@likaslens/shared";
 import { Gift, Package } from "lucide-react";
 

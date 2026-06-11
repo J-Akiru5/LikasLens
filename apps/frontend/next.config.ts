@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import withPWA from "next-pwa";
-import { runtimeCaching } from "./sw-cache";
+import runtimeCaching from "next-pwa/cache";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 

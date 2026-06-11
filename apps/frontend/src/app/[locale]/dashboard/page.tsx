@@ -27,7 +27,7 @@ export default async function DashboardPage() {
   let impactData: ImpactData | null = null;
 
   try {
-    const impactRes = await laravelGet<{ success: boolean; data: ImpactData }>("/api/user/impact");
+    const impactRes = await laravelGet<{ success: boolean; data: ImpactData }>("/user/impact");
     if (impactRes.success) impactData = impactRes.data;
   } catch { /* defaults */ }
 
