@@ -19,7 +19,7 @@ export function SplashScreen() {
         <div className="relative">
           <div className="absolute inset-0 bg-accent/5 rounded-full blur-2xl animate-pulse" />
           <div className="relative w-20 h-20 rounded-2xl bg-accent flex items-center justify-center shadow-[4px_4px_0px_#081c15]">
-            <Leaf className="w-10 h-10 text-secondary" />
+            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-14 h-14 object-contain" />
           </div>
         </div>
 

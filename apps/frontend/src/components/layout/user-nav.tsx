@@ -128,8 +128,7 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
-              className="absolute right-0 mt-3 w-56 border border-ink/10 bg-page shadow-lg z-50"
-              style={{ borderRadius: 12 }}
+              className="absolute right-0 mt-3 w-56 rounded-2xl border border-ink/10 bg-page shadow-xl overflow-hidden z-50"
             >
               <div className="p-3 border-b border-ink/10">
                 <p className="font-mono text-[10px] text-ink/40 uppercase tracking-wider">Signed in as</p>

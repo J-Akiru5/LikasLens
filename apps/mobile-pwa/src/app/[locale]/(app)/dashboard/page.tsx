@@ -57,7 +57,7 @@ export default function DashboardPage() {
         <div className="relative z-10 flex flex-col items-center text-center mt-4">
           <span className="text-xs font-mono uppercase tracking-widest opacity-80 mb-1">Eco-Credits Balance</span>
           <h1 className="text-[3.5rem] leading-none font-bold tracking-tighter" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>
-            {stats?.reward_points_balance?.toLocaleString() ?? 0}
+            {((stats as any)?.reward_points_balance ?? 0).toLocaleString()}
           </h1>
           <div className="bg-page/10 backdrop-blur-sm border border-page/10 px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest mt-4 flex items-center gap-1">
             <span className="text-page">↑ 12%</span>
@@ -117,7 +117,7 @@ export default function DashboardPage() {
 
         <div className="space-y-4">
           {feed.length === 0 ? (
-            <EmptyFeed message="No recent activity" />
+            <EmptyFeed description="No recent activity" />
           ) : (
             feed.map((item) => {
               const typeConfig: Record<string, { bg: string; text: string; icon: string }> = {

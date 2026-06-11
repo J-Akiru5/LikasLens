@@ -45,42 +45,44 @@ export default async function DashboardPage() {
 
   return (
     <DashboardContent greeting={userGreeting} userRole={userRole}>
-      <div className="max-w-4xl mx-auto space-y-8">
-        {isAdmin ? (
-          <div className="bg-panel border border-ink/10 rounded-3xl p-8 md:p-12 text-center max-w-2xl mx-auto mt-12 shadow-sm">
-            <div className="w-16 h-16 bg-green/10 text-green rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+      {isAdmin ? (
+        <div className="bento-grid">
+          <div className="span-6 md:col-start-4">
+            <div className="bg-panel border border-ink/10 rounded-3xl p-8 md:p-12 text-center shadow-sm">
+              <div className="w-16 h-16 bg-green/10 text-green rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-ink mb-3">
+                Citizen Portal Access
+              </h2>
+              <p className="text-ink/60 mb-8 max-w-md mx-auto leading-relaxed">
+                You are currently viewing the frontend application as an Administrator. This portal is designed for regular citizens to submit reports and view public data.
+              </p>
+              <a
+                href={process.env.NEXT_PUBLIC_ADMIN_PORTAL_URL || "/admin"}
+                className="inline-flex items-center gap-2 bg-green text-page px-6 py-3 rounded-xl font-semibold tracking-wide hover:opacity-90 transition-opacity"
+              >
+                Go to Admin Portal
+                <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
             </div>
-            <h2 className="text-2xl font-bold text-ink mb-3">
-              Citizen Portal Access
-            </h2>
-            <p className="text-ink/60 mb-8 max-w-md mx-auto leading-relaxed">
-              You are currently viewing the frontend application as an Administrator. This portal is designed for regular citizens to submit reports and view public data.
-            </p>
-            <a
-              href={process.env.NEXT_PUBLIC_ADMIN_PORTAL_URL || "/admin"}
-              className="inline-flex items-center gap-2 bg-green text-page px-6 py-3 rounded-xl font-semibold tracking-wide hover:opacity-90 transition-opacity"
-            >
-              Go to Admin Portal
-              <svg className="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
           </div>
-        ) : (
-          <>
-            <ContributorProfile />
-            <CitizenDashboardClient
-              impact={impactData}
-              stats={statsData}
-              feed={feedData}
-              ghostModeActive={false}
-            />
-          </>
-        )}
-      </div>
+        </div>
+      ) : (
+        <>
+          <ContributorProfile />
+          <CitizenDashboardClient
+            impact={impactData}
+            stats={statsData}
+            feed={feedData}
+            ghostModeActive={false}
+          />
+        </>
+      )}
     </DashboardContent>
   );
 }

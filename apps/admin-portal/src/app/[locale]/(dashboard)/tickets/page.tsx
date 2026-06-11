@@ -110,7 +110,7 @@ export default function TicketsPage() {
     try {
       const res = await bulkTicketStatus(ids, newStatus);
       if (res.success) {
-        showToast(res.message, "success");
+        showToast(res.message || "Operation successful", "success");
         bulk.clear();
         await fetchTickets();
       }
@@ -129,7 +129,7 @@ export default function TicketsPage() {
     try {
       const res = await bulkTicketAssign(ids, lguId);
       if (res.success) {
-        showToast(res.message, "success");
+        showToast(res.message || "Operation successful", "success");
         bulk.clear();
       }
     } catch (err) {
@@ -370,3 +370,4 @@ export default function TicketsPage() {
     </div>
   );
 }
+

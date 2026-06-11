@@ -49,7 +49,7 @@ export function LoginClient() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="w-16 h-16 rounded-full border border-accent flex items-center justify-center bg-transparent">
-            <Leaf className="w-6 h-6 text-accent" />
+            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-10 h-10 object-contain" />
           </div>
         </div>
 

@@ -94,9 +94,12 @@ export function OnboardingSlider() {
     <div className="fixed inset-0 flex flex-col bg-page">
       <div className="flex items-center justify-between p-6 z-10">
         <div className="flex items-center gap-2">
-          <Leaf className="w-5 h-5 text-accent" />
-          <span className="font-bold text-sm text-accent tracking-tight uppercase">
-            LikasLens
+          <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-8 h-8 object-contain" />
+          <span className="font-heading tracking-[0.2em] text-sm text-accent flex items-center mt-0.5 uppercase">
+            <span className="font-medium">LIK</span>
+            <span className="font-semibold mx-[1px]">Λ</span>
+            <span className="font-medium mr-1">S</span>
+            <span className="font-bold">LENS</span>
           </span>
         </div>
         <button

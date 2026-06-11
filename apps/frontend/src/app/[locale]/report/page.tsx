@@ -82,6 +82,7 @@ export default function ReportPage() {
     const newTheme = checked ? "ghost" : "civic";
     document.documentElement.setAttribute("data-theme", newTheme);
     try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
+    (window as any).updateThemeColor?.();
   };
 
   const stripExif = async (base64: string) => {
@@ -347,7 +348,7 @@ export default function ReportPage() {
       />
 
       <DashboardLayoutWrapper>
-        <div className="max-w-2xl mx-auto space-y-8">
+        <div className="space-y-8">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#3a7d54]" />

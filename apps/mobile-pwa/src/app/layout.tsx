@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
-import { locales, type Locale } from "@likaslens/shared";
 
 const bodyFont = Geist({
   variable: "--font-body",
@@ -34,29 +34,23 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1B4332",
+  themeColor: "#1b4332",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
 };
 
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
-}
-
 export default async function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale?: Locale }>;
 }) {
-  const resolvedParams = await params;
+  const locale = await getLocale();
 
   return (
     <html
-      lang={resolvedParams?.locale === "ta" ? "ta" : resolvedParams?.locale || "en"}
+      lang={locale}
       className={`${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
       data-theme="civic"
       suppressHydrationWarning
@@ -64,8 +58,8 @@ export default async function RootLayout({
       <head>
         <Script id="theme-initializer" strategy="beforeInteractive">
           {`try {
-            var theme = localStorage.getItem('likaslens-theme');
-            if (theme === 'ghost') {
+            var savedTheme = localStorage.getItem('likaslens-theme');
+            if (savedTheme === 'ghost') {
               document.documentElement.setAttribute('data-theme', 'ghost');
             }
           } catch (e) {}`}

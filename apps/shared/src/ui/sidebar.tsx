@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Leaf,
   Home,
@@ -96,9 +96,12 @@ export function Sidebar({
   const sidebarContent = (
     <>
       <div className="p-6 border-b border-ink/10 flex items-center gap-2 text-ink">
-        <Leaf className="w-6 h-6 text-green" />
-        <span className="font-semibold text-xl text-ink tracking-tight">
-          {logoLabel}
+        <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-8 h-8 object-contain" />
+        <span className="font-heading tracking-[0.2em] text-xl text-ink flex items-center mt-0.5">
+          <span className="font-medium">LIK</span>
+          <span className="font-semibold mx-[1px]">Λ</span>
+          <span className="font-medium mr-1">S</span>
+          <span className="font-bold uppercase">LENS</span>
         </span>
       </div>
 
@@ -125,7 +128,17 @@ export function Sidebar({
             <Link
               key={href}
               href={href}
+              prefetch={true}
               onClick={closeMobile}
+              onMouseEnter={(e) => {
+                const link = e.currentTarget;
+                const prefetchLink = document.createElement("link");
+                prefetchLink.rel = "prefetch";
+                prefetchLink.href = href;
+                prefetchLink.as = "document";
+                document.head.appendChild(prefetchLink);
+                setTimeout(() => prefetchLink.remove(), 3000);
+              }}
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-all duration-150 relative",

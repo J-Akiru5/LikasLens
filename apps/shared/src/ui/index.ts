@@ -1,3 +1,5 @@
+export { RouteProgress } from "./route-progress";
+export { Sparkline } from "./sparkline";
 export { Spinner } from "./spinner";
 export { Badge } from "./badge";
 export {

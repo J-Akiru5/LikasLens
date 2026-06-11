@@ -26,6 +26,7 @@ use App\Http\Controllers\TicketAssignmentController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserImpactController;
 use App\Http\Controllers\ApiTokenController;
+use App\Http\Controllers\AnalyticsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -74,7 +75,12 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
     Route::get('/admin/laws', [AdminLawController::class, 'index']);
     Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
+    Route::get('/analytics/dashboard', [AnalyticsController::class, 'dashboard']);
 });
+
+// Dashboard aggregate stats (public — no user-specific data, cached)
+Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+Route::get('/dashboard/feed', [DashboardController::class, 'feed']);
 
 // Chat proxy endpoint (public, expensive — proxies to internal AI service, strict throttle)
 Route::post('/v1/chat', [ChatController::class, 'send'])->middleware('throttle:10,1');
@@ -137,10 +143,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/reports/verify', [ReportController::class, 'verify']);
     });
     Route::post('/reports/batch-sync', [ReportController::class, 'batchSync']);
-
-    // Dashboard endpoints
-    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
-    Route::get('/dashboard/feed', [DashboardController::class, 'feed']);
 
     // Analyst+ routes
     Route::middleware('role:analyst,super_admin')->group(function () {

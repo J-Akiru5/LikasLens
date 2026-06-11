@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Sidebar, type NavItem } from "./sidebar";
 import { AppHeader } from "./app-header";
 import { BottomNav, type BottomNavItem } from "./bottom-nav";
+import { RouteProgress } from "./route-progress";
 import { cn } from "../utils";
 
 interface DashboardLayoutProps {
@@ -41,6 +42,8 @@ export function DashboardLayout({
 
   return (
     <div className={cn("flex h-dvh overflow-hidden bg-page", className)}>
+      <RouteProgress />
+
       <Sidebar
         navItems={navItems}
         userRole={userRole}
@@ -63,7 +66,9 @@ export function DashboardLayout({
         />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
-          {children}
+          <div className="max-w-[1440px] mx-auto">
+            {children}
+          </div>
         </main>
       </div>
 

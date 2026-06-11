@@ -62,29 +62,21 @@ export default function DashboardPage() {
       label: "Active Incidents",
       value: stats?.active_incidents ?? 0,
       icon: AlertTriangle,
-      iconBg: "bg-amber/10",
-      iconColor: "text-amber",
     },
     {
       label: "Resolved Today",
       value: stats?.resolved_today ?? 0,
       icon: CheckCircle2,
-      iconBg: "bg-green/10",
-      iconColor: "text-green",
     },
     {
       label: "Avg Response",
       value: `${stats?.avg_response_minutes ?? 0}m`,
       icon: Clock,
-      iconBg: "bg-ink/[0.04]",
-      iconColor: "text-ink/60",
     },
     {
       label: "Total Users",
       value: stats?.total_users ?? 0,
       icon: Users,
-      iconBg: "bg-ink/[0.04]",
-      iconColor: "text-ink/60",
     },
   ];
 
@@ -103,15 +95,10 @@ export default function DashboardPage() {
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <div
-              key={kpi.label}
-              className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5"
-            >
+            <div key={kpi.label} className="kpi-card">
               <div className="flex items-center gap-4">
-                <div
-                  className={`w-12 h-12 rounded-2xl ${kpi.iconBg} flex items-center justify-center`}
-                >
-                  <Icon className={`w-6 h-6 ${kpi.iconColor}`} />
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center">
+                  <Icon className="w-6 h-6" />
                 </div>
                 <div>
                   <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
@@ -192,9 +179,9 @@ export default function DashboardPage() {
                 </div>
                 <span
                   className={`ml-2 shrink-0 rounded-full px-2.5 py-1 text-xs font-mono ${
-                    ticket.status === "Open"
+                    ticket.status === "open"
                       ? "bg-amber/10 text-amber"
-                      : ticket.status === "Resolved"
+                      : ticket.status === "resolved"
                         ? "bg-green/10 text-green"
                         : "bg-ink/[0.04] text-ink/60"
                   }`}

@@ -276,18 +276,27 @@ export default function ImpactPage() {
             textDecoration: "none",
           }}
         >
-          <Leaf
-            style={{ width: 20, height: 20, color: "var(--accent-bright)" }}
+          <img
+            src="/icons/icon-192x192.png"
+            alt="LikasLens Logo"
+            style={{ width: 32, height: 32, objectFit: "contain" }}
           />
           <span
             style={{
               fontSize: 20,
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
+              letterSpacing: "0.2em",
               color: "var(--hero-ink)",
+              display: "flex",
+              alignItems: "center",
+              marginTop: 2,
+              fontFamily: "var(--font-heading), sans-serif",
+              textTransform: "uppercase"
             }}
           >
-            LikasLens
+            <span style={{ fontWeight: 500 }}>LIK</span>
+            <span style={{ fontWeight: 600, margin: "0 1px" }}>Λ</span>
+            <span style={{ fontWeight: 500, marginRight: 4 }}>S</span>
+            <span style={{ fontWeight: 800 }}>LENS</span>
           </span>
         </Link>
 

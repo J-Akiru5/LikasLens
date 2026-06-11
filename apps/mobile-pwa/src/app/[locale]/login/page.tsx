@@ -72,7 +72,7 @@ export default function LoginPage() {
         {/* Floating Logo */}
         <div className="absolute -top-10 left-8">
           <div className="w-20 h-20 rounded-3xl bg-page shadow-xl flex items-center justify-center border border-accent/10">
-            <Leaf className="w-10 h-10 text-accent" />
+            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-14 h-14 object-contain" />
           </div>
         </div>
 

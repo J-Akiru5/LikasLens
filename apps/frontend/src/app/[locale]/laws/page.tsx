@@ -50,7 +50,7 @@ export default function LawsPage() {
 
   return (
     <DashboardLayoutWrapper showBranding>
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-ink/10 pb-6">
           <div>
             <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink mb-3">Environmental Laws</h1>

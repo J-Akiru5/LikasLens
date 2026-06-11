@@ -233,7 +233,7 @@ function ProfilePageContent() {
   if (loading) {
     return (
       <DashboardLayoutWrapper>
-        <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
+        <div className="space-y-6 animate-fade-in">
           <div className="rounded-[40px] h-52 bg-ink/5 animate-shimmer" />
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="space-y-4">
@@ -255,7 +255,7 @@ function ProfilePageContent() {
 
   return (
     <DashboardLayoutWrapper>
-      <div className="max-w-5xl mx-auto space-y-12">
+      <div className="space-y-12">
         {/* Sweeping Neon Curved Header for Profile */}
         <div className="bg-green text-page rounded-b-[40px] md:rounded-[40px] pt-12 pb-16 px-8 relative overflow-hidden shadow-xl mt-4 md:mt-0 mb-4">
           <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 rounded-full border-[40px] border-page/5" />

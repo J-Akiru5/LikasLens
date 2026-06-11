@@ -78,9 +78,12 @@ export function AppHeader({
           </h1>
         ) : showBranding ? (
           <Link href="/" className="flex items-center gap-2 text-ink">
-            <Leaf className="w-5 h-5 text-green" />
-            <span className="font-semibold tracking-tight text-lg">
-              LikasLens
+            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-8 h-8 object-contain" />
+            <span className="font-heading tracking-[0.2em] text-lg flex items-center mt-0.5">
+              <span className="font-medium">LIK</span>
+              <span className="font-semibold mx-[1px]">Λ</span>
+              <span className="font-medium mr-1">S</span>
+              <span className="font-bold uppercase">LENS</span>
             </span>
           </Link>
         ) : null}
@@ -106,12 +109,12 @@ export function AppHeader({
             aria-label="Notifications"
             aria-expanded={notifOpen}
             onClick={() => setNotifOpen((v) => !v)}
-            className="relative text-ink/40 hover:text-ink transition-colors"
+            className="relative p-2 rounded-xl text-ink/50 hover:text-ink hover:bg-ink/5 transition-all focus:outline-none focus:ring-2 focus:ring-accent"
           >
             <Bell className="w-5 h-5" />
             <span
               className={cn(
-                "absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full",
+                "absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-2 border-page",
                 isGhostMode ? "bg-[#2EE6C8]" : "bg-green",
               )}
               aria-hidden="true"
@@ -119,8 +122,8 @@ export function AppHeader({
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-full mt-3 w-80 border border-ink/10 bg-page shadow-lg z-50">
-              <div className="p-3 border-b border-ink/10 flex items-center justify-between">
+            <div className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-ink/10 bg-page shadow-xl overflow-hidden z-50">
+              <div className="p-3 border-b border-ink/10 flex items-center justify-between bg-ink/5">
                 <span className="font-mono text-xs text-ink uppercase tracking-wider">
                   Notifications
                 </span>

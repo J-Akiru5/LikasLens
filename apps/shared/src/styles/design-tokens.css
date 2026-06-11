@@ -149,6 +149,90 @@
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
+   BENTO GRID SYSTEM — 12-column responsive grid
+   ─────────────────────────────────────────────────────────────────────────── */
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 24px;
+    width: 100%;
+}
+.span-3  { grid-column: span 3; }
+.span-4  { grid-column: span 4; }
+.span-5  { grid-column: span 5; }
+.span-6  { grid-column: span 6; }
+.span-7  { grid-column: span 7; }
+.span-8  { grid-column: span 8; }
+.span-9  { grid-column: span 9; }
+.span-12 { grid-column: span 12; }
+
+@media (max-width: 1024px) {
+    .span-3, .span-4, .span-5 { grid-column: span 6; }
+}
+@media (max-width: 640px) {
+    [class^="span-"] { grid-column: span 12; }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   KPI CARD — modern stat card with accent strip
+   ─────────────────────────────────────────────────────────────────────────── */
+.kpi-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.kpi-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+}
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+[data-theme="ghost"] .kpi-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.kpi-card .kpi-accent-green::before    { background: var(--green); }
+.kpi-card .kpi-accent-amber::before   { background: var(--amber); }
+.kpi-card .kpi-accent-accent::before  { background: var(--accent); }
+.kpi-card .kpi-accent-muted::before   { background: var(--muted); }
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--ink);
+}
+.kpi-label {
+    font-size: 0.75rem;
+    font-family: var(--font-data, monospace);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+}
+.kpi-trend {
+    font-size: 0.6875rem;
+    font-family: var(--font-data, monospace);
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
    TAILWIND V4 THEME — maps CSS vars to Tailwind utility classes
    ─────────────────────────────────────────────────────────────────────────── */
 @theme inline {

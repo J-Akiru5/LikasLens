@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
 import { Footer } from "@/components/layout/footer";
 import {
   motion,
@@ -26,7 +24,7 @@ import {
   Bot,
 } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
-import { PublicScoreboard, FaqSection, laravelGet } from "@likaslens/shared";
+import { PublicScoreboard, FaqSection, laravelGet, LanguageSuggestionPopup } from "@likaslens/shared";
 
 interface LiveMetric {
   label: string;
@@ -46,7 +44,7 @@ const HOW_IT_WORKS = [
     Icon: Bot,
     title: "AI Routes It",
     description:
-      "Our YOLOv8-powered vision model identifies the issue type and severity, then intelligently dispatches the report to the exact government agency responsible.",
+      "Our advanced AI Vision Model identifies the issue type and severity, then intelligently dispatches the report to the exact government agency responsible.",
   },
   {
     step: "03",
@@ -78,7 +76,6 @@ const fadeUp = {
 };
 
 export default function Home() {
-  const router = useRouter();
   const [ghostMode, setGhostMode] = useState(false);
   const [metricIndex, setMetricIndex] = useState(0);
   const [navScrolled, setNavScrolled] = useState(false);
@@ -160,22 +157,6 @@ export default function Home() {
     fetchMetrics();
   }, []);
 
-  // Redirect logged-in users to dashboard
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          router.replace("/dashboard");
-        }
-      } catch {
-        // Not logged in, show landing page
-      }
-    }
-    checkAuth();
-  }, [router]);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setMetricIndex((i) => (i + 1) % liveMetrics.length);
@@ -241,7 +222,6 @@ export default function Home() {
         localStorage.setItem("likaslens-theme", "ghost");
       } catch {}
     } else {
-      // Don't override if it's explicitly set to civic somewhere else, just remove ghost
       const current = document.documentElement.getAttribute("data-theme");
       if (current === "ghost") {
         document.documentElement.setAttribute("data-theme", "civic");
@@ -250,6 +230,7 @@ export default function Home() {
         } catch {}
       }
     }
+    (window as any).updateThemeColor?.();
   }, [ghostMode]);
 
   return (
@@ -288,18 +269,27 @@ export default function Home() {
             flexShrink: 0,
           }}
         >
-          <Leaf
-            style={{ width: 20, height: 20, color: "var(--accent-bright)" }}
+          <img
+            src="/icons/icon-192x192.png"
+            alt="LikasLens Logo"
+            style={{ width: 32, height: 32, objectFit: "contain" }}
           />
           <span
             style={{
               fontSize: 20,
-              fontWeight: 700,
-              letterSpacing: "-0.03em",
+              letterSpacing: "0.2em",
               color: "var(--hero-ink)",
+              display: "flex",
+              alignItems: "center",
+              marginTop: 2,
+              fontFamily: "var(--font-heading), sans-serif",
+              textTransform: "uppercase"
             }}
           >
-            LikasLens
+            <span style={{ fontWeight: 500 }}>LIK</span>
+            <span style={{ fontWeight: 600, margin: "0 1px" }}>Λ</span>
+            <span style={{ fontWeight: 500, marginRight: 4 }}>S</span>
+            <span style={{ fontWeight: 800 }}>LENS</span>
           </span>
         </div>
 
@@ -1767,7 +1757,7 @@ export default function Home() {
                       gap: 12,
                     }}
                   >
-                    <Leaf style={{ width: 32, height: 32, color: "#2ee6c8" }} />
+                    <img src="/icons/icon-192x192.png" alt="LikasLens Logo" style={{ width: 48, height: 48, objectFit: "contain" }} />
                     <p
                       style={{
                         fontFamily: "monospace",
@@ -1879,6 +1869,7 @@ export default function Home() {
       </section>
 
       <Footer />
+      <LanguageSuggestionPopup />
     </main>
   );
 }

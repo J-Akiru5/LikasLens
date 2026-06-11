@@ -464,6 +464,7 @@ function PlatformSection() {
     setTheme(value);
     try { localStorage.setItem("likaslens-theme", value); } catch { /* ignore */ }
     document.documentElement.setAttribute("data-theme", value);
+    (window as any).updateThemeColor?.();
     window.dispatchEvent(new Event("themechange"));
     showToast(`Theme switched to ${value === "civic" ? "Civic" : "Ghost"} mode`, "success");
   };

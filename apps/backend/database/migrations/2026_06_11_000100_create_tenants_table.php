@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('country_code', 5)->default('PH');
             $table->string('timezone')->default('Asia/Manila');
             $table->boolean('is_active')->default(true);
+            $table->softDeletes();
             $table->timestamps();
 
             $table->index('is_active');

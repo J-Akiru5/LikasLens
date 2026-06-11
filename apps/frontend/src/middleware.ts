@@ -7,7 +7,7 @@ const intlMiddleware = createIntlMiddleware({
   locales,
   defaultLocale,
   localePrefix: "always",
-  localeDetection: true,
+  localeDetection: false,
 });
 
 export default async function middleware(request: NextRequest) {
@@ -111,5 +111,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/", "/(en|fil|vi|id|ms|ta)/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
 };

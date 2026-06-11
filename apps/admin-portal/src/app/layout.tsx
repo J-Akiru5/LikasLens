@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
-import "./globals.css";
+import { getLocale } from "next-intl/server";
 import { LikasyChat } from "@likaslens/shared";
-import { locales, type Locale } from "@likaslens/shared";
+import "./globals.css";
 
 const bodyFont = Geist({
   variable: "--font-body",
@@ -25,21 +25,15 @@ export const viewport: Viewport = {
   themeColor: "#1B4332",
 };
 
-export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
-}
-
 export default async function RootLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ locale?: Locale }>;
 }) {
-  const resolvedParams = await params;
+  const locale = await getLocale();
   return (
     <html
-      lang={resolvedParams?.locale === "ta" ? "ta" : (resolvedParams?.locale || "en")}
+      lang={locale}
       className={`${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
       data-theme="civic"
       suppressHydrationWarning
@@ -58,7 +52,7 @@ export default async function RootLayout({
         <div className="flex-1">
           {children}
         </div>
-        <LikasyChat persona="admin" locale={resolvedParams.locale} />
+        <LikasyChat persona="admin" locale={locale} />
       </body>
     </html>
   );

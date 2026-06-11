@@ -172,7 +172,7 @@ export default function UsersPage() {
     try {
       const res = await bulkUserRole(ids, newRole);
       if (res.success) {
-        showToast(res.message, "success");
+        showToast(res.message || "Operation successful", "success");
         bulk.clear();
         await fetchUsers();
       }
@@ -192,7 +192,7 @@ export default function UsersPage() {
     try {
       const res = await bulkUserDeactivate(ids);
       if (res.success) {
-        showToast(res.message, "success");
+        showToast(res.message || "Operation successful", "success");
         bulk.clear();
         await fetchUsers();
       }
@@ -544,3 +544,4 @@ export default function UsersPage() {
     </div>
   );
 }
+

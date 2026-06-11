@@ -56,7 +56,7 @@ export default function AnalyticsPage() {
 
   const totalTickets = tickets.length;
   const resolvedTickets = tickets.filter(
-    (t) => t.status === "Resolved" || t.status === "Closed",
+    (t) => t.status === "resolved" || t.status === "closed",
   ).length;
   const pendingTickets = totalTickets - resolvedTickets;
   const resolutionRate =
@@ -174,9 +174,9 @@ export default function AnalyticsPage() {
                 </div>
                 <span
                   className={`ml-2 shrink-0 rounded-full px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest font-bold ${
-                    ticket.status === "Open"
+                    ticket.status === "open"
                       ? "bg-amber/10 text-amber"
-                      : ticket.status === "Resolved"
+                      : ticket.status === "resolved"
                         ? "bg-green/10 text-green"
                         : "bg-ink/[0.04] text-ink/60"
                   }`}

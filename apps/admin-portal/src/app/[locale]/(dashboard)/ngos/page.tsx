@@ -136,7 +136,7 @@ export default function NgosPage() {
     try {
       const res = await bulkNgoVerify(ids);
       if (res.success) {
-        showToast(res.message, "success");
+        showToast(res.message || "Operation successful", "success");
         bulk.clear();
         loadNgos();
       }
@@ -156,7 +156,7 @@ export default function NgosPage() {
     try {
       const res = await bulkNgoDelete(ids);
       if (res.success) {
-        showToast(res.message, "success");
+        showToast(res.message || "Operation successful", "success");
         bulk.clear();
         loadNgos();
       }
