@@ -53,11 +53,12 @@ class AdminLawController extends Controller
     {
         $validated = $request->validate([
             'law_code' => 'required|string|max:50|unique:environmental_laws_ph,law_code',
+            'country_code' => 'nullable|string|max:2',
             'title' => 'required|string|max:255',
             'summary' => 'required|string',
             'issuing_agency' => 'required|string|max:255',
             'jurisdiction_scope' => 'nullable|string|max:100',
-            'source_url' => 'nullable|url|max:500',
+            'source_url' => 'nullable|url|max:255',
             'is_active' => 'boolean',
         ]);
 
@@ -87,11 +88,12 @@ class AdminLawController extends Controller
 
         $validated = $request->validate([
             'law_code' => 'sometimes|string|max:50|unique:environmental_laws_ph,law_code,'.$id,
+            'country_code' => 'nullable|string|max:2',
             'title' => 'sometimes|string|max:255',
             'summary' => 'sometimes|string',
             'issuing_agency' => 'sometimes|string|max:255',
             'jurisdiction_scope' => 'nullable|string|max:100',
-            'source_url' => 'nullable|url|max:500',
+            'source_url' => 'nullable|url|max:255',
             'is_active' => 'boolean',
         ]);
 
