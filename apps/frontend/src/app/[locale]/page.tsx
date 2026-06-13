@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Footer } from "@/components/layout/footer";
 import { PartnerCarousel, FaqSection, LanguageSuggestionPopup } from "@likaslens/shared";
 import { HeroSection } from "@/components/marketing/sections/hero-section";
@@ -25,6 +26,8 @@ import { InstallCtaSection } from "@/components/marketing/sections/install-cta-s
  *  9. Footer
  */
 export default function Home() {
+  const params = useParams();
+  const locale = typeof params?.locale === "string" ? params.locale : "en";
   const [ghostMode, setGhostMode] = useState(false);
 
   useEffect(() => {
@@ -76,7 +79,7 @@ export default function Home() {
       <FaqSection />
       <InstallCtaSection ghostMode={ghostMode} />
       <Footer />
-      <LanguageSuggestionPopup />
+      <LanguageSuggestionPopup currentLocale={locale as "en" | "fil" | "vi" | "id" | "ms" | "ta"} />
     </main>
   );
 }

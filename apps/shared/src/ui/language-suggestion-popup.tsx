@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   getSupportedLocaleFromNavigator,
@@ -13,9 +12,13 @@ import {
   localeNames,
 } from "../i18n/language-suggestion";
 import type { Locale } from "../i18n/config";
+import { defaultLocale } from "../i18n/config";
 
-export function LanguageSuggestionPopup() {
-  const currentLocale = useLocale() as Locale;
+interface LanguageSuggestionPopupProps {
+  currentLocale?: Locale;
+}
+
+export function LanguageSuggestionPopup({ currentLocale = defaultLocale }: LanguageSuggestionPopupProps) {
   const [visible, setVisible] = useState(false);
   const [detectedLocale, setDetectedLocale] = useState<Locale | null>(null);
 
