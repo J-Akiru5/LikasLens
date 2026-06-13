@@ -5,10 +5,11 @@ import {
   getTickets,
   getDashboardStats,
   AdminKPIsSkeleton,
+  EmptyState,
 } from "@likaslens/shared";
 import type { Ticket, DashboardStats } from "@likaslens/shared";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
-import { BarChart3, TrendingUp, Download } from "lucide-react";
+import { BarChart3, TrendingUp, Download, AlertCircle } from "lucide-react";
 import { ToastContainer } from "@likaslens/shared";
 
 export default function ReportsPage() {
@@ -236,24 +237,32 @@ export default function ReportsPage() {
                 Incident Types
               </h2>
               <div className="space-y-5">
-                {typeStats.map((stat, i) => (
-                  <div key={i}>
-                    <div className="flex justify-between font-mono text-sm mb-2">
-                      <span className="text-ink/70 truncate mr-4">
-                        {stat.label}
-                      </span>
-                      <span className="text-ink/40 shrink-0">
-                        {stat.count} ({stat.percent}%)
-                      </span>
+                {typeStats.length === 0 ? (
+                  <EmptyState
+                    icon={BarChart3}
+                    title="No incident data yet"
+                    description="Reports with classifications will appear here once tickets are created and processed."
+                  />
+                ) : (
+                  typeStats.map((stat, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between font-mono text-sm mb-2">
+                        <span className="text-ink/70 truncate mr-4">
+                          {stat.label}
+                        </span>
+                        <span className="text-ink/40 shrink-0">
+                          {stat.count} ({stat.percent}%)
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-green rounded-full transition-all duration-500"
+                          style={{ width: `${stat.percent}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-green rounded-full transition-all duration-500"
-                        style={{ width: `${stat.percent}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </section>
           </div>
@@ -270,8 +279,18 @@ export default function ReportsPage() {
                   tickets.forEach((t) => {
                     statusCounts[t.status] = (statusCounts[t.status] || 0) + 1;
                   });
+                  const entries = Object.entries(statusCounts);
+                  if (entries.length === 0) {
+                    return (
+                      <EmptyState
+                        icon={AlertCircle}
+                        title="No status data yet"
+                        description="Ticket status breakdown will appear here once reports are submitted and processed."
+                      />
+                    );
+                  }
                   const maxCount = Math.max(...Object.values(statusCounts), 1);
-                  return Object.entries(statusCounts).map(([status, count]) => {
+                  return entries.map(([status, count]) => {
                     const pct = Math.round((count / maxCount) * 100);
                     return (
                       <div key={status}>
