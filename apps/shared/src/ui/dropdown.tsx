@@ -6,6 +6,7 @@ import {
   useEffect,
   useCallback,
   useMemo,
+  useId,
   type ReactNode,
   type KeyboardEvent,
 } from "react";
@@ -115,9 +116,7 @@ export function Dropdown(props: DropdownProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const uniqueId = useRef(
-    `dropdown-${Math.random().toString(36).slice(2, 9)}`
-  );
+  const baseId = useId();
 
   // ── Memos ──────────────────────────────────────────────────────────────
 
@@ -345,7 +344,7 @@ export function Dropdown(props: DropdownProps) {
   ) => {
     const selected = isSelected(option.value);
     const focused = focusedIndex === index;
-    const optId = `${uniqueId.current}-opt-${index}`;
+    const optId = `${baseId}-opt-${index}`;
 
     return (
       <button
@@ -493,11 +492,11 @@ export function Dropdown(props: DropdownProps) {
         role="combobox"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
-        aria-controls={`${uniqueId.current}-menu`}
+        aria-controls={`${baseId}-menu`}
         aria-label={placeholder}
         aria-activedescendant={
           isOpen && focusedIndex >= 0
-            ? `${uniqueId.current}-opt-${focusedIndex}`
+            ? `${baseId}-opt-${focusedIndex}`
             : undefined
         }
         disabled={disabled}
@@ -606,7 +605,7 @@ export function Dropdown(props: DropdownProps) {
         {isOpen && (
           <motion.div
             ref={menuRef}
-            id={`${uniqueId.current}-menu`}
+            id={`${baseId}-menu`}
             role="listbox"
             aria-multiselectable={multi || undefined}
             initial={{

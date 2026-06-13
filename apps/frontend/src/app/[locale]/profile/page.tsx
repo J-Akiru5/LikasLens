@@ -13,6 +13,8 @@ import {
   Shield,
   BadgeCheck,
   Medal,
+  Save,
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -20,6 +22,12 @@ import { createClient } from "@/utils/supabase/client";
 import { PageSkeleton } from "@likaslens/shared";
 import { AchievementCard, RankProgressCard, Dropdown } from "@likaslens/shared";
 import { fetchEcoCreditRate } from "@likaslens/shared";
+import { AvatarUpload } from "@/components/profile/avatar-upload";
+import { CustomSelect } from "@/components/ui/custom-select";
+import { FormSkeleton } from "@likaslens/shared";
+import { showToast, ToastContainer } from "@/components/ui/toast";
+import { cn } from "@likaslens/shared";
+
 import type {
   Achievement,
   RankProgress,
@@ -29,7 +37,7 @@ import type {
 import { useTranslations } from "next-intl";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 
-type TabKey = "overview" | "achievements";
+type TabKey = "overview" | "achievements" | "settings";
 type FilterKey = "all" | "unlocked" | "locked";
 type TierFilter = "all" | AchievementTier;
 type SortKey = "default" | "progress" | "recent" | "tier";
@@ -61,14 +69,16 @@ function ProfilePageContent() {
   const [rewardPoints, setRewardPoints] = useState<number | null>(null);
   const [userRank, setUserRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [rankProgress, setRankProgress] = useState<RankProgress | null>(null);
+  const [bio, setBio] = useState("");
   const [profileStats, setProfileStats] = useState({
     reports_filed: 0,
     reports_verified: 0,
     community_upvotes: 0,
   });
-  const [countryCode, setCountryCode] = useState<string | null>(null);
+  const [countryCode, setCountryCode] = useState<string>("PH");
   const [currencySetting, setCurrencySetting] =
     useState<CurrencySetting | null>(null);
   const [filter, setFilter] = useState<FilterKey>("all");
@@ -102,7 +112,9 @@ function ProfilePageContent() {
               : null,
           );
           setAvatarUrl(user.user_metadata?.avatar_url ?? null);
-          setDisplayName(user.user_metadata?.display_name ?? null);
+          setDisplayName(user.user_metadata?.display_name ?? "");
+          setBio(user.user_metadata?.bio ?? "");
+          setCountryCode(user.user_metadata?.country_code ?? "PH");
         }
 
         const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
@@ -194,6 +206,35 @@ function ProfilePageContent() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!countryCode) return;
+    fetchEcoCreditRate<{ success: boolean; data: CurrencySetting }>(countryCode)
+      .then((res) => {
+        if (res?.success) setCurrencySetting(res.data);
+      })
+      .catch(() => {});
+  }, [countryCode]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    const supabase = createClient();
+    const { error, data } = await supabase.auth.updateUser({
+      data: {
+        display_name: displayName,
+        bio,
+        avatar_url: avatarUrl,
+        country_code: countryCode,
+      },
+    });
+
+    setSaving(false);
+    if (error) {
+      showToast(error.message, "error");
+    } else {
+      showToast("Profile updated successfully", "success");
+    }
+  };
+
   const filteredAchievements = achievements
     .filter((a) => {
       if (filter === "unlocked") return a.unlocked;
@@ -255,128 +296,104 @@ function ProfilePageContent() {
 
   return (
     <DashboardLayoutWrapper>
-      <div className="space-y-12">
-        {/* Sweeping Neon Curved Header for Profile */}
-        <div className="bg-green text-page rounded-b-[40px] md:rounded-[40px] pt-12 pb-16 px-8 relative overflow-hidden shadow-xl mt-4 md:mt-0 mb-4">
-          <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 rounded-full border-[40px] border-page/5" />
-          <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-64 h-64 rounded-full border-[30px] border-page/5" />
-
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <span className="text-sm font-mono uppercase tracking-widest opacity-80 mb-2 block">
-                Citizen Account
-              </span>
-              <h1
-                className="text-[3rem] md:text-[4rem] leading-none font-bold tracking-tighter"
-                style={{
-                  fontFamily: "var(--font-heading), Montserrat, sans-serif",
-                }}
-              >
-                My Profile
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="text-right hidden md:block">
-                <span className="text-xs font-mono uppercase tracking-widest opacity-80 block mb-1">
-                  Impact Score
-                </span>
-                <span className="text-2xl font-bold tracking-tight">
-                  {(rewardPoints ?? 0).toLocaleString()} pts
-                </span>
+      <ToastContainer />
+      <div className="space-y-8 max-w-6xl mx-auto">
+        {/* Modern Profile Header */}
+        <div className="bg-panel border border-ink/5 rounded-3xl p-8 relative overflow-hidden shadow-sm flex flex-col md:flex-row items-center gap-8">
+          <div className="w-32 h-32 rounded-3xl bg-green/10 flex items-center justify-center border border-green/20 shadow-inner shrink-0 relative overflow-hidden z-10">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <User className="w-12 h-12 text-green" />
+            )}
+          </div>
+          
+          <div className="flex-1 text-center md:text-left z-10">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-ink mb-1">
+              {displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")}
+            </h1>
+            {userEmail && <p className="font-mono text-sm text-ink/50">{userEmail}</p>}
+            
+            {userCreated && (
+              <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 bg-ink/5 rounded-full font-mono text-xs text-ink/50">
+                <Calendar className="w-3.5 h-3.5" />
+                Joined {userCreated}
               </div>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-4 z-10 shrink-0 w-full md:w-auto">
+            <div className="bg-ink/5 rounded-2xl p-4 flex flex-col items-center justify-center min-w-[140px]">
+              <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest font-bold block mb-1">
+                Impact Score
+              </span>
+              <span className="text-3xl font-semibold tracking-tight text-ink block">
+                {(rewardPoints ?? 0).toLocaleString()}
+              </span>
             </div>
           </div>
+          
+          {/* Subtle background decoration */}
+          <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 w-[500px] h-[500px] rounded-full bg-green/5 blur-3xl" />
         </div>
-        <div className="flex border-b border-ink/10">
-          {(["overview", "achievements"] as TabKey[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 pb-3 font-mono text-xs uppercase tracking-wide transition-colors ${
-                activeTab === tab
-                  ? "text-ink border-b border-ink"
-                  : "text-ink/40 hover:text-ink/70"
-              }`}
-            >
-              {tab === "overview" ? (
-                <span className="flex items-center gap-2">
-                  <User className="w-3.5 h-3.5" /> Overview
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <Medal className="w-3.5 h-3.5" /> Credentials
-                </span>
-              )}
-            </button>
-          ))}
-          <div className="ml-auto">
-            <Link
-              href="/dashboard/profile"
-              className="font-mono text-xs text-ink/40 hover:text-ink transition-colors flex items-center gap-1.5 pb-3"
-            >
-              <Settings className="w-3.5 h-3.5" /> Edit
-            </Link>
+
+        {/* Unified Pill Container Tabs */}
+        <div className="flex items-center justify-start mb-8 pb-6 border-b border-ink/5 overflow-x-auto no-scrollbar">
+          <div className="inline-flex p-1.5 bg-ink/5 rounded-2xl backdrop-blur-md">
+            {(["overview", "achievements", "settings"] as TabKey[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "px-6 py-2.5 rounded-xl font-mono text-xs uppercase tracking-widest font-bold transition-all duration-300 flex items-center gap-2",
+                  activeTab === tab
+                    ? "bg-panel text-ink shadow-sm ring-1 ring-ink/5 scale-100"
+                    : "text-ink/40 hover:text-ink/60 scale-95"
+                )}
+              >
+                {tab === "overview" && <User className="w-3.5 h-3.5" />}
+                {tab === "achievements" && <Medal className="w-3.5 h-3.5" />}
+                {tab === "settings" && <Settings className="w-3.5 h-3.5" />}
+                {tab === "achievements" ? "Credentials" : tab}
+              </button>
+            ))}
           </div>
         </div>
 
         {activeTab === "overview" && (
           <>
-            <div className="grid lg:grid-cols-3 gap-8">
-              <div className="bg-panel rounded-3xl p-8 border border-ink/5 shadow-sm hover:shadow-md transition-all flex flex-col items-center text-center space-y-6">
-                <div className="w-24 h-24 rounded-3xl bg-green/10 flex items-center justify-center border border-green/20 shadow-inner">
-                  {avatarUrl ? (
-                    <img
-                      src={avatarUrl}
-                      alt=""
-                      className="w-24 h-24 rounded-3xl object-cover"
-                    />
-                  ) : (
-                    <User className="w-10 h-10 text-green" />
-                  )}
-                </div>
-                <div>
-                  <h2 className="font-semibold tracking-tight text-3xl text-ink mb-1">
-                    {displayName ||
-                      (userEmail ? userEmail.split("@")[0] : "Citizen")}
-                  </h2>
-                  {userEmail && (
-                    <p className="font-mono text-sm text-ink/50">{userEmail}</p>
-                  )}
-                  {userCreated && (
-                    <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 bg-ink/5 rounded-full font-mono text-xs text-ink/50">
-                      <Calendar className="w-3.5 h-3.5" />
-                      Joined {userCreated}
+            <div className="space-y-8">
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div className="bg-panel rounded-3xl p-8 border border-ink/5 shadow-sm flex flex-col justify-center">
+                  <div className="grid grid-cols-3 gap-2 text-center divide-x divide-ink/5">
+                    <div className="space-y-2 px-2 sm:px-4">
+                      <span className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink block">
+                        {profileStats.reports_filed}
+                      </span>
+                      <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold block">
+                        Filed
+                      </span>
                     </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="lg:col-span-2 space-y-8">
-                <div className="bg-panel rounded-3xl p-8 border border-ink/5 shadow-sm grid grid-cols-3 gap-6 text-center">
-                  <div className="space-y-1">
-                    <span className="font-semibold tracking-tight text-4xl text-ink block">
-                      {profileStats.reports_filed}
-                    </span>
-                    <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold">
-                      Filed
-                    </span>
-                  </div>
-                  <div className="space-y-1 border-x border-ink/5">
-                    <span className="font-semibold tracking-tight text-4xl text-green block">
-                      {profileStats.reports_verified}
-                    </span>
-                    <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold">
-                      Verified
-                    </span>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="font-semibold tracking-tight text-4xl text-ink block">
-                      {achievements.filter((a) => a.unlocked).length}
-                    </span>
-                    <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold">
-                      {tp("achievementBadges")}
-                    </span>
+                    <div className="space-y-2 px-2 sm:px-4">
+                      <span className="font-semibold tracking-tight text-3xl sm:text-4xl text-green block">
+                        {profileStats.reports_verified}
+                      </span>
+                      <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold block">
+                        Verified
+                      </span>
+                    </div>
+                    <div className="space-y-2 px-2 sm:px-4">
+                      <span className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink block">
+                        {achievements.filter((a) => a.unlocked).length}
+                      </span>
+                      <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold block">
+                        {tp("achievementBadges")}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
@@ -439,7 +456,7 @@ function ProfilePageContent() {
               <h2 className="font-semibold tracking-tight text-2xl text-ink mb-6">
                 Score Sources
               </h2>
-              <div className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(() => {
                   const unlockedAchievements = achievements.filter(
                     (a) => a.unlocked,
@@ -481,12 +498,24 @@ function ProfilePageContent() {
                           },
                         ];
                   return items.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-6">
-                      <div className="flex-1">
-                        <div className="text-sm text-ink/70 mb-2">
+                    <div
+                      key={idx}
+                      className="bg-panel border border-ink/5 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:border-ink/10 transition-colors gap-6"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="text-sm font-medium text-ink/80 leading-snug">
                           {item.activity}
                         </div>
-                        <div className="h-1 bg-ink/10 rounded-full overflow-hidden">
+                        <div className="font-semibold tracking-tight text-xl text-ink min-w-fit">
+                          {item.amount}
+                        </div>
+                      </div>
+                      <div className="space-y-2 mt-auto">
+                        <div className="flex justify-between items-center text-[10px] uppercase font-mono tracking-widest text-ink/40">
+                          <span>Contribution</span>
+                          <span>{item.percentage}%</span>
+                        </div>
+                        <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-ink/40 rounded-full transition-all duration-500"
                             style={{
@@ -494,9 +523,6 @@ function ProfilePageContent() {
                             }}
                           />
                         </div>
-                      </div>
-                      <div className="font-semibold tracking-tight text-xl text-ink/70 min-w-fit">
-                        {item.amount}
                       </div>
                     </div>
                   ));
@@ -508,29 +534,29 @@ function ProfilePageContent() {
 
         {activeTab === "achievements" && (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pb-8 border-b border-ink/10">
-              <div>
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 pb-8 border-b border-ink/10">
+              <div className="bg-panel rounded-2xl p-6 border border-ink/5 shadow-sm flex flex-col justify-center">
                 <span className="font-semibold tracking-tight text-3xl text-ink block">
                   {achievements.filter((a) => a.unlocked).length}
                   <span className="text-base text-ink/30">
                     /{achievements.length}
                   </span>
                 </span>
-                <span className="font-mono text-xs text-ink/40 uppercase tracking-wide mt-1 block">
+                <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mt-1 block">
                   {t("unlockedCount", {
                     unlocked: achievements.filter((a) => a.unlocked).length,
                     total: achievements.length,
                   })}
                 </span>
               </div>
-              <div>
+              <div className="bg-panel rounded-2xl p-6 border border-ink/5 shadow-sm flex flex-col justify-center">
                 <span className="font-semibold tracking-tight text-3xl text-ink block">
                   {achievements
                     .filter((a) => a.unlocked)
                     .reduce((sum, a) => sum + a.points_awarded, 0)
                     .toLocaleString()}
                 </span>
-                <span className="font-mono text-xs text-ink/40 uppercase tracking-wide mt-1 block">
+                <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mt-1 block">
                   {t("xpEarned", {
                     xp: achievements
                       .filter((a) => a.unlocked)
@@ -554,8 +580,8 @@ function ProfilePageContent() {
                   (a) => a.unlocked,
                 ).length;
                 return (
-                  <div key={tier}>
-                    <div className="flex items-center gap-2 mb-1 text-ink/40">
+                  <div key={tier} className="bg-panel rounded-2xl p-5 border border-ink/5 shadow-sm flex flex-col justify-center">
+                    <div className="flex items-center gap-2 mb-2 text-ink/40">
                       {tierIcons[tier]}
                     </div>
                     <span className="font-semibold tracking-tight text-xl text-ink/70 block">
@@ -564,7 +590,7 @@ function ProfilePageContent() {
                         /{tierAchievements.length}
                       </span>
                     </span>
-                    <span className="font-mono text-[10px] text-ink/40 uppercase tracking-wide mt-1 block">
+                    <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mt-1 block">
                       {tier === "basic"
                         ? t("tierBasic")
                         : tier === "verified"
@@ -578,97 +604,100 @@ function ProfilePageContent() {
               })}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex gap-2 flex-wrap">
-                {(["all", "unlocked", "locked"] as FilterKey[]).map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`font-mono text-xs uppercase tracking-wide transition-colors pb-1 ${
-                      filter === f
-                        ? "text-ink border-b border-ink"
-                        : "text-ink/40 hover:text-ink/70"
-                    }`}
-                  >
-                    {f === "all" && t("all")}
-                    {f === "unlocked" && (
-                      <span className="flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 fill-current" />{" "}
-                        {t("unlocked")}
-                      </span>
-                    )}
-                    {f === "locked" && (
-                      <span className="flex items-center gap-1">
-                        <Lock className="w-3 h-3" /> {t("locked")}
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex gap-2 items-center">
-                <span className="font-mono text-[10px] text-ink/40 uppercase tracking-wide">
-                  {t("filterByTier")}:
-                </span>
-                <div className="flex gap-1">
-                  {(
-                    [
-                      "all",
-                      "basic",
-                      "verified",
-                      "advanced",
-                      "authority",
-                    ] as TierFilter[]
-                  ).map((tf) => (
+            <div className="bg-panel border border-ink/5 rounded-2xl p-2 sm:p-4 shadow-sm flex flex-col xl:flex-row items-center justify-between gap-4 mb-8">
+              <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
+                <div className="flex gap-1 bg-ink/5 rounded-xl p-1 w-full md:w-auto overflow-x-auto no-scrollbar">
+                  {(["all", "unlocked", "locked"] as FilterKey[]).map((f) => (
                     <button
-                      key={tf}
-                      onClick={() => setTierFilter(tf)}
-                      className={`font-mono text-[10px] uppercase tracking-wide px-2 py-1 transition-colors ${
-                        tierFilter === tf
-                          ? "text-ink bg-ink/[0.04]"
-                          : "text-ink/40 hover:text-ink/70"
+                      key={f}
+                      onClick={() => setFilter(f)}
+                      className={`font-mono text-[10px] sm:text-xs uppercase tracking-wider transition-all px-4 py-2 rounded-lg whitespace-nowrap ${
+                        filter === f
+                          ? "bg-panel text-ink shadow-sm"
+                          : "text-ink/50 hover:text-ink/80 hover:bg-ink/[0.02]"
                       }`}
                     >
-                      {tf === "all"
-                        ? t("all")
-                        : tf === "basic"
-                          ? t("tierBasic")
-                          : tf === "verified"
-                            ? t("tierVerified")
-                            : tf === "advanced"
-                              ? t("tierAdvanced")
-                              : t("tierAuthority")}
+                      {f === "all" && t("all")}
+                      {f === "unlocked" && (
+                        <span className="flex items-center justify-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 fill-current" />{" "}
+                          {t("unlocked")}
+                        </span>
+                      )}
+                      {f === "locked" && (
+                        <span className="flex items-center justify-center gap-1.5">
+                          <Lock className="w-3.5 h-3.5" /> {t("locked")}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>
+
+                <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto no-scrollbar md:border-l border-ink/10 md:pl-4">
+                  <div className="flex gap-1 bg-ink/5 rounded-xl p-1">
+                    {(
+                      [
+                        "all",
+                        "basic",
+                        "verified",
+                        "advanced",
+                        "authority",
+                      ] as TierFilter[]
+                    ).map((tf) => (
+                      <button
+                        key={tf}
+                        onClick={() => setTierFilter(tf)}
+                        className={`font-mono text-[10px] uppercase tracking-wider transition-all px-3 py-1.5 rounded-lg whitespace-nowrap ${
+                          tierFilter === tf
+                            ? "bg-panel text-ink shadow-sm"
+                            : "text-ink/50 hover:text-ink/80 hover:bg-ink/[0.02]"
+                        }`}
+                      >
+                        {tf === "all"
+                          ? t("all")
+                          : tf === "basic"
+                            ? t("tierBasic")
+                            : tf === "verified"
+                              ? t("tierVerified")
+                              : tf === "advanced"
+                                ? t("tierAdvanced")
+                                : t("tierAuthority")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <Dropdown
-                value={sort}
-                onChange={(val) => setSort(val as SortKey)}
-                options={[
-                  { value: "default", label: t("sortDefault") },
-                  { value: "progress", label: t("sortProgress") },
-                  { value: "recent", label: t("sortRecentlyUnlocked") },
-                  { value: "tier", label: t("sortTier") },
-                ]}
-                size="sm"
-                className="w-40"
-              />
+              <div className="w-full xl:w-auto flex justify-end">
+                <Dropdown
+                  value={sort}
+                  onChange={(val) => setSort(val as SortKey)}
+                  options={[
+                    { value: "default", label: t("sortDefault") },
+                    { value: "progress", label: t("sortProgress") },
+                    { value: "recent", label: t("sortRecentlyUnlocked") },
+                    { value: "tier", label: t("sortTier") },
+                  ]}
+                  size="sm"
+                  className="w-full sm:w-48"
+                />
+              </div>
             </div>
 
             {filteredAchievements.length > 0 ? (
-              <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filteredAchievements.map((achievement) => (
                   <div
                     key={achievement.id}
                     onClick={() => setSelectedAchievement(achievement)}
-                    className="cursor-pointer"
+                    className="cursor-pointer group"
                   >
-                    <AchievementCard
-                      achievement={achievement}
-                      variant="compact"
-                    />
+                    <div className="transition-transform duration-300 group-hover:-translate-y-1 group-active:translate-y-0 h-full">
+                      <AchievementCard
+                        achievement={achievement}
+                        variant="compact"
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -840,6 +869,108 @@ function ProfilePageContent() {
               </div>
             )}
           </>
+        )}
+
+        {activeTab === "settings" && (
+          <div className="grid md:grid-cols-3 gap-8 animate-fade-in max-w-6xl mx-auto pb-16">
+            <div className="md:col-span-1 space-y-6">
+              <div className="bg-panel border border-ink/5 rounded-3xl p-8 shadow-sm flex flex-col items-center">
+                <h2 className="font-semibold tracking-tight text-xl text-ink mb-6 w-full text-left">
+                  Profile Photo
+                </h2>
+                {userEmail && (
+                  <AvatarUpload
+                    userId={userEmail}
+                    currentUrl={avatarUrl}
+                    onUploadComplete={(url) => setAvatarUrl(url)}
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="md:col-span-2 space-y-6">
+              <div className="bg-panel border border-ink/5 rounded-3xl p-8 shadow-sm">
+                <h2 className="font-semibold tracking-tight text-xl text-ink mb-6">
+                  Profile Information
+                </h2>
+                <div className="space-y-5">
+                  <div>
+                    <label className="font-mono text-xs text-ink/40 uppercase tracking-widest block mb-2">
+                    Display Name
+                  </label>
+                  <input
+                    type="text"
+                    value={displayName || ""}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Your public name"
+                    className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 rounded-lg"
+                    maxLength={50}
+                  />
+                </div>
+
+                <div>
+                  <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">
+                    Bio
+                  </label>
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell the community about yourself..."
+                    className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 resize-none rounded-lg"
+                    rows={4}
+                    maxLength={300}
+                  />
+                  <p className="font-mono text-xs text-ink/30 mt-1 text-right">
+                    {bio.length}/300
+                  </p>
+                </div>
+
+                <div>
+                  <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">
+                    <span className="flex items-center gap-2">
+                      <Globe className="w-3.5 h-3.5" /> Country / Region
+                    </span>
+                  </label>
+                  <CustomSelect
+                    value={countryCode}
+                    onChange={setCountryCode}
+                    options={[
+                      { value: "PH", label: "Philippines (PH)" },
+                      { value: "ID", label: "Indonesia (ID)" },
+                      { value: "MY", label: "Malaysia (MY)" },
+                      { value: "TH", label: "Thailand (TH)" },
+                      { value: "VN", label: "Vietnam (VN)" },
+                      { value: "SG", label: "Singapore (SG)" },
+                      { value: "BN", label: "Brunei (BN)" },
+                      { value: "LA", label: "Laos (LA)" },
+                      { value: "KH", label: "Cambodia (KH)" },
+                      { value: "MM", label: "Myanmar (MM)" },
+                    ]}
+                  />
+                  {currencySetting && (
+                    <p className="font-mono text-xs text-ink/40 mt-2">
+                      Eco-Credit Rate: 1 Eco = {currencySetting.currency_code}{" "}
+                      {currencySetting.eco_credit_rate.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                      })}
+                    </p>
+                  )}
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex items-center justify-center w-full sm:w-auto gap-2 px-8 py-3 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm"
+                  >
+                    <Save className="w-4 h-4" />
+                    {saving ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </DashboardLayoutWrapper>

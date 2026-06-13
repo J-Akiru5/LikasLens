@@ -181,8 +181,12 @@ export default function ImpactPage() {
   };
 
   return (
-    <DashboardLayoutWrapper greeting={userName}>
-      <div className="space-y-6">
+    <DashboardLayoutWrapper 
+      greeting={userName}
+      pageTitle="Climate Impact Dashboard"
+      pageSubtitle="ASEAN AI Hackathon 2026 — Climate Change Resilience"
+    >
+      <div className="space-y-6 mt-4">
         {loading ? (
           <div className="space-y-6 animate-pulse">
             <div className="h-8 w-64 bg-ink/5 rounded" />
@@ -202,25 +206,7 @@ export default function ImpactPage() {
             <div className="panel p-6 h-48 bg-ink/5 rounded" />
           </div>
         ) : (
-          <div className="bento-grid">
-            {/* Row 1: Header */}
-            <div className="span-12">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                    <BarChart3 className="w-6 h-6 text-secondary" />
-                    Climate Impact Dashboard
-                  </h1>
-                  <p className="text-muted font-mono text-xs uppercase tracking-widest mt-1">
-                    ASEAN AI Hackathon 2026 — Climate Change Resilience
-                  </p>
-                </div>
-                <div className="hidden md:flex items-center gap-2 text-xs font-mono text-muted">
-                  <span className="w-2 h-2 rounded-full bg-green animate-pulse" />
-                  Live Data
-                </div>
-              </div>
-            </div>
+          <div className="bento-grid mt-4">
 
             {/* Row 2: KPI Metrics */}
             <div className="span-12">

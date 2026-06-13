@@ -16,6 +16,7 @@ import {
   BarChart3,
   Download,
   Fingerprint,
+  Leaf,
 } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
 import { laravelGet, MagneticButton } from "@likaslens/shared";
@@ -255,23 +256,37 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button
             onClick={onGhostToggle}
-            className="hidden sm:flex"
+            className="hidden sm:flex relative items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent"
             style={{
-              alignItems: "center",
-              gap: 6,
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: "monospace",
-              fontSize: 11,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: ghostMode ? "var(--ghost-accent)" : "var(--hero-muted)",
-              transition: "color 0.2s",
+              background: ghostMode ? "rgba(46, 230, 200, 0.1)" : "rgba(240, 237, 232, 0.05)",
+              border: ghostMode ? "1px solid rgba(46, 230, 200, 0.2)" : "1px solid rgba(240, 237, 232, 0.1)",
+              boxShadow: "inset 0 2px 4px rgba(0,0,0,0.1)",
             }}
+            title="Toggle Ghost Mode"
           >
-            <Fingerprint style={{ width: 14, height: 14 }} />
-            Ghost
+            <div
+              className={`absolute top-[3px] left-[3px] w-[24px] h-[24px] rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 flex items-center justify-center z-10 ${
+                ghostMode ? "translate-x-14" : "translate-x-0"
+              }`}
+              style={{
+                background: ghostMode ? "var(--accent-bright)" : "rgba(240, 237, 232, 0.9)",
+              }}
+            >
+              {ghostMode ? (
+                <Fingerprint style={{ width: 14, height: 14, color: "var(--hero-bg)" }} />
+              ) : (
+                <Leaf style={{ width: 14, height: 14, color: "#0d1a12" }} />
+              )}
+            </div>
+            
+            <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-mono font-bold tracking-widest uppercase">
+              <span className="transition-opacity duration-300" style={{ opacity: ghostMode ? 1 : 0, color: "var(--hero-ink)" }}>
+                Ghost
+              </span>
+              <span className="transition-opacity duration-300" style={{ opacity: ghostMode ? 0 : 1, color: "rgba(240, 237, 232, 0.4)" }}>
+                Civic
+              </span>
+            </div>
           </button>
           <UserNav invert />
         </div>

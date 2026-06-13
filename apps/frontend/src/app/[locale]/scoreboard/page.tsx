@@ -188,22 +188,11 @@ export default function ScoreboardPage() {
   }
 
   return (
-    <DashboardLayoutWrapper>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="bento-grid">
-          <div className="span-12">
-            <h1
-              className="text-3xl font-bold text-ink mb-2"
-              style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}
-            >
-              Public Leaderboard
-            </h1>
-            <p className="text-sm text-muted font-mono">
-              Top environmental reporters ranked by eco-credits earned
-            </p>
-          </div>
-        </div>
+    <DashboardLayoutWrapper 
+      pageTitle="Public Leaderboard" 
+      pageSubtitle="Top environmental reporters ranked by eco-credits earned"
+    >
+      <div className="space-y-6 mt-4">
 
         {/* Spotlight + Stats Row */}
         {(spotlight || stats) && (
@@ -247,46 +236,84 @@ export default function ScoreboardPage() {
             )}
             {stats && (
               <div className={spotlight ? "span-4" : "span-12"}>
-                <div className="bg-panel rounded-3xl border border-ink/5 p-6 h-full">
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mb-4">
-                    Platform Statistics
-                  </p>
-                  <div className="space-y-4">
-                    <div>
+                {spotlight ? (
+                  <div className="bg-panel rounded-3xl border border-ink/5 p-6 h-full">
+                    <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mb-4">
+                      Platform Statistics
+                    </p>
+                    <div className="space-y-4">
+                      <div>
+                        <p
+                          className="text-2xl font-bold text-ink"
+                          style={{ fontFamily: "var(--font-data), monospace" }}
+                        >
+                          {stats.total_reports.toLocaleString()}
+                        </p>
+                        <p className="text-xs font-mono text-ink/40 uppercase">
+                          Total Reports
+                        </p>
+                      </div>
+                      <div>
+                        <p
+                          className="text-2xl font-bold text-ink"
+                          style={{ fontFamily: "var(--font-data), monospace" }}
+                        >
+                          {stats.total_citizens.toLocaleString()}
+                        </p>
+                        <p className="text-xs font-mono text-ink/40 uppercase">
+                          Total Citizens
+                        </p>
+                      </div>
+                      <div>
+                        <p
+                          className="text-2xl font-bold text-ink"
+                          style={{ fontFamily: "var(--font-data), monospace" }}
+                        >
+                          {stats.avg_eco_credits.toLocaleString()}
+                        </p>
+                        <p className="text-xs font-mono text-ink/40 uppercase">
+                          Avg Eco-Credits
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-panel rounded-3xl border border-ink/5 p-6 flex flex-col justify-center">
+                      <p className="text-xs font-mono text-ink/40 uppercase mb-2">
+                        Total Reports
+                      </p>
                       <p
-                        className="text-2xl font-bold text-ink"
+                        className="text-4xl font-bold text-ink"
                         style={{ fontFamily: "var(--font-data), monospace" }}
                       >
                         {stats.total_reports.toLocaleString()}
                       </p>
-                      <p className="text-xs font-mono text-ink/40 uppercase">
-                        Total Reports
-                      </p>
                     </div>
-                    <div>
+                    <div className="bg-panel rounded-3xl border border-ink/5 p-6 flex flex-col justify-center">
+                      <p className="text-xs font-mono text-ink/40 uppercase mb-2">
+                        Total Citizens
+                      </p>
                       <p
-                        className="text-2xl font-bold text-ink"
+                        className="text-4xl font-bold text-ink"
                         style={{ fontFamily: "var(--font-data), monospace" }}
                       >
                         {stats.total_citizens.toLocaleString()}
                       </p>
-                      <p className="text-xs font-mono text-ink/40 uppercase">
-                        Total Citizens
-                      </p>
                     </div>
-                    <div>
+                    <div className="bg-panel rounded-3xl border border-ink/5 p-6 flex flex-col justify-center">
+                      <p className="text-xs font-mono text-ink/40 uppercase mb-2">
+                        Avg Eco-Credits
+                      </p>
                       <p
-                        className="text-2xl font-bold text-ink"
+                        className="text-4xl font-bold text-ink"
                         style={{ fontFamily: "var(--font-data), monospace" }}
                       >
                         {stats.avg_eco_credits.toLocaleString()}
                       </p>
-                      <p className="text-xs font-mono text-ink/40 uppercase">
-                        Avg Eco-Credits
-                      </p>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -295,7 +322,7 @@ export default function ScoreboardPage() {
         {/* Tab Bar */}
         <div className="bento-grid">
           <div className="span-12">
-            <div className="flex gap-2">
+            <div className="flex items-center gap-1 bg-ink/[0.03] p-1 rounded-lg w-fit border border-ink/5">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -303,10 +330,10 @@ export default function ScoreboardPage() {
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
                     className={cn(
-                      "flex items-center gap-2 py-2.5 px-4 rounded-xl font-mono text-xs font-medium uppercase tracking-wide transition-all border",
+                      "flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
                       activeTab === tab.key
-                        ? "bg-green text-page border-green shadow-sm"
-                        : "text-ink/50 border-ink/10 hover:text-ink/70 hover:border-ink/20"
+                        ? "bg-panel shadow-sm text-ink"
+                        : "text-ink/60 hover:text-ink"
                     )}
                   >
                     <Icon className="w-4 h-4" />

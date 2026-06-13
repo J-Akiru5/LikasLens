@@ -509,20 +509,20 @@ export default function ReportPage() {
               </div>
             </section>
 
-            <section className={`border p-5 rounded-xl transition-colors duration-500 ${isGhostMode ? "border-[#2EE6C8]/20 bg-[#2EE6C8]/5" : "border-ink/10"}`}>
+            <label className={`cursor-pointer block border p-5 rounded-xl transition-all duration-300 ${isGhostMode ? "border-[#2EE6C8]/30 bg-[#2EE6C8]/5 shadow-[0_0_15px_rgba(46,230,200,0.1)]" : "border-ink/10 hover:border-ink/20 hover:bg-ink/[0.01]"}`}>
               <div className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-3">
-                  <Fingerprint className={`w-5 h-5 ${isGhostMode ? "text-[#2EE6C8]" : "text-ink/40"}`} />
+                  <Fingerprint className={`w-5 h-5 transition-colors ${isGhostMode ? "text-[#2EE6C8]" : "text-ink/40"}`} />
                   <div>
-                    <p className={`font-semibold tracking-tight text-base ${isGhostMode ? "text-[#2EE6C8]" : "text-ink"}`}>Ghost Mode</p>
+                    <p className={`font-semibold tracking-tight text-base transition-colors ${isGhostMode ? "text-[#2EE6C8]" : "text-ink"}`}>Ghost Mode</p>
                     <p className="font-mono text-xs text-ink/50">Send anonymously. Remove all identifying data.</p>
                   </div>
                 </div>
-                <label className="inline-flex items-center" aria-label="Toggle Ghost Mode">
-                  <input type="checkbox" checked={isGhostMode} onChange={(e) => handleGhostModeToggle(e.target.checked)} className="w-4 h-4 accent-green" />
-                </label>
+                <div className="inline-flex items-center" aria-label="Toggle Ghost Mode">
+                  <input type="checkbox" checked={isGhostMode} onChange={(e) => handleGhostModeToggle(e.target.checked)} className="w-4 h-4 accent-[#2EE6C8] cursor-pointer" />
+                </div>
               </div>
-            </section>
+            </label>
 
             <div className="grid grid-cols-2 gap-4">
               <button type="button" onClick={clearForm} className="py-3 border border-ink/10 text-sm text-ink/50 hover:text-ink transition-colors rounded-lg">

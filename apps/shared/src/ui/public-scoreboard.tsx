@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { CloudOff, RefreshCw } from "lucide-react";
+import { CloudOff, RefreshCw, Trophy } from "lucide-react";
 import { getTickets } from "../api/admin";
 import type { Ticket } from "../types/ticket";
 import type { PaginatedResponse } from "../types/api";
@@ -108,8 +108,12 @@ export function PublicScoreboard() {
 
   if (displayRows.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border p-8 text-center">
-        <p className="text-sm text-muted">No reports yet</p>
+      <div className="rounded-2xl border border-dashed border-ink/10 p-12 text-center bg-ink/[0.015]">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-ink/[0.02] to-ink/[0.06] flex items-center justify-center mx-auto mb-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.08] ring-8 ring-ink/[0.015]">
+          <Trophy className="w-7 h-7 text-ink/30" />
+        </div>
+        <h3 className="font-medium text-ink mb-1.5">No reports yet</h3>
+        <p className="text-sm text-ink/50 leading-relaxed">Top contributors will be highlighted here once reports are submitted.</p>
       </div>
     );
   }

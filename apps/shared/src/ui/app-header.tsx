@@ -9,6 +9,7 @@ import {
   Info,
   X,
   Menu,
+  Fingerprint,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils";
@@ -25,8 +26,11 @@ interface Notification {
 
 interface AppHeaderProps {
   greeting?: string;
+  pageTitle?: string;
+  pageSubtitle?: string;
   showBranding?: boolean;
   isGhostMode?: boolean;
+  onThemeToggle?: () => void;
   notifications?: Notification[];
   children?: React.ReactNode;
   className?: string;
@@ -38,8 +42,11 @@ const DEFAULT_NOTIFICATIONS: Notification[] = [];
 
 export function AppHeader({
   greeting,
+  pageTitle,
+  pageSubtitle,
   showBranding = true,
   isGhostMode = false,
+  onThemeToggle,
   notifications = DEFAULT_NOTIFICATIONS,
   children,
   className,
@@ -67,17 +74,26 @@ export function AppHeader({
   return (
     <header
       className={cn(
-        "h-16 bg-page/80 backdrop-blur-md border-b border-ink/10 flex items-center justify-between px-4 sm:px-8 relative z-20",
+        "flex items-center justify-between px-4 sm:px-8 relative z-20 transition-all h-20 lg:px-12",
         className,
       )}
     >
       <div className="flex items-center gap-4">
-        {greeting ? (
+        {pageTitle ? (
+          <div>
+            <h1 className="font-semibold tracking-tight text-lg sm:text-xl text-ink">
+              {pageTitle}
+            </h1>
+            {pageSubtitle && (
+              <p className="text-xs font-mono text-ink/50 mt-0.5 tracking-wide">{pageSubtitle}</p>
+            )}
+          </div>
+        ) : greeting ? (
           <h1 className="font-semibold tracking-tight text-lg sm:text-xl text-ink">
             Welcome back, <span className="text-green">{greeting}</span>
           </h1>
         ) : showBranding ? (
-          <Link href="/" className="flex items-center gap-2 text-ink">
+          <Link href="/" className="flex items-center gap-2 text-ink lg:hidden">
             <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-8 h-8 object-contain" />
             <span className="font-heading tracking-[0.2em] text-lg flex items-center mt-0.5">
               <span className="font-medium">LIK</span>
@@ -104,22 +120,62 @@ export function AppHeader({
           </button>
         )}
 
-        <div ref={notifRef} className="relative">
-          <button
-            aria-label="Notifications"
-            aria-expanded={notifOpen}
-            onClick={() => setNotifOpen((v) => !v)}
-            className="relative p-2 rounded-xl text-ink/50 hover:text-ink hover:bg-ink/5 transition-all focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <Bell className="w-5 h-5" />
-            <span
+        <div className="flex items-center gap-2 sm:gap-3">
+          {onThemeToggle && (
+            <button
+              onClick={onThemeToggle}
               className={cn(
-                "absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-2 border-page",
-                isGhostMode ? "bg-[#2EE6C8]" : "bg-green",
+                "relative flex items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent",
+                isGhostMode
+                  ? "bg-secondary/10 border border-secondary/20 shadow-inner"
+                  : "bg-ink/5 border border-ink/10 hover:bg-ink/10 shadow-inner"
               )}
-              aria-hidden="true"
-            />
-          </button>
+              title="Toggle Ghost Mode"
+            >
+              <div
+                className={cn(
+                  "absolute top-1 left-1 w-6 h-6 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 flex items-center justify-center z-10",
+                  isGhostMode ? "bg-secondary translate-x-14" : "bg-page translate-x-0"
+                )}
+              >
+                {isGhostMode ? (
+                  <Fingerprint className="w-3.5 h-3.5 text-page" />
+                ) : (
+                  <Leaf className="w-3.5 h-3.5 text-green" />
+                )}
+              </div>
+              
+              <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-mono font-bold tracking-widest uppercase">
+                <span className={cn("transition-opacity duration-300", isGhostMode ? "opacity-100 text-ink" : "opacity-0")}>
+                  Ghost
+                </span>
+                <span className={cn("transition-opacity duration-300", isGhostMode ? "opacity-0" : "opacity-100 text-ink/50")}>
+                  Civic
+                </span>
+              </div>
+            </button>
+          )}
+
+          <div ref={notifRef} className="relative">
+            <button
+              aria-label="Notifications"
+              aria-expanded={notifOpen}
+              onClick={() => setNotifOpen((v) => !v)}
+              className="relative p-2 rounded-xl text-ink/50 hover:text-ink hover:bg-ink/5 transition-all focus:outline-none focus:ring-2 focus:ring-accent"
+            >
+              <Bell className="w-5 h-5" />
+              {notifications.length > 0 && (
+                <span
+                  className={cn(
+                    "absolute top-1 right-1.5 min-w-[16px] h-[16px] px-1 rounded-full border-2 border-page flex items-center justify-center text-[9px] font-bold",
+                    isGhostMode ? "bg-[#2EE6C8] text-ink" : "bg-red text-white",
+                  )}
+                  aria-hidden="true"
+                >
+                  {notifications.length > 9 ? "9+" : notifications.length}
+                </span>
+              )}
+            </button>
 
           {notifOpen && (
             <div className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-ink/10 bg-page shadow-xl overflow-hidden z-50">
@@ -135,25 +191,35 @@ export function AppHeader({
                 </button>
               </div>
               <div className="max-h-80 overflow-y-auto">
-                {notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className="p-3 border-b border-ink/10 last:border-0"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 shrink-0">{iconMap[n.type]}</div>
-                      <div className="min-w-0">
-                        <div className="text-sm text-ink">{n.title}</div>
-                        <div className="text-xs text-ink/50 mt-0.5">
-                          {n.desc}
-                        </div>
-                        <div className="text-xs text-ink/30 mt-1 font-mono">
-                          {n.time}
+                {notifications.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+                    <div className="w-12 h-12 rounded-full bg-ink/5 flex items-center justify-center mb-3">
+                      <Bell className="w-5 h-5 text-ink/30" />
+                    </div>
+                    <p className="text-sm font-medium text-ink/80">No new notifications</p>
+                    <p className="text-xs text-ink/50 mt-1">You're all caught up!</p>
+                  </div>
+                ) : (
+                  notifications.map((n) => (
+                    <div
+                      key={n.id}
+                      className="p-3 border-b border-ink/10 last:border-0"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-0.5 shrink-0">{iconMap[n.type]}</div>
+                        <div className="min-w-0">
+                          <div className="text-sm text-ink">{n.title}</div>
+                          <div className="text-xs text-ink/50 mt-0.5">
+                            {n.desc}
+                          </div>
+                          <div className="text-xs text-ink/30 mt-1 font-mono">
+                            {n.time}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
               <div className="p-2 border-t border-ink/10 text-center">
                 <Link
@@ -166,6 +232,7 @@ export function AppHeader({
               </div>
             </div>
           )}
+        </div>
         </div>
       </div>
     </header>

@@ -78,7 +78,7 @@ export default function Home() {
       <ImpactSection />
       <FaqSection />
       <InstallCtaSection ghostMode={ghostMode} />
-      <Footer />
+      <Footer ghostMode={ghostMode} />
       <LanguageSuggestionPopup currentLocale={locale as "en" | "fil" | "vi" | "id" | "ms" | "ta"} />
     </main>
   );

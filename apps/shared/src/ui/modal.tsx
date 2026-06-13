@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { cn } from "../utils";
@@ -175,7 +176,12 @@ export function Modal({
     [closeOnBackdrop, onClose]
   );
 
-  return (
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div
@@ -203,12 +209,11 @@ export function Modal({
             variants={modalVariants}
             initial="hidden"
             animate="visible"
-            exit="exit"
             role="dialog"
             aria-modal="true"
             aria-label={title || "Dialog"}
             className={cn(
-              "relative w-full rounded-2xl border border-border bg-page shadow-xl shadow-black/10 overflow-hidden",
+              "relative z-10 w-full rounded-2xl border border-border bg-page shadow-xl shadow-black/10 overflow-hidden",
               "max-h-[85vh] flex flex-col",
               fullscreenMobile
                 ? "sm:max-h-[85vh] sm:rounded-2xl rounded-b-none fixed bottom-0 left-0 right-0 sm:static max-h-[90vh]"
@@ -248,7 +253,8 @@ export function Modal({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 

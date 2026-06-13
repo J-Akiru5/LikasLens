@@ -15,6 +15,8 @@ interface DashboardLayoutProps {
   isGhostMode: boolean;
   onThemeToggle: () => void;
   greeting?: string;
+  pageTitle?: string;
+  pageSubtitle?: string;
   showBranding?: boolean;
   logoHref?: string;
   logoLabel?: string;
@@ -31,6 +33,8 @@ export function DashboardLayout({
   isGhostMode,
   onThemeToggle,
   greeting,
+  pageTitle,
+  pageSubtitle,
   showBranding = true,
   logoHref,
   logoLabel,
@@ -41,7 +45,7 @@ export function DashboardLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className={cn("flex h-dvh overflow-hidden bg-page", className)}>
+    <div className={cn("flex h-dvh overflow-hidden bg-ink/[0.04]", className)}>
       <RouteProgress />
 
       <Sidebar
@@ -56,17 +60,20 @@ export function DashboardLayout({
         onMobileOpenChange={setMobileSidebarOpen}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-page lg:my-4 lg:mr-4 lg:ml-0 lg:rounded-[2.5rem] lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative z-10 transition-all duration-300">
         <AppHeader
           greeting={greeting}
+          pageTitle={pageTitle}
+          pageSubtitle={pageSubtitle}
           showBranding={showBranding}
           isGhostMode={isGhostMode}
+          onThemeToggle={onThemeToggle}
           onMobileMenuToggle={() => setMobileSidebarOpen(true)}
           children={headerChildren}
         />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
-          <div className="max-w-[1440px] mx-auto">
+        <main className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-12 pb-20 lg:pb-12">
+          <div className="max-w-[1440px] mx-auto pt-2">
             {children}
           </div>
         </main>

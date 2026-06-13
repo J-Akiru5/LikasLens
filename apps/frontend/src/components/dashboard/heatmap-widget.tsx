@@ -192,7 +192,7 @@ export function HeatmapWidget() {
   }, [data]);
 
   return (
-    <div className="bg-panel border border-ink/10 rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-panel rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.04] overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-ink/5">
         <div className="flex items-center gap-3">
@@ -200,7 +200,7 @@ export function HeatmapWidget() {
             <MapPin className="w-5 h-5 text-amber" />
           </div>
           <div>
-            <h3 className="font-bold text-ink text-sm">Report Heatmap</h3>
+            <h3 className="font-bold text-ink text-sm">Live Incident Heatmap</h3>
             <p className="text-xs text-ink/50">Last 7 days</p>
           </div>
         </div>
@@ -230,13 +230,16 @@ export function HeatmapWidget() {
           </div>
         )}
 
-        <div ref={mapRef} style={{ height: "280px", width: "100%" }} />
+        <div ref={mapRef} style={{ height: "450px", width: "100%" }} />
 
         {!loading && !error && data && data.points.length === 0 && (
           <div className="absolute inset-0 z-[999] flex items-center justify-center pointer-events-none">
-            <div className="bg-panel/90 backdrop-blur-sm rounded-xl px-6 py-4 text-center">
-              <MapPin className="w-6 h-6 text-ink/20 mx-auto mb-2" />
-              <p className="text-xs text-ink/50">No reports in the last 7 days</p>
+            <div className="rounded-2xl border border-ink/10 p-8 text-center bg-panel/95 backdrop-blur-md shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-ink/[0.02] to-ink/[0.06] flex items-center justify-center mx-auto mb-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.08] ring-8 ring-ink/[0.015]">
+                <MapPin className="w-7 h-7 text-ink/30" />
+              </div>
+              <h3 className="font-medium text-ink mb-1.5">No reports yet</h3>
+              <p className="text-sm text-ink/50 leading-relaxed">No incidents mapped in the last 7 days.</p>
             </div>
           </div>
         )}

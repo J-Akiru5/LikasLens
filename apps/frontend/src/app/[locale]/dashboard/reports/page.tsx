@@ -113,120 +113,96 @@ export default function ReportsPage() {
   }
 
   return (
-    <DashboardLayoutWrapper>
+    <DashboardLayoutWrapper
+      pageTitle="Platform Analytics"
+      headerChildren={
+        <button
+          onClick={() => {
+            const htmlContent = `
+                <!DOCTYPE html>
+                <html><head><meta charset="utf-8"><title>LikasLens Report</title>
+                <style>body{font-family:sans-serif;padding:40px;color:#333}
+                h1{color:#2d6a4f;border-bottom:2px solid #2d6a4f;padding-bottom:10px}
+                table{width:100%;border-collapse:collapse;margin-top:20px}
+                th{background:#2d6a4f;color:#fff;padding:8px;text-align:left}
+                td{padding:8px;border:1px solid #ddd}
+                tr:nth-child(even){background:#f8f8f8}
+                .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:20px 0}
+                .summary-item{border:1px solid #ddd;padding:15px}
+                .summary-item .label{font-size:12px;color:#666;text-transform:uppercase;margin-bottom:5px}
+                .summary-item .value{font-size:24px;color:#2d6a4f;font-weight:bold}
+                .footer{margin-top:40px;padding-top:20px;border-top:2px solid #2d6a4f;text-align:center;color:#999;font-size:11px}
+                @media print{body{padding:20px}}</style></head><body>
+                <h1>LikasLens Analytics Report</h1>
+                <p>Generated: ${new Date().toLocaleString()}</p>
+                <div class="summary">
+                  <div class="summary-item"><div class="label">Total Incidents</div><div class="value">${totalIncidents}</div></div>
+                  <div class="summary-item"><div class="label">Resolved</div><div class="value">${stats?.resolved_today ?? 0}</div></div>
+                  <div class="summary-item"><div class="label">Resolution Rate</div><div class="value">${avgResolutionRate}%</div></div>
+                  <div class="summary-item"><div class="label">Ghost Mode</div><div class="value">${ghostModeUsage}</div></div>
+                </div>
+                <table><tr><th>ID</th><th>Title</th><th>Location</th><th>Status</th></tr>
+                ${tickets.map((t) => `<tr><td>${t.display_id || t.id}</td><td>${t.title}</td><td>${t.location}</td><td>${t.status}</td></tr>`).join("")}
+                </table>
+                <div class="footer">LikasLens 2026 | Environmental Monitoring Platform</div>
+                </body></html>`;
+            const w = window.open("", "", "width=1200,height=800");
+            if (w) {
+              w.document.write(htmlContent);
+              w.document.close();
+            } else {
+              alert("Please disable pop-up blocker to generate PDF");
+            }
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-panel rounded-full font-mono text-[10px] uppercase tracking-widest text-ink hover:text-green border border-ink/5 shadow-sm hover:shadow-md transition-all"
+        >
+          <Download className="w-3.5 h-3.5" /> Export Data
+        </button>
+      }
+    >
       <ToastContainer />
       <div className="space-y-6 pb-20">
-        {/* Hero */}
+        {/* Metric Cards */}
         <div className="bento-grid">
-          <div className="span-12">
-            <div className="bg-green text-page rounded-[40px] pt-10 pb-16 px-8 relative overflow-hidden shadow-xl">
-              <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-96 h-96 rounded-full border-[40px] border-page/5" />
-              <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-64 h-64 rounded-full border-[30px] border-page/5" />
-
-              <div className="relative z-10 flex flex-col items-center text-center mt-4">
-                <span className="text-sm font-mono uppercase tracking-widest opacity-80 mb-2">
-                  Platform Analytics
+          {[
+            {
+              title: "Total Tracked",
+              value: totalIncidents.toLocaleString(),
+              label: "all time reports",
+            },
+            {
+              title: "Resolution Rate",
+              value: `${avgResolutionRate}%`,
+              label: "overall avg",
+            },
+            {
+              title: "Open Incidents",
+              value: `${stats?.active_incidents ?? 0}`,
+              label: "currently active",
+            },
+            {
+              title: "Resolved Today",
+              value: `${stats?.resolved_today ?? 0}`,
+              label: "last 24h",
+            },
+          ].map((metric, i) => (
+            <div key={i} className="span-3">
+              <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5 flex flex-col items-center justify-center text-center h-full hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+                <span className="font-semibold tracking-tight text-4xl sm:text-5xl text-ink mb-3 block">
+                  {metric.value}
                 </span>
-                <h1
-                  className="text-[4rem] md:text-[5rem] leading-none font-bold tracking-tighter"
-                  style={{
-                    fontFamily: "var(--font-heading), Montserrat, sans-serif",
-                  }}
-                >
-                  {totalIncidents.toLocaleString()}
-                </h1>
-                <div className="bg-page/10 backdrop-blur-sm border border-page/10 px-4 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest mt-4 flex items-center gap-2">
-                  <span className="text-page">Total Reports Tracked</span>
-                </div>
+                <span className="font-mono text-xs text-ink/50 uppercase tracking-widest font-bold block mb-1">
+                  {metric.title}
+                </span>
+                <span className="font-mono text-[10px] text-ink/30 uppercase tracking-wide block">
+                  {metric.label}
+                </span>
               </div>
             </div>
-          </div>
+          ))}
         </div>
 
-        {/* KPI Row */}
-        <div className="bento-grid">
-          <div className="span-12">
-            <div className="bg-panel rounded-3xl p-6 shadow-xl border border-ink/5 grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[
-                {
-                  title: "Resolution Rate",
-                  value: `${avgResolutionRate}%`,
-                  label: "overall avg",
-                },
-                {
-                  title: "Open Incidents",
-                  value: `${stats?.active_incidents ?? 0}`,
-                  label: "currently active",
-                },
-                {
-                  title: "Resolved Today",
-                  value: `${stats?.resolved_today ?? 0}`,
-                  label: "last 24h",
-                },
-              ].map((metric, i) => (
-                <div key={i} className="flex flex-col items-center text-center">
-                  <span className="font-semibold tracking-tight text-3xl text-ink mb-1">
-                    {metric.value}
-                  </span>
-                  <span className="font-mono text-xs text-ink/60 uppercase tracking-widest mb-1">
-                    {metric.title}
-                  </span>
-                  <span className="font-mono text-[10px] text-ink/40 uppercase">
-                    {metric.label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        {/* Export Button */}
-        <div className="bento-grid">
-          <div className="span-12 flex justify-center">
-            <button
-              onClick={() => {
-                const htmlContent = `
-                    <!DOCTYPE html>
-                    <html><head><meta charset="utf-8"><title>LikasLens Report</title>
-                    <style>body{font-family:sans-serif;padding:40px;color:#333}
-                    h1{color:#2d6a4f;border-bottom:2px solid #2d6a4f;padding-bottom:10px}
-                    table{width:100%;border-collapse:collapse;margin-top:20px}
-                    th{background:#2d6a4f;color:#fff;padding:8px;text-align:left}
-                    td{padding:8px;border:1px solid #ddd}
-                    tr:nth-child(even){background:#f8f8f8}
-                    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:20px 0}
-                    .summary-item{border:1px solid #ddd;padding:15px}
-                    .summary-item .label{font-size:12px;color:#666;text-transform:uppercase;margin-bottom:5px}
-                    .summary-item .value{font-size:24px;color:#2d6a4f;font-weight:bold}
-                    .footer{margin-top:40px;padding-top:20px;border-top:2px solid #2d6a4f;text-align:center;color:#999;font-size:11px}
-                    @media print{body{padding:20px}}</style></head><body>
-                    <h1>LikasLens Analytics Report</h1>
-                    <p>Generated: ${new Date().toLocaleString()}</p>
-                    <div class="summary">
-                      <div class="summary-item"><div class="label">Total Incidents</div><div class="value">${totalIncidents}</div></div>
-                      <div class="summary-item"><div class="label">Resolved</div><div class="value">${stats?.resolved_today ?? 0}</div></div>
-                      <div class="summary-item"><div class="label">Resolution Rate</div><div class="value">${avgResolutionRate}%</div></div>
-                      <div class="summary-item"><div class="label">Ghost Mode</div><div class="value">${ghostModeUsage}</div></div>
-                    </div>
-                    <table><tr><th>ID</th><th>Title</th><th>Location</th><th>Status</th></tr>
-                    ${tickets.map((t) => `<tr><td>${t.display_id || t.id}</td><td>${t.title}</td><td>${t.location}</td><td>${t.status}</td></tr>`).join("")}
-                    </table>
-                    <div class="footer">LikasLens 2026 | Environmental Monitoring Platform</div>
-                    </body></html>`;
-                const w = window.open("", "", "width=1200,height=800");
-                if (w) {
-                  w.document.write(htmlContent);
-                  w.document.close();
-                } else {
-                  alert("Please disable pop-up blocker to generate PDF");
-                }
-              }}
-              className="flex items-center gap-2 px-6 py-3 bg-panel rounded-full font-mono text-xs uppercase tracking-widest text-ink hover:text-green border border-ink/5 shadow-sm hover:shadow-md transition-all"
-            >
-              <Download className="w-4 h-4" /> Export Report Data
-            </button>
-          </div>
-        </div>
 
         {/* Charts Row */}
         <div className="bento-grid">

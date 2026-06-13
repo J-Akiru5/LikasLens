@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { StatsCards, ActivityFeed, PublicScoreboard } from "@likaslens/shared";
+import { StatsCards, ActivityFeed, PublicScoreboard, cn, Dropdown } from "@likaslens/shared";
 import type { DashboardStats, ActivityFeedItem } from "@likaslens/shared";
 import { Camera, AlertTriangle, Scale, Activity, Clock, CheckCircle, TriangleAlert, Leaf, TrendingUp } from "lucide-react";
 import { HeatmapWidget } from "@/components/dashboard/heatmap-widget";
@@ -19,6 +19,9 @@ type Panel = "feed" | "scoreboard" | null;
 
 export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeActive }: CitizenDashboardProps) {
   const points = (impact as any)?.reward_points_balance ?? 0;
+  const [activeTab, setActiveTab] = useState<"overview" | "installed" | "uninstalled">("overview");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("latest");
 
   const statCards = stats ? [
     {
@@ -66,107 +69,121 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
   }));
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Hero Banner */}
-      <div className="bento-grid">
-        <div className="span-12">
-          <div className="bg-green text-page rounded-2xl p-6 md:p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 rounded-full border-[30px] border-page/5 translate-x-1/4 -translate-y-1/4" />
-            <div className="relative z-10 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-mono uppercase tracking-widest opacity-80 mb-1">Eco-Credits Balance</p>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter">
-                  {points.toLocaleString()}
-                </h1>
-                <span className="inline-flex items-center gap-1.5 bg-page/10 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-widest mt-3">
-                  <Leaf className="w-3 h-3" />
-                  Eco-Credits
-                </span>
+    <div className="space-y-6 pb-12 pt-2 px-2 md:px-6">
+      
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">Dashboard Overview</h1>
+      </div>
+
+      {/* Tabs and Filters */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ink/5 pb-4">
+        <div className="flex items-center gap-1 bg-ink/[0.03] p-1 rounded-lg w-fit border border-ink/5">
+          <button 
+            onClick={() => setActiveTab('overview')}
+            className={cn("px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200", activeTab === 'overview' ? 'bg-panel shadow-sm text-ink' : 'text-ink/60 hover:text-ink')}
+          >
+            All Reports
+          </button>
+          <button 
+            onClick={() => setActiveTab('installed')}
+            className={cn("px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200", activeTab === 'installed' ? 'bg-panel shadow-sm text-ink' : 'text-ink/60 hover:text-ink')}
+          >
+            Resolved
+          </button>
+          <button 
+            onClick={() => setActiveTab('uninstalled')}
+            className={cn("px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200", activeTab === 'uninstalled' ? 'bg-panel shadow-sm text-ink' : 'text-ink/60 hover:text-ink')}
+          >
+            Pending
+          </button>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input 
+              type="text" 
+              placeholder="Search reports..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full md:w-64 bg-panel border border-ink/10 rounded-lg pl-9 pr-4 py-1.5 text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-1 focus:ring-ink/20 shadow-sm"
+            />
+          </div>
+          <div className="w-48">
+            <Dropdown
+              size="sm"
+              value={sortBy}
+              onChange={setSortBy}
+              options={[
+                { value: "latest", label: "Latest" },
+                { value: "impact", label: "Highest Impact" }
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Content Areas */}
+      {activeTab === 'overview' && (
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          
+          {/* Section 1: Insights */}
+          <section>
+            <h2 className="font-semibold text-base text-ink mb-4">Environmental Impact Insights</h2>
+            {statCards && <StatsCards stats={statCards} />}
+          </section>
+          
+          {/* Section 2: Tracking */}
+          <section>
+            <h2 className="font-semibold text-base text-ink mb-4">Incident & Reporting Tracking</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 bg-panel rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.04] p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-medium text-sm text-ink/80 flex items-center gap-2">
+                     <Activity className="w-4 h-4 text-ink/40" />
+                     Recent Activity
+                  </h3>
+                </div>
+                <ActivityFeed items={feedItems} />
               </div>
-              <div className="hidden md:flex items-center gap-3">
-                <TrendingUp className="w-5 h-5 opacity-70" />
-                <span className="font-mono text-sm opacity-70">LikasLens Civic</span>
+              
+              <div className="bg-panel rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.04] p-5">
+                 <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-medium text-sm text-ink/80 flex items-center gap-2">
+                     <TrendingUp className="w-4 h-4 text-ink/40" />
+                     Top Contributors
+                  </h3>
+                 </div>
+                 <PublicScoreboard />
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </section>
 
-      {/* Quick Actions */}
-      <div className="bento-grid">
-        <div className="span-12">
-          <div className="bg-panel rounded-2xl border border-ink/5 p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Link href={`/${locale}/report`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-ink/[0.02] transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center group-hover:bg-green group-hover:text-page transition-colors">
-                <Camera className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-mono uppercase tracking-widest font-bold text-ink/60 group-hover:text-ink">Report</span>
-            </Link>
-            <Link href={`/${locale}/incidents`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-ink/[0.02] transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center group-hover:bg-green group-hover:text-page transition-colors">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-mono uppercase tracking-widest font-bold text-ink/60 group-hover:text-ink">Incidents</span>
-            </Link>
-            <Link href={`/${locale}/laws`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-ink/[0.02] transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center group-hover:bg-green group-hover:text-page transition-colors">
-                <Scale className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-mono uppercase tracking-widest font-bold text-ink/60 group-hover:text-ink">Laws</span>
-            </Link>
-            <Link href={`/${locale}/impact`} className="flex items-center gap-3 p-3 rounded-xl hover:bg-ink/[0.02] transition-colors group">
-              <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center group-hover:bg-green group-hover:text-page transition-colors">
-                <Activity className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-mono uppercase tracking-widest font-bold text-ink/60 group-hover:text-ink">Impact</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+          {/* Section 3: Heatmap */}
+          <section>
+            <HeatmapWidget />
+          </section>
 
-      {/* Stats Cards */}
-      {statCards && (
-        <div className="bento-grid">
-          <div className="span-12">
-            <StatsCards stats={statCards} />
-          </div>
         </div>
       )}
 
-      {/* Activity Feed + Scoreboard */}
-      <div className="bento-grid">
-        <div className="span-8">
-          <div className="bg-panel rounded-2xl border border-ink/5 p-5">
-            <h2 className="font-bold text-lg text-ink mb-4 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-ink/40" />
-              Recent Activity
-            </h2>
-            <ActivityFeed items={feedItems} />
-          </div>
+      {activeTab === 'installed' && (
+        <div className="flex flex-col items-center justify-center py-24 text-center animate-in fade-in duration-500">
+          <CheckCircle className="w-12 h-12 text-green/50 mb-4" />
+          <h3 className="text-lg font-medium text-ink">Resolved Reports</h3>
+          <p className="text-sm text-ink/50 max-w-sm mt-2">All environmental reports that have been successfully resolved by partnering agencies will appear here.</p>
         </div>
-        <div className="span-4">
-          <div className="bg-panel rounded-2xl border border-ink/5 p-5">
-            <h2 className="font-bold text-lg text-ink mb-4 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-ink/40" />
-              Scoreboard
-            </h2>
-            <PublicScoreboard />
-          </div>
-        </div>
-      </div>
+      )}
 
-      {/* Heatmap */}
-      <div className="bento-grid">
-        <div className="span-12">
-          <div className="bg-panel rounded-2xl border border-ink/5 p-5">
-            <h2 className="font-bold text-lg text-ink mb-4 flex items-center gap-2">
-              <MapPinIcon />
-              Report Heatmap
-            </h2>
-            <HeatmapWidget />
-          </div>
+      {activeTab === 'uninstalled' && (
+        <div className="flex flex-col items-center justify-center py-24 text-center animate-in fade-in duration-500">
+          <Clock className="w-12 h-12 text-amber/50 mb-4" />
+          <h3 className="text-lg font-medium text-ink">Pending Reports</h3>
+          <p className="text-sm text-ink/50 max-w-sm mt-2">Reports awaiting agency review or currently under investigation will appear here.</p>
         </div>
-      </div>
+      )}
+
     </div>
   );
 }
