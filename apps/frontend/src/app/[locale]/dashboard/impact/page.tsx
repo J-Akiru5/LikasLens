@@ -257,6 +257,7 @@ export default function ImpactPage() {
                     description="Monthly incident trends will populate once reports are submitted and processed by the AI pipeline."
                   />
                 ) : (
+                  <>
                   <div className="flex items-end gap-1 h-40">
                   {timeSeries.map((d) => (
                     <div key={d.month} className="flex-1 flex flex-col items-center gap-1">
@@ -286,6 +287,7 @@ export default function ImpactPage() {
                     Resolved
                   </div>
                 </div>
+                </>
                 )}
               </div>
             </div>
