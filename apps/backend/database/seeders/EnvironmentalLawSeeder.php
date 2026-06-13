@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\EnvironmentalLawPh;
+use App\Models\LawPenalty;
+use App\Models\ViolationType;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class EnvironmentalLawSeeder extends Seeder
 {
@@ -14,8 +14,6 @@ class EnvironmentalLawSeeder extends Seeder
      */
     public function run(): void
     {
-        $now = Carbon::now();
-
         $laws = [
             [
                 'law_code' => 'PD-1151',
@@ -32,32 +30,11 @@ class EnvironmentalLawSeeder extends Seeder
                 'source_url' => 'https://www.lawphil.net/statutes/presdecs/pd1978/pd_1586_1978.html',
             ],
             [
-                'law_code' => 'RA-7611',
-                'title' => 'Strategic Environmental Plan for Palawan Act of 1992',
-                'summary' => 'Creates the SEP framework and ECAN strategy for sustainable development in Palawan.',
-                'issuing_agency' => 'PCSD',
-                'source_url' => 'https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/2/3542',
-            ],
-            [
-                'law_code' => 'RA-9729',
-                'title' => 'Climate Change Act of 2009',
-                'summary' => 'Mainstreams climate change adaptation and mitigation in government policy and planning.',
-                'issuing_agency' => 'Climate Change Commission',
-                'source_url' => 'https://www.officialgazette.gov.ph/2009/10/23/republic-act-no-9729/',
-            ],
-            [
-                'law_code' => 'AM-09-6-8-SC',
-                'title' => 'Rules of Procedure for Environmental Cases (Writ of Kalikasan)',
-                'summary' => 'Provides judicial remedies for environmental rights violations and continuing mandamus actions.',
-                'issuing_agency' => 'Supreme Court of the Philippines',
-                'source_url' => 'https://sc.judiciary.gov.ph/rules-of-procedure-for-environmental-cases/',
-            ],
-            [
-                'law_code' => 'RA-10121',
-                'title' => 'Philippine Disaster Risk Reduction and Management Act of 2010',
-                'summary' => 'Strengthens disaster preparedness, risk reduction, and climate resilience programs nationwide.',
-                'issuing_agency' => 'NDRRMC',
-                'source_url' => 'https://www.officialgazette.gov.ph/2010/05/27/republic-act-no-10121/',
+                'law_code' => 'PD-705',
+                'title' => 'Revised Forestry Code of the Philippines',
+                'summary' => 'Lays down the basic principles of forest management and conservation, regulates logging operations, and penalizes illegal deforestation.',
+                'issuing_agency' => 'DENR',
+                'source_url' => 'https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/26/54708',
             ],
             [
                 'law_code' => 'PD-856',
@@ -88,6 +65,20 @@ class EnvironmentalLawSeeder extends Seeder
                 'source_url' => 'https://www.officialgazette.gov.ph/1990/10/26/republic-act-no-6969/',
             ],
             [
+                'law_code' => 'RA-7586',
+                'title' => 'National Integrated Protected Areas System (NIPAS) Act',
+                'summary' => 'Secures the perpetual existence of all native plants and animals through the establishment of a comprehensive system of integrated protected areas.',
+                'issuing_agency' => 'DENR-BMB',
+                'source_url' => 'https://www.officialgazette.gov.ph/1992/06/01/republic-act-no-7586/',
+            ],
+            [
+                'law_code' => 'RA-7611',
+                'title' => 'Strategic Environmental Plan for Palawan Act of 1992',
+                'summary' => 'Creates the SEP framework and ECAN strategy for sustainable development in Palawan.',
+                'issuing_agency' => 'PCSD',
+                'source_url' => 'https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/2/3542',
+            ],
+            [
                 'law_code' => 'RA-8749',
                 'title' => 'Philippine Clean Air Act of 1999',
                 'summary' => 'Establishes air quality management, emissions controls, and permitting requirements.',
@@ -102,40 +93,54 @@ class EnvironmentalLawSeeder extends Seeder
                 'source_url' => 'https://mirror.officialgazette.gov.ph/2001/01/26/republic-act-no-9003-s-2001/',
             ],
             [
+                'law_code' => 'RA-9147',
+                'title' => 'Wildlife Resources Conservation and Protection Act',
+                'summary' => 'Provides for the conservation and protection of wildlife resources and their habitats.',
+                'issuing_agency' => 'DENR-BMB',
+                'source_url' => 'https://www.officialgazette.gov.ph/2001/07/30/republic-act-no-9147/',
+            ],
+            [
                 'law_code' => 'RA-9275',
                 'title' => 'Philippine Clean Water Act of 2004',
                 'summary' => 'Provides the national framework for water quality protection and wastewater regulation.',
                 'issuing_agency' => 'DENR-EMB',
                 'source_url' => 'https://mirror.officialgazette.gov.ph/2004/03/22/republic-act-no-9275/',
             ],
+            [
+                'law_code' => 'RA-9729',
+                'title' => 'Climate Change Act of 2009',
+                'summary' => 'Mainstreams climate change adaptation and mitigation in government policy and planning.',
+                'issuing_agency' => 'Climate Change Commission',
+                'source_url' => 'https://www.officialgazette.gov.ph/2009/10/23/republic-act-no-9729/',
+            ],
+            [
+                'law_code' => 'RA-10121',
+                'title' => 'Philippine Disaster Risk Reduction and Management Act of 2010',
+                'summary' => 'Strengthens disaster preparedness, risk reduction, and climate resilience programs nationwide.',
+                'issuing_agency' => 'NDRRMC',
+                'source_url' => 'https://www.officialgazette.gov.ph/2010/05/27/republic-act-no-10121/',
+            ],
+            [
+                'law_code' => 'AM-09-6-8-SC',
+                'title' => 'Rules of Procedure for Environmental Cases (Writ of Kalikasan)',
+                'summary' => 'Provides judicial remedies for environmental rights violations and continuing mandamus actions.',
+                'issuing_agency' => 'Supreme Court of the Philippines',
+                'source_url' => 'https://sc.judiciary.gov.ph/rules-of-procedure-for-environmental-cases/',
+            ],
         ];
 
         $lawIdByCode = [];
 
         foreach ($laws as $law) {
-            $existing = DB::table('environmental_laws_ph')->where('law_code', $law['law_code'])->first();
-
-            if ($existing !== null) {
-                $lawIdByCode[$law['law_code']] = $existing->id;
-
-                continue;
-            }
-
-            $id = (string) Str::uuid();
-            $lawIdByCode[$law['law_code']] = $id;
-
-            DB::table('environmental_laws_ph')->insert([
-                'id' => $id,
-                'law_code' => $law['law_code'],
-                'title' => $law['title'],
-                'summary' => $law['summary'],
-                'issuing_agency' => $law['issuing_agency'],
-                'jurisdiction_scope' => 'national',
-                'source_url' => $law['source_url'],
-                'is_active' => true,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+            $record = EnvironmentalLawPh::updateOrCreate(
+                ['law_code' => $law['law_code']],
+                array_merge($law, [
+                    'jurisdiction_scope' => 'national',
+                    'country_code' => 'PH',
+                    'is_active' => true,
+                ])
+            );
+            $lawIdByCode[$law['law_code']] = $record->id;
         }
 
         $penalties = [
@@ -182,33 +187,21 @@ class EnvironmentalLawSeeder extends Seeder
                 continue;
             }
 
-            $existing = DB::table('law_penalties')
-                ->where('law_id', $lawIdByCode[$penalty['law_code']])
-                ->where('violation_name', $penalty['violation_name'])
-                ->first();
-
-            if ($existing !== null) {
-                $penaltyIdByLawCode[$penalty['law_code']] = $existing->id;
-
-                continue;
-            }
-
-            $id = (string) Str::uuid();
-            $penaltyIdByLawCode[$penalty['law_code']] = $id;
-
-            DB::table('law_penalties')->insert([
-                'id' => $id,
-                'law_id' => $lawIdByCode[$penalty['law_code']],
-                'violation_name' => $penalty['violation_name'],
-                'penalty_type' => $penalty['penalty_type'],
-                'min_fine_php' => $penalty['min_fine_php'] ?? null,
-                'max_fine_php' => $penalty['max_fine_php'] ?? null,
-                'min_imprisonment_days' => $penalty['min_imprisonment_days'] ?? null,
-                'max_imprisonment_days' => $penalty['max_imprisonment_days'] ?? null,
-                'notes' => $penalty['notes'] ?? null,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+            $record = LawPenalty::firstOrCreate(
+                [
+                    'law_id' => $lawIdByCode[$penalty['law_code']],
+                    'violation_name' => $penalty['violation_name'],
+                ],
+                [
+                    'penalty_type' => $penalty['penalty_type'],
+                    'min_fine_php' => $penalty['min_fine_php'] ?? null,
+                    'max_fine_php' => $penalty['max_fine_php'] ?? null,
+                    'min_imprisonment_days' => $penalty['min_imprisonment_days'] ?? null,
+                    'max_imprisonment_days' => $penalty['max_imprisonment_days'] ?? null,
+                    'notes' => $penalty['notes'] ?? null,
+                ]
+            );
+            $penaltyIdByLawCode[$penalty['law_code']] = $record->id;
         }
 
         $violationTypes = [
@@ -239,22 +232,15 @@ class EnvironmentalLawSeeder extends Seeder
         ];
 
         foreach ($violationTypes as $violationType) {
-            $existing = DB::table('violation_types')->where('code', $violationType['code'])->first();
-
-            if ($existing !== null) {
-                continue;
-            }
-
-            DB::table('violation_types')->insert([
-                'id' => (string) Str::uuid(),
-                'code' => $violationType['code'],
-                'name' => $violationType['name'],
-                'description' => $violationType['description'],
-                'law_id' => $lawIdByCode[$violationType['law_code']] ?? null,
-                'default_penalty_id' => $penaltyIdByLawCode[$violationType['law_code']] ?? null,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
+            ViolationType::firstOrCreate(
+                ['code' => $violationType['code']],
+                [
+                    'name' => $violationType['name'],
+                    'description' => $violationType['description'],
+                    'law_id' => $lawIdByCode[$violationType['law_code']] ?? null,
+                    'default_penalty_id' => $penaltyIdByLawCode[$violationType['law_code']] ?? null,
+                ]
+            );
         }
     }
 }

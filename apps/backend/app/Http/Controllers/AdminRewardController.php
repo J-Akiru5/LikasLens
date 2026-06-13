@@ -57,9 +57,9 @@ class AdminRewardController extends Controller
         $reward = RewardsCatalog::create($validated);
 
         AuditLog::create([
-            'actor_user_id' => $request->user()->id,
+            'actor_user_id' => $request->user()?->id,
             'action' => 'reward_created',
-            'entity_type' => 'rewards_catalog',
+            'entity_type' => 'RewardsCatalog',
             'entity_id' => $reward->id,
             'new_values' => $validated,
             'ip_address' => $request->ip(),
@@ -76,6 +76,7 @@ class AdminRewardController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $reward = RewardsCatalog::findOrFail($id);
+        $old = $reward->toArray();
 
         $validated = $request->validate([
             'partner_store_id' => 'sometimes|string|exists:partner_stores,id',
@@ -92,12 +93,12 @@ class AdminRewardController extends Controller
         $reward->update($validated);
 
         AuditLog::create([
-            'actor_user_id' => $request->user()->id,
+            'actor_user_id' => $request->user()?->id,
             'action' => 'reward_updated',
-            'entity_type' => 'rewards_catalog',
+            'entity_type' => 'RewardsCatalog',
             'entity_id' => $reward->id,
-            'old_values' => $oldValues,
-            'new_values' => $validated,
+            'old_values' => $old,
+            'new_values' => $reward->fresh()->toArray(),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
@@ -112,15 +113,15 @@ class AdminRewardController extends Controller
     public function destroy(Request $request, string $id): JsonResponse
     {
         $reward = RewardsCatalog::findOrFail($id);
-        $rewardName = $reward->reward_name;
+        $old = $reward->toArray();
         $reward->delete();
 
         AuditLog::create([
-            'actor_user_id' => $request->user()->id,
+            'actor_user_id' => $request->user()?->id,
             'action' => 'reward_deleted',
-            'entity_type' => 'rewards_catalog',
+            'entity_type' => 'RewardsCatalog',
             'entity_id' => $id,
-            'old_values' => ['reward_name' => $rewardName],
+            'old_values' => $old,
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);

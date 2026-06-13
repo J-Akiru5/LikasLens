@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\EnforceDataRetention;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -10,3 +11,6 @@ Artisan::command('inspire', function () {
 
 // SLA breach check: run every hour
 Schedule::command('sla:check-breaches')->hourly();
+
+// Data retention enforcement: run daily
+Schedule::command('likaslens:enforce-retention')->daily();

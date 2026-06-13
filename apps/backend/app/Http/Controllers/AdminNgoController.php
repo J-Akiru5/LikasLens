@@ -58,9 +58,9 @@ class AdminNgoController extends Controller
         $ngo = NgoGroup::create($validated);
 
         AuditLog::create([
-            'actor_user_id' => $request->user()->id,
+            'actor_user_id' => $request->user()?->id,
             'action' => 'ngo_created',
-            'entity_type' => 'ngo_group',
+            'entity_type' => 'NgoGroup',
             'entity_id' => $ngo->id,
             'new_values' => $validated,
             'ip_address' => $request->ip(),
@@ -77,6 +77,7 @@ class AdminNgoController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $ngo = NgoGroup::findOrFail($id);
+        $old = $ngo->toArray();
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -90,12 +91,12 @@ class AdminNgoController extends Controller
         $ngo->update($validated);
 
         AuditLog::create([
-            'actor_user_id' => $request->user()->id,
+            'actor_user_id' => $request->user()?->id,
             'action' => 'ngo_updated',
-            'entity_type' => 'ngo_group',
+            'entity_type' => 'NgoGroup',
             'entity_id' => $ngo->id,
-            'old_values' => $oldValues,
-            'new_values' => $validated,
+            'old_values' => $old,
+            'new_values' => $ngo->fresh()->toArray(),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
@@ -110,15 +111,15 @@ class AdminNgoController extends Controller
     public function destroy(Request $request, string $id): JsonResponse
     {
         $ngo = NgoGroup::findOrFail($id);
-        $ngoName = $ngo->name;
+        $old = $ngo->toArray();
         $ngo->delete();
 
         AuditLog::create([
-            'actor_user_id' => $request->user()->id,
+            'actor_user_id' => $request->user()?->id,
             'action' => 'ngo_deleted',
-            'entity_type' => 'ngo_group',
+            'entity_type' => 'NgoGroup',
             'entity_id' => $id,
-            'old_values' => ['name' => $ngoName],
+            'old_values' => $old,
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);

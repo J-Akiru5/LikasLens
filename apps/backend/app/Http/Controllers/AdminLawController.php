@@ -53,20 +53,21 @@ class AdminLawController extends Controller
     {
         $validated = $request->validate([
             'law_code' => 'required|string|max:50|unique:environmental_laws_ph,law_code',
+            'country_code' => 'nullable|string|max:2',
             'title' => 'required|string|max:255',
             'summary' => 'required|string',
             'issuing_agency' => 'required|string|max:255',
             'jurisdiction_scope' => 'nullable|string|max:100',
-            'source_url' => 'nullable|url|max:500',
+            'source_url' => 'nullable|url|max:255',
             'is_active' => 'boolean',
         ]);
 
         $law = EnvironmentalLawPh::create($validated);
 
         AuditLog::create([
-            'actor_user_id' => $request->user()->id,
+            'actor_user_id' => $request->user()?->id,
             'action' => 'law_created',
-            'entity_type' => 'environmental_law',
+            'entity_type' => 'EnvironmentalLawPh',
             'entity_id' => $law->id,
             'new_values' => $validated,
             'ip_address' => $request->ip(),
@@ -83,14 +84,16 @@ class AdminLawController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $law = EnvironmentalLawPh::findOrFail($id);
+        $old = $law->toArray();
 
         $validated = $request->validate([
             'law_code' => 'sometimes|string|max:50|unique:environmental_laws_ph,law_code,'.$id,
+            'country_code' => 'nullable|string|max:2',
             'title' => 'sometimes|string|max:255',
             'summary' => 'sometimes|string',
             'issuing_agency' => 'sometimes|string|max:255',
             'jurisdiction_scope' => 'nullable|string|max:100',
-            'source_url' => 'nullable|url|max:500',
+            'source_url' => 'nullable|url|max:255',
             'is_active' => 'boolean',
         ]);
 
@@ -98,12 +101,12 @@ class AdminLawController extends Controller
         $law->update($validated);
 
         AuditLog::create([
-            'actor_user_id' => $request->user()->id,
+            'actor_user_id' => $request->user()?->id,
             'action' => 'law_updated',
-            'entity_type' => 'environmental_law',
+            'entity_type' => 'EnvironmentalLawPh',
             'entity_id' => $law->id,
-            'old_values' => $oldValues,
-            'new_values' => $validated,
+            'old_values' => $old,
+            'new_values' => $law->fresh()->toArray(),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
@@ -118,15 +121,15 @@ class AdminLawController extends Controller
     public function destroy(Request $request, string $id): JsonResponse
     {
         $law = EnvironmentalLawPh::findOrFail($id);
-        $lawTitle = $law->title;
+        $old = $law->toArray();
         $law->delete();
 
         AuditLog::create([
-            'actor_user_id' => $request->user()->id,
+            'actor_user_id' => $request->user()?->id,
             'action' => 'law_deleted',
-            'entity_type' => 'environmental_law',
+            'entity_type' => 'EnvironmentalLawPh',
             'entity_id' => $id,
-            'old_values' => ['title' => $lawTitle],
+            'old_values' => $old,
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);

@@ -17,13 +17,13 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             EnvironmentalLawSeeder::class,
-            LawSeeder::class,
             NgoSeeder::class,
             IncidentSeeder::class,
             AchievementSeeder::class,
             CurrencySettingSeeder::class,
             EcoCreditPoolSeeder::class,
             SlaConfigSeeder::class,
+            CountryCodeSeeder::class,
         ]);
 
     }

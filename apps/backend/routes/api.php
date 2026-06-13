@@ -138,6 +138,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/achievements', [AchievementController::class, 'userAchievements']);
     Route::get('/user/rank-progress', [AchievementController::class, 'rankProgress']);
 
+    // Data privacy rights
+    Route::get('/user/export-data', [AuthController::class, 'exportData']);
+    Route::delete('/user/delete-account', [AuthController::class, 'deleteAccount']);
+
     // Report actions
     Route::middleware('role:analyst,super_admin')->group(function () {
         Route::post('/reports/verify', [ReportController::class, 'verify']);

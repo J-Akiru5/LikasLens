@@ -89,6 +89,28 @@ class ReportController extends Controller
 
             $userId = $this->resolveUserId($validated['user_id'] ?? null);
 
+            // Server-side EXIF stripping: re-encode image via GD to ensure metadata is removed
+            $exifStrippedAt = now();
+            if (str_starts_with($mimeType, 'image/jpeg')) {
+                $img = @imagecreatefromstring($imageData);
+                if ($img) {
+                    ob_start();
+                    imagejpeg($img, null, 92);
+                    $imageData = ob_get_clean();
+                    imagedestroy($img);
+                    $checksum = hash('sha256', $imageData);
+                }
+            } elseif ($mimeType === 'image/png') {
+                $img = @imagecreatefromstring($imageData);
+                if ($img) {
+                    ob_start();
+                    imagepng($img, null, 6);
+                    $imageData = ob_get_clean();
+                    imagedestroy($img);
+                    $checksum = hash('sha256', $imageData);
+                }
+            }
+
             $disk = $this->getStorageDisk();
             $disk->put($storagePath, $imageData, [
                 'checksum' => $checksum,
