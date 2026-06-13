@@ -6,7 +6,7 @@ import {
 } from "@likaslens/shared";
 import type { HotspotPrediction, PredictionMeta } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { AdminKPIsSkeleton } from "@likaslens/shared";
+import { AdminKPIsSkeleton, EmptyState } from "@likaslens/shared";
 import {
   MapPin,
   TrendingUp,
@@ -200,8 +200,12 @@ export default function PredictionsPage() {
           </h3>
           <div className="relative w-full h-[480px] rounded-2xl bg-ink/[0.03] overflow-hidden border border-ink/5">
             {predictions.length === 0 ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <p className="font-mono text-sm text-muted">No predictions available</p>
+              <div className="absolute inset-0 flex items-center justify-center p-8">
+                <EmptyState
+                  icon={AlertTriangle}
+                  title="No predictions available"
+                  description="Not enough report data to generate hotspot predictions. At least 10 reports are needed for the predictive model."
+                />
               </div>
             ) : (
               <HotspotMap predictions={predictions} tickets={tickets} />

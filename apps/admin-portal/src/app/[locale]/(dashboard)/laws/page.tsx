@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { laravelGet, laravelPost, showToast } from "@likaslens/shared";
 import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
-import { AdminTableSkeleton } from "@likaslens/shared";
+import { AdminTableSkeleton, EmptyState } from "@likaslens/shared";
 import {
   Scale,
   Search,
@@ -196,9 +196,17 @@ export default function LawsPage() {
             </div>
           ))}
           {laws.length === 0 && (
-            <p className="col-span-full text-center font-mono text-sm text-muted py-12">
-              No laws found
-            </p>
+            <div className="col-span-full">
+              <EmptyState
+                icon={Scale}
+                title="No laws found"
+                description={
+                  search
+                    ? "Try adjusting your search criteria."
+                    : "No environmental laws have been added to the database yet."
+                }
+              />
+            </div>
           )}
         </div>
       )}

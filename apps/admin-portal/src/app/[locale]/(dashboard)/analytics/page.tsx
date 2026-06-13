@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getTickets } from "@likaslens/shared";
+import { getTickets, EmptyState } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
 import { AdminKPIsSkeleton } from "@likaslens/shared";
 import { BarChart3, TrendingUp, TrendingDown } from "lucide-react";
@@ -130,6 +130,13 @@ export default function AnalyticsPage() {
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-6">
             Tickets by Status
           </h3>
+          {Object.keys(statusCounts).length === 0 ? (
+            <EmptyState
+              icon={BarChart3}
+              title="No ticket data yet"
+              description="Status distribution will appear once tickets are created and processed."
+            />
+          ) : (
           <div className="space-y-4">
             {Object.entries(statusCounts).map(([status, count]) => {
               const pct =
@@ -152,12 +159,20 @@ export default function AnalyticsPage() {
               );
             })}
           </div>
+          )}
         </div>
 
         <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-6">
             Ticket List
           </h3>
+          {tickets.length === 0 ? (
+            <EmptyState
+              icon={TrendingUp}
+              title="No tickets yet"
+              description="Submitted tickets will appear here once citizens submit reports."
+            />
+          ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {tickets.map((ticket) => (
               <div
@@ -186,6 +201,7 @@ export default function AnalyticsPage() {
               </div>
             ))}
           </div>
+          )}
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { laravelGet, laravelPatch } from "@likaslens/shared";
 import type { PaginatedResponse, ApiResponse } from "@likaslens/shared";
-import { showToast, AdminTableSkeleton } from "@likaslens/shared";
+import { showToast, AdminTableSkeleton, EmptyState } from "@likaslens/shared";
 import { ChevronLeft, ChevronRight, Mail, User, Clock, CheckCircle2 } from "lucide-react";
 
 interface ContactMessage {
@@ -139,9 +139,11 @@ export default function InquiriesPage() {
             </div>
           ))}
           {messages.length === 0 && (
-            <p className="text-center font-mono text-sm text-muted py-12">
-              No inquiries found
-            </p>
+            <EmptyState
+              icon={Mail}
+              title="No inquiries found"
+              description="Contact messages submitted through the public portal will appear here."
+            />
           )}
         </div>
       )}

@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { getAuditLogs, getAuditLogDetail } from "@likaslens/shared";
 import type { AuditLogEntry } from "@likaslens/shared";
-import { Dropdown, AdminTableSkeleton, Modal } from "@likaslens/shared";
+import { Dropdown, AdminTableSkeleton, Modal, EmptyState } from "@likaslens/shared";
 import {
   ChevronLeft,
   ChevronRight,
@@ -193,8 +193,12 @@ function DiffModal({
 
         {/* Diff view */}
         {!hasChanges ? (
-          <div className="text-center py-8">
-            <p className="font-mono text-sm text-muted">No changes recorded</p>
+          <div className="py-4">
+            <EmptyState
+              icon={Eye}
+              title="No changes recorded"
+              description="No field differences were found for this audit entry."
+            />
           </div>
         ) : (
           <div className="space-y-3">
@@ -259,8 +263,12 @@ function TimelineView({
 }) {
   if (logs.length === 0) {
     return (
-      <div className="text-center py-16">
-        <p className="font-mono text-sm text-muted">No audit logs found</p>
+      <div className="py-8">
+        <EmptyState
+          icon={ScrollText}
+          title="No audit logs found"
+          description="Administrative actions and changes will be recorded here for compliance tracking."
+        />
       </div>
     );
   }
@@ -552,9 +560,11 @@ export default function AuditLogsPage() {
             </div>
           ))}
           {logs.length === 0 && (
-            <p className="text-center font-mono text-sm text-muted py-12">
-              No audit logs found
-            </p>
+            <EmptyState
+              icon={ScrollText}
+              title="No audit logs found"
+              description="Administrative actions and changes will be recorded here for compliance tracking."
+            />
           )}
         </div>
       ) : (

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { laravelGet, laravelPost, showToast } from "@likaslens/shared";
 import type { PaginatedResponse } from "@likaslens/shared";
-import { AdminCardGridSkeleton } from "@likaslens/shared";
+import { AdminCardGridSkeleton, EmptyState } from "@likaslens/shared";
 import { ChevronLeft, ChevronRight, Gift, Package, Plus, X } from "lucide-react";
 
 interface Reward {
@@ -135,9 +135,13 @@ export default function RewardsPage() {
             </div>
           ))}
           {rewards.length === 0 && (
-            <p className="col-span-full text-center font-mono text-sm text-muted py-12">
-              No rewards configured
-            </p>
+            <div className="col-span-full">
+              <EmptyState
+                icon={Gift}
+                title="No rewards configured"
+                description="Create rewards to incentivize citizen participation through the eco-credit system."
+              />
+            </div>
           )}
         </div>
       )}
