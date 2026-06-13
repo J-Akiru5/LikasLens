@@ -3,9 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { DashboardSkeleton, laravelGet, getDashboardFeed, showToast, EmptyFeed } from "@likaslens/shared";
+import { DashboardSkeleton, laravelGet, getDashboardFeed, showToast, EmptyFeed, PartnerCarousel } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/shared";
-import { Camera, AlertTriangle, Scale, Activity, Zap } from "lucide-react";
+import { Camera, AlertTriangle, Scale, Activity, Zap, TrendingUp, Award, Gift, ChevronRight } from "lucide-react";
+
+const PARTNER_OFFERS = [
+  { name: "7-Eleven", shortName: "7-ELEVEN", offer: "Free Coffee", points: 150 },
+  { name: "SM Supermalls", shortName: "SM", offer: "₱50 GC", points: 500 },
+  { name: "Jollibee Foundation", shortName: "JOLLIBEE", offer: "Meal Voucher", points: 300 },
+  { name: "Globe Telecom", shortName: "GLOBE", offer: "1GB Data", points: 200 },
+  { name: "Mercury Drug", shortName: "MERCURY", offer: "₱100 Off", points: 400 },
+];
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -46,28 +54,34 @@ export default function DashboardPage() {
     );
   }
 
+  const points = (stats as any)?.reward_points_balance ?? 0;
+  const totalReports = stats?.total_reports ?? 0;
+  const resolvedToday = stats?.resolved_today ?? 0;
+  const activeIncidents = stats?.active_incidents ?? 0;
+
   return (
-    <div className="min-h-full pb-20">
-      {/* Sweeping Neon Curved Header */}
-      <div className="bg-green text-page rounded-b-[40px] pt-10 pb-20 px-6 relative overflow-hidden shadow-lg">
-        {/* Subtle decorative circles */}
-        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-64 h-64 rounded-full border-[30px] border-page/5" />
-        <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-40 h-40 rounded-full border-[20px] border-page/5" />
-        
-        <div className="relative z-10 flex flex-col items-center text-center mt-4">
-          <span className="text-xs font-mono uppercase tracking-widest opacity-80 mb-1">Eco-Credits Balance</span>
-          <h1 className="text-[3.5rem] leading-none font-bold tracking-tighter" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>
-            {((stats as any)?.reward_points_balance ?? 0).toLocaleString()}
-          </h1>
-          <div className="bg-page/10 backdrop-blur-sm border border-page/10 px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-widest mt-4 flex items-center gap-1">
-            <span className="text-page">↑ 12%</span>
-            <span className="opacity-70">Last month</span>
+    <div className="min-h-full pb-24">
+      {/* ── Compact Greeting + Balance ─────────────────────── */}
+      <div className="px-6 pt-8 pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">Welcome back</p>
+            <h1 className="text-2xl font-bold tracking-tight text-ink" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>
+              Dashboard
+            </h1>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-xs font-mono uppercase tracking-widest text-muted mb-1">Eco-Credits</span>
+            <div className="flex items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full">
+              <Award className="w-4 h-4" />
+              <span className="font-bold text-sm tabular-nums">{points.toLocaleString()}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Report Button */}
-      <div className="relative z-20 -mt-12 px-6 mb-4">
+      {/* ── Quick Report Button ─────────────────────────────── */}
+      <div className="px-6 mb-4">
         <Link
           href={`/${locale}/report?quick=true`}
           className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-green text-white font-bold text-sm shadow-lg shadow-green/20 hover:bg-green/90 hover:shadow-green/30 active:scale-[0.98] transition-all"
@@ -78,44 +92,94 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Floating Quick Actions */}
-      <div className="relative z-10 px-6 mt-2">
-        <div className="bg-panel rounded-3xl p-4 shadow-xl border border-ink/5 flex justify-between items-center">
-          <Link href={`/${locale}/report`} className="flex flex-col items-center gap-2 flex-1 group">
-            <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all group-hover:bg-green group-hover:text-page">
-              <Camera className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-ink/60 group-hover:text-ink">Report</span>
-          </Link>
-          <Link href={`/${locale}/incidents`} className="flex flex-col items-center gap-2 flex-1 group">
-            <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all group-hover:bg-green group-hover:text-page">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-ink/60 group-hover:text-ink">Incidents</span>
-          </Link>
-          <Link href={`/${locale}/laws`} className="flex flex-col items-center gap-2 flex-1 group">
-            <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all group-hover:bg-green group-hover:text-page">
-              <Scale className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-ink/60 group-hover:text-ink">Laws</span>
-          </Link>
-          <Link href={`/${locale}/impact`} className="flex flex-col items-center gap-2 flex-1 group">
-            <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all group-hover:bg-green group-hover:text-page">
-              <Activity className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-ink/60 group-hover:text-ink">Impact</span>
-          </Link>
+      {/* ── Quick Actions Row ───────────────────────────────── */}
+      <div className="px-6 mb-6">
+        <div className="bg-panel rounded-2xl p-3 border border-ink/5 flex justify-between items-center">
+          {[
+            { href: `/${locale}/report`, icon: Camera, label: "Report" },
+            { href: `/${locale}/history`, icon: AlertTriangle, label: "My Reports" },
+            { href: `/${locale}/laws`, icon: Scale, label: "Laws" },
+            { href: `/${locale}/wallet`, icon: Gift, label: "Wallet" },
+          ].map((item) => (
+            <Link key={item.label} href={item.href} className="flex flex-col items-center gap-2 flex-1 group">
+              <div className="w-11 h-11 rounded-xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all group-hover:bg-green group-hover:text-page">
+                <item.icon className="w-5 h-5" />
+              </div>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/60 group-hover:text-ink">{item.label}</span>
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* Recent Activity / Transactions */}
-      <div className="px-6 mt-8 space-y-6">
+      {/* ── My Impact Card ⭐ NEW ──────────────────────────── */}
+      <div className="px-6 mb-6">
+        <div className="bg-panel rounded-2xl p-5 border border-ink/5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-sm text-ink flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-green" />
+              My Impact
+            </h2>
+            <Link href={`/${locale}/impact`} className="text-[10px] font-mono uppercase tracking-widest text-green flex items-center gap-1">
+              Details <ChevronRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-page rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-ink tabular-nums">{totalReports}</p>
+              <p className="text-[9px] font-mono uppercase tracking-widest text-muted mt-1">Reports</p>
+            </div>
+            <div className="bg-page rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-green tabular-nums">{resolvedToday}</p>
+              <p className="text-[9px] font-mono uppercase tracking-widest text-muted mt-1">Resolved</p>
+            </div>
+            <div className="bg-page rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-amber tabular-nums">{activeIncidents}</p>
+              <p className="text-[9px] font-mono uppercase tracking-widest text-muted mt-1">Active</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Partner Offers Carousel ⭐ NEW ─────────────────── */}
+      <div className="px-6 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-bold text-sm text-ink">Partner Offers</h2>
+          <span className="text-[10px] font-mono uppercase tracking-widest text-muted">Redeem with Eco-Credits</span>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide">
+          {PARTNER_OFFERS.map((offer) => (
+            <div
+              key={offer.name}
+              className="flex-shrink-0 w-[160px] snap-start bg-panel rounded-2xl border border-ink/5 p-4 flex flex-col gap-3 hover:border-green/30 transition-colors"
+            >
+              <div className="w-10 h-10 rounded-xl bg-green/10 flex items-center justify-center">
+                <span className="text-[10px] font-bold font-mono text-green">{offer.shortName.slice(0, 3)}</span>
+              </div>
+              <div>
+                <p className="font-bold text-sm text-ink">{offer.offer}</p>
+                <p className="text-[10px] font-mono text-muted mt-0.5">{offer.name}</p>
+              </div>
+              <div className="mt-auto pt-2 border-t border-ink/5">
+                <span className="text-xs font-bold text-green">{offer.points} pts</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Recent Activity ────────────────────────────────── */}
+      <div className="px-6 space-y-4">
         <div className="flex justify-between items-end">
-          <h2 className="text-xl font-bold text-ink" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>Recent Activity</h2>
-          <span className="text-[10px] font-mono uppercase tracking-widest text-ink/50 hover:text-ink cursor-pointer">View All {'>'}</span>
+          <h2 className="font-bold text-sm text-ink flex items-center gap-2">
+            <Activity className="w-4 h-4 text-ink/40" />
+            Recent Activity
+          </h2>
+          <Link href={`/${locale}/history`} className="text-[10px] font-mono uppercase tracking-widest text-ink/50 hover:text-ink flex items-center gap-1">
+            View All <ChevronRight className="w-3 h-3" />
+          </Link>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {feed.length === 0 ? (
             <EmptyFeed description="No recent activity" />
           ) : (
@@ -128,16 +192,16 @@ export default function DashboardPage() {
               const config = typeConfig[item.type] ?? typeConfig.Info;
 
               return (
-                <div key={item.id} className="bg-panel rounded-3xl p-4 shadow-sm border border-ink/5 flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-2xl ${config.bg} flex items-center justify-center shrink-0`}>
+                <div key={item.id} className="bg-panel rounded-2xl p-4 shadow-sm border border-ink/5 flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
                     <span className={`${config.text} font-bold`}>{config.icon}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-ink truncate">{item.title}</p>
+                    <p className="font-bold text-sm text-ink truncate">{item.title}</p>
                     <p className="text-xs text-ink/50 mt-0.5 truncate">{item.location || item.description}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className={`font-bold ${config.text}`}>{item.status}</p>
+                    <p className={`font-bold text-xs ${config.text}`}>{item.status}</p>
                     <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-1">{item.time}</p>
                   </div>
                 </div>

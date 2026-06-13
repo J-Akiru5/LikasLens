@@ -11,7 +11,7 @@ const intlMiddleware = createIntlMiddleware({
 });
 
 export default async function middleware(request: NextRequest) {
-  let response = intlMiddleware(request);
+  const response = intlMiddleware(request);
 
   // Multi-tenant: extract subdomain
   const host = request.headers.get("host") || "";

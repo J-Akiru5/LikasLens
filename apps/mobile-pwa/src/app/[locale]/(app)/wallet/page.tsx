@@ -1,4 +1,4 @@
-import { ScanLine, Send, Gift, Trophy, Award, List, Heart, Zap, HelpCircle } from "lucide-react";
+import { ScanLine, Award, Trophy, List, HelpCircle, Shield, Leaf, BarChart3, BookOpen } from "lucide-react";
 
 export default function WalletPage() {
   return (
@@ -49,12 +49,6 @@ export default function WalletPage() {
           <div className="grid grid-cols-4 gap-4">
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
-                <Gift className="w-6 h-6" />
-              </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Redeem</span>
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
                 <Award className="w-6 h-6" />
               </div>
               <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Badges</span>
@@ -67,9 +61,15 @@ export default function WalletPage() {
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
-                <Send className="w-6 h-6" />
+                <BarChart3 className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Transfer</span>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Impact</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
+                <Shield className="w-6 h-6" />
+              </div>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Privacy</span>
             </div>
             
             {/* Second row */}
@@ -81,15 +81,15 @@ export default function WalletPage() {
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
-                <Heart className="w-6 h-6" />
+                <Leaf className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Donate</span>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">REDD+</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
-                <Zap className="w-6 h-6" />
+                <BookOpen className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Boosts</span>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Laws</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">

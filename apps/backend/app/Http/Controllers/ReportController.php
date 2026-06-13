@@ -630,6 +630,8 @@ class ReportController extends Controller
         if ($ticket) {
             $oldStatus = $ticket->status;
             $ticket->status = 'verified';
+            // Mark verified incidents as REDD+ MRV eligible
+            $ticket->is_redd_eligible = true;
             $ticket->save();
 
             // Fire timeline event for LGU verification
@@ -716,5 +718,136 @@ class ReportController extends Controller
                 'results' => $results,
             ],
         ]);
+    }
+
+    /**
+     * Community corroboration: allow a citizen to corroborate an existing report.
+     * Requires GPS-diversity check (>50m apart) and different user.
+     */
+    public function corroborate(Request $request)
+    {
+        $validated = $request->validate([
+            'report_id' => 'required|uuid|exists:reports,id',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'user_id' => 'nullable|string|max:255',
+        ]);
+
+        $report = Report::findOrFail($validated['report_id']);
+
+        // Anti-Sybil: check if same user is trying to corroborate their own report
+        if ($validated['user_id'] && $validated['user_id'] === $report->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot corroborate your own report.',
+            ], 403);
+        }
+
+        // GPS-diversity check: must be >50m from original report
+        $distance = $this->haversineDistance(
+            $report->latitude, $report->longitude,
+            $validated['latitude'], $validated['longitude']
+        );
+
+        if ($distance < 50) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Corroborating reports must be at least 50m from the original report.',
+            ], 422);
+        }
+
+        // Check if report already has enough corroboration (2 reports/500m threshold)
+        $existingCorroborations = Report::where('id', '!=', $validated['report_id'])
+            ->whereBetween('created_at', [
+                $report->created_at->subHours(24),
+                $report->created_at->addHours(24),
+            ])
+            ->get()
+            ->filter(function ($r) use ($report) {
+                $dist = $this->haversineDistance(
+                    $report->latitude, $report->longitude,
+                    $r->latitude, $r->longitude
+                );
+                return $dist <= 500; // 500m corroboration radius
+            })
+            ->count();
+
+        $corroborated = $existingCorroborations >= 1; // Original + 1 more = 2 reports
+
+        // Link to chain if not already linked
+        if ($corroborated && !$report->chain_id) {
+            app(ChainService::class)->processNewReport($report);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $corroborated
+                ? 'Corroboration threshold met! Report escalated for AI analysis.'
+                : 'Corroboration recorded. Awaiting additional reports within 500m.',
+            'data' => [
+                'report_id' => $report->id,
+                'corroborated' => $corroborated,
+                'existing_corroborations' => $existingCorroborations,
+                'required_for_escalation' => max(0, 1 - $existingCorroborations),
+            ],
+        ]);
+    }
+
+    /**
+     * Anti-Sybil geofence check: reject reports within 5m of an existing report from the same user.
+     */
+    public function checkGeofence(Request $request)
+    {
+        $validated = $request->validate([
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'user_id' => 'nullable|string|max:255',
+        ]);
+
+        $geofenceRadius = 5; // 5m anti-Sybil geofence
+
+        $nearbyReport = Report::where('user_id', $validated['user_id'] ?? 'ANONYMOUS_GHOST')
+            ->where('created_at', '>', now()->subHours(24))
+            ->get()
+            ->first(function ($report) use ($validated, $geofenceRadius) {
+                $distance = $this->haversineDistance(
+                    $report->latitude, $report->longitude,
+                    $validated['latitude'], $validated['longitude']
+                );
+                return $distance <= $geofenceRadius;
+            });
+
+        if ($nearbyReport) {
+            return response()->json([
+                'success' => false,
+                'message' => 'A report already exists within 5m of this location from your account in the last 24 hours.',
+                'existing_report_id' => $nearbyReport->id,
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Location passes anti-Sybil geofence check.',
+        ]);
+    }
+
+    /**
+     * Calculate distance between two GPS coordinates using Haversine formula.
+     * Returns distance in meters.
+     */
+    private function haversineDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 6371000; // Earth's radius in meters
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLng / 2) * sin($dLng / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
     }
 }

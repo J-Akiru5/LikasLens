@@ -1029,3 +1029,116 @@ body {
         transition: none;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PARTNER CAROUSEL — infinite marquee
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.partner-carousel-section {
+    padding: 48px 0;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+}
+
+.partner-carousel-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding: 0 24px;
+}
+
+.partner-carousel-title {
+    font-family: monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    margin: 0;
+}
+
+.partner-carousel-subtitle {
+    font-size: 14px;
+    color: var(--muted-subtle);
+    margin: 8px 0 0;
+}
+
+.partner-marquee-wrapper {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        black 10%,
+        black 90%,
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        black 10%,
+        black 90%,
+        transparent 100%
+    );
+}
+
+.partner-marquee-track {
+    display: flex;
+    gap: 24px;
+    width: max-content;
+    animation: partner-marquee var(--marquee-duration, 35s) linear infinite;
+}
+
+.partner-marquee-track:hover {
+    animation-play-state: paused;
+}
+
+.partner-marquee-item {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.partner-marquee-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border-radius: 999px;
+    background: var(--page);
+    border: 1px solid var(--border);
+    font-family: var(--font-heading), sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.partner-marquee-badge:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-subtle);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+@keyframes partner-marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .partner-marquee-track {
+        animation: none;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}

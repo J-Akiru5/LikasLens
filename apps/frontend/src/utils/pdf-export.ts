@@ -15,7 +15,6 @@ export async function exportElementToPdf(
 ): Promise<void> {
   const {
     filename = "export.pdf",
-    quality = 2,
     scale = 2,
     preserveBackgroundColor = true,
     margin = { top: 10, right: 10, bottom: 10, left: 10 },

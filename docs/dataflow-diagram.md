@@ -45,7 +45,7 @@ flowchart TB
 
     %% AI Service
     subgraph AIService["FastAPI AI Service :8001"]
-        YOLO["YOLOv8<br/>Object Detection"]
+        YOLO["YOLOv8 Nano<br/>Object Detection"]
         Gremlin["Gremlin Traversal<br/>Law + Agency Routing"]
         Gemini["Gemini 2.5 Flash<br/>Summary + Chatbot"]
     end
@@ -129,7 +129,7 @@ sequenceDiagram
     participant Storage as Supabase Storage
     participant DB as PostgreSQL
     participant AI as AI Service
-    participant YOLO as YOLOv8
+    participant YOLO as YOLOv8 Nano
     participant Graph as Gremlin Graph
     participant LLM as Gemini
 
@@ -181,7 +181,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     subgraph Neural["Neural Layer"]
-        YOLO["YOLOv8<br/>Object Detection<br/>(yolov8n.pt)"]
+        YOLO["YOLOv8 Nano<br/>Object Detection<br/>(yolov8n.pt)"]
         Gemini["Gemini 2.5 Flash<br/>NL Summarization"]
     end
 

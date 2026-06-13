@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Leaf } from "lucide-react";
 
 const FOOTER_LINKS = [
   { label: "Privacy Policy", href: "/privacy" },
@@ -54,6 +53,7 @@ export function Footer() {
       <div className="max-w-[1440px] mx-auto px-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-8 mb-8 md:mb-12 relative z-10">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-7 h-7 object-contain" />
             <span className="font-mono text-xs tracking-widest uppercase opacity-70">
               LikasLens &copy; {new Date().getFullYear()}

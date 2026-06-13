@@ -51,6 +51,7 @@ export function AvatarUpload({ userId, currentUrl, onUploadComplete }: AvatarUpl
     <div className="flex items-center gap-6">
       <div className="relative w-24 h-24 rounded-full border-2 border-accent overflow-hidden flex items-center justify-center bg-accent/10 flex-shrink-0">
         {displayUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={displayUrl}
             alt="Profile preview"

@@ -152,7 +152,7 @@ function AnimatedCounter({ value, duration = 1.5 }: { value: number; duration?: 
 
   useEffect(() => {
     if (value === 0) return;
-    let start = 0;
+    const start = 0;
     const end = value;
     const startTime = Date.now();
     const durationMs = duration * 1000;

@@ -98,12 +98,16 @@ export function HeatmapMap({ days = 30, showFilters = true, height = "600px" }: 
   const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
   const [selectedHotZone, setSelectedHotZone] = useState<HotZone | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leafletMapRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersLayerRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const heatLayerRef = useRef<any>(null);
 
   // Fetch violation types for filter dropdown
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     laravelGet<{ success: boolean; data: ViolationType[] }>("/reports/heatmap/violation-types")
       .then((res) => {
         if (res.success) setViolationTypes(res.data);
@@ -140,6 +144,7 @@ export function HeatmapMap({ days = 30, showFilters = true, height = "600px" }: 
   }, [days, selectedType]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 
@@ -214,6 +219,7 @@ export function HeatmapMap({ days = 30, showFilters = true, height = "600px" }: 
         // Render heatmap layer
         const heatPoints = data.points.map((p) => [p.lat, p.lng, p.weight]);
         if (heatPoints.length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const heat = (L as any).heatLayer(heatPoints, {
             radius: 25,
             blur: 15,

@@ -44,7 +44,7 @@
     "typescript": "^5"
   },
   "peerDependencies": {
-    "next": ">=15",
+    "next": "^16.2.2",
     "next-intl": "^4",
     "react": "^19",
     "react-dom": "^19"

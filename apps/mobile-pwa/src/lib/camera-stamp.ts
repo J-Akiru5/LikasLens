@@ -46,7 +46,12 @@ export function captureWithStamp(
   // Draw metadata at bottom
   ctx.fillStyle = "#ffffff";
   ctx.font = "18px monospace";
-  ctx.fillText(`\u{1F4CD} ${metadata.latitude.toFixed(6)}, ${metadata.longitude.toFixed(6)}`, 20, canvas.height - 80);
+  // In Ghost Mode, hide GPS coordinates from the visual stamp
+  if (!metadata.ghostMode) {
+    ctx.fillText(`\u{1F4CD} ${metadata.latitude.toFixed(6)}, ${metadata.longitude.toFixed(6)}`, 20, canvas.height - 80);
+  } else {
+    ctx.fillText(`\u{1F4CD} [COORDINATES HIDDEN]`, 20, canvas.height - 80);
+  }
   ctx.fillText(`\u{1F550} ${new Date().toISOString()}`, 20, canvas.height - 50);
   if (metadata.reportId) {
     ctx.fillText(`\u{1F4CB} ${metadata.reportId}`, 20, canvas.height - 20);

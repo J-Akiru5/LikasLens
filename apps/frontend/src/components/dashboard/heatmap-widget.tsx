@@ -44,8 +44,11 @@ export function HeatmapWidget() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const leafletMapRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markersLayerRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const heatLayerRef = useRef<any>(null);
 
   const fetchData = useCallback(async () => {
@@ -68,6 +71,7 @@ export function HeatmapWidget() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 
@@ -141,6 +145,7 @@ export function HeatmapWidget() {
       // Heatmap layer
       const heatPoints = data.points.map((p) => [p.lat, p.lng, p.weight]);
       if (heatPoints.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const heat = (L as any).heatLayer(heatPoints, {
           radius: 25,
           blur: 15,

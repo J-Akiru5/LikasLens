@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getTickets, bulkTicketStatus, bulkTicketAssign, getAdminNgos } from "@likaslens/shared";
 import type { Ticket, NgoGroup } from "@likaslens/shared";
-import { showToast, Dropdown, AdminTableSkeleton } from "@likaslens/shared";
+import { showToast, Dropdown, AdminTableSkeleton, ConfidenceTierBadge, ReddEligibilityBadge } from "@likaslens/shared";
 import {
   Search,
   MoreVertical,
@@ -296,6 +296,17 @@ export default function TicketsPage() {
                   <span className={`px-2.5 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${getStatusPill(ticket.status)}`}>
                     {ticket.status}
                   </span>
+                </div>
+
+                {/* AI confidence tier (CardinalMu-inspired Watch/Advisory/Confirmed) */}
+                <div className="mb-3 pl-7 pr-8 flex items-center gap-2">
+                  <ConfidenceTierBadge
+                    score={Number((ticket as unknown as { ai_confidence?: number }).ai_confidence ?? 0)}
+                    showScore
+                  />
+                  <ReddEligibilityBadge
+                    eligible={(ticket as unknown as { is_redd_eligible?: boolean }).is_redd_eligible ?? false}
+                  />
                 </div>
 
                 <h3 className="font-bold text-[17px] text-ink leading-snug mb-4 line-clamp-2 flex-1">

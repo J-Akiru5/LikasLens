@@ -27,6 +27,8 @@ use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserImpactController;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\PatternEscalationController;
+use App\Http\Controllers\BiasRiskRegisterController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +43,8 @@ Route::get('/health', function () {
 // Report submission endpoints (public, rate limited)
 Route::post('/reports', [ReportController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/reports/triage', [ReportController::class, 'triage'])->middleware('throttle:20,1');
+Route::post('/reports/corroborate', [ReportController::class, 'corroborate'])->middleware('throttle:20,1');
+Route::post('/reports/check-geofence', [ReportController::class, 'checkGeofence'])->middleware('throttle:30,1');
 Route::get('/reports/chain/{chainId}', [ReportController::class, 'showChain'])->middleware('throttle:60,1');
 Route::get('/reports/{id}/verify-evidence', [ReportController::class, 'verifyEvidence'])->middleware('throttle:30,1');
 
@@ -210,6 +214,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/triage/{id}/dismiss', [AdminTriageController::class, 'dismiss']);
         Route::post('/admin/triage/{id}/escalate', [AdminTriageController::class, 'escalate']);
 
+        // Pattern escalation (LUWAS-inspired)
+        Route::get('/admin/pattern-escalation/detect', [PatternEscalationController::class, 'detect']);
+        Route::post('/admin/pattern-escalation/escalate', [PatternEscalationController::class, 'escalate']);
+
+        // Bias / risk register
+        Route::get('/admin/bias-register', [BiasRiskRegisterController::class, 'index']);
+
         // Bulk operations
         Route::post('/admin/tickets/bulk-status', [AdminBulkController::class, 'bulkTicketStatus']);
         Route::post('/admin/tickets/bulk-assign', [AdminBulkController::class, 'bulkTicketAssign']);
@@ -222,6 +233,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Ticket status transition (analyst+ can update status)
     Route::middleware('role:analyst,super_admin')->group(function () {
         Route::patch('/tickets/{id}/status', [TicketController::class, 'updateStatus']);
+        Route::get('/tickets/{id}/explain', [TicketController::class, 'explain']);
     });
 });
 

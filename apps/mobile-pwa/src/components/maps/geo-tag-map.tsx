@@ -46,7 +46,7 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
     })();
   }, []);
 
-  const buildIcon = useCallback((L: typeof import("leaflet").default) => {
+  const buildIcon = useCallback((L: any) => {
     return L.divIcon({
       className: "",
       html: `
@@ -83,7 +83,6 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
       zoom: startZoom,
       zoomControl: false,        // custom zoom — cleaner on mobile
       attributionControl: true,
-      tap: true,                 // enable tap for mobile
       dragging: true,
       touchZoom: true,
       doubleClickZoom: true,

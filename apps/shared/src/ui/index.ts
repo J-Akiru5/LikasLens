@@ -50,3 +50,8 @@ export {
 } from "./empty-state";
 export { ErrorPage, NotFoundPage } from "./error-page";
 export { Modal, ConfirmModal } from "./modal";
+export { PartnerCarousel } from "./partner-carousel";
+export { ConfidenceTierBadge } from "./confidence-tier-badge";
+export { ReddEligibilityBadge } from "./redd-badge";
+export * from "./wow/magnetic-button";
+export * from "./wow/spotlight-card";

@@ -17,10 +17,10 @@
     "framer-motion": "^12.38.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.14.0",
-    "next": "16.2.2",
-    "next-intl": "^4.12.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "next": "^16.2.2",
+    "next-intl": "^4",
+    "react": "^19",
+    "react-dom": "^19",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
@@ -30,7 +30,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
+    "eslint-config-next": "^16.2.2",
+    "minimatch": "^10.2.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
