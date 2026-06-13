@@ -12,7 +12,7 @@
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
     /* ── Surface layers ────────────────────────────────────────────────────── */
-    --page: #f5f5f0; /* warm off-white — page background */
+    --page: #ffffff; /* pure white — page background (enterprise standard) */
     --panel: #ffffff; /* pure white cards, panels */
     --panel-elevated: #fafafa; /* dropdowns, popovers */
     --overlay: #ffffff; /* modals, dialogs */
@@ -1105,7 +1105,7 @@ body {
     justify-content: center;
     padding: 10px 24px;
     border-radius: 999px;
-    background: var(--page);
+    background: var(--panel-elevated);
     border: 1px solid var(--border);
     font-family: var(--font-heading), sans-serif;
     font-size: 12px;
