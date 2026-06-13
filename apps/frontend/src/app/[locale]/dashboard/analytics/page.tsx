@@ -1,19 +1,12 @@
 "use client";
 
 import { BarChart3, ArrowUpRight } from "lucide-react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { AppHeader } from "@/components/layout/header";
-import { BottomNav } from "@/components/layout/bottom-nav";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 
 export default function AnalyticsPage() {
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-        <AppHeader greeting="Analyst" />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-6 pb-20 lg:pb-6 relative z-10">
-          <BottomNav />
-          <div className="flex items-center justify-center min-h-[60dvh]">
+    <DashboardLayoutWrapper greeting="Analyst">
+      <div className="flex items-center justify-center min-h-[60dvh]">
       <div className="text-center max-w-md space-y-6">
         <div className="space-y-2">
           <BarChart3 className="w-8 h-8 text-muted mx-auto" />
@@ -32,9 +25,7 @@ export default function AnalyticsPage() {
           <ArrowUpRight className="h-4 w-4" />
         </a>
       </div>
-          </div>
-        </main>
       </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }

@@ -1,149 +1,24 @@
 @import "tailwindcss";
-@import "@likaslens/shared/src/styles/civic-brutalism.css";
 @source "../../../shared/src/**/*.{ts,tsx}";
 @source "../shared/src/**/*.{ts,tsx}";
 @source "./node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @source "../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @source "../../shared/src/**/*.{ts,tsx}";
+@import "@likaslens/shared/src/styles/design-tokens.css";
 
-:root {
-  --page: #f5f5f0;
-  --ink: #1a1d1a;
-  --panel: #eeeee8;
-  --border: rgba(26, 29, 26, 0.08);
-  --muted: rgba(26, 29, 26, 0.5);
-  --accent: #1b4332;
-  --accent-bright: #2ee6c8;
-  --green: #2d6a4f;
-  --red: #b23b3b;
-  --amber: #b8860b;
-}
-
-:root[data-theme="ghost"] {
-  --page: #0c1628;
-  --ink: #e8e0d4;
-  --panel: rgba(12, 22, 40, 0.92);
-  --border: rgba(232, 224, 212, 0.06);
-  --muted: rgba(232, 224, 212, 0.4);
-  --accent: #2ee6c8;
-  --accent-bright: #2ee6c8;
-  --green: #2ee6c8;
-  --red: #e85a5a;
-  --amber: #e8ad55;
-}
-
-@theme inline {
-  --color-page: var(--page);
-  --color-ink: var(--ink);
-  --color-panel: var(--panel);
-  --color-accent: var(--accent);
-  --color-secondary: var(--accent-bright);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-  --color-green: var(--green);
-  --color-red: var(--red);
-  --color-amber: var(--amber);
-  --font-sans: var(--font-body);
-  --font-mono: var(--font-data);
-}
-
-body {
-  background: var(--page);
-  color: var(--ink);
-  font-family: var(--font-body), "Helvetica Neue", Arial, sans-serif;
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-*:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-html {
-  transition: background-color 0.4s ease, color 0.4s ease;
-}
-
-html body {
-  transition: background-color 0.4s ease, color 0.4s ease;
-}
-
-/* Entrance animations */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-@keyframes slide-in {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-
-.animate-fade-up {
-  animation: fade-up 0.5s ease-out both;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.4s ease-out both;
-}
-
-/* Panel surfaces */
-.panel-surface {
-  background: var(--panel);
-}
-
-.surface-muted {
-  color: var(--muted);
-}
-
-/* Theme-aware inputs */
-.theme-input {
-  background: var(--panel);
-  border: 2px solid var(--border);
-  color: var(--ink);
-  transition: border-color 0.2s ease;
-}
-
-.theme-input:focus {
-  border-color: var(--accent);
-  outline: none;
-}
-
-.theme-input::placeholder {
-  color: var(--muted);
-}
-
-/* Theme-aware status */
-.theme-status {
-  border-radius: 8px;
-}
-
-/* Scrollbar styling */
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADMIN PORTAL-ONLY OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
 }

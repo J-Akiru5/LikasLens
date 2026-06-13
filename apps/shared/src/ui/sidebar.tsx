@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Leaf,
   Home,
@@ -15,13 +15,14 @@ import {
 import { cn } from "../utils";
 
 export interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
+  href?: string;
+  label?: string;
+  icon?: LucideIcon;
   exact?: boolean;
   roles?: string[] | null;
   divider?: boolean;
   dividerLabel?: string;
+  colorDot?: string; // Hex color for the tiny dot indicator
 }
 
 interface SidebarProps {
@@ -33,6 +34,10 @@ interface SidebarProps {
   logoLabel?: string;
   extraBottom?: React.ReactNode;
   className?: string;
+  /** Controlled mobile open state — passed from DashboardLayout */
+  mobileOpen?: boolean;
+  /** Called when sidebar wants to change its mobile open state */
+  onMobileOpenChange?: (open: boolean) => void;
 }
 
 export function Sidebar({
@@ -44,9 +49,20 @@ export function Sidebar({
   logoLabel = "LikasLens",
   extraBottom,
   className,
+  mobileOpen: mobileOpenProp,
+  onMobileOpenChange,
 }: SidebarProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+  
+  const mobileOpen =
+    mobileOpenProp !== undefined ? mobileOpenProp : internalOpen;
+  const setMobileOpen = (v: boolean) => {
+    if (onMobileOpenChange) onMobileOpenChange(v);
+    else setInternalOpen(v);
+  };
 
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
@@ -74,149 +90,158 @@ export function Sidebar({
     };
   }, [mobileOpen]);
 
-  const visibleNavItems = navItems.filter(
-    (item) =>
-      item.divider ||
-      !item.roles ||
-      (userRole && item.roles.includes(userRole))
-  );
+  const visibleNavItems = navItems.filter((item) => {
+    // Role filtering
+    if (item.roles && userRole && !item.roles.includes(userRole)) return false;
+    
+    // Search filtering
+    if (searchQuery.trim() !== "") {
+      if (item.divider) return false; // Hide dividers during search
+      if (item.label && !item.label.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    }
+    return true;
+  });
 
   const sidebarContent = (
     <>
-      <div className="p-6 border-b border-ink/10 flex items-center gap-2 text-ink">
-        <Leaf className="w-6 h-6 text-green" />
-        <span className="font-semibold text-xl text-ink tracking-tight">
-          {logoLabel}
-        </span>
+      <div className={cn("p-4 border-b border-ink/5 flex flex-col gap-4 text-ink transition-all relative", isDesktopCollapsed ? "items-center" : "")}>
+        <div className={cn("flex items-center", isDesktopCollapsed ? "justify-center relative" : "justify-between")}>
+          <div className="flex items-center gap-2">
+            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-8 h-8 object-contain" />
+            {!isDesktopCollapsed && (
+              <span className="font-heading tracking-[0.2em] text-lg text-ink flex items-center mt-0.5">
+                <span className="font-medium">LIK</span>
+                <span className="font-semibold mx-[1px]">Λ</span>
+                <span className="font-medium mr-1">S</span>
+                <span className="font-bold uppercase">LENS</span>
+              </span>
+            )}
+          </div>
+        </div>
+        
+        {/* Search Bar */}
+        {!isDesktopCollapsed && (
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-ink/[0.03] border border-ink/5 rounded-md pl-9 pr-10 py-1.5 text-sm text-ink placeholder:text-ink/40 focus:outline-none focus:ring-1 focus:ring-ink/20"
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+              <kbd className="font-sans text-[10px] text-ink/40 bg-ink/5 px-1 py-0.5 rounded border border-ink/10">⌘</kbd>
+              <kbd className="font-sans text-[10px] text-ink/40 bg-ink/5 px-1 py-0.5 rounded border border-ink/10">K</kbd>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto overscroll-contain py-6 px-4 space-y-1">
+      <div className="flex-1 overflow-y-auto overscroll-contain py-4 px-3 space-y-0.5">
         {visibleNavItems.map((item, index) => {
           if (item.divider) {
+            if (isDesktopCollapsed) return <div key={`div-${index}`} className="h-4" />; // Just space when collapsed
             return (
-              <div key={`div-${index}`} className="pt-6 pb-2 px-3">
-                <p className="text-[10px] font-mono text-ink/40 uppercase tracking-widest">
+              <div key={`div-${index}`} className="pt-5 pb-2 px-3">
+                <p className="text-[10px] font-sans font-semibold text-ink/40 uppercase tracking-wider">
                   {item.dividerLabel}
                 </p>
               </div>
             );
           }
 
+          const href = item.href ?? "#";
+          const Icon = item.icon;
           const cleanPathname = pathname.replace(/^\/[^/]+/, "") || "/";
           const isActive = item.exact
-            ? cleanPathname === item.href ||
-              cleanPathname === `${item.href}/`
-            : cleanPathname.startsWith(item.href);
-
-          const Icon = item.icon;
+            ? cleanPathname === href || cleanPathname === `${href}/`
+            : cleanPathname.startsWith(href);
 
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={href}
+              href={href}
+              prefetch={true}
               onClick={closeMobile}
+              onMouseEnter={(e) => {
+                const link = e.currentTarget;
+                const prefetchLink = document.createElement("link");
+                prefetchLink.rel = "prefetch";
+                prefetchLink.href = href;
+                prefetchLink.as = "document";
+                document.head.appendChild(prefetchLink);
+                setTimeout(() => prefetchLink.remove(), 3000);
+              }}
+              title={isDesktopCollapsed ? item.label : undefined}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors",
+                "flex items-center px-3 py-2 text-sm rounded-md transition-all duration-150",
+                isDesktopCollapsed ? "justify-center px-0" : "gap-3",
                 isActive
-                  ? "text-ink bg-ink/[0.04] font-medium"
-                  : "text-ink/60 hover:text-ink hover:bg-ink/[0.04]"
+                  ? "text-ink font-medium bg-ink/[0.04]"
+                  : "text-ink/60 hover:text-ink hover:bg-ink/[0.02]",
               )}
             >
-              <Icon className="w-4 h-4" /> {item.label}
+              {item.colorDot && !Icon ? (
+                <div 
+                  className="w-2.5 h-2.5 rounded-sm ml-0.5 mr-1 shrink-0" 
+                  style={{ backgroundColor: item.colorDot }}
+                />
+              ) : Icon ? (
+                <Icon className={cn("w-[18px] h-[18px] shrink-0", isActive ? "text-ink/80" : "text-ink/50")} strokeWidth={isActive ? 2.5 : 2} />
+              ) : null}
+              {!isDesktopCollapsed && <span className="truncate">{item.label}</span>}
             </Link>
           );
         })}
       </div>
 
-      <div className="p-6 border-t border-ink/10 space-y-3">
+      <div className="p-4 space-y-2">
         <button
-          onClick={onThemeToggle}
+          onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
+          title={isDesktopCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           className={cn(
-            "flex items-center justify-between w-full px-4 py-3 transition-colors",
-            isGhostMode
-              ? "bg-secondary/10 border border-secondary/20"
-              : "border border-ink/10"
+            "flex items-center text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors rounded-md w-full hidden lg:flex",
+            isDesktopCollapsed ? "justify-center p-2" : "gap-3 px-3 py-2"
           )}
         >
-          <div className="flex items-center gap-2">
-            <Fingerprint
-              className={cn(
-                "w-4 h-4",
-                isGhostMode ? "text-secondary" : "text-ink/40"
-              )}
-            />
-            <span
-              className={cn(
-                "font-mono text-xs uppercase tracking-wider",
-                isGhostMode ? "text-secondary" : "text-ink/50"
-              )}
-            >
-              Ghost Mode
-            </span>
-          </div>
-          <div
-            className={cn(
-              "w-8 h-4 rounded-full border-2 flex items-center transition-colors",
-              isGhostMode
-                ? "bg-secondary/20 border-secondary"
-                : "bg-ink/10 border-ink/20"
-            )}
-          >
-            <div
-              className={cn(
-                "w-3 h-3 rounded-full transition-all",
-                isGhostMode
-                  ? "ml-auto mr-0.5 bg-secondary"
-                  : "ml-0.5 mr-auto bg-ink/40"
-              )}
-            />
-          </div>
+          {isDesktopCollapsed ? (
+             <svg className="w-5 h-5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m13 17 5-5-5-5"/><path d="m6 17 5-5-5-5"/></svg>
+          ) : (
+             <>
+               <svg className="w-4 h-4 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg>
+               <span>Collapse Sidebar</span>
+             </>
+          )}
         </button>
-
-        {extraBottom}
 
         <Link
           href={logoHref}
           onClick={closeMobile}
-          className="flex items-center gap-3 px-3 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors"
-        >
-           <Home className="w-4 h-4" /> Back to Home
-        </Link>
-        <Link
-          href="/dashboard/settings"
-          onClick={closeMobile}
-          aria-current={
-            pathname.startsWith("/dashboard/settings") ? "page" : undefined
-          }
+          title={isDesktopCollapsed ? "Back to Home" : undefined}
           className={cn(
-            "flex items-center gap-3 px-3 py-2 text-sm transition-colors",
-            pathname.startsWith("/dashboard/settings")
-              ? "text-ink bg-ink/[0.04]"
-              : "text-ink/60 hover:text-ink hover:bg-ink/[0.02]"
+            "flex items-center text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors rounded-md",
+            isDesktopCollapsed ? "justify-center p-2" : "gap-3 px-3 py-2"
           )}
         >
-           <Settings className="w-4 h-4" /> Settings
+          <Home className={cn("shrink-0", isDesktopCollapsed ? "w-5 h-5" : "w-4 h-4")} /> {!isDesktopCollapsed && "Back to Home"}
         </Link>
+      </div>
+
+      <div className="p-4 border-t border-ink/10">
+        {!isDesktopCollapsed && extraBottom}
       </div>
     </>
   );
 
   return (
     <>
-      <button
-        aria-label={mobileOpen ? "Close sidebar" : "Open sidebar"}
-        aria-expanded={mobileOpen}
-        onClick={() => setMobileOpen((prev) => !prev)}
-        className="lg:hidden fixed top-4 right-4 z-50 p-3 border border-ink/10 bg-page"
-      >
-         {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
-
       <aside
         className={cn(
-          "hidden lg:flex lg:w-64 shrink-0 border-r border-ink/10 flex-col h-full relative z-20 bg-page",
-          className
+          "hidden lg:flex shrink-0 border-r-0 flex-col h-full relative z-20 transition-all duration-300 group",
+          isDesktopCollapsed ? "lg:w-20" : "lg:w-64",
+          className,
         )}
       >
         {sidebarContent}
@@ -225,7 +250,7 @@ export function Sidebar({
       <div
         className={cn(
           "fixed inset-0 z-30 lg:hidden transition-opacity duration-200",
-          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         aria-hidden={!mobileOpen}
       >
@@ -233,7 +258,7 @@ export function Sidebar({
         <aside
           className={cn(
             "absolute left-0 top-0 bottom-0 w-72 bg-page border-r border-ink/10 flex flex-col transition-transform duration-200 pt-[env(safe-area-inset-top)]",
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
+            mobileOpen ? "translate-x-0" : "-translate-x-full",
           )}
         >
           <div className="flex items-center justify-end p-4 lg:hidden">

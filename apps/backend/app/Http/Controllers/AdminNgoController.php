@@ -87,6 +87,7 @@ class AdminNgoController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        $oldValues = $ngo->only(array_keys($validated));
         $ngo->update($validated);
 
         AuditLog::create([

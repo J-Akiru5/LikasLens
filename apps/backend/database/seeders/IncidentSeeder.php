@@ -703,7 +703,7 @@ class IncidentSeeder extends Seeder
                 'ai_triage_summary' => $data['ai_triage_summary'],
                 'ai_confidence'     => $data['ai_confidence'],
                 'resolved_at'       => $data['resolved_at'] ?? null,
-                'created_at'        => $now->copy()->subHours(rand(1, 360)),
+                'created_at'        => $now->copy()->subDays(rand(1, 150)),
                 'updated_at'        => $now,
             ]));
         }

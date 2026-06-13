@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from gremlin_python.driver.client import Client
-from gremlin_python.driver.serializer import GraphSONSerializersV2d0
+from gremlin_python.driver.serializer import GraphSONSerializersV3d0
 from gremlin_python.driver.aiohttp.transport import AiohttpTransport
 
 from gremlin_upserts.baseline_rules import build_baseline_rule_queries
@@ -68,7 +68,7 @@ def build_client(config: CosmosGremlinConfig) -> Client:
         "g",
         username=graph_path,
         password=config.account_key,
-        message_serializer=GraphSONSerializersV2d0(),
+        message_serializer=GraphSONSerializersV3d0(),
         transport_factory=AiohttpTransport,
     )
 

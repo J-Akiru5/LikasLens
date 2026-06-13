@@ -16,7 +16,7 @@ import {
   Mail,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { AppHeader } from "@/components/layout/header";
+import { AppHeader } from "@likaslens/shared";
 
 const sectionDelay = (i: number) => ({ delay: i * 0.08 });
 
@@ -86,7 +86,7 @@ export default function PrivacyPage() {
                   <ul className="space-y-2 text-sm text-ink/80">
                     <li>• Profile linked to your report (name, avatar)</li>
                     <li>• GPS coordinates attached to evidence photos</li>
-                    <li>• EXIF metadata preserved for forensic integrity</li>
+                    <li>• EXIF metadata stripped for privacy protection</li>
                     <li>• Report visible on your public profile</li>
                     <li>• Eco-credits awarded for verified reports</li>
                   </ul>

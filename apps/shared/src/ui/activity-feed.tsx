@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Info, MapPin, AlertCircle } from "lucide-react";
+import { AlertTriangle, Info, MapPin, AlertCircle, Activity } from "lucide-react";
 import { useState } from "react";
 
 interface FeedItem {
@@ -28,17 +28,7 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
   const [displayedCount, setDisplayedCount] = useState(3);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const allItems = items || [
-    { id: "INC-092", type: "Critical" as const, title: "Illegal Dumping Detected", location: "Sector 4, Riverside", time: "10 mins ago", status: "Routing to Agency" },
-    { id: "INC-091", type: "Warning" as const, title: "Air Quality Drop", location: "Downtown Core", time: "45 mins ago", status: "Monitoring" },
-    { id: "INC-090", type: "Info" as const, title: "Resolution Confirmed", location: "Park District", time: "2 hours ago", status: "Archived" },
-    { id: "INC-089", type: "Warning" as const, title: "Water Contamination Alert", location: "Riverside Industrial", time: "3 hours ago", status: "Investigating" },
-    { id: "INC-088", type: "Critical" as const, title: "Deforestation Zone Detected", location: "Northern Ridge Forest", time: "5 hours ago", status: "Critical Review" },
-    { id: "INC-087", type: "Info" as const, title: "Noise Level Normalized", location: "Downtown Core", time: "6 hours ago", status: "Resolved" },
-    { id: "INC-086", type: "Warning" as const, title: "Wildfire Risk Assessment", location: "Sector 7, Forest Zone", time: "8 hours ago", status: "Monitoring" },
-    { id: "INC-085", type: "Critical" as const, title: "Illegal Wildlife Trafficking", location: "National Park Boundary", time: "10 hours ago", status: "Active Investigation" },
-    { id: "INC-084", type: "Info" as const, title: "Air Quality Improved", location: "Downtown Core", time: "12 hours ago", status: "Resolved" },
-  ];
+  const allItems = items || [];
 
   if (loading) {
     return (
@@ -73,9 +63,12 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
 
   if (!items || items.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border p-8 text-center">
-        <Info className="mx-auto h-8 w-8 text-muted mb-2" />
-        <p className="text-sm text-muted">No activity yet</p>
+      <div className="rounded-2xl border border-dashed border-ink/10 p-12 text-center bg-ink/[0.015]">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-ink/[0.02] to-ink/[0.06] flex items-center justify-center mx-auto mb-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.08] ring-8 ring-ink/[0.015]">
+          <Activity className="w-7 h-7 text-ink/30" />
+        </div>
+        <h3 className="font-medium text-ink mb-1.5">No activity yet</h3>
+        <p className="text-sm text-ink/50 leading-relaxed">Recent reports and updates will appear here.</p>
       </div>
     );
   }

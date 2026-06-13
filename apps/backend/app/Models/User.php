@@ -3,8 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Scopes\TenantScope;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Concerns\HasSoftDeletes;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,7 +17,18 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, HasSoftDeletes, HasUuids, Notifiable;
+    use HasApiTokens, HasFactory, SoftDeletes, HasUuids, Notifiable;
+
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new TenantScope);
+
+        static::creating(function (self $user) {
+            if (empty($user->tenant_id) && $tenant = Tenant::current()) {
+                $user->tenant_id = $tenant->id;
+            }
+        });
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -24,6 +36,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        'tenant_id',
         'supabase_auth_user_id',
         'name',
         'email',
@@ -43,6 +56,11 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function wallet()
     {

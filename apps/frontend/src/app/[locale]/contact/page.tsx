@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Mail, MessageCircle, MapPin, Send, CheckCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AppHeader } from "@/components/layout/header";
+import { AppHeader } from "@likaslens/shared";
 import { showToast } from "@likaslens/shared";
 
 export default function ContactPage() {

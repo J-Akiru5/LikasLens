@@ -22,7 +22,9 @@
     "./i18n/yolo-labels/ms": "./src/i18n/yolo-labels/ms.json",
     "./i18n/yolo-labels/ta": "./src/i18n/yolo-labels/ta.json",
     "./src/styles/civic-brutalism.css": "./src/styles/civic-brutalism.css",
-    "./styles/civic-brutalism.css": "./src/styles/civic-brutalism.css"
+    "./styles/civic-brutalism.css": "./src/styles/civic-brutalism.css",
+    "./src/styles/design-tokens.css": "./src/styles/design-tokens.css",
+    "./styles/design-tokens.css": "./src/styles/design-tokens.css"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -42,7 +44,8 @@
     "typescript": "^5"
   },
   "peerDependencies": {
-    "next": ">=15",
+    "next": "^16.2.2",
+    "next-intl": "^4",
     "react": "^19",
     "react-dom": "^19"
   }

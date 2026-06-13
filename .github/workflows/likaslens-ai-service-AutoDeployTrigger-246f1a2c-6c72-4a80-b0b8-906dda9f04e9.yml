@@ -1,29 +1,59 @@
-name: Trigger auto deployment for likaslens-ai-service
+name: 🚀 AI Service – Build & Deploy
 
-# When this action will be executed
 on:
-  # Automatically trigger it when detected changes in repo
   push:
-    branches: 
-      [ main ]
+    branches: [main]
     paths:
-    - '**'
-    - '.github/workflows/likaslens-ai-service-AutoDeployTrigger-246f1a2c-6c72-4a80-b0b8-906dda9f04e9.yml'
+      - "apps/ai-service/**"
+      - ".github/workflows/likaslens-ai-service-AutoDeployTrigger-*.yml"
+  workflow_dispatch:
 
-  # Allow manual trigger 
-  workflow_dispatch:     
+concurrency:
+  group: deploy-ai-service-${{ github.sha }}
+  cancel-in-progress: true
 
 jobs:
+  # ── CI Gate: run AI service checks first ────────────────────────────
+  ci-gate:
+    name: 🧪 CI Gate
+    uses: ./.github/workflows/ci.yml
+    # We reference the ai-service job implicitly; GitHub matches the job
+    # by the workflow call — but we just use this as a lightweight call
+    secrets: inherit
+
+  # ── Build + Scan + Deploy ──────────────────────────────────────────
   build-and-deploy:
+    name: 🐳 Build & Deploy
     runs-on: ubuntu-latest
-    permissions: 
-      id-token: write #This is required for requesting the OIDC JWT Token
-      contents: read #Required when GH token is used to authenticate with private repo
-      packages: write #Required for pushing to GitHub Container Registry
+    needs: [ci-gate]
+    permissions:
+      id-token: write
+      contents: read
+      packages: write
+      security-events: write
 
     steps:
-      - name: Checkout to the branch
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Build container for security scan
+        run: docker build -t likaslens-ai-service:scan apps/ai-service
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.29.0
+        with:
+          image-ref: likaslens-ai-service:scan
+          format: sarif
+          output: trivy-ai-results.sarif
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          vuln-type: os,library
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-ai-results.sarif
+          category: ai-service-container
 
       - name: Azure Login
         uses: azure/login@v2

@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Leaf, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { setLaravelAuthToken } from "@likaslens/shared";
+import { laravelPost } from "@likaslens/shared";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,9 +33,22 @@ export default function LoginPage() {
       return;
     }
 
-    // Wire Supabase session token to shared API client for Laravel calls
-    if (data.session?.access_token) {
-      setLaravelAuthToken(data.session.access_token);
+    // Sync with Laravel to get Sanctum token
+    try {
+      const laravelData = await laravelPost<any>("/auth/sync", {
+        supabase_auth_user_id: data.user.id,
+        email: data.user.email,
+        name: data.user.user_metadata?.full_name || data.user.email?.split("@")[0],
+      });
+      
+      if (laravelData?.data?.token) {
+        const token = laravelData.data.token;
+        document.cookie = `laravel_token=${token}; path=/; max-age=2592000; SameSite=Strict; Secure`; // 30 days
+      } else {
+        console.error("No token returned from backend:", laravelData);
+      }
+    } catch (syncErr) {
+      console.error("Failed to sync with backend", syncErr);
     }
 
     // Sync user to Laravel backend (non-blocking, best-effort)
@@ -75,7 +88,7 @@ export default function LoginPage() {
         {/* Floating Logo */}
         <div className="absolute -top-10 left-8">
           <div className="w-20 h-20 rounded-3xl bg-page shadow-xl flex items-center justify-center border border-accent/10">
-            <Leaf className="w-10 h-10 text-accent" />
+            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-14 h-14 object-contain" />
           </div>
         </div>
 

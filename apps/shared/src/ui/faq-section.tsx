@@ -3,7 +3,16 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-const faqs = [
+interface Faq {
+  q: string;
+  a: string;
+}
+
+interface FaqSectionProps {
+  faqs?: Faq[];
+}
+
+const DEFAULT_FAQS: Faq[] = [
   {
     q: "What is LikasLens?",
     a: "LikasLens is a civic reporting platform that lets anyone report environmental issues like illegal dumping, pollution, or deforestation. Our AI automatically classifies and routes reports to the correct government agency.",
@@ -38,7 +47,7 @@ const faqs = [
   },
 ];
 
-export function FaqSection() {
+export function FaqSection({ faqs = DEFAULT_FAQS }: FaqSectionProps) {
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
   return (

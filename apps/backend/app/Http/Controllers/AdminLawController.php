@@ -97,6 +97,7 @@ class AdminLawController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        $oldValues = $law->only(array_keys($validated));
         $law->update($validated);
 
         AuditLog::create([

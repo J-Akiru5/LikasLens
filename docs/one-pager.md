@@ -4,15 +4,19 @@
 
 ## The Problem
 
-**Environmental crimes in ASEAN go unreported.** Citizens witness illegal logging, water pollution, wildlife trafficking, and transboundary haze — but lack accessible, safe channels to report them. Existing systems are fragmented, country-specific, and expose whistleblowers to retaliation. Meanwhile, enforcement agencies lack real-time intelligence connecting incidents to the specific laws being violated.
+> **The Problem.** "In Guimaras Province, 2023: illegal aquaculture expansion cleared 28 hectares of coastal mangrove in a single week. A year later, the barangay upstream recorded its worst flooding event in two decades. The connection was only confirmed after the damage was done. LikasLens detects the clearing in real time. The flood never had to happen."
 
-The World Bank estimates environmental crime costs ASEAN economies **$30+ billion annually** — from illegal fishing to deforestation.
+**REDD+ angle:** Verified incident data from LikasLens feeds South Pole / Verra MRV chains for carbon market access under Paris Agreement Article 6.
 
 ---
 
 ## Our Solution: LikasLens
 
 **LikasLens** is a neuro-symbolic civic reporting platform that transforms every citizen's smartphone into an environmental sensor. Citizens capture evidence of environmental hazards, and our AI pipeline automatically traces the incident through laws, enforcement agencies, and jurisdictions — all while protecting reporter identities with zero-knowledge Ghost Mode.
+
+*Prevention over post-mortem response. The same verified data feed is REDD+ MRV-eligible — turning local monitoring into carbon market revenue.*
+
+**LikasLens** — *Every citizen's phone is an environmental sensor.*
 
 ---
 
@@ -43,7 +47,7 @@ The World Bank estimates environmental crime costs ASEAN economies **$30+ billio
 | **Frontend** | Next.js 14 PWA + Tailwind | Citizen app, offline-capable with IndexedDB queue |
 | **Backend API** | Laravel 12 (PHP) + Sanctum | Report ingestion, user management, leaderboard |
 | **Auth** | Supabase Auth | Identity, social login |
-| **AI Service** | FastAPI + YOLOv8 + Gemini 2.5 Flash | Hazard classification, incident brief generation |
+| **AI Service** | FastAPI + YOLOv8 Nano + Gemini 2.5 Flash | Hazard classification, incident brief generation |
 | **Graph DB** | Cosmos DB Gremlin | Neuro-symbolic routing: hazard → law → agency → jurisdiction |
 | **PWA Offline** | Service Worker + IndexedDB | Three-tier caching, offline report queue, auto-sync |
 
@@ -65,17 +69,22 @@ Field reporters often lack connectivity. The PWA caches critical resources with 
 
 ---
 
+## Reach
+
+6 ASEAN countries · 25+ environmental laws · 10+ enforcement agencies · 18 hazard types · 11 violation classifications
+
 ## Impact Metrics
 
 | Metric | Target |
 |--------|--------|
-| Countries covered | 6 ASEAN nations |
-| Environmental laws indexed | 25+ |
-| Enforcement agencies connected | 10+ |
-| Hazard types detectable (YOLOv8) | 18 |
-| Violation classifications | 11 |
-| Offline reliability | 100% queue retention |
-| Report-to-agency latency | <5 seconds (online) |
+| YOLOv8 Nano inference | <= 250ms on Android <= 2GB |
+| mAP@0.5 (5 hazard classes) | >= 0.72 |
+| Precision / Recall | >= 0.78 / >= 0.70 |
+| Community corroboration | >= 2 GPS-diverse reports / 500m |
+| Ghost Mode EXIF strip | <= 50ms on-device |
+| Cosmos legal routing | 100% agency-correct on 20 test cases |
+| Eco-Credit issuance | <= 5s post LGU confirmation |
+| Demo repeatability | 3 scenarios replayable |
 
 ---
 
@@ -102,14 +111,14 @@ LikasLens is built for ASEAN from day one:
 
 ---
 
-## What's Next
+## Roadmap
 
-1. **NGO pilot partnerships** — deploy in Negros Occidental, Philippines with Forest Watch and Bantay Kalikasan
-2. **Mobile APK distribution** — Capacitor-wrapped PWA for community installs
-3. **Additional ASEAN countries** — Cambodia, Laos, Myanmar, Brunei law data
-4. **Satellite imagery cross-referencing** — validate citizen reports against remote sensing data
-5. **Multi-language AI reports** — Gemini incident summaries in Thai, Vietnamese, Bahasa
+- **0–3 months:** NGO pilot in Negros Occidental, PH (Forest Watch, Bantay Kalikasan). Capacitor-wrapped APK for community installs. First REDD+ MRV pilot with one community partner.
+- **3–6 months:** Cambodia, Laos, Myanmar, Brunei law data. Multi-language AI briefs (Thai, Vietnamese, Bahasa). Satellite imagery cross-referencing for high-confidence auto-confirmation.
+- **6–12 months:** Indonesia and Vietnam national rollouts. South Pole / Verra MRV chain integration. Government API partnerships in 2+ ASEAN countries.
 
 ---
+
+**REDD+ eligible:** Verified incident data feeds South Pole / Verra MRV chains for carbon market access under Paris Agreement Article 6.
 
 **LikasLens** — *Every citizen's phone is an environmental sensor.*

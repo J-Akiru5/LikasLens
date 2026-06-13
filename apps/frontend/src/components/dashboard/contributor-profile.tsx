@@ -82,10 +82,15 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
   if (error) {
     return (
       <div className="py-24 text-center">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <AlertCircle className="w-5 h-5 text-amber" />
-          <h2 className="font-semibold tracking-tight text-xl text-ink">{error}</h2>
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-ink/[0.02] to-ink/[0.06] flex items-center justify-center mx-auto mb-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.08] ring-8 ring-ink/[0.015]">
+          <User className="w-7 h-7 text-ink/30" />
         </div>
+        <h2 className="font-semibold tracking-tight text-lg text-ink mb-1.5">Profile Unavailable</h2>
+        <p className="text-sm text-ink/50 max-w-sm mx-auto leading-relaxed">
+          {error === "User not found" 
+            ? "This citizen hasn't set up their public profile yet." 
+            : "We couldn't load this profile right now. The systems might be syncing."}
+        </p>
       </div>
     );
   }

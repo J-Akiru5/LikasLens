@@ -14,7 +14,7 @@ class TriageService
 
     public function __construct()
     {
-        $this->aiServiceUrl = rtrim(env('AI_SERVICE_URL', 'http://127.0.0.1:8001'), '/');
+        $this->aiServiceUrl = rtrim(config('services.ai.url', 'http://127.0.0.1:8001'), '/');
     }
 
     public function analyze(string $base64Image, Ticket $ticket): array
@@ -116,6 +116,53 @@ class TriageService
         }
 
         return round(min($maxConfidence, 0.99), 4);
+    }
+
+    /**
+     * Check image similarity against existing report embeddings.
+     *
+     * Calls the AI service /analyze/similarity endpoint.  Returns an array
+     * with `similar_reports` (list) and `embedding_stored` (bool).
+     * On failure returns an empty result so the caller can continue.
+     */
+    public function checkSimilarity(string $base64Image, string $ticketId, string $violationType = 'unknown'): array
+    {
+        try {
+            $apiKey = config('services.ai.api_key');
+            $headers = $apiKey ? ['X-API-Key' => $apiKey] : [];
+
+            $response = Http::timeout(120)
+                ->withHeaders($headers)
+                ->post("{$this->aiServiceUrl}/analyze/similarity", [
+                    'image' => $base64Image,
+                    'report_id' => $ticketId,
+                    'violation_type' => $violationType,
+                    'threshold' => 0.85,
+                ]);
+
+            if (! $response->successful()) {
+                Log::warning('AI service similarity check failed', [
+                    'status' => $response->status(),
+                    'ticket_id' => $ticketId,
+                ]);
+
+                return ['similar_reports' => [], 'embedding_stored' => false];
+            }
+
+            $data = $response->json();
+
+            return [
+                'similar_reports' => $data['similar_reports'] ?? [],
+                'embedding_stored' => $data['embedding_stored'] ?? false,
+            ];
+        } catch (\Throwable $e) {
+            Log::warning('AI service similarity check failed', [
+                'error' => $e->getMessage(),
+                'ticket_id' => $ticketId,
+            ]);
+
+            return ['similar_reports' => [], 'embedding_stored' => false];
+        }
     }
 
     private function fallbackResult(Ticket $ticket): array

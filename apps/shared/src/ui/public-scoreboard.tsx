@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { CloudOff, RefreshCw } from "lucide-react";
+import { CloudOff, RefreshCw, Trophy } from "lucide-react";
+import { getTickets } from "../api/admin";
+import type { Ticket } from "../types/ticket";
+import type { PaginatedResponse } from "../types/api";
 
 interface PublicReportRow {
   rank: number;
@@ -30,24 +33,15 @@ export function PublicScoreboard() {
     setLoading(true);
     setError(null);
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const res = await fetch(`${baseUrl}/tickets?per_page=10`, {
-        headers: { Accept: "application/json" },
-        signal: controller.signal,
-      });
-      if (!res.ok) {
-        setError("Failed to load reports");
-        return;
-      }
-      const body = await res.json();
-      const tickets: unknown[] = Array.isArray(body?.data) ? body.data : [];
+      const body = await getTickets({ per_page: "10" });
+      const tickets: Ticket[] = Array.isArray(body?.data) ? body.data : [];
       setRows(
-        tickets.map((t: Record<string, unknown>, i: number) => ({
+        tickets.map((t, i) => ({
           rank: i + 1,
-          agency: (t.reporter as string) || (t.location as string) || "Unknown",
-          title: (t.title as string) || "Environmental Issue",
-          status: (t.status as string) || "Open",
-          time: t.resolved_at ? formatTimeSince(t.resolved_at as string) : t.created_at ? formatTimeSince(t.created_at as string) : "\u2014",
+          agency: t.reporter || t.location || "Unknown",
+          title: t.title || "Environmental Issue",
+          status: t.status || "Open",
+          time: t.resolved_at ? formatTimeSince(t.resolved_at) : t.created_at ? formatTimeSince(t.created_at) : "\u2014",
         }))
       );
     } catch (err) {
@@ -70,11 +64,7 @@ export function PublicScoreboard() {
     };
   }, [fetchReports]);
 
-  const fallback = [
-    { rank: 1, agency: "Dept. of Forestry", title: "Illegal Logging", status: "Fixed", time: "12 mins" },
-    { rank: 2, agency: "Coast Guard", title: "Oil Spill", status: "Checking it", time: "45 mins" },
-    { rank: 3, agency: "City Sanitation", title: "Trash Dumping", status: "Fixed", time: "2 hours" },
-  ];
+  const fallback: PublicReportRow[] = [];
 
   if (loading) {
     return (
@@ -114,12 +104,16 @@ export function PublicScoreboard() {
     );
   }
 
-  const displayRows = rows.length === 0 ? fallback : rows;
+  const displayRows = rows;
 
   if (displayRows.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border p-8 text-center">
-        <p className="text-sm text-muted">No reports yet</p>
+      <div className="rounded-2xl border border-dashed border-ink/10 p-12 text-center bg-ink/[0.015]">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-ink/[0.02] to-ink/[0.06] flex items-center justify-center mx-auto mb-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.08] ring-8 ring-ink/[0.015]">
+          <Trophy className="w-7 h-7 text-ink/30" />
+        </div>
+        <h3 className="font-medium text-ink mb-1.5">No reports yet</h3>
+        <p className="text-sm text-ink/50 leading-relaxed">Top contributors will be highlighted here once reports are submitted.</p>
       </div>
     );
   }

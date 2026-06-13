@@ -14,12 +14,22 @@ class EcoCreditController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|uuid|exists:users,id',
-            'ticket_id' => 'required|uuid',
+            'ticket_id' => 'required|uuid|exists:tickets,id',
             'credit_amount' => 'required|integer|min:1',
         ]);
 
         $userId = $validated['user_id'];
+        $ticketId = $validated['ticket_id'];
         $creditAmount = $validated['credit_amount'];
+
+        // Verify ticket belongs to the user
+        $ticket = \App\Models\Ticket::where('id', $ticketId)
+            ->where('reporter_user_id', $userId)
+            ->first();
+
+        if (! $ticket) {
+            return response()->json(['error' => 'Ticket not found or does not belong to this user.'], 403);
+        }
 
         try {
             $result = DB::transaction(function () use ($userId, $creditAmount) {

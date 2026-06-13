@@ -89,6 +89,7 @@ class AdminRewardController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        $oldValues = $reward->only(array_keys($validated));
         $reward->update($validated);
 
         AuditLog::create([

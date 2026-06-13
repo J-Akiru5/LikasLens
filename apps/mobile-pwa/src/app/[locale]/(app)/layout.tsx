@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { MobileLayout } from "@likaslens/shared";
-import { LayoutDashboard, Camera, Trophy, User } from "lucide-react";
+import { LayoutDashboard, Camera, Trophy, User, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 const BOTTOM_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/report", label: "Report", icon: Camera },
+  { href: "/wallet", label: "Wallet", icon: Wallet },
+  { href: "/report", label: "Report", icon: Camera, isPrimary: true },
   { href: "/scoreboard", label: "Records", icon: Trophy },
   { href: "/profile", label: "Profile", icon: User },
 ];

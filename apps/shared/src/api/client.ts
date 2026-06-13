@@ -7,6 +7,11 @@ function getCookie(name: string): string | null {
 function normalizeBaseUrl(raw: string): string {
   const trimmed = raw.trim();
   if (!trimmed) return "";
+  
+  if (trimmed.startsWith("/")) {
+    return trimmed.replace(/\/+$/, "");
+  }
+  
   try {
     const parsed = new URL(trimmed);
     return parsed.origin + parsed.pathname.replace(/\/+$/, "");
@@ -15,20 +20,11 @@ function normalizeBaseUrl(raw: string): string {
   }
 }
 
-let _authToken: string | null = null;
-
-export function setLaravelAuthToken(token: string | null) {
-  _authToken = token;
-}
-
-export function getLaravelAuthToken(): string | null {
-  return _authToken;
-}
-
 export async function laravelFetch<T>(
   endpoint: string,
   options: RequestInit = {},
-  timeoutMs: number = 10000
+  timeoutMs: number = 10000,
+  token?: string
 ): Promise<T> {
   const baseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL || "");
 
@@ -38,9 +34,20 @@ export async function laravelFetch<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  const token = _authToken || getCookie("laravel_token");
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  const authToken = token || getCookie("laravel_token");
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
+  }
+
+  // Multi-tenant: extract subdomain and pass to backend
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (!host.includes("localhost") && !/^(\d+\.){3}\d+$/.test(host)) {
+      const parts = host.split(".");
+      if (parts.length >= 3 && parts[0] !== "www" && parts[0] !== "api") {
+        headers["X-Tenant-Slug"] = parts[0];
+      }
+    }
   }
 
   const url = baseUrl + (baseUrl.endsWith("/") && endpoint.startsWith("/") ? endpoint.slice(1) : endpoint);
@@ -81,37 +88,38 @@ export async function laravelFetch<T>(
   }
 }
 
-export function laravelGet<T>(endpoint: string, signal?: AbortSignal) {
-  return laravelFetch<T>(endpoint, { method: "GET", signal });
+export function laravelGet<T>(endpoint: string, signal?: AbortSignal, token?: string) {
+  return laravelFetch<T>(endpoint, { method: "GET", signal }, 10000, token);
 }
 
-export function laravelPost<T>(endpoint: string, body?: unknown, timeoutMs?: number) {
+export function laravelPost<T>(endpoint: string, body?: unknown, timeoutMs?: number, token?: string) {
   return laravelFetch<T>(
     endpoint,
     {
       method: "POST",
       body: body ? JSON.stringify(body) : undefined,
     },
-    timeoutMs
+    timeoutMs,
+    token
   );
 }
 
-export function laravelPut<T>(endpoint: string, body?: unknown) {
+export function laravelPut<T>(endpoint: string, body?: unknown, token?: string) {
   return laravelFetch<T>(endpoint, {
     method: "PUT",
     body: body ? JSON.stringify(body) : undefined,
-  });
+  }, 10000, token);
 }
 
-export function laravelDelete<T>(endpoint: string) {
-  return laravelFetch<T>(endpoint, { method: "DELETE" });
+export function laravelDelete<T>(endpoint: string, token?: string) {
+  return laravelFetch<T>(endpoint, { method: "DELETE" }, 10000, token);
 }
 
-export function laravelPatch<T>(endpoint: string, body?: unknown) {
+export function laravelPatch<T>(endpoint: string, body?: unknown, token?: string) {
   return laravelFetch<T>(endpoint, {
     method: "PATCH",
     body: body ? JSON.stringify(body) : undefined,
-  });
+  }, 10000, token);
 }
 
 // Achievement API

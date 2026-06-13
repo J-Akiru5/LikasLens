@@ -47,7 +47,7 @@
                     │         │      :8001          │
                     │         │                     │
                     │         │  ┌───────────────┐  │         ┌─────────────────┐
-                    │         │  │   YOLOv8      │  │         │  Cosmos DB      │
+                    │         │  │   YOLOv8 Nano      │  │         │  Cosmos DB      │
                     │         │  │   Object      │  │         │  Gremlin Graph  │
                     │         │  │   Detection   │  │         │  (Hazard→Law→   │
                     │         │  └───────┬───────┘  │         │   Agency routing│
@@ -94,7 +94,7 @@
   1. CAPTURE          2. TRANSMIT         3. STORE            4. ANALYZE
   ──────────          ───────────         ────────            ─────────
   Citizen opens       POST /api/reports   Supabase Storage    AI Service:
-  /report page        (base64 image +     (evidence photos)   YOLOv8 detects
+  /report page        (base64 image +     (evidence photos)   YOLOv8 Nano detects
   Camera + GPS        GPS + user_id)      PostgreSQL          objects →
   Ghost Mode?         Ghost Mode:         (Ticket + Evidence  Gremlin maps
   strips EXIF         EXIF already        + Report rows)      hazard → law →
@@ -123,7 +123,7 @@
                     │         NEURAL LAYER                │
                     │                                     │
   Evidence    ┌─────┴─────┐              ┌───────────────┴──┐
-  Image  ────>│  YOLOv8   │──detections──>│  Gemini 2.5     │
+  Image  ────>│  YOLOv8 Nano   │──detections──>│  Gemini 2.5     │
               │  Object   │              │  Flash           │
               │  Detection│              │  (Summary)       │
               └─────┬─────┘              └───────────────┬──┘

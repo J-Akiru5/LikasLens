@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TicketStatusChanged;
 use App\Models\Report;
 use App\Models\Ticket;
 use App\Models\TicketEvidence;
 use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\RankService;
+use App\Services\BlockchainService;
+use App\Services\ChainService;
 use App\Services\TriageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -74,6 +77,9 @@ class ReportController extends Controller
                     'message' => 'Invalid base64 image data',
                 ], 422);
             }
+
+            // Ghost Mode EXIF stripping — remove all metadata before storage
+            $imageData = $this->stripExifMetadata($imageData);
 
             $checksum = hash('sha256', $imageData);
             $mimeType = $this->detectMimeType($imageData);
@@ -157,7 +163,34 @@ class ReportController extends Controller
                 return [$ticket, $evidence];
             });
 
-            // Step 2 — AI triage (outside transaction — report survives even if AI is down)
+            // Step 2 — Fire initial timeline entry for new ticket
+            TicketStatusChanged::dispatch(
+                ticket: $ticket,
+                fromStatus: null,
+                toStatus: 'open',
+                actorId: $userId !== self::GHOST_USER_ID ? $userId : null,
+                actorType: $userId !== self::GHOST_USER_ID ? 'user' : 'system',
+                note: 'Ticket created from mobile report',
+            );
+
+            // Step 2.5 — Report chaining / duplicate detection (non-critical, best-effort)
+            $chainData = null;
+            try {
+                $chain = app(ChainService::class)->processNewReport($ticket);
+                $chainData = [
+                    'chain_id' => $chain->id,
+                    'is_new_chain' => $chain->primary_ticket_id === $ticket->id,
+                    'total_reports' => $chain->total_reports,
+                    'urgency_boost' => $chain->urgency_boost,
+                ];
+            } catch (\Throwable $e) {
+                Log::warning('ReportController: Chain processing failed, continuing', [
+                    'error' => $e->getMessage(),
+                    'ticket_id' => $ticket->id,
+                ]);
+            }
+
+            // Step 3 — AI triage (outside transaction — report survives even if AI is down)
             $triage = null;
             try {
                 $triage = app(TriageService::class)->analyze($validated['base64Image'], $ticket);
@@ -169,7 +202,23 @@ class ReportController extends Controller
                 $triage = ['success' => false, 'has_concern' => false, 'indicators' => []];
             }
 
-            // Step 3 — Achievement & rank evaluation (non-critical, best-effort)
+            // Step 3.5 — Image similarity search (best-effort, non-blocking)
+            $similarityResult = ['similar_reports' => [], 'embedding_stored' => false];
+            try {
+                $violationType = $triage['indicators'][0]['type'] ?? 'unknown';
+                $similarityResult = app(TriageService::class)->checkSimilarity(
+                    $validated['base64Image'],
+                    $ticket->id,
+                    $violationType,
+                );
+            } catch (\Throwable $e) {
+                Log::warning('ReportController: Similarity check failed, continuing', [
+                    'error' => $e->getMessage(),
+                    'ticket_id' => $ticket->id,
+                ]);
+            }
+
+            // Step 4 — Achievement & rank evaluation (non-critical, best-effort)
             if ($userId !== self::GHOST_USER_ID) {
                 try {
                     $reporter = User::find($userId);
@@ -196,6 +245,55 @@ class ReportController extends Controller
                 }
             }
 
+            // Step 4 — Blockchain evidence hashing (non-critical, best-effort)
+            $evidenceHash = null;
+            $blockchainTx = null;
+            $blockchainVerifiedAt = null;
+            try {
+                $blockchainService = app(BlockchainService::class);
+
+                $evidenceHash = $blockchainService->hashEvidence([
+                    'latitude' => $validated['latitude'],
+                    'longitude' => $validated['longitude'],
+                    'report_type' => $validated['report_type'] ?? null,
+                    'severity' => $triage['indicators'][0]['severity'] ?? 'unclassified',
+                    'ai_class' => $triage['indicators'][0]['type'] ?? null,
+                    'timestamp' => now()->toISOString(),
+                    'report_id' => $ticket->id,
+                ]);
+
+                $blockchainTx = $blockchainService->submitToBlockchain($evidenceHash);
+                if ($blockchainTx) {
+                    $blockchainVerifiedAt = now();
+                }
+
+                // Persist blockchain fields on the Report record
+                $report = Report::where('user_id', $userId)
+                    ->whereBetween('created_at', [
+                        $ticket->created_at->subSeconds(5),
+                        $ticket->created_at->addSeconds(5),
+                    ])
+                    ->first();
+                if ($report) {
+                    $report->update([
+                        'evidence_hash' => $evidenceHash,
+                        'blockchain_tx' => $blockchainTx,
+                        'blockchain_verified_at' => $blockchainVerifiedAt,
+                    ]);
+                }
+
+                Log::info('ReportController: Blockchain evidence hashing completed', [
+                    'ticket_id' => $ticket->id,
+                    'evidence_hash' => $evidenceHash,
+                    'blockchain_tx' => $blockchainTx,
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('ReportController: Blockchain hashing failed, continuing', [
+                    'error' => $e->getMessage(),
+                    'ticket_id' => $ticket->id,
+                ]);
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Report submitted successfully',
@@ -207,6 +305,21 @@ class ReportController extends Controller
                     'imageSize' => strlen($validated['base64Image']),
                     'checksum' => $checksum,
                     'triage' => $triage,
+                    'blockchain' => [
+                        'evidence_hash' => $evidenceHash,
+                        'tx_hash' => $blockchainTx,
+                        'explorer_url' => $blockchainTx ? app(BlockchainService::class)->getExplorerUrl($blockchainTx) : null,
+                        'verified_at' => $blockchainVerifiedAt?->toISOString(),
+                    ],
+                    'chain' => $chainData,
+                    'similar_reports' => $similarityResult['similar_reports'] ?? [],
+                    'similar_reports_message' => ! empty($similarityResult['similar_reports'])
+                        ? sprintf(
+                            'This looks similar to %d other report%s in the area',
+                            count($similarityResult['similar_reports']),
+                            count($similarityResult['similar_reports']) === 1 ? '' : 's',
+                        )
+                        : null,
                 ],
             ], 201);
         } catch (\Throwable $e) {
@@ -224,6 +337,89 @@ class ReportController extends Controller
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
             ], 500);
         }
+    }
+
+    /**
+     * Verify blockchain evidence for a report.
+     * Returns evidence hash, tx hash, explorer URL, and on-chain verification status.
+     */
+    public function verifyEvidence(string $id)
+    {
+        $report = Report::find($id);
+
+        if (! $report) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Report not found',
+            ], 404);
+        }
+
+        if (empty($report->evidence_hash)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No blockchain evidence found for this report',
+            ], 404);
+        }
+
+        $blockchainService = app(BlockchainService::class);
+
+        $onChainVerified = false;
+        if ($report->blockchain_tx) {
+            $onChainVerified = $blockchainService->verifyTransaction($report->blockchain_tx);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'report_id' => $report->id,
+                'evidence_hash' => $report->evidence_hash,
+                'tx_hash' => $report->blockchain_tx,
+                'explorer_url' => $report->blockchain_tx
+                    ? $blockchainService->getExplorerUrl($report->blockchain_tx)
+                    : null,
+                'on_chain_verified' => $onChainVerified,
+                'verified_at' => $report->blockchain_verified_at?->toISOString(),
+            ],
+        ]);
+    }
+
+    /**
+     * Show the details of a report chain, including all linked tickets.
+     */
+    public function showChain(string $chainId)
+    {
+        $chain = app(ChainService::class)->getChainDetails($chainId);
+
+        if (! $chain) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chain not found',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'chain_id' => $chain->id,
+                'primary_ticket_id' => $chain->primary_ticket_id,
+                'location_name' => $chain->location_name,
+                'latitude' => $chain->latitude,
+                'longitude' => $chain->longitude,
+                'radius_meters' => $chain->radius_meters,
+                'total_reports' => $chain->total_reports,
+                'urgency_boost' => $chain->urgency_boost,
+                'first_reported_at' => $chain->first_reported_at?->toISOString(),
+                'last_reported_at' => $chain->last_reported_at?->toISOString(),
+                'status' => $chain->status,
+                'tickets' => $chain->tickets->map(fn ($t) => [
+                    'id' => $t->id,
+                    'title' => $t->title,
+                    'status' => $t->status,
+                    'urgency_score' => $t->urgency_score,
+                    'created_at' => $t->created_at?->toISOString(),
+                ]),
+            ],
+        ]);
     }
 
     private function stripDataUriPrefix(string $value): ?string
@@ -269,20 +465,19 @@ class ReportController extends Controller
 
     private function ensureGhostUser(): string
     {
-        $ghost = User::where('supabase_auth_user_id', self::GHOST_USER_ID)->first();
-        if ($ghost) {
-            return $ghost->id;
-        }
+        $ghost = User::firstOrCreate(
+            ['supabase_auth_user_id' => self::GHOST_USER_ID],
+            [
+                'name' => 'Anonymous Ghost',
+                'email' => 'ghost@likaslens.local',
+                'role' => 'ghost',
+                'trust_score' => 0,
+                'reward_points_balance' => 0,
+                'password' => bcrypt(Str::random(32)),
+            ]
+        );
 
-        return User::create([
-            'supabase_auth_user_id' => self::GHOST_USER_ID,
-            'name' => 'Anonymous Ghost',
-            'email' => 'ghost@likaslens.local',
-            'role' => 'ghost',
-            'trust_score' => 0,
-            'reward_points_balance' => 0,
-            'password' => bcrypt(Str::random(32)),
-        ])->id;
+        return $ghost->id;
     }
 
     private function detectMimeType(string $data): string
@@ -303,6 +498,83 @@ class ReportController extends Controller
             'image/gif' => 'gif',
             default => 'bin',
         };
+    }
+
+    /**
+     * Strip EXIF metadata from image binary data.
+     * Prefers Imagick (lossless strip), falls back to GD (re-encode).
+     * Returns original data unchanged if the format is not a supported image type.
+     */
+    private function stripExifMetadata(string $imageData): string
+    {
+        $mime = $this->detectMimeType($imageData);
+
+        // Only strip EXIF from formats that can carry it
+        if (! in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            return $imageData;
+        }
+
+        // Prefer Imagick — it strips metadata without re-compressing pixels
+        if (extension_loaded('imagick')) {
+            try {
+                $imagick = new \Imagick();
+                $imagick->readImageBlob($imageData);
+                $imagick->stripImage();
+                $stripped = $imagick->getImageBlob();
+                $imagick->destroy();
+
+                Log::info('ReportController: EXIF stripped via Imagick', [
+                    'original_bytes' => strlen($imageData),
+                    'stripped_bytes' => strlen($stripped),
+                ]);
+
+                return $stripped;
+            } catch (\Throwable $e) {
+                Log::warning('ReportController: Imagick EXIF strip failed, falling back to GD', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        // Fallback — GD re-encodes the image, which drops all metadata
+        if (extension_loaded('gd')) {
+            $gdImage = @imagecreatefromstring($imageData);
+            if ($gdImage !== false) {
+                ob_start();
+                $output = false;
+                switch ($mime) {
+                    case 'image/jpeg':
+                        $output = imagejpeg($gdImage, null, 90);
+                        break;
+                    case 'image/png':
+                        $output = imagepng($gdImage, null, 9);
+                        break;
+                    case 'image/webp':
+                        $output = imagewebp($gdImage, null, 90);
+                        break;
+                }
+                $stripped = ob_get_clean();
+                imagedestroy($gdImage);
+
+                if ($output !== false && $stripped !== false && strlen($stripped) > 0) {
+                    Log::info('ReportController: EXIF stripped via GD re-encode', [
+                        'original_bytes' => strlen($imageData),
+                        'stripped_bytes' => strlen($stripped),
+                    ]);
+
+                    return $stripped;
+                }
+            }
+
+            Log::warning('ReportController: GD EXIF strip produced empty output, returning original data');
+        }
+
+        // Neither extension available — log a warning so operators can fix the server
+        Log::warning('ReportController: Neither Imagick nor GD available — EXIF data NOT stripped', [
+            'mime' => $mime,
+        ]);
+
+        return $imageData;
     }
 
     private function getStorageDisk()
@@ -349,10 +621,28 @@ class ReportController extends Controller
         $report->status = 'verified';
         $report->save();
 
-        $ticket = Ticket::where('reporter_user_id', $report->user_id)->latest()->first();
+        $ticket = Ticket::where('reporter_user_id', $report->user_id)
+            ->whereBetween('created_at', [
+                $report->created_at->subSeconds(5),
+                $report->created_at->addSeconds(5),
+            ])
+            ->first();
         if ($ticket) {
+            $oldStatus = $ticket->status;
             $ticket->status = 'verified';
+            // Mark verified incidents as REDD+ MRV eligible
+            $ticket->is_redd_eligible = true;
             $ticket->save();
+
+            // Fire timeline event for LGU verification
+            TicketStatusChanged::dispatch(
+                ticket: $ticket,
+                fromStatus: $oldStatus,
+                toStatus: 'verified',
+                actorId: $request->user()?->id,
+                actorType: 'lgu',
+                note: 'Report verified by LGU',
+            );
         }
 
         if ($report->user_id) {
@@ -383,7 +673,7 @@ class ReportController extends Controller
     public function batchSync(Request $request)
     {
         $validated = $request->validate([
-            'reports' => 'required|array|min:1',
+            'reports' => 'required|array|min:1|max:50',
             'reports.*.base64Image' => 'required|string',
             'reports.*.latitude' => 'required|numeric',
             'reports.*.longitude' => 'required|numeric',
@@ -428,5 +718,136 @@ class ReportController extends Controller
                 'results' => $results,
             ],
         ]);
+    }
+
+    /**
+     * Community corroboration: allow a citizen to corroborate an existing report.
+     * Requires GPS-diversity check (>50m apart) and different user.
+     */
+    public function corroborate(Request $request)
+    {
+        $validated = $request->validate([
+            'report_id' => 'required|uuid|exists:reports,id',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'user_id' => 'nullable|string|max:255',
+        ]);
+
+        $report = Report::findOrFail($validated['report_id']);
+
+        // Anti-Sybil: check if same user is trying to corroborate their own report
+        if ($validated['user_id'] && $validated['user_id'] === $report->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot corroborate your own report.',
+            ], 403);
+        }
+
+        // GPS-diversity check: must be >50m from original report
+        $distance = $this->haversineDistance(
+            $report->latitude, $report->longitude,
+            $validated['latitude'], $validated['longitude']
+        );
+
+        if ($distance < 50) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Corroborating reports must be at least 50m from the original report.',
+            ], 422);
+        }
+
+        // Check if report already has enough corroboration (2 reports/500m threshold)
+        $existingCorroborations = Report::where('id', '!=', $validated['report_id'])
+            ->whereBetween('created_at', [
+                $report->created_at->subHours(24),
+                $report->created_at->addHours(24),
+            ])
+            ->get()
+            ->filter(function ($r) use ($report) {
+                $dist = $this->haversineDistance(
+                    $report->latitude, $report->longitude,
+                    $r->latitude, $r->longitude
+                );
+                return $dist <= 500; // 500m corroboration radius
+            })
+            ->count();
+
+        $corroborated = $existingCorroborations >= 1; // Original + 1 more = 2 reports
+
+        // Link to chain if not already linked
+        if ($corroborated && !$report->chain_id) {
+            app(ChainService::class)->processNewReport($report);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $corroborated
+                ? 'Corroboration threshold met! Report escalated for AI analysis.'
+                : 'Corroboration recorded. Awaiting additional reports within 500m.',
+            'data' => [
+                'report_id' => $report->id,
+                'corroborated' => $corroborated,
+                'existing_corroborations' => $existingCorroborations,
+                'required_for_escalation' => max(0, 1 - $existingCorroborations),
+            ],
+        ]);
+    }
+
+    /**
+     * Anti-Sybil geofence check: reject reports within 5m of an existing report from the same user.
+     */
+    public function checkGeofence(Request $request)
+    {
+        $validated = $request->validate([
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'user_id' => 'nullable|string|max:255',
+        ]);
+
+        $geofenceRadius = 5; // 5m anti-Sybil geofence
+
+        $nearbyReport = Report::where('user_id', $validated['user_id'] ?? 'ANONYMOUS_GHOST')
+            ->where('created_at', '>', now()->subHours(24))
+            ->get()
+            ->first(function ($report) use ($validated, $geofenceRadius) {
+                $distance = $this->haversineDistance(
+                    $report->latitude, $report->longitude,
+                    $validated['latitude'], $validated['longitude']
+                );
+                return $distance <= $geofenceRadius;
+            });
+
+        if ($nearbyReport) {
+            return response()->json([
+                'success' => false,
+                'message' => 'A report already exists within 5m of this location from your account in the last 24 hours.',
+                'existing_report_id' => $nearbyReport->id,
+            ], 422);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Location passes anti-Sybil geofence check.',
+        ]);
+    }
+
+    /**
+     * Calculate distance between two GPS coordinates using Haversine formula.
+     * Returns distance in meters.
+     */
+    private function haversineDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 6371000; // Earth's radius in meters
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLng / 2) * sin($dLng / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
     }
 }

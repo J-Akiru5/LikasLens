@@ -1,16 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState, useTransition } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { BottomNav } from "@/components/layout/bottom-nav";
-import { AppHeader } from "@/components/layout/header";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import {
   Bell,
   Lock,
   Eye,
   Globe,
   Monitor,
-  ArrowLeft,
   Shield,
   Key,
   UserCircle2,
@@ -24,7 +21,7 @@ import {
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { locales, localeNames, defaultLocale, showToast, ToastContainer } from "@likaslens/shared";
+import { locales, localeNames, defaultLocale, showToast, ToastContainer, Dropdown } from "@likaslens/shared";
 import { createClient } from "@/utils/supabase/client";
 import { deleteAccount } from "@/app/[locale]/actions/account";
 
@@ -467,6 +464,7 @@ function PlatformSection() {
     setTheme(value);
     try { localStorage.setItem("likaslens-theme", value); } catch { /* ignore */ }
     document.documentElement.setAttribute("data-theme", value);
+    (window as any).updateThemeColor?.();
     window.dispatchEvent(new Event("themechange"));
     showToast(`Theme switched to ${value === "civic" ? "Civic" : "Ghost"} mode`, "success");
   };
@@ -490,18 +488,16 @@ function PlatformSection() {
       <div className="space-y-5">
         <div>
           <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">{t("language")}</label>
-          <select
+          <Dropdown
             value={currentLocale}
-            onChange={(e) => handleLocaleChange(e.target.value)}
+            onChange={(val) => handleLocaleChange(val as string)}
+            options={locales.map((loc) => ({
+              value: loc,
+              label: `${localeNames[loc].native} (${localeNames[loc].english})`,
+            }))}
             disabled={isPending}
-            className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink focus:outline-none focus:border-ink/30 disabled:opacity-50"
-          >
-            {locales.map((loc) => (
-              <option key={loc} value={loc}>
-                {localeNames[loc].native} ({localeNames[loc].english})
-              </option>
-            ))}
-          </select>
+            size="md"
+          />
         </div>
         <div>
           <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">{t("theme")}</label>
@@ -549,42 +545,35 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-page">
-      <Sidebar />
-      <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
-        <ToastContainer />
-        <AppHeader showBranding={false} />
-        <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors">
-                &larr; {tc("back")}
-              </Link>
-              <span className="text-ink/20">/</span>
-              <h1 className="font-semibold tracking-tight text-3xl text-ink">{t("title")}</h1>
-            </div>
+    <DashboardLayoutWrapper>
+      <ToastContainer />
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div className="flex items-center gap-4">
+          <Link href="/dashboard" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors">
+            &larr; {tc("back")}
+          </Link>
+          <span className="text-ink/20">/</span>
+          <h1 className="font-semibold tracking-tight text-3xl text-ink">{t("title")}</h1>
+        </div>
 
-            <nav className="flex gap-2 overflow-x-auto pb-1">
-              {tabs.map((tab) => (
-                <TabButton
-                  key={tab.id}
-                  tab={tab}
-                  isActive={activeTab === tab.id}
-                  onSelect={onSelectTab}
-                />
-              ))}
-            </nav>
+        <nav className="flex gap-2 overflow-x-auto pb-1">
+          {tabs.map((tab) => (
+            <TabButton
+              key={tab.id}
+              tab={tab}
+              isActive={activeTab === tab.id}
+              onSelect={onSelectTab}
+            />
+          ))}
+        </nav>
 
-            <div>
-              {activeTab === "platform" && <PlatformSection />}
-              {activeTab === "notifications" && <NotificationsSection />}
-              {activeTab === "security" && <SecuritySection />}
-              {activeTab === "account" && <AccountSection />}
-            </div>
-          </div>
-        </main>
-        <BottomNav />
+        <div>
+          {activeTab === "platform" && <PlatformSection />}
+          {activeTab === "notifications" && <NotificationsSection />}
+          {activeTab === "security" && <SecuritySection />}
+          {activeTab === "account" && <AccountSection />}
+        </div>
       </div>
-    </div>
+    </DashboardLayoutWrapper>
   );
 }

@@ -3,16 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { User, LogOut, LayoutGrid, UserCircle2, ChevronDown } from "lucide-react";
+import { User, LogOut, LayoutGrid, UserCircle2, ChevronDown, Settings } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { showToast, setLaravelAuthToken } from "@likaslens/shared";
+import { showToast, ConfirmModal } from "@likaslens/shared";
 import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
-export function UserNav({ invert = false }: { invert?: boolean } = {}) {
+export function UserNav({ invert = false, variant = "header" }: { invert?: boolean; variant?: "header" | "sidebar" } = {}) {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -20,14 +21,12 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
       const { data: { session } } = await supabase.auth.getSession();
       const authUser = session?.user ?? null;
       setUser(authUser);
-      setLaravelAuthToken(session?.access_token ?? null);
       setLoading(false);
     }
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null);
-      setLaravelAuthToken(session?.access_token ?? null);
     });
 
     return () => subscription.unsubscribe();
@@ -35,7 +34,6 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
 
   const handleLogout = async () => {
     try {
-      setLaravelAuthToken(null);
       await supabase.auth.signOut();
       try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
       try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
@@ -48,7 +46,7 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
   if (loading) {
     return (
       <div
-        className="w-9 h-9 rounded-full animate-pulse bg-ink/10"
+        className={variant === "header" ? "w-9 h-9 rounded-full animate-pulse bg-ink/10" : "w-full h-12 rounded-xl animate-pulse bg-ink/5"}
       />
     );
   }
@@ -93,6 +91,44 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
     );
   }
 
+  if (variant === "sidebar") {
+    return (
+      <div className="relative w-full">
+        <button
+          onClick={() => setShowLogoutAlert(true)}
+          className="flex items-center w-full gap-3 p-2 rounded-xl hover:bg-ink/[0.04] transition-colors group text-left"
+        >
+          <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border bg-ink/5 border-ink/10 shrink-0">
+            {user.user_metadata?.avatar_url ? (
+              <Image src={user.user_metadata.avatar_url} alt="Avatar" width={40} height={40} sizes="40px" unoptimized className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-5 h-5 text-ink/70" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-ink truncate">
+              {user.user_metadata?.full_name || user.email?.split("@")[0] || "Citizen"}
+            </p>
+            <p className="text-xs text-ink/50 truncate">
+              {user.email}
+            </p>
+          </div>
+          <LogOut className="w-4 h-4 text-ink/40 group-hover:text-ink transition-colors shrink-0" />
+        </button>
+
+        <ConfirmModal
+          isOpen={showLogoutAlert}
+          onClose={() => setShowLogoutAlert(false)}
+          onConfirm={handleLogout}
+          title="Sign Out"
+          message="Are you sure you want to log out of your account?"
+          confirmLabel="Log Out"
+          variant="danger"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="relative">
       <button
@@ -131,8 +167,7 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
-              className="absolute right-0 mt-3 w-56 border border-ink/10 bg-page shadow-lg z-50"
-              style={{ borderRadius: 12 }}
+              className="absolute right-0 mt-3 w-56 rounded-2xl border border-ink/10 bg-page shadow-xl overflow-hidden z-50"
             >
               <div className="p-3 border-b border-ink/10">
                 <p className="font-mono text-[10px] text-ink/40 uppercase tracking-wider">Signed in as</p>
@@ -161,7 +196,7 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
                 <button
                   className="flex items-center gap-2 px-3 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors w-full text-left"
                   style={{ borderRadius: 8 }}
-                  onClick={handleLogout}
+                  onClick={() => { setIsOpen(false); setShowLogoutAlert(true); }}
                 >
                   <LogOut className="w-4 h-4" />
                   Logout
@@ -171,6 +206,16 @@ export function UserNav({ invert = false }: { invert?: boolean } = {}) {
           </>
         )}
       </AnimatePresence>
+
+      <ConfirmModal
+        isOpen={showLogoutAlert}
+        onClose={() => setShowLogoutAlert(false)}
+        onConfirm={handleLogout}
+        title="Sign Out"
+        message="Are you sure you want to log out of your account?"
+        confirmLabel="Log Out"
+        variant="danger"
+      />
     </div>
   );
 }
