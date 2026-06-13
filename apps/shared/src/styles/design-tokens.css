@@ -12,9 +12,9 @@
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
     /* ── Surface layers ────────────────────────────────────────────────────── */
-    --page: #f4f5ef; /* green-tinted off-white */
-    --panel: #eceee6; /* cards, panels */
-    --panel-elevated: #e4e6de; /* dropdowns, popovers */
+    --page: #f5f5f0; /* warm off-white — page background */
+    --panel: #ffffff; /* pure white cards, panels */
+    --panel-elevated: #fafafa; /* dropdowns, popovers */
     --overlay: #ffffff; /* modals, dialogs */
 
     /* ── Ink / text ────────────────────────────────────────────────────────── */
@@ -23,8 +23,8 @@
     --muted-subtle: #748078; /* ~3.1:1 — captions, decorative only */
 
     /* ── Borders ───────────────────────────────────────────────────────────── */
-    --border: rgba(17, 24, 20, 0.08);
-    --border-strong: rgba(17, 24, 20, 0.18); /* form fields, emphasized */
+    --border: rgba(0, 0, 0, 0.06);
+    --border-strong: rgba(0, 0, 0, 0.12); /* form fields, emphasized */
 
     /* ── Brand ─────────────────────────────────────────────────────────────── */
     --accent: #1b4332; /* forest green — primary brand */
@@ -66,11 +66,11 @@
         0 12px 32px rgba(17, 24, 20, 0.12), 0 4px 8px rgba(17, 24, 20, 0.06);
 
     /* ── Border radius ──────────────────────────────────────────────────────── */
-    --radius-sm: 0.25rem; /* 4px  — badges, chips, pills */
-    --radius-md: 0.375rem; /* 6px  — buttons, inputs */
-    --radius-lg: 0.625rem; /* 10px — cards, panels */
-    --radius-xl: 0.875rem; /* 14px — modals, large panels */
-    --radius-2xl: 1.25rem; /* 20px — PWA full-screen only */
+    --radius-sm: 0.375rem; /* 6px  — badges, chips, pills */
+    --radius-md: 0.5rem; /* 8px  — buttons, inputs */
+    --radius-lg: 0.75rem; /* 12px — cards, panels */
+    --radius-xl: 1rem; /* 16px — modals, large panels */
+    --radius-2xl: 1.5rem; /* 24px — PWA full-screen, hero cards */
     --radius-full: 9999px;
 
     /* ── Type scale ─────────────────────────────────────────────────────────── */
@@ -179,7 +179,7 @@
 .kpi-card {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: var(--radius-xl);
     padding: 20px 24px;
     position: relative;
     overflow: hidden;
