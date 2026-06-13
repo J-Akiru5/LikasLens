@@ -6,6 +6,7 @@ import {
   getTickets,
   Sparkline,
   laravelGet,
+  EmptyState,
 } from "@likaslens/shared";
 import type {
   DashboardStats,
@@ -183,9 +184,11 @@ export default function DashboardPage() {
               </div>
             ))}
             {feed.length === 0 && (
-              <p className="font-mono text-sm text-muted text-center py-4">
-                No recent activity
-              </p>
+              <EmptyState
+                icon={LayoutDashboard}
+                title="No recent activity"
+                description="New activity from citizen reports and system actions will appear here."
+              />
             )}
           </div>
         </div>
@@ -227,9 +230,11 @@ export default function DashboardPage() {
               </div>
             ))}
             {recentTickets.length === 0 && (
-              <p className="font-mono text-sm text-muted text-center py-4">
-                No recent tickets
-              </p>
+              <EmptyState
+                icon={AlertTriangle}
+                title="No recent tickets"
+                description="When citizens submit reports, tickets will appear here for review and dispatch."
+              />
             )}
           </div>
         </div>

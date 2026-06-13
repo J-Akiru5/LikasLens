@@ -21,8 +21,9 @@ import {
   Share2,
   Sparkles,
   Building2,
+  MapPin,
 } from "lucide-react";
-import { laravelGet } from "@likaslens/shared";
+import { laravelGet, EmptyState } from "@likaslens/shared";
 
 interface Ticket {
   id: string;
@@ -249,7 +250,14 @@ export default function ImpactPage() {
                   <TrendingUp className="w-4 h-4 text-secondary" />
                   <h2 className="font-bold tracking-tight">Monthly Incident Trends</h2>
                 </div>
-                <div className="flex items-end gap-1 h-40">
+                {timeSeries.length === 0 ? (
+                  <EmptyState
+                    icon={BarChart3}
+                    title="No trend data yet"
+                    description="Monthly incident trends will populate once reports are submitted and processed by the AI pipeline."
+                  />
+                ) : (
+                  <div className="flex items-end gap-1 h-40">
                   {timeSeries.map((d) => (
                     <div key={d.month} className="flex-1 flex flex-col items-center gap-1">
                       <div className="w-full flex gap-0.5 items-end" style={{ height: 120 }}>
@@ -278,6 +286,7 @@ export default function ImpactPage() {
                     Resolved
                   </div>
                 </div>
+                )}
               </div>
             </div>
 
@@ -285,9 +294,16 @@ export default function ImpactPage() {
               <div className="panel p-6 space-y-4 h-full">
                 <div className="flex items-center gap-2">
                   <MapPinIcon />
-                  <h2 className="font-bold tracking-tight">Region 6 Province Breakdown</h2>
+                  <h2 className="font-bold tracking-tight">Province Breakdown</h2>
                 </div>
-                <div className="space-y-3">
+                {provinceData.length === 0 ? (
+                  <EmptyState
+                    icon={MapPin}
+                    title="No province data yet"
+                    description="Province-level breakdown will appear here once reports are geotagged and processed."
+                  />
+                ) : (
+                  <div className="space-y-3">
                   {provinceData.map((p) => (
                     <div key={p.name} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-panel/50">
                       <div className="flex-1 min-w-0">
@@ -315,6 +331,7 @@ export default function ImpactPage() {
                     </div>
                   ))}
                 </div>
+              )}
               </div>
             </div>
 
