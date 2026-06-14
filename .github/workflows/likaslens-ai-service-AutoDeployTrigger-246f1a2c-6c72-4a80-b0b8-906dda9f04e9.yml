@@ -41,4 +41,4 @@ jobs:
           registryPassword: ${{ secrets.GITHUB_TOKEN }}
           containerAppName: likaslens-ai-service
           resourceGroup: likaslens
-          imageToBuild: ghcr.io/${{ github.repository }}/likaslens-ai-service:${{ github.sha }}
+          imageToBuild: ghcr.io/${{ lower(github.repository_owner) }}/likaslens/likaslens-ai-service:${{ github.sha }}
