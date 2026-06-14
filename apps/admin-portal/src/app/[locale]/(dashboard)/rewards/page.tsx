@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { laravelGet, laravelPost, showToast } from "@likaslens/shared";
+import { laravelGet, laravelPost, showToast, Button } from "@likaslens/shared";
 import type { PaginatedResponse } from "@likaslens/shared";
 import { AdminCardGridSkeleton, EmptyState } from "@likaslens/shared";
 import { ChevronLeft, ChevronRight, Gift, Package, Plus, X } from "lucide-react";
@@ -85,19 +85,16 @@ export default function RewardsPage() {
             Manage eco-credit rewards
           </p>
         </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-green text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
-        >
+        <Button variant="primary" type="button" onClick={() => setShowCreate(true)}>
           <Plus className="w-4 h-4" />
           Create Reward
-        </button>
+        </Button>
       </div>
 
       {loading ? (
         <AdminCardGridSkeleton cards={6} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {rewards.map((reward) => (
             <div
               key={reward.id}
@@ -152,20 +149,24 @@ export default function RewardsPage() {
             Page {page} of {lastPage}
           </p>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
             >
               <ChevronLeft className="w-4 h-4" /> Prev
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
               onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
               disabled={page >= lastPage}
-              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
             >
               Next <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -258,23 +259,20 @@ export default function RewardsPage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <button
+                <Button
+                  variant="secondary"
                   type="button"
                   onClick={() => setShowCreate(false)}
-                  className="px-5 py-2.5 bg-panel border border-ink/10 rounded-xl font-medium text-sm text-ink hover:bg-ink/[0.02] transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="primary"
                   type="submit"
-                  disabled={createLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-green text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+                  loading={createLoading}
                 >
-                  {createLoading && (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  )}
                   Create Reward
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -283,4 +281,3 @@ export default function RewardsPage() {
     </div>
   );
 }
-

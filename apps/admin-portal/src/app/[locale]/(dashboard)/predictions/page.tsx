@@ -6,7 +6,7 @@ import {
 } from "@likaslens/shared";
 import type { HotspotPrediction, PredictionMeta } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { AdminKPIsSkeleton, EmptyState } from "@likaslens/shared";
+import { AdminKPIsSkeleton, EmptyState, Button } from "@likaslens/shared";
 import {
   MapPin,
   TrendingUp,
@@ -127,45 +127,39 @@ export default function PredictionsPage() {
 
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+        <div className="kpi-card kpi-accent-amber rounded-2xl border border-border bg-panel p-5">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-red/10 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-red" />
             </div>
             <div>
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
-                High Risk Zones
-              </p>
+              <span className="label-pill label-pill-light">High Risk Zones</span>
               <p className="font-semibold tracking-tight text-3xl text-ink">
                 {highRiskCount}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+        <div className="kpi-card kpi-accent-muted rounded-2xl border border-border bg-panel p-5">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] flex items-center justify-center">
               <MapPin className="w-6 h-6 text-ink/60" />
             </div>
             <div>
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
-                Predicted Zones
-              </p>
+              <span className="label-pill label-pill-light">Predicted Zones</span>
               <p className="font-semibold tracking-tight text-3xl text-ink">
                 {predictions.length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+        <div className="kpi-card kpi-accent-green rounded-2xl border border-border bg-panel p-5">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] flex items-center justify-center">
               <BarChart3 className="w-6 h-6 text-ink/60" />
             </div>
             <div>
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
-                Avg Confidence
-              </p>
+              <span className="label-pill label-pill-light">Avg Confidence</span>
               <p className="font-semibold tracking-tight text-3xl text-ink">
                 {avgConfidence}%
               </p>

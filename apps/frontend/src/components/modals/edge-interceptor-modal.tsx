@@ -4,6 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShieldAlert, X } from "lucide-react";
 import { useEffect } from "react";
 
+const EDGE_INTERCEPTOR_CANCEL_CLASS =
+  "flex-1 py-3 bg-panel text-ink border border-border text-sm font-medium rounded-lg hover:bg-ink/[0.04] transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2";
+
+const EDGE_INTERCEPTOR_CONFIRM_CLASS =
+  "flex-1 py-3 bg-accent text-white text-sm font-medium hover:opacity-90 transition-colors disabled:opacity-50 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2";
+
 interface EdgeInterceptorModalProps {
   isOpen: boolean;
   onCancel: () => void;
@@ -87,10 +93,10 @@ export function EdgeInterceptorModal({
               </div>
 
               <div className="flex gap-3 p-6 border-t border-ink/10">
-                <button onClick={onCancel} disabled={isLoading} aria-label="Cancel" className="flex-1 py-3 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors disabled:opacity-50 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+                <button onClick={onCancel} disabled={isLoading} aria-label="Cancel" className={EDGE_INTERCEPTOR_CANCEL_CLASS}>
                   Cancel
                 </button>
-                <button onClick={onProceed} disabled={isLoading} aria-label="Proceed anonymously" className="flex-1 py-3 bg-[#2d6a4f] text-[#fcfaf7] text-sm font-medium hover:bg-[#23543e] transition-colors disabled:opacity-50 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+                <button onClick={onProceed} disabled={isLoading} aria-label="Proceed anonymously" className={EDGE_INTERCEPTOR_CONFIRM_CLASS}>
                   {isLoading ? "Submitting..." : "Proceed Anonymously"}
                 </button>
               </div>

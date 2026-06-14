@@ -88,7 +88,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
     async function fetchMetrics() {
       try {
         const [ticketsData] = await Promise.all([
-          laravelGet<{ success: boolean; data: Array<Record<string, unknown>>; meta?: { total: number } }>("/tickets?per_page=50").catch(() => null),
+          laravelGet<{ success: boolean; data: Array<{ status: string; created_at: string; resolved_at?: string }>; meta?: { total: number } }>("/tickets?per_page=50").catch(() => null),
         ]);
         if (!ticketsData) return;
         const meta = ticketsData?.meta;

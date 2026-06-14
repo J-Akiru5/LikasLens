@@ -75,51 +75,51 @@ export default function ImpactPage() {
         </div>
 
         <div className="grid gap-4">
-          <div className="bg-panel p-6 rounded-[2rem] border border-ink/5 flex items-center gap-5 shadow-sm">
+          <div className="kpi-card kpi-accent-green rounded-[2rem] border border-border bg-panel p-6 flex items-center gap-5 shadow-sm">
             <div className="w-16 h-16 rounded-[1.25rem] bg-[#2d6a4f]/10 flex items-center justify-center shrink-0">
               <TreePine className="w-8 h-8 text-[#2d6a4f]" />
             </div>
             <div>
-              <span className="text-3xl font-bold text-ink block mb-1">
+              <span className="text-3xl font-bold text-ink block mb-1 tabular-nums">
                 {stats?.total_reports?.toLocaleString() ?? "\u2014"}
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink/50">Trees Saved</span>
+              <span className="label-pill label-pill-light">Trees Saved</span>
             </div>
           </div>
 
-          <div className="bg-panel p-6 rounded-[2rem] border border-ink/5 flex items-center gap-5 shadow-sm">
+          <div className="kpi-card kpi-accent-accent rounded-[2rem] border border-border bg-panel p-6 flex items-center gap-5 shadow-sm">
             <div className="w-16 h-16 rounded-[1.25rem] bg-[#0284c7]/10 flex items-center justify-center shrink-0">
               <Droplets className="w-8 h-8 text-[#0284c7]" />
             </div>
             <div>
-              <span className="text-3xl font-bold text-ink block mb-1">
+              <span className="text-3xl font-bold text-ink block mb-1 tabular-nums">
                 {stats?.active_incidents_total != null ? `${(stats.active_incidents_total * 100).toLocaleString()}L` : "\u2014"}
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink/50">Water Cleaned</span>
+              <span className="label-pill label-pill-light">Water Cleaned</span>
             </div>
           </div>
 
-          <div className="bg-panel p-6 rounded-[2rem] border border-ink/5 flex items-center gap-5 shadow-sm">
+          <div className="kpi-card kpi-accent-amber rounded-[2rem] border border-border bg-panel p-6 flex items-center gap-5 shadow-sm">
             <div className="w-16 h-16 rounded-[1.25rem] bg-[#c27a2e]/10 flex items-center justify-center shrink-0">
               <Zap className="w-8 h-8 text-[#c27a2e]" />
             </div>
             <div>
-              <span className="text-3xl font-bold text-ink block mb-1">
+              <span className="text-3xl font-bold text-ink block mb-1 tabular-nums">
                 {stats?.total_users != null ? `${(stats.total_users / 1000).toFixed(1)}M` : "\u2014"}
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink/50">kg CO2 Offset</span>
+              <span className="label-pill label-pill-light">kg CO2 Offset</span>
             </div>
           </div>
 
-          <div className="bg-panel p-6 rounded-[2rem] border border-ink/5 flex items-center gap-5 shadow-sm">
+          <div className="kpi-card kpi-accent-muted rounded-[2rem] border border-border bg-panel p-6 flex items-center gap-5 shadow-sm">
             <div className="w-16 h-16 rounded-[1.25rem] bg-ink/5 flex items-center justify-center shrink-0">
               <ShieldCheck className="w-8 h-8 text-ink/60" />
             </div>
             <div>
-              <span className="text-3xl font-bold text-ink block mb-1">
+              <span className="text-3xl font-bold text-ink block mb-1 tabular-nums">
                 {stats?.resolved_today?.toLocaleString() ?? "\u2014"}
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink/50">Policies Enforced</span>
+              <span className="label-pill label-pill-light">Policies Enforced</span>
             </div>
           </div>
         </div>

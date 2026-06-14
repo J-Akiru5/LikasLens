@@ -1,6 +1,8 @@
+// apps/admin-portal/src/app/[locale]/(dashboard)/laws/page.tsx
+// Phase 6 sub-page sweep: Create Law CTAs -> Button
 "use client";
 import { useEffect, useState } from "react";
-import { laravelGet, laravelPost, showToast } from "@likaslens/shared";
+import { laravelGet, laravelPost, showToast, Button } from "@likaslens/shared";
 import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
 import { AdminTableSkeleton, EmptyState } from "@likaslens/shared";
 import {
@@ -146,19 +148,20 @@ export default function LawsPage() {
             className="w-full pl-9 pr-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
           />
         </div>
-        <button
+        <Button
+          variant="primary"
           onClick={() => setShowCreate(true)}
-          className="ml-4 inline-flex items-center gap-2 px-5 py-2.5 bg-green text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
+          className="ml-4"
         >
           <Plus className="w-4 h-4" />
           Create Law
-        </button>
+        </Button>
       </div>
 
       {loading ? (
         <AdminTableSkeleton rows={8} columns={4} showSearch={false} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {laws.map((law) => (
             <div
               key={law.id}
@@ -278,7 +281,7 @@ export default function LawsPage() {
 
             <form onSubmit={handleCreateLaw} className="space-y-4">
               <div>
-                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                <label className="label-pill label-pill-light block mb-1">
                   Title *
                 </label>
                 <input
@@ -292,7 +295,7 @@ export default function LawsPage() {
               </div>
 
               <div>
-                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                <label className="label-pill label-pill-light block mb-1">
                   Law Code *
                 </label>
                 <input
@@ -306,7 +309,7 @@ export default function LawsPage() {
               </div>
 
               <div>
-                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                <label className="label-pill label-pill-light block mb-1">
                   Summary
                 </label>
                 <textarea
@@ -319,7 +322,7 @@ export default function LawsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                  <label className="label-pill label-pill-light block mb-1">
                     Issuing Agency
                   </label>
                   <input
@@ -331,7 +334,7 @@ export default function LawsPage() {
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                  <label className="label-pill label-pill-light block mb-1">
                     Country Code
                   </label>
                   <input
@@ -345,7 +348,7 @@ export default function LawsPage() {
               </div>
 
               <div>
-                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                <label className="label-pill label-pill-light block mb-1">
                   Source URL
                 </label>
                 <input
@@ -358,23 +361,12 @@ export default function LawsPage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowCreate(false)}
-                  className="px-5 py-2.5 bg-panel border border-ink/10 rounded-xl font-medium text-sm text-ink hover:bg-ink/[0.02] transition-colors"
-                >
+                <Button variant="secondary" type="button" onClick={() => setShowCreate(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={createLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-green text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  {createLoading && (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  )}
+                </Button>
+                <Button variant="primary" type="submit" loading={createLoading}>
                   Create Law
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -413,7 +405,7 @@ export default function LawsPage() {
 
             <div className="space-y-4">
               <div>
-                <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">
+                <p className="label-pill label-pill-light mb-1">
                   Summary
                 </p>
                 <p className="font-mono text-sm text-ink/70">
@@ -423,7 +415,7 @@ export default function LawsPage() {
 
               <div className="flex flex-wrap gap-4">
                 <div>
-                  <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">
+                  <p className="label-pill label-pill-light mb-1">
                     Issuing Agency
                   </p>
                   <p className="font-mono text-sm font-medium text-ink">
@@ -432,7 +424,7 @@ export default function LawsPage() {
                 </div>
                 {selectedLaw.jurisdiction_scope && (
                   <div>
-                    <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">
+                    <p className="label-pill label-pill-light mb-1">
                       Jurisdiction
                     </p>
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-ink/[0.04] text-ink/60">
@@ -441,7 +433,7 @@ export default function LawsPage() {
                   </div>
                 )}
                 <div>
-                  <p className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1">
+                  <p className="label-pill label-pill-light mb-1">
                     Status
                   </p>
                   <span

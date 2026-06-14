@@ -12,9 +12,9 @@ export default function SettingsPage() {
       </header>
 
       <main className="flex-1 p-4">
-        <div className="bg-ink/5 rounded-3xl p-8 text-center mt-8">
+        <div className="kpi-card kpi-accent-muted rounded-3xl p-8 text-center mt-8">
           <p className="text-ink/40 font-mono text-sm font-bold uppercase tracking-widest">
-            App Settings
+            <span className="label-pill label-pill-light">App Settings</span>
           </p>
           <p className="text-ink/60 text-sm mt-4">
             Notification preferences, theme selection, and language settings will be available here.

@@ -1,3 +1,5 @@
+// apps/admin-portal/src/app/[locale]/(dashboard)/ngos/page.tsx
+// Phase 6 sub-page sweep: Add NGO CTA + form submit -> Button
 "use client";
 import { useEffect, useState } from "react";
 import {
@@ -7,6 +9,7 @@ import {
   deleteAdminNgo,
   bulkNgoVerify,
   bulkNgoDelete,
+  Button,
 } from "@likaslens/shared";
 import type { NgoGroup } from "@likaslens/shared";
 import { showToast, AdminCardGridSkeleton } from "@likaslens/shared";
@@ -179,7 +182,8 @@ export default function NgosPage() {
             Manage partner organizations
           </p>
         </div>
-        <button
+        <Button
+          variant="secondary"
           onClick={() => {
             setShowForm(true);
             setEditId(null);
@@ -191,10 +195,9 @@ export default function NgosPage() {
               contact_phone: "",
             });
           }}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink text-page rounded-xl font-mono text-xs uppercase tracking-widest font-bold hover:bg-ink/90 transition-colors"
         >
           <Plus className="w-4 h-4" /> Add NGO
-        </button>
+        </Button>
       </div>
 
       {error && !showForm && (
@@ -214,7 +217,7 @@ export default function NgosPage() {
             )}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="block font-mono text-xs text-ink/50 uppercase tracking-widest mb-2">
+                <label className="label-pill label-pill-light block mb-2">
                   Name *
                 </label>
                 <input
@@ -225,7 +228,7 @@ export default function NgosPage() {
                 />
               </div>
               <div>
-                <label className="block font-mono text-xs text-ink/50 uppercase tracking-widest mb-2">
+                <label className="label-pill label-pill-light block mb-2">
                   Region *
                 </label>
                 <input
@@ -236,7 +239,7 @@ export default function NgosPage() {
                 />
               </div>
               <div>
-                <label className="block font-mono text-xs text-ink/50 uppercase tracking-widest mb-2">
+                <label className="label-pill label-pill-light block mb-2">
                   Email
                 </label>
                 <input
@@ -249,7 +252,7 @@ export default function NgosPage() {
                 />
               </div>
               <div>
-                <label className="block font-mono text-xs text-ink/50 uppercase tracking-widest mb-2">
+                <label className="label-pill label-pill-light block mb-2">
                   Phone
                 </label>
                 <input
@@ -262,30 +265,20 @@ export default function NgosPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={saving}
-                className="px-5 py-2.5 bg-ink text-page rounded-xl font-mono text-xs uppercase tracking-widest font-bold hover:bg-ink/90 transition-colors disabled:opacity-50"
-              >
-                {saving
-                  ? editId
-                    ? "Updating..."
-                    : "Creating..."
-                  : editId
-                    ? "Update"
-                    : "Create"}
-              </button>
-              <button
+              <Button variant="primary" type="submit" loading={saving}>
+                {editId ? "Update" : "Create"}
+              </Button>
+              <Button
+                variant="secondary"
                 type="button"
                 disabled={saving}
                 onClick={() => {
                   setShowForm(false);
                   setError(null);
                 }}
-                className="px-5 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-xs uppercase tracking-widest text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-50"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -316,7 +309,7 @@ export default function NgosPage() {
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {ngos.length === 0 ? (
               <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
                 <Building2 className="w-16 h-16 text-ink/20 mb-4" />
@@ -379,24 +372,25 @@ export default function NgosPage() {
                     </p>
                   )}
                   <div className="mt-4 flex gap-2 pl-7">
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEdit(ngo);
                       }}
-                      className="px-3 py-1.5 text-xs font-mono text-ink/60 hover:text-ink border border-ink/10 rounded-lg hover:bg-ink/[0.02] transition-colors"
                     >
                       Edit
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDelete(ngo.id);
                       }}
-                      className="px-3 py-1.5 text-xs font-mono text-red/60 hover:text-red border border-red/10 rounded-lg hover:bg-red/5 transition-colors"
+                      className="text-red hover:bg-red/5"
                     >
                       Delete
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))

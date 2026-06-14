@@ -8,10 +8,10 @@ import {
   escalateTriageTicket,
   getTriageViolationTypes,
   showToast,
-  AdminTableSkeleton,
-  EmptyState,
+  Button,
 } from "@likaslens/shared";
 import type { TriageTicket } from "@likaslens/shared";
+import { AdminTableSkeleton, EmptyState } from "@likaslens/shared";
 import {
   ShieldAlert,
   Search,
@@ -299,31 +299,37 @@ export default function TriagePage() {
 
                       {/* Action buttons */}
                       <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <button
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          type="button"
                           onClick={() => openClassifyModal(ticket)}
                           disabled={isBusy}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent text-white rounded-lg text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           Classify
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          type="button"
                           onClick={() => handleEscalate(ticket)}
                           disabled={isBusy}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber/10 text-amber rounded-lg text-xs font-medium hover:bg-amber/20 transition-colors disabled:opacity-50"
                           title="Escalate to senior analyst"
                         >
                           <ArrowUpRight className="w-3.5 h-3.5" />
                           Escalate
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          type="button"
                           onClick={() => handleDismiss(ticket)}
                           disabled={isBusy}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-ink/[0.04] text-ink/50 rounded-lg text-xs font-medium hover:bg-red/10 hover:text-red transition-colors disabled:opacity-50"
                           title="Dismiss as spam"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
@@ -375,20 +381,24 @@ export default function TriagePage() {
             Page {page} of {lastPage}
           </p>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
             >
               <ChevronLeft className="w-4 h-4" /> Prev
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
               onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
               disabled={page >= lastPage}
-              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
             >
               Next <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -528,23 +538,20 @@ export default function TriagePage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <button
+                <Button
+                  variant="secondary"
                   type="button"
                   onClick={() => setClassifyTarget(null)}
-                  className="px-5 py-2.5 bg-panel border border-ink/10 rounded-xl font-medium text-sm text-ink hover:bg-ink/[0.02] transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="primary"
                   type="submit"
-                  disabled={classifyLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+                  loading={classifyLoading}
                 >
-                  {classifyLoading && (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  )}
                   Classify &amp; Investigate
-                </button>
+                </Button>
               </div>
             </form>
           </div>

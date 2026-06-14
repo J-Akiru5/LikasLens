@@ -1,6 +1,8 @@
+// apps/admin-portal/src/app/[locale]/(dashboard)/audit-logs/page.tsx
+// Phase 6 sub-page sweep: Button swaps + label-pill eyebrows
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { getAuditLogs, getAuditLogDetail } from "@likaslens/shared";
+import { getAuditLogs, getAuditLogDetail, Button } from "@likaslens/shared";
 import type { AuditLogEntry } from "@likaslens/shared";
 import { Dropdown, AdminTableSkeleton, Modal, EmptyState } from "@likaslens/shared";
 import {
@@ -156,9 +158,9 @@ function DiffModal({
         {/* Meta info */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-ink/40 mb-1">
+            <span className="label-pill label-pill-light mb-1 inline-block">
               Action
-            </p>
+            </span>
             <span
               className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${ACTION_COLORS[log.action] ?? "bg-ink/[0.04] text-ink/60"}`}
             >
@@ -166,25 +168,25 @@ function DiffModal({
             </span>
           </div>
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-ink/40 mb-1">
+            <span className="label-pill label-pill-light mb-1 inline-block">
               Entity
-            </p>
+            </span>
             <p className="font-mono text-sm text-ink">
               {log.entity_type} &middot; {log.entity_id.slice(0, 8)}
             </p>
           </div>
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-ink/40 mb-1">
+            <span className="label-pill label-pill-light mb-1 inline-block">
               Actor
-            </p>
+            </span>
             <p className="font-mono text-sm text-ink">
               {log.actor?.name ?? "System"}
             </p>
           </div>
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-ink/40 mb-1">
+            <span className="label-pill label-pill-light mb-1 inline-block">
               Timestamp
-            </p>
+            </span>
             <p className="font-mono text-sm text-ink">
               {new Date(log.created_at).toLocaleString()}
             </p>
@@ -202,7 +204,7 @@ function DiffModal({
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="font-mono text-xs uppercase tracking-widest text-ink/40">
+            <p className="label-pill label-pill-light">
               Changes ({changedFields.length} field
               {changedFields.length !== 1 ? "s" : ""})
             </p>
@@ -498,15 +500,14 @@ export default function AuditLogsPage() {
         <div className="flex-1" />
 
         {/* Export button */}
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           onClick={handleExportCsv}
           disabled={logs.length === 0}
-          className="flex items-center gap-2 px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
         >
           <Download className="w-4 h-4" />
           Export CSV
-        </button>
+        </Button>
       </div>
 
       {/* Content */}
@@ -548,14 +549,13 @@ export default function AuditLogsPage() {
 
               {/* View detail button */}
               {(log.old_values || log.new_values) && (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
                   onClick={() => handleSelectLog(log)}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-mono uppercase tracking-widest text-ink/40 hover:text-ink/70 hover:bg-ink/[0.04] transition-colors"
                 >
                   <Eye className="w-3.5 h-3.5" />
                   Diff
-                </button>
+                </Button>
               )}
             </div>
           ))}
@@ -579,20 +579,20 @@ export default function AuditLogsPage() {
             Page {page} of {lastPage}
           </p>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
             >
               <ChevronLeft className="w-4 h-4" /> Prev
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
               onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
               disabled={page >= lastPage}
-              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
             >
               Next <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       )}

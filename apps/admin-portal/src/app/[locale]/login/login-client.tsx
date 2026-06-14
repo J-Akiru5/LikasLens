@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "@/lib/auth";
-import { showToast } from "@likaslens/shared";
+import { showToast, Button } from "@likaslens/shared";
 import { Leaf, Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
 
 export function LoginClient() {
@@ -110,19 +110,21 @@ export function LoginClient() {
             </div>
           </div>
 
-          <button
+          <Button
+            variant="primary"
+            size="xl"
             type="submit"
-            disabled={loading}
-            className="w-full bg-accent text-white rounded-lg py-4 font-semibold tracking-wide text-lg flex items-center justify-center gap-2 hover:bg-accent/90 disabled:opacity-50 transition-colors"
+            loading={loading}
+            className="w-full"
           >
             {loading ? (
-              <span className="animate-pulse">Logging in...</span>
+              "Logging in..."
             ) : (
               <>
                 Log In <ArrowRight className="w-5 h-5" />
               </>
             )}
-          </button>
+          </Button>
         </form>
 
         {/* Footer links */}

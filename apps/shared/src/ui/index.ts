@@ -11,6 +11,7 @@ export {
 } from "./card";
 export type { TrackStatus } from "./card";
 export { Button } from "./button";
+export type { ButtonProps } from "./button";
 export * from "./chat/likasy-chat";
 export { ToastContainer, showToast } from "./toast";
 export { OfflineBanner } from "./offline-banner";

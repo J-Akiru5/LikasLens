@@ -72,8 +72,8 @@ export function DashboardLayout({
           children={headerChildren}
         />
 
-        <main className="flex-1 overflow-y-auto px-4 sm:px-8 lg:px-12 pb-20 lg:pb-12">
-          <div className="max-w-[1440px] mx-auto pt-2">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-8 lg:px-12 pb-20 lg:pb-12">
+          <div className="max-w-[1440px] w-full mx-auto pt-2">
             {children}
           </div>
         </main>

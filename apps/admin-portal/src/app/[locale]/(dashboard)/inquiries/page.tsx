@@ -1,9 +1,11 @@
+// apps/admin-portal/src/app/[locale]/(dashboard)/inquiries/page.tsx
+// Phase 6 sub-page sweep: Mark Read button -> Button
 "use client";
 
 import { useEffect, useState } from "react";
 import { laravelGet, laravelPatch } from "@likaslens/shared";
 import type { PaginatedResponse, ApiResponse } from "@likaslens/shared";
-import { showToast, AdminTableSkeleton, EmptyState } from "@likaslens/shared";
+import { showToast, AdminTableSkeleton, EmptyState, Button } from "@likaslens/shared";
 import { ChevronLeft, ChevronRight, Mail, User, Clock, CheckCircle2 } from "lucide-react";
 
 interface ContactMessage {
@@ -106,7 +108,7 @@ export default function InquiriesPage() {
                     </div>
 
                     {msg.status === "unread" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-green/10 text-green font-mono text-[10px] font-bold uppercase tracking-widest">
+                      <span className="label-pill label-pill-light inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-green/10 text-green font-mono text-[10px] font-bold uppercase tracking-widest">
                         New
                       </span>
                     )}
@@ -119,13 +121,10 @@ export default function InquiriesPage() {
 
                 <div className="shrink-0 flex items-center justify-end">
                   {msg.status === "unread" ? (
-                    <button
-                      onClick={() => markAsRead(msg.id)}
-                      className="px-4 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-xs text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors flex items-center gap-2"
-                    >
+                    <Button variant="secondary" onClick={() => markAsRead(msg.id)}>
                       <CheckCircle2 className="w-4 h-4" />
                       Mark Read
-                    </button>
+                    </Button>
                   ) : (
                     <span className="inline-flex items-center gap-2 font-mono text-xs text-ink/40">
                       <CheckCircle2 className="w-4 h-4" />

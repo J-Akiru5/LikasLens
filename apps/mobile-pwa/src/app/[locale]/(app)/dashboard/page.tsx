@@ -84,7 +84,7 @@ export default function DashboardPage() {
       <div className="px-6 mb-4">
         <Link
           href={`/${locale}/report?quick=true`}
-          className="flex items-center justify-center gap-3 w-full h-14 rounded-2xl bg-green text-white font-bold text-sm shadow-lg shadow-green/20 hover:bg-green/90 hover:shadow-green/30 active:scale-[0.98] transition-all"
+          className="flex items-center justify-center gap-3 w-full h-14 rounded-full bg-accent text-white font-bold text-sm shadow-lg hover:-translate-y-px hover:shadow-[0_12px_32px_-12px_color-mix(in_oklab,var(--accent)_22%,transparent)] active:scale-[0.98] transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         >
           <Camera className="w-5 h-5" />
           Quick Report
@@ -102,10 +102,10 @@ export default function DashboardPage() {
             { href: `/${locale}/wallet`, icon: Gift, label: "Wallet" },
           ].map((item) => (
             <Link key={item.label} href={item.href} className="flex flex-col items-center gap-2 flex-1 group">
-              <div className="w-11 h-11 rounded-xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all group-hover:bg-green group-hover:text-page">
+              <div className="w-11 h-11 rounded-xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all duration-200 ease-out group-hover:bg-accent group-hover:text-page group-focus-visible:ring-2 group-focus-visible:ring-accent group-focus-visible:ring-offset-2">
                 <item.icon className="w-5 h-5" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/60 group-hover:text-ink">{item.label}</span>
+              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/60 group-hover:text-ink transition-colors">{item.label}</span>
             </Link>
           ))}
         </div>

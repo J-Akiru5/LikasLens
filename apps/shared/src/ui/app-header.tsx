@@ -80,16 +80,16 @@ export function AppHeader({
     >
       <div className="flex items-center gap-4">
         {pageTitle ? (
-          <div>
-            <h1 className="font-semibold tracking-tight text-lg sm:text-xl text-ink">
+          <div className="min-w-0 flex-1">
+            <h1 className="font-semibold tracking-tight text-base sm:text-xl text-ink truncate">
               {pageTitle}
             </h1>
             {pageSubtitle && (
-              <p className="text-xs font-mono text-ink/50 mt-0.5 tracking-wide">{pageSubtitle}</p>
+              <p className="text-[10px] sm:text-xs font-mono text-ink/50 mt-0.5 tracking-wide truncate">{pageSubtitle}</p>
             )}
           </div>
         ) : greeting ? (
-          <h1 className="font-semibold tracking-tight text-lg sm:text-xl text-ink">
+          <h1 className="font-semibold tracking-tight text-sm sm:text-xl text-ink truncate max-w-[60vw] sm:max-w-none">
             Welcome back, <span className="text-green">{greeting}</span>
           </h1>
         ) : showBranding ? (
@@ -171,7 +171,7 @@ export function AppHeader({
                 <span
                   className={cn(
                     "absolute top-1 right-1.5 min-w-[16px] h-[16px] px-1 rounded-full border-2 border-page flex items-center justify-center text-[9px] font-bold",
-                    isGhostMode ? "bg-[#2EE6C8] text-ink" : "bg-red text-white",
+                    isGhostMode ? "bg-accent-bright text-ink" : "bg-red text-white",
                   )}
                   aria-hidden="true"
                 >

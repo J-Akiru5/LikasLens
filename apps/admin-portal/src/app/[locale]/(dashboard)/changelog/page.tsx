@@ -1,3 +1,5 @@
+// apps/admin-portal/src/app/[locale]/(dashboard)/changelog/page.tsx
+// Phase 6 sub-page sweep: section labels already styled; no CTAs/KPIs
 import { getChangelog } from "@/lib/changelog";
 import { ScrollText } from "lucide-react";
 
@@ -45,10 +47,12 @@ export default function AdminChangelogPage() {
               {Object.entries(version.entries).map(([section, entries]) => (
                 <div key={section}>
                   <div className="flex items-center gap-3 mb-3">
-                    <span className={`inline-block px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest rounded-full ${
-                      SECTION_COLORS[section] || "bg-ink/[0.04] text-ink/60"
-                    }`}>
-                      {section}
+                    <span className="label-pill label-pill-light inline-block">
+                      <span className={`inline-block px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest rounded-full ${
+                        SECTION_COLORS[section] || "bg-ink/[0.04] text-ink/60"
+                      }`}>
+                        {section}
+                      </span>
                     </span>
                     <div className="flex-1 h-px bg-ink/5" />
                   </div>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, BarChart3, TrendingUp, Users, Map } from "lucide-react";
-import { laravelGet, showToast, Skeleton } from "@likaslens/shared";
+import { laravelGet, showToast, Skeleton, cn } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse } from "@likaslens/shared";
 
 export default function AnalyticsPage() {
@@ -64,21 +64,21 @@ export default function AnalyticsPage() {
 
       <div className="p-4 space-y-4 mt-2">
         <div className="grid grid-cols-2 gap-4">
-          <div className="bg-panel p-5 rounded-3xl border border-ink/5 flex flex-col gap-2 shadow-sm">
+          <div className="kpi-card kpi-accent-green rounded-3xl border border-border bg-panel p-5 flex flex-col gap-2 shadow-sm">
             <div className="w-10 h-10 rounded-2xl bg-green/10 flex items-center justify-center">
               <BarChart3 className="w-5 h-5 text-green" />
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-2">Total Reports</span>
-            <span className="text-3xl font-bold text-ink tracking-tighter">
+            <span className="label-pill label-pill-light mt-2">Total Reports</span>
+            <span className="text-3xl font-bold text-ink tracking-tighter tabular-nums">
               {stats?.total_reports?.toLocaleString() ?? "\u2014"}
             </span>
           </div>
-          <div className="bg-panel p-5 rounded-3xl border border-ink/5 flex flex-col gap-2 shadow-sm">
+          <div className="kpi-card kpi-accent-amber rounded-3xl border border-border bg-panel p-5 flex flex-col gap-2 shadow-sm">
             <div className="w-10 h-10 rounded-2xl bg-amber/10 flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-amber" />
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-2">Resolution Rate</span>
-            <span className="text-3xl font-bold text-ink tracking-tighter">
+            <span className="label-pill label-pill-light mt-2">Resolution Rate</span>
+            <span className="text-3xl font-bold text-ink tracking-tighter tabular-nums">
               {stats?.resolved_today_progress != null ? `${stats.resolved_today_progress}%` : "\u2014"}
             </span>
           </div>
@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
            </div>
         </div>
 
-        <div className="bg-panel p-6 rounded-[2rem] border border-ink/5 shadow-sm mt-4 text-center">
+        <div className="kpi-card kpi-accent-muted rounded-[2rem] border border-border bg-panel p-6 shadow-sm mt-4 text-center">
            <div className="w-16 h-16 rounded-full bg-ink/5 flex items-center justify-center mx-auto mb-4">
              <Map className="w-8 h-8 text-ink/40" />
            </div>

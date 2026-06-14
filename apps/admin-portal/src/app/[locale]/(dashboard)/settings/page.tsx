@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { showToast } from "@likaslens/shared";
+import { showToast, Button } from "@likaslens/shared";
 import {
   Globe,
   Bell,
@@ -368,7 +368,7 @@ function DevelopersSection() {
           </div>
           <h2 className="font-semibold tracking-tight text-2xl text-ink">Personal Access Tokens</h2>
         </div>
-        
+
         {generatedToken && (
           <div className="mb-6 p-4 rounded-xl border border-green/30 bg-green/5 text-sm">
             <p className="font-medium text-ink mb-2">Save this token now. It will not be shown again.</p>
@@ -387,20 +387,21 @@ function DevelopersSection() {
         )}
 
         <div className="flex gap-4 mb-8">
-          <input 
-            type="text" 
-            placeholder="Token name (e.g., IoT Device 1)" 
+          <input
+            type="text"
+            placeholder="Token name (e.g., IoT Device 1)"
             value={newTokenName}
             onChange={(e) => setNewTokenName(e.target.value)}
-            className="flex-1 p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20" 
+            className="flex-1 p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20"
           />
-          <button 
+          <Button
+            variant="primary"
+            type="button"
             onClick={generateToken}
             disabled={!newTokenName.trim()}
-            className="px-6 py-3 bg-ink text-white rounded-xl font-semibold text-sm hover:bg-ink/90 disabled:opacity-50 transition-colors"
           >
             Generate Token
-          </button>
+          </Button>
         </div>
 
         <div className="space-y-3">
@@ -464,18 +465,18 @@ export default function SettingsPage() {
           <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Settings</h1>
           <p className="font-mono text-base text-muted mt-1">System configuration</p>
         </div>
-        <button
+        <Button
+          variant="primary"
           type="button"
           onClick={handleSave}
-          disabled={saving}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-green hover:bg-green/90 disabled:bg-green/50 text-ink rounded-xl font-semibold text-sm transition-colors"
+          loading={saving}
         >
           {saved ? <Check size={16} /> : <Save size={16} />}
           {saving ? "Saving..." : saved ? "Saved" : "Save Settings"}
-        </button>
+        </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

@@ -1,3 +1,5 @@
+// apps/admin-portal/src/app/[locale]/(dashboard)/analytics/page.tsx
+// Phase 6 sub-page sweep: KPI tiles + eyebrows
 "use client";
 import { useEffect, useState } from "react";
 import { getTickets, EmptyState } from "@likaslens/shared";
@@ -69,6 +71,7 @@ export default function AnalyticsPage() {
       icon: BarChart3,
       iconBg: "bg-ink/[0.04]",
       iconColor: "text-ink/60",
+      accent: "muted" as const,
     },
     {
       label: "Resolution Rate",
@@ -76,6 +79,7 @@ export default function AnalyticsPage() {
       icon: TrendingUp,
       iconBg: "bg-green/10",
       iconColor: "text-green",
+      accent: "green" as const,
     },
     {
       label: "Pending",
@@ -83,6 +87,7 @@ export default function AnalyticsPage() {
       icon: TrendingDown,
       iconBg: "bg-amber/10",
       iconColor: "text-amber",
+      accent: "amber" as const,
     },
   ];
 
@@ -97,13 +102,13 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
             <div
               key={kpi.label}
-              className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5"
+              className={`kpi-card rounded-3xl p-6 shadow-sm border border-ink/5 kpi-accent-${kpi.accent}`}
             >
               <div className="flex items-center gap-4">
                 <div
@@ -112,10 +117,10 @@ export default function AnalyticsPage() {
                   <Icon className={`w-6 h-6 ${kpi.iconColor}`} />
                 </div>
                 <div>
-                  <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
+                  <span className="label-pill label-pill-light">
                     {kpi.label}
-                  </p>
-                  <p className="font-semibold tracking-tight text-3xl text-ink">
+                  </span>
+                  <p className="font-semibold tracking-tight text-3xl text-ink mt-1">
                     {kpi.value}
                   </p>
                 </div>
@@ -128,7 +133,7 @@ export default function AnalyticsPage() {
       <div className="grid gap-8 lg:grid-cols-2">
         <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-6">
-            Tickets by Status
+            <span className="label-pill label-pill-light">Tickets by Status</span>
           </h3>
           {Object.keys(statusCounts).length === 0 ? (
             <EmptyState
@@ -164,7 +169,7 @@ export default function AnalyticsPage() {
 
         <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-6">
-            Ticket List
+            <span className="label-pill label-pill-light">Ticket List</span>
           </h3>
           {tickets.length === 0 ? (
             <EmptyState
