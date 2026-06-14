@@ -40,7 +40,7 @@ export function PublicScoreboard() {
         return;
       }
       const body = await res.json();
-      const tickets: unknown[] = Array.isArray(body?.data) ? body.data : [];
+      const tickets = Array.isArray(body?.data) ? body.data : [];
       setRows(
         tickets.map((t: Record<string, unknown>, i: number) => ({
           rank: i + 1,
