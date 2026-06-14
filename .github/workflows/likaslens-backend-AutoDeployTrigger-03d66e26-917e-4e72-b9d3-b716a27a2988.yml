@@ -25,6 +25,10 @@ jobs:
       - name: Checkout to the branch
         uses: actions/checkout@v4
 
+      - name: Set lowercase owner
+        id: vars
+        run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -41,4 +45,4 @@ jobs:
           registryPassword: ${{ secrets.GITHUB_TOKEN }}
           containerAppName: likaslens-backend
           resourceGroup: likaslens
-          imageToBuild: ghcr.io/${{ lower(github.repository_owner) }}/likaslens/likaslens-backend:${{ github.sha }}
+          imageToBuild: ghcr.io/${{ steps.vars.outputs.owner }}/likaslens/likaslens-backend:${{ github.sha }}
