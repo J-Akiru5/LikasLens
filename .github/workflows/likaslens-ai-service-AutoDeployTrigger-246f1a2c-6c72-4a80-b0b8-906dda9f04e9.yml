@@ -36,6 +36,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set lowercase owner
+        id: vars
+        run: echo "owner=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
       - name: Build container for security scan
         run: docker build -t likaslens-ai-service:scan apps/ai-service
 
@@ -71,4 +75,4 @@ jobs:
           registryPassword: ${{ secrets.GITHUB_TOKEN }}
           containerAppName: likaslens-ai-service
           resourceGroup: likaslens
-          imageToBuild: ghcr.io/${{ github.repository }}/likaslens-ai-service:${{ github.sha }}
+          imageToBuild: ghcr.io/${{ steps.vars.outputs.owner }}/likaslens/likaslens-ai-service:${{ github.sha }}
