@@ -93,7 +93,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
         if (!ticketsData) return;
         const meta = ticketsData?.meta;
         const tickets: Array<{ status: string; created_at: string; resolved_at?: string }> =
-          ticketsData?.data ?? [];
+          (ticketsData?.data ?? []) as Array<{ status: string; created_at: string; resolved_at?: string }>;
         const total: number = meta?.total ?? tickets.length;
         const resolved = tickets.filter((t) => t.status?.toLowerCase() === "resolved").length;
         const active = tickets.filter(
