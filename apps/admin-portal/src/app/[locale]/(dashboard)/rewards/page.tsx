@@ -78,7 +78,7 @@ export default function RewardsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
             Rewards Catalog
           </h1>
           <p className="font-mono text-base text-muted mt-1">
@@ -98,7 +98,7 @@ export default function RewardsPage() {
           {rewards.map((reward) => (
             <div
               key={reward.id}
-              className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02]"
+              className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02]"
             >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center shrink-0">
@@ -177,7 +177,7 @@ export default function RewardsPage() {
           onClick={() => setShowCreate(false)}
         >
           <div
-            className="bg-panel p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
+            className="bg-panel p-4 sm:p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button

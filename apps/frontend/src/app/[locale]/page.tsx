@@ -2,14 +2,32 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
+import { LazyMotion, domAnimation } from "framer-motion";
 import { Footer } from "@/components/layout/footer";
 import { PartnerCarousel, FaqSection, LanguageSuggestionPopup } from "@likaslens/shared";
 import { HeroSection } from "@/components/marketing/sections/hero-section";
-import { HowItWorksSection } from "@/components/marketing/sections/how-it-works-section";
-import { GhostModeSection } from "@/components/marketing/sections/ghost-mode-section";
-import { ScoreboardSection } from "@/components/marketing/sections/scoreboard-section";
-import { ImpactSection } from "@/components/marketing/sections/impact-section";
-import { InstallCtaSection } from "@/components/marketing/sections/install-cta-section";
+
+const HowItWorksSection = dynamic(
+  () => import("@/components/marketing/sections/how-it-works-section").then((m) => m.HowItWorksSection),
+  { ssr: false }
+);
+const GhostModeSection = dynamic(
+  () => import("@/components/marketing/sections/ghost-mode-section").then((m) => m.GhostModeSection),
+  { ssr: false }
+);
+const ScoreboardSection = dynamic(
+  () => import("@/components/marketing/sections/scoreboard-section").then((m) => m.ScoreboardSection),
+  { ssr: false }
+);
+const ImpactSection = dynamic(
+  () => import("@/components/marketing/sections/impact-section").then((m) => m.ImpactSection),
+  { ssr: false }
+);
+const InstallCtaSection = dynamic(
+  () => import("@/components/marketing/sections/install-cta-section").then((m) => m.InstallCtaSection),
+  { ssr: false }
+);
 
 /**
  * LikasLens Landing Page — modular, theme-aware, award-winning.
@@ -66,20 +84,22 @@ export default function Home() {
   }, [ghostMode]);
 
   return (
-    <main
-      className="relative min-h-dvh"
-      style={{ background: "var(--page)", color: "var(--ink)" }}
-    >
-      <HeroSection ghostMode={ghostMode} onGhostToggle={() => setGhostMode(!ghostMode)} />
-      <PartnerCarousel />
-      <HowItWorksSection />
-      <GhostModeSection ghostMode={ghostMode} onGhostToggle={() => setGhostMode(!ghostMode)} />
-      <ScoreboardSection />
-      <ImpactSection />
-      <FaqSection />
-      <InstallCtaSection ghostMode={ghostMode} />
-      <Footer ghostMode={ghostMode} />
-      <LanguageSuggestionPopup currentLocale={locale as "en" | "fil" | "vi" | "id" | "ms" | "ta"} />
-    </main>
+    <LazyMotion features={domAnimation}>
+      <main
+        className="relative min-h-dvh"
+        style={{ background: "var(--page)", color: "var(--ink)" }}
+      >
+        <HeroSection ghostMode={ghostMode} onGhostToggle={() => setGhostMode(!ghostMode)} />
+        <PartnerCarousel />
+        <HowItWorksSection />
+        <GhostModeSection ghostMode={ghostMode} onGhostToggle={() => setGhostMode(!ghostMode)} />
+        <ScoreboardSection />
+        <ImpactSection />
+        <FaqSection />
+        <InstallCtaSection ghostMode={ghostMode} />
+        <Footer ghostMode={ghostMode} />
+        <LanguageSuggestionPopup currentLocale={locale as "en" | "fil" | "vi" | "id" | "ms" | "ta"} />
+      </main>
+    </LazyMotion>
   );
 }

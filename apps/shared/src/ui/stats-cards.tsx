@@ -15,7 +15,7 @@ export interface StatCardItem {
   sparkline?: number[];
   /** category chip text */
   category?: string;
-  icon?: React.ReactNode;
+  icon?: React.ElementType | React.ReactNode;
   accent?: Accent;
 }
 
@@ -45,6 +45,27 @@ const trendColor: Record<NonNullable<StatCardItem["trend"]>, string> = {
   flat: "text-muted",
 };
 
+const bgIconColor: Record<Accent, string> = {
+  green: "text-green",
+  amber: "text-amber",
+  accent: "text-accent",
+  muted: "text-muted",
+};
+
+const bgTintClass: Record<Accent, string> = {
+  green: "bg-green/[0.02] hover:bg-green/[0.04]",
+  amber: "bg-amber-500/[0.02] hover:bg-amber-500/[0.04]",
+  accent: "bg-accent/[0.02] hover:bg-accent/[0.04]",
+  muted: "bg-panel",
+};
+
+const valueColorClass: Record<Accent, string> = {
+  green: "text-green",
+  amber: "text-amber-600",
+  accent: "text-accent",
+  muted: "text-ink",
+};
+
 function MiniSparkline({ points, color }: { points: number[]; color: string }) {
   if (!points.length) return null;
   const w = 80;
@@ -69,39 +90,59 @@ function MiniSparkline({ points, color }: { points: number[]; color: string }) {
 
 export function StatsCards({ items, className, gridClassName }: StatsCardsProps) {
   return (
-    <div className={cn("grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4", gridClassName, className)}>
+    <div className={cn("grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-4", gridClassName, className)}>
       {items.map((item) => {
         const accent = item.accent ?? "accent";
         return (
           <div
             key={item.id}
             className={cn(
-              "kpi-card",
+              "kpi-card group",
               accentClass[accent],
-              "relative flex flex-col gap-3 rounded-2xl border border-border bg-panel p-5 transition-shadow duration-200 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklab,var(--accent)_18%,transparent)]"
+              bgTintClass[accent],
+              "relative flex flex-col gap-3 rounded-2xl border border-border p-3 sm:p-4 transition-colors duration-300 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklab,var(--accent)_18%,transparent)]"
             )}
           >
-            <div className="flex items-start justify-between gap-2">
-              {item.icon ? (
-                <span className="label-pill label-pill-light inline-flex items-center gap-1.5">
-                  {item.icon}
-                  {item.category ? <span>{item.category}</span> : null}
+            {/* Semantic Background Icon */}
+            {item.icon ? (
+              <div 
+                className={cn(
+                  "absolute right-0 bottom-0 translate-x-2 translate-y-2 sm:translate-x-4 sm:translate-y-4 transition-all duration-500 pointer-events-none group-hover:scale-110",
+                  bgIconColor[accent]
+                )}
+                style={{ opacity: 0.05 }}
+              >
+                {React.isValidElement(item.icon) 
+                  ? React.cloneElement(item.icon as React.ReactElement, { className: "w-16 h-16 sm:w-28 sm:h-28" } as any) 
+                  : React.createElement(item.icon as any, { className: "w-16 h-16 sm:w-28 sm:h-28" })
+                }
+              </div>
+            ) : null}
+            
+            {/* Top row: Label */}
+            <div className="flex items-start justify-between gap-2 relative z-10 mb-2 sm:mb-3">
+              {item.category ? (
+                <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40">
+                  {item.category}
                 </span>
-              ) : item.category ? (
-                <span className="label-pill label-pill-light">{item.category}</span>
               ) : (
-                <span />
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40">{item.label}</span>
+                </div>
               )}
               {item.sparkline ? (
                 <MiniSparkline points={item.sparkline} color={sparklineColor[accent]} />
               ) : null}
             </div>
 
-            <div className="text-3xl font-semibold text-ink tracking-tight tabular-nums">
+            <div className={cn(
+              "text-2xl sm:text-3xl font-bold tracking-tight tabular-nums relative z-10",
+              valueColorClass[accent]
+            )}>
               {item.value}
             </div>
 
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 relative z-10">
               <span className="text-xs font-mono uppercase tracking-wider text-muted">
                 {item.label}
               </span>

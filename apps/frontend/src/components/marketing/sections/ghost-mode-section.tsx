@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Fingerprint, Eye, ShieldCheck, CheckCircle, Camera } from "lucide-react";
 
 interface GhostModeSectionProps {
@@ -112,7 +112,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
             {ghostMode && (
               <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse at center, rgba(250,204,21,0.08) 0%, transparent 70%)" }} />
             )}
-            <motion.div
+            <m.div
               key={ghostMode ? "ghost" : "normal"}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -122,7 +122,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
               {ghostMode ? (
                 <>
                   <div style={{ position: "relative", display: "inline-block", overflow: "hidden", padding: 12 }}>
-                    <motion.div
+                    <m.div
                       animate={{
                         x: [0, -2, 2, 0, 0, 0, 0, 0],
                         opacity: [1, 0.3, 1, 1, 1, 1, 1, 1],
@@ -136,8 +136,8 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                       transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                     >
                       <Fingerprint style={{ width: 96, height: 96, color: "var(--ghost-accent)" }} />
-                    </motion.div>
-                    <motion.div
+                    </m.div>
+                    <m.div
                       animate={{ top: ["-20%", "120%"] }}
                       transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 0.5 }}
                       style={{
@@ -175,7 +175,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                   </div>
                 </>
               )}
-            </motion.div>
+            </m.div>
           </div>
         </div>
       </div>

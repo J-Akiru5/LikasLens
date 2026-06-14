@@ -188,8 +188,8 @@
     .span-3, .span-4, .span-5 { grid-column: span 6; }
 }
 @media (max-width: 640px) {
-    .span-3, .span-4, .span-5 { grid-column: span 6; }
-    .span-6, .span-7, .span-8, .span-9, .span-12 { grid-column: span 12; }
+    /* Make all bento panels full width on mobile */
+    .span-3, .span-4, .span-5, .span-6, .span-7, .span-8, .span-9, .span-12 { grid-column: span 12; }
 }
 
 /* ───────────────────────────────────────────────────────────────────────────

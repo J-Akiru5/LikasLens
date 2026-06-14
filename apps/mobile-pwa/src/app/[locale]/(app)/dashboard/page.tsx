@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { DashboardSkeleton, laravelGet, getDashboardFeed, showToast, EmptyFeed, PartnerCarousel } from "@likaslens/shared";
+import { DashboardSkeleton, laravelGet, getDashboardFeed, showToast, EmptyFeed, PartnerCarousel, RevealSection } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/shared";
 import { Camera, AlertTriangle, Scale, Activity, Zap, TrendingUp, Award, Gift, ChevronRight } from "lucide-react";
 
@@ -112,6 +112,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── My Impact Card ⭐ NEW ──────────────────────────── */}
+      <RevealSection>
       <div className="px-6 mb-6">
         <div className="bg-panel rounded-2xl p-5 border border-ink/5">
           <div className="flex items-center justify-between mb-4">
@@ -139,6 +140,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      </RevealSection>
 
       {/* ── Partner Offers Carousel ⭐ NEW ─────────────────── */}
       <div className="px-6 mb-6">
@@ -168,6 +170,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Recent Activity ────────────────────────────────── */}
+      <RevealSection>
       <div className="px-6 space-y-4">
         <div className="flex justify-between items-end">
           <h2 className="font-bold text-sm text-ink flex items-center gap-2">
@@ -210,6 +213,7 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+      </RevealSection>
     </div>
   );
 }

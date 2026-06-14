@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sidebar, type NavItem } from "./sidebar";
 import { AppHeader } from "./app-header";
+import { MobileHeader } from "./mobile-header";
 import { BottomNav, type BottomNavItem } from "./bottom-nav";
 import { RouteProgress } from "./route-progress";
 import { cn } from "../utils";
@@ -61,14 +62,19 @@ export function DashboardLayout({
       />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-page lg:my-4 lg:mr-4 lg:ml-0 lg:rounded-[2.5rem] lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative z-10 transition-all duration-300">
+        <MobileHeader
+          isGhostMode={isGhostMode}
+          onThemeToggle={onThemeToggle}
+          onMobileMenuToggle={() => setMobileSidebarOpen(true)}
+        />
+
         <AppHeader
           greeting={greeting}
           pageTitle={pageTitle}
           pageSubtitle={pageSubtitle}
-          showBranding={showBranding}
+          showBranding={false}
           isGhostMode={isGhostMode}
           onThemeToggle={onThemeToggle}
-          onMobileMenuToggle={() => setMobileSidebarOpen(true)}
           children={headerChildren}
         />
 

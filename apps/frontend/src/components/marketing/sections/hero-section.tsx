@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  motion,
+  m,
   useScroll,
   useMotionValueEvent,
   useTransform,
@@ -87,32 +87,14 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
   useEffect(() => {
     async function fetchMetrics() {
       try {
-        const [ticketsData] = await Promise.all([
-          laravelGet<{ success: boolean; data: Array<{ status: string; created_at: string; resolved_at?: string }>; meta?: { total: number } }>("/tickets?per_page=50").catch(() => null),
-        ]);
-        if (!ticketsData) return;
-        const meta = ticketsData?.meta;
-        const tickets: Array<{ status: string; created_at: string; resolved_at?: string }> =
-          ticketsData?.data ?? [];
-        const total: number = meta?.total ?? tickets.length;
-        const resolved = tickets.filter((t) => t.status?.toLowerCase() === "resolved").length;
-        const active = tickets.filter(
-          (t) => !["resolved", "closed"].includes(t.status?.toLowerCase() ?? ""),
-        ).length;
-        const resolvedTickets = tickets.filter((t) => t.resolved_at && t.created_at);
-        let avgResponse = "—";
-        if (resolvedTickets.length > 0) {
-          const avgMs =
-            resolvedTickets.reduce((sum, t) => {
-              return sum + (new Date(t.resolved_at!).getTime() - new Date(t.created_at).getTime());
-            }, 0) / resolvedTickets.length;
-          const hours = Math.round(avgMs / 1000 / 60 / 60);
-          avgResponse = hours < 24 ? `${hours}h` : `${Math.round(hours / 24)}d`;
-        }
+        const statsData = await laravelGet<{ success: boolean; data: { active_incidents: number; resolved_today: number; avg_response_hours: number; total_reports: number } }>("/dashboard/stats").catch(() => null);
+        if (!statsData?.success) return;
+        const s = statsData.data;
+        const avgResponse = s.avg_response_hours < 24 ? `${Math.round(s.avg_response_hours)}h` : `${Math.round(s.avg_response_hours / 24)}d`;
         setLiveMetrics([
-          { label: "Total Reports", value: total.toLocaleString() },
-          { label: "Resolved", value: resolved.toLocaleString() },
-          { label: "Active Cases", value: active.toLocaleString() },
+          { label: "Total Reports", value: (s.total_reports ?? 0).toLocaleString() },
+          { label: "Resolved", value: (s.resolved_today ?? 0).toLocaleString() },
+          { label: "Active Cases", value: (s.active_incidents ?? 0).toLocaleString() },
           { label: "Avg Response", value: avgResponse },
         ]);
       } catch {
@@ -188,7 +170,8 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
       />
 
       {/* Navigation */}
-      <motion.nav
+      <m.nav
+        className={navScrolled ? "px-4 sm:px-6 py-3" : "px-4 sm:px-6 py-4 sm:py-5"}
         style={{
           position: "fixed",
           top: 0,
@@ -198,7 +181,6 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: navScrolled ? "12px 40px" : "20px 40px",
           background: navScrolled ? "rgba(22,52,34,0.92)" : "transparent",
           backdropFilter: navScrolled ? "blur(20px)" : "none",
           borderBottom: navScrolled ? "1px solid rgba(255,255,255,0.07)" : "none",
@@ -291,26 +273,23 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
           </button>
           <UserNav invert />
         </div>
-      </motion.nav>
+      </m.nav>
 
       {/* Hero Content */}
       <div
+        className="px-4 sm:px-8 pt-24 pb-20 w-full max-w-7xl mx-auto"
         style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          padding: "96px 32px 80px",
-          width: "100%",
         }}
       >
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left — Copy */}
-          <motion.div
+          <m.div
             variants={staggerContainer}
             initial="hidden"
             animate="show"
             style={{ display: "flex", flexDirection: "column", gap: 32 }}
           >
-            <motion.div variants={fadeUp}>
+            <m.div variants={fadeUp}>
               <span
                 style={{
                   display: "inline-flex",
@@ -337,10 +316,10 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 />
                 Civic Environmental Intelligence · 2026
               </span>
-            </motion.div>
+            </m.div>
 
-            <motion.div variants={fadeUp} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <motion.h1
+            <m.div variants={fadeUp} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <m.h1
                 variants={staggerContainer}
                 initial="hidden"
                 animate="show"
@@ -357,11 +336,11 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 }}
               >
                 {["The", "Environment", "Needs", "a"].map((word, i) => (
-                  <motion.span key={i} variants={wordAnimation} style={{ display: "inline-block" }}>
+                  <m.span key={i} variants={wordAnimation} style={{ display: "inline-block" }}>
                     {word}
-                  </motion.span>
+                  </m.span>
                 ))}
-                <motion.span
+                <m.span
                   variants={wordAnimation}
                   style={{
                     background: "linear-gradient(135deg, var(--accent-bright) 0%, #5aefb0 50%, #a8f5d0 100%)",
@@ -372,8 +351,8 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                   }}
                 >
                   Witness.
-                </motion.span>
-              </motion.h1>
+                </m.span>
+              </m.h1>
               <p
                 style={{
                   fontSize: 17,
@@ -387,10 +366,10 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 directly to government agencies through AI-powered
                 environmental reporting.
               </p>
-            </motion.div>
+            </m.div>
 
             {/* CTAs */}
-            <motion.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+            <m.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
               <MagneticButton pull={0.3}>
                 <Link
                   href="/report"
@@ -437,11 +416,11 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                   <BarChart3 style={{ width: 16, height: 16 }} /> See Public Records
                 </a>
               </MagneticButton>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
 
           {/* Right — Live Metrics Card */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.93, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
@@ -476,7 +455,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
               {/* Metrics */}
               <div style={{ display: "flex", flexDirection: "column" }}>
                 {liveMetrics.map((metric, idx) => (
-                  <motion.div
+                  <m.div
                     key={metric.label}
                     animate={{ opacity: idx === metricIndex ? 1 : 0.3 }}
                     transition={{ duration: 0.5 }}
@@ -502,7 +481,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                     >
                       {metric.value}
                     </span>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
 
@@ -516,7 +495,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                     <div key={step} style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ height: 6, borderRadius: 9999, background: "rgba(46,230,200,0.15)", overflow: "hidden" }}>
-                          <motion.div
+                          <m.div
                             style={{ height: "100%", borderRadius: 9999, background: "var(--accent-bright)" }}
                             initial={{ width: "0%" }}
                             animate={{ width: "100%" }}
@@ -554,12 +533,12 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 </button>
               </div>
             </div>
-          </motion.div>
+          </m.div>
         </div>
       </div>
 
       {/* Scroll Indicator */}
-      <motion.div
+      <m.div
         style={{
           position: "absolute", bottom: 80, left: "50%", transform: "translateX(-50%)",
           opacity: scrollOpacity, display: "flex", flexDirection: "column",
@@ -569,10 +548,10 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
         <span style={{ fontFamily: "monospace", fontSize: 10, color: "rgba(240,237,232,0.4)", textTransform: "uppercase", letterSpacing: "0.2em" }}>
           Scroll
         </span>
-        <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
+        <m.div animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}>
           <ArrowDown style={{ width: 16, height: 16, color: "var(--accent-bright)" }} />
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
 
       {/* Wave divider */}
       <div style={{ position: "absolute", bottom: -2, left: 0, right: 0, pointerEvents: "none", lineHeight: 0 }}>

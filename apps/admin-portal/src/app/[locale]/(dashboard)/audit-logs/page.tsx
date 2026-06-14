@@ -433,7 +433,7 @@ export default function AuditLogsPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+        <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
           Audit Logs
         </h1>
         <p className="font-mono text-base text-muted mt-1">

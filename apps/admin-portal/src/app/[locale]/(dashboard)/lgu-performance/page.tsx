@@ -185,11 +185,25 @@ export default function LguPerformancePage() {
       ]
     : [];
 
+  const bgTintClass: Record<string, string> = {
+    green: "bg-green/[0.02] hover:bg-green/[0.04]",
+    amber: "bg-amber-500/[0.02] hover:bg-amber-500/[0.04]",
+    accent: "bg-accent/[0.02] hover:bg-accent/[0.04]",
+    muted: "bg-ink/[0.02] hover:bg-ink/[0.04]",
+  };
+
+  const valueColorClass: Record<string, string> = {
+    green: "text-green",
+    amber: "text-amber-600",
+    accent: "text-accent",
+    muted: "text-ink",
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
             LGU Performance
           </h1>
           <p className="font-mono text-base text-muted mt-1">
@@ -212,9 +226,15 @@ export default function LguPerformancePage() {
           return (
             <div
               key={kpi.label}
-              className={`kpi-card rounded-3xl p-6 shadow-sm border border-ink/5 kpi-accent-${kpi.accent}`}
+              className={`kpi-card rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5 kpi-accent-${kpi.accent} ${bgTintClass[kpi.accent]} group transition-colors duration-300 relative overflow-hidden`}
             >
-              <div className="flex items-center gap-4">
+              <div 
+                className={`absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 ${kpi.iconColor.split('/')[0]}`}
+                style={{ opacity: 0.05 }}
+              >
+                <Icon className="w-24 h-24 sm:w-28 sm:h-28" />
+              </div>
+              <div className="flex items-center gap-4 relative z-10">
                 <div
                   className={`w-12 h-12 rounded-2xl ${kpi.iconBg} flex items-center justify-center`}
                 >
@@ -224,7 +244,7 @@ export default function LguPerformancePage() {
                   <span className="label-pill label-pill-light">
                     {kpi.label}
                   </span>
-                  <p className="font-semibold tracking-tight text-3xl text-ink mt-1">
+                  <p className={`font-semibold tracking-tight text-3xl mt-1 ${valueColorClass[kpi.accent]}`}>
                     {kpi.value}
                   </p>
                 </div>
@@ -236,7 +256,7 @@ export default function LguPerformancePage() {
 
       {/* Platform Average Benchmark Bar */}
       {platformAvg && (
-        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+        <div className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-4">
             <span className="label-pill label-pill-light">Platform Benchmarks</span>
           </h3>

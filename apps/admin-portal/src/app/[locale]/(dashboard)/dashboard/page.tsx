@@ -8,6 +8,7 @@ import {
   laravelGet,
   EmptyState,
   cn,
+  RevealSection,
 } from "@likaslens/shared";
 import type {
   DashboardStats,
@@ -146,6 +147,20 @@ export default function DashboardPage() {
     muted: "before:bg-muted",
   };
 
+  const bgTintClass: Record<typeof kpiTiles[number]["accent"], string> = {
+    green: "bg-green/[0.02] hover:bg-green/[0.04]",
+    amber: "bg-amber-500/[0.02] hover:bg-amber-500/[0.04]",
+    accent: "bg-accent/[0.02] hover:bg-accent/[0.04]",
+    muted: "bg-ink/[0.02] hover:bg-ink/[0.04]",
+  };
+
+  const valueColorClass: Record<typeof kpiTiles[number]["accent"], string> = {
+    green: "text-green",
+    amber: "text-amber-600",
+    accent: "text-accent",
+    muted: "text-ink",
+  };
+
   // Extract hotspots from analytics data
   const hotspots: { name: string; count: number }[] = analyticsData?.data?.hotspots
     ? analyticsData.data.hotspots.slice(0, 5)
@@ -156,7 +171,7 @@ export default function DashboardPage() {
       {/* ── Welcome Header ─────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="font-semibold tracking-tight text-3xl md:text-4xl text-ink">
+          <h1 className="font-semibold tracking-tight text-3xl md:text-3xl sm:text-4xl text-ink">
             {greeting}
           </h1>
           <p className="font-mono text-sm text-muted mt-1">{dateStr}</p>
@@ -172,6 +187,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Phase 5: Asymmetric KPI Grid (1 hero + 2 primary + 2 secondary) ── */}
+      <RevealSection stagger={0.06}>
       <div className={ADMIN_KPI_GRID}>
         {kpiTiles.map((kpi) => {
           const Icon = kpi.icon;
@@ -180,12 +196,22 @@ export default function DashboardPage() {
               key={kpi.id}
               className={cn(
                 kpi.span,
-                "kpi-card relative overflow-hidden rounded-2xl border border-border bg-panel p-5",
+                "kpi-card relative overflow-hidden rounded-2xl border border-border p-5 group transition-colors duration-300",
+                bgTintClass[kpi.accent],
                 "before:absolute before:left-0 before:right-0 before:top-0 before:h-0.5",
                 accentBarClass[kpi.accent]
               )}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div 
+                className={cn(
+                  "absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110",
+                  kpi.color
+                )}
+                style={{ opacity: 0.05 }}
+              >
+                <Icon className="w-24 h-24 sm:w-32 sm:h-32" />
+              </div>
+              <div className="flex items-start justify-between mb-3 relative z-10">
                 <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center`}>
                   <Icon className={`w-5 h-5 ${kpi.color}`} />
                 </div>
@@ -193,20 +219,22 @@ export default function DashboardPage() {
                   <Sparkline data={kpi.sparkline} width={64} height={32} color="var(--accent)" />
                 </div>
               </div>
-              <p className="font-mono text-[10px] text-ink/50 uppercase tracking-widest mb-1">
+              <p className="font-mono text-[10px] text-ink/50 uppercase tracking-widest mb-1 relative z-10">
                 {kpi.label}
               </p>
-              <p className="font-semibold tracking-tight text-2xl text-ink">
+              <p className={cn("font-semibold tracking-tight text-2xl relative z-10", valueColorClass[kpi.accent])}>
                 {kpi.value}
               </p>
             </div>
           );
         })}
       </div>
+      </RevealSection>
 
       {/* ── Activity + Tickets Side by Side ─────────────────── */}
+      <RevealSection>
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="bg-panel rounded-2xl p-6 border border-ink/5">
+        <div className="bg-panel rounded-2xl p-4 sm:p-6 border border-ink/5">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
               <LayoutDashboard className="w-4 h-4 text-ink/40" />
@@ -247,7 +275,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-panel rounded-2xl p-6 border border-ink/5">
+        <div className="bg-panel rounded-2xl p-4 sm:p-6 border border-ink/5">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
               <AlertTriangle className="w-4 h-4 text-ink/40" />
@@ -293,10 +321,12 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      </RevealSection>
 
       {/* ── Regional Hotspots ⭐ NEW ──────────────────────── */}
       {hotspots.length > 0 && (
-        <div className="bg-panel rounded-2xl p-6 border border-ink/5">
+        <RevealSection>
+        <div className="bg-panel rounded-2xl p-4 sm:p-6 border border-ink/5">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-red/10 flex items-center justify-center">
               <MapPin className="w-4 h-4 text-red" />
@@ -335,6 +365,7 @@ export default function DashboardPage() {
             })}
           </div>
         </div>
+        </RevealSection>
       )}
     </div>
   );

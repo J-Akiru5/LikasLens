@@ -462,7 +462,7 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Settings</h1>
+          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">Settings</h1>
           <p className="font-mono text-base text-muted mt-1">System configuration</p>
         </div>
         <Button
@@ -482,7 +482,7 @@ export default function SettingsPage() {
           const isActive = activeTab === tab.id;
           return (
             <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)}
-              className={`bg-panel rounded-3xl p-6 shadow-sm border text-left transition-all ${
+              className={`bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border text-left transition-all ${
                 isActive
                   ? "border-green/30 bg-green/[0.02]"
                   : "border-ink/5 hover:bg-ink/[0.02]"
@@ -511,7 +511,7 @@ export default function SettingsPage() {
         {activeTab === "developers" && <DevelopersSection />}
       </div>
 
-      <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+      <div className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
         <h3 className="font-semibold tracking-tight text-xl text-ink mb-4">System Information</h3>
         <div className="space-y-2 font-mono text-sm text-muted">
           <p>LikasLens Admin Portal v0.1.0</p>

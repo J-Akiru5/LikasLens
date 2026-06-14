@@ -175,7 +175,7 @@ export default function NgosPage() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
             NGOs
           </h1>
           <p className="font-mono text-base text-muted mt-1">
@@ -208,7 +208,7 @@ export default function NgosPage() {
       )}
 
       {showForm && (
-        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+        <div className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="rounded-xl border border-red/20 bg-red/5 p-3 font-mono text-sm text-red">
@@ -323,7 +323,7 @@ export default function NgosPage() {
                 <div
                   key={ngo.id}
                   onClick={() => bulk.toggle(ngo.id)}
-                  className={`bg-panel rounded-3xl p-6 shadow-sm border transition-all cursor-pointer relative ${
+                  className={`bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border transition-all cursor-pointer relative ${
                     bulk.isSelected(ngo.id)
                       ? "border-green/40 ring-2 ring-green/10"
                       : "border-ink/5 hover:scale-[1.02]"

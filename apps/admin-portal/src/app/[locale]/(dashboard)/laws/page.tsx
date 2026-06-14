@@ -129,7 +129,7 @@ export default function LawsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+        <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
           Environmental Laws
         </h1>
         <p className="font-mono text-base text-muted mt-1">
@@ -166,7 +166,7 @@ export default function LawsPage() {
             <div
               key={law.id}
               onClick={() => openDetail(law.id)}
-              className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer"
+              className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer"
             >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center shrink-0">
@@ -255,7 +255,7 @@ export default function LawsPage() {
           onClick={() => setShowCreate(false)}
         >
           <div
-            className="bg-panel p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
+            className="bg-panel p-4 sm:p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -379,7 +379,7 @@ export default function LawsPage() {
           onClick={() => setSelectedLaw(null)}
         >
           <div
-            className="bg-panel p-6 border border-ink/10 max-w-2xl w-full rounded-3xl shadow-xl relative"
+            className="bg-panel p-4 sm:p-6 border border-ink/10 max-w-2xl w-full rounded-3xl shadow-xl relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button

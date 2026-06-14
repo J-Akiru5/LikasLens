@@ -201,7 +201,7 @@ export default function TriagePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
             Triage
           </h1>
           <p className="font-mono text-base text-muted mt-1">
@@ -410,7 +410,7 @@ export default function TriagePage() {
           onClick={() => setClassifyTarget(null)}
         >
           <div
-            className="bg-panel p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
+            className="bg-panel p-4 sm:p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button

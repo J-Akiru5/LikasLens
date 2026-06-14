@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Smartphone, Download, Camera } from "lucide-react";
 
 interface InstallCtaSectionProps {
@@ -34,7 +34,7 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
 
   return (
     <section id="install-guide" className="max-w-7xl mx-auto px-6 lg:px-8 py-20 pb-32">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
@@ -159,7 +159,7 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </section>
   );
 }

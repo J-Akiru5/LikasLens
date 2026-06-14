@@ -61,7 +61,7 @@ export default function InquiriesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+        <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
           Inquiries
         </h1>
         <p className="font-mono text-base text-muted mt-1">
@@ -76,7 +76,7 @@ export default function InquiriesPage() {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`bg-panel rounded-3xl p-6 shadow-sm border transition-all ${
+              className={`bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border transition-all ${
                 msg.status === "unread"
                   ? "border-green/20 bg-green/[0.02]"
                   : "border-ink/5 opacity-70"

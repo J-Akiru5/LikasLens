@@ -24,7 +24,7 @@ export default function AdminChangelogPage() {
       <div>
         <div className="flex items-center gap-3">
           <ScrollText className="w-6 h-6 text-ink/40" />
-          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Changelog</h1>
+          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">Changelog</h1>
         </div>
         <p className="font-mono text-base text-muted mt-1">
           Track all changes, fixes, and improvements to LikasLens.
@@ -33,7 +33,7 @@ export default function AdminChangelogPage() {
 
       <div className="space-y-10">
         {versions.map((version) => (
-          <section key={version.version} className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+          <section key={version.version} className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
             <div className="flex items-baseline gap-4 mb-6">
               <h2 className="font-semibold tracking-tight text-2xl text-ink">
                 v{version.version}

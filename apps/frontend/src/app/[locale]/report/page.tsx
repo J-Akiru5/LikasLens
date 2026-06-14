@@ -417,7 +417,7 @@ export default function ReportPage() {
                 <MapPin className="w-4 h-4 text-ink/40" />
                 Location Data
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 <div className="border border-ink/10 p-4 space-y-2 rounded-lg">
                   <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Latitude</span>
                   <p className="font-mono text-lg text-ink">{latitude?.toFixed(6) ?? "\u2014"}</p>
@@ -526,7 +526,7 @@ export default function ReportPage() {
               </div>
             </label>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
               <button type="button" onClick={clearForm} aria-label="Clear form" className="py-3 border border-ink/10 text-sm text-ink/50 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                 Clear Form
               </button>

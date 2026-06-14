@@ -29,62 +29,60 @@ class AnalyticsController extends Controller
 
         // Fetch reports grouped by month
         $reports = Ticket::where('created_at', '>=', $startDate)
-            ->select(
-                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month_key"),
-                DB::raw('COUNT(*) as count')
-            )
-            ->groupBy('month_key')
-            ->get();
+            ->get()
+            ->groupBy(function($item) {
+                return Carbon::parse($item->created_at)->format('Y-m');
+            });
 
-        foreach ($reports as $report) {
-            if (isset($timeSeries[$report->month_key])) {
-                $timeSeries[$report->month_key]['reports'] = (int) $report->count;
+        foreach ($reports as $monthKey => $items) {
+            if (isset($timeSeries[$monthKey])) {
+                $timeSeries[$monthKey]['reports'] = $items->count();
             }
         }
 
         // Fetch resolved grouped by month
         $resolved = Ticket::whereNotNull('resolved_at')
             ->where('resolved_at', '>=', $startDate)
-            ->select(
-                DB::raw("DATE_FORMAT(resolved_at, '%Y-%m') as month_key"),
-                DB::raw('COUNT(*) as count')
-            )
-            ->groupBy('month_key')
-            ->get();
+            ->get()
+            ->groupBy(function($item) {
+                return Carbon::parse($item->resolved_at)->format('Y-m');
+            });
 
-        foreach ($resolved as $res) {
-            if (isset($timeSeries[$res->month_key])) {
-                $timeSeries[$res->month_key]['resolved'] = (int) $res->count;
+        foreach ($resolved as $monthKey => $items) {
+            if (isset($timeSeries[$monthKey])) {
+                $timeSeries[$monthKey]['resolved'] = $items->count();
             }
         }
 
         // 2. Province/Location Hotspots (simulating from address_text)
         $hotspots = Ticket::whereNotNull('address_text')
-            ->select(
-                DB::raw("SUBSTRING_INDEX(address_text, ',', -1) as region"),
-                DB::raw('COUNT(*) as incidents'),
-                DB::raw("SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved")
-            )
-            ->groupBy('region')
-            ->orderByDesc('incidents')
-            ->limit(6)
             ->get()
-            ->map(function ($item) {
+            ->groupBy(function($item) {
+                $parts = explode(',', $item->address_text);
+                return trim(end($parts));
+            })
+            ->map(function ($items, $region) {
+                $incidents = $items->count();
+                $resolved = $items->where('status', 'resolved')->count();
+                
                 // Determine risk based on unresolved incidents
-                $active = $item->incidents - $item->resolved;
+                $active = $incidents - $resolved;
                 if ($active > 10) $risk = 'critical';
                 elseif ($active > 5) $risk = 'high';
                 elseif ($active > 2) $risk = 'moderate';
                 else $risk = 'low';
 
                 return [
-                    'name' => trim($item->region),
-                    'incidents' => (int) $item->incidents,
-                    'resolved' => (int) $item->resolved,
-                    'score' => $item->incidents > 0 ? round(($item->resolved / $item->incidents) * 100) : 0,
+                    'name' => $region,
+                    'incidents' => $incidents,
+                    'resolved' => $resolved,
+                    'score' => $incidents > 0 ? round(($resolved / $incidents) * 100) : 0,
                     'risk' => $risk,
                 ];
-            });
+            })
+            ->sortByDesc('incidents')
+            ->take(6)
+            ->values();
 
         return response()->json([
             'success' => true,
