@@ -256,7 +256,8 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button
             onClick={onGhostToggle}
-            className="hidden sm:flex relative items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent"
+            aria-label={ghostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
+            className="hidden sm:flex relative items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--hero-bg)]"
             style={{
               background: ghostMode ? "rgba(46, 230, 200, 0.1)" : "rgba(240, 237, 232, 0.05)",
               border: ghostMode ? "1px solid rgba(46, 230, 200, 0.2)" : "1px solid rgba(240, 237, 232, 0.1)",
@@ -540,6 +541,8 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 </div>
                 <button
                   onClick={handleInstall}
+                  aria-label="Install LikasLens app"
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--hero-bg)]"
                   style={{
                     display: "flex", alignItems: "center", gap: 4,
                     background: "none", border: "none", cursor: "pointer",
@@ -547,7 +550,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                     color: "var(--accent-bright)", textDecoration: "underline",
                   }}
                 >
-                  <Download style={{ width: 12, height: 12 }} /> Install App
+                  <Download style={{ width: 12, height: 12 }} aria-hidden="true" /> Install App
                 </button>
               </div>
             </div>

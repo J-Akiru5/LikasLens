@@ -160,8 +160,8 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
               Environmental monitoring platform. Protecting communities through collective intelligence and decentralized action.
             </p>
             <div className="flex gap-4 mt-2">
-              <a href="https://github.com/J-Akiru5/LikasLens" target="_blank" rel="noreferrer" className={`w-10 h-10 rounded-full border ${borderColor} flex items-center justify-center ${mutedColor} hover:text-accent hover:border-accent hover:bg-accent/10 transition-all group`}>
-                <GitHubCatIcon className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+              <a href="https://github.com/J-Akiru5/LikasLens" target="_blank" rel="noreferrer" aria-label="LikasLens on GitHub" className={`w-10 h-10 rounded-full border ${borderColor} flex items-center justify-center ${mutedColor} hover:text-accent hover:border-accent hover:bg-accent/10 transition-all group`}>
+                <GitHubCatIcon className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" aria-hidden="true" />
               </a>
             </div>
           </div>

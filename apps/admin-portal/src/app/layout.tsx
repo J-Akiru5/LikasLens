@@ -49,7 +49,13 @@ export default async function RootLayout({
         </Script>
       </head>
       <body className="min-h-full bg-page font-body flex flex-col antialiased">
-        <div className="flex-1">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none"
+        >
+          Skip to main content
+        </a>
+        <div id="main-content" className="flex-1">
           {children}
         </div>
         <LikasyChat persona="admin" locale={locale} />

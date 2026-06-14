@@ -80,6 +80,8 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
 
             <button
               onClick={onGhostToggle}
+              aria-label={ghostMode ? "Deactivate Ghost Mode" : "Activate Ghost Mode"}
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
               style={{
                 alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 10,
                 marginTop: 24, padding: "12px 24px", borderRadius: 12, border: "none", cursor: "pointer",
@@ -93,9 +95,9 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
               }}
             >
               {ghostMode ? (
-                <><ShieldCheck style={{ width: 16, height: 16 }} /> Deactivate Ghost Mode</>
+                <><ShieldCheck style={{ width: 16, height: 16 }} aria-hidden="true" /> Deactivate Ghost Mode</>
               ) : (
-                <><Eye style={{ width: 16, height: 16 }} /> Activate Ghost Mode</>
+                <><Eye style={{ width: 16, height: 16 }} aria-hidden="true" /> Activate Ghost Mode</>
               )}
             </button>
           </div>

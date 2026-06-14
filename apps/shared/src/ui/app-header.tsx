@@ -113,10 +113,11 @@ export function AppHeader({
         {onMobileMenuToggle && (
           <button
             aria-label="Open navigation menu"
+            aria-expanded={false}
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 -mr-1 text-ink/50 hover:text-ink transition-colors"
+            className="lg:hidden p-2 -mr-1 text-ink/50 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5" aria-hidden="true" />
           </button>
         )}
 
@@ -124,8 +125,10 @@ export function AppHeader({
           {onThemeToggle && (
             <button
               onClick={onThemeToggle}
+              aria-label={isGhostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
+              aria-pressed={isGhostMode}
               className={cn(
-                "relative flex items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-accent",
+                "relative flex items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
                 isGhostMode
                   ? "bg-secondary/10 border border-secondary/20 shadow-inner"
                   : "bg-ink/5 border border-ink/10 hover:bg-ink/10 shadow-inner"
@@ -161,9 +164,9 @@ export function AppHeader({
               aria-label="Notifications"
               aria-expanded={notifOpen}
               onClick={() => setNotifOpen((v) => !v)}
-              className="relative p-2 rounded-xl text-ink/50 hover:text-ink hover:bg-ink/5 transition-all focus:outline-none focus:ring-2 focus:ring-accent"
+              className="relative p-2 rounded-xl text-ink/50 hover:text-ink hover:bg-ink/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-5 h-5" aria-hidden="true" />
               {notifications.length > 0 && (
                 <span
                   className={cn(
@@ -185,9 +188,10 @@ export function AppHeader({
                 </span>
                 <button
                   onClick={() => setNotifOpen(false)}
-                  className="p-1 text-ink/40 hover:text-ink transition-colors"
+                  aria-label="Close notifications"
+                  className="p-1 text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
               <div className="max-h-80 overflow-y-auto">

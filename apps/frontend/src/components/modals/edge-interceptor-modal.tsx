@@ -47,15 +47,15 @@ export function EdgeInterceptorModal({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
           >
-            <div className="relative w-full max-w-md bg-page border border-ink/10 shadow-lg rounded-2xl overflow-hidden">
+            <div role="dialog" aria-modal="true" aria-labelledby="edge-alert-title" className="relative w-full max-w-md bg-page border border-ink/10 shadow-lg rounded-2xl overflow-hidden">
               <div className="p-6 border-b border-ink/10">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <ShieldAlert className="w-6 h-6 text-ink/40 fill-current" />
-                    <h2 className="font-semibold tracking-tight text-lg text-ink">Edge Alert</h2>
+                    <ShieldAlert className="w-6 h-6 text-ink/40 fill-current" aria-hidden="true" />
+                    <h2 id="edge-alert-title" className="font-semibold tracking-tight text-lg text-ink">Edge Alert</h2>
                   </div>
-                  <button onClick={onCancel} className="p-1 text-ink/40 hover:text-ink transition-colors" aria-label="Close">
-                    <X className="w-5 h-5" />
+                  <button onClick={onCancel} className="p-1 text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2" aria-label="Close">
+                    <X className="w-5 h-5" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -81,16 +81,16 @@ export function EdgeInterceptorModal({
                 </div>
 
                 <label className="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#2d6a4f]" disabled={isLoading} />
+                  <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#2d6a4f]" disabled={isLoading} aria-label="Submit in Ghost Mode (recommended)" />
                   <span className="font-mono text-sm text-ink/60">Submit in Ghost Mode (recommended)</span>
                 </label>
               </div>
 
               <div className="flex gap-3 p-6 border-t border-ink/10">
-                <button onClick={onCancel} disabled={isLoading} className="flex-1 py-3 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors disabled:opacity-50 rounded-lg">
+                <button onClick={onCancel} disabled={isLoading} aria-label="Cancel" className="flex-1 py-3 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors disabled:opacity-50 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                   Cancel
                 </button>
-                <button onClick={onProceed} disabled={isLoading} className="flex-1 py-3 bg-[#2d6a4f] text-[#fcfaf7] text-sm font-medium hover:bg-[#23543e] transition-colors disabled:opacity-50 rounded-lg">
+                <button onClick={onProceed} disabled={isLoading} aria-label="Proceed anonymously" className="flex-1 py-3 bg-[#2d6a4f] text-[#fcfaf7] text-sm font-medium hover:bg-[#23543e] transition-colors disabled:opacity-50 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                   {isLoading ? "Submitting..." : "Proceed Anonymously"}
                 </button>
               </div>
