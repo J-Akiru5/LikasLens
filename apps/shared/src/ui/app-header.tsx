@@ -115,7 +115,7 @@ export function AppHeader({
             aria-label="Open navigation menu"
             aria-expanded={false}
             onClick={onMobileMenuToggle}
-            className="lg:hidden p-2 -mr-1 text-ink/50 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            className="lg:hidden p-2.5 rounded-xl text-ink/70 hover:text-ink bg-ink/[0.04] hover:bg-ink/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             <Menu className="w-5 h-5" aria-hidden="true" />
           </button>

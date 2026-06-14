@@ -27,8 +27,8 @@ import {
 const ADMIN_KPI_GRID = "grid grid-cols-12 gap-4";
 const ADMIN_KPI_TILE_SPAN = {
   hero: "col-span-12 lg:col-span-4",
-  primary: "col-span-12 sm:col-span-6 lg:col-span-4",
-  secondary: "col-span-12 sm:col-span-6 lg:col-span-2",
+  primary: "col-span-6 sm:col-span-6 lg:col-span-4",
+  secondary: "col-span-6 sm:col-span-6 lg:col-span-2",
 } as const;
 const ADMIN_PULSE_BADGE =
   "items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest shadow-[0_0_0_4px_color-mix(in_oklab,var(--green)_25%,transparent)]";

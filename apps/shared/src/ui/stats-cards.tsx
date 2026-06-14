@@ -69,7 +69,7 @@ function MiniSparkline({ points, color }: { points: number[]; color: string }) {
 
 export function StatsCards({ items, className, gridClassName }: StatsCardsProps) {
   return (
-    <div className={cn("grid gap-4 md:grid-cols-2 lg:grid-cols-4", gridClassName, className)}>
+    <div className={cn("grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4", gridClassName, className)}>
       {items.map((item) => {
         const accent = item.accent ?? "accent";
         return (

@@ -126,7 +126,7 @@ export default function PredictionsPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div className="kpi-card kpi-accent-amber rounded-2xl border border-border bg-panel p-5">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-red/10 flex items-center justify-center">

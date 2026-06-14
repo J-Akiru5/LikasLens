@@ -154,7 +154,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
 
           {/* Section 2: Tracking */}
           <section>
-            <h2 className="font-semibold text-base text-ink mb-4">Incident & Reporting Tracking</h2>              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <h2 className="font-semibold text-base text-ink mb-4">Incident & Reporting Tracking</h2>              <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 bg-panel rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.04] p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-medium text-sm text-ink/80 flex items-center gap-2">
