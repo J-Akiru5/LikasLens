@@ -183,6 +183,9 @@ jobs:
           key: composer-${{ hashFiles('apps/backend/composer.lock') }}
           restore-keys: composer-
 
+      - name: Create bootstrap/cache directory
+        run: mkdir -p bootstrap/cache && chmod -R 775 bootstrap/cache storage
+
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
 
