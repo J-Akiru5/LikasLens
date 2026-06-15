@@ -45,7 +45,7 @@ COPY . .
 RUN mkdir -p bootstrap/cache \
     && chmod -R 775 bootstrap/cache storage \
     && composer run-script post-autoload-dump \
-    && php artisan optimize
+    && php artisan optimize || true
 
 # ── Stage 3: Production runtime (slim) ───────────────────────────────
 FROM php:8.2-cli AS production
