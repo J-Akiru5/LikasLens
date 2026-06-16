@@ -44,7 +44,7 @@ jobs:
         run: docker build -t likaslens-ai-service:scan apps/ai-service
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.29.0
+        uses: aquasecurity/trivy-action@v0.24.0
         with:
           image-ref: likaslens-ai-service:scan
           format: sarif
