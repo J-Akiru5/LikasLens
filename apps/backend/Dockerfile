@@ -68,6 +68,7 @@ COPY --from=build /app /app
 COPY start.sh /app/start.sh
 
 RUN chmod +x /app/start.sh \
+    && sed -i 's/\r$//' /app/start.sh \
     && chown -R appuser:appuser /app/storage /app/bootstrap/cache /app/public
 
 USER appuser
