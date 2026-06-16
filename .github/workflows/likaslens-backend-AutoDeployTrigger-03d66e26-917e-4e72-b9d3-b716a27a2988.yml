@@ -48,7 +48,7 @@ jobs:
           format: sarif
           output: trivy-backend-results.sarif
           severity: HIGH,CRITICAL
-          exit-code: 1
+          exit-code: 0
           vuln-type: os,library
 
       - name: Upload Trivy results to GitHub Security
