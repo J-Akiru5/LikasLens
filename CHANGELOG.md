@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-06-17
+
+### Changed
+- **DevOps**: Migrated backend deployment from Azure Container Apps to Google Cloud Run
+- **DevOps**: Migrated AI service deployment from Azure Container Apps to Google Cloud Run
+- **DevOps**: Replaced Azure OIDC login with GCP service account authentication in GitHub Actions
+- **DevOps**: Container images now pushed to Artifact Registry (asia-southeast1) instead of GHCR
+- **DevOps**: Both deploy workflows now include CI gate (reusable ci.yml) and Trivy vulnerability scanning
+- **Docs**: Replaced `AZURE_DEPLOYMENT.md` with `GCP_DEPLOYMENT.md` (full rewrite for Cloud Run)
+- **Docs**: Added `GCP_DEPLOYMENT.html` interactive setup guide with step-by-step instructions
+
+### Removed
+- **DevOps**: Deleted Azure Container Apps deployment workflows (backend + AI service)
+- **Docs**: Archived `AZURE_DEPLOYMENT.md` to `docs/archive/`
+
+### Fixed
+- **DevOps**: Backend deploy workflow now uses correct Supabase host (`db.sfklmmtimelotqvrldni.supabase.co`) and port (`5432`)
+
 ## [0.7.4] - 2026-06-09
 
 ### Changed
@@ -311,7 +329,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.1...v0.7.2
