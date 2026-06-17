@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getTickets, AdminTableSkeleton, EmptyState } from "@likaslens/shared";
+import { getTickets, AdminTableSkeleton, EmptyState, IncidentDrawer, RevealSection } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import {
@@ -31,6 +31,7 @@ export default function IncidentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedIncident, setSelectedIncident] = useState<Ticket | null>(null);
 
   useEffect(() => {
     getTickets({ per_page: "50" })
@@ -189,7 +190,8 @@ export default function IncidentsPage() {
 
         <div className="bento-grid">
           <div className="span-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <RevealSection stagger={0.05}>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredIncidents.length > 0 ? (
                 filteredIncidents.map((ticket, i) => {
                   const isResolved =
@@ -211,7 +213,8 @@ export default function IncidentsPage() {
                   return (
                     <div
                       key={ticket.id}
-                      className="bg-panel rounded-[1.5rem] p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer flex flex-col h-full relative"
+                      onClick={() => setSelectedIncident(ticket)}
+                      className="bg-panel rounded-[1.5rem] p-4 sm:p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer flex flex-col h-full relative"
                     >
                       <div className="absolute top-4 right-4 z-10">
                         <button
@@ -235,6 +238,7 @@ export default function IncidentsPage() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 closeMenu();
+                                setSelectedIncident(ticket);
                               }}
                               className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
                             >
@@ -323,9 +327,15 @@ export default function IncidentsPage() {
                 </div>
               )}
             </div>
+            </RevealSection>
           </div>
         </div>
       </div>
+      <IncidentDrawer 
+        isOpen={!!selectedIncident} 
+        onClose={() => setSelectedIncident(null)} 
+        incident={selectedIncident} 
+      />
     </DashboardLayoutWrapper>
   );
 }

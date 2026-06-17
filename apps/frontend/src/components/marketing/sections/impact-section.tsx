@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import {
   BarChart3,
   CheckCircle2,
@@ -169,8 +169,8 @@ export function ImpactSection() {
   ];
 
   return (
-    <section id="impact" style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 32px" }}>
-      <motion.div
+    <section id="impact" className="max-w-7xl mx-auto px-4 sm:px-8 py-20" style={{}}>
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
@@ -211,14 +211,14 @@ export function ImpactSection() {
         <p style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.65, margin: 0, maxWidth: 480 }}>
           Real-time metrics showing how citizen reports are driving measurable environmental action.
         </p>
-      </motion.div>
+      </m.div>
 
       {loading ? (
         <ImpactSkeleton />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
           {/* STAT CARDS GRID */}
-          <motion.div
+          <m.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="show"
@@ -226,10 +226,10 @@ export function ImpactSection() {
             className="grid grid-cols-2 md:grid-cols-4 gap-4"
           >
             {statCards.map((card) => (
-              <motion.div
+              <m.div
                 key={card.label}
                 variants={fadeUp}
-                className="rounded-2xl p-6"
+                className="rounded-2xl p-4 sm:p-6"
                 style={{
                   background: "var(--panel)", border: "1px solid var(--border)",
                   display: "flex", flexDirection: "column", gap: 8,
@@ -246,13 +246,13 @@ export function ImpactSection() {
                 <span style={{ fontSize: "clamp(1.8rem, 3vw, 2.5rem)", fontWeight: 800, fontFamily: "monospace", letterSpacing: "-0.04em", color: "var(--ink)" }}>
                   <AnimatedCounter value={card.value} duration={1.2} />
                 </span>
-              </motion.div>
+              </m.div>
             ))}
-          </motion.div>
+          </m.div>
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Reports by Type */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
@@ -284,7 +284,7 @@ export function ImpactSection() {
                           <span style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>{count}</span>
                         </div>
                         <div style={{ height: 8, borderRadius: 9999, background: "color-mix(in srgb, var(--accent) 10%, transparent)", overflow: "hidden" }}>
-                          <motion.div
+                          <m.div
                             initial={{ width: 0 }}
                             whileInView={{ width: `${pct}%` }}
                             viewport={{ once: true }}
@@ -297,10 +297,10 @@ export function ImpactSection() {
                   })}
                 </div>
               )}
-            </motion.div>
+            </m.div>
 
             {/* Recent Verified Reports */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
@@ -352,12 +352,12 @@ export function ImpactSection() {
                   ))}
                 </div>
               )}
-            </motion.div>
+            </m.div>
           </div>
 
           {/* Top Barangays */}
           {stats.top_barangays.length > 0 && (
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
@@ -371,9 +371,9 @@ export function ImpactSection() {
                   Top Locations by Report Count
                 </h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-3">
                 {stats.top_barangays.map((brgy, idx) => (
-                  <motion.div
+                  <m.div
                     key={brgy.name}
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
@@ -391,10 +391,10 @@ export function ImpactSection() {
                     <span style={{ fontFamily: "monospace", fontSize: 12, color: "var(--muted)" }}>
                       {brgy.count} report{brgy.count !== 1 ? "s" : ""}
                     </span>
-                  </motion.div>
+                  </m.div>
                 ))}
               </div>
-            </motion.div>
+            </m.div>
           )}
         </div>
       )}

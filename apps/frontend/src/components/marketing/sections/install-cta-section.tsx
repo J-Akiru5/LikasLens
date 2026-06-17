@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Smartphone, Download, Camera } from "lucide-react";
 
 interface InstallCtaSectionProps {
@@ -34,7 +34,7 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
 
   return (
     <section id="install-guide" className="max-w-7xl mx-auto px-6 lg:px-8 py-20 pb-32">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
@@ -73,7 +73,7 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
           <div className="p-10 md:p-16 space-y-8">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Smartphone style={{ width: 18, height: 18, color: ghostMode ? "var(--accent)" : "var(--accent-bright)" }} />
+                <Smartphone style={{ width: 18, height: 18, color: ghostMode ? "var(--accent)" : "var(--accent-bright)" }} aria-hidden="true" />
                 <span style={{ fontFamily: "monospace", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em", color: ghostMode ? "var(--muted)" : "rgba(255,255,255,0.55)", transition: "color 0.4s" }}>
                   Progressive Web App
                 </span>
@@ -111,6 +111,8 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
             </div>
             <button
               onClick={handleInstall}
+              aria-label="Install LikasLens app on your device"
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
               style={{
                 display: "flex", alignItems: "center", gap: 10, padding: "14px 24px",
                 borderRadius: 8, background: "#2ee6c8", color: "#0d1a12", fontWeight: 700,
@@ -118,7 +120,7 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
                 boxShadow: "0 8px 24px -8px rgba(46,230,200,0.35)", transition: "all 0.25s ease",
               }}
             >
-              <Download style={{ width: 16, height: 16 }} /> Install LikasLens
+              <Download style={{ width: 16, height: 16 }} aria-hidden="true" /> Install LikasLens
             </button>
           </div>
 
@@ -157,7 +159,7 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
             </div>
           </div>
         </div>
-      </motion.div>
+      </m.div>
     </section>
   );
 }

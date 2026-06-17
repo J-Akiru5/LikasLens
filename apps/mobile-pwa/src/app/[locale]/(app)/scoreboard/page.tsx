@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Trophy, Medal, Crown, Users, BarChart3, RefreshCw, ChevronDown } from "lucide-react";
+import { Trophy, Medal, Crown, Users, BarChart3, RefreshCw, ChevronDown, FileText } from "lucide-react";
 import { cn, laravelGet } from "@likaslens/shared";
-import { ScoreboardSkeleton } from "@likaslens/shared";
+import { ScoreboardSkeleton, EmptyState } from "@likaslens/shared";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -232,7 +232,7 @@ export default function ScoreboardPage() {
             <div className="absolute top-3 right-3">
               <Crown className="w-8 h-8 text-amber-500/30" />
             </div>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-amber-600 mb-3">
+            <p className="label-pill label-pill-light mb-3">
               Eco-Warrior of the Month
             </p>
             <div className="flex items-center gap-4">
@@ -249,12 +249,12 @@ export default function ScoreboardPage() {
               </div>
               <div className="text-right">
                 <p
-                  className="text-2xl font-bold text-amber-600"
+                  className="text-2xl font-bold text-amber-600 tabular-nums"
                   style={{ fontFamily: "var(--font-data), monospace" }}
                 >
                   {spotlight.eco_credits.toLocaleString()}
                 </p>
-                <p className="text-[10px] font-mono text-ink/40 uppercase">
+                <p className="label-pill label-pill-light">
                   eco-credits
                 </p>
               </div>
@@ -267,32 +267,50 @@ export default function ScoreboardPage() {
       {stats && (
         <div className="px-6 mb-6">
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-panel rounded-2xl border border-ink/5 p-3 text-center">
+            <div className="kpi-card kpi-accent-green rounded-2xl border border-border bg-green/[0.02] hover:bg-green/[0.04] p-3 text-center relative overflow-hidden group transition-colors duration-300">
+              <div 
+                className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-green"
+                style={{ opacity: 0.05 }}
+              >
+                <FileText className="w-12 h-12" />
+              </div>
               <p
-                className="text-lg font-bold text-ink"
+                className="text-lg font-bold text-green tabular-nums relative z-10"
                 style={{ fontFamily: "var(--font-data), monospace" }}
               >
                 {stats.total_reports.toLocaleString()}
               </p>
-              <p className="text-[10px] font-mono text-ink/40 uppercase">Reports</p>
+              <p className="label-pill label-pill-light relative z-10">Reports</p>
             </div>
-            <div className="bg-panel rounded-2xl border border-ink/5 p-3 text-center">
+            <div className="kpi-card kpi-accent-amber rounded-2xl border border-border bg-amber-500/[0.02] hover:bg-amber-500/[0.04] p-3 text-center relative overflow-hidden group transition-colors duration-300">
+              <div 
+                className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-amber-500"
+                style={{ opacity: 0.05 }}
+              >
+                <Users className="w-12 h-12" />
+              </div>
               <p
-                className="text-lg font-bold text-ink"
+                className="text-lg font-bold text-amber-600 tabular-nums relative z-10"
                 style={{ fontFamily: "var(--font-data), monospace" }}
               >
                 {stats.total_citizens.toLocaleString()}
               </p>
-              <p className="text-[10px] font-mono text-ink/40 uppercase">Citizens</p>
+              <p className="label-pill label-pill-light relative z-10">Citizens</p>
             </div>
-            <div className="bg-panel rounded-2xl border border-ink/5 p-3 text-center">
+            <div className="kpi-card kpi-accent-muted rounded-2xl border border-border bg-panel p-3 text-center relative overflow-hidden group transition-colors duration-300">
+              <div 
+                className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-muted"
+                style={{ opacity: 0.05 }}
+              >
+                <Trophy className="w-12 h-12" />
+              </div>
               <p
-                className="text-lg font-bold text-ink"
+                className="text-lg font-bold text-ink tabular-nums relative z-10"
                 style={{ fontFamily: "var(--font-data), monospace" }}
               >
                 {stats.avg_eco_credits.toLocaleString()}
               </p>
-              <p className="text-[10px] font-mono text-ink/40 uppercase">Avg XP</p>
+              <p className="label-pill label-pill-light relative z-10">Avg XP</p>
             </div>
           </div>
         </div>
@@ -324,12 +342,11 @@ export default function ScoreboardPage() {
           /* ---- Barangay Leaderboard ---- */
           <div className="space-y-3">
             {barangayEntries.length === 0 ? (
-              <div className="text-center py-12">
-                <Users className="w-10 h-10 text-ink/20 mx-auto mb-3" />
-                <p className="text-sm text-ink/40 font-mono">
-                  No barangay data this month
-                </p>
-              </div>
+              <EmptyState 
+                icon={Users}
+                title="No barangay data this month"
+                description="Be the first to submit a report."
+              />
             ) : (
               barangayEntries.map((entry, index) => {
                 const rank = index + 1;
@@ -354,18 +371,18 @@ export default function ScoreboardPage() {
                         <p className="font-semibold text-ink text-sm truncate">
                           {entry.barangay}
                         </p>
-                        <p className="text-[10px] font-mono text-ink/40 uppercase">
+                        <p className="label-pill label-pill-light">
                           community reports
                         </p>
                       </div>
                       <div className="text-right">
                         <p
-                          className="text-lg font-bold text-ink"
+                          className="text-lg font-bold text-ink tabular-nums"
                           style={{ fontFamily: "var(--font-data), monospace" }}
                         >
                           {entry.report_count.toLocaleString()}
                         </p>
-                        <p className="text-[10px] font-mono text-ink/40 uppercase">
+                        <p className="label-pill label-pill-light">
                           reports
                         </p>
                       </div>
@@ -379,12 +396,11 @@ export default function ScoreboardPage() {
           /* ---- Citizen Leaderboard ---- */
           <div className="space-y-3">
             {entries.length === 0 ? (
-              <div className="text-center py-12">
-                <Trophy className="w-10 h-10 text-ink/20 mx-auto mb-3" />
-                <p className="text-sm text-ink/40 font-mono">
-                  No data available
-                </p>
-              </div>
+              <EmptyState 
+                icon={Trophy}
+                title="No data available"
+                description="Be the first to submit a report and earn your place."
+              />
             ) : (
               entries.map((entry, index) => {
                 const rank = index + 1;
@@ -422,13 +438,13 @@ export default function ScoreboardPage() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <p className="text-[10px] font-mono text-ink/40 uppercase">
+                          <p className="label-pill label-pill-light">
                             {score} eco-credits
                           </p>
                           {entry.report_count !== undefined && (
                             <>
                               <span className="text-ink/20">&middot;</span>
-                              <p className="text-[10px] font-mono text-ink/40 uppercase">
+                              <p className="label-pill label-pill-light">
                                 {entry.report_count} reports
                               </p>
                             </>
@@ -436,7 +452,7 @@ export default function ScoreboardPage() {
                           {entry.level && (
                             <>
                               <span className="text-ink/20">&middot;</span>
-                              <p className="text-[10px] font-mono text-ink/40 uppercase">
+                              <p className="label-pill label-pill-light">
                                 {entry.level}
                               </p>
                             </>
@@ -446,12 +462,12 @@ export default function ScoreboardPage() {
 
                       <div className="text-right">
                         <p
-                          className="text-lg font-bold text-ink"
+                          className="text-lg font-bold text-ink tabular-nums"
                           style={{ fontFamily: "var(--font-data), monospace" }}
                         >
                           {score.toLocaleString()}
                         </p>
-                        <p className="text-[10px] font-mono text-ink/40 uppercase">
+                        <p className="label-pill label-pill-light">
                           XP
                         </p>
                       </div>
@@ -465,7 +481,7 @@ export default function ScoreboardPage() {
 
         {/* Footer */}
         <div className="text-center py-8">
-          <p className="text-[10px] font-mono text-ink/30 uppercase tracking-wide">
+          <p className="label-pill label-pill-light">
             Rankings update in real-time as reports are processed
           </p>
         </div>

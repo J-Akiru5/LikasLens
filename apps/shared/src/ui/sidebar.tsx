@@ -179,8 +179,8 @@ export function Sidebar({
                 "flex items-center px-3 py-2 text-sm rounded-md transition-all duration-150",
                 isDesktopCollapsed ? "justify-center px-0" : "gap-3",
                 isActive
-                  ? "text-ink font-medium bg-ink/[0.04]"
-                  : "text-ink/60 hover:text-ink hover:bg-ink/[0.02]",
+                  ? "group relative flex items-center gap-3 pl-5 pr-3 py-2 rounded-lg bg-accent/8 text-accent before:absolute before:left-1.5 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-accent transition-colors duration-150 ease-out"
+                  : "text-ink/70 hover:bg-ink/[0.04] hover:text-ink",
               )}
             >
               {item.colorDot && !Icon ? (
@@ -265,9 +265,9 @@ export function Sidebar({
             <button
               aria-label="Close sidebar"
               onClick={closeMobile}
-              className="p-2 text-ink/40 hover:text-ink transition-colors"
+              className="p-2 text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
           {sidebarContent}

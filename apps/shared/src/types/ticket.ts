@@ -111,3 +111,35 @@ export interface TriageTicket {
   created_at: string;
   time_since: string;
 }
+
+// ── AI Explainability ──────────────────────────────────────────────────
+
+export interface ConfidenceBreakdown {
+  visual: number;
+  community_corroboration: number;
+  geo_within_known_zone: number;
+}
+
+export interface RuleChain {
+  rule_fired: string;
+  statute: string;
+  agency: string;
+}
+
+export interface NeighbourTicket {
+  id: string;
+  title: string;
+  status: string;
+  ai_confidence: number;
+  created_at: string;
+}
+
+export interface TicketExplainResponse {
+  ticket_id: string;
+  display_id: string;
+  category: string;
+  confidence: number;
+  confidence_breakdown: ConfidenceBreakdown;
+  rule_chain: RuleChain;
+  neighbours: NeighbourTicket[];
+}

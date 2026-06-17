@@ -12,6 +12,7 @@ import {
   Trophy,
   User,
   BarChart3,
+  Network,
 } from "lucide-react";
 import { UserNav } from "./user-nav";
 
@@ -23,6 +24,7 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
   { href: "/dashboard/reports", label: "Reports", icon: FileText },
   { href: "/dashboard/impact", label: "Impact Map", icon: BarChart3 },
+  { href: "/dashboard/knowledge-graph", label: "Graph Explorer", icon: Network },
   
   { divider: true, dividerLabel: "Quick Access" },
   { href: "/report", label: "Submit Report", icon: Camera },

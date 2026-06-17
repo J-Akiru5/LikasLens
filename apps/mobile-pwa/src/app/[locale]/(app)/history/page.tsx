@@ -13,7 +13,7 @@ export default function HistoryPage() {
       </header>
 
       <main className="flex-1 p-4">
-        <div className="bg-ink/5 rounded-3xl p-8 text-center mt-8">
+        <div className="kpi-card kpi-accent-muted rounded-3xl p-8 text-center mt-8">
           <p className="text-ink/60 font-mono text-sm">
             Your environmental report history will appear here.
           </p>

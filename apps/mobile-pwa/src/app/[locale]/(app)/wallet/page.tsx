@@ -1,4 +1,5 @@
 import { ScanLine, Award, Trophy, List, HelpCircle, Shield, Leaf, BarChart3, BookOpen } from "lucide-react";
+import { Button } from "@likaslens/shared";
 
 export default function WalletPage() {
   return (
@@ -16,7 +17,7 @@ export default function WalletPage() {
           {/* Decorative background shapes */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4" />
           <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/10 rounded-full blur-xl translate-y-1/3 -translate-x-1/3" />
-          
+
           <div className="relative z-10 flex justify-between items-start">
             <div>
               <h2 className="text-xl font-bold tracking-tight">Citizen User</h2>
@@ -45,66 +46,69 @@ export default function WalletPage() {
 
         {/* Quick Actions Grid */}
         <div className="mt-8">
-          <h3 className="text-xs font-mono uppercase tracking-widest text-ink/60 mb-4 px-2">Quick Actions</h3>
+          <h3 className="label-pill label-pill-light mb-4 px-2 inline-block">Quick Actions</h3>
           <div className="grid grid-cols-4 gap-4">
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
                 <Award className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Badges</span>
+              <span className="label-pill label-pill-light">Badges</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
                 <Trophy className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Rankings</span>
+              <span className="label-pill label-pill-light">Rankings</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
                 <BarChart3 className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Impact</span>
+              <span className="label-pill label-pill-light">Impact</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
                 <Shield className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Privacy</span>
+              <span className="label-pill label-pill-light">Privacy</span>
             </div>
-            
+
             {/* Second row */}
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
                 <List className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">History</span>
+              <span className="label-pill label-pill-light">History</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
                 <Leaf className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">REDD+</span>
+              <span className="label-pill label-pill-light">REDD+</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
                 <BookOpen className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">Laws</span>
+              <span className="label-pill label-pill-light">Laws</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="w-14 h-14 rounded-[20px] bg-panel border border-ink/5 shadow-sm flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all hover:border-green hover:text-green">
                 <HelpCircle className="w-6 h-6" />
               </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/70">How to Earn</span>
+              <span className="label-pill label-pill-light">How to Earn</span>
             </div>
           </div>
         </div>
-        
+
         {/* Primary Action Button */}
         <div className="mt-8">
-          <button className="w-full bg-green text-page py-4 rounded-full font-bold uppercase tracking-widest text-sm shadow-lg active:scale-[0.98] transition-transform flex items-center justify-center gap-2">
+          <Button
+            variant="primary"
+            className="w-full rounded-full py-4 font-bold uppercase tracking-widest text-sm shadow-lg active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+          >
             <span>+</span> Add Eco-Card to Google Wallet
-          </button>
+          </Button>
         </div>
       </main>
     </div>

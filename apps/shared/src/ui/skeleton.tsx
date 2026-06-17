@@ -29,7 +29,7 @@ export function DashboardSkeleton() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Stat cards row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
@@ -94,7 +94,7 @@ export function ScoreboardSkeleton() {
   return (
     <div className="space-y-3 animate-fade-in">
       {/* Header row */}
-      <div className="grid grid-cols-[1fr_1.5fr_1fr_0.8fr] gap-4 pb-4 border-b border-border">
+      <div className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr] sm:grid-cols-[2fr_2fr_1fr_1fr] gap-2 sm:gap-4 pb-4 border-b border-border">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="h-4 rounded bg-ink/5 animate-shimmer" />
         ))}
@@ -103,7 +103,7 @@ export function ScoreboardSkeleton() {
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="grid grid-cols-[1fr_1.5fr_1fr_0.8fr] gap-4 py-4 border-b border-border last:border-0"
+          className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr] sm:grid-cols-[2fr_2fr_1fr_1fr] gap-2 sm:gap-4 py-4 border-b border-border last:border-0"
         >
           {Array.from({ length: 4 }).map((_, j) => (
             <div
@@ -148,10 +148,10 @@ export function FormSkeleton({ fields = 4 }: { fields?: number }) {
 export function AdminKPIsSkeleton({ count = 4 }: { count?: number }) {
   const cols =
     count === 3
-      ? "sm:grid-cols-3"
+      ? "grid-cols-2 sm:grid-cols-3"
       : count === 2
-        ? "sm:grid-cols-2"
-        : "sm:grid-cols-2 lg:grid-cols-4";
+        ? "grid-cols-2"
+        : "grid-cols-2 lg:grid-cols-4";
   return (
     <div className={cn("grid gap-4", cols)}>
       {Array.from({ length: count }).map((_, i) => (
@@ -232,7 +232,7 @@ export function AdminTableSkeleton({
  */
 export function AdminCardGridSkeleton({ cards = 6 }: { cards?: number }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
+    <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 animate-fade-in">
       {Array.from({ length: cards }).map((_, i) => (
         <div
           key={i}

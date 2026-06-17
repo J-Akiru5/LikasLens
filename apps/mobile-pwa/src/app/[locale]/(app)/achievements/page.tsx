@@ -12,9 +12,9 @@ export default function AchievementsPage() {
       </header>
 
       <main className="flex-1 p-4">
-        <div className="bg-ink/5 rounded-3xl p-8 text-center mt-8 border border-amber/20 bg-amber/5">
-          <p className="text-amber/60 font-mono text-sm font-bold uppercase tracking-widest">
-            Coming Soon
+        <div className="kpi-card kpi-accent-amber rounded-3xl p-8 text-center mt-8 border border-amber/20">
+          <p className="text-amber/70 font-mono text-sm font-bold uppercase tracking-widest">
+            <span className="label-pill label-pill-light">Coming Soon</span>
           </p>
           <p className="text-ink/60 text-sm mt-4">
             Unlock badges and rewards by making environmental reports.

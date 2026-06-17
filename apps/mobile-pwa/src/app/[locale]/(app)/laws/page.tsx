@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Scale, Search, ExternalLink, Loader2, ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { laravelGet, type PaginatedResponse } from "@likaslens/shared";
+import { laravelGet, Button, type PaginatedResponse } from "@likaslens/shared";
 
 interface Law {
   id: string;
@@ -49,9 +49,11 @@ export default function LawsPage() {
       {/* Header */}
       <div className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10">
         <div className="flex items-center h-16 px-4">
-          <Link href=".." className="p-2 -ml-2 rounded-full hover:bg-ink/5 transition-colors">
-            <ChevronLeft className="w-6 h-6 text-ink" />
-          </Link>
+          <Button asChild variant="ghost" size="icon" className="rounded-full">
+            <Link href=".." aria-label="Back">
+              <ChevronLeft className="w-6 h-6 text-ink" />
+            </Link>
+          </Button>
           <h1 className="flex-1 text-center text-lg font-bold font-mono tracking-widest uppercase text-ink -ml-8">
             Laws Database
           </h1>
@@ -85,31 +87,38 @@ export default function LawsPage() {
         ) : (
           <div className="space-y-4">
             <p className="font-mono text-[10px] text-ink/40 uppercase tracking-widest px-2">
-              {filtered.length} active records
+              <span className="label-pill label-pill-light">{filtered.length} active records</span>
             </p>
             {filtered.map((law) => (
-              <div key={law.id} className="bg-panel rounded-3xl p-5 border border-ink/5 shadow-sm active:scale-[0.98] transition-transform">
+              <div key={law.id} className="kpi-card kpi-accent-muted bg-panel rounded-3xl p-5 border border-ink/5 shadow-sm active:scale-[0.98] transition-transform">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-green/10 flex items-center justify-center shrink-0">
                     <Scale className="w-6 h-6 text-green" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-mono text-xs text-green mb-1 uppercase tracking-wider">{law.law_code}</p>
+                    <p className="font-mono text-xs text-green mb-1 uppercase tracking-wider">
+                      <span className="label-pill label-pill-light">{law.law_code}</span>
+                    </p>
                     <h3 className="font-bold text-[15px] text-ink leading-tight mb-2">{law.title}</h3>
                     <p className="text-sm text-ink/60 line-clamp-3 mb-3">{law.summary}</p>
-                    
+
                     <div className="flex items-center justify-between border-t border-ink/5 pt-3 mt-1">
-                      <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest">{law.issuing_agency}</span>
+                      <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest">
+                        <span className="label-pill label-pill-light">{law.issuing_agency}</span>
+                      </span>
                       {law.source_url && (
-                        <a
-                          href={law.source_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-ink hover:text-green transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <ExternalLink className="w-3 h-3" /> Source
-                        </a>
+                        <Button asChild variant="ghost" size="sm" className="font-mono text-[10px] uppercase tracking-widest text-ink hover:text-green">
+                          <a
+                            href={law.source_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label={`Open source for ${law.law_code}`}
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            <span className="label-pill label-pill-light">Source</span>
+                          </a>
+                        </Button>
                       )}
                     </div>
                   </div>
