@@ -166,7 +166,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
           {/* Brand Column */}
           <div className="flex flex-col gap-6 lg:col-span-2">
             <div className="flex items-center gap-3 group w-fit">
-              <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" />
+              <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500 brightness-0 invert drop-shadow-sm" />
               <span className={`font-heading tracking-[0.2em] text-2xl flex items-center ${textColor}`}>
                 <span className="font-medium">LIK</span>
                 <span className="font-semibold text-accent mx-[1px]">Λ</span>

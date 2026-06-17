@@ -94,7 +94,7 @@ export function AppHeader({
           </h1>
         ) : showBranding ? (
           <Link href="/" className="flex items-center gap-2 text-ink lg:hidden">
-            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-8 h-8 object-contain" />
+            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain brightness-0 invert drop-shadow-sm" />
             <span className="font-heading tracking-[0.2em] text-lg flex items-center mt-0.5">
               <span className="font-medium">LIK</span>
               <span className="font-semibold mx-[1px]">Λ</span>

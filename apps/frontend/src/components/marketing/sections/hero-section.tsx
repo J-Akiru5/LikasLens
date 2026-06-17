@@ -192,7 +192,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icons/icon-192x192.png" alt="LikasLens Logo" style={{ width: 32, height: 32, objectFit: "contain" }} />
+          <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" style={{ width: 32, height: 32, objectFit: "contain" }} />
           <span
             style={{
               fontSize: 20,
@@ -213,7 +213,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
         </div>
 
         <div
-          className="hidden md:flex"
+          className="hidden md:flex brightness-0 invert drop-shadow-sm"
           style={{
             gap: 32,
             fontFamily: "monospace",

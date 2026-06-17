@@ -58,7 +58,7 @@ export function LoginClient() {
       <div className="panel relative z-10 w-full max-w-md p-8">
         <div className="flex justify-center mb-8">
           <div className="w-16 h-16 rounded-full border-2 flex items-center justify-center shadow-[4px_4px_0px_var(--accent)] bg-amber text-page border-amber">
-            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-12 h-12 object-contain" />
+            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-12 h-12 object-contain brightness-0 invert drop-shadow-sm" />
           </div>
         </div>
 

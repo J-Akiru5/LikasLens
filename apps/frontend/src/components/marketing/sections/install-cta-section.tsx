@@ -141,7 +141,7 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
                 <div style={{ position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", width: 80, height: 20, borderRadius: 9999, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 16px 24px", gap: 12 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/icons/icon-192x192.png" alt="LikasLens Logo" style={{ width: 48, height: 48, objectFit: "contain" }} />
+                  <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" style={{ width: 48, height: 48, objectFit: "contain" }} />
                   <p style={{ fontFamily: "monospace", fontSize: 9, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.1em", textAlign: "center", margin: 0 }}>LikasLens</p>
                   <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
                     <div style={{ height: 7, borderRadius: 9999, background: "rgba(255,255,255,0.08)", width: "100%" }} />

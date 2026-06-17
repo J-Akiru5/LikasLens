@@ -49,7 +49,7 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
           className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-accent text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
           aria-label="Open Likasy chat"
         >
-           <MessageCircle className="w-6 h-6" />
+           <img src="/images/likasy-logo.png" alt="Likasy Chat" className="w-8 h-8 object-contain drop-shadow-md" />
         </button>
       )}
 
@@ -64,7 +64,7 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
           >
             <div className="flex items-center gap-2 px-4 py-3 shrink-0 bg-accent text-white">
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                 <Bot className="w-5 h-5" />
+                 <img src="/images/likasy-logo.png" alt="Likasy" className="w-6 h-6 object-contain" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold">Likasy</div>
@@ -87,7 +87,7 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
               {loading && (
                 <div className="flex items-start gap-2">
                   <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-1 bg-accent">
-                     <Bot className="w-3.5 h-3.5 text-white" />
+                     <img src="/images/likasy-logo.png" alt="Likasy" className="w-4 h-4 object-contain" />
                   </div>
                   <div className="flex items-center gap-1 px-3 py-2 rounded-xl bg-panel border border-border">
                     <span className="w-2 h-2 rounded-full bg-accent animate-bounce" />
@@ -172,7 +172,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   return (
     <div className={`flex items-start gap-2 ${isUser ? "flex-row-reverse" : ""}`}>
       <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-1" style={{ background: isUser ? "var(--ink)" : "var(--accent)" }}>
-         {isUser ? <User className="w-3.5 h-3.5 text-page" /> : <Bot className="w-3.5 h-3.5 text-white" />}
+         {isUser ? <User className="w-3.5 h-3.5 text-page" /> : <img src="/images/likasy-logo.png" alt="Likasy" className="w-4 h-4 object-contain" />}
       </div>
       <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed ${isUser ? "bg-ink text-page" : "bg-panel text-ink border border-border"}`}>
         {isUser ? <div className="whitespace-pre-wrap break-words">{message.content}</div> : <MarkdownRenderer content={message.content} />}

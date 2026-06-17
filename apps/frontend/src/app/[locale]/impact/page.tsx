@@ -277,7 +277,7 @@ export default function ImpactPage() {
           }}
         >
           <img
-            src="/icons/icon-192x192.png"
+            src="/images/likas-lens-logo.png"
             alt="LikasLens Logo"
             style={{ width: 32, height: 32, objectFit: "contain" }}
           />
@@ -300,7 +300,7 @@ export default function ImpactPage() {
           </span>
         </Link>
 
-        <div className="hidden md:flex" style={{ gap: 32 }}>
+        <div className="hidden md:flex brightness-0 invert drop-shadow-sm" style={{ gap: 32 }}>
           <Link
             href="/"
             style={{
