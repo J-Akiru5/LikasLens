@@ -137,7 +137,7 @@ Neo4j stores your environmental law knowledge graph (hazards → laws → agenci
 | `APP_KEY` | `base64:...` (from your existing Azure config) |
 | `APP_URL` | *(leave blank — will fill after deploy)* |
 | `DB_CONNECTION` | `pgsql` |
-| `DB_HOST` | `db.sfklmmtimelotqvrldni.supabase.co` |
+| `DB_HOST` | `aws-1-ap-northeast-2.pooler.supabase.com` (Session Pooler — IPv4 compatible) |
 | `DB_PORT` | `5432` |
 | `DB_DATABASE` | `postgres` |
 | `DB_USERNAME` | `postgres.sfklmmtimelotqvrldni` |
