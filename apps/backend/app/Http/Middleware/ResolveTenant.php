@@ -94,8 +94,18 @@ class ResolveTenant
      */
     private function extractSubdomain(string $host): ?string
     {
-        // Handle localhost and IP addresses — no subdomain
-        if (str_contains($host, 'localhost') || preg_match('/^\d+\.\d+\.\d+\.\d+$/', $host)) {
+        // Handle localhost, IP addresses, and hosted domains (no subdomain)
+        if (
+            str_contains($host, 'localhost')
+            || preg_match('/^\d+\.\d+\.\d+\.\d+$/', $host)
+            || str_contains($host, '.run.app')           // Google Cloud Run
+            || str_contains($host, '.a.run.app')         // Google Cloud Run (alternate)
+            || str_contains($host, '.azurewebsites.net') // Azure
+            || str_contains($host, '.azurecontainerapps.io') // Azure Container Apps
+            || str_contains($host, '.vercel.app')        // Vercel
+            || str_contains($host, '.onrender.com')      // Render
+            || str_contains($host, '.herokuapp.com')     // Heroku
+        ) {
             return null;
         }
 
