@@ -175,7 +175,7 @@ Neo4j stores your environmental law knowledge graph (hazards → laws → agenci
 | `NEO4J_URI` | `neo4j+s://<your-instance>.databases.neo4j.io` (from Neo4j AuraDB) |
 | `NEO4J_USER` | `neo4j` |
 | `NEO4J_PASSWORD` | *(from Neo4j AuraDB console)* |
-| `CORS_ORIGINS` | `https://likaslens.vercel.app,https://likaslens-admin.vercel.app,https://likaslens-api-1096292232709.asia-southeast1.run.app` |
+| `CORS_ORIGINS` | `https://likaslens.syntaxure.dev,https://likasadmin.syntaxure.dev,https://likaslens-api-1096292232709.asia-southeast1.run.app` |
 | `ENVIRONMENT` | `production` |
 | `APP_DEBUG` | `false` |
 
