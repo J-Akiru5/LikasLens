@@ -181,7 +181,6 @@ jobs:
         with:
           path: apps/backend/vendor
           key: composer-${{ hashFiles('apps/backend/composer.lock') }}
-          restore-keys: composer-
 
       - name: Create bootstrap/cache directory
         run: mkdir -p bootstrap/cache && chmod -R 775 bootstrap/cache storage
