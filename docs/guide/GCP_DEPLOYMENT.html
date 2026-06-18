@@ -664,6 +664,59 @@
   </div>
 
   <!-- ============================================ -->
+  <!-- PHASE 2B: NEO4J AURADB -->
+  <!-- ============================================ -->
+  <div class="phase-divider" id="phase-2b">
+    <span class="phase-title">Phase 2B — Neo4j AuraDB (Graph Database)</span>
+    <span class="badge badge-manual">Manual</span>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Create Neo4j AuraDB Free Instance</h2>
+    </div>
+    <p>Neo4j stores your environmental law knowledge graph (hazards → laws → agencies). The free tier gives you 200K nodes and 400K relationships — more than enough.</p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      Go to <a href="https://neo4j.com/cloud/aura-free/" target="_blank">neo4j.com/cloud/aura-free</a> → Click <strong>Start Free</strong>.
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      Sign up with your email. You'll land on the Neo4j Console.
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      Click <strong>Create Instance</strong>:
+      <ul>
+        <li><strong>Name:</strong> <code>likaslens-graph</code></li>
+        <li><strong>Region:</strong> Leave default or choose closest to you</li>
+      </ul>
+    </div>
+    <div class="step">
+      <span class="step-number">4</span>
+      <strong>Save your credentials immediately</strong> (shown once, cannot be retrieved later):
+      <ul>
+        <li><code>NEO4J_URI</code> — looks like <code>neo4j+s://xxxx.databases.neo4j.io</code></li>
+        <li><code>NEO4J_USER</code> — usually <code>neo4j</code></li>
+        <li><code>NEO4J_PASSWORD</code> — auto-generated, copy this now</li>
+      </ul>
+    </div>
+    <div class="step">
+      <span class="step-number">5</span>
+      Save these values — you'll paste them into Cloud Run env vars in Phase 4.
+    </div>
+
+    <div class="warning">
+      <strong>Save your password now!</strong> Neo4j only shows the password once during instance creation. If you lose it, you'll need to reset the instance.
+    </div>
+
+    <div class="info">
+      <strong>Cost:</strong> AuraDB Free is truly free forever (no credit card required). 200K nodes, 400K relationships, 1 instance. Your 3-month GCP credits are not used here.
+    </div>
+  </div>
+
+  <!-- ============================================ -->
   <!-- PHASE 3: SERVICE ACCOUNT -->
   <!-- ============================================ -->
   <div class="phase-divider" id="phase-3" data-phase="3">
@@ -830,10 +883,15 @@
 
     <div class="step">
       <span class="step-number">6</span>
+      Click the <strong>Resources</strong> tab → Set <strong>Memory</strong> to <strong>1 GiB</strong> (prevents OOM during heavy requests).
+    </div>
+
+    <div class="step">
+      <span class="step-number">7</span>
       Click <strong>Create</strong>. Wait ~1 minute. It will give you a <strong>public URL</strong> (e.g., <code>https://likaslens-api-xyz.a.run.app</code>). <strong>Save this URL!</strong>
     </div>
     <div class="step">
-      <span class="step-number">7</span>
+      <span class="step-number">8</span>
       Go back to <strong>Edit &amp; Deploy New Revision</strong> → update <code>APP_URL</code> with this URL → <strong>Deploy</strong>.
     </div>
   </div>
@@ -862,6 +920,10 @@
     </div>
     <div class="step">
       <span class="step-number">4</span>
+      Click the <strong>Resources</strong> tab → Set <strong>Memory</strong> to <strong>2 GiB</strong> and <strong>CPU</strong> to <strong>2</strong> (AI workloads need headroom).
+    </div>
+    <div class="step">
+      <span class="step-number">5</span>
       Expand <strong>Variables &amp; Secrets</strong> → <strong>+ Add Variable</strong> for each:
     </div>
 
@@ -878,7 +940,7 @@
     </table>
 
     <div class="step">
-      <span class="step-number">5</span>
+      <span class="step-number">6</span>
       Click <strong>Create</strong>. Wait ~1 minute. <strong>Save the public URL</strong> (e.g., <code>https://likaslens-ai-xyz.a.run.app</code>).
     </div>
   </div>
@@ -937,7 +999,7 @@
     </table>
 
     <div class="info">
-      <strong>First push after Phase 4:</strong> The workflows will replace the sample containers with your real Laravel/FastAPI code. Because you already set env vars in Phase 4, the app will connect to Supabase immediately on boot.
+      <strong>Test containers are replaced automatically:</strong> The sample containers you deployed in Phase 4 are temporary placeholders. When you push to <code>main</code>, GitHub Actions builds your real Docker image and deploys it — the test container is replaced automatically. Your env vars are preserved because they're stored in the Cloud Run service config, not inside the container.
     </div>
 
     <h3>What the Pipeline Does (Step by Step)</h3>
