@@ -71,6 +71,27 @@
 
 ---
 
+## Phase 2B: Neo4j AuraDB (Graph Database)
+
+Neo4j stores your environmental law knowledge graph (hazards → laws → agencies). The free tier gives you 200K nodes and 400K relationships — more than enough.
+
+1. Go to [neo4j.com/cloud/aura-free](https://neo4j.com/cloud/aura-free/) → Click **Start Free**.
+2. Sign up with your email. You'll land on the Neo4j Console.
+3. Click **Create Instance**:
+   - **Name:** `likaslens-graph`
+   - **Region:** Leave default or choose closest to you
+4. **Save your credentials immediately** (shown once, cannot be retrieved later):
+   - `NEO4J_URI` — looks like `neo4j+s://xxxx.databases.neo4j.io`
+   - `NEO4J_USER` — usually `neo4j`
+   - `NEO4J_PASSWORD` — auto-generated, copy this now
+5. Save these values — you'll paste them into Cloud Run env vars in Phase 4.
+
+> **Save your password now!** Neo4j only shows the password once during instance creation. If you lose it, you'll need to reset the instance.
+
+> **Cost:** AuraDB Free is truly free forever (no credit card required). 200K nodes, 400K relationships, 1 instance. Your 3-month GCP credits are not used here.
+
+---
+
 ## Phase 3: Service Account (VIP Pass for GitHub Actions)
 
 1. Search **Service Accounts** (under IAM & Admin).
@@ -132,9 +153,10 @@
 | `SUPABASE_STORAGE_BUCKET` | `likaslens-evidence` |
 | `AI_SERVICE_URL` | *(leave blank — will fill after AI service deploys)* |
 
-5. Click **Create**. Wait ~1 minute.
-6. **Save the public URL** (e.g., `https://likaslens-api-xyz.a.run.app`). This is your new backend URL.
-7. Go back to **Edit & Deploy New Revision** → update `APP_URL` with this URL → **Deploy**.
+5. Click the **Resources** tab → Set **Memory** to **1 GiB** (prevents OOM during heavy requests).
+6. Click **Create**. Wait ~1 minute.
+7. **Save the public URL** (e.g., `https://likaslens-api-xyz.a.run.app`). This is your new backend URL.
+8. Go back to **Edit & Deploy New Revision** → update `APP_URL` with this URL → **Deploy**.
 
 ### 4B: Deploy AI Service (`likaslens-ai`)
 
@@ -143,7 +165,8 @@
    - **Service name:** `likaslens-ai`
    - **Region:** `asia-southeast1`
    - **Authentication:** **Allow unauthenticated invocations**
-3. Expand **Variables & Secrets** → **+ Add Variable** for each:
+3. Click the **Resources** tab → Set **Memory** to **2 GiB** and **CPU** to **2** (AI workloads need headroom).
+4. Expand **Variables & Secrets** → **+ Add Variable** for each:
 
 | Variable | Value |
 |----------|-------|
@@ -156,8 +179,8 @@
 | `ENVIRONMENT` | `production` |
 | `APP_DEBUG` | `false` |
 
-4. Click **Create**. Wait ~1 minute.
-5. **Save the public URL** (e.g., `https://likaslens-ai-xyz.a.run.app`).
+5. Click **Create**. Wait ~1 minute.
+6. **Save the public URL** (e.g., `https://likaslens-ai-xyz.a.run.app`).
 
 ### 4C: Link Backend → AI Service
 
@@ -180,6 +203,8 @@ Both workflows:
 3. Run Trivy vulnerability scanner (HIGH/CRITICAL)
 4. Push to Artifact Registry
 5. Deploy to Cloud Run
+
+> **Test containers are replaced automatically:** The sample containers you deployed in Phase 4 are temporary placeholders. When you push to `main`, GitHub Actions builds your real Docker image and deploys it — the test container is replaced automatically. Your env vars are preserved because they're stored in the Cloud Run service config, not inside the container.
 
 **To trigger:** Commit and push to `main`. Watch the GitHub Actions tab.
 
