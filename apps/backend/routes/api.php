@@ -102,6 +102,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         $user = $request->user();
 
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -117,6 +124,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user/profile', function (Request $request) {
         $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
 
         return response()->json([
             'success' => true,
