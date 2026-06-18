@@ -25,7 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AI Service**: `neo4j_bootstrap.py` — Cypher MERGE upsert generation for idempotent seeding
 - **AI Service**: `graph_rag.py` — Context-Governed RAG with Gemini embeddings and Neo4j vector search
 - **AI Service**: `neo4j_upserts/baseline_rules.py` — Seed data with Location nodes (Iloilo) and all 16 PH laws
+- **AI Service**: `seed_neo4j.py` — Standalone seed script with `--drop` flag and auto-embed support
 - **Docs**: Billing budget & alerts setup in Phase 1 of GCP deployment guide
+- **Docs**: Neo4j AuraDB setup guide (Phase 2B) in GCP deployment guide
+- **Docs**: Memory/CPU allocation steps for Cloud Run services (Phase 4)
 
 ### Removed
 - **AI Service**: Removed `gremlinpython` dependency (replaced by `neo4j`)
