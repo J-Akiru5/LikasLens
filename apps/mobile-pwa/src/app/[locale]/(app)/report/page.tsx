@@ -15,7 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { cn, laravelPost, showToast } from "@likaslens/shared";
+import { cn, laravelPost, showToast, Button } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
 import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -387,14 +387,13 @@ export default function ReportPage() {
         </div>
 
         {/* Submit */}
-        <button
+        <Button
           onClick={handleSubmit}
           disabled={submitting}
+          variant="primary"
           className={cn(
             "w-full h-14 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-            submitting
-              ? "bg-ink/5 text-ink/30 cursor-not-allowed"
-              : "bg-green text-white shadow-lg shadow-green/20 hover:bg-green/90 hover:shadow-green/30",
+            submitting && "opacity-50"
           )}
         >
           {submitting ? (
@@ -405,7 +404,7 @@ export default function ReportPage() {
               Submit Report
             </>
           )}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -453,7 +452,7 @@ export default function ReportPage() {
 
       {/* Map — shows GPS pin, draggable to refine location */}
       <div>
-        <label className="block text-[10px] font-mono uppercase tracking-wider text-ink/40 mb-2 pl-1">
+        <label className="label-pill label-pill-light mb-2 inline-block pl-1">
           Location
         </label>
         <GeoTagMap
@@ -466,7 +465,7 @@ export default function ReportPage() {
 
       {/* Incident Type */}
       <div className="relative">
-        <label className="block text-[10px] font-mono uppercase tracking-wider text-ink/40 mb-2 pl-1">
+        <label className="label-pill label-pill-light mb-2 inline-block pl-1">
           Incident Type
         </label>
         <button
@@ -509,7 +508,7 @@ export default function ReportPage() {
 
       {/* Description */}
       <div>
-        <label className="block text-[10px] font-mono uppercase tracking-wider text-ink/40 mb-2 pl-1">
+        <label className="label-pill label-pill-light mb-2 inline-block pl-1">
           Description (Optional)
         </label>
         <div className="relative">
@@ -591,14 +590,13 @@ export default function ReportPage() {
       </div>
 
       {/* Submit */}
-      <button
+      <Button
         onClick={handleSubmit}
         disabled={submitting || !incidentType}
+        variant="primary"
         className={cn(
           "w-full h-14 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-          submitting || !incidentType
-            ? "bg-ink/5 text-ink/30 cursor-not-allowed"
-            : "bg-green text-white shadow-lg shadow-green/20 hover:bg-green/90 hover:shadow-green/30",
+          (submitting || !incidentType) && "opacity-50 cursor-not-allowed"
         )}
       >
         {submitting ? (
@@ -609,7 +607,7 @@ export default function ReportPage() {
             Submit Evidence
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

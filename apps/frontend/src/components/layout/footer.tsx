@@ -28,8 +28,11 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
     >
       {/* Background Images Layer (Optimized with Next.js Image) */}
       <div 
-        className="absolute inset-0 transition-opacity duration-1000 z-0"
-        style={{ opacity: ghostMode ? 0 : 0.8 }}
+        className="absolute inset-0 transition-opacity duration-1000 z-0 origin-bottom"
+        style={{ 
+          opacity: ghostMode ? 0 : 0.95,
+          animation: ghostMode ? 'none' : 'breathScale 30s ease-in-out infinite'
+        }}
       >
         <Image 
           src="/images/footer-mountain-light.png" 
@@ -42,8 +45,11 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
         />
       </div>
       <div 
-        className="absolute inset-0 transition-opacity duration-1000 z-0"
-        style={{ opacity: ghostMode ? 0.8 : 0 }}
+        className="absolute inset-0 transition-opacity duration-1000 z-0 origin-bottom"
+        style={{ 
+          opacity: ghostMode ? 0.8 : 0,
+          animation: ghostMode ? 'breathScale 40s ease-in-out infinite' : 'none'
+        }}
       >
         <Image 
           src="/images/footer-sea.png" 
@@ -58,16 +64,24 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
       
       {/* Gradient Overlay for Readability */}
       <div 
-        className={`absolute inset-0 transition-opacity duration-1000 z-0 pointer-events-none ${ghostMode ? "bg-gradient-to-t from-[#020b14] via-[#020b14]/80 to-[#020b14]/20" : "bg-white/50 bg-gradient-to-t from-[#f0f9f4] via-[#f0f9f4]/80 to-transparent"}`} 
+        className={`absolute inset-0 transition-opacity duration-1000 z-0 pointer-events-none ${ghostMode ? "bg-gradient-to-t from-[#020b14] via-[#020b14]/80 to-[#020b14]/20" : "bg-white/30 bg-gradient-to-t from-[#e6f4ed] via-[#e6f4ed]/80 to-transparent"}`} 
       />
 
       {/* Top Cutout Layer (matches page background to carve shapes into the footer) */}
       <div className="absolute top-[-1px] left-0 right-0 pointer-events-none z-10 overflow-hidden" style={{ color: "var(--page)" }}>
         {ghostMode ? (
-          // Moving Wave for Deep Sea
-          <svg viewBox="0 0 1440 100" className="w-[200%] h-[40px] md:h-[80px] block" preserveAspectRatio="none" style={{ animation: 'slideWave 15s linear infinite' }}>
-            <path d="M0,0 L2880,0 L2880,50 C2520,100 2520,0 2160,50 C1800,100 1800,0 1440,50 C1080,100 1080,0 720,50 C360,100 360,0 0,50 Z" fill="currentColor" />
-          </svg>
+          // Moving Waves for Deep Sea
+          <div className="relative w-full h-[40px] md:h-[80px]">
+            <svg viewBox="0 0 1440 100" className="absolute top-0 left-0 w-[200%] h-full opacity-60" preserveAspectRatio="none" style={{ animation: 'slideWave 18s linear infinite' }}>
+              <path d="M0,0 L2880,0 L2880,50 C2520,100 2520,0 2160,50 C1800,100 1800,0 1440,50 C1080,100 1080,0 720,50 C360,100 360,0 0,50 Z" fill="currentColor" />
+            </svg>
+            <svg viewBox="0 0 1440 100" className="absolute top-0 left-0 w-[200%] h-full opacity-30" preserveAspectRatio="none" style={{ animation: 'slideWave 25s linear infinite reverse' }}>
+              <path d="M0,0 L2880,0 L2880,50 C2520,80 2520,20 2160,50 C1800,80 1800,20 1440,50 C1080,80 1080,20 720,50 C360,80 360,20 0,50 Z" fill="currentColor" />
+            </svg>
+            <svg viewBox="0 0 1440 100" className="absolute top-0 left-0 w-[200%] h-full opacity-10" preserveAspectRatio="none" style={{ animation: 'slideWave 12s linear infinite' }}>
+              <path d="M0,0 L2880,0 L2880,50 C2520,120 2520,-20 2160,50 C1800,120 1800,-20 1440,50 C1080,120 1080,-20 720,50 C360,120 360,-20 0,50 Z" fill="currentColor" />
+            </svg>
+          </div>
         ) : (
           // Static Mountain Hills for Civic
           <svg viewBox="0 0 1440 100" className="w-full h-[40px] md:h-[80px] block" preserveAspectRatio="none">
@@ -97,6 +111,10 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
         @keyframes slideWave {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
+        }
+        @keyframes breathScale {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
         }
       `}} />
 
@@ -156,12 +174,19 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 <span className="font-bold uppercase">LENS</span>
               </span>
             </div>
-            <p className={`text-sm ${mutedColor} max-w-md leading-relaxed transition-colors duration-1000`}>
-              Environmental monitoring platform. Protecting communities through collective intelligence and decentralized action.
-            </p>
+            <div className={`mt-2 p-3 rounded-xl ${ghostMode ? "bg-white/5 border-white/10" : "bg-green/5 border-green/20"} border text-xs`}>
+              <p className={`font-semibold ${ghostMode ? "text-cyan-400" : "text-green"}`}>
+                {ghostMode ? "Ghost Mode (Deep Sea)" : "Civic Mode (Mountain)"}
+              </p>
+              <p className={`${mutedColor} mt-1 leading-relaxed`}>
+                {ghostMode 
+                  ? "Submerged deep-data surveillance, operating beneath the surface to uncover hidden anomalies securely."
+                  : "Surface-level visibility, representing transparent civic participation and community awareness."}
+              </p>
+            </div>
             <div className="flex gap-4 mt-2">
-              <a href="https://github.com/J-Akiru5/LikasLens" target="_blank" rel="noreferrer" className={`w-10 h-10 rounded-full border ${borderColor} flex items-center justify-center ${mutedColor} hover:text-accent hover:border-accent hover:bg-accent/10 transition-all group`}>
-                <GitHubCatIcon className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+              <a href="https://github.com/J-Akiru5/LikasLens" target="_blank" rel="noreferrer" aria-label="LikasLens on GitHub" className={`w-10 h-10 rounded-full border ${borderColor} flex items-center justify-center ${mutedColor} hover:text-accent hover:border-accent hover:bg-accent/10 transition-all group`}>
+                <GitHubCatIcon className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" aria-hidden="true" />
               </a>
             </div>
           </div>

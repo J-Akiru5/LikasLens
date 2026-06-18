@@ -39,7 +39,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       aria-label={`Switch to ${isGhostMode ? "Civic" : "Ghost"} mode`}
       aria-pressed={isGhostMode}
       className={cn(
-        "flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200",
+        "flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
         isGhostMode
           ? "bg-accent/10 border border-accent/20 text-accent"
           : "border border-border text-ink/60 hover:bg-ink/[0.02]",

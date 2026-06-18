@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { User, LogOut, ChevronRight, Award, Settings, Wallet, Edit2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@likaslens/shared";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -53,15 +54,19 @@ export default function ProfilePage() {
       </h1>
 
       {/* User Card */}
-      <div className="p-6 rounded-[2rem] bg-gradient-to-br from-green to-accent border border-page/10 shadow-xl relative overflow-hidden group mb-8">
+      <div className="kpi-card kpi-accent-green p-6 rounded-[2rem] bg-gradient-to-br from-green to-accent border border-page/10 shadow-xl relative overflow-hidden group mb-8">
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-page/10 rounded-full blur-xl" />
         <div className="absolute right-4 top-4 z-10">
-          <Link
-            href={`/${locale}/profile/edit`}
-            className="w-10 h-10 rounded-full bg-page/10 backdrop-blur-md flex items-center justify-center hover:bg-page/20 transition-colors"
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="w-10 h-10 rounded-full bg-page/10 backdrop-blur-md hover:bg-page/20"
           >
-            <Edit2 className="w-5 h-5 text-page" />
-          </Link>
+            <Link href={`/${locale}/profile/edit`} aria-label="Edit profile">
+              <Edit2 className="w-5 h-5 text-page" />
+            </Link>
+          </Button>
         </div>
         <div className="flex items-center gap-4 relative z-10">
           <div className="w-16 h-16 rounded-2xl bg-page/10 backdrop-blur-md border border-page/20 flex items-center justify-center shadow-inner">
@@ -80,7 +85,7 @@ export default function ProfilePage() {
 
       {/* Menu Items */}
       <div className="space-y-3 mt-6">
-        <Link 
+        <Link
           href={`/${locale}/history`}
           className="w-full flex items-center gap-4 p-4 rounded-3xl bg-panel border border-ink/5 hover:border-green hover:shadow-md transition-all group"
         >
@@ -93,7 +98,7 @@ export default function ProfilePage() {
           <ChevronRight className="w-5 h-5 text-ink/30 group-hover:text-green transition-colors" />
         </Link>
 
-        <Link 
+        <Link
           href={`/${locale}/achievements`}
           className="w-full flex items-center gap-4 p-4 rounded-3xl bg-panel border border-ink/5 hover:border-amber/50 hover:shadow-md transition-all group"
         >
@@ -106,7 +111,7 @@ export default function ProfilePage() {
           <ChevronRight className="w-5 h-5 text-ink/30 group-hover:text-amber transition-colors" />
         </Link>
 
-        <Link 
+        <Link
           href={`/${locale}/settings`}
           className="w-full flex items-center gap-4 p-4 rounded-3xl bg-panel border border-ink/5 hover:border-ink/20 hover:shadow-md transition-all group"
         >
@@ -121,11 +126,13 @@ export default function ProfilePage() {
       </div>
 
       <div className="mt-8 mb-4 px-2">
-        <h3 className="font-mono text-xs uppercase tracking-widest text-ink/40 font-bold">Citizen Tools</h3>
+        <h3 className="font-mono text-xs uppercase tracking-widest text-ink/40 font-bold">
+          <span className="label-pill label-pill-light">Citizen Tools</span>
+        </h3>
       </div>
-      
+
       <div className="space-y-3">
-        <Link 
+        <Link
           href={`/${locale}/incidents`}
           className="w-full flex items-center gap-4 p-4 rounded-3xl bg-panel border border-ink/5 hover:border-ink/20 hover:shadow-md transition-all group"
         >
@@ -138,7 +145,7 @@ export default function ProfilePage() {
           <ChevronRight className="w-5 h-5 text-ink/30" />
         </Link>
 
-        <Link 
+        <Link
           href={`/${locale}/analytics`}
           className="w-full flex items-center gap-4 p-4 rounded-3xl bg-panel border border-ink/5 hover:border-ink/20 hover:shadow-md transition-all group"
         >
@@ -150,8 +157,8 @@ export default function ProfilePage() {
           </span>
           <ChevronRight className="w-5 h-5 text-ink/30" />
         </Link>
-        
-        <Link 
+
+        <Link
           href={`/${locale}/impact`}
           className="w-full flex items-center gap-4 p-4 rounded-3xl bg-panel border border-ink/5 hover:border-ink/20 hover:shadow-md transition-all group"
         >
@@ -164,7 +171,7 @@ export default function ProfilePage() {
           <ChevronRight className="w-5 h-5 text-ink/30" />
         </Link>
 
-        <Link 
+        <Link
           href={`/${locale}/laws`}
           className="w-full flex items-center gap-4 p-4 rounded-3xl bg-panel border border-ink/5 hover:border-ink/20 hover:shadow-md transition-all group"
         >

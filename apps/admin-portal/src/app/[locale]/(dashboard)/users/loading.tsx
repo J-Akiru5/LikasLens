@@ -5,7 +5,7 @@ export default function Loading() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[1,2,3,4].map(i => <div key={i} className="bg-panel rounded-2xl border border-ink/5 p-5 h-28 animate-shimmer" />)}
       </div>
-      <div className="bg-panel rounded-2xl border border-ink/5 p-6 space-y-3">
+      <div className="bg-panel rounded-2xl border border-ink/5 p-4 sm:p-6 space-y-3">
         {[1,2,3,4,5].map(i => <div key={i} className="h-12 rounded-lg bg-ink/5 animate-shimmer" />)}
       </div>
     </div>

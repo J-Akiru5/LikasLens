@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Camera, Bot, CheckCircle } from "lucide-react";
 
 import { SpotlightCard } from "@likaslens/shared";
@@ -55,7 +55,7 @@ export function HowItWorksSection() {
       id="how-it-works"
       style={{ maxWidth: 1280, margin: "0 auto", padding: "120px 32px" }}
     >
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
@@ -111,9 +111,9 @@ export function HowItWorksSection() {
         >
           Three steps turn every citizen report into measurable environmental action.
         </p>
-      </motion.div>
+      </m.div>
 
-      <motion.div
+      <m.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="show"
@@ -125,7 +125,7 @@ export function HowItWorksSection() {
         }}
       >
         {HOW_IT_WORKS.map(({ step, Icon, title, description }, i) => (
-          <motion.div
+      <m.div
             key={step}
             variants={fadeUp}
             style={{
@@ -207,9 +207,9 @@ export function HowItWorksSection() {
               </p>
             </div>
             </SpotlightCard>
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
     </section>
   );
 }

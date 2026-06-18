@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Fingerprint, Eye, ShieldCheck, CheckCircle, Camera } from "lucide-react";
 
 interface GhostModeSectionProps {
@@ -80,6 +80,8 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
 
             <button
               onClick={onGhostToggle}
+              aria-label={ghostMode ? "Deactivate Ghost Mode" : "Activate Ghost Mode"}
+              className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
               style={{
                 alignSelf: "flex-start", display: "flex", alignItems: "center", gap: 10,
                 marginTop: 24, padding: "12px 24px", borderRadius: 12, border: "none", cursor: "pointer",
@@ -93,9 +95,9 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
               }}
             >
               {ghostMode ? (
-                <><ShieldCheck style={{ width: 16, height: 16 }} /> Deactivate Ghost Mode</>
+                <><ShieldCheck style={{ width: 16, height: 16 }} aria-hidden="true" /> Deactivate Ghost Mode</>
               ) : (
-                <><Eye style={{ width: 16, height: 16 }} /> Activate Ghost Mode</>
+                <><Eye style={{ width: 16, height: 16 }} aria-hidden="true" /> Activate Ghost Mode</>
               )}
             </button>
           </div>
@@ -110,7 +112,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
             {ghostMode && (
               <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse at center, rgba(250,204,21,0.08) 0%, transparent 70%)" }} />
             )}
-            <motion.div
+            <m.div
               key={ghostMode ? "ghost" : "normal"}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -120,7 +122,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
               {ghostMode ? (
                 <>
                   <div style={{ position: "relative", display: "inline-block", overflow: "hidden", padding: 12 }}>
-                    <motion.div
+                    <m.div
                       animate={{
                         x: [0, -2, 2, 0, 0, 0, 0, 0],
                         opacity: [1, 0.3, 1, 1, 1, 1, 1, 1],
@@ -134,8 +136,8 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                       transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                     >
                       <Fingerprint style={{ width: 96, height: 96, color: "var(--ghost-accent)" }} />
-                    </motion.div>
-                    <motion.div
+                    </m.div>
+                    <m.div
                       animate={{ top: ["-20%", "120%"] }}
                       transition={{ duration: 2.5, repeat: Infinity, ease: "linear", repeatDelay: 0.5 }}
                       style={{
@@ -173,7 +175,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                   </div>
                 </>
               )}
-            </motion.div>
+            </m.div>
           </div>
         </div>
       </div>

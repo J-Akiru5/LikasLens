@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { User, Camera, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { getProfile, laravelPut, showToast, cn } from "@likaslens/shared";
+import { getProfile, laravelPut, showToast, Button } from "@likaslens/shared";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function EditProfilePage() {
               <Camera className="w-4 h-4 text-ink/60" />
             </div>
           </div>
-          <p className="text-ink/60 font-mono text-xs">Tap to change avatar</p>
+          <p className="label-pill label-pill-light">Tap to change avatar</p>
         </div>
 
         {loading ? (
@@ -77,7 +77,7 @@ export default function EditProfilePage() {
         ) : (
           <form className="space-y-6 mt-8" onSubmit={handleSave}>
             <div>
-              <label className="block font-mono text-xs font-bold uppercase mb-2 text-ink/70">
+              <label className="label-pill label-pill-light mb-2 inline-block">
                 Display Name
               </label>
               <input
@@ -89,10 +89,11 @@ export default function EditProfilePage() {
               />
             </div>
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
               disabled={saving}
-              className="w-full bg-accent text-white rounded-2xl py-4 font-semibold tracking-wide text-lg flex items-center justify-center hover:bg-accent/90 disabled:opacity-50 transition-colors shadow-lg"
+              className="w-full rounded-2xl py-4 font-semibold tracking-wide text-lg flex items-center justify-center shadow-lg"
             >
               {saving ? (
                 <>
@@ -102,7 +103,7 @@ export default function EditProfilePage() {
               ) : (
                 "Save Changes"
               )}
-            </button>
+            </Button>
           </form>
         )}
       </main>

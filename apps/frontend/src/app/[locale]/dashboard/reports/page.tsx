@@ -6,10 +6,12 @@ import {
   getDashboardStats,
   AdminKPIsSkeleton,
   EmptyState,
+  StatsCards,
+  RevealSection,
 } from "@likaslens/shared";
 import type { Ticket, DashboardStats } from "@likaslens/shared";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
-import { BarChart3, TrendingUp, Download, AlertCircle } from "lucide-react";
+import { BarChart3, TrendingUp, Download, AlertCircle, FileText, CheckCircle, TriangleAlert, Activity } from "lucide-react";
 import { ToastContainer } from "@likaslens/shared";
 
 export default function ReportsPage() {
@@ -163,48 +165,52 @@ export default function ReportsPage() {
       <ToastContainer />
       <div className="space-y-6 pb-20">
         {/* Metric Cards */}
-        <div className="bento-grid">
-          {[
-            {
-              title: "Total Tracked",
-              value: totalIncidents.toLocaleString(),
-              label: "all time reports",
-            },
-            {
-              title: "Resolution Rate",
-              value: `${avgResolutionRate}%`,
-              label: "overall avg",
-            },
-            {
-              title: "Open Incidents",
-              value: `${stats?.active_incidents ?? 0}`,
-              label: "currently active",
-            },
-            {
-              title: "Resolved Today",
-              value: `${stats?.resolved_today ?? 0}`,
-              label: "last 24h",
-            },
-          ].map((metric, i) => (
-            <div key={i} className="span-3">
-              <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5 flex flex-col items-center justify-center text-center h-full hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-                <span className="font-semibold tracking-tight text-4xl sm:text-5xl text-ink mb-3 block">
-                  {metric.value}
-                </span>
-                <span className="font-mono text-xs text-ink/50 uppercase tracking-widest font-bold block mb-1">
-                  {metric.title}
-                </span>
-                <span className="font-mono text-[10px] text-ink/30 uppercase tracking-wide block">
-                  {metric.label}
-                </span>
-              </div>
-            </div>
-          ))}
+        <RevealSection>
+        <div className="mb-6">
+          <StatsCards
+            items={[
+              {
+                id: "total",
+                category: "Total Tracked",
+                label: "All Time Reports",
+                value: totalIncidents.toLocaleString(),
+                accent: "accent",
+                icon: FileText,
+              },
+              {
+                id: "rate",
+                category: "Resolution Rate",
+                label: "Overall Avg",
+                value: `${avgResolutionRate}%`,
+                accent: "green",
+                icon: Activity,
+              },
+              {
+                id: "open",
+                category: "Open Incidents",
+                label: "Currently Active",
+                value: stats?.active_incidents ?? 0,
+                accent: "amber",
+                icon: TriangleAlert,
+              },
+              {
+                id: "resolved",
+                category: "Resolved Today",
+                label: "Last 24h",
+                value: stats?.resolved_today ?? 0,
+                accent: "green",
+                icon: CheckCircle,
+              },
+            ]}
+            gridClassName="grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6"
+          />
         </div>
+        </RevealSection>
 
 
 
         {/* Charts Row */}
+        <RevealSection>
         <div className="bento-grid">
           <div className="span-6">
             <section className="bg-panel rounded-3xl p-6 md:p-8 shadow-sm border border-ink/5">
@@ -288,6 +294,7 @@ export default function ReportsPage() {
             </section>
           </div>
         </div>
+        </RevealSection>
       </div>
     </DashboardLayoutWrapper>
   );

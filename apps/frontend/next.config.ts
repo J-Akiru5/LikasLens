@@ -8,6 +8,9 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {},
+  images: {
+    qualities: [70, 75],
+  },
   webpack: (config, { isServer }) => {
     return config;
   },

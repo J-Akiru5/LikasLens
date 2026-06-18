@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronLeft, TreePine, Droplets, Zap, ShieldCheck } from "lucide-react";
-import { laravelGet, showToast, Skeleton } from "@likaslens/shared";
+import { laravelGet, showToast, Skeleton, AnimatedCounter, RevealSection } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse } from "@likaslens/shared";
 
 export default function ImpactPage() {
@@ -74,55 +74,89 @@ export default function ImpactPage() {
           </p>
         </div>
 
-        <div className="grid gap-4">
-          <div className="bg-panel p-6 rounded-[2rem] border border-ink/5 flex items-center gap-5 shadow-sm">
-            <div className="w-16 h-16 rounded-[1.25rem] bg-[#2d6a4f]/10 flex items-center justify-center shrink-0">
-              <TreePine className="w-8 h-8 text-[#2d6a4f]" />
+        <RevealSection stagger={0.12}>
+          <div className="grid gap-4">
+            <div className="kpi-card kpi-accent-green rounded-[2rem] border border-border bg-green/[0.02] hover:bg-green/[0.04] transition-colors duration-300 p-6 flex items-center gap-5 shadow-sm relative overflow-hidden group">
+              <div 
+                className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-[#2d6a4f]"
+                style={{ opacity: 0.05 }}
+              >
+                <TreePine className="w-24 h-24" />
+              </div>
+              <div className="w-16 h-16 rounded-[1.25rem] bg-[#2d6a4f]/10 flex items-center justify-center shrink-0 relative z-10">
+                <TreePine className="w-8 h-8 text-[#2d6a4f]" />
+              </div>
+              <div className="relative z-10">
+                <span className="text-3xl font-bold text-[#2d6a4f] block mb-1 tabular-nums">
+                  {stats?.total_reports != null ? (
+                    <AnimatedCounter value={stats.total_reports} />
+                  ) : "\u2014"}
+                </span>
+                <span className="label-pill label-pill-light">Trees Saved</span>
+              </div>
             </div>
-            <div>
-              <span className="text-3xl font-bold text-ink block mb-1">
-                {stats?.total_reports?.toLocaleString() ?? "\u2014"}
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink/50">Trees Saved</span>
-            </div>
-          </div>
 
-          <div className="bg-panel p-6 rounded-[2rem] border border-ink/5 flex items-center gap-5 shadow-sm">
-            <div className="w-16 h-16 rounded-[1.25rem] bg-[#0284c7]/10 flex items-center justify-center shrink-0">
-              <Droplets className="w-8 h-8 text-[#0284c7]" />
+            <div className="kpi-card kpi-accent-accent rounded-[2rem] border border-border bg-accent/[0.02] hover:bg-accent/[0.04] transition-colors duration-300 p-6 flex items-center gap-5 shadow-sm relative overflow-hidden group">
+              <div 
+                className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-[#0284c7]"
+                style={{ opacity: 0.05 }}
+              >
+                <Droplets className="w-24 h-24" />
+              </div>
+              <div className="w-16 h-16 rounded-[1.25rem] bg-[#0284c7]/10 flex items-center justify-center shrink-0 relative z-10">
+                <Droplets className="w-8 h-8 text-[#0284c7]" />
+              </div>
+              <div className="relative z-10">
+                <span className="text-3xl font-bold text-[#0284c7] block mb-1 tabular-nums">
+                  {stats?.active_incidents_total != null ? (
+                    <AnimatedCounter value={stats.active_incidents_total * 100} suffix="L" />
+                  ) : "\u2014"}
+                </span>
+                <span className="label-pill label-pill-light">Water Cleaned</span>
+              </div>
             </div>
-            <div>
-              <span className="text-3xl font-bold text-ink block mb-1">
-                {stats?.active_incidents_total != null ? `${(stats.active_incidents_total * 100).toLocaleString()}L` : "\u2014"}
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink/50">Water Cleaned</span>
-            </div>
-          </div>
 
-          <div className="bg-panel p-6 rounded-[2rem] border border-ink/5 flex items-center gap-5 shadow-sm">
-            <div className="w-16 h-16 rounded-[1.25rem] bg-[#c27a2e]/10 flex items-center justify-center shrink-0">
-              <Zap className="w-8 h-8 text-[#c27a2e]" />
+            <div className="kpi-card kpi-accent-amber rounded-[2rem] border border-border bg-amber-500/[0.02] hover:bg-amber-500/[0.04] transition-colors duration-300 p-6 flex items-center gap-5 shadow-sm relative overflow-hidden group">
+              <div 
+                className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-[#c27a2e]"
+                style={{ opacity: 0.05 }}
+              >
+                <Zap className="w-24 h-24" />
+              </div>
+              <div className="w-16 h-16 rounded-[1.25rem] bg-[#c27a2e]/10 flex items-center justify-center shrink-0 relative z-10">
+                <Zap className="w-8 h-8 text-[#c27a2e]" />
+              </div>
+              <div className="relative z-10">
+                <span className="text-3xl font-bold text-[#c27a2e] block mb-1 tabular-nums">
+                  {stats?.total_users != null ? (
+                    <AnimatedCounter value={stats.total_users / 1000} decimals={1} suffix="M" />
+                  ) : "\u2014"}
+                </span>
+                <span className="label-pill label-pill-light">kg CO2 Offset</span>
+              </div>
             </div>
-            <div>
-              <span className="text-3xl font-bold text-ink block mb-1">
-                {stats?.total_users != null ? `${(stats.total_users / 1000).toFixed(1)}M` : "\u2014"}
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink/50">kg CO2 Offset</span>
-            </div>
-          </div>
 
-          <div className="bg-panel p-6 rounded-[2rem] border border-ink/5 flex items-center gap-5 shadow-sm">
-            <div className="w-16 h-16 rounded-[1.25rem] bg-ink/5 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-8 h-8 text-ink/60" />
-            </div>
-            <div>
-              <span className="text-3xl font-bold text-ink block mb-1">
-                {stats?.resolved_today?.toLocaleString() ?? "\u2014"}
-              </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-ink/50">Policies Enforced</span>
+            <div className="kpi-card kpi-accent-muted rounded-[2rem] border border-border bg-ink/[0.02] hover:bg-ink/[0.04] transition-colors duration-300 p-6 flex items-center gap-5 shadow-sm relative overflow-hidden group">
+              <div 
+                className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-ink"
+                style={{ opacity: 0.05 }}
+              >
+                <ShieldCheck className="w-24 h-24" />
+              </div>
+              <div className="w-16 h-16 rounded-[1.25rem] bg-ink/5 flex items-center justify-center shrink-0 relative z-10">
+                <ShieldCheck className="w-8 h-8 text-ink/60" />
+              </div>
+              <div className="relative z-10">
+                <span className="text-3xl font-bold text-ink block mb-1 tabular-nums">
+                  {stats?.resolved_today != null ? (
+                    <AnimatedCounter value={stats.resolved_today} />
+                  ) : "\u2014"}
+                </span>
+                <span className="label-pill label-pill-light">Policies Enforced</span>
+              </div>
             </div>
           </div>
-        </div>
+        </RevealSection>
       </div>
     </div>
   );

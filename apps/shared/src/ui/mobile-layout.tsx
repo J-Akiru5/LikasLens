@@ -54,27 +54,29 @@ export function MobileLayout({
           <button
             onClick={onThemeToggle}
             className={cn(
-              "p-2 rounded-lg transition-colors",
+              "p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
               isGhostMode
                 ? "text-secondary bg-secondary/10"
                 : "text-ink/40 hover:text-ink"
             )}
-            aria-label="Toggle Ghost Mode"
+            aria-label={isGhostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
           >
-            <Fingerprint className="w-5 h-5" />
+            <Fingerprint className="w-5 h-5" aria-hidden="true" />
           </button>
 
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className={cn(
-                "relative transition-colors p-2 rounded-full",
+                "relative transition-colors p-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
                 showNotifications ? "bg-ink/5 text-ink" : "text-ink/40 hover:text-ink hover:bg-ink/5"
               )}
               aria-label="Notifications"
+              aria-expanded={showNotifications}
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-5 h-5" aria-hidden="true" />
               <span
+                aria-hidden="true"
                 className={cn(
                   "absolute top-1.5 right-1.5 w-2 h-2 rounded-full border-2 border-page",
                   isGhostMode ? "bg-secondary" : "bg-green"

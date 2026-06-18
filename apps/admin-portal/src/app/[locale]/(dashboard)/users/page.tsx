@@ -24,6 +24,7 @@ import {
   showToast,
   Dropdown,
   AdminTableSkeleton,
+  Button,
 } from "@likaslens/shared";
 import { useBulkSelect } from "@/hooks/use-bulk-select";
 import { BulkActionsBar } from "@/components/bulk-actions-bar";
@@ -228,7 +229,7 @@ export default function UsersPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
             Users
           </h1>
           <p className="font-mono text-base text-muted mt-1">
@@ -237,13 +238,14 @@ export default function UsersPage() {
               : "Manage user accounts and roles"}
           </p>
         </div>
-        <button
+        <Button
+          variant="primary"
+          type="button"
           onClick={() => setShowCreate(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-green text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
           Create User
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-col gap-4 sm:flex-row">
@@ -403,22 +405,26 @@ export default function UsersPage() {
                 Page {page + 1} of {totalPages}
               </p>
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  type="button"
                   onClick={() => setPage((p) => Math.max(0, p - 1))}
                   disabled={page === 0}
-                  className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
                 >
                   <ChevronLeft className="w-4 h-4" /> Prev
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  type="button"
                   onClick={() =>
                     setPage((p) => Math.min(totalPages - 1, p + 1))
                   }
                   disabled={page >= totalPages - 1}
-                  className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
                 >
                   Next <ChevronRight className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -431,7 +437,7 @@ export default function UsersPage() {
           onClick={() => setShowCreate(false)}
         >
           <div
-            className="bg-panel p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
+            className="bg-panel p-4 sm:p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -498,23 +504,20 @@ export default function UsersPage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <button
+                <Button
+                  variant="secondary"
                   type="button"
                   onClick={() => setShowCreate(false)}
-                  className="px-5 py-2.5 bg-panel border border-ink/10 rounded-xl font-medium text-sm text-ink hover:bg-ink/[0.02] transition-colors"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="primary"
                   type="submit"
-                  disabled={createLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-green text-white rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+                  loading={createLoading}
                 >
-                  {createLoading && (
-                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  )}
                   Create User
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -544,4 +547,3 @@ export default function UsersPage() {
     </div>
   );
 }
-

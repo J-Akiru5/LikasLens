@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { PublicScoreboard } from "@likaslens/shared";
 
 export function ScoreboardSection() {
@@ -9,7 +9,7 @@ export function ScoreboardSection() {
       id="scoreboard"
       style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 32px" }}
     >
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
@@ -63,7 +63,7 @@ export function ScoreboardSection() {
         >
           Recent reports being tracked and resolved across the platform.
         </p>
-      </motion.div>
+      </m.div>
       <div
         style={{
           background: "var(--panel)",
