@@ -73,7 +73,7 @@ class LikasLensSeeder extends Seeder
                 ['email' => "citizen{$i}@likaslens.ph"],
                 [
                     'supabase_auth_user_id' => (string) Str::uuid(),
-                    'name' => 'Citizen ' . $i,
+                    'name' => 'Citizen '.$i,
                     'password' => Hash::make('password'),
                     'role' => 'citizen',
                     'trust_score' => mt_rand(30, 95),

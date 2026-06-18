@@ -72,10 +72,11 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE_NAME=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/likaslens-backend:${{ github.sha }}
+          IMAGE_BASE=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/likaslens-backend
           cd apps/backend
-          docker build -t $IMAGE_NAME .
-          docker push $IMAGE_NAME
+          docker build -t $IMAGE_BASE:${{ github.sha }} -t $IMAGE_BASE:latest .
+          docker push $IMAGE_BASE:${{ github.sha }}
+          docker push $IMAGE_BASE:latest
 
       - name: Deploy to Cloud Run
         run: |

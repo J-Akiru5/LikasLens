@@ -215,7 +215,7 @@ class LeaderboardController extends Controller
 
         // Match "Barangay <name>" or "Brgy. <name>" or "Brgy <name>"
         if (preg_match('/(?:Barangay|Brgy\.?)\s+([^,]+)/i', trim($address), $matches)) {
-            return 'Brgy. ' . trim($matches[1]);
+            return 'Brgy. '.trim($matches[1]);
         }
 
         return null;

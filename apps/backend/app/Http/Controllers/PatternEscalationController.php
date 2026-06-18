@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Ticket;
 use App\Models\AuditLog;
+use App\Models\Ticket;
 use App\Models\TicketTimeline;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
 
 /**
  * Cross-barangay pattern escalation (LUWAS-inspired "Silent Area" scoring).
@@ -69,7 +69,7 @@ class PatternEscalationController extends Controller
     public function escalate(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'ticket_ids' => 'required|array|min:' . self::CLUSTER_THRESHOLD,
+            'ticket_ids' => 'required|array|min:'.self::CLUSTER_THRESHOLD,
             'ticket_ids.*' => 'string|exists:tickets,id',
             'note' => 'nullable|string|max:500',
         ]);
@@ -78,7 +78,7 @@ class PatternEscalationController extends Controller
 
         foreach ($tickets as $ticket) {
             $ticket->update([
-                'ai_triage_summary' => trim(($ticket->ai_triage_summary ?? '') . ' [SYSTEMIC CLUSTER]'),
+                'ai_triage_summary' => trim(($ticket->ai_triage_summary ?? '').' [SYSTEMIC CLUSTER]'),
             ]);
 
             TicketTimeline::create([
@@ -120,7 +120,8 @@ class PatternEscalationController extends Controller
 
     /**
      * Greedy single-link clustering by Haversine distance.
-     * @param \Illuminate\Support\Collection<int, Ticket> $tickets
+     *
+     * @param  Collection<int, Ticket>  $tickets
      * @return array<int, array{centroid: array{lat: float, lng: float}, ticket_ids: array<int, string>, count: int}>
      */
     private function clusterTickets($tickets, int $radiusM, int $threshold): array
@@ -144,8 +145,10 @@ class PatternEscalationController extends Controller
                 );
                 if ($d <= $radiusM) {
                     $cluster[] = $candidate;
+
                     return true;
                 }
+
                 return false;
             });
 

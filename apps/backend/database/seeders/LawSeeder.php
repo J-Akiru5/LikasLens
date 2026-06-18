@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\EnvironmentalLawPh;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class LawSeeder extends Seeder
 {

@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\TicketStatusChanged;
 use App\Models\TicketTimeline;
+use App\Notifications\TicketStatusUpdated;
 use Illuminate\Support\Facades\Log;
 
 class RecordStatusChange
@@ -38,7 +39,7 @@ class RecordStatusChange
         $reporter = $event->ticket->reporter;
         if ($reporter && $reporter->role !== 'ghost') {
             try {
-                $reporter->notify(new \App\Notifications\TicketStatusUpdated(
+                $reporter->notify(new TicketStatusUpdated(
                     $event->ticket,
                     $event->fromStatus,
                     $event->toStatus

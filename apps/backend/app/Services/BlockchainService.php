@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\Log;
 class BlockchainService
 {
     private string $rpcUrl;
+
     private ?string $privateKey;
+
     private string $walletAddress;
+
     private string $network;
 
     public function __construct()
@@ -52,16 +55,18 @@ class BlockchainService
                 Log::warning('BlockchainService: No wallet configured, skipping on-chain submission', [
                     'evidence_hash' => $evidenceHash,
                 ]);
+
                 return null;
             }
 
             // Prepare the data field: prefix evidence hash with 0x
-            $data = '0x' . $evidenceHash;
+            $data = '0x'.$evidenceHash;
 
             // Get current nonce
             $nonce = $this->getNonce();
             if ($nonce === null) {
                 Log::error('BlockchainService: Failed to fetch nonce');
+
                 return null;
             }
 
@@ -69,6 +74,7 @@ class BlockchainService
             $gasPrice = $this->getGasPrice();
             if ($gasPrice === null) {
                 Log::error('BlockchainService: Failed to fetch gas price');
+
                 return null;
             }
 
@@ -76,6 +82,7 @@ class BlockchainService
             $rawTx = $this->signTransaction($data, $nonce, $gasPrice);
             if ($rawTx === null) {
                 Log::error('BlockchainService: Failed to sign transaction');
+
                 return null;
             }
 
@@ -88,6 +95,7 @@ class BlockchainService
                     'tx_hash' => $response['result'],
                     'network' => $this->network,
                 ]);
+
                 return $response['result'];
             }
 
@@ -95,12 +103,14 @@ class BlockchainService
                 'response' => $response,
                 'evidence_hash' => $evidenceHash,
             ]);
+
             return null;
         } catch (\Throwable $e) {
             Log::error('BlockchainService: submitToBlockchain exception', [
                 'error' => $e->getMessage(),
                 'evidence_hash' => $evidenceHash,
             ]);
+
             return null;
         }
     }
@@ -127,6 +137,7 @@ class BlockchainService
                 'error' => $e->getMessage(),
                 'tx_hash' => $txHash,
             ]);
+
             return false;
         }
     }
@@ -172,6 +183,7 @@ class BlockchainService
 
             if ($signature === null) {
                 Log::error('BlockchainService: ECDSA signing failed');
+
                 return null;
             }
 
@@ -191,11 +203,12 @@ class BlockchainService
                 $this->hexToBytes($signature['s']),
             ]);
 
-            return '0x' . bin2hex($signedTx);
+            return '0x'.bin2hex($signedTx);
         } catch (\Throwable $e) {
             Log::error('BlockchainService: signTransaction exception', [
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -253,13 +266,13 @@ class BlockchainService
 
             // Build a DER-encoded EC private key for secp256k1
             $der = $this->buildSecp256k1PrivateKeyDer($privKeyBin);
-            $pem = "-----BEGIN EC PRIVATE KEY-----\n" . chunk_split(base64_encode($der), 64, "\n") . "-----END EC PRIVATE KEY-----";
+            $pem = "-----BEGIN EC PRIVATE KEY-----\n".chunk_split(base64_encode($der), 64, "\n").'-----END EC PRIVATE KEY-----';
 
             // OpenSSL sign
             $signature = '';
             $success = openssl_sign($hash, $signature, $pem, 'SHA256');
 
-            if (!$success || strlen($signature) === 0) {
+            if (! $success || strlen($signature) === 0) {
                 return null;
             }
 
@@ -274,13 +287,14 @@ class BlockchainService
 
             return [
                 'v' => $v,
-                'r' => '0x' . str_pad(bin2hex($rs['r']), 64, '0', STR_PAD_LEFT),
-                's' => '0x' . str_pad(bin2hex($rs['s']), 64, '0', STR_PAD_LEFT),
+                'r' => '0x'.str_pad(bin2hex($rs['r']), 64, '0', STR_PAD_LEFT),
+                's' => '0x'.str_pad(bin2hex($rs['s']), 64, '0', STR_PAD_LEFT),
             ];
         } catch (\Throwable $e) {
             Log::error('BlockchainService: signHash exception', [
                 'error' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -295,12 +309,12 @@ class BlockchainService
 
         // ECPrivateKey SEQUENCE
         $version = "\x02\x01\x01"; // INTEGER 1
-        $privKey = "\x04\x20" . $privateKeyBytes; // OCTET STRING (32 bytes)
+        $privKey = "\x04\x20".$privateKeyBytes; // OCTET STRING (32 bytes)
 
         // Build the inner SEQUENCE
-        $inner = $version . $privKey . "\xa0" . $this->derLen(strlen($curveOid)) . $curveOid;
+        $inner = $version.$privKey."\xa0".$this->derLen(strlen($curveOid)).$curveOid;
 
-        return "\x30" . $this->derLen(strlen($inner)) . $inner;
+        return "\x30".$this->derLen(strlen($inner)).$inner;
     }
 
     /**
@@ -314,11 +328,11 @@ class BlockchainService
 
         $hex = dechex($len);
         if (strlen($hex) % 2 !== 0) {
-            $hex = '0' . $hex;
+            $hex = '0'.$hex;
         }
         $bytes = hex2bin($hex);
 
-        return chr(0x80 | strlen($bytes)) . $bytes;
+        return chr(0x80 | strlen($bytes)).$bytes;
     }
 
     /**
@@ -391,8 +405,9 @@ class BlockchainService
     {
         $hex = ltrim($hex, '0x');
         if (strlen($hex) % 2 !== 0) {
-            $hex = '0' . $hex;
+            $hex = '0'.$hex;
         }
+
         return hex2bin($hex);
     }
 
@@ -407,8 +422,9 @@ class BlockchainService
 
         $hex = dechex($value);
         if (strlen($hex) % 2 !== 0) {
-            $hex = '0' . $hex;
+            $hex = '0'.$hex;
         }
+
         return hex2bin($hex);
     }
 
@@ -425,27 +441,27 @@ class BlockchainService
                 if ($len === 1 && ord($item) < 0x80) {
                     $result .= $item;
                 } elseif ($len <= 55) {
-                    $result .= chr(0x80 + $len) . $item;
+                    $result .= chr(0x80 + $len).$item;
                 } else {
                     $lenHex = dechex($len);
                     if (strlen($lenHex) % 2 !== 0) {
-                        $lenHex = '0' . $lenHex;
+                        $lenHex = '0'.$lenHex;
                     }
                     $lenBytes = hex2bin($lenHex);
-                    $result .= chr(0xb7 + strlen($lenBytes)) . $lenBytes . $item;
+                    $result .= chr(0xB7 + strlen($lenBytes)).$lenBytes.$item;
                 }
             } elseif (is_array($item)) {
                 $encoded = $this->rlpEncode($item);
                 $len = strlen($encoded);
                 if ($len <= 55) {
-                    $result .= chr(0xc0 + $len) . $encoded;
+                    $result .= chr(0xC0 + $len).$encoded;
                 } else {
                     $lenHex = dechex($len);
                     if (strlen($lenHex) % 2 !== 0) {
-                        $lenHex = '0' . $lenHex;
+                        $lenHex = '0'.$lenHex;
                     }
                     $lenBytes = hex2bin($lenHex);
-                    $result .= chr(0xf7 + strlen($lenBytes)) . $lenBytes . $encoded;
+                    $result .= chr(0xF7 + strlen($lenBytes)).$lenBytes.$encoded;
                 }
             }
         }

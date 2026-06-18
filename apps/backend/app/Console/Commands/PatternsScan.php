@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Http\Controllers\PatternEscalationController;
 use App\Models\AuditLog;
 use App\Models\Ticket;
-use App\Models\TicketTimeline;
 use Illuminate\Console\Command;
 
 /**
@@ -49,7 +48,7 @@ class PatternsScan extends Command
         $reflect->setAccessible(true);
         $clusters = $reflect->invoke($controller, $tickets, $radiusM, $threshold);
 
-        $this->line("  Clusters detected: " . count($clusters));
+        $this->line('  Clusters detected: '.count($clusters));
         foreach ($clusters as $i => $cluster) {
             $this->line("    [{$i}] centroid=({$cluster['centroid']['lat']},{$cluster['centroid']['lng']}) size={$cluster['count']}");
         }

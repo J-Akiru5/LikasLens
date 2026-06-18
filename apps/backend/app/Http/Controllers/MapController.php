@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ticket;
-use App\Models\TicketClassification;
 use App\Models\ViolationType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,8 +12,11 @@ use Illuminate\Support\Facades\DB;
 class MapController extends Controller
 {
     private const EARTH_RADIUS_M = 6_371_000;
+
     private const CLUSTER_RADIUS_M = 100;
+
     private const HOT_ZONE_THRESHOLD = 5;
+
     private const HOT_ZONE_WINDOW_DAYS = 7;
 
     /**
@@ -40,7 +42,7 @@ class MapController extends Controller
         $typeFilter = $validated['type'] ?? null;
         $boundsStr = $validated['bounds'] ?? null;
 
-        $cacheKey = 'heatmap:' . md5("{$days}:{$typeFilter}:{$boundsStr}");
+        $cacheKey = 'heatmap:'.md5("{$days}:{$typeFilter}:{$boundsStr}");
 
         $data = Cache::remember($cacheKey, 120, function () use ($days, $typeFilter, $boundsStr) {
             $since = now()->subDays($days);
@@ -165,7 +167,7 @@ class MapController extends Controller
         $map = [];
         foreach ($rows as $row) {
             // First row per ticket_id is the highest confidence
-            if (!isset($map[$row->ticket_id])) {
+            if (! isset($map[$row->ticket_id])) {
                 $map[$row->ticket_id] = $row->code;
             }
         }
@@ -260,7 +262,7 @@ class MapController extends Controller
             $cellLng = floor((float) $ticket->longitude / $cellSize) * $cellSize;
             $key = "{$cellLat}:{$cellLng}";
 
-            if (!isset($cells[$key])) {
+            if (! isset($cells[$key])) {
                 $cells[$key] = [
                     'tickets' => [],
                     'south' => $cellLat,
@@ -361,7 +363,7 @@ class MapController extends Controller
      */
     private function parseBounds(?string $boundsStr): ?array
     {
-        if (!$boundsStr) {
+        if (! $boundsStr) {
             return null;
         }
 
@@ -401,7 +403,7 @@ class MapController extends Controller
     private function resolveClusterLocation(array $members): string
     {
         foreach ($members as $member) {
-            if (!empty($member->address_text)) {
+            if (! empty($member->address_text)) {
                 return $member->address_text;
             }
         }

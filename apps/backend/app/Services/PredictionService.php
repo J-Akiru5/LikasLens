@@ -3,9 +3,7 @@
 namespace App\Services;
 
 use App\Models\Ticket;
-use App\Models\TicketClassification;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class PredictionService
 {
@@ -16,7 +14,7 @@ class PredictionService
      * by frequency, trend, and recency, then returns the top N predictions.
      *
      * @param  int  $daysBack  Number of days of history to analyze
-     * @param  int  $topN      Number of top predictions to return
+     * @param  int  $topN  Number of top predictions to return
      * @param  string|null  $violationType  Optional filter by violation type code
      */
     public function predictHotspots(int $daysBack = 90, int $topN = 10, ?string $violationType = null): array

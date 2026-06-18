@@ -72,10 +72,15 @@ class AnalyticsController extends Controller
             ->map(function ($item) {
                 // Determine risk based on unresolved incidents
                 $active = $item->incidents - $item->resolved;
-                if ($active > 10) $risk = 'critical';
-                elseif ($active > 5) $risk = 'high';
-                elseif ($active > 2) $risk = 'moderate';
-                else $risk = 'low';
+                if ($active > 10) {
+                    $risk = 'critical';
+                } elseif ($active > 5) {
+                    $risk = 'high';
+                } elseif ($active > 2) {
+                    $risk = 'moderate';
+                } else {
+                    $risk = 'low';
+                }
 
                 return [
                     'name' => trim($item->region),
@@ -90,8 +95,8 @@ class AnalyticsController extends Controller
             'success' => true,
             'data' => [
                 'time_series' => array_values($timeSeries),
-                'hotspots' => $hotspots
-            ]
+                'hotspots' => $hotspots,
+            ],
         ]);
     }
 }

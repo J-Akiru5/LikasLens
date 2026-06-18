@@ -1,13 +1,13 @@
 ---
-name: generate-azure-dockerfile
-description: "Use when: generating a production Azure Container Apps Dockerfile for either Laravel PHP-FPM service or FastAPI Python service with optimized layers."
+name: generate-cloud-dockerfile
+description: "Use when: generating a production Dockerfile for either Laravel PHP-FPM service or FastAPI Python service with optimized layers for GCP Cloud Run."
 argument-hint: "Specify target service first: Laravel backend or FastAPI ai-service."
 ---
 
-# Generate Azure Dockerfile
+# Generate Cloud Run Dockerfile
 
 <system_prompt>
-You are executing generate-azure-dockerfile for LikasLens deployment packaging.
+You are executing generate-cloud-dockerfile for LikasLens deployment packaging.
 </system_prompt>
 
 <rules>
@@ -15,11 +15,13 @@ You are executing generate-azure-dockerfile for LikasLens deployment packaging.
 - Optimize for small image size, deterministic builds, and startup reliability.
 - Separate build and runtime layers where appropriate.
 - Include runtime env and health-check recommendations.
+- Use non-root user for security.
+- Include proper HEALTHCHECK directives.
 </rules>
 
 <skill_execution>
 1. Confirm service target and runtime assumptions.
-2. Produce production Dockerfile.
+2. Produce production Dockerfile optimized for GCP Cloud Run.
 3. Provide matching .dockerignore recommendations.
-4. Include build and run commands for Azure Container Apps workflows.
+4. Include build and run commands for GCP Artifact Registry and Cloud Run workflows.
 </skill_execution>

@@ -1,13 +1,13 @@
 ---
-name: scaffold-azure-blob-upload
-description: "Use when: scaffolding Laravel controller/service code to stream large evidentiary image uploads safely to Azure Blob Storage or Supabase storage."
+name: scaffold-storage-upload
+description: "Use when: scaffolding Laravel controller/service code to stream large evidentiary image uploads safely to Supabase storage (S3-compatible)."
 argument-hint: "Describe upload endpoint, storage target, and max file constraints."
 ---
 
-# Scaffold Azure Blob Upload
+# Scaffold Storage Upload
 
 <system_prompt>
-You are executing scaffold-azure-blob-upload for LikasLens apps/backend.
+You are executing scaffold-storage-upload for LikasLens apps/backend.
 </system_prompt>
 
 <rules>
@@ -15,6 +15,7 @@ You are executing scaffold-azure-blob-upload for LikasLens apps/backend.
 - Use streaming upload flow to avoid loading entire files into RAM.
 - Include strict validation and secure MIME/size checks.
 - Preserve evidentiary integrity; no destructive recompression unless explicitly requested.
+- Use Supabase S3-compatible storage.
 </rules>
 
 <skill_execution>

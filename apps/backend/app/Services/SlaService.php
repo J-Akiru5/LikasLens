@@ -20,15 +20,17 @@ class SlaService
     {
         $violationType = $this->getViolationTypeCode($ticket);
 
-        if (!$violationType) {
+        if (! $violationType) {
             Log::warning("SLA: No violation type found for ticket {$ticket->id}, skipping deadline calculation.");
+
             return;
         }
 
         $config = SlaConfig::forViolation($violationType);
 
-        if (!$config) {
+        if (! $config) {
             Log::warning("SLA: No SLA config found for violation type '{$violationType}', skipping deadline calculation.");
+
             return;
         }
 
@@ -41,7 +43,7 @@ class SlaService
             'sla_resolution_breached' => false,
         ]);
 
-        Log::info("SLA: Deadlines set for ticket {$ticket->id}. " .
+        Log::info("SLA: Deadlines set for ticket {$ticket->id}. ".
             "Response by {$ticket->sla_deadline_response}, Resolution by {$ticket->sla_deadline_resolution}.");
     }
 
@@ -95,6 +97,7 @@ class SlaService
     {
         if ($ticket->sla_escalated_at) {
             Log::info("SLA: Ticket {$ticket->id} already escalated at {$ticket->sla_escalated_at}, skipping.");
+
             return;
         }
 
@@ -108,7 +111,7 @@ class SlaService
             'escalated_to' => $escalatedTo,
         ]);
 
-        Log::alert("SLA: Ticket {$ticket->id} ESCALATED to {$escalatedTo}. " .
+        Log::alert("SLA: Ticket {$ticket->id} ESCALATED to {$escalatedTo}. ".
             "Response breached: {$ticket->sla_response_breached}, Resolution breached: {$ticket->sla_resolution_breached}.");
 
         // TODO: When notification system is implemented, send notification to escalated_to user
@@ -145,16 +148,16 @@ class SlaService
             if ($config && $config->escalation_enabled) {
                 $this->escalate($ticket);
                 $escalated++;
-            } elseif (!$config) {
+            } elseif (! $config) {
                 // No config means we still escalate as a safety measure
                 $this->escalate($ticket);
                 $escalated++;
             }
         }
 
-        Log::info("SLA: Escalation check complete. " .
-            "Response breached: {$breachResults['response_breached']}, " .
-            "Resolution breached: {$breachResults['resolution_breached']}, " .
+        Log::info('SLA: Escalation check complete. '.
+            "Response breached: {$breachResults['response_breached']}, ".
+            "Resolution breached: {$breachResults['resolution_breached']}, ".
             "Escalated: {$escalated}.");
 
         return array_merge($breachResults, ['escalated' => $escalated]);
