@@ -6,14 +6,107 @@
   <title>LikasLens — GCP Migration Setup Guide</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 180px; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       background: #f8f9fa;
       color: #1a1a2e;
       line-height: 1.7;
       padding: 2rem;
+      padding-top: 0;
     }
     .container { max-width: 920px; margin: 0 auto; }
+
+    /* ── Sticky Progress Header ── */
+    .progress-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 2px solid #e9ecef;
+      padding: 0.75rem 2rem;
+      margin: 0 -2rem 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .progress-header-inner {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .progress-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1B4332;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+    .progress-bar-track {
+      background: #e9ecef;
+      border-radius: 100px;
+      height: 10px;
+      overflow: hidden;
+      margin-bottom: 0.4rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .progress-stats {
+      font-size: 0.75rem;
+      color: #6c757d;
+      margin-bottom: 0.5rem;
+    }
+    .progress-stats strong { color: #1B4332; }
+
+    /* ── Phase Nav Pills ── */
+    .phase-nav {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+    .phase-nav a {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 0.25em 0.65em;
+      border-radius: 100px;
+      border: 1.5px solid #dee2e6;
+      color: #6c757d;
+      background: #fff;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .phase-nav a:hover {
+      border-color: #1B4332;
+      color: #1B4332;
+      background: #f0fdf4;
+    }
+    .phase-nav a.phase-done {
+      border-color: #16a34a;
+      color: #16a34a;
+      background: #f0fdf4;
+    }
+    .phase-nav a.phase-done::before { content: "✓ "; }
+    .phase-nav a.phase-active {
+      border-color: #1B4332;
+      color: #fff;
+      background: #1B4332;
+    }
+    .reset-btn {
+      font-size: 0.65rem;
+      color: #9ca3af;
+      background: none;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 0.2em 0.6em;
+      cursor: pointer;
+      float: right;
+      transition: all 0.2s;
+    }
+    .reset-btn:hover { color: #ef4444; border-color: #ef4444; }
     h1 {
       font-size: 2.2rem;
       font-weight: 800;
@@ -94,25 +187,19 @@
       padding: 0;
     }
 
-    .step {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      margin-bottom: 0.75rem;
-      border-left: 3px solid #1B4332;
-    }
     .step-number {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 24px;
       height: 24px;
       background: #1B4332;
       color: #fff;
       border-radius: 50%;
-      text-align: center;
-      line-height: 24px;
       font-size: 0.75rem;
       font-weight: 700;
       margin-right: 0.5rem;
+      flex-shrink: 0;
     }
     .warning {
       background: #fffbeb;
@@ -192,17 +279,50 @@
       padding: 0.5rem 0.5rem 0.5rem 2rem;
       position: relative;
       border-bottom: 1px solid #f1f3f5;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
     }
+    .checklist li:hover { background: #f0fdf4; }
     .checklist li::before {
       content: "☐";
       position: absolute;
       left: 0.5rem;
       color: #1B4332;
       font-weight: 700;
+      transition: color 0.15s;
+    }
+    .checklist li.done {
+      color: #9ca3af;
+      text-decoration: line-through;
+      text-decoration-color: #d1d5db;
     }
     .checklist li.done::before {
       content: "☑";
       color: #16a34a;
+    }
+
+    /* ── Step styling ── */
+    .step {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid #1B4332;
+    }
+    .step .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: #1B4332;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-right: 0.5rem;
+      flex-shrink: 0;
     }
 
     .copy-btn {
@@ -252,6 +372,32 @@
   </style>
 </head>
 <body>
+
+<!-- ── Sticky Progress Header ── -->
+<div class="progress-header">
+  <div class="progress-header-inner">
+    <div class="progress-title">
+      Deployment Progress
+      <button class="reset-btn" id="resetProgress" title="Reset all progress">Reset</button>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="progress-stats" id="progressStats">
+      <strong>0 / 7</strong> phases complete &mdash; 0%
+    </div>
+    <nav class="phase-nav" id="phaseNav">
+      <a href="#phase-1">1. GCP Project</a>
+      <a href="#phase-2">2. Enable APIs</a>
+      <a href="#phase-3">3. Service Acct</a>
+      <a href="#phase-4">4. Deploy</a>
+      <a href="#phase-5">5. CI/CD</a>
+      <a href="#phase-6">6. Seeders</a>
+      <a href="#phase-7">7. Frontend</a>
+    </nav>
+  </div>
+</div>
+
 <div class="container">
 
   <!-- Header -->
@@ -354,9 +500,9 @@
                                    │                            │
                                    v                            v
                           ┌────────────────┐          ┌─────────────────┐
-                          │  Supabase      │          │  Cosmos DB      │
-                          │  PostgreSQL +  │          │  Gremlin        │
-                          │  Storage (S3)  │          │  (Graph)        │
+│  Supabase      │          │  Neo4j AuraDB  │
+│  PostgreSQL +  │          │  (Graph)       │
+│  Storage (S3)  │          │  Free Tier     │
                           └────────────────┘          └─────────────────┘</div>
     <p><strong>Why Cloud Run?</strong> Serverless — Google wakes containers on traffic, sleeps them when idle. Near-zero cost during your 3-month free credits.</p>
   </div>
@@ -364,16 +510,23 @@
   <!-- ============================================ -->
   <!-- PHASE 1: GCP PROJECT & BILLING -->
   <!-- ============================================ -->
-  <div class="phase-divider">
+  <div class="phase-divider" id="phase-1" data-phase="1">
     <span class="phase-title">Phase 1 — GCP Project & Billing</span>
     <span class="badge badge-manual">Manual</span>
+    <label style="margin-left:auto;display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#6c757d;cursor:pointer;">
+      <input type="checkbox" class="phase-checkbox" data-phase="1" style="accent-color:#16a34a;width:16px;height:16px;"> Mark complete
+    </label>
   </div>
 
   <div class="card">
     <div class="card-header">
       <h2>Create Your GCP Project</h2>
     </div>
-    <p>This creates the digital "fenced yard" where your app will live.</p>
+    <p>This creates the digital "fenced yard" where both services (backend + AI) will live.</p>
+
+    <div class="info">
+      <strong>One project, two services:</strong> Both <code>likaslens-api</code> and <code>likaslens-ai</code> live in this single project. This simplifies billing, IAM, and Artifact Registry — one setup covers both.
+    </div>
 
     <div class="step">
       <span class="step-number">1</span>
@@ -389,7 +542,7 @@
     </div>
     <div class="step">
       <span class="step-number">4</span>
-      Project Name: <code>likaslens-backend</code> → Click <strong>Create</strong>.
+      Project Name: <code>likaslens</code> → Click <strong>Create</strong>.
     </div>
     <div class="step">
       <span class="step-number">5</span>
@@ -405,12 +558,52 @@
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-header">
+      <h2>Set Up Billing Budget & Alerts</h2>
+      <span class="badge badge-critical">Important</span>
+    </div>
+    <p>This is your safety net. If containers stay awake too long or traffic spikes, you'll know immediately — not when the bill arrives.</p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      Go to <strong>Billing</strong> → <strong>Budgets & alerts</strong> (left sidebar).
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      Click <strong>+ Create Budget</strong>.
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      Name: <code>likaslens-budget</code>
+    </div>
+    <div class="step">
+      <span class="step-number">4</span>
+      Set amount: <strong>$10</strong> (or $5 if you want tighter control).
+    </div>
+    <div class="step">
+      <span class="step-number">5</span>
+      Under <strong>Alerts</strong>, check all three thresholds: <strong>50%</strong>, <strong>90%</strong>, <strong>100%</strong>.
+    </div>
+    <div class="step">
+      <span class="step-number">6</span>
+      Enter your email under <strong>Notification recipients</strong> → Click <strong>Finish</strong>.
+    </div>
+
+    <div class="warning">
+      <strong>Why this matters:</strong> Cloud Run charges per request + compute time. If a container stays awake or gets hammered with traffic, costs can spike. These alerts give you time to react before your credits run out.
+    </div>
+  </div>
+
   <!-- ============================================ -->
   <!-- PHASE 2: ENABLE APIs -->
   <!-- ============================================ -->
-  <div class="phase-divider">
+  <div class="phase-divider" id="phase-2" data-phase="2">
     <span class="phase-title">Phase 2 — Enable APIs & Artifact Registry</span>
     <span class="badge badge-manual">Manual</span>
+    <label style="margin-left:auto;display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#6c757d;cursor:pointer;">
+      <input type="checkbox" class="phase-checkbox" data-phase="2" style="accent-color:#16a34a;width:16px;height:16px;"> Mark complete
+    </label>
   </div>
 
   <div class="card">
@@ -454,6 +647,8 @@
     <div class="card-header">
       <h2>Enable Cloud Run API</h2>
     </div>
+    <p>Cloud Run is where your containers actually run. You just need to turn on the API — nothing else here.</p>
+
     <div class="step">
       <span class="step-number">1</span>
       Search for <strong>"Cloud Run"</strong> in the top search bar.
@@ -462,14 +657,21 @@
       <span class="step-number">2</span>
       Click <strong>Enable</strong> to turn on the Cloud Run API.
     </div>
+
+    <div class="info">
+      <strong>Ignore "Connect Repository":</strong> You'll see options to connect GitHub repos or set up Cloud Build. Skip all of that — your GitHub Actions pipeline handles building and pushing containers. You only need the API enabled.
+    </div>
   </div>
 
   <!-- ============================================ -->
   <!-- PHASE 3: SERVICE ACCOUNT -->
   <!-- ============================================ -->
-  <div class="phase-divider">
+  <div class="phase-divider" id="phase-3" data-phase="3">
     <span class="phase-title">Phase 3 — Service Account (VIP Pass)</span>
     <span class="badge badge-manual">Manual</span>
+    <label style="margin-left:auto;display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#6c757d;cursor:pointer;">
+      <input type="checkbox" class="phase-checkbox" data-phase="3" style="accent-color:#16a34a;width:16px;height:16px;"> Mark complete
+    </label>
   </div>
 
   <div class="card">
@@ -561,9 +763,12 @@
   <!-- ============================================ -->
   <!-- PHASE 4: MANUAL DEPLOY + ENV VARS -->
   <!-- ============================================ -->
-  <div class="phase-divider">
+  <div class="phase-divider" id="phase-4" data-phase="4">
     <span class="phase-title">Phase 4 — Deploy & Set Environment Variables</span>
     <span class="badge badge-manual">Manual</span>
+    <label style="margin-left:auto;display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#6c757d;cursor:pointer;">
+      <input type="checkbox" class="phase-checkbox" data-phase="4" style="accent-color:#16a34a;width:16px;height:16px;"> Mark complete
+    </label>
   </div>
 
   <div class="card">
@@ -664,11 +869,9 @@
       <tr><th>Variable</th><th>Value</th></tr>
       <tr><td><code>AI_SERVICE_PORT</code></td><td><code>8001</code></td></tr>
       <tr><td><code>GOOGLE_API_KEY</code></td><td><em>From Google AI Studio → API Keys</em></td></tr>
-      <tr><td><code>COSMOS_GREMLIN_ENDPOINT</code></td><td><code>wss://&lt;account&gt;.gremlin.cosmos.azure.com:443/</code></td></tr>
-      <tr><td><code>COSMOS_GREMLIN_KEY</code></td><td><em>From Azure Cosmos DB → Keys</em></td></tr>
-      <tr><td><code>COSMOS_GREMLIN_DATABASE</code></td><td><code>likaslens</code></td></tr>
-      <tr><td><code>COSMOS_GREMLIN_GRAPH</code></td><td><code>routing_graph</code></td></tr>
-      <tr><td><code>COSMOS_GREMLIN_PARTITION_KEY</code></td><td><code>likaslens-routing-seed</code></td></tr>
+      <tr><td><code>NEO4J_URI</code></td><td><code>neo4j+s://&lt;your-instance&gt;.databases.neo4j.io</code> (from Neo4j AuraDB)</td></tr>
+      <tr><td><code>NEO4J_USER</code></td><td><code>neo4j</code></td></tr>
+      <tr><td><code>NEO4J_PASSWORD</code></td><td><em>From Neo4j AuraDB console</em></td></tr>
       <tr><td><code>CORS_ORIGINS</code></td><td><code>https://likaslens.vercel.app,https://likaslens-admin.vercel.app,https://likaslens-api-xyz.a.run.app</code></td></tr>
       <tr><td><code>ENVIRONMENT</code></td><td><code>production</code></td></tr>
       <tr><td><code>APP_DEBUG</code></td><td><code>false</code></td></tr>
@@ -705,9 +908,12 @@
   <!-- ============================================ -->
   <!-- PHASE 5: GITHUB ACTIONS -->
   <!-- ============================================ -->
-  <div class="phase-divider">
+  <div class="phase-divider" id="phase-5" data-phase="5">
     <span class="phase-title">Phase 5 — GitHub Actions CI/CD</span>
     <span class="badge badge-done">Automated</span>
+    <label style="margin-left:auto;display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#6c757d;cursor:pointer;">
+      <input type="checkbox" class="phase-checkbox" data-phase="5" style="accent-color:#16a34a;width:16px;height:16px;"> Mark complete
+    </label>
   </div>
 
   <div class="card">
@@ -740,7 +946,7 @@
       <li><strong>Build</strong> — Builds the Docker image from <code>apps/backend/Dockerfile</code> or <code>apps/ai-service/Dockerfile</code></li>
       <li><strong>Trivy Scan</strong> — Scans the image for HIGH/CRITICAL vulnerabilities, uploads SARIF to GitHub Security</li>
       <li><strong>Google Auth</strong> — Authenticates using the <code>GCP_CREDENTIALS</code> secret</li>
-      <li><strong>Push</strong> — Pushes the image to <code>asia-southeast1-docker.pkg.dev/likaslens-backend/likaslens-repo/</code></li>
+      <li><strong>Push</strong> — Pushes the image to <code>asia-southeast1-docker.pkg.dev/likaslens/likaslens-repo/</code></li>
       <li><strong>Deploy</strong> — Tells Cloud Run to swap the sample container for the real code</li>
     </ol>
   </div>
@@ -748,9 +954,12 @@
   <!-- ============================================ -->
   <!-- PHASE 6: SEEDERS -->
   <!-- ============================================ -->
-  <div class="phase-divider">
+  <div class="phase-divider" id="phase-6" data-phase="6">
     <span class="phase-title">Phase 6 — Running Seeders</span>
     <span class="badge badge-manual">Manual</span>
+    <label style="margin-left:auto;display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#6c757d;cursor:pointer;">
+      <input type="checkbox" class="phase-checkbox" data-phase="6" style="accent-color:#16a34a;width:16px;height:16px;"> Mark complete
+    </label>
   </div>
 
   <div class="card">
@@ -765,7 +974,7 @@
 
     <h3>Run Migrations Manually (Optional)</h3>
     <pre><code>gcloud run jobs create migrate-job \
-  --image asia-southeast1-docker.pkg.dev/likaslens-backend/likaslens-repo/likaslens-backend:latest \
+  --image asia-southeast1-docker.pkg.dev/likaslens/likaslens-repo/likaslens-backend:latest \
   --command "php,artisan,migrate,--force" \
   --region asia-southeast1
 
@@ -773,7 +982,7 @@ gcloud run jobs execute migrate-job --region asia-southeast1</code></pre>
 
     <h3>Run Seeders</h3>
     <pre><code>gcloud run jobs create seed-job \
-  --image asia-southeast1-docker.pkg.dev/likaslens-backend/likaslens-repo/likaslens-backend:latest \
+  --image asia-southeast1-docker.pkg.dev/likaslens/likaslens-repo/likaslens-backend:latest \
   --command "php,artisan,db:seed,--force" \
   --region asia-southeast1
 
@@ -783,9 +992,12 @@ gcloud run jobs execute seed-job --region asia-southeast1</code></pre>
   <!-- ============================================ -->
   <!-- PHASE 7: UPDATE VERCEL -->
   <!-- ============================================ -->
-  <div class="phase-divider">
+  <div class="phase-divider" id="phase-7" data-phase="7">
     <span class="phase-title">Phase 7 — Update Frontend (Vercel)</span>
     <span class="badge badge-manual">Manual</span>
+    <label style="margin-left:auto;display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;color:#6c757d;cursor:pointer;">
+      <input type="checkbox" class="phase-checkbox" data-phase="7" style="accent-color:#16a34a;width:16px;height:16px;"> Mark complete
+    </label>
   </div>
 
   <div class="card">
@@ -896,7 +1108,7 @@ gcloud run jobs execute seed-job --region asia-southeast1</code></pre>
       <tr><td>Supabase S3 keys</td><td>Supabase Dashboard → Settings → Storage → S3 Access Keys</td></tr>
       <tr><td>Supabase anon key</td><td>Supabase Dashboard → Settings → API → anon public</td></tr>
       <tr><td>Google Gemini API key</td><td>Google AI Studio → API Keys</td></tr>
-      <tr><td>Cosmos DB endpoint + key</td><td>Azure Portal → Cosmos DB → Keys</td></tr>
+      <tr><td>Neo4j AuraDB credentials</td><td>Neo4j Console → https://console.neo4j.io</td></tr>
       <tr><td>GCP Service Account JSON</td><td>GCP Console → IAM & Admin → Service Accounts → Keys</td></tr>
       <tr><td>Cloud Run URLs</td><td>GCP Console → Cloud Run → Service → URL</td></tr>
     </table>
@@ -930,5 +1142,62 @@ gcloud run jobs execute seed-job --region asia-southeast1</code></pre>
   </div>
 
 </div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'gcp-deploy-progress';
+  const TOTAL_PHASES = 7;
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+  }
+  function save(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function updateProgress(state) {
+    const done = Object.values(state).filter(Boolean).length;
+    const pct = Math.round((done / TOTAL_PHASES) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressStats').innerHTML =
+      '<strong>' + done + ' / ' + TOTAL_PHASES + '</strong> phases complete &mdash; ' + pct + '%';
+
+    document.querySelectorAll('#phaseNav a').forEach(function(a) {
+      var id = a.getAttribute('href').replace('#phase-', '');
+      a.classList.toggle('phase-done', !!state[id]);
+    });
+  }
+
+  function init() {
+    var state = load();
+
+    document.querySelectorAll('.phase-checkbox').forEach(function(cb) {
+      var phase = cb.dataset.phase;
+      cb.checked = !!state[phase];
+      cb.addEventListener('change', function() {
+        state[phase] = cb.checked;
+        save(state);
+        updateProgress(state);
+      });
+    });
+
+    document.getElementById('resetProgress').addEventListener('click', function() {
+      if (confirm('Reset all deployment progress?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        document.querySelectorAll('.phase-checkbox').forEach(function(cb) { cb.checked = false; });
+        updateProgress({});
+      }
+    });
+
+    updateProgress(state);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 </body>
 </html>

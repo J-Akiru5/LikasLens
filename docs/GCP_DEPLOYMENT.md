@@ -1,7 +1,7 @@
 # LikasLens — Google Cloud Platform (GCP) Deployment Guide
 
 > **Purpose:** Deploy the Laravel backend and FastAPI AI service to Google Cloud Run
-> **Last updated:** 2026-06-17
+> **Last updated:** 2026-06-18
 > **Replaces:** `AZURE_DEPLOYMENT.md` (archived)
 
 ---
@@ -18,9 +18,9 @@
                                    │                            │
                                    v                            v
                           ┌────────────────┐          ┌─────────────────┐
-                          │  Supabase      │          │  Cosmos DB      │
-                          │  PostgreSQL +  │          │  Gremlin        │
-                          │  Storage (S3)  │          │  (Graph)        │
+                          │  Supabase      │          │  Neo4j AuraDB   │
+                          │  PostgreSQL +  │          │  (Graph)        │
+                          │  Storage (S3)  │          │  Free Tier      │
                           └────────────────┘          └─────────────────┘
 ```
 
@@ -30,11 +30,24 @@
 
 ## Phase 1: GCP Project & Billing
 
+> **One project, two services:** Both `likaslens-api` and `likaslens-ai` live in this single project. This simplifies billing, IAM, and Artifact Registry — one setup covers both.
+
 1. Go to [console.cloud.google.com](https://console.cloud.google.com) and log in.
 2. Click the project dropdown at the top blue bar → **New Project**.
-3. Project Name: `likaslens-backend` → Click **Create**.
+3. Project Name: `likaslens` → Click **Create**.
 4. Select the new project in the top bar.
 5. Search **Billing** in the top search bar → Link your account to activate free credits.
+
+### Set Up Billing Budget & Alerts (Safety Net)
+
+> **Why:** Cloud Run charges per request + compute time. If a container stays awake or traffic spikes, you want to know immediately — not when the bill arrives.
+
+1. Go to **Billing** → **Budgets & alerts** (left sidebar).
+2. Click **+ Create Budget**.
+3. Name: `likaslens-budget`
+4. Set amount: **$10** (or $5 for tighter control).
+5. Under **Alerts**, check all three thresholds: **50%**, **90%**, **100%**.
+6. Enter your email under **Notification recipients** → Click **Finish**.
 
 ---
 
@@ -53,6 +66,8 @@
 ### Enable Cloud Run
 
 1. Search **Cloud Run** → Click **Enable**.
+
+> **Ignore "Connect Repository":** You'll see options to connect GitHub repos or set up Cloud Build. Skip all of that — your GitHub Actions pipeline handles building and pushing containers. You only need the API enabled.
 
 ---
 
@@ -134,11 +149,9 @@
 |----------|-------|
 | `AI_SERVICE_PORT` | `8001` |
 | `GOOGLE_API_KEY` | *(from Google AI Studio → API Keys)* |
-| `COSMOS_GREMLIN_ENDPOINT` | `wss://<account>.gremlin.cosmos.azure.com:443/` |
-| `COSMOS_GREMLIN_KEY` | *(from Azure Cosmos DB → Keys)* |
-| `COSMOS_GREMLIN_DATABASE` | `likaslens` |
-| `COSMOS_GREMLIN_GRAPH` | `routing_graph` |
-| `COSMOS_GREMLIN_PARTITION_KEY` | `likaslens-routing-seed` |
+| `NEO4J_URI` | `neo4j+s://<your-instance>.databases.neo4j.io` (from Neo4j AuraDB) |
+| `NEO4J_USER` | `neo4j` |
+| `NEO4J_PASSWORD` | *(from Neo4j AuraDB console)* |
 | `CORS_ORIGINS` | `https://likaslens.vercel.app,https://likaslens-admin.vercel.app,https://likaslens-api-xyz.a.run.app` |
 | `ENVIRONMENT` | `production` |
 | `APP_DEBUG` | `false` |
@@ -179,7 +192,7 @@ Use the GCP Cloud Shell (terminal icon `>_` at the top right of the GCP console)
 ```bash
 # Create a one-off job to run migrations
 gcloud run jobs create migrate-job \
-  --image asia-southeast1-docker.pkg.dev/likaslens-backend/likaslens-repo/likaslens-backend:latest \
+  --image asia-southeast1-docker.pkg.dev/likaslens/likaslens-repo/likaslens-backend:latest \
   --command "php,artisan,migrate,--force" \
   --region asia-southeast1
 
@@ -192,7 +205,7 @@ gcloud run jobs execute migrate-job --region asia-southeast1
 To run seeders:
 ```bash
 gcloud run jobs create seed-job \
-  --image asia-southeast1-docker.pkg.dev/likaslens-backend/likaslens-repo/likaslens-backend:latest \
+  --image asia-southeast1-docker.pkg.dev/likaslens/likaslens-repo/likaslens-backend:latest \
   --command "php,artisan,db:seed,--force" \
   --region asia-southeast1
 
@@ -238,6 +251,7 @@ curl https://likaslens-ai-xyz.a.run.app/health
 | Backend returns 500 on DB endpoints | Missing/wrong `DB_*` env vars | Check Supabase is active, verify credentials |
 | Backend returns 500 on `/api/reports` | Missing `SUPABASE_S3_*` env vars | Set S3 credentials in Cloud Run |
 | AI service returns 502 | Missing `GOOGLE_API_KEY` | Set Gemini API key |
+| AI service returns 500 on `/api/v1/analyze-hazard` | Missing `NEO4J_*` env vars | Set Neo4j credentials in Cloud Run |
 | Frontend shows "Failed to fetch" | Wrong `NEXT_PUBLIC_API_URL` | Check exact Cloud Run backend URL |
 | CORS errors | Missing `CORS_ORIGINS` on AI service | Add Vercel + Cloud Run domains |
 | Supabase connection refused | Project paused | Resume in Supabase dashboard |
@@ -253,7 +267,7 @@ curl https://likaslens-ai-xyz.a.run.app/health
 | Supabase S3 keys | Supabase Dashboard → Settings → Storage → S3 Access Keys |
 | Supabase anon key | Supabase Dashboard → Settings → API → anon public |
 | Google Gemini API key | Google AI Studio → API Keys |
-| Cosmos DB endpoint + key | Azure Portal → Cosmos DB → Keys |
+| Neo4j AuraDB credentials | Neo4j Console → https://console.neo4j.io |
 | GCP Service Account JSON | GCP Console → IAM & Admin → Service Accounts → Keys |
 | Cloud Run URLs | GCP Console → Cloud Run → Service → URL |
 

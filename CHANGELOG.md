@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-06-18
+
+### Changed
+- **AI Service**: Migrated graph database from Azure Cosmos DB (Gremlin) to Neo4j AuraDB Free
+- **AI Service**: Replaced Gremlin traversals with Cypher queries for all graph operations
+- **AI Service**: Added Location-aware schema (Iloilo proof of concept) with `GOVERNED_BY` relationships
+- **AI Service**: Implemented GraphRAG pipeline — Gemini embeddings (`text-embedding-004`) + Neo4j vector search
+- **AI Service**: `hazard_analyzer.py` now uses hybrid retrieval (graph traversal + vector fallback)
+- **AI Service**: `POST /api/v1/analyze-hazard` now accepts optional `location` parameter for location-aware law lookup
+- **AI Service**: Replaced `gremlinpython` dependency with `neo4j` Python driver
+- **Docs**: Updated architecture diagrams to show Neo4j AuraDB instead of Cosmos DB
+- **Docs**: Updated GCP deployment guide with Neo4j env vars (`NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`)
+
+### Added
+- **AI Service**: `neo4j_client.py` — Neo4j async driver, connection management, Cypher query execution
+- **AI Service**: `neo4j_bootstrap.py` — Cypher MERGE upsert generation for idempotent seeding
+- **AI Service**: `graph_rag.py` — Context-Governed RAG with Gemini embeddings and Neo4j vector search
+- **AI Service**: `neo4j_upserts/baseline_rules.py` — Seed data with Location nodes (Iloilo) and all 16 PH laws
+- **Docs**: Billing budget & alerts setup in Phase 1 of GCP deployment guide
+
+### Removed
+- **AI Service**: Removed `gremlinpython` dependency (replaced by `neo4j`)
+- **AI Service**: Removed Cosmos DB Gremlin environment variables
+
+### Archived
+- **AI Service**: Moved `gremlin_client.py`, `gremlin_bootstrap.py`, `gremlin_upserts/` to `docs/archive/gremlin/`
+- **AI Service**: Moved `COSMOS_GREMLIN_SETUP_GUIDE.md` to `docs/archive/gremlin/`
+- **AI Service**: Moved Gremlin migration script to `docs/archive/gremlin/`
+
 ## [0.8.0] - 2026-06-17
 
 ### Changed

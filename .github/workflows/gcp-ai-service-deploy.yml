@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PROJECT_ID: likaslens-backend
+  PROJECT_ID: likaslens
   REGION: asia-southeast1
   REPO_NAME: likaslens-repo
   SERVICE_NAME: likaslens-ai

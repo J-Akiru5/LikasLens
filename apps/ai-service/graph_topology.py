@@ -1,114 +1,91 @@
 """
-Cosmos DB Gremlin topology metadata and bootstrap payloads for LikasLens.
+Neo4j graph topology metadata and bootstrap payloads for LikasLens.
+Replaces the former Cosmos DB Gremlin topology module.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC, datetime
-
-
-DEFAULT_PARTITION_KEY = "likaslens-routing-seed"
 
 
 VERTEX_LABELS = [
+    "Location",
+    "Law",
+    "HazardType",
+    "ViolationType",
+    "Agency",
     "Citizen",
     "Incident",
-    "Law",
-    "ViolationType",
-    "HazardType",
-    "NGO",
-    "Reward",
-    "Partner",
-    "Jurisdiction",
-    "Evidence",
 ]
 
 EDGE_LABELS = [
-    "REPORTED",
+    "GOVERNED_BY",
+    "VIOLATES",
+    "ENFORCED_BY",
     "CLASSIFIED_AS",
+    "REPORTED",
     "ASSIGNED_TO",
-    "REDEEMED",
-    "PROVIDED_BY",
-    "HAS_EVIDENCE",
-    "RELATED_TO",
-    "violates",
-    "enforced_by",
 ]
 
 
 @dataclass(frozen=True)
-class GremlinTopologyConfig:
+class GraphTopologyConfig:
     """A serializable topology configuration contract for backend consumers."""
 
     vertex_labels: list[str]
     edge_labels: list[str]
     edge_properties: list[str]
-    partition_key: str
 
 
-def get_topology_config() -> GremlinTopologyConfig:
+def get_topology_config() -> GraphTopologyConfig:
     """Return the graph topology used by LikasLens across AI and backend services."""
-    return GremlinTopologyConfig(
+    return GraphTopologyConfig(
         vertex_labels=VERTEX_LABELS,
         edge_labels=EDGE_LABELS,
         edge_properties=[
-            "createdAt",
-            "source",
             "confidence",
-            "modelName",
-            "explanation",
-            "isActive",
+            "source",
+            "createdAt",
         ],
-        partition_key=DEFAULT_PARTITION_KEY,
     )
 
 
 def build_seed_vertices() -> list[dict[str, object]]:
-    """Return a deterministic baseline set of graph vertices for smoke-testing traversals."""
-    now = datetime.now(UTC).isoformat()
+    """Return a deterministic baseline set of graph vertices for smoke-testing."""
     return [
         {
-            "id": "seed-citizen-001",
-            "label": "Citizen",
+            "label": "Location",
+            "match": {"name": "Iloilo City"},
             "props": {
-                "createdAt": now,
-                "source": "system",
-                "isActive": True,
-                "partitionKey": DEFAULT_PARTITION_KEY,
+                "region": "Western Visayas",
+                "country": "PH",
+                "description": "Highly urbanized city in Western Visayas, Philippines",
             },
         },
         {
-            "id": "seed-incident-001",
-            "label": "Incident",
+            "label": "Law",
+            "match": {"code": "RA-9003"},
             "props": {
-                "status": "open",
-                "createdAt": now,
-                "source": "system",
-                "isActive": True,
-                "partitionKey": DEFAULT_PARTITION_KEY,
+                "title": "Ecological Solid Waste Management Act of 2000",
+                "issuing_agency": "NSWMC",
+                "jurisdictionCode": "PH-NATIONAL",
             },
         },
         {
-            "id": "seed-violation-001",
-            "label": "ViolationType",
+            "label": "HazardType",
+            "match": {"code": "illegal_dumping"},
             "props": {
-                "code": "SWM-ILLEGAL-DUMPING",
-                "createdAt": now,
-                "source": "system",
-                "isActive": True,
-                "partitionKey": DEFAULT_PARTITION_KEY,
+                "name": "Illegal Dumping",
             },
         },
         {
-            "id": "seed-ngo-001",
-            "label": "NGO",
+            "label": "Agency",
+            "match": {"id": "ngo-green-dingle-initiative"},
             "props": {
                 "name": "Green Dingle Initiative",
-                "createdAt": now,
-                "source": "system",
-                "isActive": True,
-                "partitionKey": DEFAULT_PARTITION_KEY,
+                "focus": "solid-waste",
+                "country": "PH",
+                "region": "Western Visayas",
             },
         },
     ]
@@ -116,41 +93,29 @@ def build_seed_vertices() -> list[dict[str, object]]:
 
 def build_seed_edges() -> list[dict[str, object]]:
     """Return deterministic baseline edges between seed vertices."""
-    now = datetime.now(UTC).isoformat()
     return [
         {
-            "label": "REPORTED",
-            "from": "seed-citizen-001",
-            "to": "seed-incident-001",
-            "props": {
-                "createdAt": now,
-                "source": "system",
-                "isActive": True,
-                "partitionKey": DEFAULT_PARTITION_KEY,
-            },
+            "from_label": "Location",
+            "from_match": {"name": "Iloilo City"},
+            "to_label": "Law",
+            "to_match": {"code": "RA-9003"},
+            "label": "GOVERNED_BY",
+            "props": {},
         },
         {
-            "label": "CLASSIFIED_AS",
-            "from": "seed-incident-001",
-            "to": "seed-violation-001",
-            "props": {
-                "createdAt": now,
-                "source": "ai",
-                "confidence": 0.85,
-                "modelName": "gemini",
-                "isActive": True,
-                "partitionKey": DEFAULT_PARTITION_KEY,
-            },
+            "from_label": "HazardType",
+            "from_match": {"code": "illegal_dumping"},
+            "to_label": "Law",
+            "to_match": {"code": "RA-9003"},
+            "label": "VIOLATES",
+            "props": {"confidence": 1.0, "source": "philippine-law"},
         },
         {
-            "label": "ASSIGNED_TO",
-            "from": "seed-incident-001",
-            "to": "seed-ngo-001",
-            "props": {
-                "createdAt": now,
-                "source": "analyst",
-                "isActive": True,
-                "partitionKey": DEFAULT_PARTITION_KEY,
-            },
+            "from_label": "Law",
+            "from_match": {"code": "RA-9003"},
+            "to_label": "Agency",
+            "to_match": {"id": "ngo-green-dingle-initiative"},
+            "label": "ENFORCED_BY",
+            "props": {"source": "migration"},
         },
     ]
