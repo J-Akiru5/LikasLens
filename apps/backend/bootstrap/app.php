@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\ResolveTenant;
 use Illuminate\Foundation\Application;
@@ -45,6 +46,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 if ($e instanceof HttpExceptionInterface) {
                     $status = $e->getStatusCode();
+                } elseif ($e instanceof AuthenticationException) {
+                    $status = 401;
                 }
 
                 $response = [
@@ -57,10 +60,6 @@ return Application::configure(basePath: dirname(__DIR__))
                     $response['file'] = $e->getFile();
                     $response['line'] = $e->getLine();
                 }
-
-                // Temporary: expose error details for debugging
-                $response['debug_error'] = $e->getMessage();
-                $response['debug_class'] = get_class($e);
 
                 return response()->json($response, $status);
             }
