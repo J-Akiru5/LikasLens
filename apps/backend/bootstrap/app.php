@@ -58,6 +58,10 @@ return Application::configure(basePath: dirname(__DIR__))
                     $response['line'] = $e->getLine();
                 }
 
+                // Temporary: expose error details for debugging
+                $response['debug_error'] = $e->getMessage();
+                $response['debug_class'] = get_class($e);
+
                 return response()->json($response, $status);
             }
         });
