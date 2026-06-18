@@ -934,7 +934,7 @@
       <tr><td><code>NEO4J_URI</code></td><td><code>neo4j+s://&lt;your-instance&gt;.databases.neo4j.io</code> (from Neo4j AuraDB)</td></tr>
       <tr><td><code>NEO4J_USER</code></td><td><code>neo4j</code></td></tr>
       <tr><td><code>NEO4J_PASSWORD</code></td><td><em>From Neo4j AuraDB console</em></td></tr>
-      <tr><td><code>CORS_ORIGINS</code></td><td><code>https://likaslens.vercel.app,https://likaslens-admin.vercel.app,https://likaslens-api-xyz.a.run.app</code></td></tr>
+      <tr><td><code>CORS_ORIGINS</code></td><td><code>https://likaslens.vercel.app,https://likaslens-admin.vercel.app,https://likaslens-api-1096292232709.asia-southeast1.run.app</code></td></tr>
       <tr><td><code>ENVIRONMENT</code></td><td><code>production</code></td></tr>
       <tr><td><code>APP_DEBUG</code></td><td><code>false</code></td></tr>
     </table>
@@ -1116,8 +1116,8 @@ gcloud run jobs execute seed-job --region asia-southeast1</code></pre>
 
     <table>
       <tr><th>Variable</th><th>New Value</th></tr>
-      <tr><td><code>NEXT_PUBLIC_API_URL</code></td><td><code>https://likaslens-api-xyz.a.run.app/api</code></td></tr>
-      <tr><td><code>NEXT_PUBLIC_AI_SERVICE_URL</code></td><td><code>https://likaslens-ai-xyz.a.run.app</code></td></tr>
+      <tr><td><code>NEXT_PUBLIC_API_URL</code></td><td><code>https://likaslens-api-1096292232709.asia-southeast1.run.app/api</code></td></tr>
+      <tr><td><code>NEXT_PUBLIC_AI_SERVICE_URL</code></td><td><code>https://likaslens-ai-1096292232709.asia-southeast1.run.app</code></td></tr>
     </table>
 
     <div class="step">
@@ -1140,11 +1140,11 @@ gcloud run jobs execute seed-job --region asia-southeast1</code></pre>
     </div>
 
     <h3>Backend Health Check</h3>
-    <pre><code>curl https://likaslens-api-xyz.a.run.app/api/health
+    <pre><code>curl https://likaslens-api-1096292232709.asia-southeast1.run.app/api/health
 # Expected: {"status":"ok","service":"likaslens-backend","timestamp":"..."}</code></pre>
 
     <h3>AI Service Health Check</h3>
-    <pre><code>curl https://likaslens-ai-xyz.a.run.app/health
+    <pre><code>curl https://likaslens-ai-1096292232709.asia-southeast1.run.app/health
 # Expected: {"status":"ok"}</code></pre>
 
     <h3>Frontend</h3>
