@@ -16,11 +16,13 @@ def build_vertex_merge_query(label: str, match_props: dict[str, Any], set_props:
         match_props: Properties used to match the node (e.g., {'code': 'RA-9003'})
         set_props: Additional properties to set on create (optional)
     """
+    # In Cypher MERGE patterns, use { key: $key } syntax (colon, not equals)
     match_clause = ", ".join(
-        f"n.{k} = ${k}" for k in match_props
+        f"{k}: ${k}" for k in match_props
     )
     on_create_sets = ""
     if set_props:
+        # In SET clauses, use n.key = $key syntax
         on_create_sets = " ON CREATE SET " + ", ".join(
             f"n.{k} = ${k}" for k in set_props
         )
@@ -46,20 +48,21 @@ def build_edge_merge_query(
         edge_label: Relationship type (e.g., 'VIOLATES', 'ENFORCED_BY')
         edge_props: Properties to set on the relationship (optional)
     """
+    # In Cypher MATCH patterns, use { key: $key } syntax (colon, not equals)
     from_clause = ", ".join(
-        f"a.{k} = ${'from_' + k}" for k in from_match
+        f"{k}: ${'from_' + k}" for k in from_match
     )
     to_clause = ", ".join(
-        f"b.{k} = ${'to_' + k}" for k in to_match
+        f"{k}: ${'to_' + k}" for k in to_match
     )
 
     on_create_sets = ""
     if edge_props:
+        # In SET clauses, use r.key = $key syntax
         on_create_sets = " ON CREATE SET " + ", ".join(
             f"r.{k} = ${'edge_' + k}" for k in edge_props
         )
 
-    # Build flat parameter dict key lists for documentation
     return (
         f"MATCH (a:{from_label} {{ {from_clause} }}), "
         f"(b:{to_label} {{ {to_clause} }}) "
