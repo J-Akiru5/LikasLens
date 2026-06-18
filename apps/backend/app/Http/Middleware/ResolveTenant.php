@@ -18,7 +18,7 @@ class ResolveTenant
      *   3. Subdomain                   — e.g. cebu.likaslens.org
      *   4. Default tenant (slug="default") — fallback for single-tenant mode
      *
-     * Returns 404 if a tenant identifier is provided but no active tenant matches.
+     * Continues without a tenant if no match is found (single-tenant mode).
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -29,25 +29,11 @@ class ResolveTenant
             $tenant = Tenant::where('id', $tenantId)
                 ->where('is_active', true)
                 ->first();
-
-            if (! $tenant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tenant not found or inactive.',
-                ], 404);
-            }
         }
 
         // 2. Tenant slug in header
         if (! $tenant && ($slug = $request->header('X-Tenant-Slug'))) {
             $tenant = Tenant::resolveBySlug($slug);
-
-            if (! $tenant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tenant not found or inactive.',
-                ], 404);
-            }
         }
 
         // 3. Subdomain extraction
@@ -57,13 +43,6 @@ class ResolveTenant
 
             if ($slug && $slug !== 'www' && $slug !== 'api') {
                 $tenant = Tenant::resolveBySlug($slug);
-
-                if (! $tenant) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Tenant not found or inactive.',
-                    ], 404);
-                }
             }
         }
 
