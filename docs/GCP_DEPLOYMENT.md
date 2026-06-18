@@ -149,7 +149,7 @@ Neo4j stores your environmental law knowledge graph (hazards → laws → agenci
 | `SUPABASE_S3_ENDPOINT` | `https://sfklmmtimelotqvrldni.storage.supabase.co/storage/v1/s3` |
 | `SUPABASE_S3_ACCESS_KEY` | *(from Supabase → Settings → Storage → S3 Access Keys)* |
 | `SUPABASE_S3_SECRET_KEY` | *(from Supabase → Settings → Storage → S3 Access Keys)* |
-| `SUPABASE_S3_REGION` | `ap-southeast-1` |
+| `SUPABASE_S3_REGION` | `ap-northeast-2` |
 | `SUPABASE_STORAGE_BUCKET` | `likaslens-evidence` |
 | `AI_SERVICE_URL` | *(leave blank — will fill after AI service deploys)* |
 
