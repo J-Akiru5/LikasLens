@@ -212,22 +212,50 @@ Both workflows:
 
 ## Phase 6: Running Seeders
 
-Use the GCP Cloud Shell (terminal icon `>_` at the top right of the GCP console):
+Use the GCP Cloud Shell (terminal icon `>_` at the top right of the GCP console).
+
+### Seed Neo4j Graph Database (Required for AI Service)
+
+This seeds the graph with 16 PH environmental laws, 18 hazard types, 5 agencies, 3 locations (Iloilo), and all their relationships.
 
 ```bash
-# Create a one-off job to run migrations
-gcloud run jobs create migrate-job \
-  --image asia-southeast1-docker.pkg.dev/likaslens/likaslens-repo/likaslens-backend:latest \
-  --command "php,artisan,migrate,--force" \
-  --region asia-southeast1
+# 1. Clone the repo (if not already)
+git clone https://github.com/J-Akiru5/LikasLens.git
+cd LikasLens/apps/ai-service
 
-# Execute the job
-gcloud run jobs execute migrate-job --region asia-southeast1
+# 2. Install dependencies
+pip install neo4j python-dotenv google-generativeai
+
+# 3. Set environment variables
+export NEO4J_URI="neo4j+s://your-instance.databases.neo4j.io"
+export NEO4J_USER="neo4j"
+export NEO4J_PASSWORD="your-password"
+export GOOGLE_API_KEY="your-gemini-key"  # optional, enables vector embeddings
+
+# 4. Run the seed script
+python seed_neo4j.py
+
+# To clear and re-seed (e.g., after schema changes):
+python seed_neo4j.py --drop
 ```
 
-> **Note:** The `start.sh` entrypoint already runs `php artisan migrate --force` on every container boot, so migrations happen automatically. This step is only needed if you want to run seeders manually.
+**What it does:**
+- Creates uniqueness constraints (Law.code, HazardType.code, etc.)
+- Seeds all vertex nodes (laws, hazards, agencies, violations, locations)
+- Seeds all edges (GOVERNED_BY, VIOLATES, ENFORCED_BY, CLASSIFIED_AS)
+- If `GOOGLE_API_KEY` is set: creates vector index and embeds 16 PH laws for GraphRAG
 
-To run seeders:
+**Verify in Neo4j Console:**
+1. Go to https://console.neo4j.io
+2. Open your instance → Query tab
+3. Run: `MATCH (n) RETURN labels(n)[0] AS label, count(n) AS count ORDER BY count DESC`
+4. You should see: Law (16), HazardType (18), Agency (5), ViolationType (11), Location (3)
+
+### Backend Seeders (Optional)
+
+> **Note:** The `start.sh` entrypoint already runs `php artisan migrate --force` on every container boot, so migrations happen automatically.
+
+To run Laravel seeders (sample data):
 ```bash
 gcloud run jobs create seed-job \
   --image asia-southeast1-docker.pkg.dev/likaslens/likaslens-repo/likaslens-backend:latest \
@@ -266,6 +294,11 @@ curl https://likaslens-ai-xyz.a.run.app/health
 # Frontend
 # Open https://likaslens.vercel.app in browser
 ```
+
+**Verify Neo4j:**
+1. Go to https://console.neo4j.io → Open your instance
+2. Run in Query tab: `MATCH (n) RETURN labels(n)[0] AS label, count(n) AS count ORDER BY count DESC`
+3. Expected: Law (16), HazardType (18), Agency (5), ViolationType (11), Location (3)
 
 ---
 

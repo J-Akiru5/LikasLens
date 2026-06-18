@@ -1026,23 +1026,69 @@
 
   <div class="card">
     <div class="card-header">
-      <h2>Database Commands</h2>
+      <h2>Seed Neo4j Graph Database (Required)</h2>
     </div>
-    <p>Use the GCP Cloud Shell (terminal icon <code>&gt;_</code> at the very top right of the GCP console).</p>
+    <p>This seeds the graph with 16 PH environmental laws, 18 hazard types, 5 agencies, 3 locations (Iloilo), and all their relationships.</p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      Open GCP Cloud Shell (terminal icon <code>&gt;_</code> at the top right of the GCP console).
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      Clone the repo and install dependencies:
+      <pre><code>git clone https://github.com/J-Akiru5/LikasLens.git
+cd LikasLens/apps/ai-service
+pip install neo4j python-dotenv google-generativeai</code></pre>
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      Set environment variables:
+      <pre><code>export NEO4J_URI="neo4j+s://your-instance.databases.neo4j.io"
+export NEO4J_USER="neo4j"
+export NEO4J_PASSWORD="your-password"
+export GOOGLE_API_KEY="your-gemini-key"  # optional, enables vector embeddings</code></pre>
+    </div>
+    <div class="step">
+      <span class="step-number">4</span>
+      Run the seed script:
+      <pre><code>python seed_neo4j.py</code></pre>
+    </div>
+    <div class="step">
+      <span class="step-number">5</span>
+      To clear and re-seed (e.g., after schema changes):
+      <pre><code>python seed_neo4j.py --drop</code></pre>
+    </div>
 
     <div class="info">
-      <strong>Auto-migrations:</strong> The <code>start.sh</code> entrypoint already runs <code>php artisan migrate --force</code> on every container boot. You only need this if you want to run <strong>seeders</strong> manually.
+      <strong>What it does:</strong> Creates uniqueness constraints, seeds all vertex nodes (laws, hazards, agencies, violations, locations), seeds all edges (GOVERNED_BY, VIOLATES, ENFORCED_BY, CLASSIFIED_AS). If <code>GOOGLE_API_KEY</code> is set, it also creates a vector index and embeds the 16 PH laws for GraphRAG.
     </div>
 
-    <h3>Run Migrations Manually (Optional)</h3>
-    <pre><code>gcloud run jobs create migrate-job \
-  --image asia-southeast1-docker.pkg.dev/likaslens/likaslens-repo/likaslens-backend:latest \
-  --command "php,artisan,migrate,--force" \
-  --region asia-southeast1
+    <h3>Verify in Neo4j Console</h3>
+    <div class="step">
+      <span class="step-number">1</span>
+      Go to <a href="https://console.neo4j.io" target="_blank">console.neo4j.io</a> → Open your instance → Query tab.
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      Run: <code>MATCH (n) RETURN labels(n)[0] AS label, count(n) AS count ORDER BY count DESC</code>
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      Expected results: Law (16), HazardType (18), Agency (5), ViolationType (11), Location (3).
+    </div>
+  </div>
 
-gcloud run jobs execute migrate-job --region asia-southeast1</code></pre>
+  <div class="card">
+    <div class="card-header">
+      <h2>Backend Seeders (Optional)</h2>
+    </div>
 
-    <h3>Run Seeders</h3>
+    <div class="info">
+      <strong>Auto-migrations:</strong> The <code>start.sh</code> entrypoint already runs <code>php artisan migrate --force</code> on every container boot. Migrations happen automatically.
+    </div>
+
+    <p>To run Laravel seeders (sample data):</p>
     <pre><code>gcloud run jobs create seed-job \
   --image asia-southeast1-docker.pkg.dev/likaslens/likaslens-repo/likaslens-backend:latest \
   --command "php,artisan,db:seed,--force" \
@@ -1103,6 +1149,20 @@ gcloud run jobs execute seed-job --region asia-southeast1</code></pre>
 
     <h3>Frontend</h3>
     <p>Open <a href="https://likaslens.vercel.app" target="_blank">https://likaslens.vercel.app</a> in your browser. Log in and test a report submission.</p>
+
+    <h3>Neo4j Graph Database</h3>
+    <div class="step">
+      <span class="step-number">1</span>
+      Go to <a href="https://console.neo4j.io" target="_blank">console.neo4j.io</a> → Open your instance → Query tab.
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      Run: <code>MATCH (n) RETURN labels(n)[0] AS label, count(n) AS count ORDER BY count DESC</code>
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      Expected: Law (16), HazardType (18), Agency (5), ViolationType (11), Location (3).
+    </div>
   </div>
 
   <!-- ============================================ -->
