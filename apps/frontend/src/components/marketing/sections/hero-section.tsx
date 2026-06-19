@@ -242,7 +242,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
             onClick={onGhostToggle}
             aria-pressed={ghostMode}
             aria-label={ghostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
-            className="hidden sm:flex relative items-center h-8 w-[88px] rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-2"
+            className="flex relative items-center h-8 w-[88px] rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-2"
             style={{
               background: ghostMode ? "rgba(46,230,200,0.1)" : "rgba(240,237,232,0.05)",
               border: ghostMode ? "1px solid rgba(46,230,200,0.22)" : "1px solid rgba(240,237,232,0.1)",

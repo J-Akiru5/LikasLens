@@ -140,11 +140,11 @@ export function ImpactSection() {
             style={{ borderRadius: 14, minHeight: 260, border: "1px solid var(--border)" }}
           >
             <Image
-              src="https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=1200&q=80"
+              src="/images/ridge-to-reef.png"
               alt="A river winding through forested Philippine highlands"
               fill
               sizes="(min-width: 1024px) 40vw, 100vw"
-              className="ec-duotone"
+              style={{ objectFit: "cover", objectPosition: "center" }}
             />
             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", padding: 22 }}>
               <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "rgba(240,237,232,0.85)", margin: 0, maxWidth: 320, lineHeight: 1.5 }}>

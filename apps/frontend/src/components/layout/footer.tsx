@@ -199,23 +199,26 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
             </div>
           </div>
 
-          {/* Links Column 1: Platform */}
-          <div className="flex flex-col gap-4">
-            <h3 className={`font-mono text-xs uppercase tracking-widest ${subHeadingColor} font-bold mb-2`}>Platform</h3>
-            <Link href="/#features" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Features</Link>
-            <Link href="/#scoreboard" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Public Records</Link>
-            <Link href="/changelog" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Changelog</Link>
-            <Link href="/dashboard" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit flex items-center gap-2`}>
-              Citizen Portal <span className="px-1.5 py-0.5 rounded bg-accent/20 text-accent-bright text-[9px] font-bold uppercase tracking-wider">Beta</span>
-            </Link>
-          </div>
+          {/* Links Columns Container (2 columns on mobile) */}
+          <div className="grid grid-cols-2 gap-8 lg:col-span-2">
+            {/* Links Column 1: Platform */}
+            <div className="flex flex-col gap-4">
+              <h3 className={`font-mono text-xs uppercase tracking-widest ${subHeadingColor} font-bold mb-2`}>Platform</h3>
+              <Link href="/#features" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Features</Link>
+              <Link href="/#scoreboard" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Public Records</Link>
+              <Link href="/changelog" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Changelog</Link>
+              <Link href="/dashboard" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit flex flex-wrap items-center gap-2`}>
+                Citizen Portal <span className="px-1.5 py-0.5 rounded bg-accent/20 text-accent-bright text-[9px] font-bold uppercase tracking-wider">Beta</span>
+              </Link>
+            </div>
 
-          {/* Links Column 2: Legal */}
-          <div className="flex flex-col gap-4">
-            <h3 className={`font-mono text-xs uppercase tracking-widest ${subHeadingColor} font-bold mb-2`}>Legal</h3>
-            <Link href="/privacy" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Privacy Policy</Link>
-            <Link href="/terms" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Terms of Service</Link>
-            <Link href="/contact" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Contact Us</Link>
+            {/* Links Column 2: Legal */}
+            <div className="flex flex-col gap-4">
+              <h3 className={`font-mono text-xs uppercase tracking-widest ${subHeadingColor} font-bold mb-2`}>Legal</h3>
+              <Link href="/privacy" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Privacy Policy</Link>
+              <Link href="/terms" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Terms of Service</Link>
+              <Link href="/contact" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Contact Us</Link>
+            </div>
           </div>
         </div>
 
