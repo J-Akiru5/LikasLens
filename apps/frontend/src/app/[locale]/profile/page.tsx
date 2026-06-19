@@ -120,29 +120,47 @@ function ProfilePageContent() {
         const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
         const supabaseUserId = user?.id;
 
-        const [leaderboardRes, achievementsRes, rankRes, profileRes] =
-          await Promise.all([
-            fetch(`${laravelUrl}/leaderboard`).then((r) =>
-              r.ok ? r.json() : null,
-            ),
-            supabaseUserId
-              ? fetch(`${laravelUrl}/achievements/user/${supabaseUserId}`).then(
-                  (r) => (r.ok ? r.json() : null),
-                )
-              : fetch(`${laravelUrl}/achievements`).then((r) =>
-                  r.ok ? r.json() : null,
-                ),
-            supabaseUserId
-              ? fetch(`${laravelUrl}/user/rank-progress`, {
-                  credentials: "include",
-                }).then((r) => (r.ok ? r.json() : null))
-              : Promise.resolve(null),
-            supabaseUserId
-              ? fetch(`${laravelUrl}/profile/${supabaseUserId}`).then((r) =>
-                  r.ok ? r.json() : null,
-                )
-              : Promise.resolve(null),
-          ]);
+        let achievementsRes = null;
+        let rankRes = null;
+        let profileRes = null;
+
+        if (supabaseUserId) {
+          const achievementsResponse = await fetch(`${laravelUrl}/achievements/user/${supabaseUserId}`);
+          if (achievementsResponse.status === 404) {
+            const syncRes = await fetch(`${laravelUrl}/auth/sync`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify({
+                supabase_auth_user_id: supabaseUserId,
+                email: user.email,
+                name: user.user_metadata?.display_name || user.email?.split("@")[0],
+              }),
+            });
+            if (syncRes.ok) {
+              const [retryAchievements, retryRank, retryProfile] = await Promise.all([
+                fetch(`${laravelUrl}/achievements/user/${supabaseUserId}`).then((r) => r.ok ? r.json() : null),
+                fetch(`${laravelUrl}/user/rank-progress`, { credentials: "include" }).then((r) => r.ok ? r.json() : null),
+                fetch(`${laravelUrl}/profile/${supabaseUserId}`).then((r) => r.ok ? r.json() : null),
+              ]);
+              achievementsRes = retryAchievements;
+              rankRes = retryRank;
+              profileRes = retryProfile;
+            }
+          } else if (achievementsResponse.ok) {
+            achievementsRes = await achievementsResponse.json();
+            [rankRes, profileRes] = await Promise.all([
+              fetch(`${laravelUrl}/user/rank-progress`, { credentials: "include" }).then((r) => r.ok ? r.json() : null),
+              fetch(`${laravelUrl}/profile/${supabaseUserId}`).then((r) => r.ok ? r.json() : null),
+            ]);
+          }
+        } else {
+          achievementsRes = await fetch(`${laravelUrl}/achievements`).then((r) => r.ok ? r.json() : null);
+        }
+
+        const leaderboardRes = await fetch(`${laravelUrl}/leaderboard`).then((r) => r.ok ? r.json() : null);
 
         if (mounted) {
           let profileStatsData = {
