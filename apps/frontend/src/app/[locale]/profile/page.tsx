@@ -20,7 +20,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { PageSkeleton } from "@likaslens/shared";
-import { AchievementCard, RankProgressCard, Dropdown } from "@likaslens/shared";
+import { AchievementCard, RankProgressCard, Dropdown, EmptyState } from "@likaslens/shared";
 import { fetchEcoCreditRate } from "@likaslens/shared";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
 import { CustomSelect } from "@/components/ui/custom-select";
@@ -703,7 +703,7 @@ function ProfilePageContent() {
             </div>
 
             {filteredAchievements.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                 {filteredAchievements.map((achievement) => (
                   <div
                     key={achievement.id}
@@ -720,22 +720,12 @@ function ProfilePageContent() {
                 ))}
               </div>
             ) : (
-              <div className="py-16 text-center">
-                <Medal className="w-10 h-10 text-ink/20 mx-auto mb-3" />
-                <p className="font-mono text-sm text-ink/50 uppercase tracking-wide">
-                  {filter === "unlocked"
-                    ? t("noAchievementsUnlocked")
-                    : filter === "locked"
-                      ? t("noAchievementsLocked")
-                      : "No achievements found."}
-                </p>
-                <p className="font-mono text-xs text-ink/40 mt-1">
-                  {filter === "unlocked"
-                    ? t("noAchievementsUnlockedDesc")
-                    : filter === "locked"
-                      ? t("noAchievementsLockedDesc")
-                      : "Try adjusting your filters."}
-                </p>
+              <div className="col-span-full">
+                <EmptyState 
+                  icon={Medal}
+                  title={filter === "unlocked" ? t("noAchievementsUnlocked") : filter === "locked" ? t("noAchievementsLocked") : "No achievements found."}
+                  description={filter === "unlocked" ? t("noAchievementsUnlockedDesc") : filter === "locked" ? t("noAchievementsLockedDesc") : "Try adjusting your filters."}
+                />
               </div>
             )}
 
@@ -890,7 +880,7 @@ function ProfilePageContent() {
         )}
 
         {activeTab === "settings" && (
-          <div className="grid md:grid-cols-3 gap-8 animate-fade-in max-w-6xl mx-auto pb-16">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 animate-fade-in max-w-6xl mx-auto pb-16">
             <div className="md:col-span-1 space-y-6">
               <div className="bg-panel border border-ink/5 rounded-3xl p-8 shadow-sm flex flex-col items-center">
                 <h2 className="font-semibold tracking-tight text-xl text-ink mb-6 w-full text-left">

@@ -4,8 +4,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, X, Send, Bot, User } from "lucide-react";
 import { useGeminiChat, type ChatMessage } from "../../hooks/useGeminiChat";
+import { cn } from "../../utils";
 
-export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "citizen" | "admin"; locale?: string }) {
+export function LikasyChat({ persona = "citizen", locale = "en", className }: { persona?: "citizen" | "admin"; locale?: string; className?: string }) {
   const [open, setOpen] = useState(false);
   const { messages, loading, sendMessage } = useGeminiChat(persona, locale);
   const [input, setInput] = useState("");
@@ -46,10 +47,24 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-accent text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
+          className={cn(
+            "group fixed bottom-6 right-6 z-50 flex items-center justify-center w-16 h-16",
+            className
+          )}
           aria-label="Open Likasy chat"
         >
-           <MessageCircle className="w-6 h-6" />
+          {/* Outer glowing ripple */}
+          <div className="absolute inset-0 rounded-full bg-accent/30 animate-ping [animation-duration:3s]" />
+          
+          {/* Inner pulsating glow */}
+          <div className="absolute -inset-1 rounded-full bg-accent/20 animate-pulse [animation-duration:2s]" />
+
+          {/* Floating Logo Avatar without background circle */}
+          <img 
+            src="/images/likasy-logo.png" 
+            alt="Likasy Chat" 
+            className="w-full h-full object-contain drop-shadow-xl animate-float relative z-10 transition-transform duration-300 group-hover:scale-110 active:scale-95" 
+          />
         </button>
       )}
 
@@ -60,11 +75,11 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20, transition: { duration: 0.15 } }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 h-[28rem] max-h-[70vh] flex flex-col rounded-xl border border-border bg-panel shadow-lg overflow-hidden"
+            className={cn("fixed bottom-6 right-6 z-50 w-80 sm:w-96 h-[28rem] max-h-[70vh] flex flex-col rounded-xl border border-border bg-panel shadow-lg overflow-hidden", className)}
           >
             <div className="flex items-center gap-2 px-4 py-3 shrink-0 bg-accent text-white">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/20">
-                 <Bot className="w-5 h-5" />
+              <div className="flex items-center justify-center w-8 h-8 shrink-0 drop-shadow-sm">
+                 <img src="/images/likasy-logo.png" alt="Likasy" className="w-full h-full object-contain" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold">Likasy</div>
@@ -86,8 +101,8 @@ export function LikasyChat({ persona = "citizen", locale = "en" }: { persona?: "
               ))}
               {loading && (
                 <div className="flex items-start gap-2">
-                  <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-1 bg-accent">
-                     <Bot className="w-3.5 h-3.5 text-white" />
+                  <div className="flex items-center justify-center w-7 h-7 shrink-0 mt-1 drop-shadow-sm">
+                     <img src="/images/likasy-logo.png" alt="Likasy" className="w-full h-full object-contain animate-pulse" />
                   </div>
                   <div className="flex items-center gap-1 px-3 py-2 rounded-xl bg-panel border border-border">
                     <span className="w-2 h-2 rounded-full bg-accent animate-bounce" />
@@ -171,9 +186,15 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
   return (
     <div className={`flex items-start gap-2 ${isUser ? "flex-row-reverse" : ""}`}>
-      <div className="flex items-center justify-center w-6 h-6 rounded-full shrink-0 mt-1" style={{ background: isUser ? "var(--ink)" : "var(--accent)" }}>
-         {isUser ? <User className="w-3.5 h-3.5 text-page" /> : <Bot className="w-3.5 h-3.5 text-white" />}
-      </div>
+      {isUser ? (
+        <div className="flex items-center justify-center w-7 h-7 rounded-full shrink-0 mt-1 bg-ink shadow-sm">
+          <User className="w-4 h-4 text-page" />
+        </div>
+      ) : (
+        <div className="flex items-center justify-center w-7 h-7 shrink-0 mt-1 drop-shadow-sm">
+          <img src="/images/likasy-logo.png" alt="Likasy" className="w-full h-full object-contain" />
+        </div>
+      )}
       <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed ${isUser ? "bg-ink text-page" : "bg-panel text-ink border border-border"}`}>
         {isUser ? <div className="whitespace-pre-wrap break-words">{message.content}</div> : <MarkdownRenderer content={message.content} />}
       </div>

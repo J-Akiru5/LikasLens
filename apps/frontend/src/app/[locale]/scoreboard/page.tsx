@@ -10,9 +10,10 @@ import {
   BarChart3,
   TrendingUp,
   RefreshCw,
+  FileText,
 } from "lucide-react";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
-import { EmptyLeaderboard, ErrorPage, ScoreboardSkeleton } from "@likaslens/shared";
+import { EmptyState, ErrorPage, ScoreboardSkeleton } from "@likaslens/shared";
 import { cn } from "@likaslens/shared";
 
 /* ------------------------------------------------------------------ */
@@ -31,10 +32,7 @@ interface LeaderboardEntry {
   report_count?: number;
 }
 
-interface BarangayEntry {
-  barangay: string;
-  report_count: number;
-}
+
 
 interface SpotlightEntry {
   id: string;
@@ -52,20 +50,18 @@ interface LeaderboardStats {
   avg_eco_credits: number;
 }
 
-type TabKey = "all-time" | "monthly" | "weekly" | "barangay";
+type TabKey = "all-time" | "monthly" | "weekly";
 
 const TABS: { key: TabKey; label: string; icon: typeof Trophy }[] = [
   { key: "all-time", label: "All Time", icon: Trophy },
   { key: "monthly", label: "This Month", icon: TrendingUp },
   { key: "weekly", label: "This Week", icon: BarChart3 },
-  { key: "barangay", label: "Barangay", icon: Users },
 ];
 
 const ENDPOINTS: Record<TabKey, string> = {
   "all-time": "/leaderboard",
   "monthly": "/leaderboard/monthly",
   "weekly": "/leaderboard/weekly",
-  "barangay": "/leaderboard/barangay",
 };
 
 /* ------------------------------------------------------------------ */
@@ -76,7 +72,7 @@ export default function ScoreboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("all-time");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [barangayEntries, setBarangayEntries] = useState<BarangayEntry[]>([]);
+
   const [spotlight, setSpotlight] = useState<SpotlightEntry | null>(null);
   const [stats, setStats] = useState<LeaderboardStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,14 +89,8 @@ export default function ScoreboardPage() {
         const res = await fetch(`${laravelUrl}${ENDPOINTS[tab]}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-        if (tab === "barangay") {
-          setBarangayEntries(json?.data || []);
-          setEntries([]);
-        } else {
-          const data = json?.data || json || [];
-          setEntries(Array.isArray(data) ? data : []);
-          setBarangayEntries([]);
-        }
+        const data = json?.data || json || [];
+        setEntries(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
         setError("Unable to load leaderboard");
@@ -278,38 +268,61 @@ export default function ScoreboardPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-panel rounded-3xl border border-ink/5 p-6 flex flex-col justify-center">
-                      <p className="text-xs font-mono text-ink/40 uppercase mb-2">
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+                    {/* Primary Stat - Spans full width on mobile, 1 col on desktop */}
+                    <div className="col-span-2 sm:col-span-1 bg-green/[0.02] hover:bg-green/[0.04] rounded-3xl border border-ink/5 p-4 sm:p-6 flex flex-col justify-center sm:text-left relative overflow-hidden group hover:border-green/20 transition-colors duration-300">
+                      <div 
+                        className="absolute right-0 bottom-0 translate-x-2 translate-y-2 sm:translate-x-4 sm:translate-y-4 pointer-events-none transition-all duration-500 group-hover:scale-110 text-green"
+                        style={{ opacity: 0.05 }}
+                      >
+                        <FileText className="w-16 h-16 sm:w-28 sm:h-28" />
+                      </div>
+                      <p className="text-[10px] sm:text-xs font-mono text-ink/40 uppercase mb-1 sm:mb-2 tracking-wider relative z-10">
                         Total Reports
                       </p>
                       <p
-                        className="text-4xl font-bold text-ink"
+                        className="text-3xl sm:text-4xl font-bold text-green relative z-10"
                         style={{ fontFamily: "var(--font-data), monospace" }}
                       >
                         {stats.total_reports.toLocaleString()}
                       </p>
                     </div>
-                    <div className="bg-panel rounded-3xl border border-ink/5 p-6 flex flex-col justify-center">
-                      <p className="text-xs font-mono text-ink/40 uppercase mb-2">
+
+                    {/* Secondary Stat 1 */}
+                    <div className="col-span-1 bg-secondary/[0.02] hover:bg-secondary/[0.04] rounded-3xl border border-ink/5 p-4 sm:p-6 flex flex-col justify-center sm:text-left relative overflow-hidden group hover:border-secondary/20 transition-colors duration-300">
+                      <div 
+                        className="absolute right-0 bottom-0 translate-x-2 translate-y-2 sm:translate-x-4 sm:translate-y-4 pointer-events-none transition-all duration-500 group-hover:scale-110 text-secondary"
+                        style={{ opacity: 0.05 }}
+                      >
+                        <Users className="w-16 h-16 sm:w-28 sm:h-28" />
+                      </div>
+                      <p className="text-[10px] sm:text-xs font-mono text-ink/40 uppercase mb-1 sm:mb-2 tracking-wider relative z-10">
                         Total Citizens
                       </p>
                       <p
-                        className="text-4xl font-bold text-ink"
+                        className="text-3xl sm:text-4xl font-bold text-secondary relative z-10"
                         style={{ fontFamily: "var(--font-data), monospace" }}
                       >
                         {stats.total_citizens.toLocaleString()}
                       </p>
                     </div>
-                    <div className="bg-panel rounded-3xl border border-ink/5 p-6 flex flex-col justify-center">
-                      <p className="text-xs font-mono text-ink/40 uppercase mb-2">
+
+                    {/* Secondary Stat 2 */}
+                    <div className="col-span-1 bg-amber-500/[0.02] hover:bg-amber-500/[0.04] rounded-3xl border border-ink/5 p-4 sm:p-6 flex flex-col justify-center sm:text-left relative overflow-hidden group hover:border-amber-500/20 transition-colors duration-300">
+                      <div 
+                        className="absolute right-0 bottom-0 translate-x-2 translate-y-2 sm:translate-x-4 sm:translate-y-4 pointer-events-none transition-all duration-500 group-hover:scale-110 text-amber-500"
+                        style={{ opacity: 0.05 }}
+                      >
+                        <Trophy className="w-16 h-16 sm:w-28 sm:h-28" />
+                      </div>
+                      <p className="text-[10px] sm:text-xs font-mono text-ink/40 uppercase mb-1 sm:mb-2 tracking-wider relative z-10">
                         Avg Eco-Credits
                       </p>
                       <p
-                        className="text-4xl font-bold text-ink"
+                        className="text-3xl sm:text-4xl font-bold text-amber-600 relative z-10"
                         style={{ fontFamily: "var(--font-data), monospace" }}
                       >
-                        {stats.avg_eco_credits.toLocaleString()}
+                        {stats.avg_eco_credits.toLocaleString(undefined, { maximumFractionDigits: 1 })}
                       </p>
                     </div>
                   </div>
@@ -322,7 +335,7 @@ export default function ScoreboardPage() {
         {/* Tab Bar */}
         <div className="bento-grid">
           <div className="span-12">
-            <div className="flex items-center gap-1 bg-ink/[0.03] p-1 rounded-lg w-fit border border-ink/5">
+            <div className="grid grid-cols-2 sm:flex sm:flex-row items-center gap-1 bg-ink/[0.03] p-1 rounded-lg w-full sm:w-fit border border-ink/5 min-w-0">
               {TABS.map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -330,9 +343,9 @@ export default function ScoreboardPage() {
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key)}
                     className={cn(
-                      "flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200",
+                      "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-1.5 text-[11px] sm:text-sm font-medium rounded-md transition-all duration-200",
                       activeTab === tab.key
-                        ? "bg-panel shadow-sm text-ink"
+                        ? "bg-accent shadow-sm text-page shadow-accent/25"
                         : "text-ink/60 hover:text-ink"
                     )}
                   >
@@ -350,62 +363,27 @@ export default function ScoreboardPage() {
           <div className="span-12">
             {loading ? (
               <ScoreboardSkeleton />
-            ) : activeTab === "barangay" ? (
-              /* ---- Barangay Leaderboard ---- */
-              <div className="bg-panel rounded-3xl border border-ink/5 overflow-hidden">
-                <div className="grid grid-cols-[60px_1fr_1fr] gap-4 px-6 py-3 border-b border-ink/5 font-mono text-[10px] text-ink/40 uppercase tracking-wider">
-                  <div>Rank</div>
-                  <div>Barangay</div>
-                  <div className="text-right">Reports</div>
-                </div>
-                {barangayEntries.length === 0 ? (
-                  <div className="px-6 py-16 text-center">
-                    <Users className="w-10 h-10 text-ink/15 mx-auto mb-3" />
-                    <p className="text-sm text-ink/40 font-mono">
-                      No barangay data this month
-                    </p>
-                  </div>
-                ) : (
-                  barangayEntries.map((entry, index) => {
-                    const rank = index + 1;
-                    return (
-                      <div
-                        key={entry.barangay}
-                        className={cn(
-                          "grid grid-cols-[60px_1fr_1fr] gap-4 px-6 py-4 border-b border-ink/5 last:border-0 transition-colors",
-                          rank <= 3 ? getRankBg(rank) : "hover:bg-ink/3"
-                        )}
-                      >
-                        <div className="flex items-center">{getRankIcon(rank)}</div>
-                        <div className="flex items-center">
-                          <p className="font-medium text-sm text-ink truncate">
-                            {entry.barangay}
-                          </p>
-                        </div>
-                        <div className="flex items-center justify-end">
-                          <p
-                            className="font-mono text-sm font-bold text-ink"
-                            style={{ fontFamily: "var(--font-data), monospace" }}
-                          >
-                            {entry.report_count.toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+
             ) : (
               /* ---- Citizen Leaderboard ---- */
               <div className="bg-panel rounded-3xl border border-ink/5 overflow-hidden">
-                <div className="grid grid-cols-[60px_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-ink/5 font-mono text-[10px] text-ink/40 uppercase tracking-wider">
+                <div className="hidden sm:grid grid-cols-[60px_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-ink/5 font-mono text-[10px] text-ink/40 uppercase tracking-wider">
                   <div>Rank</div>
                   <div>Citizen</div>
                   <div className="text-center">Reports</div>
                   <div className="text-right">Eco-Credits</div>
                 </div>
                 {entries.length === 0 ? (
-                  <EmptyLeaderboard />
+                  <EmptyState 
+                    icon={
+                      activeTab === "all-time" ? Trophy :
+                      activeTab === "monthly" ? TrendingUp :
+                      activeTab === "weekly" ? BarChart3 :
+                      Trophy
+                    }
+                    title="No rankings yet"
+                    description="Be the first to submit a report and earn your place on the leaderboard."
+                  />
                 ) : (
                   entries.map((entry, index) => {
                     const rank = index + 1;
@@ -416,12 +394,12 @@ export default function ScoreboardPage() {
                       <div
                         key={entry.id || rank}
                         className={cn(
-                          "grid grid-cols-[60px_1fr_1fr_1fr] gap-4 px-6 py-4 border-b border-ink/5 last:border-0 transition-colors",
+                          "grid grid-cols-[28px_1fr_50px_50px] sm:grid-cols-[60px_1fr_1fr_1fr] gap-1.5 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 border-b border-ink/5 last:border-0 transition-colors",
                           rank <= 3 ? getRankBg(rank) : "hover:bg-ink/3"
                         )}
                       >
                         <div className="flex items-center">{getRankIcon(rank)}</div>
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-1 sm:gap-3 min-w-0">
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm text-ink truncate">
                               {entry.name || "Ghost"}
@@ -434,13 +412,13 @@ export default function ScoreboardPage() {
                           </div>
                         </div>
                         <div className="flex items-center justify-center">
-                          <p className="font-mono text-sm text-ink/60">
+                          <p className="font-mono text-xs sm:text-sm text-ink/60">
                             {entry.report_count ?? "\u2014"}
                           </p>
                         </div>
                         <div className="flex items-center justify-end">
                           <p
-                            className="font-mono text-sm font-bold text-ink"
+                            className="font-mono text-xs sm:text-sm font-bold text-ink"
                             style={{ fontFamily: "var(--font-data), monospace" }}
                           >
                             {score.toLocaleString()}

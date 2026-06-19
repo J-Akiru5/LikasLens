@@ -29,7 +29,7 @@ export function DashboardSkeleton() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Stat cards row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
@@ -94,7 +94,7 @@ export function ScoreboardSkeleton() {
   return (
     <div className="space-y-3 animate-fade-in">
       {/* Header row */}
-      <div className="grid grid-cols-[1fr_1.5fr_1fr_0.8fr] gap-4 pb-4 border-b border-border">
+      <div className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr] sm:grid-cols-[2fr_2fr_1fr_1fr] gap-2 sm:gap-4 pb-4 border-b border-border">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="h-4 rounded bg-ink/5 animate-shimmer" />
         ))}
@@ -103,7 +103,7 @@ export function ScoreboardSkeleton() {
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
-          className="grid grid-cols-[1fr_1.5fr_1fr_0.8fr] gap-4 py-4 border-b border-border last:border-0"
+          className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr] sm:grid-cols-[2fr_2fr_1fr_1fr] gap-2 sm:gap-4 py-4 border-b border-border last:border-0"
         >
           {Array.from({ length: 4 }).map((_, j) => (
             <div
@@ -148,10 +148,10 @@ export function FormSkeleton({ fields = 4 }: { fields?: number }) {
 export function AdminKPIsSkeleton({ count = 4 }: { count?: number }) {
   const cols =
     count === 3
-      ? "sm:grid-cols-3"
+      ? "grid-cols-2 sm:grid-cols-3"
       : count === 2
-        ? "sm:grid-cols-2"
-        : "sm:grid-cols-2 lg:grid-cols-4";
+        ? "grid-cols-2"
+        : "grid-cols-2 lg:grid-cols-4";
   return (
     <div className={cn("grid gap-4", cols)}>
       {Array.from({ length: count }).map((_, i) => (
@@ -232,7 +232,7 @@ export function AdminTableSkeleton({
  */
 export function AdminCardGridSkeleton({ cards = 6 }: { cards?: number }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in">
+    <div className="grid gap-4 grid-cols-2 lg:grid-cols-3 animate-fade-in">
       {Array.from({ length: cards }).map((_, i) => (
         <div
           key={i}
@@ -282,6 +282,267 @@ export function PageSkeleton({ sections = 3 }: { sections?: number }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * Mobile DashboardSkeleton — mirrors the iOS-style dashboard layout
+ * with stat cards, quick actions, and activity feed rows.
+ */
+export function MobileDashboardSkeleton() {
+  return (
+    <div className="space-y-5 animate-fade-in px-5 pb-28">
+      {/* Title block */}
+      <div className="space-y-1.5 pt-2">
+        <div className="h-8 w-36 rounded-lg bg-ink/5 animate-shimmer" />
+        <div className="h-3.5 w-56 rounded bg-ink/5 animate-shimmer" />
+      </div>
+      {/* Banner */}
+      <div className="h-32 w-full rounded-2xl bg-ink/5 animate-shimmer" />
+      {/* Stat cards row */}
+      <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} style={{ padding: "14px 8px", textAlign: "center", borderRight: i < 2 ? "1px solid var(--border)" : "none" }}>
+            <div className="h-6 w-12 mx-auto rounded bg-ink/5 animate-shimmer" />
+            <div className="h-2.5 w-10 mx-auto rounded bg-ink/5 animate-shimmer mt-1.5" />
+          </div>
+        ))}
+      </div>
+      {/* Quick actions */}
+      <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", padding: "10px 6px" }}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex flex-col items-center gap-1.5">
+            <div className="w-10 h-10 rounded-xl bg-ink/5 animate-shimmer" />
+            <div className="h-2 w-8 rounded bg-ink/5 animate-shimmer" />
+          </div>
+        ))}
+      </div>
+      {/* Activity rows */}
+      <div className="space-y-2">
+        <div className="h-3 w-24 rounded bg-ink/5 animate-shimmer" />
+        <div className="ios-grouped-list">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="ios-list-row">
+              <div className="w-8 h-8 rounded-lg bg-ink/5 animate-shimmer shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3.5 w-3/4 rounded bg-ink/5 animate-shimmer" />
+                <div className="h-2.5 w-1/2 rounded bg-ink/5 animate-shimmer" />
+              </div>
+              <div className="h-3 w-12 rounded bg-ink/5 animate-shimmer shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Mobile ScoreboardSkeleton — leaderboard with spotlight banner + data rows.
+ */
+export function MobileScoreboardSkeleton() {
+  return (
+    <div className="space-y-4 animate-fade-in px-5 pb-28">
+      {/* Title */}
+      <div className="space-y-1.5 pt-2">
+        <div className="h-8 w-32 rounded-lg bg-ink/5 animate-shimmer" />
+        <div className="h-3.5 w-48 rounded bg-ink/5 animate-shimmer" />
+      </div>
+      {/* Spotlight banner */}
+      <div className="h-28 w-full rounded-2xl bg-ink/5 animate-shimmer" />
+      {/* Stats strip */}
+      <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} style={{ padding: "14px 8px", textAlign: "center", borderRight: i < 2 ? "1px solid var(--border)" : "none" }}>
+            <div className="h-5 w-10 mx-auto rounded bg-ink/5 animate-shimmer" />
+            <div className="h-2 w-8 mx-auto rounded bg-ink/5 animate-shimmer mt-1.5" />
+          </div>
+        ))}
+      </div>
+      {/* Segmented tabs */}
+      <div className="m-segmented">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex-1 h-9 rounded-full bg-ink/5 animate-shimmer" />
+        ))}
+      </div>
+      {/* Rows */}
+      <div className="ios-grouped-list">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="ios-list-row">
+            <div className="h-4 w-6 rounded bg-ink/5 animate-shimmer shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <div className="h-3.5 w-2/3 rounded bg-ink/5 animate-shimmer" />
+              <div className="h-2.5 w-1/3 rounded bg-ink/5 animate-shimmer" />
+            </div>
+            <div className="h-4 w-10 rounded bg-ink/5 animate-shimmer shrink-0" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Mobile ProfileSkeleton — profile header card + list rows.
+ */
+export function MobileProfileSkeleton() {
+  return (
+    <div className="space-y-5 animate-fade-in px-5 pb-28">
+      {/* Title */}
+      <div className="h-8 w-24 rounded-lg bg-ink/5 animate-shimmer pt-2" />
+      {/* Banner / identity card */}
+      <div className="h-32 w-full rounded-2xl bg-ink/5 animate-shimmer" />
+      {/* Account rows */}
+      <div className="space-y-2">
+        <div className="h-3 w-16 rounded bg-ink/5 animate-shimmer" />
+        <div className="ios-grouped-list">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="ios-list-row">
+              <div className="w-8 h-8 rounded-lg bg-ink/5 animate-shimmer shrink-0" />
+              <div className="h-3.5 flex-1 rounded bg-ink/5 animate-shimmer" />
+              <div className="w-4 h-4 rounded bg-ink/5 animate-shimmer shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Tool rows */}
+      <div className="space-y-2">
+        <div className="h-3 w-24 rounded bg-ink/5 animate-shimmer" />
+        <div className="ios-grouped-list">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="ios-list-row">
+              <div className="w-8 h-8 rounded-lg bg-ink/5 animate-shimmer shrink-0" />
+              <div className="h-3.5 flex-1 rounded bg-ink/5 animate-shimmer" />
+              <div className="w-4 h-4 rounded bg-ink/5 animate-shimmer shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Mobile WalletSkeleton — card + grid actions.
+ */
+export function MobileWalletSkeleton() {
+  return (
+    <div className="space-y-6 animate-fade-in p-6 pb-28">
+      {/* Card */}
+      <div className="w-full aspect-[1.586/1] rounded-3xl bg-ink/5 animate-shimmer" />
+      {/* Grid actions */}
+      <div className="space-y-3">
+        <div className="h-3 w-20 rounded bg-ink/5 animate-shimmer" />
+        <div className="grid grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-2">
+              <div className="w-14 h-14 rounded-[20px] bg-ink/5 animate-shimmer" />
+              <div className="h-2 w-10 rounded bg-ink/5 animate-shimmer" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Button */}
+      <div className="h-12 w-full rounded-full bg-ink/5 animate-shimmer" />
+    </div>
+  );
+}
+
+/**
+ * Mobile ImpactSkeleton — KPI cards stacked.
+ */
+export function MobileImpactSkeleton() {
+  return (
+    <div className="space-y-6 animate-fade-in p-4 pb-20">
+      {/* Header */}
+      <div className="text-center space-y-2 py-6">
+        <div className="h-8 w-48 mx-auto rounded-lg bg-ink/5 animate-shimmer" />
+        <div className="h-3 w-40 mx-auto rounded bg-ink/5 animate-shimmer" />
+      </div>
+      {/* KPI cards */}
+      <div className="grid gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-24 rounded-[2rem] bg-ink/5 animate-shimmer" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Mobile ReportSkeleton — camera step placeholder.
+ */
+export function MobileReportSkeleton() {
+  return (
+    <div className="space-y-4 animate-fade-in p-4 pb-20">
+      {/* Camera viewfinder */}
+      <div className="aspect-[3/4] w-full rounded-2xl bg-ink/5 animate-shimmer" />
+      {/* Controls */}
+      <div className="flex items-center justify-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-ink/5 animate-shimmer" />
+        <div className="w-16 h-16 rounded-full bg-ink/5 animate-shimmer" />
+        <div className="w-12 h-12 rounded-full bg-ink/5 animate-shimmer" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Mobile ListSkeleton — generic list with rows, for laws, incidents, history, etc.
+ */
+export function MobileListSkeleton({ rows = 6 }: { rows?: number }) {
+  return (
+    <div className="space-y-4 animate-fade-in px-5 pb-28">
+      {/* Back + title */}
+      <div className="flex items-center gap-3 pt-2">
+        <div className="w-8 h-8 rounded-lg bg-ink/5 animate-shimmer shrink-0" />
+        <div className="h-6 w-32 rounded bg-ink/5 animate-shimmer" />
+      </div>
+      {/* Rows */}
+      <div className="ios-grouped-list">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="ios-list-row">
+            <div className="w-8 h-8 rounded-lg bg-ink/5 animate-shimmer shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <div className="h-3.5 w-2/3 rounded bg-ink/5 animate-shimmer" />
+              <div className="h-2.5 w-1/3 rounded bg-ink/5 animate-shimmer" />
+            </div>
+            <div className="h-5 w-14 rounded-full bg-ink/5 animate-shimmer shrink-0" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Mobile AnalyticsSkeleton — stats + chart placeholder.
+ */
+export function MobileAnalyticsSkeleton() {
+  return (
+    <div className="space-y-5 animate-fade-in px-5 pb-28">
+      <div className="flex items-center gap-3 pt-2">
+        <div className="w-8 h-8 rounded-lg bg-ink/5 animate-shimmer shrink-0" />
+        <div className="h-6 w-28 rounded bg-ink/5 animate-shimmer" />
+      </div>
+      <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} style={{ padding: "14px 8px", textAlign: "center", borderRight: i < 2 ? "1px solid var(--border)" : "none" }}>
+            <div className="h-5 w-10 mx-auto rounded bg-ink/5 animate-shimmer" />
+            <div className="h-2 w-8 mx-auto rounded bg-ink/5 animate-shimmer mt-1.5" />
+          </div>
+        ))}
+      </div>
+      <div className="h-48 w-full rounded-2xl bg-ink/5 animate-shimmer" />
+      <div className="ios-grouped-list">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="ios-list-row">
+            <div className="h-3.5 flex-1 rounded bg-ink/5 animate-shimmer" />
+            <div className="h-4 w-12 rounded bg-ink/5 animate-shimmer shrink-0" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

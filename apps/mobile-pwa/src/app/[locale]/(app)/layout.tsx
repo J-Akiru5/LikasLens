@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MobileLayout } from "@likaslens/shared";
+import { MobileLayout, RouteProgress } from "@likaslens/shared";
 import { LayoutDashboard, Camera, Trophy, User, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { PageTransition } from "@/components/page-transition";
+import { usePathname } from "next/navigation";
 
 const BOTTOM_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -13,12 +15,15 @@ const BOTTOM_NAV_ITEMS = [
   { href: "/profile", label: "Profile", icon: User },
 ];
 
+const MAIN_ROUTES = BOTTOM_NAV_ITEMS.map((item) => item.href);
+
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [isGhostMode, setIsGhostMode] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const theme = document.documentElement.getAttribute("data-theme");
@@ -41,13 +46,22 @@ export default function AppLayout({
     setIsGhostMode(!isGhostMode);
   };
 
+  const cleanPath = pathname.replace(/^\/[^/]+/, "") || "/";
+  const isMainRoute = MAIN_ROUTES.some((route) =>
+    cleanPath === route || cleanPath === `${route}/`
+  );
+  const localePrefix = pathname.split("/")[1] ? `/${pathname.split("/")[1]}` : "";
+  const backHref = isMainRoute ? undefined : `${localePrefix}/profile`;
+
   return (
     <MobileLayout
       bottomNavItems={BOTTOM_NAV_ITEMS}
       isGhostMode={isGhostMode}
       onThemeToggle={toggleGhostMode}
+      backHref={backHref}
     >
-      {children}
+      <RouteProgress />
+      <PageTransition>{children}</PageTransition>
     </MobileLayout>
   );
 }

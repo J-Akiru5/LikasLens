@@ -380,10 +380,10 @@ export default function ReportPage() {
                 <div className="relative bg-black/90 border border-ink/10 overflow-hidden rounded-xl">
                   <video ref={videoRef} autoPlay playsInline muted className="w-full aspect-video object-cover" />
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
-                    <button type="button" onClick={capturePhoto} className="px-5 py-2.5 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2 rounded-lg">
-                      <Camera className="w-4 h-4" /> Capture
+                    <button type="button" onClick={capturePhoto} aria-label="Capture photo" className="px-5 py-2.5 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+                      <Camera className="w-4 h-4" aria-hidden="true" /> Capture
                     </button>
-                    <button type="button" onClick={() => camera.stop()} className="px-5 py-2.5 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg">
+                    <button type="button" onClick={() => camera.stop()} aria-label="Cancel camera" className="px-5 py-2.5 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                       Cancel
                     </button>
                   </div>
@@ -417,7 +417,7 @@ export default function ReportPage() {
                 <MapPin className="w-4 h-4 text-ink/40" />
                 Location Data
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 <div className="border border-ink/10 p-4 space-y-2 rounded-lg">
                   <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Latitude</span>
                   <p className="font-mono text-lg text-ink">{latitude?.toFixed(6) ?? "\u2014"}</p>
@@ -427,6 +427,7 @@ export default function ReportPage() {
                       inputMode="decimal"
                       step="any"
                       placeholder="e.g. 11.7053"
+                      aria-label="Latitude coordinate"
                       value={manualLat}
                       onChange={(e) => { setManualLat(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -90 && val <= 90) setLatitude(val); }}
                       className="w-full px-3 py-2 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none rounded-lg mt-2"
@@ -442,6 +443,7 @@ export default function ReportPage() {
                       inputMode="decimal"
                       step="any"
                       placeholder="e.g. 122.2970"
+                      aria-label="Longitude coordinate"
                       value={manualLng}
                       onChange={(e) => { setManualLng(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -180 && val <= 180) setLongitude(val); }}
                       className="w-full px-3 py-2 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none rounded-lg mt-2"
@@ -450,7 +452,7 @@ export default function ReportPage() {
                 </div>
               </div>
               {!showManualCoords && (
-                <button type="button" onClick={() => setShowManualCoords(true)} className="font-mono text-xs text-ink/40 hover:text-ink transition-colors">
+                <button type="button" onClick={() => setShowManualCoords(true)} aria-label="Enter coordinates manually" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                   Enter coordinates manually
                 </button>
               )}
@@ -524,14 +526,15 @@ export default function ReportPage() {
               </div>
             </label>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button type="button" onClick={clearForm} className="py-3 border border-ink/10 text-sm text-ink/50 hover:text-ink transition-colors rounded-lg">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+              <button type="button" onClick={clearForm} aria-label="Clear form" className="py-3 border border-ink/10 text-sm text-ink/50 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                 Clear Form
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
-                className="py-3 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
+                aria-label="Submit report"
+                className="py-3 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
               >
                 {isSubmitting ? "Submitting..." : isTriaging ? "Analyzing..." : "Submit Report"}
               </button>

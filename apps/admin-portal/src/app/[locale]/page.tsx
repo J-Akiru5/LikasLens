@@ -101,7 +101,7 @@ export default function AdminLandingPage() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-10 py-5 flex items-center justify-between transition-all">
         <div className="flex items-center gap-2">
-          <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-8 h-8 object-contain" />
+          <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
           <span className="font-heading tracking-[0.2em] text-xl text-[#f0ede8] flex items-center mt-0.5">
             <span className="font-medium">LIK</span>
             <span className="font-semibold mx-[1px]">Λ</span>
@@ -354,7 +354,7 @@ export default function AdminLandingPage() {
       <footer className="relative z-10 border-t border-[rgba(240,237,232,0.05)] py-8 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-[rgba(240,237,232,0.5)]">
-            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-6 h-6 object-contain" />
+            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-6 h-6 object-contain drop-shadow-sm" />
             <span className="font-mono text-xs uppercase tracking-widest">
               LikasLens Admin Platform
             </span>

@@ -7,6 +7,12 @@
    Each app may append app-specific overrides after this import.
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* BrandPalette (2026.06):
+   Civic accent: #1b4332 (forest green, paired with text-white for AA on filled buttons)
+   Ghost accent: #2ee6c8 (tech teal)
+   Implementation uses the closest accessible shade to the locked constitution.
+*/
+
 /* ───────────────────────────────────────────────────────────────────────────
    THEME VARIABLES — Civic (default light) & Ghost (dark cyber)
    ─────────────────────────────────────────────────────────────────────────── */
@@ -31,6 +37,12 @@
     --accent-hover: #163829;
     --accent-subtle: rgba(27, 67, 50, 0.08);
     --accent-bright: #2ee6c8; /* tech teal — dark-bg / decorative only */
+    --accent-glow: color-mix(in oklab, var(--accent) 22%, transparent);
+    --accent-soft: color-mix(in oklab, var(--accent) 10%, transparent);
+    --accent-strong: color-mix(in oklab, var(--accent) 90%, #000 0%);
+    --green-glow: color-mix(in oklab, var(--green) 25%, transparent);
+    --red-glow: color-mix(in oklab, var(--red) 25%, transparent);
+    --info: #1d4ed8;
     --teal-ink: #0d8c79; /* teal for text on light bg — ~5.1:1 */
     --secondary: #5a7d6a;
 
@@ -116,6 +128,12 @@
     --accent-hover: #3df0d2;
     --accent-subtle: rgba(46, 230, 200, 0.08);
     --accent-bright: #2ee6c8;
+    --accent-glow: color-mix(in oklab, var(--accent) 22%, transparent);
+    --accent-soft: color-mix(in oklab, var(--accent) 10%, transparent);
+    --accent-strong: color-mix(in oklab, var(--accent) 90%, #000 0%);
+    --green-glow: color-mix(in oklab, var(--green) 25%, transparent);
+    --red-glow: color-mix(in oklab, var(--red) 25%, transparent);
+    --info: #38bdf8;
     --teal-ink: #2ee6c8; /* same as accent on dark bg */
     --secondary: #e8ad55;
 
@@ -170,7 +188,8 @@
     .span-3, .span-4, .span-5 { grid-column: span 6; }
 }
 @media (max-width: 640px) {
-    [class^="span-"] { grid-column: span 12; }
+    /* Make all bento panels full width on mobile */
+    .span-3, .span-4, .span-5, .span-6, .span-7, .span-8, .span-9, .span-12 { grid-column: span 12; }
 }
 
 /* ───────────────────────────────────────────────────────────────────────────

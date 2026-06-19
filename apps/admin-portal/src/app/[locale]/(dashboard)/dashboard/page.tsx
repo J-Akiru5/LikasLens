@@ -7,6 +7,8 @@ import {
   Sparkline,
   laravelGet,
   EmptyState,
+  cn,
+  RevealSection,
 } from "@likaslens/shared";
 import type {
   DashboardStats,
@@ -20,9 +22,17 @@ import {
   Clock,
   Users,
   LayoutDashboard,
-  TrendingUp,
   MapPin,
 } from "lucide-react";
+
+const ADMIN_KPI_GRID = "grid grid-cols-12 gap-4";
+const ADMIN_KPI_TILE_SPAN = {
+  hero: "col-span-12 lg:col-span-4",
+  primary: "col-span-6 sm:col-span-6 lg:col-span-4",
+  secondary: "col-span-6 sm:col-span-6 lg:col-span-2",
+} as const;
+const ADMIN_PULSE_BADGE =
+  "items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest shadow-[0_0_0_4px_color-mix(in_oklab,var(--green)_25%,transparent)]";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -69,40 +79,87 @@ export default function DashboardPage() {
   const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening";
   const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 
-  const kpis = [
+  // Phase 5: asymmetric KPI tiles (1 hero + 2 primary + 2 secondary)
+  // Active Incidents is the hero (largest, green halo for "operational awareness")
+  // Avg Response is dropped — Admin Portal emphasizes throughput, not minutes.
+  const kpiTiles = [
     {
+      id: "active-incidents",
       label: "Active Incidents",
       value: stats?.active_incidents ?? 0,
+      span: ADMIN_KPI_TILE_SPAN.hero,
+      accent: "green" as const,
       icon: AlertTriangle,
       color: "text-amber",
       bg: "bg-amber/10",
       sparkline: [12, 8, 15, 6, 10, 9, stats?.active_incidents ?? 0],
     },
     {
+      id: "resolved-today",
       label: "Resolved Today",
       value: stats?.resolved_today ?? 0,
+      span: ADMIN_KPI_TILE_SPAN.primary,
+      accent: "accent" as const,
       icon: CheckCircle2,
       color: "text-green",
       bg: "bg-green/10",
       sparkline: [3, 7, 4, 9, 6, 8, stats?.resolved_today ?? 0],
     },
     {
+      id: "avg-response",
       label: "Avg Response",
       value: `${stats?.avg_response_minutes ?? 0}m`,
+      span: ADMIN_KPI_TILE_SPAN.primary,
+      accent: "amber" as const,
       icon: Clock,
       color: "text-accent",
       bg: "bg-accent/10",
       sparkline: [52, 48, 45, 41, 38, 35, stats?.avg_response_minutes ?? 0],
     },
     {
+      id: "total-users",
       label: "Total Users",
       value: stats?.total_users ?? 0,
+      span: ADMIN_KPI_TILE_SPAN.secondary,
+      accent: "muted" as const,
       icon: Users,
       color: "text-secondary",
       bg: "bg-secondary/10",
       sparkline: [120, 145, 132, 158, 140, 165, stats?.total_users ?? 0],
     },
+    {
+      id: "open-tickets",
+      label: "Open Tickets",
+      value: (stats as any)?.open_tickets ?? 0,
+      span: ADMIN_KPI_TILE_SPAN.secondary,
+      accent: "muted" as const,
+      icon: AlertTriangle,
+      color: "text-ink",
+      bg: "bg-ink/[0.04]",
+      sparkline: [40, 36, 30, 28, 24, 22, (stats as any)?.open_tickets ?? 0],
+    },
   ];
+
+  const accentBarClass: Record<typeof kpiTiles[number]["accent"], string> = {
+    green: "before:bg-green",
+    amber: "before:bg-amber",
+    accent: "before:bg-accent",
+    muted: "before:bg-muted",
+  };
+
+  const bgTintClass: Record<typeof kpiTiles[number]["accent"], string> = {
+    green: "bg-green/[0.02] hover:bg-green/[0.04]",
+    amber: "bg-amber-500/[0.02] hover:bg-amber-500/[0.04]",
+    accent: "bg-accent/[0.02] hover:bg-accent/[0.04]",
+    muted: "bg-ink/[0.02] hover:bg-ink/[0.04]",
+  };
+
+  const valueColorClass: Record<typeof kpiTiles[number]["accent"], string> = {
+    green: "text-green",
+    amber: "text-amber-600",
+    accent: "text-accent",
+    muted: "text-ink",
+  };
 
   // Extract hotspots from analytics data
   const hotspots: { name: string; count: number }[] = analyticsData?.data?.hotspots
@@ -114,24 +171,47 @@ export default function DashboardPage() {
       {/* ── Welcome Header ─────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="font-semibold tracking-tight text-3xl md:text-4xl text-ink">
+          <h1 className="font-semibold tracking-tight text-3xl md:text-3xl sm:text-4xl text-ink">
             {greeting}
           </h1>
           <p className="font-mono text-sm text-muted mt-1">{dateStr}</p>
         </div>
-        <div className="hidden md:flex items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest">
-          <span className="w-2 h-2 rounded-full bg-green animate-pulse" />
+        {/* Phase 5: green-halo "All Systems Online" pulse badge */}
+        <span className={cn(ADMIN_PULSE_BADGE, "hidden md:inline-flex")}>
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green/60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-green" />
+          </span>
           All Systems Online
-        </div>
+        </span>
       </div>
 
-      {/* ── KPI Cards with Sparklines ──────────────────────── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((kpi) => {
+      {/* ── Phase 5: Asymmetric KPI Grid (1 hero + 2 primary + 2 secondary) ── */}
+      <RevealSection stagger={0.06}>
+      <div className={ADMIN_KPI_GRID}>
+        {kpiTiles.map((kpi) => {
           const Icon = kpi.icon;
           return (
-            <div key={kpi.label} className="bg-panel rounded-2xl p-5 border border-ink/5 hover:border-ink/10 transition-colors">
-              <div className="flex items-start justify-between mb-3">
+            <div
+              key={kpi.id}
+              className={cn(
+                kpi.span,
+                "kpi-card relative overflow-hidden rounded-2xl border border-border p-5 group transition-colors duration-300",
+                bgTintClass[kpi.accent],
+                "before:absolute before:left-0 before:right-0 before:top-0 before:h-0.5",
+                accentBarClass[kpi.accent]
+              )}
+            >
+              <div 
+                className={cn(
+                  "absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110",
+                  kpi.color
+                )}
+                style={{ opacity: 0.05 }}
+              >
+                <Icon className="w-24 h-24 sm:w-32 sm:h-32" />
+              </div>
+              <div className="flex items-start justify-between mb-3 relative z-10">
                 <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center`}>
                   <Icon className={`w-5 h-5 ${kpi.color}`} />
                 </div>
@@ -139,20 +219,22 @@ export default function DashboardPage() {
                   <Sparkline data={kpi.sparkline} width={64} height={32} color="var(--accent)" />
                 </div>
               </div>
-              <p className="font-mono text-[10px] text-ink/50 uppercase tracking-widest mb-1">
+              <p className="font-mono text-[10px] text-ink/50 uppercase tracking-widest mb-1 relative z-10">
                 {kpi.label}
               </p>
-              <p className="font-semibold tracking-tight text-2xl text-ink">
+              <p className={cn("font-semibold tracking-tight text-2xl relative z-10", valueColorClass[kpi.accent])}>
                 {kpi.value}
               </p>
             </div>
           );
         })}
       </div>
+      </RevealSection>
 
       {/* ── Activity + Tickets Side by Side ─────────────────── */}
+      <RevealSection>
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="bg-panel rounded-2xl p-6 border border-ink/5">
+        <div className="bg-panel rounded-2xl p-4 sm:p-6 border border-ink/5">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
               <LayoutDashboard className="w-4 h-4 text-ink/40" />
@@ -193,7 +275,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-panel rounded-2xl p-6 border border-ink/5">
+        <div className="bg-panel rounded-2xl p-4 sm:p-6 border border-ink/5">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
               <AlertTriangle className="w-4 h-4 text-ink/40" />
@@ -239,10 +321,12 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      </RevealSection>
 
       {/* ── Regional Hotspots ⭐ NEW ──────────────────────── */}
       {hotspots.length > 0 && (
-        <div className="bg-panel rounded-2xl p-6 border border-ink/5">
+        <RevealSection>
+        <div className="bg-panel rounded-2xl p-4 sm:p-6 border border-ink/5">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-red/10 flex items-center justify-center">
               <MapPin className="w-4 h-4 text-red" />
@@ -281,6 +365,7 @@ export default function DashboardPage() {
             })}
           </div>
         </div>
+        </RevealSection>
       )}
     </div>
   );

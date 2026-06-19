@@ -64,14 +64,11 @@ export function ToastContainer() {
   if (!toasts.length) return null;
 
   const typeStyles: Record<ToastType, string> = {
-    success:
-      "border-green/30 bg-green/10 text-green shadow-green/5",
-    error: "border-red/30 bg-red/10 text-red shadow-red/5",
-    warning:
-      "border-amber/30 bg-amber/10 text-amber shadow-amber/5",
-    loading:
-      "border-ink/10 bg-panel text-ink shadow-black/5",
-    info: "border-accent/30 bg-accent/10 text-accent shadow-accent/5",
+    success: "bg-[#4a7c59] border-transparent text-white shadow-md",
+    error: "bg-[#4a7c59] border-transparent text-white shadow-md",
+    warning: "bg-[#4a7c59] border-transparent text-white shadow-md",
+    loading: "bg-[#4a7c59] border-transparent text-white shadow-md",
+    info: "bg-[#4a7c59] border-transparent text-white shadow-md",
   };
 
   const typeIcons: Record<ToastType, React.ReactNode> = {

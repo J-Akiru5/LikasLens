@@ -7,6 +7,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-06-19
+
+### Added
+- **Mobile PWA**: Full feature parity with frontend — all interactive charts, map, and globe now work on mobile
+- **Mobile PWA**: `AqiGauge` component — live air quality index from Open-Meteo API with ECharts gauge visualization
+- **Mobile PWA**: `TimeSeriesChart` component — 30-day trend line chart with reports/resolved overlay
+- **Mobile PWA**: `ViolationDonut` component — ECharts donut chart showing violation type breakdown
+- **Mobile PWA**: `SankeyFlow` component — ECharts Sankey diagram showing report routing flow (Source → Violation → Agency)
+- **Mobile PWA**: `HotspotList` component — top risk hotspots from analytics dashboard with severity scores
+- **Mobile PWA**: `EnhancedMap` component — MapLibre GL JS + deck.gl with HexagonLayer/HeatmapLayer/ScatterplotLayer, satellite overlays (NASA GIBS), time-lapse playback
+- **Mobile PWA**: `Globe3D` component — interactive 3D globe with cobe library, ASEAN network visualization, drag-to-rotate, auto-rotation
+- **Mobile PWA**: `echarts-theme.ts` — custom dark theme for ECharts with mobile-optimized sizing
+- **Mobile PWA**: Analytics page rewritten with all 5 charts + KPI cards + active citizens + auto-refresh polling
+- **Mobile PWA**: Impact page rewritten with 3D globe, real metrics (reports, citizens, regions, cases resolved), violation breakdown
+- **Mobile PWA**: Map page rewritten with real MapLibre + deck.gl interactive map (replaces fake placeholder div)
+- **Mobile PWA**: Reports page rewritten with time series chart, violation donut, status breakdown, and PDF export
+- **Mobile PWA**: PDF export — opens report in print dialog for "Save as PDF" (no server-side dependencies)
+- **Mobile PWA**: Installed dependencies: `maplibre-gl`, `react-map-gl`, `@deck.gl/core`, `@deck.gl/mapbox`, `@deck.gl/aggregation-layers`, `@deck.gl/layers`, `echarts`, `echarts-for-react`, `cobe`
+- **Backend**: `UserWalletController` — 5 endpoints: wallet, ledger, rewards, redeem, redemptions
+- **Backend**: 5 new routes under auth:sanctum: `GET /user/wallet`, `GET /user/ledger`, `GET /user/rewards`, `POST /user/redeem`, `GET /user/redemptions`
+
+### Changed
+- **Mobile PWA**: Dashboard partner offers now fetched from `/user/rewards` API (replaces hardcoded 7-Eleven/SM/Jollibee/Globe/Mercury offers)
+- **Mobile PWA**: Dashboard reward points balance now fetched from `/user/wallet` API (fixes always-zero display)
+- **Mobile PWA**: Wallet redeem flow now shows success/error toasts on redemption (was silent)
+- **Mobile PWA**: Wallet data fetch failures now show error toast (was silent)
+
+### Fixed
+- **Mobile PWA**: Map page now shows real interactive MapLibre + deck.gl map instead of fake div with positioned dots
+- **Mobile PWA**: Analytics page now shows real ECharts instead of placeholder "check back later" text
+- **Mobile PWA**: Impact page now shows real metrics instead of fabricated formulas (was: user_count÷1000 labeled as "CO2 Offset")
+- **Mobile PWA**: Dashboard points balance no longer stuck at zero — fetched from wallet API
+- **Mobile PWA**: Dashboard partner offers now dynamic from rewards catalog instead of hardcoded list
+
+## [0.8.5] - 2026-06-19
+
+### Added
+- **Mobile PWA**: 18 `loading.tsx` files across all route segments for instant skeleton UI on navigation
+- **Shared**: 8 new mobile-specific skeleton components — `MobileDashboardSkeleton`, `MobileScoreboardSkeleton`, `MobileProfileSkeleton`, `MobileWalletSkeleton`, `MobileImpactSkeleton`, `MobileReportSkeleton`, `MobileListSkeleton`, `MobileAnalyticsSkeleton`
+- **Mobile PWA**: `PageTransition` component for smooth fade-in on route changes (skeleton → content)
+- **Mobile PWA**: `RouteProgress` bar integrated into app shell — thin gradient bar at top during navigation
+- **Mobile PWA**: `prefetch={true}` on all BottomNav `<Link>` components for instant route preloading
+- **Shared**: Active state indicator (dot above icon) in `BottomNav` for clearer tab selection
+- **Frontend**: Redesigned hero section, how-it-works section, ghost-mode section, impact section, install-CTA section, and scoreboard section with refreshed UI
+- **Frontend**: Animated thematic footer with optimized images and light civic mode styling
+- **Frontend**: New design tokens in `globals.css` — white page background, softer borders, larger radius (2026 enterprise standard)
+- **Mobile PWA**: Updated design tokens in `globals.css` — expanded mobile-native iOS aesthetic styles
+- **Mobile PWA**: New `use-haptics` hook for native haptic feedback on taps and gestures
+- **Mobile PWA**: New `bottom-sheet` native component with framer-motion spring physics and drag-to-dismiss
+- **Admin Portal**: Next.js config with turbopack and API rewrites
+- **All apps**: Turbopack configuration in `next.config.ts` for faster dev builds
+
+### Changed
+- **Mobile PWA**: Scoreboard tab switching now keeps current data visible during tab changes (no more full skeleton flash)
+- **Mobile PWA**: Dashboard page restructured with improved card grid layout and stat cards
+- **Mobile PWA**: Profile page updated with iOS-style grouped list layout
+- **Mobile PWA**: Report page refactored camera/report submission flow
+- **Mobile PWA**: Splash screen and onboarding slider updated with refreshed styling
+- **Mobile PWA**: App shell layout now wraps children with `RouteProgress` and `PageTransition`
+- **Frontend**: Login and register pages — logo now shows in original green color
+- **Frontend**: Footer logo updated to original green color
+- **Mobile PWA**: Login, register, splash, and onboarding — logo now shows in original green color
+- **Admin Portal**: Login and landing page — logo now shows in original green color
+- **Shared**: `MobileLayout`, `Sidebar`, `AppHeader`, `MobileHeader` — logo now shows in original green color
+- **Shared**: `BottomNav` links now use `prefetch={true}` for faster navigation
+- **Frontend**: Next.js config updated with turbopack and image optimization settings
+- **Mobile PWA**: Next.js config updated with turbopack and API proxy rewrites
+
+### Fixed
+- **Mobile PWA**: Navigation no longer shows blank page during route changes — instant skeleton UI
+- **Mobile PWA**: Scoreboard no longer flashes full skeleton on tab switch
+- **All apps**: Logo no longer forced to white via `brightness-0 invert` filter (shows natural green)
+
 ## [0.9.0] - 2026-06-18
 
 ### Changed
@@ -361,7 +434,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.9.0...v0.9.1
+[0.8.5]: https://github.com/J-Akiru5/LikasLens/compare/v0.8.0...v0.8.5
 [0.8.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.2...v0.7.3
