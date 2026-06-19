@@ -595,6 +595,43 @@
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-header">
+      <h2>Set Up Billing Budget & Alerts</h2>
+      <span class="badge badge-critical">Important</span>
+    </div>
+    <p>This is your safety net. If containers stay awake too long or traffic spikes, you'll know immediately — not when the bill arrives.</p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      Go to <strong>Billing</strong> → <strong>Budgets & alerts</strong> (left sidebar).
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      Click <strong>+ Create Budget</strong>.
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      Name: <code>likaslens-budget</code>
+    </div>
+    <div class="step">
+      <span class="step-number">4</span>
+      Set amount: <strong>$10</strong> (or $5 if you want tighter control).
+    </div>
+    <div class="step">
+      <span class="step-number">5</span>
+      Under <strong>Alerts</strong>, check all three thresholds: <strong>50%</strong>, <strong>90%</strong>, <strong>100%</strong>.
+    </div>
+    <div class="step">
+      <span class="step-number">6</span>
+      Enter your email under <strong>Notification recipients</strong> → Click <strong>Finish</strong>.
+    </div>
+
+    <div class="warning">
+      <strong>Why this matters:</strong> Cloud Run charges per request + compute time. If a container stays awake or gets hammered with traffic, costs can spike. These alerts give you time to react before your credits run out.
+    </div>
+  </div>
+
   <!-- ============================================ -->
   <!-- PHASE 2: ENABLE APIs -->
   <!-- ============================================ -->
