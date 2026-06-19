@@ -299,7 +299,7 @@ def classify_environmental_risk(detections: list[dict[str, Any]]) -> dict[str, A
     }
 
 
-def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.25) -> dict[str, Any]:
+def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.50) -> dict[str, Any]:
     """Run YOLOv8 inference on image bytes and return structured results."""
     if len(image_bytes) > MAX_IMAGE_BYTES:
         raise ValueError(
@@ -396,7 +396,7 @@ def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.25) -> dic
     }
 
 
-def analyze_base64(base64_string: str, confidence_threshold: float = 0.25) -> dict[str, Any]:
+def analyze_base64(base64_string: str, confidence_threshold: float = 0.50) -> dict[str, Any]:
     """Analyze a base64-encoded image."""
     if len(base64_string) > MAX_IMAGE_BYTES * 2:
         raise ValueError("Base64 payload too large")

@@ -72,10 +72,10 @@
 
 ## Day 2 — Friday, June 6
 
-### Task 2.1: Seed All 16 PH Laws into Gremlin Graph
+### Task 2.1: Seed All 16 PH Laws into Neo4j Graph
 **Time:** 5h | **Priority:** CRITICAL | **Status:** ✅ COMPLETE
 
-**File modified:** `apps/ai-service/gremlin_upserts/baseline_rules.py` (+478 lines)
+**File modified:** `apps/ai-service/neo4j_upserts/baseline_rules.py` (+478 lines)
 
 **What was built:**
 - All 16 PH environmental law vertices with full properties
@@ -85,7 +85,7 @@
 - Idempotent upserts (safe to re-run)
 
 **Acceptance Criteria:**
-- [x] All 16 laws exist as vertices in Gremlin graph
+- [x] All 16 laws exist as vertices in Neo4j graph
 - [x] Each law has correct properties (code, title, agency, jurisdiction)
 - [x] `/graph/topology` returns all 16 laws
 - [x] No duplicate vertices on re-run (idempotent upserts)
@@ -235,7 +235,7 @@
 |------|--------|-----------|
 | No community environmental model found | ✅ Resolved | `HrutikAdsare/waste-detection-yolov8` from HuggingFace |
 | Model inference too slow | ✅ Resolved | Using `yolov8n` (nano) variant for speed |
-| Gremlin connection fails | ✅ Resolved | Fallback handling in `gremlin_client.py`; Cosmos DB online |
+| Neo4j connection fails | ✅ Resolved | Fallback handling in `neo4j_client.py`; Neo4j AuraDB online |
 | Gemini hallucinates laws | ✅ Resolved | System prompt explicitly forbids invented laws; tested |
 | `asean_expansion.py` removed | ⚠️ Open | File removed in cleanup commit; needs restoration if ASEAN seeding required |
 
