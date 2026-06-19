@@ -20,9 +20,20 @@ interface BottomNavProps {
   className?: string;
 }
 
+/** Haptic feedback — no-op where unsupported (desktop, iOS Safari). */
+function tapHaptic() {
+  try {
+    if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    navigator.vibrate(10);
+  } catch {
+    /* no-op */
+  }
+}
+
 export function BottomNav({ items, className }: BottomNavProps) {
   const pathname = usePathname();
-  
+
   const pathParts = pathname.split("/");
   const hasLocale = (locales as readonly string[]).includes(pathParts[1]);
   const localePrefix = hasLocale ? `/${pathParts[1]}` : "";
@@ -43,19 +54,30 @@ export function BottomNav({ items, className }: BottomNavProps) {
       <Link
         key={item.href}
         href={fullHref}
+        prefetch={true}
+        onClick={tapHaptic}
         aria-current={isActive ? "page" : undefined}
+        // Humanist type for labels (no mono-as-decoration); native app
+        // tab bars use sentence-case, readable labels.
         className={cn(
-          "flex flex-col items-center justify-center h-full gap-1 px-1 py-1 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider transition-all min-w-[60px]",
-          isActive ? "text-green font-bold" : "text-ink/40 hover:text-ink/60 font-medium"
+          "flex flex-col items-center justify-center h-full gap-1 px-1 py-1 text-[10px] transition-all min-w-[60px]",
+          isActive ? "text-green font-semibold" : "text-ink/40 hover:text-ink/60 font-medium"
         )}
+        style={{ fontFamily: "var(--font-body)" }}
       >
         <div className="relative flex items-center justify-center w-12 h-7 sm:w-14 sm:h-8 mb-0.5">
+          {/* Refined active indicator: a small dot above the icon, not a
+              filled pill behind it. Reads cleaner and more native. */}
           {isActive && (
-            <div className="absolute inset-0 bg-green/15 rounded-full" />
+            <span
+              aria-hidden="true"
+              className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+              style={{ background: "var(--accent)" }}
+            />
           )}
-          <Icon className="w-5 h-5 sm:w-6 sm:h-6 relative z-10" />
+          <Icon className="w-[22px] h-[22px] relative z-10" strokeWidth={isActive ? 2.4 : 2} />
         </div>
-        <span className="truncate w-full text-center">{item.label}</span>
+        <span className="truncate w-full text-center capitalize">{item.label}</span>
       </Link>
     );
   };
@@ -63,10 +85,16 @@ export function BottomNav({ items, className }: BottomNavProps) {
   return (
     <nav
       className={cn(
-        "lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-page/90 backdrop-blur-lg border-t border-ink/10",
+        "lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-ink/10",
         "pb-[env(safe-area-inset-bottom)]",
         className
       )}
+      // Frosted translucent bar — the native iOS/Android tab-bar look.
+      style={{
+        background: "color-mix(in oklab, var(--page) 78%, transparent)",
+        backdropFilter: "saturate(180%) blur(20px)",
+        WebkitBackdropFilter: "saturate(180%) blur(20px)",
+      }}
     >
       <div className="flex items-center h-16 relative px-2">
         {/* Left Items */}
@@ -74,19 +102,29 @@ export function BottomNav({ items, className }: BottomNavProps) {
           {normalItems.slice(0, Math.ceil(normalItems.length / 2)).map(renderNormalItem)}
         </div>
 
-        {/* Primary Center Item */}
+        {/* Primary Center Item — raised camera FAB */}
         {primaryItem && (
           <div className="relative flex justify-center w-20 h-full shrink-0">
             <Link
               href={`${localePrefix}${primaryItem.href === "/" ? "" : primaryItem.href}` || "/"}
+              prefetch={true}
+              onClick={tapHaptic}
+              aria-label={primaryItem.label}
               className={cn(
-                "absolute -top-6 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full shadow-lg shadow-green/20 transition-transform active:scale-95",
-                "bg-gradient-to-tr from-green to-accent border-4 border-page"
+                "absolute -top-6 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-transform active:scale-95",
+                "border-4 border-page"
               )}
+              style={{
+                background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 100%)",
+                boxShadow: "0 8px 20px -6px color-mix(in oklab, var(--accent) 45%, transparent)",
+              }}
             >
               <primaryItem.icon className="w-6 h-6 text-white" />
             </Link>
-            <span className="absolute bottom-1.5 text-[10px] font-mono font-bold uppercase tracking-wider text-ink/80">
+            <span
+              className="absolute bottom-1.5 text-[10px] font-semibold capitalize"
+              style={{ fontFamily: "var(--font-body)", color: "color-mix(in oklab, var(--ink) 75%, transparent)" }}
+            >
               {primaryItem.label}
             </span>
           </div>

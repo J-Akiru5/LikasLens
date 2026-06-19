@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MobileLayout } from "@likaslens/shared";
+import { MobileLayout, RouteProgress } from "@likaslens/shared";
 import { LayoutDashboard, Camera, Trophy, User, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { PageTransition } from "@/components/page-transition";
 
 const BOTTOM_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -47,7 +48,8 @@ export default function AppLayout({
       isGhostMode={isGhostMode}
       onThemeToggle={toggleGhostMode}
     >
-      {children}
+      <RouteProgress />
+      <PageTransition>{children}</PageTransition>
     </MobileLayout>
   );
 }

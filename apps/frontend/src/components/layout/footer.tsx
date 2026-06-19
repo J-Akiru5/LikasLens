@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 function GitHubCatIcon({ className }: { className?: string }) {
   return (
@@ -17,6 +18,11 @@ function GitHubCatIcon({ className }: { className?: string }) {
 }
 
 export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const textColor = ghostMode ? "text-white" : "text-ink";
   const mutedColor = ghostMode ? "text-white/60" : "text-ink/80";
   const subHeadingColor = ghostMode ? "text-white/40" : "text-ink/60";
@@ -120,42 +126,44 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
 
       {/* Animated Particles Layer */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
-        {ghostMode ? (
-          // Undersea Bubbles
-          <>
-            {[...Array(15)].map((_, i) => (
-              <div 
-                key={`bubble-${i}`}
-                className="absolute rounded-full border border-white/20 bg-white/10"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  bottom: `-20px`,
-                  width: `${Math.random() * 20 + 10}px`,
-                  height: `${Math.random() * 20 + 10}px`,
-                  animation: `floatUp ${Math.random() * 8 + 8}s linear infinite`,
-                  animationDelay: `${Math.random() * 5}s`,
-                }}
-              />
-            ))}
-          </>
-        ) : (
-          // Forest Dust/Leaves
-          <>
-            {[...Array(12)].map((_, i) => (
-              <div 
-                key={`dust-${i}`}
-                className="absolute rounded-full bg-green/30"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  width: `${Math.random() * 6 + 3}px`,
-                  height: `${Math.random() * 6 + 3}px`,
-                  animation: `flicker ${Math.random() * 4 + 3}s ease-in-out infinite alternate, drift ${Math.random() * 20 + 15}s linear infinite`,
-                  animationDelay: `${Math.random() * 5}s`,
-                }}
-              />
-            ))}
-          </>
+        {mounted && (
+          ghostMode ? (
+            // Undersea Bubbles
+            <>
+              {[...Array(15)].map((_, i) => (
+                <div 
+                  key={`bubble-${i}`}
+                  className="absolute rounded-full border border-white/20 bg-white/10"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    bottom: `-20px`,
+                    width: `${Math.random() * 20 + 10}px`,
+                    height: `${Math.random() * 20 + 10}px`,
+                    animation: `floatUp ${Math.random() * 8 + 8}s linear infinite`,
+                    animationDelay: `${Math.random() * 5}s`,
+                  }}
+                />
+              ))}
+            </>
+          ) : (
+            // Forest Dust/Leaves
+            <>
+              {[...Array(12)].map((_, i) => (
+                <div 
+                  key={`dust-${i}`}
+                  className="absolute rounded-full bg-green/30"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    width: `${Math.random() * 6 + 3}px`,
+                    height: `${Math.random() * 6 + 3}px`,
+                    animation: `flicker ${Math.random() * 4 + 3}s ease-in-out infinite alternate, drift ${Math.random() * 20 + 15}s linear infinite`,
+                    animationDelay: `${Math.random() * 5}s`,
+                  }}
+                />
+              ))}
+            </>
+          )
         )}
       </div>
 
@@ -166,7 +174,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
           {/* Brand Column */}
           <div className="flex flex-col gap-6 lg:col-span-2">
             <div className="flex items-center gap-3 group w-fit">
-              <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500 brightness-0 invert drop-shadow-sm" />
+              <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500 drop-shadow-sm" />
               <span className={`font-heading tracking-[0.2em] text-2xl flex items-center ${textColor}`}>
                 <span className="font-medium">LIK</span>
                 <span className="font-semibold text-accent mx-[1px]">Λ</span>
@@ -226,31 +234,28 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
         </div>
       </div>
 
-      {/* Giant Typography Background */}
+      {/* Solid wordmark — replaces gradient text (a brand anti-pattern).
+          Outline-fill treatment reads as a forensic stamp, not a SaaS gradient. */}
       <div className="w-full px-4 md:px-8 flex justify-center select-none overflow-hidden relative z-0 pb-6 md:pb-8 mt-4 md:mt-8">
         <div className="relative group cursor-default">
           <h1
-            className="font-heading font-black text-center transition-all duration-1000 group-hover:scale-[1.02]"
+            className="ec-wordmark-solid text-center"
             style={{
-              fontSize: "clamp(3.5rem, 15vw, 20rem)",
+              fontSize: "clamp(3rem, 13vw, 16rem)",
               lineHeight: 0.95,
-              letterSpacing: "-0.06em",
               margin: 0,
               paddingBottom: "1rem",
-              paddingRight: "0.05em",
-              color: "transparent",
-              backgroundImage: ghostMode 
-                ? "linear-gradient(135deg, #0f3e5c 0%, #00d4ff 100%)" // Deep Sea Cyan
-                : "linear-gradient(135deg, #1b4332 0%, #2ee6c8 100%)", // Forest Green
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
               whiteSpace: "nowrap",
+              color: ghostMode ? "rgba(46,230,200,0.12)" : "color-mix(in oklab, var(--accent) 16%, transparent)",
+              WebkitTextStroke: ghostMode
+                ? "1px rgba(46,230,200,0.28)"
+                : "1px color-mix(in oklab, var(--accent) 32%, transparent)",
+              transition: "color 0.6s ease",
             }}
+            aria-hidden="true"
           >
             LIKΛS LENS
           </h1>
-          {/* Subtle glow behind the text on hover */}
-          <div className="absolute inset-0 bg-accent/20 blur-[100px] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
         </div>
       </div>
     </footer>

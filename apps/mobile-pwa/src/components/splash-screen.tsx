@@ -19,16 +19,22 @@ export function SplashScreen() {
         <div className="relative">
           <div className="absolute inset-0 bg-accent/5 rounded-full blur-2xl animate-pulse" />
           <div className="relative w-20 h-20 rounded-2xl bg-accent flex items-center justify-center shadow-[4px_4px_0px_#081c15]">
-            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-14 h-14 object-contain brightness-0 invert drop-shadow-sm" />
+            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-14 h-14 object-contain drop-shadow-sm" />
           </div>
         </div>
 
         <div className="text-center">
-          <h1 className="text-3xl font-black tracking-tight text-accent uppercase">
-            LIKASLENS
+          <h1
+            className="tracking-tight text-accent uppercase"
+            style={{ fontFamily: "var(--font-heading)", fontSize: 30, fontWeight: 800, letterSpacing: "-0.02em" }}
+          >
+            LikasLens
           </h1>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-accent/40 mt-2 font-mono">
-            Civic Environmental Intelligence
+          <p
+            className="mt-2"
+            style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "color-mix(in oklab, var(--accent) 45%, transparent)" }}
+          >
+            Civic environmental intelligence
           </p>
         </div>
 

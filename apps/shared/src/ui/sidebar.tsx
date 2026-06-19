@@ -107,7 +107,7 @@ export function Sidebar({
       <div className={cn("p-4 border-b border-ink/5 flex flex-col gap-4 text-ink transition-all relative", isDesktopCollapsed ? "items-center" : "")}>
         <div className={cn("flex items-center", isDesktopCollapsed ? "justify-center relative" : "justify-between")}>
           <div className="flex items-center gap-2">
-            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain brightness-0 invert drop-shadow-sm" />
+            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
             {!isDesktopCollapsed && (
               <span className="font-heading tracking-[0.2em] text-lg text-ink flex items-center mt-0.5">
                 <span className="font-medium">LIK</span>

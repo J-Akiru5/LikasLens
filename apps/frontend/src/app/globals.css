@@ -8,11 +8,190 @@
 @import "@likaslens/shared/src/styles/design-tokens.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   FRONTEND-ONLY OVERRIDES
+   FRONTEND-ONLY OVERRIDES — Evidence Console (2026 redesign)
+   Scoped to the frontend. Shared tokens are untouched.
    ═══════════════════════════════════════════════════════════════════════════ */
 body {
   position: relative;
 }
+
+/* -- Distinctive typography system -------------------------------------------------
+   Moves off the Inter / Montserrat / Space-Mono reflex monoculture. Fonts are
+   self-hosted via next/font (see layout.tsx); here we bind the shared token
+   names so the rest of the app inherits the new voice automatically. */
+:root {
+  --font-body: var(--font-body), "Public Sans", system-ui, -apple-system, sans-serif;
+  --font-data: var(--font-data), "JetBrains Mono", ui-monospace, monospace;
+  --font-heading: var(--font-display), "Bricolage Grotesque", system-ui, sans-serif;
+  --font-sans: var(--font-body), "Public Sans", system-ui, sans-serif;
+
+  /* Headline rhythm — display tightness within impeccable craft floors:
+     clamp max ≤ 6rem, letter-spacing ≥ -0.04em. */
+  --display-hero: clamp(2.75rem, 5.6vw, 5.5rem);
+  --display-section: clamp(2.1rem, 3.6vw, 3.25rem);
+}
+
+/* -- Evidence Console primitives --------------------------------------------------- */
+
+/* Streaming incident ledger — the hero centerpiece. A live case-file feed, not a
+   glass card. */
+.ec-ledger {
+  --ec-rule: rgba(240, 237, 232, 0.08);
+  background: color-mix(in oklab, var(--hero-bg) 78%, #000);
+  border: 1px solid var(--ec-rule);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ec-ledger-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--ec-rule);
+}
+.ec-ledger-row {
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--ec-rule);
+  position: relative;
+}
+.ec-ledger-row:last-child {
+  border-bottom: none;
+}
+
+/* Status bar — color paired with a label + dot, never color alone. */
+.ec-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.ec-status-routing { background: var(--amber); }
+.ec-status-resolved { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+.ec-status-critical { background: var(--red); }
+.ec-status-active { background: var(--teal-ink); }
+
+/* The single live "in transit" row — animated scan beam. */
+.ec-ledger-row[data-state="live"]::after {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--accent-bright);
+  box-shadow: 0 0 12px var(--accent-bright);
+}
+
+/* Forensic duotone photo treatment — turns stock into evidence. */
+.ec-duotone {
+  filter: grayscale(0.35) contrast(1.08) brightness(0.55);
+  mix-blend-mode: luminosity;
+}
+.ec-duotone-wrap {
+  position: relative;
+  background: linear-gradient(135deg, var(--accent) 0%, #0d1a12 70%);
+  overflow: hidden;
+}
+.ec-duotone-wrap > img,
+.ec-duotone-wrap picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Scan-line sweep over hero photo. */
+.ec-scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 14%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in oklab, var(--accent-bright) 22%, transparent) 50%,
+    transparent 100%
+  );
+  animation: ec-scan 7s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes ec-scan {
+  0%   { top: -16%; opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* Fine instrument grid — extremely subtle, not the 2px SaaS grid. */
+.ec-grid {
+  background-image:
+    linear-gradient(rgba(240, 237, 232, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 237, 232, 0.035) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* Case-file artifact card (pipeline nodes) — solid, one border OR one shadow. */
+.ec-casefile {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: transform var(--transition-expressive), border-color var(--transition-std);
+}
+.ec-casefile:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+/* Pipeline connector — dotted forensic trace between nodes. */
+.ec-trace {
+  background-image: radial-gradient(circle, var(--border-strong) 1.2px, transparent 1.2px);
+  background-size: 10px 10px;
+  background-repeat: repeat-x;
+  background-position: left center;
+}
+
+/* Solid wordmark treatment (footer) — replaces gradient text. */
+.ec-wordmark-solid {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* Section cadence — fluid vertical rhythm, varied (not uniform). */
+.ec-section {
+  padding-block: clamp(64px, 9vw, 120px);
+}
+.ec-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent) 20%, transparent);
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* -- Reduced motion (PRODUCT.md: this is a field tool, not a showcase) ------------ */
+@media (prefers-reduced-motion: reduce) {
+  .ec-scanline { animation: none; opacity: 0.5; }
+  .ec-casefile { transition: none; }
+  .ec-casefile:hover { transform: none; }
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    LEAFLET MAP OVERRIDES

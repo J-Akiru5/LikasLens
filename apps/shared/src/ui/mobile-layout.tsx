@@ -39,14 +39,22 @@ export function MobileLayout({
       )}
     >
       {/* Top Bar */}
-      <header className="h-14 bg-page/80 backdrop-blur-md border-b border-ink/10 flex items-center justify-between px-4 relative z-20 shrink-0">
+      <header
+        className="h-14 border-b border-ink/10 flex items-center justify-between px-4 relative z-20 shrink-0"
+        style={{
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          background: "color-mix(in oklab, var(--page) 78%, transparent)",
+          backdropFilter: "saturate(180%) blur(20px)",
+          WebkitBackdropFilter: "saturate(180%) blur(20px)",
+        }}
+      >
         <Link href={`${localePrefix}/dashboard` || "/"} className="flex items-center gap-2 text-ink">
-          <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain brightness-0 invert drop-shadow-sm" />
-          <span className="font-heading tracking-[0.2em] text-lg flex items-center mt-0.5">
-            <span className="font-medium">LIK</span>
-            <span className="font-semibold mx-[1px]">Λ</span>
-            <span className="font-medium mr-1">S</span>
-            <span className="font-bold uppercase">LENS</span>
+          <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
+          <span className="flex items-center mt-0.5" style={{ fontFamily: "var(--font-heading)", letterSpacing: "0.16em", fontSize: 17 }}>
+            <span style={{ fontWeight: 500 }}>LIK</span>
+            <span style={{ fontWeight: 700, color: "var(--accent)", margin: "0 1px" }}>Λ</span>
+            <span style={{ fontWeight: 500, marginRight: 3 }}>S</span>
+            <span style={{ fontWeight: 800, textTransform: "uppercase" }}>LENS</span>
           </span>
         </Link>
 

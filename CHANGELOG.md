@@ -7,6 +7,95 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.5] - 2026-06-19
+
+### Added
+- **Mobile PWA**: 18 `loading.tsx` files across all route segments for instant skeleton UI on navigation
+- **Shared**: 8 new mobile-specific skeleton components — `MobileDashboardSkeleton`, `MobileScoreboardSkeleton`, `MobileProfileSkeleton`, `MobileWalletSkeleton`, `MobileImpactSkeleton`, `MobileReportSkeleton`, `MobileListSkeleton`, `MobileAnalyticsSkeleton`
+- **Mobile PWA**: `PageTransition` component for smooth fade-in on route changes (skeleton → content)
+- **Mobile PWA**: `RouteProgress` bar integrated into app shell — thin gradient bar at top during navigation
+- **Mobile PWA**: `prefetch={true}` on all BottomNav `<Link>` components for instant route preloading
+- **Shared**: Active state indicator (dot above icon) in `BottomNav` for clearer tab selection
+- **Frontend**: Redesigned hero section, how-it-works section, ghost-mode section, impact section, install-CTA section, and scoreboard section with refreshed UI
+- **Frontend**: Animated thematic footer with optimized images and light civic mode styling
+- **Frontend**: New design tokens in `globals.css` — white page background, softer borders, larger radius (2026 enterprise standard)
+- **Mobile PWA**: Updated design tokens in `globals.css` — expanded mobile-native iOS aesthetic styles
+- **Mobile PWA**: New `use-haptics` hook for native haptic feedback on taps and gestures
+- **Mobile PWA**: New `bottom-sheet` native component with framer-motion spring physics and drag-to-dismiss
+- **Admin Portal**: Next.js config with turbopack and API rewrites
+- **All apps**: Turbopack configuration in `next.config.ts` for faster dev builds
+
+### Changed
+- **Mobile PWA**: Scoreboard tab switching now keeps current data visible during tab changes (no more full skeleton flash)
+- **Mobile PWA**: Dashboard page restructured with improved card grid layout and stat cards
+- **Mobile PWA**: Profile page updated with iOS-style grouped list layout
+- **Mobile PWA**: Report page refactored camera/report submission flow
+- **Mobile PWA**: Splash screen and onboarding slider updated with refreshed styling
+- **Mobile PWA**: App shell layout now wraps children with `RouteProgress` and `PageTransition`
+- **Frontend**: Login and register pages — logo now shows in original green color
+- **Frontend**: Footer logo updated to original green color
+- **Mobile PWA**: Login, register, splash, and onboarding — logo now shows in original green color
+- **Admin Portal**: Login and landing page — logo now shows in original green color
+- **Shared**: `MobileLayout`, `Sidebar`, `AppHeader`, `MobileHeader` — logo now shows in original green color
+- **Shared**: `BottomNav` links now use `prefetch={true}` for faster navigation
+- **Frontend**: Next.js config updated with turbopack and image optimization settings
+- **Mobile PWA**: Next.js config updated with turbopack and API proxy rewrites
+
+### Fixed
+- **Mobile PWA**: Navigation no longer shows blank page during route changes — instant skeleton UI
+- **Mobile PWA**: Scoreboard no longer flashes full skeleton on tab switch
+- **All apps**: Logo no longer forced to white via `brightness-0 invert` filter (shows natural green)
+
+## [0.9.0] - 2026-06-18
+
+### Changed
+- **AI Service**: Migrated graph database from Azure Cosmos DB (Gremlin) to Neo4j AuraDB Free
+- **AI Service**: Replaced Gremlin traversals with Cypher queries for all graph operations
+- **AI Service**: Added Location-aware schema (Iloilo proof of concept) with `GOVERNED_BY` relationships
+- **AI Service**: Implemented GraphRAG pipeline — Gemini embeddings (`text-embedding-004`) + Neo4j vector search
+- **AI Service**: `hazard_analyzer.py` now uses hybrid retrieval (graph traversal + vector fallback)
+- **AI Service**: `POST /api/v1/analyze-hazard` now accepts optional `location` parameter for location-aware law lookup
+- **AI Service**: Replaced `gremlinpython` dependency with `neo4j` Python driver
+- **Docs**: Updated architecture diagrams to show Neo4j AuraDB instead of Cosmos DB
+- **Docs**: Updated GCP deployment guide with Neo4j env vars (`NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`)
+
+### Added
+- **AI Service**: `neo4j_client.py` — Neo4j async driver, connection management, Cypher query execution
+- **AI Service**: `neo4j_bootstrap.py` — Cypher MERGE upsert generation for idempotent seeding
+- **AI Service**: `graph_rag.py` — Context-Governed RAG with Gemini embeddings and Neo4j vector search
+- **AI Service**: `neo4j_upserts/baseline_rules.py` — Seed data with Location nodes (Iloilo) and all 16 PH laws
+- **AI Service**: `seed_neo4j.py` — Standalone seed script with `--drop` flag and auto-embed support
+- **Docs**: Billing budget & alerts setup in Phase 1 of GCP deployment guide
+- **Docs**: Neo4j AuraDB setup guide (Phase 2B) in GCP deployment guide
+- **Docs**: Memory/CPU allocation steps for Cloud Run services (Phase 4)
+
+### Removed
+- **AI Service**: Removed `gremlinpython` dependency (replaced by `neo4j`)
+- **AI Service**: Removed Cosmos DB Gremlin environment variables
+
+### Archived
+- **AI Service**: Moved `gremlin_client.py`, `gremlin_bootstrap.py`, `gremlin_upserts/` to `docs/archive/gremlin/`
+- **AI Service**: Moved `COSMOS_GREMLIN_SETUP_GUIDE.md` to `docs/archive/gremlin/`
+- **AI Service**: Moved Gremlin migration script to `docs/archive/gremlin/`
+
+## [0.8.0] - 2026-06-17
+
+### Changed
+- **DevOps**: Migrated backend deployment from Azure Container Apps to Google Cloud Run
+- **DevOps**: Migrated AI service deployment from Azure Container Apps to Google Cloud Run
+- **DevOps**: Replaced Azure OIDC login with GCP service account authentication in GitHub Actions
+- **DevOps**: Container images now pushed to Artifact Registry (asia-southeast1) instead of GHCR
+- **DevOps**: Both deploy workflows now include CI gate (reusable ci.yml) and Trivy vulnerability scanning
+- **Docs**: Replaced `AZURE_DEPLOYMENT.md` with `GCP_DEPLOYMENT.md` (full rewrite for Cloud Run)
+- **Docs**: Added `GCP_DEPLOYMENT.html` interactive setup guide with step-by-step instructions
+
+### Removed
+- **DevOps**: Deleted Azure Container Apps deployment workflows (backend + AI service)
+- **Docs**: Archived `AZURE_DEPLOYMENT.md` to `docs/archive/`
+
+### Fixed
+- **DevOps**: Backend deploy workflow now uses correct Supabase host (`db.sfklmmtimelotqvrldni.supabase.co`) and port (`5432`)
+
 ## [0.7.4] - 2026-06-09
 
 ### Changed
@@ -311,7 +400,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.4...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.8.5...HEAD
+[0.8.5]: https://github.com/J-Akiru5/LikasLens/compare/v0.8.0...v0.8.5
+[0.8.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.1...v0.7.2

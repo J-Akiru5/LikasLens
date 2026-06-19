@@ -1,11 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { DashboardSkeleton, laravelGet, getDashboardFeed, showToast, EmptyFeed, PartnerCarousel, RevealSection } from "@likaslens/shared";
+import {
+  DashboardSkeleton,
+  laravelGet,
+  getDashboardFeed,
+  showToast,
+  EmptyFeed,
+} from "@likaslens/shared";
 import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/shared";
-import { Camera, AlertTriangle, Scale, Activity, Zap, TrendingUp, Award, Gift, ChevronRight } from "lucide-react";
+import { Camera, ChevronRight, Gift, Award, Activity, Zap, Scale } from "lucide-react";
+import { LargeTitle } from "@/components/native/large-title";
+import { useHaptics } from "@/hooks/use-haptics";
 
 const PARTNER_OFFERS = [
   { name: "7-Eleven", shortName: "7-ELEVEN", offer: "Free Coffee", points: 150 },
@@ -19,6 +28,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [feed, setFeed] = useState<ActivityFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const haptic = useHaptics();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -60,160 +70,204 @@ export default function DashboardPage() {
   const activeIncidents = stats?.active_incidents ?? 0;
 
   return (
-    <div className="min-h-full pb-24">
-      {/* ── Compact Greeting + Balance ─────────────────────── */}
-      <div className="px-6 pt-8 pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">Welcome back</p>
-            <h1 className="text-2xl font-bold tracking-tight text-ink" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>
-              Dashboard
-            </h1>
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="text-xs font-mono uppercase tracking-widest text-muted mb-1">Eco-Credits</span>
-            <div className="flex items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full">
-              <Award className="w-4 h-4" />
-              <span className="font-bold text-sm tabular-nums">{points.toLocaleString()}</span>
+    <div className="pb-28">
+      <div className="px-5">
+        <LargeTitle
+          title="Dashboard"
+          subtitle="Welcome back. Here's your environmental record today."
+          trailing={
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "5px 11px",
+                borderRadius: 9999,
+                background: "color-mix(in oklab, var(--accent) 10%, transparent)",
+              }}
+            >
+              <Award style={{ width: 14, height: 14, color: "var(--accent)" }} />
+              <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>
+                {points.toLocaleString()}
+              </span>
             </div>
-          </div>
-        </div>
+          }
+        />
       </div>
 
-      {/* ── Quick Report Button ─────────────────────────────── */}
-      <div className="px-6 mb-4">
+      <div className="px-5">
+        {/* ── Forensic photo banner with the primary action ─────────────────── */}
         <Link
           href={`/${locale}/report?quick=true`}
-          className="flex items-center justify-center gap-3 w-full h-14 rounded-full bg-accent text-white font-bold text-sm shadow-lg hover:-translate-y-px hover:shadow-[0_12px_32px_-12px_color-mix(in_oklab,var(--accent)_22%,transparent)] active:scale-[0.98] transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          onClick={() => haptic("medium")}
+          className="m-banner-wrap block relative"
+          style={{ marginBottom: 20, minHeight: 132 }}
         >
-          <Camera className="w-5 h-5" />
-          Quick Report
-          <Zap className="w-4 h-4 text-white/70" />
-        </Link>
-      </div>
-
-      {/* ── Quick Actions Row ───────────────────────────────── */}
-      <div className="px-6 mb-6">
-        <div className="bg-panel rounded-2xl p-3 border border-ink/5 flex justify-between items-center">
-          {[
-            { href: `/${locale}/report`, icon: Camera, label: "Report" },
-            { href: `/${locale}/history`, icon: AlertTriangle, label: "My Reports" },
-            { href: `/${locale}/laws`, icon: Scale, label: "Laws" },
-            { href: `/${locale}/wallet`, icon: Gift, label: "Wallet" },
-          ].map((item) => (
-            <Link key={item.label} href={item.href} className="flex flex-col items-center gap-2 flex-1 group">
-              <div className="w-11 h-11 rounded-xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all duration-200 ease-out group-hover:bg-accent group-hover:text-page group-focus-visible:ring-2 group-focus-visible:ring-accent group-focus-visible:ring-offset-2">
-                <item.icon className="w-5 h-5" />
-              </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/60 group-hover:text-ink transition-colors">{item.label}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* ── My Impact Card ⭐ NEW ──────────────────────────── */}
-      <RevealSection>
-      <div className="px-6 mb-6">
-        <div className="bg-panel rounded-2xl p-5 border border-ink/5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-sm text-ink flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-green" />
-              My Impact
-            </h2>
-            <Link href={`/${locale}/impact`} className="text-[10px] font-mono uppercase tracking-widest text-green flex items-center gap-1">
-              Details <ChevronRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-page rounded-xl p-3 text-center">
-              <p className="text-xl font-bold text-ink tabular-nums">{totalReports}</p>
-              <p className="text-[9px] font-mono uppercase tracking-widest text-muted mt-1">Reports</p>
-            </div>
-            <div className="bg-page rounded-xl p-3 text-center">
-              <p className="text-xl font-bold text-green tabular-nums">{resolvedToday}</p>
-              <p className="text-[9px] font-mono uppercase tracking-widest text-muted mt-1">Resolved</p>
-            </div>
-            <div className="bg-page rounded-xl p-3 text-center">
-              <p className="text-xl font-bold text-amber tabular-nums">{activeIncidents}</p>
-              <p className="text-[9px] font-mono uppercase tracking-widest text-muted mt-1">Active</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      </RevealSection>
-
-      {/* ── Partner Offers Carousel ⭐ NEW ─────────────────── */}
-      <div className="px-6 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-bold text-sm text-ink">Partner Offers</h2>
-          <span className="text-[10px] font-mono uppercase tracking-widest text-muted">Redeem with Eco-Credits</span>
-        </div>
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide">
-          {PARTNER_OFFERS.map((offer) => (
-            <div
-              key={offer.name}
-              className="flex-shrink-0 w-[160px] snap-start bg-panel rounded-2xl border border-ink/5 p-4 flex flex-col gap-3 hover:border-green/30 transition-colors"
+          <Image
+            src="https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=900&q=80"
+            alt="A river winding through forested Philippine highlands"
+            fill
+            sizes="100vw"
+            priority
+          />
+          <div className="m-banner-scrim" />
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 18px", gap: 4 }}>
+            <span
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 5, alignSelf: "flex-start",
+                fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 600,
+                letterSpacing: "0.05em", textTransform: "uppercase",
+                color: "var(--accent-bright)", marginBottom: 2,
+              }}
             >
-              <div className="w-10 h-10 rounded-xl bg-green/10 flex items-center justify-center">
-                <span className="text-[10px] font-bold font-mono text-green">{offer.shortName.slice(0, 3)}</span>
-              </div>
-              <div>
-                <p className="font-bold text-sm text-ink">{offer.offer}</p>
-                <p className="text-[10px] font-mono text-muted mt-0.5">{offer.name}</p>
-              </div>
-              <div className="mt-auto pt-2 border-t border-ink/5">
-                <span className="text-xs font-bold text-green">{offer.points} pts</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+              <Zap style={{ width: 11, height: 11 }} /> Quick report
+            </span>
+            <p style={{ fontFamily: "var(--font-heading)", fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", color: "#f0ede8", margin: 0, lineHeight: 1.1 }}>
+              See something. Snap it.
+            </p>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: 12.5, color: "rgba(240,237,232,0.7)", margin: 0 }}>
+              Camera ready · AI routes it to the right agency
+            </p>
+          </div>
+        </Link>
 
-      {/* ── Recent Activity ────────────────────────────────── */}
-      <RevealSection>
-      <div className="px-6 space-y-4">
-        <div className="flex justify-between items-end">
-          <h2 className="font-bold text-sm text-ink flex items-center gap-2">
-            <Activity className="w-4 h-4 text-ink/40" />
-            Recent Activity
-          </h2>
-          <Link href={`/${locale}/history`} className="text-[10px] font-mono uppercase tracking-widest text-ink/50 hover:text-ink flex items-center gap-1">
-            View All <ChevronRight className="w-3 h-3" />
-          </Link>
-        </div>
+        {/* ── My Impact — grouped inset card, mono on numbers only ─────────── */}
+        <section style={{ marginBottom: 24 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
+            <h2 className="ios-section-label">My impact</h2>
+            <Link
+              href={`/${locale}/impact`}
+              className="flex items-center gap-0.5"
+              style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
+            >
+              Details <ChevronRight style={{ width: 14, height: 14 }} />
+            </Link>
+          </div>
+          <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", padding: 0 }}>
+            {[
+              { label: "Reports", value: totalReports, color: "var(--ink)" },
+              { label: "Resolved", value: resolvedToday, color: "var(--green)" },
+              { label: "Active", value: activeIncidents, color: "var(--amber)" },
+            ].map((item, i) => (
+              <div
+                key={item.label}
+                style={{
+                  padding: "14px 8px",
+                  textAlign: "center",
+                  borderRight: i < 2 ? "1px solid var(--border)" : "none",
+                }}
+              >
+                <p style={{ fontFamily: "var(--font-data)", fontSize: 26, fontWeight: 700, color: item.color, margin: 0, lineHeight: 1, letterSpacing: "-0.02em" }}>
+                  {item.value.toLocaleString()}
+                </p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "6px 0 0" }}>
+                  {item.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-        <div className="space-y-3">
+        {/* ── Quick actions rail ───────────────────────────────────────────── */}
+        <section style={{ marginBottom: 24 }}>
+          <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", padding: "10px 6px" }}>
+            {[
+              { href: `/${locale}/report`, label: "Report", Icon: Camera },
+              { href: `/${locale}/wallet`, label: "Wallet", Icon: Gift },
+              { href: `/${locale}/laws`, label: "Laws", Icon: Scale },
+              { href: `/${locale}/impact`, label: "Impact", Icon: Activity },
+            ].map(({ href, label, Icon }) => (
+              <Link
+                key={label}
+                href={href}
+                onClick={() => haptic("light")}
+                className="flex flex-col items-center gap-1.5"
+              >
+                <div className="ios-row-icon" style={{ background: "color-mix(in oklab, var(--ink) 4%, transparent)", width: 40, height: 40, borderRadius: 12 }}>
+                  <Icon style={{ width: 18, height: 18, color: "var(--ink)" }} />
+                </div>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 11, fontWeight: 500, color: "var(--muted)" }}>
+                  {label}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Partner offers rail (horizontal snap) ────────────────────────── */}
+        <section style={{ marginBottom: 24 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
+            <h2 className="ios-section-label">Redeem eco-credits</h2>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-5 px-5 snap-x snap-mandatory scrollbar-hide">
+            {PARTNER_OFFERS.map((offer) => (
+              <div
+                key={offer.name}
+                className="flex-shrink-0 snap-start"
+                style={{ width: 148, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}
+              >
+                <div className="ios-row-icon" style={{ background: "color-mix(in oklab, var(--accent) 10%, transparent)", width: 36, height: 36 }}>
+                  <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, color: "var(--accent)" }}>
+                    {offer.shortName.slice(0, 3)}
+                  </span>
+                </div>
+                <div>
+                  <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 700, color: "var(--ink)", margin: 0 }}>{offer.offer}</p>
+                  <p style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "var(--muted)", margin: "2px 0 0" }}>{offer.name}</p>
+                </div>
+                <div style={{ marginTop: "auto", paddingTop: 8, borderTop: "1px solid var(--border)" }}>
+                  <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>{offer.points} pts</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Recent activity — grouped rows ──────────────────────────────── */}
+        <section>
+          <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
+            <h2 className="ios-section-label">Recent activity</h2>
+            <Link
+              href={`/${locale}/history`}
+              className="flex items-center gap-0.5"
+              style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
+            >
+              All <ChevronRight style={{ width: 14, height: 14 }} />
+            </Link>
+          </div>
+
           {feed.length === 0 ? (
             <EmptyFeed description="No recent activity" />
           ) : (
-            feed.map((item) => {
-              const typeConfig: Record<string, { bg: string; text: string; icon: string }> = {
-                Critical: { bg: "bg-red/10", text: "text-red", icon: "↙" },
-                Warning: { bg: "bg-amber/10", text: "text-amber", icon: "★" },
-                Info: { bg: "bg-green/10", text: "text-green", icon: "↗" },
-              };
-              const config = typeConfig[item.type] ?? typeConfig.Info;
-
-              return (
-                <div key={item.id} className="bg-panel rounded-2xl p-4 shadow-sm border border-ink/5 flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
-                    <span className={`${config.text} font-bold`}>{config.icon}</span>
+            <div className="ios-grouped-list">
+              {feed.map((item) => {
+                const dotColor =
+                  item.type === "Critical" ? "var(--red)" :
+                  item.type === "Warning" ? "var(--amber)" : "var(--green)";
+                return (
+                  <div key={item.id} className="ios-list-row">
+                    <div className="ios-row-icon" style={{ background: `color-mix(in oklab, ${dotColor} 12%, transparent)` }}>
+                      <span className="m-status-dot" style={{ background: dotColor }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600, color: "var(--ink)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.title}
+                      </p>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.location || item.description}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600, color: "var(--ink)", margin: 0 }}>{item.status}</p>
+                      <p style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--muted)", margin: "2px 0 0" }}>{item.time}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-ink truncate">{item.title}</p>
-                    <p className="text-xs text-ink/50 mt-0.5 truncate">{item.location || item.description}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className={`font-bold text-xs ${config.text}`}>{item.status}</p>
-                    <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-1">{item.time}</p>
-                  </div>
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
-        </div>
+        </section>
       </div>
-      </RevealSection>
     </div>
   );
 }

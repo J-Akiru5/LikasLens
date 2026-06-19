@@ -1,102 +1,34 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { m } from "framer-motion";
-import {
-  BarChart3,
-  CheckCircle2,
-  Users,
-  Building2,
-  MapPin,
-  TrendingUp,
-  FileText,
-  Activity,
-} from "lucide-react";
+import { CheckCircle2, MapPin } from "lucide-react";
 import { laravelGet, EmptyState } from "@likaslens/shared";
 import type { PublicImpactData } from "@likaslens/shared";
 
-/* ── Animations ────────────────────────────────────────── */
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.05 },
-  },
-};
+/* ─────────────────────────────────────────────────────────────────────────────
+   Impact — editorial band. Replaces the 4-up hero-metric SaaS grid.
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
-    },
-  },
-};
+   One decisive hero number with provenance, supported by a smaller breakdown
+   ledger and a forensic photo. A photograph carries the brand weight here;
+   the data proves it.
+   ───────────────────────────────────────────────────────────────────────────── */
 
-/* ── Skeleton Component ────────────────────────────────── */
-function ImpactSkeleton() {
-  return (
-    <div className="space-y-8 animate-pulse">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-2xl p-6" style={{ background: "var(--panel)", border: "1px solid var(--border)" }}>
-            <div className="h-4 w-10 rounded bg-ink/5 mb-3" />
-            <div className="h-8 w-20 rounded bg-ink/5 mb-2" />
-            <div className="h-3 w-24 rounded bg-ink/5" />
-          </div>
-        ))}
-      </div>
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="rounded-2xl p-6" style={{ background: "var(--panel)", border: "1px solid var(--border)", minHeight: 300 }}>
-          <div className="h-5 w-40 rounded bg-ink/5 mb-6" />
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-3 mb-4">
-              <div className="h-3 w-24 rounded bg-ink/5" />
-              <div className="flex-1 h-6 rounded bg-ink/5" />
-            </div>
-          ))}
-        </div>
-        <div className="rounded-2xl p-6" style={{ background: "var(--panel)", border: "1px solid var(--border)", minHeight: 300 }}>
-          <div className="h-5 w-48 rounded bg-ink/5 mb-6" />
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="flex items-start gap-3 mb-4 pb-4" style={{ borderBottom: "1px solid var(--border)" }}>
-              <div className="h-8 w-8 rounded-full bg-ink/5 flex-shrink-0" />
-              <div className="flex-1 space-y-2">
-                <div className="h-3 w-full rounded bg-ink/5" />
-                <div className="h-3 w-2/3 rounded bg-ink/5" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Animated Counter ──────────────────────────────────── */
-function AnimatedCounter({ value, duration = 1.5 }: { value: number; duration?: number }) {
+function AnimatedCounter({ value, duration = 1.6 }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0);
-
   useEffect(() => {
     if (value === 0) return;
-    const end = value;
-    const startTime = Date.now();
-    const durationMs = duration * 1000;
-
+    const start = Date.now();
+    const ms = duration * 1000;
     function tick() {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / durationMs, 1);
-      // Ease out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(eased * end));
-      if (progress < 1) requestAnimationFrame(tick);
+      const p = Math.min((Date.now() - start) / ms, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplay(Math.round(eased * value));
+      if (p < 1) requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
   }, [value, duration]);
-
   return <>{display.toLocaleString()}</>;
 }
 
@@ -109,14 +41,11 @@ export function ImpactSection() {
     async function fetchImpact() {
       try {
         const res = await laravelGet<{ success: boolean; data: PublicImpactData }>(
-          "/public/impact",
-          controller.signal,
+          "/public/impact", controller.signal,
         );
-        if (res.success) {
-          setData(res.data);
-        }
+        if (res.success) setData(res.data);
       } catch {
-        // Silent fail, just use fallbacks
+        // silent
       } finally {
         setLoading(false);
       }
@@ -126,278 +55,178 @@ export function ImpactSection() {
   }, []);
 
   const stats = data ?? {
-    total_reports: 0,
-    total_resolved: 0,
-    total_citizens: 0,
-    total_ngos: 0,
-    resolution_rate: 0,
-    recent_verified: [],
-    reports_by_type: {},
-    top_barangays: [],
+    total_reports: 0, total_resolved: 0, total_citizens: 0, total_ngos: 0,
+    resolution_rate: 0, recent_verified: [], reports_by_type: {}, top_barangays: [],
   };
-
   const typeEntries = Object.entries(stats.reports_by_type);
-  const maxTypeCount = typeEntries.length > 0
-    ? Math.max(...typeEntries.map(([, c]) => c))
-    : 1;
-
-  const statCards = [
-    {
-      icon: FileText,
-      label: "Total Reports",
-      value: stats.total_reports,
-      color: "var(--accent)",
-    },
-    {
-      icon: CheckCircle2,
-      label: "Resolved",
-      value: stats.total_resolved,
-      color: "#22c55e",
-    },
-    {
-      icon: Users,
-      label: "Active Citizens",
-      value: stats.total_citizens,
-      color: "var(--secondary)",
-    },
-    {
-      icon: Building2,
-      label: "Partner NGOs",
-      value: stats.total_ngos,
-      color: "#f59e0b",
-    },
-  ];
+  const maxType = typeEntries.length > 0 ? Math.max(...typeEntries.map(([, c]) => c)) : 1;
 
   return (
-    <section id="impact" className="max-w-7xl mx-auto px-4 sm:px-8 py-20" style={{}}>
-      <m.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.6 }}
-        style={{ marginBottom: 40, display: "flex", flexDirection: "column", gap: 12 }}
-      >
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "4px 12px",
-            borderRadius: 9999,
-            background: "color-mix(in srgb, var(--accent) 8%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--accent) 20%, transparent)",
-            fontFamily: "monospace",
-            fontSize: 10,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "var(--accent)",
-            width: "fit-content",
-          }}
-        >
-          <Activity style={{ width: 12, height: 12 }} /> Overall Impact
-        </span>
-        <h2
-          style={{
-            fontSize: "clamp(2.2rem, 4vw, 3.5rem)",
-            fontWeight: 800,
-            letterSpacing: "-0.04em",
-            lineHeight: 1.1,
-            color: "var(--ink)",
-            margin: 0,
-          }}
-        >
-          Protecting Our<br />Environment Together
-        </h2>
-        <p style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.65, margin: 0, maxWidth: 480 }}>
-          Real-time metrics showing how citizen reports are driving measurable environmental action.
-        </p>
-      </m.div>
+    <section id="impact" className="ec-section" style={{ background: "var(--page)" }}>
+      <div className="max-w-7xl mx-auto px-5 sm:px-8">
 
-      {loading ? (
-        <ImpactSkeleton />
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-          {/* STAT CARDS GRID */}
-          <m.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, margin: "-60px" }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        {/* Editorial intro */}
+        <m.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6 }}
+          style={{ marginBottom: 48, maxWidth: 720, display: "flex", flexDirection: "column", gap: 16 }}
+        >
+          <h2
+            style={{
+              fontSize: "var(--display-section)",
+              fontFamily: "var(--font-heading)", fontWeight: 700,
+              letterSpacing: "-0.03em", lineHeight: 1.06, color: "var(--ink)",
+              margin: 0, textWrap: "balance" as const,
+            }}
           >
-            {statCards.map((card) => (
-              <m.div
-                key={card.label}
-                variants={fadeUp}
-                className="rounded-2xl p-4 sm:p-6"
-                style={{
-                  background: "var(--panel)", border: "1px solid var(--border)",
-                  display: "flex", flexDirection: "column", gap: 8,
-                  transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
-                }}
-                whileHover={{ y: -4 }}
-              >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <card.icon style={{ width: 20, height: 20, color: card.color }} />
-                  <span style={{ fontFamily: "monospace", fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    {card.label}
-                  </span>
-                </div>
-                <span style={{ fontSize: "clamp(1.8rem, 3vw, 2.5rem)", fontWeight: 800, fontFamily: "monospace", letterSpacing: "-0.04em", color: "var(--ink)" }}>
-                  <AnimatedCounter value={card.value} duration={1.2} />
-                </span>
-              </m.div>
-            ))}
+            Every report leaves a mark on the public record.
+          </h2>
+          <p style={{ fontSize: 17, color: "var(--muted)", lineHeight: 1.6, margin: 0, maxWidth: 560 }}>
+            Resolution is not promised in a press release. It is counted here,
+            case by case, where it can be checked.
+          </p>
+        </m.div>
+
+        {/* Hero number + photo band */}
+        <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6 mb-6">
+          {/* Hero number card */}
+          <m.div
+            initial={{ opacity: 0, y: 22 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6 }}
+            className="ec-casefile"
+            style={{ padding: "36px 36px 30px", background: "linear-gradient(160deg, var(--accent-subtle), var(--panel) 55%)", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 28 }}
+          >
+            <div>
+              <p style={{ fontFamily: "var(--font-data)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 14px" }}>
+                Cases on the public record
+              </p>
+              <span style={{ display: "block", fontSize: "clamp(3.5rem, 8vw, 6rem)", fontFamily: "var(--font-heading)", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 0.95, color: "var(--accent)" }}>
+                {loading ? <span style={{ opacity: 0.3 }}>—</span> : <AnimatedCounter value={stats.total_reports} />}
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: 28, flexWrap: "wrap", paddingTop: 22, borderTop: "1px solid var(--border)" }}>
+              <div>
+                <p style={{ fontFamily: "var(--font-data)", fontSize: 22, fontWeight: 700, color: "var(--ink)", margin: 0 }}>
+                  {loading ? "—" : <AnimatedCounter value={stats.total_resolved} duration={1.4} />}
+                </p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "4px 0 0" }}>resolved</p>
+              </div>
+              <div>
+                <p style={{ fontFamily: "var(--font-data)", fontSize: 22, fontWeight: 700, color: "var(--ink)", margin: 0 }}>
+                  {loading ? "—" : <AnimatedCounter value={stats.total_citizens} duration={1.4} />}
+                </p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "4px 0 0" }}>citizens reporting</p>
+              </div>
+              <div>
+                <p style={{ fontFamily: "var(--font-data)", fontSize: 22, fontWeight: 700, color: "var(--ink)", margin: 0 }}>
+                  {loading ? "—" : stats.total_ngos}
+                </p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "4px 0 0" }}>partner agencies</p>
+              </div>
+            </div>
           </m.div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Reports by Type */}
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6 }}
-              className="rounded-2xl p-6"
-              style={{ background: "var(--panel)", border: "1px solid var(--border)" }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
-                <BarChart3 style={{ width: 18, height: 18, color: "var(--accent)" }} />
-                <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>
-                  Reports by Type
-                </h2>
-              </div>
-              {typeEntries.length === 0 ? (
-                <EmptyState
-                  svg="reports"
-                  title="No Classification Data"
-                  description="Reports by type will appear here once submitted."
-                  className="py-12"
-                />
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {typeEntries.map(([name, count]) => {
-                    const pct = maxTypeCount > 0 ? (count / maxTypeCount) * 100 : 0;
-                    return (
-                      <div key={name}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                          <span style={{ fontFamily: "monospace", fontSize: 12, color: "var(--ink)", fontWeight: 600 }}>{name}</span>
-                          <span style={{ fontFamily: "monospace", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>{count}</span>
-                        </div>
-                        <div style={{ height: 8, borderRadius: 9999, background: "color-mix(in srgb, var(--accent) 10%, transparent)", overflow: "hidden" }}>
-                          <m.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${pct}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                            style={{ height: "100%", borderRadius: 9999, background: "var(--accent)" }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </m.div>
+          {/* Forensic photo tile */}
+          <m.div
+            initial={{ opacity: 0, y: 22 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="ec-duotone-wrap"
+            style={{ borderRadius: 14, minHeight: 260, border: "1px solid var(--border)" }}
+          >
+            <Image
+              src="https://images.unsplash.com/photo-1502134249126-9f3755a50d78?auto=format&fit=crop&w=1200&q=80"
+              alt="A river winding through forested Philippine highlands"
+              fill
+              sizes="(min-width: 1024px) 40vw, 100vw"
+              className="ec-duotone"
+            />
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", padding: 22 }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "rgba(240,237,232,0.85)", margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
+                Reports come from ridge to reef. Each is geotagged, classified, and routed to the agency with jurisdiction.
+              </p>
+            </div>
+          </m.div>
+        </div>
 
-            {/* Recent Verified Reports */}
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="rounded-2xl p-6"
-              style={{ background: "var(--panel)", border: "1px solid var(--border)" }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
-                <CheckCircle2 style={{ width: 18, height: 18, color: "#22c55e" }} />
-                <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>
-                  Recently Resolved
-                </h2>
-              </div>
-              {stats.recent_verified.length === 0 ? (
-                <EmptyState
-                  svg="search"
-                  title="No Verified Reports"
-                  description="Resolved environmental reports will appear here."
-                  className="py-12"
-                />
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                  {stats.recent_verified.map((item, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 0",
-                        borderBottom: idx < stats.recent_verified.length - 1 ? "1px solid var(--border)" : "none",
-                      }}
-                    >
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", background: "color-mix(in srgb, #22c55e 15%, transparent)", border: "1px solid color-mix(in srgb, #22c55e 30%, transparent)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <CheckCircle2 style={{ width: 14, height: 14, color: "#22c55e" }} />
+        {/* Breakdown ledger — by type + recently resolved */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Reports by type */}
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6 }}
+            className="ec-casefile"
+            style={{ padding: 28 }}
+          >
+            <h3 style={{ fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", letterSpacing: "-0.01em", color: "var(--ink)", margin: "0 0 20px" }}>
+              Reports by type
+            </h3>
+            {typeEntries.length === 0 ? (
+              <EmptyState svg="reports" title="No classification data" description="Reports by type will appear here once submitted." className="py-10" />
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {typeEntries.map(([name, count]) => {
+                  const pct = maxType > 0 ? (count / maxType) * 100 : 0;
+                  return (
+                    <div key={name}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                        <span style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--ink)", fontWeight: 600 }}>{name}</span>
+                        <span style={{ fontFamily: "var(--font-data)", fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>{count}</span>
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: 0, lineHeight: 1.4 }}>
-                          {item.title ?? "Environmental Report"}
-                        </p>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: "monospace", fontSize: 10, color: "var(--muted)" }}>
-                            <MapPin style={{ width: 10, height: 10 }} /> {item.location}
-                          </span>
-                          <span style={{ fontFamily: "monospace", fontSize: 10, color: "var(--muted)" }}>{item.date}</span>
-                          <span style={{ fontFamily: "monospace", fontSize: 9, padding: "2px 6px", borderRadius: 4, background: "color-mix(in srgb, #22c55e 12%, transparent)", color: "#22c55e", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                            {item.status}
-                          </span>
-                        </div>
+                      <div style={{ height: 6, borderRadius: 9999, background: "color-mix(in oklab, var(--accent) 10%, transparent)", overflow: "hidden" }}>
+                        <m.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} style={{ height: "100%", borderRadius: 9999, background: "var(--accent)" }} />
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </m.div>
-          </div>
-
-          {/* Top Barangays */}
-          {stats.top_barangays.length > 0 && (
-            <m.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6 }}
-              className="rounded-2xl p-6"
-              style={{ background: "var(--panel)", border: "1px solid var(--border)" }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
-                <TrendingUp style={{ width: 18, height: 18, color: "var(--secondary)" }} />
-                <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>
-                  Top Locations by Report Count
-                </h2>
+                  );
+                })}
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-3">
-                {stats.top_barangays.map((brgy, idx) => (
-                  <m.div
-                    key={brgy.name}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.08, duration: 0.4 }}
-                    className="rounded-xl p-4"
-                    style={{ background: "color-mix(in srgb, var(--secondary) 5%, var(--panel))", border: "1px solid var(--border)", textAlign: "center" }}
-                  >
-                    <span style={{ fontFamily: "monospace", fontSize: 28, fontWeight: 900, color: "var(--secondary)", lineHeight: 1, display: "block" }}>
-                      #{idx + 1}
-                    </span>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: "8px 0 4px", lineHeight: 1.3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={brgy.name}>
-                      {brgy.name}
-                    </p>
-                    <span style={{ fontFamily: "monospace", fontSize: 12, color: "var(--muted)" }}>
-                      {brgy.count} report{brgy.count !== 1 ? "s" : ""}
-                    </span>
-                  </m.div>
+            )}
+          </m.div>
+
+          {/* Recently resolved */}
+          <m.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="ec-casefile"
+            style={{ padding: 28 }}
+          >
+            <h3 style={{ fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", letterSpacing: "-0.01em", color: "var(--ink)", margin: "0 0 16px" }}>
+              Recently resolved
+            </h3>
+            {stats.recent_verified.length === 0 ? (
+              <EmptyState svg="search" title="No verified reports" description="Resolved environmental reports will appear here." className="py-10" />
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {stats.recent_verified.slice(0, 5).map((item, idx, arr) => (
+                  <div key={idx} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 0", borderBottom: idx < arr.length - 1 ? "1px solid var(--border)" : "none" }}>
+                    <div style={{ width: 30, height: 30, borderRadius: "50%", background: "color-mix(in oklab, var(--green) 14%, transparent)", border: "1px solid color-mix(in oklab, var(--green) 30%, transparent)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <CheckCircle2 style={{ width: 14, height: 14, color: "var(--green)" }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: 0, lineHeight: 1.4 }}>{item.title ?? "Environmental report"}</p>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)" }}>
+                          <MapPin style={{ width: 10, height: 10 }} /> {item.location}
+                        </span>
+                        <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)" }}>{item.date}</span>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </m.div>
-          )}
+            )}
+          </m.div>
         </div>
-      )}
+      </div>
     </section>
   );
 }

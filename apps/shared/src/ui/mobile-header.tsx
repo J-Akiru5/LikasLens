@@ -60,7 +60,7 @@ export function MobileHeader({
           <Menu className="w-5 h-5" aria-hidden="true" />
         </button>
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <img src="/images/likas-lens-logo.png" alt="" className="w-7 h-7 object-contain brightness-0 invert drop-shadow-sm" />
+          <img src="/images/likas-lens-logo.png" alt="" className="w-7 h-7 object-contain drop-shadow-sm" />
           <span className="font-heading tracking-[0.2em] text-base flex items-center mt-0.5">
             <span className="font-medium">LIK</span>
             <span className="font-semibold mx-[1px]">Λ</span>

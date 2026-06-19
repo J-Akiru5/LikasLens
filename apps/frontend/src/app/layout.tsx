@@ -1,14 +1,30 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, JetBrains_Mono } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  Public_Sans,
+  JetBrains_Mono,
+} from "next/font/google";
 import Script from "next/script";
 import { getLocale } from "next-intl/server";
 import "./globals.css";
 
-const bodyFont = Geist({
-  variable: "--font-body",
+// Distinctive display face — characterful grotesque, not a 2026 reflex font.
+const displayFont = Bricolage_Grotesque({
+  variable: "--font-display",
   subsets: ["latin"],
+  weight: ["600", "700", "800"],
 });
 
+// Warm humanist sans, designed for civic / government readability. Replaces the
+// Inter reflex monoculture. Carries headings + body.
+const bodyFont = Public_Sans({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+// Already-committed data face. Reserved STRICTLY for real data (IDs, coords,
+// timestamps, confidence %). Identity-preserving.
 const dataFont = JetBrains_Mono({
   variable: "--font-data",
   subsets: ["latin"],
@@ -50,7 +66,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
+      className={`${displayFont.variable} ${bodyFont.variable} ${dataFont.variable} h-full antialiased`}
       data-theme="civic"
       suppressHydrationWarning
     >
