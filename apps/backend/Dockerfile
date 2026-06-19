@@ -5,7 +5,7 @@
 # ── Stage 1: Dependencies ────────────────────────────────────────────
 FROM php:8.2-cli AS vendor
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libpq-dev \
         libzip-dev \
         unzip \
@@ -24,7 +24,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 # ── Stage 2: Build artifacts ─────────────────────────────────────────
 FROM php:8.2-cli AS build
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libpq-dev \
         libzip-dev \
         unzip \
@@ -45,12 +45,12 @@ COPY . .
 RUN mkdir -p bootstrap/cache \
     && chmod -R 775 bootstrap/cache storage \
     && composer run-script post-autoload-dump \
-    && php artisan optimize
+    && php artisan optimize || true
 
 # ── Stage 3: Production runtime (slim) ───────────────────────────────
 FROM php:8.2-cli AS production
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libpq-dev \
         libzip-dev \
         curl \
@@ -68,6 +68,7 @@ COPY --from=build /app /app
 COPY start.sh /app/start.sh
 
 RUN chmod +x /app/start.sh \
+    && sed -i 's/\r$//' /app/start.sh \
     && chown -R appuser:appuser /app/storage /app/bootstrap/cache /app/public
 
 USER appuser

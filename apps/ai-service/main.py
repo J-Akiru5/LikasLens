@@ -16,7 +16,7 @@ from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, Upload
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from gremlin_bootstrap import build_bootstrap_queries
+from neo4j_bootstrap import build_bootstrap_queries
 from graph_topology import build_seed_edges, build_seed_vertices, get_topology_config
 
 load_dotenv()
@@ -54,8 +54,8 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    from gremlin_client import reset_client
-    reset_client()
+    from neo4j_client import reset_driver
+    await reset_driver()
     logger.info("LikasLens AI Service shut down")
 
 
@@ -258,7 +258,6 @@ async def graph_topology():
         "vertex_labels": topology.vertex_labels,
         "edge_labels": topology.edge_labels,
         "edge_properties": topology.edge_properties,
-        "partition_key": topology.partition_key,
     }
 
 
@@ -421,20 +420,19 @@ async def analyze_similarity(payload: dict):
 
 @app.get("/routing/status", dependencies=[Depends(verify_api_key)])
 async def routing_status():
-    from gremlin_client import get_connection_params, is_configured
+    from neo4j_client import get_connection_params, is_configured
 
     params = get_connection_params()
     return {
         "configured": is_configured(),
-        "endpoint_set": bool(params["endpoint"]),
-        "database": params["database"],
-        "graph": params["graph"],
+        "uri_set": bool(params["uri"]),
+        "user_set": bool(params["user"]),
     }
 
 
 @app.post("/routing/incident", dependencies=[Depends(verify_api_key)])
-async def route_incident(payload: dict):
-    from gremlin_client import route_incident
+async def route_incident_endpoint(payload: dict):
+    from neo4j_client import route_incident
 
     citizen_id = payload.get("citizen_id")
     incident_id = payload.get("incident_id")
@@ -450,10 +448,10 @@ async def route_incident(payload: dict):
 
 @app.get("/routing/traversal", dependencies=[Depends(verify_api_key)])
 async def routing_traversal(citizen_id: str, incident_id: str, violation_code: str, ngo_id: str = ""):
-    from gremlin_client import build_incident_routing_traversal
+    from neo4j_client import build_incident_routing_queries
 
     try:
-        queries = build_incident_routing_traversal(
+        queries = await build_incident_routing_queries(
             citizen_id, incident_id, violation_code, ngo_id or None
         )
     except ValueError as exc:
@@ -520,8 +518,8 @@ async def record_resolution(payload: dict):
 
 @app.post("/api/v1/analyze-hazard", dependencies=[Depends(verify_api_key)])
 async def analyze_hazard(payload: dict):
-    """Neuro-symbolic hazard analysis: Gremlin graph traversal + Gemini LLM synthesis."""
-    from hazard_analyzer import HazardRequest, HazardResponse, generate_incident_summary, query_hazard_laws_and_agencies
+    """Neuro-symbolic hazard analysis: Neo4j GraphRAG + Gemini LLM synthesis."""
+    from hazard_analyzer import HazardRequest, HazardResponse, generate_grounded_report, retrieve_legal_context
 
     try:
         request = HazardRequest(**payload)
@@ -531,17 +529,21 @@ async def analyze_hazard(payload: dict):
             detail=f"Invalid request body: {exc}",
         )
 
-    graph_data = await query_hazard_laws_and_agencies(request.hazard_id)
-    ai_summary = await generate_incident_summary(
+    context = await retrieve_legal_context(request.hazard_id, request.location)
+    ai_summary = await generate_grounded_report(
         request.hazard_id,
-        graph_data["laws"],
-        graph_data["agencies"],
+        request.location,
+        context["laws"],
+        context["agencies"],
+        context["method"],
     )
 
     return HazardResponse(
         hazard_id=request.hazard_id,
-        violated_laws=graph_data["laws"],
-        enforcing_agencies=graph_data["agencies"],
+        location=request.location,
+        violated_laws=context["laws"],
+        enforcing_agencies=context["agencies"],
+        retrieval_method=context["method"],
         ai_summary=ai_summary,
     )
 

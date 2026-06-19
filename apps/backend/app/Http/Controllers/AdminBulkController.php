@@ -32,6 +32,7 @@ class AdminBulkController extends Controller
             $ticket = Ticket::find($ticketId);
             if (! $ticket) {
                 $failed[] = $ticketId;
+
                 continue;
             }
 
@@ -48,6 +49,7 @@ class AdminBulkController extends Controller
 
             if (! in_array($newStatus, $allowedTransitions[$oldStatus] ?? [])) {
                 $failed[] = $ticketId;
+
                 continue;
             }
 

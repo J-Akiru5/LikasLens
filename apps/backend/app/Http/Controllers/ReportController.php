@@ -8,9 +8,9 @@ use App\Models\Ticket;
 use App\Models\TicketEvidence;
 use App\Models\User;
 use App\Services\AchievementService;
-use App\Services\RankService;
 use App\Services\BlockchainService;
 use App\Services\ChainService;
+use App\Services\RankService;
 use App\Services\TriageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -429,6 +429,7 @@ class ReportController extends Controller
             if ($commaPos === false) {
                 return null;
             }
+
             return substr($value, $commaPos + 1);
         }
 
@@ -517,7 +518,7 @@ class ReportController extends Controller
         // Prefer Imagick — it strips metadata without re-compressing pixels
         if (extension_loaded('imagick')) {
             try {
-                $imagick = new \Imagick();
+                $imagick = new \Imagick;
                 $imagick->readImageBlob($imageData);
                 $imagick->stripImage();
                 $stripped = $imagick->getImageBlob();
@@ -768,6 +769,7 @@ class ReportController extends Controller
                     $report->latitude, $report->longitude,
                     $r->latitude, $r->longitude
                 );
+
                 return $dist <= 500; // 500m corroboration radius
             })
             ->count();
@@ -775,7 +777,7 @@ class ReportController extends Controller
         $corroborated = $existingCorroborations >= 1; // Original + 1 more = 2 reports
 
         // Link to chain if not already linked
-        if ($corroborated && !$report->chain_id) {
+        if ($corroborated && ! $report->chain_id) {
             app(ChainService::class)->processNewReport($report);
         }
 
@@ -814,6 +816,7 @@ class ReportController extends Controller
                     $report->latitude, $report->longitude,
                     $validated['latitude'], $validated['longitude']
                 );
+
                 return $distance <= $geofenceRadius;
             });
 

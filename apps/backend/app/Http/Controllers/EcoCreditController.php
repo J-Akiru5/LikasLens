@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CitizenWallet;
 use App\Models\CreditPool;
+use App\Models\Ticket;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,7 @@ class EcoCreditController extends Controller
         $creditAmount = $validated['credit_amount'];
 
         // Verify ticket belongs to the user
-        $ticket = \App\Models\Ticket::where('id', $ticketId)
+        $ticket = Ticket::where('id', $ticketId)
             ->where('reporter_user_id', $userId)
             ->first();
 

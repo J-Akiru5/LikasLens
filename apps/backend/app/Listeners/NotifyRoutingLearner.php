@@ -29,10 +29,11 @@ class NotifyRoutingLearner
             ->orderByDesc('confidence_score')
             ->first();
 
-        if (!$classification || !$classification->violationType) {
+        if (! $classification || ! $classification->violationType) {
             Log::info('NotifyRoutingLearner: Skipping — no violation type on ticket', [
                 'ticket_id' => $ticket->id,
             ]);
+
             return;
         }
 
@@ -44,10 +45,11 @@ class NotifyRoutingLearner
             ->orderBy('created_at', 'asc')
             ->first();
 
-        if (!$assignment || !$assignment->assigned_group_id) {
+        if (! $assignment || ! $assignment->assigned_group_id) {
             Log::info('NotifyRoutingLearner: Skipping — no LGU assignment on ticket', [
                 'ticket_id' => $ticket->id,
             ]);
+
             return;
         }
 

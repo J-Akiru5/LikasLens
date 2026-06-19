@@ -43,7 +43,7 @@ class AdminTriageController extends Controller
 
             return [
                 'id' => $ticket->id,
-                'display_id' => 'INC-' . strtoupper(substr($ticket->id, 0, 6)),
+                'display_id' => 'INC-'.strtoupper(substr($ticket->id, 0, 6)),
                 'title' => $ticket->title,
                 'description' => $ticket->description,
                 'status' => $ticket->status,

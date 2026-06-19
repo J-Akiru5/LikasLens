@@ -17,7 +17,7 @@ class CheckSlaBreaches extends Command
 
         $results = $slaService->runEscalationCheck();
 
-        $this->info("SLA Breach Check Results:");
+        $this->info('SLA Breach Check Results:');
         $this->info("  Response breaches found: {$results['response_breached']}");
         $this->info("  Resolution breaches found: {$results['resolution_breached']}");
         $this->info("  Tickets escalated: {$results['escalated']}");

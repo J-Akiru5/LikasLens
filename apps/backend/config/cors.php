@@ -25,14 +25,15 @@ return [
         'http://127.0.0.1:3002',
         'https://likaslens.syntaxure.dev',
         'https://likasadmin.syntaxure.dev',
+        'https://likaslens-api-1096292232709.asia-southeast1.run.app',
+        'https://likaslens-ai-1096292232709.asia-southeast1.run.app',
     ],
 
     'allowed_origins_patterns' => [
         '/^http:\/\/localhost:\d+$/',
         '/^http:\/\/127\.0\.0\.1:\d+$/',
-        '/^https:\/\/.*\.vercel\.app$/',
-        '/^https:\/\/.*\.azurecontainerapps\.io$/',
-        '/^https:\/\/.*\.azurewebsites\.net$/',
+        '/^https:\/\/.*\.syntaxure\.dev$/',
+        '/^https:\/\/.*\.run\.app$/',
     ],
 
     'allowed_headers' => ['*'],

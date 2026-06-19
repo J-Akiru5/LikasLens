@@ -135,7 +135,7 @@ class TicketController extends Controller
             'success' => true,
             'data' => [
                 'ticket_id' => $ticket->id,
-                'display_id' => 'INC-' . strtoupper(substr($ticket->id, 0, 6)),
+                'display_id' => 'INC-'.strtoupper(substr($ticket->id, 0, 6)),
                 'timeline' => $entries,
             ],
         ]);
@@ -238,7 +238,7 @@ class TicketController extends Controller
             try {
                 $response = Http::withHeaders(['X-API-Key' => $apiKey])
                     ->timeout(3)
-                    ->get($aiUrl . '/routing/explain', [
+                    ->get($aiUrl.'/routing/explain', [
                         'ticket_id' => $ticket->id,
                         'category' => $ticket->ai_triage_summary,
                         'confidence' => (float) $ticket->ai_confidence,
@@ -267,7 +267,7 @@ class TicketController extends Controller
             'success' => true,
             'data' => [
                 'ticket_id' => $ticket->id,
-                'display_id' => 'INC-' . strtoupper(substr($ticket->id, 0, 6)),
+                'display_id' => 'INC-'.strtoupper(substr($ticket->id, 0, 6)),
                 'category' => $ticket->ai_triage_summary,
                 'confidence' => $confidence,
                 'confidence_breakdown' => [
@@ -292,6 +292,7 @@ class TicketController extends Controller
         if (! $ticket->latitude || ! $ticket->longitude) {
             return false;
         }
+
         return Ticket::where('id', '!=', $ticket->id)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
@@ -351,7 +352,7 @@ class TicketController extends Controller
         try {
             Http::withHeaders(['X-API-Key' => $apiKey])
                 ->timeout(5)
-                ->post($aiUrl . '/routing/record-resolution', [
+                ->post($aiUrl.'/routing/record-resolution', [
                     'violation_type' => $violationType,
                     'lgu_id' => (string) $lguId,
                     'resolution_hours' => round($hours, 2),

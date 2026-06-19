@@ -11,11 +11,17 @@ class TicketStatusChanged
     use Dispatchable, SerializesModels;
 
     public Ticket $ticket;
+
     public ?string $fromStatus;
+
     public string $toStatus;
+
     public ?string $actorId;
+
     public string $actorType;
+
     public ?string $note;
+
     public ?array $metadata;
 
     public function __construct(

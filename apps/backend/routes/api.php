@@ -2,33 +2,33 @@
 
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\AdminAuditLogController;
+use App\Http\Controllers\AdminBulkController;
 use App\Http\Controllers\AdminLawController;
+use App\Http\Controllers\AdminLguPerformanceController;
 use App\Http\Controllers\AdminNgoController;
 use App\Http\Controllers\AdminRewardController;
-use App\Http\Controllers\AdminBulkController;
-use App\Http\Controllers\AdminLguPerformanceController;
 use App\Http\Controllers\AdminTriageController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BiasRiskRegisterController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ContactMessageController;
 use App\Http\Controllers\CurrencySettingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EcoCreditController;
 use App\Http\Controllers\LeaderboardController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PublicImpactController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\PatternEscalationController;
 use App\Http\Controllers\PredictionController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicApiController;
+use App\Http\Controllers\PublicImpactController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TicketAssignmentController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserImpactController;
-use App\Http\Controllers\ApiTokenController;
-use App\Http\Controllers\AnalyticsController;
-use App\Http\Controllers\PatternEscalationController;
-use App\Http\Controllers\BiasRiskRegisterController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -101,6 +101,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user', function (Request $request) {
         $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
@@ -116,6 +124,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user/profile', function (Request $request) {
         $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated.',
+            ], 401);
+        }
 
         return response()->json([
             'success' => true,

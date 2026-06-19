@@ -7,7 +7,6 @@ use App\Models\GeminiConversation;
 use App\Models\RewardPointLedger;
 use App\Models\Ticket;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 class EnforceDataRetention extends Command
 {

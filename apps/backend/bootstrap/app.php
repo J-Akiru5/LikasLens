@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\ResolveTenant;
 use Illuminate\Foundation\Application;
@@ -30,7 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->report(function (\Throwable $e) {
+        $exceptions->report(function (Throwable $e) {
             Log::error('Unhandled exception', [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -39,12 +40,14 @@ return Application::configure(basePath: dirname(__DIR__))
             ]);
         });
 
-        $exceptions->render(function (\Throwable $e, $request) {
+        $exceptions->render(function (Throwable $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 $status = 500;
 
                 if ($e instanceof HttpExceptionInterface) {
                     $status = $e->getStatusCode();
+                } elseif ($e instanceof AuthenticationException) {
+                    $status = 401;
                 }
 
                 $response = [

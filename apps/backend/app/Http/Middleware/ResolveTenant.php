@@ -18,7 +18,7 @@ class ResolveTenant
      *   3. Subdomain                   — e.g. cebu.likaslens.org
      *   4. Default tenant (slug="default") — fallback for single-tenant mode
      *
-     * Returns 404 if a tenant identifier is provided but no active tenant matches.
+     * Continues without a tenant if no match is found (single-tenant mode).
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -29,25 +29,11 @@ class ResolveTenant
             $tenant = Tenant::where('id', $tenantId)
                 ->where('is_active', true)
                 ->first();
-
-            if (! $tenant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tenant not found or inactive.',
-                ], 404);
-            }
         }
 
         // 2. Tenant slug in header
         if (! $tenant && ($slug = $request->header('X-Tenant-Slug'))) {
             $tenant = Tenant::resolveBySlug($slug);
-
-            if (! $tenant) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Tenant not found or inactive.',
-                ], 404);
-            }
         }
 
         // 3. Subdomain extraction
@@ -57,13 +43,6 @@ class ResolveTenant
 
             if ($slug && $slug !== 'www' && $slug !== 'api') {
                 $tenant = Tenant::resolveBySlug($slug);
-
-                if (! $tenant) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Tenant not found or inactive.',
-                    ], 404);
-                }
             }
         }
 
@@ -94,8 +73,18 @@ class ResolveTenant
      */
     private function extractSubdomain(string $host): ?string
     {
-        // Handle localhost and IP addresses — no subdomain
-        if (str_contains($host, 'localhost') || preg_match('/^\d+\.\d+\.\d+\.\d+$/', $host)) {
+        // Handle localhost, IP addresses, and hosted domains (no subdomain)
+        if (
+            str_contains($host, 'localhost')
+            || preg_match('/^\d+\.\d+\.\d+\.\d+$/', $host)
+            || str_contains($host, '.run.app')           // Google Cloud Run
+            || str_contains($host, '.a.run.app')         // Google Cloud Run (alternate)
+            || str_contains($host, '.azurewebsites.net') // Azure
+            || str_contains($host, '.azurecontainerapps.io') // Azure Container Apps
+            || str_contains($host, '.vercel.app')        // Vercel
+            || str_contains($host, '.onrender.com')      // Render
+            || str_contains($host, '.herokuapp.com')     // Heroku
+        ) {
             return null;
         }
 
