@@ -89,10 +89,6 @@ export interface VerifiedReport {
   title: string;
 }
 
-export interface TopBarangay {
-  name: string;
-  count: number;
-}
 
 export interface PublicImpactData {
   total_reports: number;
@@ -102,5 +98,4 @@ export interface PublicImpactData {
   resolution_rate: number;
   recent_verified: VerifiedReport[];
   reports_by_type: Record<string, number>;
-  top_barangays: TopBarangay[];
 }

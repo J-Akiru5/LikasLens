@@ -210,7 +210,6 @@ export default function ImpactPage() {
     resolution_rate: 0,
     recent_verified: [],
     reports_by_type: {},
-    top_barangays: [],
   };
 
   const typeEntries = Object.entries(stats.reports_by_type);
@@ -277,7 +276,7 @@ export default function ImpactPage() {
           }}
         >
           <img
-            src="/icons/icon-192x192.png"
+            src="/images/likas-lens-logo.png"
             alt="LikasLens Logo"
             style={{ width: 32, height: 32, objectFit: "contain" }}
           />
@@ -300,7 +299,7 @@ export default function ImpactPage() {
           </span>
         </Link>
 
-        <div className="hidden md:flex" style={{ gap: 32 }}>
+        <div className="hidden md:flex brightness-0 invert drop-shadow-sm" style={{ gap: 32 }}>
           <Link
             href="/"
             style={{
@@ -861,99 +860,7 @@ export default function ImpactPage() {
         </div>
       </section>
 
-      {/* ── TOP BARANGAYS ────────────────────────────────── */}
-      {stats.top_barangays.length > 0 && (
-        <section style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px 80px" }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.6 }}
-            className="rounded-2xl p-6"
-            style={{
-              background: "var(--panel)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 24,
-              }}
-            >
-              <TrendingUp style={{ width: 18, height: 18, color: "var(--secondary)" }} />
-              <h2
-                style={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  letterSpacing: "-0.02em",
-                  color: "var(--ink)",
-                  margin: 0,
-                }}
-              >
-                Top Locations by Report Count
-              </h2>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-              {stats.top_barangays.map((brgy, idx) => (
-                <motion.div
-                  key={brgy.name}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.08, duration: 0.4 }}
-                  className="rounded-xl p-4"
-                  style={{
-                    background: "color-mix(in srgb, var(--secondary) 5%, var(--panel))",
-                    border: "1px solid var(--border)",
-                    textAlign: "center",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "monospace",
-                      fontSize: 28,
-                      fontWeight: 900,
-                      color: "var(--secondary)",
-                      lineHeight: 1,
-                      display: "block",
-                    }}
-                  >
-                    #{idx + 1}
-                  </span>
-                  <p
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: "var(--ink)",
-                      margin: "8px 0 4px",
-                      lineHeight: 1.3,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                    title={brgy.name}
-                  >
-                    {brgy.name}
-                  </p>
-                  <span
-                    style={{
-                      fontFamily: "monospace",
-                      fontSize: 12,
-                      color: "var(--muted)",
-                    }}
-                  >
-                    {brgy.count} report{brgy.count !== 1 ? "s" : ""}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </section>
-      )}
 
       {/* ── CTA SECTION ──────────────────────────────────── */}
       <section style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px 80px" }}>

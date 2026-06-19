@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
-import { echarts } from "./echarts-theme";
+import { echarts, useEChartsTheme } from "./echarts-theme";
+import { useChartColors } from "./use-chart-colors";
 
 interface TimeSeriesData {
   dates: string[];
@@ -13,6 +14,8 @@ interface TimeSeriesData {
 export function TimeSeriesChart() {
   const [data, setData] = useState<TimeSeriesData | null>(null);
   const [loading, setLoading] = useState(true);
+  const chartTheme = useEChartsTheme();
+  const c = useChartColors();
 
   useEffect(() => {
     async function fetchTimeSeries() {
@@ -59,7 +62,7 @@ export function TimeSeriesChart() {
       data: ["Reports", "Resolved"],
       top: 0,
       right: 0,
-      textStyle: { color: "#94a3b8", fontSize: 11 },
+      textStyle: { color: c.textMuted, fontSize: 11 },
     },
     grid: {
       top: 40,
@@ -72,17 +75,17 @@ export function TimeSeriesChart() {
       type: "category" as const,
       data: data?.dates ?? [],
       axisLabel: {
-        color: "#94a3b8",
+        color: c.textMuted,
         fontSize: 10,
         fontFamily: "JetBrains Mono, monospace",
         rotate: 30,
       },
-      axisLine: { lineStyle: { color: "#334155" } },
+      axisLine: { lineStyle: { color: c.axisLine } },
     },
     yAxis: {
       type: "value" as const,
-      axisLabel: { color: "#94a3b8", fontSize: 10, fontFamily: "JetBrains Mono, monospace" },
-      splitLine: { lineStyle: { color: "#1e293b", type: "dashed" as const } },
+      axisLabel: { color: c.textMuted, fontSize: 10, fontFamily: "JetBrains Mono, monospace" },
+      splitLine: { lineStyle: { color: c.splitLine, type: "dashed" as const } },
     },
     dataZoom: [
       { type: "inside" as const, start: 0, end: 100 },
@@ -92,10 +95,10 @@ export function TimeSeriesChart() {
         end: 100,
         height: 20,
         bottom: 8,
-        borderColor: "#334155",
+        borderColor: c.axisLine,
         fillerColor: "rgba(34,211,238,0.15)",
         handleStyle: { color: "#22d3ee" },
-        textStyle: { color: "#94a3b8", fontSize: 10 },
+        textStyle: { color: c.textMuted, fontSize: 10 },
       },
     ],
     series: [
@@ -175,7 +178,7 @@ export function TimeSeriesChart() {
         echarts={echarts}
         option={option}
         style={{ height: 300, width: "100%" }}
-        theme="envDark"
+        theme={chartTheme}
         opts={{ renderer: "canvas" }}
         notMerge
       />

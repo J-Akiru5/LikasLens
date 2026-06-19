@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Camera,
   MapPin,
-  ChevronDown,
   Send,
   Fingerprint,
   X,
@@ -13,6 +12,8 @@ import {
   Mic,
   MicOff,
   Zap,
+  RefreshCw,
+  ShieldCheck,
 } from "lucide-react";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { cn, laravelPost, showToast, Button } from "@likaslens/shared";
@@ -20,6 +21,8 @@ import { createClient } from "@/lib/supabase/client";
 import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useVoiceInput } from "@/hooks/use-voice-input";
+import { useHaptics } from "@/hooks/use-haptics";
+import { BottomSheet } from "@/components/native/bottom-sheet";
 
 const INCIDENT_TYPES = [
   "Illegal Dumping",
@@ -52,7 +55,8 @@ export default function ReportPage() {
   const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
   const [ghostMode, setGhostMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+  const [typeSheetOpen, setTypeSheetOpen] = useState(false);
+  const haptic = useHaptics();
 
   const {
     isListening,
@@ -104,16 +108,16 @@ export default function ReportPage() {
   const capturePhoto = useCallback(() => {
     if (!videoRef.current) return;
     const video = videoRef.current;
-
     const dataUrl = captureWithStamp(video, {
       latitude: gps?.lat ?? 0,
       longitude: gps?.lng ?? 0,
       ghostMode,
     });
+    haptic("medium");
     setPhoto(dataUrl);
     setStep("preview");
     stopCamera();
-  }, [stopCamera, gps, ghostMode]);
+  }, [stopCamera, gps, ghostMode, haptic]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -125,7 +129,6 @@ export default function ReportPage() {
     }
   }, []);
 
-  // Sync voice transcript into the description field
   useEffect(() => {
     if (transcript) {
       setDescription((prev) => {
@@ -143,18 +146,15 @@ export default function ReportPage() {
     return () => stopCamera();
   }, [step, startCamera, stopCamera]);
 
-  // Ghost Mode only affects submission metadata — the global theme toggle
-  // in the app layout handles the visual theme via localStorage + data-theme.
-  // No DOM manipulation here to avoid conflicting with the layout's theme toggle.
-
   async function handleSubmit() {
     if (!incidentType) {
       showToast("Please select an incident type", "error");
+      haptic("error");
       return;
     }
-
     if (!photo) {
       showToast("No photo captured", "error");
+      haptic("error");
       return;
     }
 
@@ -162,13 +162,10 @@ export default function ReportPage() {
     try {
       showToast("Submitting report...", "info");
 
-      // Extract base64 data from the data URL.
       // canvas.toDataURL() returns a raw pixel raster, so EXIF metadata is
-      // already stripped at the point of capture. Ghost Mode additionally
-      // omits GPS coordinates from the payload below.
+      // already stripped at capture. Ghost Mode additionally omits GPS.
       const base64Image = dataUrlToBase64(photo);
 
-      // Resolve the current user ID (optional) from Supabase session.
       let userId: string | undefined;
       try {
         const supabase = createClient();
@@ -187,11 +184,10 @@ export default function ReportPage() {
         report_type: incidentType,
       });
 
+      haptic("success");
+
       if (ghostMode) {
-        showToast(
-          "Metadata stripped for your safety. Report submitted!",
-          "success",
-        );
+        showToast("Metadata stripped for your safety. Report submitted!", "success");
       } else {
         showToast("Report submitted successfully!", "success");
       }
@@ -202,108 +198,103 @@ export default function ReportPage() {
       setStep("camera");
       router.push(`/${locale}/dashboard`);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to submit report";
+      haptic("error");
+      const message = err instanceof Error ? err.message : "Failed to submit report";
       showToast(message, "error");
     } finally {
       setSubmitting(false);
     }
   }
 
-  // Camera & Preview Screen (Takes over entirely)
+  /* ───────────────────────────────────────────────────────────────────────
+     Full-screen camera + preview — takes over the viewport.
+     Refined shutter, haptics, Ghost Mode as a visible state.
+     ─────────────────────────────────────────────────────────────────────── */
   if (step === "camera" || step === "preview") {
     return (
       <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-hidden">
-        {/* Top Header */}
+        {/* Top bar */}
         <div className="absolute top-0 left-0 right-0 p-4 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between z-10 bg-gradient-to-b from-black/60 to-transparent">
           <button
             onClick={() => {
               stopCamera();
               router.push(`/${locale}/dashboard`);
             }}
-            className="p-3 bg-black/20 backdrop-blur-md rounded-full text-white hover:bg-black/40 transition-colors"
+            aria-label="Close camera"
+            className="touch-target rounded-full bg-black/30 text-white"
+            style={{ backdropFilter: "blur(10px)" }}
           >
             <X className="w-6 h-6" />
           </button>
 
           <div className="flex items-center gap-2">
             {isQuickMode && (
-              <span className="flex items-center gap-1 px-3 py-2 rounded-full text-[10px] font-mono uppercase tracking-wider bg-[#facc15]/90 text-black font-bold backdrop-blur-md shadow-[0_0_10px_rgba(250,204,21,0.4)]">
-                <Zap className="w-3 h-3" />
-                Quick
+              <span className="flex items-center gap-1 px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#facc15]/90 text-black" style={{ backdropFilter: "blur(10px)" }}>
+                <Zap className="w-3 h-3" /> Quick
               </span>
             )}
             <button
-              onClick={() => setGhostMode(!ghostMode)}
+              onClick={() => { setGhostMode(!ghostMode); haptic("light"); }}
+              aria-pressed={ghostMode}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-mono uppercase transition-all backdrop-blur-md",
+                "flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all",
                 ghostMode
-                  ? "bg-[#facc15]/90 text-black font-bold shadow-[0_0_15px_rgba(250,204,21,0.5)]"
-                  : "bg-black/40 text-white/80 border border-white/20",
+                  ? "bg-[#facc15] text-black"
+                  : "bg-black/40 text-white/85 border border-white/20",
               )}
+              style={{ backdropFilter: "blur(10px)" }}
             >
               <Fingerprint className="w-4 h-4" />
-              Ghost {ghostMode && "On"}
+              Ghost {ghostMode ? "On" : "Off"}
             </button>
           </div>
         </div>
 
-        {/* Video or Image */}
+        {/* Video or image */}
         {step === "camera" ? (
           <>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="absolute inset-0 w-full h-full object-cover"
-            />
+            <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
             <canvas ref={canvasRef} className="hidden" />
+            {/* Rule-of-thirds guide */}
+            <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{
+              backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.14) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.14) 1px, transparent 1px)",
+              backgroundSize: "33.33% 33.33%",
+            }} />
           </>
         ) : (
-          <img
-            src={photo!}
-            alt="Preview"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <img src={photo!} alt="Captured evidence preview" className="absolute inset-0 w-full h-full object-cover" />
         )}
 
-        {/* Bottom Bar */}
+        {/* Bottom controls */}
         <div className="absolute bottom-0 left-0 right-0 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-16 flex justify-center items-center bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           {step === "camera" ? (
             <button
               onClick={capturePhoto}
-              className="w-20 h-20 rounded-full bg-white/20 border-4 border-white backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform"
+              aria-label="Capture photo"
+              className="w-[76px] h-[76px] rounded-full bg-white/20 border-4 border-white flex items-center justify-center active:scale-95 transition-transform"
             >
-              <div className="w-16 h-16 rounded-full bg-white" />
+              <div className="w-[58px] h-[58px] rounded-full bg-white" />
             </button>
           ) : (
             <div className="flex w-full px-12 justify-between items-center">
               <button
-                onClick={() => {
-                  setPhoto(null);
-                  setStep("camera");
-                }}
+                onClick={() => { setPhoto(null); setStep("camera"); haptic("light"); }}
                 className="flex flex-col items-center gap-2"
               >
-                <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform border border-white/10">
-                  <X className="w-7 h-7" />
+                <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white active:scale-95 transition-transform border border-white/10" style={{ backdropFilter: "blur(10px)" }}>
+                  <RefreshCw className="w-6 h-6" />
                 </div>
-                <span className="text-white/80 text-[10px] font-mono uppercase tracking-wider">
-                  Retake
-                </span>
+                <span style={{ fontFamily: "var(--font-body)" }} className="text-white/85 text-[11px] font-semibold">Retake</span>
               </button>
 
               <button
-                onClick={() => setStep("form")}
+                onClick={() => { setStep("form"); haptic("light"); }}
                 className="flex flex-col items-center gap-2"
               >
-                <div className="w-16 h-16 rounded-full bg-green flex items-center justify-center text-white active:scale-95 transition-transform shadow-[0_0_20px_rgba(46,230,200,0.6)]">
+                <div className="w-16 h-16 rounded-full bg-green flex items-center justify-center text-white active:scale-95 transition-transform shadow-[0_0_24px_rgba(46,230,200,0.55)]">
                   <Check className="w-8 h-8" />
                 </div>
-                <span className="text-green font-bold text-[10px] font-mono uppercase tracking-wider">
-                  Use Photo
-                </span>
+                <span style={{ fontFamily: "var(--font-body)" }} className="text-green font-bold text-[11px]">Use photo</span>
               </button>
             </div>
           )}
@@ -312,149 +303,141 @@ export default function ReportPage() {
     );
   }
 
-  // Quick Mode Form — minimal: photo, ghost toggle, submit
+  /* ───────────────────────────────────────────────────────────────────────
+     Shared form pieces — Ghost Mode readout + submit button.
+     ─────────────────────────────────────────────────────────────────────── */
+  const GhostToggle = () => (
+    <div
+      className="ios-grouped-list"
+      style={{
+        padding: "14px",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 12,
+        borderColor: ghostMode ? "color-mix(in oklab, var(--secondary) 30%, transparent)" : "var(--border)",
+        background: ghostMode ? "color-mix(in oklab, var(--secondary) 6%, var(--panel))" : "var(--panel)",
+      }}
+    >
+      <button
+        onClick={() => { setGhostMode(!ghostMode); haptic("light"); }}
+        aria-pressed={ghostMode}
+        aria-label="Toggle Ghost Mode"
+        className={cn("relative shrink-0 rounded-full transition-colors")}
+        style={{ width: 44, height: 26, background: ghostMode ? "var(--secondary)" : "color-mix(in oklab, var(--ink) 20%, transparent)" }}
+      >
+        <div
+          className={cn("absolute top-1 left-1 w-[18px] h-[18px] rounded-full bg-white transition-transform")}
+          style={{ transform: ghostMode ? "translateX(18px)" : "translateX(0)" }}
+        />
+      </button>
+      <div style={{ flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Fingerprint style={{ width: 15, height: 15, color: ghostMode ? "var(--secondary)" : "var(--ink)" }} />
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600, color: "var(--ink)", margin: 0 }}>Ghost Mode</p>
+          {ghostMode && (
+            <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 6, background: "color-mix(in oklab, var(--secondary) 16%, transparent)", color: "var(--secondary)" }}>
+              EXIF STRIPPED
+            </span>
+          )}
+        </div>
+        <p style={{ fontFamily: "var(--font-body)", fontSize: 12.5, color: "var(--muted)", margin: "5px 0 0", lineHeight: 1.5 }}>
+          {ghostMode
+            ? "Your identity and location are stripped from this report before it is transmitted."
+            : "Strip location and device metadata to protect your identity on sensitive reports."}
+        </p>
+      </div>
+    </div>
+  );
+
+  const SubmitButton = ({ label, disabled }: { label: string; disabled?: boolean }) => (
+    <Button
+      onClick={handleSubmit}
+      disabled={disabled || submitting}
+      variant="primary"
+      className={cn("w-full flex items-center justify-center gap-2 transition-all active:scale-[0.98]")}
+      style={{ height: 54, borderRadius: 14, fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 15, opacity: (disabled || submitting) ? 0.5 : 1 }}
+    >
+      {submitting ? (
+        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      ) : (
+        <>
+          {ghostMode ? <ShieldCheck className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+          {label}
+        </>
+      )}
+    </Button>
+  );
+
+  /* ── Quick Mode form — minimal ─────────────────────────────────────────── */
   if (isQuickMode) {
     return (
-      <div className="p-4 space-y-5 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-300">
-        {/* Header */}
+      <div className="p-5 space-y-5 pb-32">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setStep("preview")}
-            className="p-2 -ml-2 rounded-full hover:bg-ink/5"
-          >
-            <ArrowLeft className="w-6 h-6 text-ink" />
+          <button onClick={() => setStep("preview")} aria-label="Back to preview" className="touch-target -ml-2 rounded-full text-ink">
+            <ArrowLeft className="w-6 h-6" />
           </button>
           <div className="flex-1">
-            <h1
-              className="text-2xl font-bold text-ink"
-              style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}
-            >
-              Quick Report
-            </h1>
-            <p className="text-sm text-ink/50 mt-0.5 font-mono">
-              Illegal Dumping &middot; GPS {gps ? "detected" : "pending..."}
+            <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>Quick report</h1>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: "3px 0 0" }}>
+              {incidentType} · GPS {gps ? "detected" : "pending"}
             </p>
           </div>
-          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider bg-[#facc15]/20 text-[#facc15] font-bold border border-[#facc15]/30">
-            <Zap className="w-3 h-3" />
-            Quick
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-[#facc15]/20 text-[#b8860b] border border-[#facc15]/30">
+            <Zap className="w-3 h-3" /> Quick
           </span>
         </div>
 
-        {/* Photo Thumbnail */}
-        <div className="relative rounded-2xl overflow-hidden bg-ink/5 aspect-[4/3] w-full max-h-56 shadow-inner ring-1 ring-ink/5">
-          <img
-            src={photo!}
-            alt="Captured Evidence"
-            className="w-full h-full object-cover"
-          />
+        <div className="relative rounded-2xl overflow-hidden bg-black/5 aspect-[4/3] w-full" style={{ maxHeight: 240 }}>
+          <img src={photo!} alt="Captured evidence" className="w-full h-full object-cover" />
           <button
             onClick={() => setStep("camera")}
-            className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-mono uppercase backdrop-blur-sm"
+            className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-semibold uppercase"
+            style={{ backdropFilter: "blur(8px)" }}
           >
             Retake
           </button>
-          {gps && (
-            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/50 backdrop-blur-sm text-[10px] font-mono text-white/80">
+          {gps && !ghostMode && (
+            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/55 text-white" style={{ backdropFilter: "blur(8px)" }}>
               <MapPin className="w-3 h-3" />
-              {gps.lat.toFixed(4)}, {gps.lng.toFixed(4)}
+              <span style={{ fontFamily: "var(--font-data)", fontSize: 10 }}>{gps.lat.toFixed(4)}, {gps.lng.toFixed(4)}</span>
             </div>
           )}
         </div>
 
-        {/* Ghost Mode Toggle */}
-        <div className="p-4 rounded-xl border border-secondary/20 bg-secondary/5 flex items-start gap-3">
-          <button
-            onClick={() => setGhostMode(!ghostMode)}
-            className={cn(
-              "mt-0.5 w-10 h-6 rounded-full transition-colors relative shrink-0",
-              ghostMode ? "bg-secondary" : "bg-ink/20",
-            )}
-          >
-            <div
-              className={cn(
-                "absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform",
-                ghostMode && "translate-x-4",
-              )}
-            />
-          </button>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-ink">Ghost Mode</p>
-            <p className="text-xs text-ink/50 mt-1 leading-relaxed">
-              Strip location data and metadata to protect your identity.
-            </p>
-          </div>
-        </div>
-
-        {/* Submit */}
-        <Button
-          onClick={handleSubmit}
-          disabled={submitting}
-          variant="primary"
-          className={cn(
-            "w-full h-14 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-            submitting && "opacity-50"
-          )}
-        >
-          {submitting ? (
-            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          ) : (
-            <>
-              <Send className="w-4 h-4" />
-              Submit Report
-            </>
-          )}
-        </Button>
+        <GhostToggle />
+        <SubmitButton label="Submit report" />
       </div>
     );
   }
 
-  // Full Form View (Step 3) — standard report flow
+  /* ── Full form — standard report flow ──────────────────────────────────── */
   return (
-    <div className="p-4 space-y-6 pb-32 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      {/* Header */}
+    <div className="p-5 space-y-6 pb-32">
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => setStep("preview")}
-          className="p-2 -ml-2 rounded-full hover:bg-ink/5"
-        >
-          <ArrowLeft className="w-6 h-6 text-ink" />
+        <button onClick={() => setStep("preview")} aria-label="Back to preview" className="touch-target -ml-2 rounded-full text-ink">
+          <ArrowLeft className="w-6 h-6" />
         </button>
         <div>
-          <h1
-            className="text-2xl font-bold text-ink"
-            style={{
-              fontFamily: "var(--font-heading), Montserrat, sans-serif",
-            }}
-          >
-            Report Details
-          </h1>
-          <p className="text-sm text-ink/50 mt-0.5 font-mono">
-            Review and submit evidence
-          </p>
+          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>Report details</h1>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: "3px 0 0" }}>Review and submit evidence</p>
         </div>
       </div>
 
-      {/* Selected Photo Thumbnail */}
-      <div className="relative rounded-2xl overflow-hidden bg-ink/5 aspect-[4/3] w-full max-h-64 shadow-inner ring-1 ring-ink/5">
-        <img
-          src={photo!}
-          alt="Captured Evidence"
-          className="w-full h-full object-cover"
-        />
+      {/* Photo thumbnail */}
+      <div className="relative rounded-2xl overflow-hidden bg-black/5 aspect-[4/3] w-full" style={{ maxHeight: 260 }}>
+        <img src={photo!} alt="Captured evidence" className="w-full h-full object-cover" />
         <button
           onClick={() => setStep("camera")}
-          className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-mono uppercase backdrop-blur-sm"
+          className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-semibold uppercase"
+          style={{ backdropFilter: "blur(8px)" }}
         >
-          Retake Photo
+          Retake photo
         </button>
       </div>
 
-      {/* Map — shows GPS pin, draggable to refine location */}
+      {/* Map */}
       <div>
-        <label className="label-pill label-pill-light mb-2 inline-block pl-1">
-          Location
-        </label>
+        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Location</label>
         <GeoTagMap
           lat={gps?.lat ?? null}
           lng={gps?.lng ?? null}
@@ -463,151 +446,87 @@ export default function ReportPage() {
         />
       </div>
 
-      {/* Incident Type */}
-      <div className="relative">
-        <label className="label-pill label-pill-light mb-2 inline-block pl-1">
-          Incident Type
-        </label>
+      {/* Incident type — opens a bottom sheet, not a dropdown */}
+      <div>
+        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Incident type</label>
         <button
-          onClick={() => setTypeDropdownOpen(!typeDropdownOpen)}
-          className="w-full h-14 px-4 rounded-xl bg-page border border-ink/10 text-left text-sm flex items-center justify-between shadow-sm focus:border-green/50 transition-colors"
+          onClick={() => { setTypeSheetOpen(true); haptic("light"); }}
+          className="ios-list-row w-full"
+          style={{ borderRadius: 16, border: "1px solid var(--border)", background: "var(--panel)", minHeight: 56 }}
         >
-          <span
-            className={incidentType ? "text-ink font-medium" : "text-ink/30"}
-          >
-            {incidentType || "Select classification..."}
+          <span style={{ flex: 1, textAlign: "left", fontFamily: "var(--font-body)", fontSize: 15, color: incidentType ? "var(--ink)" : "var(--muted-subtle)" }}>
+            {incidentType || "Select classification"}
           </span>
-          <ChevronDown
-            className={cn(
-              "w-4 h-4 text-ink/40 transition-transform",
-              typeDropdownOpen && "rotate-180",
-            )}
-          />
+          <Camera style={{ width: 18, height: 18, color: "var(--muted)" }} />
         </button>
-        {typeDropdownOpen && (
-          <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-page border border-ink/10 rounded-xl shadow-xl z-20 overflow-hidden max-h-64 overflow-y-auto">
-            {INCIDENT_TYPES.map((type) => (
-              <button
-                key={type}
-                onClick={() => {
-                  setIncidentType(type);
-                  setTypeDropdownOpen(false);
-                }}
-                className={cn(
-                  "w-full px-4 py-3.5 text-left text-sm hover:bg-ink/[0.04] transition-colors border-b border-ink/5 last:border-0",
-                  incidentType === type &&
-                    "bg-green/5 text-green font-semibold",
-                )}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
-      {/* Description */}
+      <BottomSheet open={typeSheetOpen} onClose={() => setTypeSheetOpen(false)} title="Select incident type">
+        <div className="ios-grouped-list">
+          {INCIDENT_TYPES.map((type) => (
+            <button
+              key={type}
+              onClick={() => { setIncidentType(type); setTypeSheetOpen(false); haptic("light"); }}
+              className="ios-list-row"
+              style={{ width: "100%", justifyContent: "space-between", background: incidentType === type ? "color-mix(in oklab, var(--accent) 6%, transparent)" : undefined }}
+            >
+              <span style={{ fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>{type}</span>
+              {incidentType === type && <Check style={{ width: 18, height: 18, color: "var(--accent)" }} />}
+            </button>
+          ))}
+        </div>
+      </BottomSheet>
+
+      {/* Description + voice */}
       <div>
-        <label className="label-pill label-pill-light mb-2 inline-block pl-1">
-          Description (Optional)
-        </label>
+        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Description (optional)</label>
         <div className="relative">
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Add any extra details about the location or situation..."
             rows={4}
-            className="w-full px-4 py-3 pr-14 rounded-xl bg-page border border-ink/10 text-sm text-ink placeholder:text-ink/30 shadow-sm focus:outline-none focus:border-green/50 focus:ring-2 focus:ring-green/10 resize-none transition-all"
+            style={{
+              width: "100%", padding: "14px 52px 14px 16px", borderRadius: 16,
+              background: "var(--panel)", border: "1px solid var(--border)",
+              fontFamily: "var(--font-body)", fontSize: 15, color: "var(--ink)",
+              resize: "none", outline: "none",
+            }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "color-mix(in oklab, var(--accent) 45%, transparent)")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
           />
           {voiceSupported ? (
             <button
               type="button"
-              onClick={toggleListening}
-              className={cn(
-                "absolute bottom-3 right-3 p-2.5 rounded-full transition-all",
-                isListening
-                  ? "bg-red-500 text-white shadow-lg shadow-red-500/30 animate-pulse"
-                  : "bg-ink/5 text-ink/40 hover:bg-ink/10 hover:text-ink/60",
-              )}
-              title={isListening ? "Stop listening" : "Speak description"}
+              onClick={() => { toggleListening(); haptic("light"); }}
+              aria-label={isListening ? "Stop listening" : "Speak description"}
+              className={cn("absolute bottom-3 right-3 rounded-full transition-all")}
+              style={{
+                background: isListening ? "var(--red)" : "color-mix(in oklab, var(--ink) 5%, transparent)",
+                color: isListening ? "#fff" : "var(--muted)",
+                width: 40, height: 40,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
             >
-              {isListening ? (
-                <Mic className="w-5 h-5" />
-              ) : (
-                <MicOff className="w-5 h-5" />
-              )}
+              {isListening ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
             </button>
           ) : (
-            <div
-              className="absolute bottom-3 right-3 p-2.5 rounded-full bg-ink/5 text-ink/20 cursor-not-allowed"
-              title="Voice input not supported"
-            >
+            <div className="absolute bottom-3 right-3 rounded-full flex items-center justify-center" style={{ width: 40, height: 40, background: "color-mix(in oklab, var(--ink) 5%, transparent)", color: "var(--muted-subtle)" }} title="Voice input not supported">
               <MicOff className="w-5 h-5" />
             </div>
           )}
         </div>
         {isListening && (
-          <p className="text-xs text-red-500 mt-2 pl-1 flex items-center gap-1.5 font-mono">
-            <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--red)", margin: "8px 0 0 2px", display: "flex", alignItems: "center", gap: 6 }}>
+            <span className="inline-block w-2 h-2 rounded-full bg-[var(--red)] animate-pulse" />
             Listening...
           </p>
         )}
-        {voiceError && (
-          <p className="text-xs text-red-400 mt-2 pl-1 font-mono">
-            {voiceError}
-          </p>
-        )}
-        {!voiceSupported && (
-          <p className="text-xs text-ink/30 mt-2 pl-1 font-mono">
-            Voice input not supported in this browser
-          </p>
-        )}
+        {voiceError && <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--red)", margin: "8px 0 0 2px" }}>{voiceError}</p>}
       </div>
 
-      {/* Ghost Mode Toggle in Form */}
-      <div className="p-4 rounded-xl border border-secondary/20 bg-secondary/5 flex items-start gap-3">
-        <button
-          onClick={() => setGhostMode(!ghostMode)}
-          className={cn(
-            "mt-0.5 w-10 h-6 rounded-full transition-colors relative shrink-0",
-            ghostMode ? "bg-secondary" : "bg-ink/20",
-          )}
-        >
-          <div
-            className={cn(
-              "absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform",
-              ghostMode && "translate-x-4",
-            )}
-          />
-        </button>
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-ink">Ghost Mode</p>
-          <p className="text-xs text-ink/50 mt-1 leading-relaxed">
-            When enabled, location data and device metadata will be completely
-            stripped from this report to protect your identity.
-          </p>
-        </div>
-      </div>
-
-      {/* Submit */}
-      <Button
-        onClick={handleSubmit}
-        disabled={submitting || !incidentType}
-        variant="primary"
-        className={cn(
-          "w-full h-14 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]",
-          (submitting || !incidentType) && "opacity-50 cursor-not-allowed"
-        )}
-      >
-        {submitting ? (
-          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        ) : (
-          <>
-            <Send className="w-4 h-4" />
-            Submit Evidence
-          </>
-        )}
-      </Button>
+      <GhostToggle />
+      <SubmitButton label="Submit evidence" disabled={!incidentType} />
     </div>
   );
 }

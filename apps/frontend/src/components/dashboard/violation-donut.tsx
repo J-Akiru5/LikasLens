@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
-import { echarts } from "./echarts-theme";
+import { echarts, useEChartsTheme } from "./echarts-theme";
+import { useChartColors } from "./use-chart-colors";
 
 interface ReportsByType {
   [type: string]: number;
@@ -32,6 +33,8 @@ function formatType(code: string): string {
 export function ViolationDonut() {
   const [data, setData] = useState<{ name: string; value: number; itemStyle: { color: string } }[]>([]);
   const [loading, setLoading] = useState(true);
+  const chartTheme = useEChartsTheme();
+  const c = useChartColors();
 
   useEffect(() => {
     async function fetchImpact() {
@@ -79,7 +82,7 @@ export function ViolationDonut() {
       orient: "vertical" as const,
       right: 8,
       top: "center",
-      textStyle: { color: "#94a3b8", fontSize: 11 },
+      textStyle: { color: c.textMuted, fontSize: 11 },
       itemWidth: 10,
       itemHeight: 10,
       itemGap: 8,
@@ -93,7 +96,7 @@ export function ViolationDonut() {
         padAngle: 2,
         itemStyle: {
           borderRadius: 6,
-          borderColor: "#0f172a",
+          borderColor: c.border,
           borderWidth: 2,
         },
         label: {
@@ -104,7 +107,7 @@ export function ViolationDonut() {
             show: true,
             fontSize: 14,
             fontWeight: "bold" as const,
-            color: "#e2e8f0",
+            color: c.emphasisText,
           },
           itemStyle: {
             shadowBlur: 10,
@@ -123,7 +126,7 @@ export function ViolationDonut() {
         style: {
           text: total.toString(),
           textAlign: "center" as const,
-          fill: "#f1f5f9",
+          fill: c.text,
           fontSize: 28,
           fontWeight: 700,
           fontFamily: "JetBrains Mono, monospace",
@@ -136,7 +139,7 @@ export function ViolationDonut() {
         style: {
           text: "TOTAL",
           textAlign: "center" as const,
-          fill: "#64748b",
+          fill: c.textMuted,
           fontSize: 10,
           fontFamily: "JetBrains Mono, monospace",
           letterSpacing: 2,
@@ -167,7 +170,7 @@ export function ViolationDonut() {
         echarts={echarts}
         option={option}
         style={{ height: 260, width: "100%" }}
-        theme="envDark"
+        theme={chartTheme}
         opts={{ renderer: "canvas" }}
         notMerge
       />

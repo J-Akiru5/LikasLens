@@ -1,35 +1,85 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { DashboardSkeleton, laravelGet, getDashboardFeed, showToast, EmptyFeed, PartnerCarousel, RevealSection } from "@likaslens/shared";
+import {
+  DashboardSkeleton,
+  laravelGet,
+  getDashboardFeed,
+  showToast,
+  EmptyFeed,
+} from "@likaslens/shared";
 import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/shared";
-import { Camera, AlertTriangle, Scale, Activity, Zap, TrendingUp, Award, Gift, ChevronRight } from "lucide-react";
+import { Camera, ChevronRight, Gift, Award, Activity, Zap, Scale } from "lucide-react";
+import { LargeTitle } from "@/components/native/large-title";
+import { useHaptics } from "@/hooks/use-haptics";
 
-const PARTNER_OFFERS = [
-  { name: "7-Eleven", shortName: "7-ELEVEN", offer: "Free Coffee", points: 150 },
-  { name: "SM Supermalls", shortName: "SM", offer: "₱50 GC", points: 500 },
-  { name: "Jollibee Foundation", shortName: "JOLLIBEE", offer: "Meal Voucher", points: 300 },
-  { name: "Globe Telecom", shortName: "GLOBE", offer: "1GB Data", points: 200 },
-  { name: "Mercury Drug", shortName: "MERCURY", offer: "₱100 Off", points: 400 },
-];
+interface RewardOffer {
+  id: string;
+  reward_name: string;
+  reward_type: string;
+  points_cost: number;
+  stock_quantity: number;
+  partner_store?: { name: string };
+}
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [feed, setFeed] = useState<ActivityFeedItem[]>([]);
+  const [rewards, setRewards] = useState<RewardOffer[]>([]);
+  const [walletPoints, setWalletPoints] = useState(0);
   const [loading, setLoading] = useState(true);
+  const haptic = useHaptics();
+
+  const chatMessages = [
+    "Welcome back! I'm Liksi, your AI assistant. 🌿",
+    "Ready to make an impact today? Every report counts! 🌍",
+    "See something wrong? Tap the Report tab below! ⚡",
+    "I'll route your reports to the right agency! 🤖",
+  ];
+  const [chatIndex, setChatIndex] = useState(0);
+  const [userName, setUserName] = useState("Citizen");
+
+  const [timeState, setTimeState] = useState({ greeting: "Welcome,", dateStr: "" });
+  useEffect(() => {
+    const date = new Date();
+    const hour = date.getHours();
+    setTimeState({
+      greeting: hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,",
+      dateStr: date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).toUpperCase()
+    });
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
       try {
-        const [statsRes, feedRes] = await Promise.all([
+        const [statsRes, feedRes, userRes, rewardsRes, walletRes] = await Promise.all([
           laravelGet<ApiResponse<DashboardStats>>("/dashboard/stats", controller.signal),
           getDashboardFeed(),
+          laravelGet<any>("/user", controller.signal).catch(() => null),
+          laravelGet<any>("/user/rewards?per_page=10", controller.signal).catch(() => null),
+          laravelGet<any>("/user/wallet", controller.signal).catch(() => null),
         ]);
         setStats(statsRes?.data ?? null);
         setFeed(feedRes?.data ?? []);
+
+        if (rewardsRes?.success && rewardsRes.data) {
+          setRewards(rewardsRes.data);
+        }
+
+        if (walletRes?.success && walletRes.data) {
+          setWalletPoints(walletRes.data.available_credits ?? 0);
+        }
+
+        const user = userRes?.data || userRes;
+        if (user?.name) {
+          setUserName(user.name.split(" ")[0]);
+        } else if (user?.first_name) {
+          setUserName(user.first_name);
+        }
       } catch (err) {
         if (!controller.signal.aborted) {
           console.error("Failed to load dashboard:", err);
@@ -54,166 +104,253 @@ export default function DashboardPage() {
     );
   }
 
-  const points = (stats as any)?.reward_points_balance ?? 0;
   const totalReports = stats?.total_reports ?? 0;
   const resolvedToday = stats?.resolved_today ?? 0;
   const activeIncidents = stats?.active_incidents ?? 0;
 
   return (
-    <div className="min-h-full pb-24">
-      {/* ── Compact Greeting + Balance ─────────────────────── */}
-      <div className="px-6 pt-8 pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-mono uppercase tracking-widest text-muted mb-1">Welcome back</p>
-            <h1 className="text-2xl font-bold tracking-tight text-ink" style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}>
-              Dashboard
-            </h1>
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="text-xs font-mono uppercase tracking-widest text-muted mb-1">Eco-Credits</span>
-            <div className="flex items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full">
-              <Award className="w-4 h-4" />
-              <span className="font-bold text-sm tabular-nums">{points.toLocaleString()}</span>
-            </div>
-          </div>
+    <div className="pb-28">
+      <div className="px-5 pb-2 pt-1 flex justify-between items-end">
+        <div>
+          <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1 min-h-[15px]">
+            {timeState.dateStr}
+          </p>
+          <h1 className="text-[24px] font-medium tracking-tight text-ink m-0" style={{ letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
+            {timeState.greeting} <strong className="font-bold">{userName}!</strong>
+          </h1>
         </div>
-      </div>
-
-      {/* ── Quick Report Button ─────────────────────────────── */}
-      <div className="px-6 mb-4">
-        <Link
-          href={`/${locale}/report?quick=true`}
-          className="flex items-center justify-center gap-3 w-full h-14 rounded-full bg-accent text-white font-bold text-sm shadow-lg hover:-translate-y-px hover:shadow-[0_12px_32px_-12px_color-mix(in_oklab,var(--accent)_22%,transparent)] active:scale-[0.98] transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "5px 11px",
+            borderRadius: 9999,
+            background: "color-mix(in oklab, var(--accent) 10%, transparent)",
+            marginBottom: 4,
+          }}
         >
-          <Camera className="w-5 h-5" />
-          Quick Report
-          <Zap className="w-4 h-4 text-white/70" />
-        </Link>
-      </div>
-
-      {/* ── Quick Actions Row ───────────────────────────────── */}
-      <div className="px-6 mb-6">
-        <div className="bg-panel rounded-2xl p-3 border border-ink/5 flex justify-between items-center">
-          {[
-            { href: `/${locale}/report`, icon: Camera, label: "Report" },
-            { href: `/${locale}/history`, icon: AlertTriangle, label: "My Reports" },
-            { href: `/${locale}/laws`, icon: Scale, label: "Laws" },
-            { href: `/${locale}/wallet`, icon: Gift, label: "Wallet" },
-          ].map((item) => (
-            <Link key={item.label} href={item.href} className="flex flex-col items-center gap-2 flex-1 group">
-              <div className="w-11 h-11 rounded-xl bg-ink/[0.04] flex items-center justify-center text-ink cursor-pointer active:scale-95 transition-all duration-200 ease-out group-hover:bg-accent group-hover:text-page group-focus-visible:ring-2 group-focus-visible:ring-accent group-focus-visible:ring-offset-2">
-                <item.icon className="w-5 h-5" />
-              </div>
-              <span className="text-[9px] font-mono uppercase tracking-widest text-ink/60 group-hover:text-ink transition-colors">{item.label}</span>
-            </Link>
-          ))}
+          <Award style={{ width: 14, height: 14, color: "var(--accent)" }} />
+          <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>
+            {walletPoints.toLocaleString()}
+          </span>
         </div>
       </div>
 
-      {/* ── My Impact Card ⭐ NEW ──────────────────────────── */}
-      <RevealSection>
-      <div className="px-6 mb-6">
-        <div className="bg-panel rounded-2xl p-5 border border-ink/5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-sm text-ink flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-green" />
-              My Impact
-            </h2>
-            <Link href={`/${locale}/impact`} className="text-[10px] font-mono uppercase tracking-widest text-green flex items-center gap-1">
-              Details <ChevronRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-page rounded-xl p-3 text-center">
-              <p className="text-xl font-bold text-ink tabular-nums">{totalReports}</p>
-              <p className="text-[9px] font-mono uppercase tracking-widest text-muted mt-1">Reports</p>
-            </div>
-            <div className="bg-page rounded-xl p-3 text-center">
-              <p className="text-xl font-bold text-green tabular-nums">{resolvedToday}</p>
-              <p className="text-[9px] font-mono uppercase tracking-widest text-muted mt-1">Resolved</p>
-            </div>
-            <div className="bg-page rounded-xl p-3 text-center">
-              <p className="text-xl font-bold text-amber tabular-nums">{activeIncidents}</p>
-              <p className="text-[9px] font-mono uppercase tracking-widest text-muted mt-1">Active</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      </RevealSection>
-
-      {/* ── Partner Offers Carousel ⭐ NEW ─────────────────── */}
-      <div className="px-6 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-bold text-sm text-ink">Partner Offers</h2>
-          <span className="text-[10px] font-mono uppercase tracking-widest text-muted">Redeem with Eco-Credits</span>
-        </div>
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 snap-x snap-mandatory scrollbar-hide">
-          {PARTNER_OFFERS.map((offer) => (
-            <div
-              key={offer.name}
-              className="flex-shrink-0 w-[160px] snap-start bg-panel rounded-2xl border border-ink/5 p-4 flex flex-col gap-3 hover:border-green/30 transition-colors"
+      {/* ── Interactive Liksi Mascot Banner (Full Width) ─────────────────── */}
+      <div style={{ marginBottom: 24 }}>
+        <div 
+          className="relative overflow-hidden shadow-sm"
+          style={{ 
+            height: 160, 
+            background: "linear-gradient(to bottom, transparent 0%, transparent 30%, #4a7c59 30%, #355940 100%)",
+            borderBottom: "1px solid #2e4d37"
+          }}
+        >
+          <div className="flex items-end h-full px-5 relative z-10 pb-1">
+            {/* Mascot anchored to bottom */}
+            <div 
+              className="relative w-[160px] h-[170px] flex-shrink-0 cursor-pointer transition-transform active:scale-95 origin-bottom drop-shadow-md -ml-5"
+              onClick={(e) => {
+                e.preventDefault();
+                haptic("light");
+                setChatIndex((prev) => (prev + 1) % chatMessages.length);
+              }}
             >
-              <div className="w-10 h-10 rounded-xl bg-green/10 flex items-center justify-center">
-                <span className="text-[10px] font-bold font-mono text-green">{offer.shortName.slice(0, 3)}</span>
-              </div>
-              <div>
-                <p className="font-bold text-sm text-ink">{offer.offer}</p>
-                <p className="text-[10px] font-mono text-muted mt-0.5">{offer.name}</p>
-              </div>
-              <div className="mt-auto pt-2 border-t border-ink/5">
-                <span className="text-xs font-bold text-green">{offer.points} pts</span>
+              <Image 
+                src="/images/liksi-welcom.gif" 
+                alt="Liksi Mascot" 
+                fill 
+                className="object-contain object-bottom scale-[1.5] origin-bottom"
+                unoptimized
+              />
+            </div>
+
+            {/* Chat Bubble Area */}
+            <div className="flex-1 pb-10 pl-1">
+              <div 
+                className="relative bg-white p-4 cursor-pointer transition-transform active:scale-[0.98] drop-shadow-sm"
+                style={{ border: "1px solid #e2e8f0", borderRadius: "18px 18px 18px 4px" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  haptic("light");
+                  setChatIndex((prev) => (prev + 1) % chatMessages.length);
+                }}
+              >
+                {/* Clean SVG Tail connected to the bubble */}
+                <svg width="14" height="20" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute -left-[13px] bottom-[-1px] z-10">
+                  <path d="M12 0V16H0C6 16 9 8 12 0Z" fill="white" />
+                  <path d="M0 16C6 16 9 8 12 0" stroke="#e2e8f0" strokeWidth="1" />
+                  <path d="M0 16H12" stroke="#e2e8f0" strokeWidth="1" />
+                </svg>
+
+                <h3 className="text-[#4a7c59] text-[13px] font-bold uppercase tracking-wider mb-1 m-0">Liksi</h3>
+                <p className="text-[14px] font-medium text-[#1e293b] m-0 leading-snug">
+                  {chatMessages[chatIndex]}
+                </p>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
-      {/* ── Recent Activity ────────────────────────────────── */}
-      <RevealSection>
-      <div className="px-6 space-y-4">
-        <div className="flex justify-between items-end">
-          <h2 className="font-bold text-sm text-ink flex items-center gap-2">
-            <Activity className="w-4 h-4 text-ink/40" />
-            Recent Activity
-          </h2>
-          <Link href={`/${locale}/history`} className="text-[10px] font-mono uppercase tracking-widest text-ink/50 hover:text-ink flex items-center gap-1">
-            View All <ChevronRight className="w-3 h-3" />
-          </Link>
-        </div>
+      <div className="px-5">
+        {/* ── My Impact — grouped inset card, mono on numbers only ─────────── */}
+        <section style={{ marginBottom: 24 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
+            <h2 className="ios-section-label">My impact</h2>
+            <Link
+              href={`/${locale}/impact`}
+              className="flex items-center gap-0.5"
+              style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
+            >
+              Details <ChevronRight style={{ width: 14, height: 14 }} />
+            </Link>
+          </div>
+          <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", padding: 0 }}>
+            {[
+              { label: "Reports", value: totalReports, color: "var(--ink)" },
+              { label: "Resolved", value: resolvedToday, color: "var(--green)" },
+              { label: "Active", value: activeIncidents, color: "var(--amber)" },
+            ].map((item, i) => (
+              <div
+                key={item.label}
+                style={{
+                  padding: "14px 8px",
+                  textAlign: "center",
+                  borderRight: i < 2 ? "1px solid var(--border)" : "none",
+                }}
+              >
+                <p style={{ fontFamily: "var(--font-data)", fontSize: 26, fontWeight: 700, color: item.color, margin: 0, lineHeight: 1, letterSpacing: "-0.02em" }}>
+                  {item.value.toLocaleString()}
+                </p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "6px 0 0" }}>
+                  {item.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-        <div className="space-y-3">
+        {/* ── Quick actions rail ───────────────────────────────────────────── */}
+        <section style={{ marginBottom: 24 }}>
+          <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", padding: "10px 6px" }}>
+            {[
+              { href: `/${locale}/report`, label: "Report", Icon: Camera },
+              { href: `/${locale}/wallet`, label: "Wallet", Icon: Gift },
+              { href: `/${locale}/laws`, label: "Laws", Icon: Scale },
+              { href: `/${locale}/impact`, label: "Impact", Icon: Activity },
+            ].map(({ href, label, Icon }) => (
+              <Link
+                key={label}
+                href={href}
+                onClick={() => haptic("light")}
+                className="flex flex-col items-center gap-1.5"
+              >
+                <div className="ios-row-icon" style={{ background: "color-mix(in oklab, var(--ink) 4%, transparent)", width: 40, height: 40, borderRadius: 12 }}>
+                  <Icon style={{ width: 18, height: 18, color: "var(--ink)" }} />
+                </div>
+                <span style={{ fontFamily: "var(--font-body)", fontSize: 11, fontWeight: 500, color: "var(--muted)" }}>
+                  {label}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* ── Partner offers rail (from API) ────────────────────────── */}
+        <section style={{ marginBottom: 24 }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
+            <h2 className="ios-section-label">Redeem eco-credits</h2>
+            <Link
+              href={`/${locale}/wallet`}
+              className="flex items-center gap-0.5"
+              style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
+            >
+              All <ChevronRight style={{ width: 14, height: 14 }} />
+            </Link>
+          </div>
+          {rewards.length === 0 ? (
+            <div className="ios-grouped-list p-6 text-center flex flex-col items-center justify-center">
+              <Gift className="w-8 h-8 text-ink/20 mb-2" />
+              <p className="text-xs font-medium text-ink/40">No rewards available yet.</p>
+            </div>
+          ) : (
+            <div className="flex gap-3 overflow-x-auto pb-1 -mx-5 px-5 snap-x snap-mandatory scrollbar-hide">
+              {rewards.map((reward) => {
+                const partnerName = reward.partner_store?.name ?? "Partner";
+                const shortName = partnerName.slice(0, 6).toUpperCase();
+                return (
+                  <Link
+                    key={reward.id}
+                    href={`/${locale}/wallet`}
+                    className="flex-shrink-0 snap-start"
+                    style={{ width: 148, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}
+                  >
+                    <div className="ios-row-icon" style={{ background: "color-mix(in oklab, var(--accent) 10%, transparent)", width: 36, height: 36 }}>
+                      <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, color: "var(--accent)" }}>
+                        {shortName.slice(0, 3)}
+                      </span>
+                    </div>
+                    <div>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 700, color: "var(--ink)", margin: 0 }}>{reward.reward_name}</p>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "var(--muted)", margin: "2px 0 0" }}>{partnerName}</p>
+                    </div>
+                    <div style={{ marginTop: "auto", paddingTop: 8, borderTop: "1px solid var(--border)" }}>
+                      <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>{reward.points_cost} pts</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* ── Recent activity — grouped rows ──────────────────────────────── */}
+        <section>
+          <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
+            <h2 className="ios-section-label">Recent activity</h2>
+            <Link
+              href={`/${locale}/history`}
+              className="flex items-center gap-0.5"
+              style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
+            >
+              All <ChevronRight style={{ width: 14, height: 14 }} />
+            </Link>
+          </div>
+
           {feed.length === 0 ? (
             <EmptyFeed description="No recent activity" />
           ) : (
-            feed.map((item) => {
-              const typeConfig: Record<string, { bg: string; text: string; icon: string }> = {
-                Critical: { bg: "bg-red/10", text: "text-red", icon: "↙" },
-                Warning: { bg: "bg-amber/10", text: "text-amber", icon: "★" },
-                Info: { bg: "bg-green/10", text: "text-green", icon: "↗" },
-              };
-              const config = typeConfig[item.type] ?? typeConfig.Info;
-
-              return (
-                <div key={item.id} className="bg-panel rounded-2xl p-4 shadow-sm border border-ink/5 flex items-center gap-4">
-                  <div className={`w-10 h-10 rounded-xl ${config.bg} flex items-center justify-center shrink-0`}>
-                    <span className={`${config.text} font-bold`}>{config.icon}</span>
+            <div className="ios-grouped-list">
+              {feed.map((item) => {
+                const dotColor =
+                  item.type === "Critical" ? "var(--red)" :
+                  item.type === "Warning" ? "var(--amber)" : "var(--green)";
+                return (
+                  <div key={item.id} className="ios-list-row">
+                    <div className="ios-row-icon" style={{ background: `color-mix(in oklab, ${dotColor} 12%, transparent)` }}>
+                      <span className="m-status-dot" style={{ background: dotColor }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600, color: "var(--ink)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.title}
+                      </p>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "2px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.location || item.description}
+                      </p>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600, color: "var(--ink)", margin: 0 }}>{item.status}</p>
+                      <p style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--muted)", margin: "2px 0 0" }}>{item.time}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-ink truncate">{item.title}</p>
-                    <p className="text-xs text-ink/50 mt-0.5 truncate">{item.location || item.description}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className={`font-bold text-xs ${config.text}`}>{item.status}</p>
-                    <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mt-1">{item.time}</p>
-                  </div>
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
-        </div>
+        </section>
       </div>
-      </RevealSection>
     </div>
   );
 }

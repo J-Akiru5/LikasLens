@@ -107,7 +107,7 @@ export function Sidebar({
       <div className={cn("p-4 border-b border-ink/5 flex flex-col gap-4 text-ink transition-all relative", isDesktopCollapsed ? "items-center" : "")}>
         <div className={cn("flex items-center", isDesktopCollapsed ? "justify-center relative" : "justify-between")}>
           <div className="flex items-center gap-2">
-            <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-8 h-8 object-contain" />
+            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
             {!isDesktopCollapsed && (
               <span className="font-heading tracking-[0.2em] text-lg text-ink flex items-center mt-0.5">
                 <span className="font-medium">LIK</span>
@@ -179,7 +179,7 @@ export function Sidebar({
                 "flex items-center px-3 py-2 text-sm rounded-md transition-all duration-150",
                 isDesktopCollapsed ? "justify-center px-0" : "gap-3",
                 isActive
-                  ? "group relative flex items-center gap-3 pl-5 pr-3 py-2 rounded-lg bg-accent/8 text-accent before:absolute before:left-1.5 before:top-2 before:bottom-2 before:w-0.5 before:rounded-full before:bg-accent transition-colors duration-150 ease-out"
+                  ? "group relative flex items-center gap-3 px-3 py-2 rounded-lg bg-accent text-page shadow-md shadow-accent/20 transition-all duration-150 ease-out font-medium"
                   : "text-ink/70 hover:bg-ink/[0.04] hover:text-ink",
               )}
             >
@@ -189,7 +189,7 @@ export function Sidebar({
                   style={{ backgroundColor: item.colorDot }}
                 />
               ) : Icon ? (
-                <Icon className={cn("w-[18px] h-[18px] shrink-0", isActive ? "text-ink/80" : "text-ink/50")} strokeWidth={isActive ? 2.5 : 2} />
+                <Icon className={cn("w-[18px] h-[18px] shrink-0", isActive ? "text-page" : "text-ink/50")} strokeWidth={isActive ? 2.5 : 2} />
               ) : null}
               {!isDesktopCollapsed && <span className="truncate">{item.label}</span>}
             </Link>

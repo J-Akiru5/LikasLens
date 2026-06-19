@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { getTickets, Button, type Ticket } from "@likaslens/shared";
-import { Search, Loader2, ChevronLeft, MapPin, Clock, Filter } from "lucide-react";
-import Link from "next/link";
+import { Search, Loader2, MapPin, Clock, Filter } from "lucide-react";
 
 const statusDot: Record<string, string> = {
   open: "bg-[#c27a2e]",
@@ -50,13 +49,7 @@ export default function IncidentsPage() {
       {/* Header */}
       <div className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10">
         <div className="flex items-center h-16 px-4">
-          <Button asChild variant="ghost" size="icon" className="rounded-full">
-            <Link href=".." aria-label="Back">
-              <ChevronLeft className="w-6 h-6 text-ink" />
-            </Link>
-          </Button>
-          <h1 className="flex-1 text-center text-lg font-bold font-mono tracking-widest uppercase text-ink -ml-8">
-            Reported Incidents
+          <h1 className="ios-large-title ios-large-title--xl">Reported Incidents
           </h1>
         </div>
       </div>

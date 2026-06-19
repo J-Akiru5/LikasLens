@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
   turbopack: {},
   images: {
     qualities: [70, 75],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
   },
   webpack: (config, { isServer }) => {
     return config;

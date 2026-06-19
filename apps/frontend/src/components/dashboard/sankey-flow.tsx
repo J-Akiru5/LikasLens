@@ -1,9 +1,12 @@
 "use client";
 
 import ReactECharts from "echarts-for-react/lib/core";
-import { echarts } from "./echarts-theme";
+import { echarts, useEChartsTheme } from "./echarts-theme";
+import { useChartColors } from "./use-chart-colors";
 
 export function SankeyFlow() {
+  const chartTheme = useEChartsTheme();
+  const c = useChartColors();
   const option = {
     tooltip: {
       trigger: "item" as const,
@@ -20,7 +23,7 @@ export function SankeyFlow() {
           curveness: 0.5,
         },
         label: {
-          color: "#e2e8f0",
+          color: c.text,
           fontSize: 11,
           fontFamily: "Inter, sans-serif",
         },
@@ -73,7 +76,7 @@ export function SankeyFlow() {
         echarts={echarts}
         option={option}
         style={{ height: 260, width: "100%" }}
-        theme="envDark"
+        theme={chartTheme}
         opts={{ renderer: "canvas" }}
         notMerge
       />

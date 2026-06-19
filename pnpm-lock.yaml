@@ -220,6 +220,18 @@ importers:
 
   apps/mobile-pwa:
     dependencies:
+      '@deck.gl/aggregation-layers':
+        specifier: ^9.3.4
+        version: 9.3.4(@deck.gl/core@9.3.4)(@deck.gl/layers@9.3.4(@deck.gl/core@9.3.4)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4))))(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))
+      '@deck.gl/core':
+        specifier: ^9.3.4
+        version: 9.3.4
+      '@deck.gl/layers':
+        specifier: ^9.3.4
+        version: 9.3.4(@deck.gl/core@9.3.4)(@loaders.gl/core@4.4.3)(@luma.gl/core@9.3.4)(@luma.gl/engine@9.3.4(@luma.gl/core@9.3.4)(@luma.gl/shadertools@9.3.4(@luma.gl/core@9.3.4)))
+      '@deck.gl/mapbox':
+        specifier: ^9.3.4
+        version: 9.3.4(@deck.gl/core@9.3.4)(@luma.gl/core@9.3.4)(@math.gl/web-mercator@4.1.0)
       '@likaslens/shared':
         specifier: workspace:*
         version: link:../shared
@@ -229,6 +241,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.103.0
         version: 2.103.0
+      '@types/cobe':
+        specifier: ^0.5.3
+        version: 0.5.3
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -2228,6 +2243,10 @@ packages:
 
   '@tybys/wasm-util@0.10.2':
     resolution: {integrity: sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg==}
+
+  '@types/cobe@0.5.3':
+    resolution: {integrity: sha512-Q5GRGtTrOdSDytb6mXk3eoH+alXcPN6LDQXpHl134XxSBPjchZS/vKa6b5T76sPVeBCEIbu41i4RO9q4J2oCwg==}
+    deprecated: This is a stub types definition. cobe provides its own type definitions, so you do not need this installed.
 
   '@types/command-line-args@5.2.3':
     resolution: {integrity: sha512-uv0aG6R0Y8WHZLTamZwtfsDLVRnOa+n+n5rEvFWL5Na5gZ8V2Teab/duDPFzIIIhs9qizDpcavCusCLJZu62Kw==}
@@ -7227,6 +7246,10 @@ snapshots:
     dependencies:
       tslib: 2.8.1
     optional: true
+
+  '@types/cobe@0.5.3':
+    dependencies:
+      cobe: 2.0.1
 
   '@types/command-line-args@5.2.3': {}
 

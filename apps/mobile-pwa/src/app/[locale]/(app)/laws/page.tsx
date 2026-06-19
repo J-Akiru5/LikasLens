@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Scale, Search, ExternalLink, Loader2, ChevronLeft } from "lucide-react";
-import Link from "next/link";
+import { Scale, Search, ExternalLink, Loader2 } from "lucide-react";
 import { laravelGet, Button, type PaginatedResponse } from "@likaslens/shared";
 
 interface Law {
@@ -49,13 +48,7 @@ export default function LawsPage() {
       {/* Header */}
       <div className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10">
         <div className="flex items-center h-16 px-4">
-          <Button asChild variant="ghost" size="icon" className="rounded-full">
-            <Link href=".." aria-label="Back">
-              <ChevronLeft className="w-6 h-6 text-ink" />
-            </Link>
-          </Button>
-          <h1 className="flex-1 text-center text-lg font-bold font-mono tracking-widest uppercase text-ink -ml-8">
-            Laws Database
+          <h1 className="ios-large-title ios-large-title--xl">Laws Database
           </h1>
         </div>
       </div>

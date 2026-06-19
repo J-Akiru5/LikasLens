@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
-import { echarts } from "./echarts-theme";
+import { echarts, useEChartsTheme } from "./echarts-theme";
 
 interface AqiData {
   us_aqi: number;
@@ -23,9 +23,23 @@ function getAqiLabel(aqi: number): { label: string; color: string } {
   return { label: "Hazardous", color: "#7f1d1d" };
 }
 
+function useIsGhostMode() {
+  const [isGhost, setIsGhost] = useState(false);
+  useEffect(() => {
+    const check = () => setIsGhost(document.documentElement.getAttribute("data-theme") === "ghost");
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+  return isGhost;
+}
+
 export function AqiGauge() {
   const [data, setData] = useState<AqiData | null>(null);
   const [loading, setLoading] = useState(true);
+  const isGhost = useIsGhostMode();
+  const chartTheme = useEChartsTheme();
 
   useEffect(() => {
     async function fetchAqi() {
@@ -62,6 +76,10 @@ export function AqiGauge() {
   const aqi = data?.us_aqi ?? 0;
   const { label, color } = getAqiLabel(aqi);
 
+  const tickColor = isGhost ? "#fff" : "#94a3b8";
+  const pointerColor = isGhost ? "#e2e8f0" : "#475569";
+  const labelColor = isGhost ? "#94a3b8" : "#64748b";
+
   const option = {
     series: [
       {
@@ -87,22 +105,22 @@ export function AqiGauge() {
           },
         },
         pointer: {
-          itemStyle: { color: "#e2e8f0" },
+          itemStyle: { color: pointerColor },
           length: "55%",
           width: 5,
         },
         axisTick: {
           distance: -18,
           length: 5,
-          lineStyle: { color: "#fff", width: 1 },
+          lineStyle: { color: tickColor, width: 1 },
         },
         splitLine: {
           distance: -22,
           length: 12,
-          lineStyle: { color: "#fff", width: 2 },
+          lineStyle: { color: tickColor, width: 2 },
         },
         axisLabel: {
-          color: "#94a3b8",
+          color: labelColor,
           distance: 28,
           fontSize: 10,
           fontFamily: "JetBrains Mono, monospace",
@@ -118,7 +136,7 @@ export function AqiGauge() {
         },
         title: {
           offsetCenter: [0, "85%"],
-          color: "#94a3b8",
+          color: labelColor,
           fontSize: 12,
           fontFamily: "Inter, sans-serif",
         },
@@ -148,7 +166,7 @@ export function AqiGauge() {
         echarts={echarts}
         option={option}
         style={{ height: 240, width: "100%" }}
-        theme="envDark"
+        theme={chartTheme}
         opts={{ renderer: "canvas" }}
         notMerge
       />
