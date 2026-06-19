@@ -18,7 +18,7 @@ interface CitizenDashboardProps {
 type Panel = "feed" | "scoreboard" | null;
 
 const CITIZEN_TAB_ACTIVE =
-  "flex items-center justify-center px-2 sm:px-4 py-2 sm:py-1.5 text-[11px] sm:text-sm font-medium rounded-md transition-all duration-200 bg-panel shadow-sm text-ink";
+  "flex items-center justify-center px-2 sm:px-4 py-2 sm:py-1.5 text-[11px] sm:text-sm font-medium rounded-md transition-all duration-200 bg-accent text-page shadow-sm shadow-accent/25";
 
 const CITIZEN_TAB_INACTIVE =
   "flex items-center justify-center px-2 sm:px-4 py-2 sm:py-1.5 text-[11px] sm:text-sm font-medium rounded-md transition-all duration-200 text-ink/60 hover:text-ink";
@@ -144,7 +144,15 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
           <RevealSection>
             <section>
               <h2 className="font-semibold text-base text-ink mb-4">Environmental Impact Insights</h2>
-              {statCards && <StatsCards items={statCards as any} />}
+              {statCards ? (
+                <StatsCards items={statCards as any} />
+              ) : (
+                <EmptyState
+                  icon={Activity}
+                  title="No Impact Data Yet"
+                  description="Your environmental impact insights will appear here once data is collected and processed."
+                />
+              )}
             </section>
           </RevealSection>
 
