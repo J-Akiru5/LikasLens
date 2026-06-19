@@ -65,13 +65,15 @@ export function ToastContainer() {
 
   const typeStyles: Record<ToastType, string> = {
     success:
-      "border-green/30 bg-green/10 text-green shadow-green/5",
-    error: "border-red/30 bg-red/10 text-red shadow-red/5",
+      "bg-[#eef7f0] border-[#cce8d2] text-[#4a7c59] shadow-sm",
+    error: 
+      "bg-[#fff5f5] border-[#feb2b2] text-[#c53030] shadow-sm",
     warning:
-      "border-amber/30 bg-amber/10 text-amber shadow-amber/5",
+      "bg-[#fffaf0] border-[#fbd38d] text-[#dd6b20] shadow-sm",
     loading:
-      "border-ink/10 bg-panel text-ink shadow-black/5",
-    info: "border-accent/30 bg-accent/10 text-accent shadow-accent/5",
+      "bg-white border-[#e2e8f0] text-[#1e293b] shadow-sm",
+    info: 
+      "bg-[#eef7f0] border-[#cce8d2] text-[#4a7c59] shadow-sm",
   };
 
   const typeIcons: Record<ToastType, React.ReactNode> = {

@@ -25,12 +25,12 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
 
   const textColor = ghostMode ? "text-white" : "text-ink";
   const mutedColor = ghostMode ? "text-white/60" : "text-ink/80";
-  const subHeadingColor = ghostMode ? "text-white/40" : "text-ink/60";
+  const subHeadingColor = ghostMode ? "text-white/40" : "text-ink/80";
   const borderColor = ghostMode ? "border-white/10" : "border-ink/20";
   
   return (
     <footer 
-      className={`w-full overflow-hidden relative mt-20 transition-colors duration-1000 ${ghostMode ? "bg-[#060a0f]" : "bg-[#f0f9f4]"}`}
+      className={`w-full overflow-hidden relative mt-20 transition-colors duration-1000 ${ghostMode ? "bg-[#060a0f]" : "bg-[#f4f1ed]"}`}
     >
       {/* Background Images Layer (Optimized with Next.js Image) */}
       <div 
@@ -41,7 +41,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
         }}
       >
         <Image 
-          src="/images/footer-mountain-light.png" 
+          src="/images/footer-mountain-brown.png" 
           alt="Civic Mode Background" 
           fill 
           sizes="100vw"
@@ -70,7 +70,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
       
       {/* Gradient Overlay for Readability */}
       <div 
-        className={`absolute inset-0 transition-opacity duration-1000 z-0 pointer-events-none ${ghostMode ? "bg-gradient-to-t from-[#020b14] via-[#020b14]/80 to-[#020b14]/20" : "bg-white/30 bg-gradient-to-t from-[#e6f4ed] via-[#e6f4ed]/80 to-transparent"}`} 
+        className={`absolute inset-0 transition-opacity duration-1000 z-0 pointer-events-none ${ghostMode ? "bg-gradient-to-t from-[#020b14] via-[#020b14]/90 to-[#020b14]/40 backdrop-blur-[2px]" : "bg-white/30 bg-gradient-to-t from-[#f7f4f0]/80 via-[#f7f4f0]/60 to-transparent backdrop-blur-[1px]"}`} 
       />
 
       {/* Top Cutout Layer (matches page background to carve shapes into the footer) */}
@@ -246,10 +246,10 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
               margin: 0,
               paddingBottom: "1rem",
               whiteSpace: "nowrap",
-              color: ghostMode ? "rgba(46,230,200,0.12)" : "color-mix(in oklab, var(--accent) 16%, transparent)",
+              color: ghostMode ? "rgba(46,230,200,0.12)" : "color-mix(in oklab, var(--accent) 8%, transparent)",
               WebkitTextStroke: ghostMode
                 ? "1px rgba(46,230,200,0.28)"
-                : "1px color-mix(in oklab, var(--accent) 32%, transparent)",
+                : "1px color-mix(in oklab, var(--accent) 15%, transparent)",
               transition: "color 0.6s ease",
             }}
             aria-hidden="true"
