@@ -56,7 +56,7 @@ export function ImpactSection() {
 
   const stats = data ?? {
     total_reports: 0, total_resolved: 0, total_citizens: 0, total_ngos: 0,
-    resolution_rate: 0, recent_verified: [], reports_by_type: {}, top_barangays: [],
+    resolution_rate: 0, recent_verified: [], reports_by_type: {},
   };
   const typeEntries = Object.entries(stats.reports_by_type);
   const maxType = typeEntries.length > 0 ? Math.max(...typeEntries.map(([, c]) => c)) : 1;

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
 import { echarts, useEChartsTheme } from "./echarts-theme";
 import { useChartColors } from "./use-chart-colors";
+import { laravelGet } from "@likaslens/shared";
 
 interface ReportsByType {
   [type: string]: number;
@@ -39,13 +40,9 @@ export function ViolationDonut() {
   useEffect(() => {
     async function fetchImpact() {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? ""}/api/public/impact`,
-          { credentials: "include" }
-        );
-        const json = await res.json();
-        if (json.success && json.data?.reports_by_type) {
-          const entries = Object.entries(json.data.reports_by_type as ReportsByType);
+        const res = await laravelGet<any>("/public/impact");
+        if (res?.success && res?.data?.reports_by_type) {
+          const entries = Object.entries(res.data.reports_by_type as ReportsByType);
           setData(
             entries.map(([type, count]) => ({
               name: formatType(type),
@@ -55,7 +52,6 @@ export function ViolationDonut() {
           );
         }
       } catch {
-        // Fallback mock data
         setData([
           { name: "Illegal Dumping", value: 34, itemStyle: { color: "#f87171" } },
           { name: "Water Pollution", value: 28, itemStyle: { color: "#22d3ee" } },
@@ -80,32 +76,30 @@ export function ViolationDonut() {
     },
     legend: {
       orient: "vertical" as const,
-      right: 8,
+      right: 4,
       top: "center",
-      textStyle: { color: c.textMuted, fontSize: 11 },
-      itemWidth: 10,
-      itemHeight: 10,
-      itemGap: 8,
+      textStyle: { color: c.textMuted, fontSize: 10 },
+      itemWidth: 8,
+      itemHeight: 8,
+      itemGap: 6,
     },
     series: [
       {
         type: "pie",
         radius: ["48%", "72%"],
-        center: ["35%", "50%"],
+        center: ["32%", "50%"],
         avoidLabelOverlap: true,
         padAngle: 2,
         itemStyle: {
-          borderRadius: 6,
+          borderRadius: 5,
           borderColor: c.border,
           borderWidth: 2,
         },
-        label: {
-          show: false,
-        },
+        label: { show: false },
         emphasis: {
           label: {
             show: true,
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: "bold" as const,
             color: c.emphasisText,
           },
@@ -121,26 +115,26 @@ export function ViolationDonut() {
     graphic: [
       {
         type: "text" as const,
-        left: "30%",
+        left: "27%",
         top: "44%",
         style: {
           text: total.toString(),
           textAlign: "center" as const,
           fill: c.text,
-          fontSize: 28,
+          fontSize: 24,
           fontWeight: 700,
           fontFamily: "JetBrains Mono, monospace",
         },
       },
       {
         type: "text" as const,
-        left: "30%",
+        left: "27%",
         top: "54%",
         style: {
           text: "TOTAL",
           textAlign: "center" as const,
           fill: c.textMuted,
-          fontSize: 10,
+          fontSize: 9,
           fontFamily: "JetBrains Mono, monospace",
           letterSpacing: 2,
         },
@@ -153,23 +147,23 @@ export function ViolationDonut() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-ink/10 bg-panel p-6 flex items-center justify-center" style={{ minHeight: 280 }}>
+      <div className="ios-grouped-list p-5 flex items-center justify-center" style={{ minHeight: 260 }}>
         <div className="animate-pulse text-sm text-ink/40">Loading violations...</div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-ink/10 bg-panel p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="font-mono text-xs text-ink/50 uppercase tracking-wider">
+    <div className="ios-grouped-list p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="font-mono text-[10px] text-ink/50 uppercase tracking-widest">
           Violation Breakdown
         </span>
       </div>
       <ReactECharts
         echarts={echarts}
         option={option}
-        style={{ height: 260, width: "100%" }}
+        style={{ height: 240, width: "100%" }}
         theme={chartTheme}
         opts={{ renderer: "canvas" }}
         notMerge

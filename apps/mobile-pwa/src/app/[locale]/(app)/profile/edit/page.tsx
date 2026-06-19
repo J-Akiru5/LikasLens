@@ -56,6 +56,7 @@ export default function EditProfilePage() {
         <h1 className="text-xl font-bold font-serif tracking-tight text-ink">
           Edit Profile
         </h1>
+        <div className="w-7" />
       </header>
 
       <main className="flex-1 p-4">

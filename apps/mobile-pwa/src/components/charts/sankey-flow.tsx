@@ -24,11 +24,11 @@ export function SankeyFlow() {
         },
         label: {
           color: c.text,
-          fontSize: 11,
+          fontSize: 10,
           fontFamily: "Inter, sans-serif",
         },
-        nodeWidth: 18,
-        nodeGap: 12,
+        nodeWidth: 14,
+        nodeGap: 10,
         data: [
           { name: "Citizen Report", itemStyle: { color: "#22d3ee" } },
           { name: "AI Detection", itemStyle: { color: "#fbbf24" } },
@@ -65,17 +65,16 @@ export function SankeyFlow() {
   };
 
   return (
-    <div className="rounded-2xl border border-ink/10 bg-panel p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="font-mono text-xs text-ink/50 uppercase tracking-wider">
+    <div className="ios-grouped-list p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="font-mono text-[10px] text-ink/50 uppercase tracking-widest">
           Report Routing Flow
         </span>
-        <span className="ml-auto font-mono text-[10px] text-ink/30">Source → Violation → Agency</span>
       </div>
       <ReactECharts
         echarts={echarts}
         option={option}
-        style={{ height: 260, width: "100%" }}
+        style={{ height: 240, width: "100%" }}
         theme={chartTheme}
         opts={{ renderer: "canvas" }}
         notMerge

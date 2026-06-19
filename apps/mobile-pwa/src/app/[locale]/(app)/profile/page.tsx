@@ -16,6 +16,9 @@ import {
   TrendingUp,
   Scale,
   AlertCircle,
+  Network,
+  Map,
+  FileText,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { LargeTitle } from "@/components/native/large-title";
@@ -35,7 +38,10 @@ const ACCOUNT_ITEMS = [
 const TOOL_ITEMS = [
   { href: "/incidents", label: "Incidents", Icon: AlertCircle, tint: "var(--red)" },
   { href: "/analytics", label: "Analytics", Icon: BarChart3, tint: "var(--accent)" },
+  { href: "/reports", label: "Reports analytics", Icon: FileText, tint: "var(--accent)" },
   { href: "/impact", label: "Impact", Icon: TrendingUp, tint: "var(--green)" },
+  { href: "/map", label: "Map view", Icon: Map, tint: "#3b82f6" },
+  { href: "/knowledge-graph", label: "Knowledge graph", Icon: Network, tint: "#a78bfa" },
   { href: "/laws", label: "Laws database", Icon: Scale, tint: "var(--secondary)" },
 ];
 
@@ -84,14 +90,7 @@ export default function ProfilePage() {
 
       <div className="px-5">
         {/* ── Identity header card ────────────────────────────────────────── */}
-        <div className="m-banner-wrap" style={{ position: "relative", minHeight: 132, marginBottom: 22 }}>
-          <Image
-            src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=80"
-            alt="Forest canopy at dawn"
-            fill
-            sizes="100vw"
-          />
-          <div className="m-banner-scrim" />
+        <div className="m-banner-wrap" style={{ position: "relative", minHeight: 132, marginBottom: 22, background: "#4a7c59" }}>
           <Link
             href={`/${locale}/profile/edit`}
             onClick={() => haptic("light")}
@@ -129,7 +128,7 @@ export default function ProfilePage() {
               <div className="ios-row-icon" style={{ background: `color-mix(in oklab, ${tint} 13%, transparent)` }}>
                 <Icon style={{ width: 16, height: 16, color: tint }} />
               </div>
-              <span style={{ flex: 1, fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>
+              <span className="flex-1 font-medium text-[16px] text-ink tracking-tight">
                 {label}
               </span>
               <ChevronRight style={{ width: 18, height: 18, color: "var(--muted-subtle)" }} />
@@ -150,7 +149,7 @@ export default function ProfilePage() {
               <div className="ios-row-icon" style={{ background: `color-mix(in oklab, ${tint} 13%, transparent)` }}>
                 <Icon style={{ width: 16, height: 16, color: tint }} />
               </div>
-              <span style={{ flex: 1, fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>
+              <span className="flex-1 font-medium text-[16px] text-ink tracking-tight">
                 {label}
               </span>
               <ChevronRight style={{ width: 18, height: 18, color: "var(--muted-subtle)" }} />

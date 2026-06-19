@@ -1,7 +1,7 @@
 "use client";
 
 import * as echarts from "echarts/core";
-import { LineChart, BarChart, GaugeChart, PieChart } from "echarts/charts";
+import { LineChart, BarChart, GaugeChart, PieChart, SankeyChart } from "echarts/charts";
 import {
   GridComponent,
   TooltipComponent,
@@ -19,6 +19,7 @@ echarts.use([
   BarChart,
   GaugeChart,
   PieChart,
+  SankeyChart,
   GridComponent,
   TooltipComponent,
   TitleComponent,

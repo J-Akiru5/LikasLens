@@ -4,15 +4,21 @@ import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
 import { echarts, useEChartsTheme } from "./echarts-theme";
 import { useChartColors } from "./use-chart-colors";
+import { laravelGet } from "@likaslens/shared";
+import type { ApiResponse } from "@likaslens/shared";
 
-interface TimeSeriesData {
-  dates: string[];
-  reports: number[];
-  resolved: number[];
+interface TimeSeriesEntry {
+  date: string;
+  count: number;
+  resolved: number;
+}
+
+interface AnalyticsData {
+  time_series: TimeSeriesEntry[];
 }
 
 export function TimeSeriesChart() {
-  const [data, setData] = useState<TimeSeriesData | null>(null);
+  const [data, setData] = useState<{ dates: string[]; reports: number[]; resolved: number[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const chartTheme = useEChartsTheme();
   const c = useChartColors();
@@ -20,21 +26,17 @@ export function TimeSeriesChart() {
   useEffect(() => {
     async function fetchTimeSeries() {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? ""}/api/analytics/dashboard`,
-          { credentials: "include" }
-        );
-        const json = await res.json();
-        if (json.success && json.data?.time_series) {
-          const ts = json.data.time_series;
+        const res = await laravelGet<ApiResponse<AnalyticsData>>("/analytics/dashboard");
+        const analytics = res?.data;
+        if (analytics?.time_series) {
           setData({
-            dates: ts.map((t: { date: string }) => t.date),
-            reports: ts.map((t: { count: number }) => t.count),
-            resolved: ts.map((t: { resolved: number }) => t.resolved ?? 0),
+            dates: analytics.time_series.map((t) => t.date),
+            reports: analytics.time_series.map((t) => t.count),
+            resolved: analytics.time_series.map((t) => t.resolved ?? 0),
           });
         }
       } catch {
-        // Use fallback mock data for demo
+        // Fallback mock
         const now = new Date();
         const dates = Array.from({ length: 30 }, (_, i) => {
           const d = new Date(now);
@@ -62,13 +64,13 @@ export function TimeSeriesChart() {
       data: ["Reports", "Resolved"],
       top: 0,
       right: 0,
-      textStyle: { color: c.textMuted, fontSize: 11 },
+      textStyle: { color: c.textMuted, fontSize: 10 },
     },
     grid: {
-      top: 40,
-      left: 12,
-      right: 12,
-      bottom: 60,
+      top: 36,
+      left: 8,
+      right: 8,
+      bottom: 56,
       containLabel: true,
     },
     xAxis: {
@@ -76,7 +78,7 @@ export function TimeSeriesChart() {
       data: data?.dates ?? [],
       axisLabel: {
         color: c.textMuted,
-        fontSize: 10,
+        fontSize: 9,
         fontFamily: "JetBrains Mono, monospace",
         rotate: 30,
       },
@@ -84,22 +86,11 @@ export function TimeSeriesChart() {
     },
     yAxis: {
       type: "value" as const,
-      axisLabel: { color: c.textMuted, fontSize: 10, fontFamily: "JetBrains Mono, monospace" },
+      axisLabel: { color: c.textMuted, fontSize: 9, fontFamily: "JetBrains Mono, monospace" },
       splitLine: { lineStyle: { color: c.splitLine, type: "dashed" as const } },
     },
     dataZoom: [
       { type: "inside" as const, start: 0, end: 100 },
-      {
-        type: "slider" as const,
-        start: 0,
-        end: 100,
-        height: 20,
-        bottom: 8,
-        borderColor: c.axisLine,
-        fillerColor: "rgba(34,211,238,0.15)",
-        handleStyle: { color: "#22d3ee" },
-        textStyle: { color: c.textMuted, fontSize: 10 },
-      },
     ],
     series: [
       {
@@ -110,10 +101,7 @@ export function TimeSeriesChart() {
         areaStyle: {
           color: {
             type: "linear" as const,
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
+            x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
               { offset: 0, color: "rgba(34,211,238,0.35)" },
               { offset: 1, color: "rgba(34,211,238,0.02)" },
@@ -123,11 +111,11 @@ export function TimeSeriesChart() {
         lineStyle: { color: "#22d3ee", width: 2 },
         itemStyle: { color: "#22d3ee" },
         symbol: "circle",
-        symbolSize: 4,
+        symbolSize: 3,
         markLine: {
           data: [{ type: "average" as const, name: "Avg" }],
           lineStyle: { color: "#fbbf24", type: "dashed" as const },
-          label: { color: "#fbbf24", fontSize: 10 },
+          label: { color: "#fbbf24", fontSize: 9 },
         },
       },
       {
@@ -138,10 +126,7 @@ export function TimeSeriesChart() {
         areaStyle: {
           color: {
             type: "linear" as const,
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
+            x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
               { offset: 0, color: "rgba(52,211,153,0.35)" },
               { offset: 1, color: "rgba(52,211,153,0.02)" },
@@ -151,7 +136,7 @@ export function TimeSeriesChart() {
         lineStyle: { color: "#34d399", width: 2 },
         itemStyle: { color: "#34d399" },
         symbol: "circle",
-        symbolSize: 4,
+        symbolSize: 3,
       },
     ],
     animation: true,
@@ -161,23 +146,23 @@ export function TimeSeriesChart() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-ink/10 bg-panel p-6 flex items-center justify-center" style={{ minHeight: 320 }}>
-        <div className="animate-pulse text-sm text-ink/40">Loading time series...</div>
+      <div className="ios-grouped-list p-5 flex items-center justify-center" style={{ minHeight: 300 }}>
+        <div className="animate-pulse text-sm text-ink/40">Loading trend...</div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-ink/10 bg-panel p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="font-mono text-xs text-ink/50 uppercase tracking-wider">
+    <div className="ios-grouped-list p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="font-mono text-[10px] text-ink/50 uppercase tracking-widest">
           30-Day Trend
         </span>
       </div>
       <ReactECharts
         echarts={echarts}
         option={option}
-        style={{ height: 300, width: "100%" }}
+        style={{ height: 280, width: "100%" }}
         theme={chartTheme}
         opts={{ renderer: "canvas" }}
         notMerge

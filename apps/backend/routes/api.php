@@ -29,6 +29,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TicketAssignmentController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserImpactController;
+use App\Http\Controllers\UserWalletController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -156,6 +157,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // Achievements
     Route::get('/user/achievements', [AchievementController::class, 'userAchievements']);
     Route::get('/user/rank-progress', [AchievementController::class, 'rankProgress']);
+
+    // Wallet & Rewards
+    Route::get('/user/wallet', [UserWalletController::class, 'wallet']);
+    Route::get('/user/ledger', [UserWalletController::class, 'ledger']);
+    Route::get('/user/rewards', [UserWalletController::class, 'rewards']);
+    Route::post('/user/redeem', [UserWalletController::class, 'redeem']);
+    Route::get('/user/redemptions', [UserWalletController::class, 'redemptions']);
 
     // Data privacy rights
     Route::get('/user/export-data', [AuthController::class, 'exportData']);

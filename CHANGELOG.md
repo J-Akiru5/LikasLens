@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-06-19
+
+### Added
+- **Mobile PWA**: Full feature parity with frontend — all interactive charts, map, and globe now work on mobile
+- **Mobile PWA**: `AqiGauge` component — live air quality index from Open-Meteo API with ECharts gauge visualization
+- **Mobile PWA**: `TimeSeriesChart` component — 30-day trend line chart with reports/resolved overlay
+- **Mobile PWA**: `ViolationDonut` component — ECharts donut chart showing violation type breakdown
+- **Mobile PWA**: `SankeyFlow` component — ECharts Sankey diagram showing report routing flow (Source → Violation → Agency)
+- **Mobile PWA**: `HotspotList` component — top risk hotspots from analytics dashboard with severity scores
+- **Mobile PWA**: `EnhancedMap` component — MapLibre GL JS + deck.gl with HexagonLayer/HeatmapLayer/ScatterplotLayer, satellite overlays (NASA GIBS), time-lapse playback
+- **Mobile PWA**: `Globe3D` component — interactive 3D globe with cobe library, ASEAN network visualization, drag-to-rotate, auto-rotation
+- **Mobile PWA**: `echarts-theme.ts` — custom dark theme for ECharts with mobile-optimized sizing
+- **Mobile PWA**: Analytics page rewritten with all 5 charts + KPI cards + active citizens + auto-refresh polling
+- **Mobile PWA**: Impact page rewritten with 3D globe, real metrics (reports, citizens, regions, cases resolved), violation breakdown
+- **Mobile PWA**: Map page rewritten with real MapLibre + deck.gl interactive map (replaces fake placeholder div)
+- **Mobile PWA**: Reports page rewritten with time series chart, violation donut, status breakdown, and PDF export
+- **Mobile PWA**: PDF export — opens report in print dialog for "Save as PDF" (no server-side dependencies)
+- **Mobile PWA**: Installed dependencies: `maplibre-gl`, `react-map-gl`, `@deck.gl/core`, `@deck.gl/mapbox`, `@deck.gl/aggregation-layers`, `@deck.gl/layers`, `echarts`, `echarts-for-react`, `cobe`
+- **Backend**: `UserWalletController` — 5 endpoints: wallet, ledger, rewards, redeem, redemptions
+- **Backend**: 5 new routes under auth:sanctum: `GET /user/wallet`, `GET /user/ledger`, `GET /user/rewards`, `POST /user/redeem`, `GET /user/redemptions`
+
+### Changed
+- **Mobile PWA**: Dashboard partner offers now fetched from `/user/rewards` API (replaces hardcoded 7-Eleven/SM/Jollibee/Globe/Mercury offers)
+- **Mobile PWA**: Dashboard reward points balance now fetched from `/user/wallet` API (fixes always-zero display)
+- **Mobile PWA**: Wallet redeem flow now shows success/error toasts on redemption (was silent)
+- **Mobile PWA**: Wallet data fetch failures now show error toast (was silent)
+
+### Fixed
+- **Mobile PWA**: Map page now shows real interactive MapLibre + deck.gl map instead of fake div with positioned dots
+- **Mobile PWA**: Analytics page now shows real ECharts instead of placeholder "check back later" text
+- **Mobile PWA**: Impact page now shows real metrics instead of fabricated formulas (was: user_count÷1000 labeled as "CO2 Offset")
+- **Mobile PWA**: Dashboard points balance no longer stuck at zero — fetched from wallet API
+- **Mobile PWA**: Dashboard partner offers now dynamic from rewards catalog instead of hardcoded list
+
 ## [0.8.5] - 2026-06-19
 
 ### Added

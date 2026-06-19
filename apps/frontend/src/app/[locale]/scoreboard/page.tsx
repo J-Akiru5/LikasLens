@@ -32,10 +32,7 @@ interface LeaderboardEntry {
   report_count?: number;
 }
 
-interface BarangayEntry {
-  barangay: string;
-  report_count: number;
-}
+
 
 interface SpotlightEntry {
   id: string;
@@ -53,20 +50,18 @@ interface LeaderboardStats {
   avg_eco_credits: number;
 }
 
-type TabKey = "all-time" | "monthly" | "weekly" | "barangay";
+type TabKey = "all-time" | "monthly" | "weekly";
 
 const TABS: { key: TabKey; label: string; icon: typeof Trophy }[] = [
   { key: "all-time", label: "All Time", icon: Trophy },
   { key: "monthly", label: "This Month", icon: TrendingUp },
   { key: "weekly", label: "This Week", icon: BarChart3 },
-  { key: "barangay", label: "Barangay", icon: Users },
 ];
 
 const ENDPOINTS: Record<TabKey, string> = {
   "all-time": "/leaderboard",
   "monthly": "/leaderboard/monthly",
   "weekly": "/leaderboard/weekly",
-  "barangay": "/leaderboard/barangay",
 };
 
 /* ------------------------------------------------------------------ */
@@ -77,7 +72,7 @@ export default function ScoreboardPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>("all-time");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [barangayEntries, setBarangayEntries] = useState<BarangayEntry[]>([]);
+
   const [spotlight, setSpotlight] = useState<SpotlightEntry | null>(null);
   const [stats, setStats] = useState<LeaderboardStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,14 +89,8 @@ export default function ScoreboardPage() {
         const res = await fetch(`${laravelUrl}${ENDPOINTS[tab]}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-        if (tab === "barangay") {
-          setBarangayEntries(json?.data || []);
-          setEntries([]);
-        } else {
-          const data = json?.data || json || [];
-          setEntries(Array.isArray(data) ? data : []);
-          setBarangayEntries([]);
-        }
+        const data = json?.data || json || [];
+        setEntries(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
         setError("Unable to load leaderboard");
@@ -356,7 +345,7 @@ export default function ScoreboardPage() {
                     className={cn(
                       "flex items-center justify-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-1.5 text-[11px] sm:text-sm font-medium rounded-md transition-all duration-200",
                       activeTab === tab.key
-                        ? "bg-panel shadow-sm text-ink"
+                        ? "bg-accent shadow-sm text-page shadow-accent/25"
                         : "text-ink/60 hover:text-ink"
                     )}
                   >
@@ -374,50 +363,7 @@ export default function ScoreboardPage() {
           <div className="span-12">
             {loading ? (
               <ScoreboardSkeleton />
-            ) : activeTab === "barangay" ? (
-              /* ---- Barangay Leaderboard ---- */
-              <div className="bg-panel rounded-3xl border border-ink/5 overflow-hidden">
-                <div className="hidden sm:grid grid-cols-[60px_1fr_1fr] gap-4 px-6 py-3 border-b border-ink/5 font-mono text-[10px] text-ink/40 uppercase tracking-wider">
-                  <div>Rank</div>
-                  <div>Barangay</div>
-                  <div className="text-right">Reports</div>
-                </div>
-                {barangayEntries.length === 0 ? (
-                  <EmptyState 
-                    icon={Users}
-                    title="No barangay rankings yet"
-                    description="Be the first to submit a report for your barangay."
-                  />
-                ) : (
-                  barangayEntries.map((entry, index) => {
-                    const rank = index + 1;
-                    return (
-                      <div
-                        key={entry.barangay}
-                        className={cn(
-                          "grid grid-cols-[28px_1fr_50px] sm:grid-cols-[60px_1fr_1fr] gap-1.5 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 border-b border-ink/5 last:border-0 transition-colors",
-                          rank <= 3 ? getRankBg(rank) : "hover:bg-ink/3"
-                        )}
-                      >
-                        <div className="flex items-center">{getRankIcon(rank)}</div>
-                        <div className="flex items-center min-w-0">
-                          <p className="font-medium text-sm text-ink truncate">
-                            {entry.barangay}
-                          </p>
-                        </div>
-                        <div className="flex items-center justify-end">
-                          <p
-                            className="font-mono text-xs sm:text-sm font-bold text-ink"
-                            style={{ fontFamily: "var(--font-data), monospace" }}
-                          >
-                            {entry.report_count.toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+
             ) : (
               /* ---- Citizen Leaderboard ---- */
               <div className="bg-panel rounded-3xl border border-ink/5 overflow-hidden">

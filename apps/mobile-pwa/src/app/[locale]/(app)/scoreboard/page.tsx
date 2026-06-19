@@ -24,10 +24,7 @@ interface LeaderboardEntry {
   report_count?: number;
 }
 
-interface BarangayEntry {
-  barangay: string;
-  report_count: number;
-}
+
 
 interface SpotlightEntry {
   id: string;
@@ -45,20 +42,18 @@ interface LeaderboardStats {
   avg_eco_credits: number;
 }
 
-type TabKey = "all-time" | "monthly" | "weekly" | "barangay";
+type TabKey = "all-time" | "monthly" | "weekly";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "all-time", label: "All Time" },
   { key: "monthly", label: "Month" },
   { key: "weekly", label: "Week" },
-  { key: "barangay", label: "Barangay" },
 ];
 
 const ENDPOINTS: Record<TabKey, string> = {
   "all-time": "/leaderboard",
   monthly: "/leaderboard/monthly",
   weekly: "/leaderboard/weekly",
-  barangay: "/leaderboard/barangay",
 };
 
 // Tonal podium accent per rank — not the neon-green block.
@@ -72,7 +67,7 @@ export default function ScoreboardPage() {
   const scrollRef = useRef<HTMLElement>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("all-time");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [barangayEntries, setBarangayEntries] = useState<BarangayEntry[]>([]);
+
   const [spotlight, setSpotlight] = useState<SpotlightEntry | null>(null);
   const [stats, setStats] = useState<LeaderboardStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -97,16 +92,9 @@ export default function ScoreboardPage() {
     if (isRefresh) setRefreshing(true);
     else if (!loading) setTabLoading(true);
     try {
-      if (tab === "barangay") {
-        const res = await laravelGet<any>("/leaderboard/barangay");
-        setBarangayEntries(res?.data || []);
-        setEntries([]);
-      } else {
-        const res = await laravelGet<any>(ENDPOINTS[tab]);
-        const data = res?.data || res || [];
-        setEntries(Array.isArray(data) ? data : []);
-        setBarangayEntries([]);
-      }
+      const res = await laravelGet<any>(ENDPOINTS[tab]);
+      const data = res?.data || res || [];
+      setEntries(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Failed to load leaderboard:", err);
     } finally {
@@ -299,28 +287,6 @@ export default function ScoreboardPage() {
         </div>
 
         {/* ── Content ────────────────────────────────────────────────────── */}
-        {activeTab === "barangay" ? (
-          barangayEntries.length === 0 ? (
-            <EmptyState icon={Users} title="No barangay data this month" description="Be the first to submit a report." />
-          ) : (
-            <div className="ios-grouped-list">
-              {barangayEntries.map((entry, i) => (
-                <div key={entry.barangay} className="ios-list-row">
-                  <span style={{ fontFamily: "var(--font-data)", fontSize: 15, fontWeight: 700, color: "var(--muted)", width: 24, textAlign: "center", flexShrink: 0 }}>
-                    {i + 1}
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600, color: "var(--ink)", margin: 0 }}>{entry.barangay}</p>
-                    <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "2px 0 0" }}>community reports</p>
-                  </div>
-                  <span style={{ fontFamily: "var(--font-data)", fontSize: 15, fontWeight: 700, color: "var(--ink)" }}>
-                    {entry.report_count.toLocaleString()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )
-        ) : (
           <>
             {/* Podium — tonal, only when there are >=3 entries */}
             {top3.length >= 3 && (
@@ -394,7 +360,6 @@ export default function ScoreboardPage() {
               </div>
             )}
           </>
-        )}
       </div>
     </div>
   );

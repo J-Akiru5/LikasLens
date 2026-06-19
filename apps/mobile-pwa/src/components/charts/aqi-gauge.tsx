@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
 import { echarts, useEChartsTheme } from "./echarts-theme";
+import { laravelGet } from "@likaslens/shared";
 
 interface AqiData {
   us_aqi: number;
@@ -93,7 +94,7 @@ export function AqiGauge() {
         center: ["50%", "55%"],
         axisLine: {
           lineStyle: {
-            width: 18,
+            width: 14,
             color: [
               [0.15, "#34d399"],
               [0.3, "#fbbf24"],
@@ -107,29 +108,29 @@ export function AqiGauge() {
         pointer: {
           itemStyle: { color: pointerColor },
           length: "55%",
-          width: 5,
+          width: 4,
         },
         axisTick: {
-          distance: -18,
-          length: 5,
+          distance: -14,
+          length: 4,
           lineStyle: { color: tickColor, width: 1 },
         },
         splitLine: {
-          distance: -22,
-          length: 12,
+          distance: -18,
+          length: 10,
           lineStyle: { color: tickColor, width: 2 },
         },
         axisLabel: {
           color: labelColor,
-          distance: 28,
-          fontSize: 10,
+          distance: 24,
+          fontSize: 9,
           fontFamily: "JetBrains Mono, monospace",
         },
         detail: {
           valueAnimation: true,
           formatter: "{value}",
           color: color,
-          fontSize: 32,
+          fontSize: 28,
           fontWeight: 700,
           fontFamily: "JetBrains Mono, monospace",
           offsetCenter: [0, "65%"],
@@ -137,7 +138,7 @@ export function AqiGauge() {
         title: {
           offsetCenter: [0, "85%"],
           color: labelColor,
-          fontSize: 12,
+          fontSize: 11,
           fontFamily: "Inter, sans-serif",
         },
         data: [{ value: aqi, name: label }],
@@ -147,31 +148,31 @@ export function AqiGauge() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-ink/10 bg-panel p-6 flex items-center justify-center" style={{ minHeight: 280 }}>
+      <div className="ios-grouped-list p-5 flex items-center justify-center" style={{ minHeight: 260 }}>
         <div className="animate-pulse text-sm text-ink/40">Loading AQI...</div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-ink/10 bg-panel p-6">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="ios-grouped-list p-4">
+      <div className="flex items-center gap-2 mb-3">
         <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: color }} />
-        <span className="font-mono text-xs text-ink/50 uppercase tracking-wider">
+        <span className="font-mono text-[10px] text-ink/50 uppercase tracking-widest">
           Air Quality Index
         </span>
-        <span className="ml-auto font-mono text-xs text-ink/40">Likas Bay</span>
+        <span className="ml-auto font-mono text-[10px] text-ink/30">Likas Bay</span>
       </div>
       <ReactECharts
         echarts={echarts}
         option={option}
-        style={{ height: 240, width: "100%" }}
+        style={{ height: 220, width: "100%" }}
         theme={chartTheme}
         opts={{ renderer: "canvas" }}
         notMerge
       />
       {data && (
-        <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-ink/10">
+        <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-ink/10">
           <div className="text-center">
             <span className="block font-mono text-lg font-bold text-ink">{data.pm2_5.toFixed(1)}</span>
             <span className="font-mono text-[10px] text-ink/40 uppercase">PM2.5</span>

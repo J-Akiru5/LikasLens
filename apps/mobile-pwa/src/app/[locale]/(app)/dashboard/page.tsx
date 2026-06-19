@@ -16,17 +16,20 @@ import { Camera, ChevronRight, Gift, Award, Activity, Zap, Scale } from "lucide-
 import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
 
-const PARTNER_OFFERS = [
-  { name: "7-Eleven", shortName: "7-ELEVEN", offer: "Free Coffee", points: 150 },
-  { name: "SM Supermalls", shortName: "SM", offer: "₱50 GC", points: 500 },
-  { name: "Jollibee Foundation", shortName: "JOLLIBEE", offer: "Meal Voucher", points: 300 },
-  { name: "Globe Telecom", shortName: "GLOBE", offer: "1GB Data", points: 200 },
-  { name: "Mercury Drug", shortName: "MERCURY", offer: "₱100 Off", points: 400 },
-];
+interface RewardOffer {
+  id: string;
+  reward_name: string;
+  reward_type: string;
+  points_cost: number;
+  stock_quantity: number;
+  partner_store?: { name: string };
+}
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [feed, setFeed] = useState<ActivityFeedItem[]>([]);
+  const [rewards, setRewards] = useState<RewardOffer[]>([]);
+  const [walletPoints, setWalletPoints] = useState(0);
   const [loading, setLoading] = useState(true);
   const haptic = useHaptics();
 
@@ -53,15 +56,24 @@ export default function DashboardPage() {
     const controller = new AbortController();
     async function load() {
       try {
-        const [statsRes, feedRes, userRes] = await Promise.all([
+        const [statsRes, feedRes, userRes, rewardsRes, walletRes] = await Promise.all([
           laravelGet<ApiResponse<DashboardStats>>("/dashboard/stats", controller.signal),
           getDashboardFeed(),
-          laravelGet<any>("/user", controller.signal).catch(() => null)
+          laravelGet<any>("/user", controller.signal).catch(() => null),
+          laravelGet<any>("/user/rewards?per_page=10", controller.signal).catch(() => null),
+          laravelGet<any>("/user/wallet", controller.signal).catch(() => null),
         ]);
         setStats(statsRes?.data ?? null);
         setFeed(feedRes?.data ?? []);
-        
-        // Extract first name from user response
+
+        if (rewardsRes?.success && rewardsRes.data) {
+          setRewards(rewardsRes.data);
+        }
+
+        if (walletRes?.success && walletRes.data) {
+          setWalletPoints(walletRes.data.available_credits ?? 0);
+        }
+
         const user = userRes?.data || userRes;
         if (user?.name) {
           setUserName(user.name.split(" ")[0]);
@@ -92,7 +104,6 @@ export default function DashboardPage() {
     );
   }
 
-  const points = (stats as any)?.reward_points_balance ?? 0;
   const totalReports = stats?.total_reports ?? 0;
   const resolvedToday = stats?.resolved_today ?? 0;
   const activeIncidents = stats?.active_incidents ?? 0;
@@ -121,7 +132,7 @@ export default function DashboardPage() {
         >
           <Award style={{ width: 14, height: 14, color: "var(--accent)" }} />
           <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>
-            {points.toLocaleString()}
+            {walletPoints.toLocaleString()}
           </span>
         </div>
       </div>
@@ -136,8 +147,6 @@ export default function DashboardPage() {
             borderBottom: "1px solid #2e4d37"
           }}
         >
-          {/* Decorative light flares removed to prevent rendering artifacts */}
-
           <div className="flex items-end h-full px-5 relative z-10 pb-1">
             {/* Mascot anchored to bottom */}
             <div 
@@ -249,33 +258,52 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* ── Partner offers rail (horizontal snap) ────────────────────────── */}
+        {/* ── Partner offers rail (from API) ────────────────────────── */}
         <section style={{ marginBottom: 24 }}>
           <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
             <h2 className="ios-section-label">Redeem eco-credits</h2>
+            <Link
+              href={`/${locale}/wallet`}
+              className="flex items-center gap-0.5"
+              style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
+            >
+              All <ChevronRight style={{ width: 14, height: 14 }} />
+            </Link>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-1 -mx-5 px-5 snap-x snap-mandatory scrollbar-hide">
-            {PARTNER_OFFERS.map((offer) => (
-              <div
-                key={offer.name}
-                className="flex-shrink-0 snap-start"
-                style={{ width: 148, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}
-              >
-                <div className="ios-row-icon" style={{ background: "color-mix(in oklab, var(--accent) 10%, transparent)", width: 36, height: 36 }}>
-                  <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, color: "var(--accent)" }}>
-                    {offer.shortName.slice(0, 3)}
-                  </span>
-                </div>
-                <div>
-                  <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 700, color: "var(--ink)", margin: 0 }}>{offer.offer}</p>
-                  <p style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "var(--muted)", margin: "2px 0 0" }}>{offer.name}</p>
-                </div>
-                <div style={{ marginTop: "auto", paddingTop: 8, borderTop: "1px solid var(--border)" }}>
-                  <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>{offer.points} pts</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          {rewards.length === 0 ? (
+            <div className="ios-grouped-list p-6 text-center flex flex-col items-center justify-center">
+              <Gift className="w-8 h-8 text-ink/20 mb-2" />
+              <p className="text-xs font-medium text-ink/40">No rewards available yet.</p>
+            </div>
+          ) : (
+            <div className="flex gap-3 overflow-x-auto pb-1 -mx-5 px-5 snap-x snap-mandatory scrollbar-hide">
+              {rewards.map((reward) => {
+                const partnerName = reward.partner_store?.name ?? "Partner";
+                const shortName = partnerName.slice(0, 6).toUpperCase();
+                return (
+                  <Link
+                    key={reward.id}
+                    href={`/${locale}/wallet`}
+                    className="flex-shrink-0 snap-start"
+                    style={{ width: 148, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}
+                  >
+                    <div className="ios-row-icon" style={{ background: "color-mix(in oklab, var(--accent) 10%, transparent)", width: 36, height: 36 }}>
+                      <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, color: "var(--accent)" }}>
+                        {shortName.slice(0, 3)}
+                      </span>
+                    </div>
+                    <div>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 700, color: "var(--ink)", margin: 0 }}>{reward.reward_name}</p>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "var(--muted)", margin: "2px 0 0" }}>{partnerName}</p>
+                    </div>
+                    <div style={{ marginTop: "auto", paddingTop: 8, borderTop: "1px solid var(--border)" }}>
+                      <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>{reward.points_cost} pts</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* ── Recent activity — grouped rows ──────────────────────────────── */}

@@ -84,6 +84,7 @@ body {
 .ios-list-row {
   display: flex;
   align-items: center;
+  width: 100%;
   gap: 12px;
   padding: 13px 14px;
   min-height: 58px; /* comfortable touch target incl. padding */
@@ -218,9 +219,9 @@ body {
   white-space: nowrap;
 }
 .m-segmented-btn--active {
-  background: var(--panel);
-  color: var(--ink);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: var(--accent);
+  color: var(--page);
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--accent) 25%, transparent);
 }
 
 /* ── Reduced motion (PRODUCT.md: this is a field tool, not a showcase) ────── */
