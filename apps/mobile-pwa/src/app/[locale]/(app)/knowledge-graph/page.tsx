@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Network, ChevronDown, ChevronUp, AlertTriangle, Cpu, Scale, Building2, ShieldCheck, X } from "lucide-react";
 import { cn } from "@likaslens/shared";
+import { useSwipeDownToClose } from "@/hooks/use-swipe-down-to-close";
 
 interface GraphNode {
   id: string;
@@ -171,6 +172,7 @@ export default function KnowledgeGraphPage() {
   const [dragging, setDragging] = useState<string | null>(null);
   const [showPresets, setShowPresets] = useState(false);
   const [showTerminal, setShowTerminal] = useState(false);
+  const presetSheetRef = useSwipeDownToClose(() => setShowPresets(false));
   
   const [terminalText, setTerminalText] = useState("");
   const [terminalIdx, setTerminalIdx] = useState(0);
@@ -444,7 +446,7 @@ export default function KnowledgeGraphPage() {
       {showPresets && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPresets(false)} />
-          <div className="relative bg-white rounded-t-3xl shadow-2xl max-h-[70vh] flex flex-col">
+          <div ref={presetSheetRef} className="relative bg-white rounded-t-3xl shadow-2xl max-h-[70vh] flex flex-col">
             <div className="flex justify-center pt-3 pb-2"><div className="w-12 h-1.5 bg-gray-200 rounded-full" /></div>
             <div className="px-5 pb-3 flex justify-between items-center border-b border-gray-100">
               <h2 className="text-lg font-bold text-ink">Select Scenario</h2>

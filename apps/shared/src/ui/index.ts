@@ -33,6 +33,7 @@ export { BottomNav } from "./bottom-nav";
 export type { BottomNavItem } from "./bottom-nav";
 export { DashboardLayout } from "./dashboard-layout";
 export { MobileLayout } from "./mobile-layout";
+export { PullToRefresh } from "./pull-to-refresh";
 export {
   Skeleton,
   DashboardSkeleton,

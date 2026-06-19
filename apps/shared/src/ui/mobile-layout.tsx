@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BottomNav, type BottomNavItem } from "./bottom-nav";
+import { PullToRefresh } from "./pull-to-refresh";
 import { cn } from "../utils";
 import { Leaf, Bell, Fingerprint, Trophy, ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -16,6 +17,7 @@ interface MobileLayoutProps {
   isGhostMode: boolean;
   onThemeToggle: () => void;
   backHref?: string;
+  onPullToRefresh?: () => Promise<void>;
   className?: string;
 }
 
@@ -25,6 +27,7 @@ export function MobileLayout({
   isGhostMode,
   onThemeToggle,
   backHref,
+  onPullToRefresh,
   className,
 }: MobileLayoutProps) {
   const pathname = usePathname();
@@ -129,8 +132,14 @@ export function MobileLayout({
         </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pb-20">
-        {children}
+      <main className={cn("flex-1 pb-20", onPullToRefresh ? "overflow-hidden" : "overflow-y-auto")}>
+        {onPullToRefresh ? (
+          <PullToRefresh onRefresh={onPullToRefresh} className="h-full">
+            {children}
+          </PullToRefresh>
+        ) : (
+          children
+        )}
       </main>
 
       {/* Likasy Chatbot */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -15,6 +15,7 @@ import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/s
 import { Camera, ChevronRight, Gift, Award, Activity, Zap, Scale } from "lucide-react";
 import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
+import { usePullToRefresh } from "@/context/pull-to-refresh";
 
 interface RewardOffer {
   id: string;
@@ -52,46 +53,46 @@ export default function DashboardPage() {
     });
   }, []);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    async function load() {
-      try {
-        const [statsRes, feedRes, userRes, rewardsRes, walletRes] = await Promise.all([
-          laravelGet<ApiResponse<DashboardStats>>("/dashboard/stats", controller.signal),
-          getDashboardFeed(),
-          laravelGet<any>("/user", controller.signal).catch(() => null),
-          laravelGet<any>("/user/rewards?per_page=10", controller.signal).catch(() => null),
-          laravelGet<any>("/user/wallet", controller.signal).catch(() => null),
-        ]);
-        setStats(statsRes?.data ?? null);
-        setFeed(feedRes?.data ?? []);
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [statsRes, feedRes, userRes, rewardsRes, walletRes] = await Promise.all([
+        laravelGet<ApiResponse<DashboardStats>>("/dashboard/stats").catch(() => null),
+        getDashboardFeed().catch(() => null),
+        laravelGet<any>("/user").catch(() => null),
+        laravelGet<any>("/user/rewards?per_page=10").catch(() => null),
+        laravelGet<any>("/user/wallet").catch(() => null),
+      ]);
+      setStats(statsRes?.data ?? null);
+      setFeed(feedRes?.data ?? []);
 
-        if (rewardsRes?.success && rewardsRes.data) {
-          setRewards(rewardsRes.data);
-        }
-
-        if (walletRes?.success && walletRes.data) {
-          setWalletPoints(walletRes.data.available_credits ?? 0);
-        }
-
-        const user = userRes?.data || userRes;
-        if (user?.name) {
-          setUserName(user.name.split(" ")[0]);
-        } else if (user?.first_name) {
-          setUserName(user.first_name);
-        }
-      } catch (err) {
-        if (!controller.signal.aborted) {
-          console.error("Failed to load dashboard:", err);
-          showToast("Failed to load dashboard data", "error");
-        }
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
+      if (rewardsRes?.success && rewardsRes.data) {
+        setRewards(rewardsRes.data);
       }
+
+      if (walletRes?.success && walletRes.data) {
+        setWalletPoints(walletRes.data.available_credits ?? 0);
+      }
+
+      const user = userRes?.data || userRes;
+      if (user?.name) {
+        setUserName(user.name.split(" ")[0]);
+      } else if (user?.first_name) {
+        setUserName(user.first_name);
+      }
+    } catch (err) {
+      console.error("Failed to load dashboard:", err);
+      showToast("Failed to load dashboard data", "error");
+    } finally {
+      setLoading(false);
     }
-    load();
-    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  usePullToRefresh(load);
 
   const params = useParams<{ locale: string }>();
   const locale = params?.locale || "en";
