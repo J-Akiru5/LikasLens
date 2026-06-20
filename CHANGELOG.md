@@ -434,7 +434,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.8.5...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.9.0...v0.9.1
 [0.8.5]: https://github.com/J-Akiru5/LikasLens/compare/v0.8.0...v0.8.5
 [0.8.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.4...v0.8.0
 [0.7.4]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.3...v0.7.4
