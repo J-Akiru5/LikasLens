@@ -55,7 +55,7 @@ const FEATURES = [
   {
     icon: Bot,
     title: "AI Assistance",
-    description: "Leverage the Likasy Chatbot for guidance on environmental laws or to help draft official responses.",
+    description: "Leverage the Liksi Chatbot for guidance on environmental laws or to help draft official responses.",
   },
   {
     icon: Scale,

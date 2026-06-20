@@ -178,7 +178,7 @@
     "publicRecordsAdmin": "Hồ sơ Công khai",
     "publicRecordsAdminDesc": "Xem bảng xếp hạng công khai. Đảm bảo các vấn đề đã giải quyết được phản ánh chính xác để cộng đồng chịu trách nhiệm.",
     "aiAssistance": "Hỗ trợ AI",
-    "aiAssistanceDesc": "Sử dụng Likasy, trợ lý AI, để tra cứu luật môi trường, phân tích mẫu báo cáo và tạo tóm tắt.",
+    "aiAssistanceDesc": "Sử dụng Liksi, trợ lý AI, để tra cứu luật môi trường, phân tích mẫu báo cáo và tạo tóm tắt.",
     "role": "Vai trò",
     "actions": "Hành động",
     "changeRole": "Thay đổi Vai trò",
@@ -353,13 +353,13 @@
     "lastUpdated": "Cập nhật Lần cuối"
   },
   "chat": {
-    "title": "Likasy",
+    "title": "Liksi",
     "subtitle": "Trợ lý AI",
     "online": "Trực tuyến",
-    "placeholder": "Hỏi Likasy...",
+    "placeholder": "Hỏi Liksi...",
     "send": "Gửi tin nhắn",
     "closeChat": "Đóng trò chuyện",
-    "openChat": "Mở trò chuyện Likasy",
+    "openChat": "Mở trò chuyện Liksi",
     "errorFallback": "Rất tiếc! Tôi không thể kết nối ngay bây giờ. Vui lòng kiểm tra kết nối hoặc thử lại sau."
   },
   "offline": {

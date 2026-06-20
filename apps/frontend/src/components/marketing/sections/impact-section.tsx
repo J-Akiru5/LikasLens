@@ -97,8 +97,8 @@ export function ImpactSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6 }}
-            className="ec-casefile"
-            style={{ padding: "36px 36px 30px", background: "linear-gradient(160deg, var(--accent-subtle), var(--panel) 55%)", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 28 }}
+            className="group hover:shadow-xl transition-all duration-500"
+            style={{ padding: "40px 36px 34px", background: "var(--panel)", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: 28, borderRadius: "20px", border: "1px solid var(--border)", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)" }}
           >
             <div>
               <p style={{ fontFamily: "var(--font-data)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 14px" }}>
@@ -136,18 +136,18 @@ export function ImpactSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="ec-duotone-wrap"
-            style={{ borderRadius: 14, minHeight: 260, border: "1px solid var(--border)" }}
+            className="group hover:shadow-xl transition-all duration-500"
+            style={{ borderRadius: "20px", minHeight: 260, position: "relative", border: "1px solid var(--border)", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)", overflow: "hidden" }}
           >
             <Image
-              src="/images/ridge-to-reef.png"
+              src="/images/impact_ridge_to_reef_3d.png"
               alt="A river winding through forested Philippine highlands"
               fill
               sizes="(min-width: 1024px) 40vw, 100vw"
-              style={{ objectFit: "cover", objectPosition: "center" }}
+              style={{ objectFit: "cover", objectPosition: "center", transform: "scale(1.2)" }}
             />
-            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-end", padding: 22 }}>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "rgba(240,237,232,0.85)", margin: 0, maxWidth: 320, lineHeight: 1.5 }}>
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "40px 32px 32px", background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)" }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "rgba(255, 255, 255, 0.95)", margin: 0, maxWidth: 320, lineHeight: 1.5, fontWeight: 500, textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>
                 Reports come from ridge to reef. Each is geotagged, classified, and routed to the agency with jurisdiction.
               </p>
             </div>
@@ -162,8 +162,8 @@ export function ImpactSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6 }}
-            className="ec-casefile"
-            style={{ padding: 28 }}
+            className="group hover:shadow-lg transition-all duration-500"
+            style={{ padding: 28, background: "var(--panel)", borderRadius: "20px", border: "1px solid var(--border)", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)" }}
           >
             <h3 style={{ fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", letterSpacing: "-0.01em", color: "var(--ink)", margin: "0 0 20px" }}>
               Reports by type
@@ -196,8 +196,8 @@ export function ImpactSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="ec-casefile"
-            style={{ padding: 28 }}
+            className="group hover:shadow-lg transition-all duration-500"
+            style={{ padding: 28, background: "var(--panel)", borderRadius: "20px", border: "1px solid var(--border)", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)" }}
           >
             <h3 style={{ fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", letterSpacing: "-0.01em", color: "var(--ink)", margin: "0 0 16px" }}>
               Recently resolved

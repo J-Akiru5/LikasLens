@@ -178,7 +178,7 @@
     "publicRecordsAdmin": "Rekod Awam",
     "publicRecordsAdminDesc": "Lihat papan skor awam. Pastikan isu yang diselesaikan dicerminkan dengan tepat untuk akauntabiliti komuniti.",
     "aiAssistance": "Bantuan AI",
-    "aiAssistanceDesc": "Gunakan Likasy, pembantu AI, untuk menanyakan undang-undang alam sekitar, menganalisis corak laporan, dan menghasilkan ringkasan.",
+    "aiAssistanceDesc": "Gunakan Liksi, pembantu AI, untuk menanyakan undang-undang alam sekitar, menganalisis corak laporan, dan menghasilkan ringkasan.",
     "role": "Peranan",
     "actions": "Tindakan",
     "changeRole": "Tukar Peranan",
@@ -353,13 +353,13 @@
     "lastUpdated": "Kemas Kini Terakhir"
   },
   "chat": {
-    "title": "Likasy",
+    "title": "Liksi",
     "subtitle": "Pembantu AI",
     "online": "Dalam Talian",
-    "placeholder": "Tanya Likasy...",
+    "placeholder": "Tanya Liksi...",
     "send": "Hantar mesej",
     "closeChat": "Tutup sembang",
-    "openChat": "Buka sembang Likasy",
+    "openChat": "Buka sembang Liksi",
     "errorFallback": "Alamak! Saya tidak dapat berfikir sekarang. Sila periksa sambungan anda atau cuba lagi nanti."
   },
   "offline": {

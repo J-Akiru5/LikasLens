@@ -178,7 +178,7 @@
     "publicRecordsAdmin": "Pampublikong Rekord",
     "publicRecordsAdminDesc": "Tingnan ang pampublikong scoreboard. Siguraduhing tamang naipapakita ang mga naresolbang isyu para sa pananagutan ng komunidad.",
     "aiAssistance": "Tulong ng AI",
-    "aiAssistanceDesc": "Gamitin si Likasy, ang AI assistant, upang mag-query ng mga batas pangkalikasan, suriin ang mga pattern ng ulat, at gumawa ng mga buod.",
+    "aiAssistanceDesc": "Gamitin si Liksi, ang AI assistant, upang mag-query ng mga batas pangkalikasan, suriin ang mga pattern ng ulat, at gumawa ng mga buod.",
     "role": "Role",
     "actions": "Mga Aksyon",
     "changeRole": "Palitan ang Role",
@@ -353,13 +353,13 @@
     "lastUpdated": "Huling Na-update"
   },
   "chat": {
-    "title": "Likasy",
+    "title": "Liksi",
     "subtitle": "AI Assistant",
     "online": "Online",
-    "placeholder": "Magtanong kay Likasy...",
+    "placeholder": "Magtanong kay Liksi...",
     "send": "Magpadala ng mensahe",
     "closeChat": "Isara ang chat",
-    "openChat": "Buksan ang Likasy chat",
+    "openChat": "Buksan ang Liksi chat",
     "errorFallback": "Oops! Hindi ko maabot ang aking utak ngayon. Pakitingnan ang iyong koneksyon o subukang muli mamaya."
   },
   "offline": {

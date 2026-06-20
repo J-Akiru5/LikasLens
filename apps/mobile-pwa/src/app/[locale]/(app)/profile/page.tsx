@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
@@ -23,6 +23,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
+import { usePullToRefresh } from "@/context/pull-to-refresh";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Profile — identity header card + grouped inset list (iOS Settings pattern).
@@ -52,17 +53,21 @@ export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    }
-    load();
+  const load = useCallback(async () => {
+    setLoading(true);
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    setUser(user);
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  usePullToRefresh(load);
 
   async function handleSignOut() {
     haptic("warning");

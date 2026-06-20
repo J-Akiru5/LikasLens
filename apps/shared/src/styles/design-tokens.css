@@ -1,10 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    LIKASLENS DESIGN TOKENS — Single Source of Truth
    ═══════════════════════════════════════════════════════════════════════════
-   Import this file in each app's globals.css via:
-     @import "@likaslens/shared/src/styles/design-tokens.css";
-
-   Each app may append app-specific overrides after this import.
+   Import this file in each app's globals.css.
+   Each app may append app-specific overrides after the import.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* BrandPalette (2026.06):
@@ -17,6 +15,7 @@
    THEME VARIABLES — Civic (default light) & Ghost (dark cyber)
    ─────────────────────────────────────────────────────────────────────────── */
 :root {
+    color-scheme: light;
     /* ── Surface layers ────────────────────────────────────────────────────── */
     --page: #ffffff; /* pure white — page background (enterprise standard) */
     --panel: #ffffff; /* pure white cards, panels */
@@ -34,6 +33,7 @@
 
     /* ── Brand ─────────────────────────────────────────────────────────────── */
     --accent: #1b4332; /* forest green — primary brand */
+    --accent-foreground: #ffffff; /* text on top of accent */
     --accent-hover: #163829;
     --accent-subtle: rgba(27, 67, 50, 0.08);
     --accent-bright: #2ee6c8; /* tech teal — dark-bg / decorative only */
@@ -108,6 +108,7 @@
 }
 
 :root[data-theme="ghost"] {
+    color-scheme: dark;
     /* ── Surface layers (4 distinct levels — not all dark-gray) ────────────── */
     --page: #0c1628; /* deep navy base */
     --panel: #111e35; /* solid — visibly above page */
@@ -125,6 +126,7 @@
 
     /* ── Brand ─────────────────────────────────────────────────────────────── */
     --accent: #2ee6c8; /* teal is primary in Ghost Mode */
+    --accent-foreground: #06101e; /* dark navy for readable text on bright teal */
     --accent-hover: #3df0d2;
     --accent-subtle: rgba(46, 230, 200, 0.08);
     --accent-bright: #2ee6c8;

@@ -71,10 +71,13 @@ export function AppHeader({
     info: <Info className="w-4 h-4 text-green" />,
   };
 
+  const hasMobileContent = Boolean(pageTitle || greeting || showBranding || children);
+
   return (
     <header
       className={cn(
-        "flex items-center justify-between px-4 sm:px-8 relative z-20 transition-all h-16 sm:h-20 lg:px-12",
+        "items-center justify-between px-4 sm:px-8 relative z-20 transition-all h-16 sm:h-20 lg:px-12",
+        !hasMobileContent ? "hidden sm:flex" : "flex",
         className,
       )}
     >
@@ -126,6 +129,7 @@ export function AppHeader({
           <div className="flex items-center gap-2 sm:gap-3">
             {onThemeToggle && (
               <button
+                suppressHydrationWarning
                 onClick={onThemeToggle}
                 aria-label={isGhostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
                 aria-pressed={isGhostMode}

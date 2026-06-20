@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { getLocale } from "next-intl/server";
-import { LikasyChat } from "@likaslens/shared";
+import { LiksiChat } from "@likaslens/shared";
 import "./globals.css";
 
 const bodyFont = Geist({
@@ -58,7 +58,7 @@ export default async function RootLayout({
         <div id="main-content" className="flex-1">
           {children}
         </div>
-        <LikasyChat persona="admin" locale={locale} />
+        <LiksiChat persona="admin" locale={locale} isAuthenticated={true} />
       </body>
     </html>
   );

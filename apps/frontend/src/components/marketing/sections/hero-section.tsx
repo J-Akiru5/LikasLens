@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
   m,
   useScroll,
-  useMotionValueEvent,
   useTransform,
   Variants,
 } from "framer-motion";
@@ -19,7 +18,6 @@ import {
   Fingerprint,
   Leaf,
 } from "lucide-react";
-import { UserNav } from "@/components/layout/user-nav";
 import { laravelGet, MagneticButton } from "@likaslens/shared";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -71,13 +69,70 @@ const fadeUp: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } },
 };
 
+
 interface HeroSectionProps {
   ghostMode: boolean;
   onGhostToggle: () => void;
 }
 
+
+const AnimatedAuroraBackground = ({ ghostMode }: { ghostMode: boolean }) => {
+  const color1 = ghostMode ? "6, 78, 59" : "5, 150, 105"; // #064e3b : #059669
+  const color2 = ghostMode ? "15, 118, 110" : "13, 148, 136"; // #0f766e : #0d9488
+  const color3 = ghostMode ? "2, 44, 34" : "16, 185, 129"; // #022c22 : #10b981
+
+  return (
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: ghostMode ? "#040c07" : "#05160d", transition: "background 0.8s ease", zIndex: 0 }}>
+      <m.div
+        animate={{ 
+          x: ["0%", "15%", "0%"],
+          y: ["0%", "20%", "0%"],
+          scale: [1, 1.25, 1]
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          top: "-20%", left: "-20%", width: "80vw", height: "80vh",
+          background: `radial-gradient(circle at center, rgba(${color1}, 0.5) 0%, rgba(${color1}, 0) 65%)`,
+          willChange: "transform"
+        }}
+      />
+      <m.div
+        animate={{ 
+          x: ["0%", "-15%", "0%"],
+          y: ["0%", "-20%", "0%"],
+          scale: [1, 1.35, 1]
+        }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          bottom: "-20%", right: "-10%", width: "90vw", height: "90vh",
+          background: `radial-gradient(circle at center, rgba(${color2}, 0.45) 0%, rgba(${color2}, 0) 65%)`,
+          willChange: "transform"
+        }}
+      />
+      <m.div
+        animate={{ 
+          x: ["0%", "-20%", "0%"],
+          y: ["0%", "15%", "0%"],
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          top: "20%", left: "10%", width: "70vw", height: "70vh",
+          background: `radial-gradient(circle at center, rgba(${color3}, 0.35) 0%, rgba(${color3}, 0) 60%)`,
+          willChange: "transform"
+        }}
+      />
+      {/* Premium SaaS noise grain overlay */}
+      <div style={{ position: "absolute", inset: 0, opacity: 0.1, backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')", mixBlendMode: "overlay", pointerEvents: "none" }} />
+    </div>
+  );
+};
+
 export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
-  const [navScrolled, setNavScrolled] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   const [ledger, setLedger] = useState<LedgerEntry[]>(SEED_LEDGER);
   const [counter, setCounter] = useState(0);
 
@@ -90,7 +145,6 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
 
   const { scrollY } = useScroll();
   const scrollOpacity = useTransform(scrollY, [0, 150], [1, 0]);
-  useMotionValueEvent(scrollY, "change", (latest) => setNavScrolled(latest > 40));
 
   // Merge in live verified records where the backend has them.
   useEffect(() => {
@@ -150,6 +204,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
 
   return (
     <section
+      ref={sectionRef}
       style={{
         minHeight: "100svh",
         backgroundColor: heroBg,
@@ -161,114 +216,27 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
         transition: "background-color 0.6s ease",
       }}
     >
-      {/* Forensic hero photograph — full-bleed, duotone-treated evidence */}
-      <div className="ec-duotone-wrap" style={{ position: "absolute", inset: 0, opacity: ghostMode ? 0.5 : 0.42 }}>
-        <Image
-          src="https://images.unsplash.com/photo-1473773508845-188df298d2d1?auto=format&fit=crop&w=1920&q=80"
-          alt="Mist over a logged Philippine forest ridge at first light"
-          fill
-          sizes="100vw"
-          className="ec-duotone"
-          priority
-        />
-        <div className="ec-scanline" aria-hidden="true" />
-        {/* Vignette so copy always clears AA regardless of photo */}
+      {/* Custom AI Glassmorphic Hero Background */}
+      <div style={{ position: "absolute", inset: 0, opacity: ghostMode ? 0.7 : 1, transition: "opacity 0.6s ease" }}>
+        <AnimatedAuroraBackground ghostMode={ghostMode} />
+        {/* Subtle dark gradient overlay to ensure text remains perfectly readable */}
         <div
           style={{
             position: "absolute", inset: 0,
-            background:
-              "linear-gradient(180deg, rgba(13,26,18,0.72) 0%, rgba(13,26,18,0.4) 45%, rgba(13,26,18,0.82) 100%)",
+            background: ghostMode 
+              ? "linear-gradient(180deg, rgba(13,26,18,0.95) 0%, rgba(13,26,18,0.5) 45%, rgba(13,26,18,0.95) 100%)"
+              : "linear-gradient(180deg, rgba(13,26,18,0.85) 0%, rgba(13,26,18,0.4) 45%, rgba(13,26,18,0.9) 100%)",
+            transition: "background 0.6s ease",
+            pointerEvents: "none",
+            zIndex: 1
           }}
         />
       </div>
 
       {/* Instrument grid */}
-      <div className="ec-grid" style={{ position: "absolute", inset: 0, opacity: 0.5, pointerEvents: "none" }} />
+      <div className="ec-grid" style={{ position: "absolute", inset: 0, opacity: 0.8, pointerEvents: "none", zIndex: 1 }} />
 
-      {/* Navigation — humanist sans, no mono-as-decoration */}
-      <m.nav
-        className={navScrolled ? "px-4 sm:px-6 py-3" : "px-4 sm:px-6 py-4 sm:py-5"}
-        style={{
-          position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: navScrolled ? "rgba(13,26,18,0.82)" : "transparent",
-          backdropFilter: navScrolled ? "blur(14px)" : "none",
-          borderBottom: navScrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
-          transition: "all 0.3s ease",
-        }}
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Link href="/" className="flex items-center gap-2.5 group" style={{ flexShrink: 0 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/likas-lens-logo.png" alt="LikasLens" style={{ width: 30, height: 30, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
-          <span
-            style={{
-              fontSize: 19, letterSpacing: "0.16em", color: "var(--hero-ink)",
-              display: "flex", alignItems: "center", marginTop: 1,
-              fontFamily: "var(--font-heading)", textTransform: "uppercase",
-            }}
-          >
-            <span style={{ fontWeight: 500 }}>LIK</span>
-            <span style={{ fontWeight: 700, color: "var(--accent-bright)", margin: "0 1px" }}>Λ</span>
-            <span style={{ fontWeight: 500, marginRight: 3 }}>S</span>
-            <span style={{ fontWeight: 800 }}>LENS</span>
-          </span>
-        </Link>
-
-        <div
-          className="hidden md:flex"
-          style={{
-            gap: 30, fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 500,
-            color: "rgba(240,237,232,0.6)",
-          }}
-        >
-          {[
-            { label: "How it works", href: "#how-it-works" },
-            { label: "Records", href: "#scoreboard" },
-            { label: "Impact", href: "#impact" },
-            { label: "Ghost Mode", href: "#ghost" },
-          ].map((item) => (
-            <a key={item.label} href={item.href} className="hover:text-white transition-colors" style={{ color: "inherit", textDecoration: "none" }}>
-              {item.label}
-            </a>
-          ))}
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* Civic ⇄ Ghost — the signature dual-mode mechanic */}
-          <button
-            onClick={onGhostToggle}
-            aria-pressed={ghostMode}
-            aria-label={ghostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
-            className="flex relative items-center h-8 w-[88px] rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-2"
-            style={{
-              background: ghostMode ? "rgba(46,230,200,0.1)" : "rgba(240,237,232,0.05)",
-              border: ghostMode ? "1px solid rgba(46,230,200,0.22)" : "1px solid rgba(240,237,232,0.1)",
-            }}
-            title={ghostMode ? "Ghost Mode active" : "Civic Mode"}
-          >
-            <div
-              className={`absolute top-[3px] left-[3px] w-[24px] h-[24px] rounded-full transition-all duration-300 flex items-center justify-center z-10 ${
-                ghostMode ? "translate-x-14" : "translate-x-0"
-              }`}
-              style={{ background: ghostMode ? "var(--accent-bright)" : "rgba(240,237,232,0.92)" }}
-            >
-              {ghostMode ? (
-                <Fingerprint style={{ width: 14, height: 14, color: "var(--hero-bg)" }} />
-              ) : (
-                <Leaf style={{ width: 14, height: 14, color: "#0d1a12" }} />
-              )}
-            </div>
-            <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-bold tracking-widest uppercase" style={{ fontFamily: "var(--font-data)" }}>
-              <span className="transition-opacity duration-300" style={{ opacity: ghostMode ? 1 : 0, color: "var(--hero-ink)" }}>Ghost</span>
-              <span className="transition-opacity duration-300" style={{ opacity: ghostMode ? 0 : 1, color: "rgba(240,237,232,0.4)" }}>Civic</span>
-            </div>
-          </button>
-          <UserNav invert />
-        </div>
-      </m.nav>
+      {/* Navigation removed; using the unified StickyLandingNav from page.tsx */}
 
       {/* Hero content — asymmetric case-file layout */}
       <div className="px-5 sm:px-8 pt-28 pb-24 w-full max-w-7xl mx-auto relative" style={{ zIndex: 2 }}>
@@ -298,27 +266,29 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 fontWeight: 700,
                 letterSpacing: "-0.035em",
                 lineHeight: 1.02,
-                color: "var(--hero-ink)",
+                color: "#ffffff",
                 margin: 0,
                 textWrap: "balance" as const,
+                textShadow: "0 4px 24px rgba(0,0,0,0.6)"
               }}
             >
-              The environment needs a witness.
+              AI-Powered Environmental Protection.
             </m.h1>
 
             <m.p
               variants={fadeUp}
               style={{
                 fontSize: "clamp(1rem, 1.4vw, 1.125rem)",
-                color: "rgba(240,237,232,0.72)",
+                color: "rgba(240,237,232,0.95)",
                 maxWidth: 480,
                 lineHeight: 1.6,
                 margin: 0,
+                textShadow: "0 2px 12px rgba(0,0,0,0.8)"
               }}
             >
-              Snap an environmental violation. The AI vision model classifies it,
-              checks it against local law, and routes the report to the exact
-              agency responsible. Every case lands on the public record.
+              Take a photo of any environmental hazard. Our AI instantly analyzes the issue,
+              identifies legal violations, and routes it to the correct government agency.
+              Every case lands on the public record.
             </m.p>
 
             <m.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -346,7 +316,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
                     padding: "13px 26px", borderRadius: 10,
-                    background: "transparent", color: "var(--hero-ink)",
+                    background: "transparent", color: "#ffffff",
                     fontWeight: 600, fontSize: 14, letterSpacing: "-0.01em",
                     textDecoration: "none",
                     border: "1px solid rgba(240,237,232,0.18)",
@@ -373,13 +343,24 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
             </m.div>
           </m.div>
 
-          {/* Right — LIVE INCIDENT LEDGER (replaces the glass metrics card) */}
+          {/* Right — LIVE INCIDENT LEDGER (now with premium glassmorphism) */}
           <m.div
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.35, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="ec-ledger" role="group" aria-label="Live incident ledger">
+            <div 
+              className="ec-ledger shadow-2xl backdrop-blur-md" 
+              role="group" 
+              aria-label="Live incident ledger"
+              style={{
+                background: ghostMode ? "rgba(13, 26, 18, 0.8)" : "rgba(13, 26, 18, 0.5)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                borderRadius: "16px",
+                overflow: "hidden",
+                transition: "background 0.6s ease"
+              }}
+            >
               {/* Header */}
               <div className="ec-ledger-head">
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -388,7 +369,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                     Incident ledger · live
                   </span>
                 </div>
-                <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "rgba(240,237,232,0.4)", border: "1px solid rgba(240,237,232,0.1)", borderRadius: 4, padding: "2px 8px" }}>
+                <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--accent-bright)", border: "1px solid var(--accent-bright)", borderRadius: 4, padding: "2px 8px" }}>
                   SYS-ONLINE
                 </span>
               </div>
@@ -408,7 +389,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                     >
                       {/* ID + status */}
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--hero-ink)" }}>
+                        <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "#ffffff" }}>
                           {entry.id}
                         </span>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "var(--font-data)", fontSize: 9.5, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(240,237,232,0.45)" }}>
@@ -483,7 +464,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
       </m.div>
 
       {/* Wave divider into page */}
-      <div style={{ position: "absolute", bottom: -2, left: 0, right: 0, pointerEvents: "none", lineHeight: 0 }}>
+      <div style={{ position: "absolute", bottom: -2, left: 0, right: 0, pointerEvents: "none", lineHeight: 0, zIndex: 20 }}>
         <svg viewBox="0 0 1440 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: "block", width: "100%", height: 100 }}>
           <path d="M0,40 C180,90 360,10 540,50 C720,90 900,20 1080,55 C1260,90 1380,30 1440,50 L1440,100 L0,100 Z" fill="var(--page)" />
         </svg>
