@@ -1,14 +1,14 @@
 "use client";
 
 import { m } from "framer-motion";
-import { Camera, Cpu, Send, Bell } from "lucide-react";
+import { Camera, Cpu, Send, Bell, ArrowRight } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Evidence-board pipeline — replaces the identical 3-card grid.
+   Evidence-board pipeline — with animated connector lines.
 
    Each node is a distinct artifact in a real ordered flow (Capture → Classify
-   → Route → Notify), so the sequence carries information the reader needs.
-   Nodes vary in emphasis: the Classify node is the densest (it's the AI core).
+   → Route → Notify). Connector lines with flowing dots show the data flow
+   between stages. Staggered scroll-reveal entrance.
    ───────────────────────────────────────────────────────────────────────────── */
 
 const NODES = [
@@ -20,56 +20,114 @@ const NODES = [
     body: "One photo from a phone. GPS and timestamp attach automatically. Nothing else is asked of the reporter in the moment.",
     artifact: "EVIDENCE FRAME",
     meta: "IMG · EXIF · GPS · TS",
-    span: "lg:col-span-5",
-    emphasis: "low" as const,
   },
   {
     n: "02",
     Icon: Cpu,
     tag: "Classify",
-    title: "The vision model reads it",
-    body: "A neuro-symbolic model identifies the violation type and severity, then reasons over Philippine environmental law to confirm it is actionable.",
-    artifact: "YOLOv8 · NEURO-SYMBOLIC",
-    meta: "TYPE · SEVERITY · LEGAL MATCH",
-    span: "lg:col-span-7",
-    emphasis: "high" as const,
+    title: "AI Analysis",
+    body: "The model identifies the violation type and matches it against environmental laws.",
+    artifact: "YOLOv8",
+    meta: "TYPE · MATCH",
   },
   {
     n: "03",
     Icon: Send,
     tag: "Route",
-    title: "Routed to the right desk",
-    body: "Logging and land cases to DENR. Coastal and marine to PCG. Hazardous waste to EMB. No more reports dying in the wrong inbox.",
-    artifact: "AGENCY DISPATCH",
-    meta: "DENR · EMB · PCG · DILG",
-    span: "lg:col-span-7",
-    emphasis: "low" as const,
+    title: "Auto-Dispatch",
+    body: "Routed to the exact government desk. No more reports dying in the wrong inbox.",
+    artifact: "AGENCY ROUTING",
+    meta: "DENR · EMB · PCG",
   },
   {
     n: "04",
     Icon: Bell,
     tag: "Notify",
-    title: "Tracked until it closes",
-    body: "The case is stamped onto the public record. The reporter gets a receipt and is notified the moment the agency acts.",
-    artifact: "PUBLIC RECEIPT",
-    meta: "CASE ID · TIMESTAMP · STATUS",
-    span: "lg:col-span-5",
-    emphasis: "low" as const,
+    title: "Public Tracking",
+    body: "The case is tracked openly until it closes. You get a receipt and live updates.",
+    artifact: "PUBLIC RECORD",
+    meta: "ID · TIMESTAMP",
   },
 ];
 
+const staggerContainer = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
+  },
+};
+
 const fadeUp = {
   hidden: { opacity: 0, y: 26 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+  },
 };
+
+/* Animated connector dot that flows between pipeline nodes */
+function PipelineConnector({ vertical = false }: { vertical?: boolean }) {
+  return (
+    <div
+      className={`relative ${vertical ? "w-px h-8 mx-auto" : "hidden lg:flex items-center justify-center"}`}
+      style={vertical ? {} : { width: 48, flexShrink: 0 }}
+      aria-hidden="true"
+    >
+      {/* Dashed line */}
+      <div
+        className={vertical ? "w-px h-full" : "h-px w-full"}
+        style={{
+          background: `repeating-linear-gradient(${vertical ? "180deg" : "90deg"}, var(--accent) 0px, var(--accent) 4px, transparent 4px, transparent 10px)`,
+          opacity: 0.3,
+        }}
+      />
+      {/* Flowing dot */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          width: 6,
+          height: 6,
+          background: "var(--accent)",
+          boxShadow: "0 0 8px var(--accent-glow)",
+          ...(vertical
+            ? { left: "50%", transform: "translateX(-50%)", animation: "flowDotVertical 2s ease-in-out infinite" }
+            : { top: "50%", transform: "translateY(-50%)", animation: "flowDotHorizontal 2s ease-in-out infinite" }),
+        }}
+      />
+      {/* Arrow at end */}
+      {!vertical && (
+        <ArrowRight
+          className="absolute right-0 top-1/2 -translate-y-1/2"
+          style={{ width: 12, height: 12, color: "var(--accent)", opacity: 0.4 }}
+        />
+      )}
+    </div>
+  );
+}
 
 export function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="ec-section">
+    <section id="how-it-works" className="ec-section" style={{ background: "var(--page)" }}>
+      {/* Pipeline connector animation keyframes */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes flowDotHorizontal {
+          0% { left: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { left: calc(100% - 6px); opacity: 0; }
+        }
+        @keyframes flowDotVertical {
+          0% { top: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: calc(100% - 6px); opacity: 0; }
+        }
+      `}} />
+
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
 
-        {/* Intro — no tracked uppercase eyebrow above the heading. One section
-            voice; the ledger photo in the hero already set the register. */}
+        {/* Intro */}
         <m.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -97,46 +155,49 @@ export function HowItWorksSection() {
           </p>
         </m.div>
 
-        {/* Pipeline — asymmetric bento, trace lines connect the flow */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-
-          {NODES.map(({ n, Icon, tag, title, body, artifact, meta, span, emphasis }) => {
-            const high = emphasis === "high";
-            return (
+        {/* Pipeline — connected cards with flowing dots */}
+        <m.div
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-60px" }}
+          className="flex flex-col lg:flex-row lg:items-stretch gap-0"
+        >
+          {NODES.map(({ n, Icon, tag, title, body, artifact, meta }, index) => (
+            <div key={n} className="contents">
+              {/* Card */}
               <m.article
-                key={n}
                 variants={fadeUp}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, margin: "-60px" }}
-                className={`ec-casefile ${span}`}
+                className="group hover:shadow-xl transition-all duration-500 flex-1"
                 style={{
-                  padding: high ? "30px 30px 26px" : "26px 26px 22px",
+                  padding: "32px 28px",
                   position: "relative",
                   display: "flex",
                   flexDirection: "column",
-                  gap: 18,
-                  background: high ? "linear-gradient(160deg, var(--accent-subtle), var(--panel) 60%)" : "var(--panel)",
+                  gap: 16,
+                  background: "var(--panel)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "20px",
+                  boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)",
                 }}
               >
-                {/* Header row: tag + index. Index is real (ordered flow), so it earns its place. */}
+                {/* Header row */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span
                     style={{
-                      display: "inline-flex", alignItems: "center", gap: 7,
-                      fontFamily: "var(--font-data)", fontSize: 11, fontWeight: 600,
-                      letterSpacing: "0.06em", textTransform: "uppercase",
-                      color: high ? "var(--accent)" : "var(--muted)",
+                      display: "inline-flex", alignItems: "center", gap: 8,
+                      fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700,
+                      letterSpacing: "0.08em", textTransform: "uppercase",
+                      color: "var(--accent)",
                     }}
                   >
-                    <Icon style={{ width: 15, height: 15 }} aria-hidden="true" />
+                    <Icon style={{ width: 16, height: 16 }} aria-hidden="true" />
                     {tag}
                   </span>
                   <span
                     style={{
-                      fontFamily: "var(--font-data)", fontSize: 13, fontWeight: 700,
-                      color: high ? "var(--accent)" : "var(--muted-subtle)",
-                      opacity: 0.7,
+                      fontFamily: "var(--font-data)", fontSize: 16, fontWeight: 800,
+                      color: "var(--border)",
                     }}
                   >
                     {n}
@@ -145,14 +206,13 @@ export function HowItWorksSection() {
 
                 <h3
                   style={{
-                    fontSize: high ? "clamp(1.5rem, 2vw, 1.9rem)" : "clamp(1.25rem, 1.6vw, 1.5rem)",
+                    fontSize: "1.35rem",
                     fontFamily: "var(--font-heading)",
                     fontWeight: 700,
                     letterSpacing: "-0.02em",
-                    lineHeight: 1.15,
+                    lineHeight: 1.2,
                     color: "var(--ink)",
                     margin: 0,
-                    textWrap: "balance" as const,
                   }}
                 >
                   {title}
@@ -162,45 +222,41 @@ export function HowItWorksSection() {
                   {body}
                 </p>
 
-                {/* Artifact strip — mono, carries real data only */}
+                {/* Artifact strip */}
                 <div style={{ marginTop: "auto", paddingTop: 16, borderTop: "1px solid var(--border)" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
                     <span
                       style={{
                         fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700,
-                        letterSpacing: "0.06em", textTransform: "uppercase",
-                        color: high ? "var(--accent)" : "var(--ink)",
+                        letterSpacing: "0.08em", textTransform: "uppercase",
+                        color: "var(--accent)",
                       }}
                     >
                       {artifact}
                     </span>
-                    <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted-subtle)", letterSpacing: "0.04em" }}>
+                    <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)", letterSpacing: "0.05em" }}>
                       {meta}
                     </span>
                   </div>
-                  {/* Inline confidence bar on the AI node — ties it to the hero ledger */}
-                  {high && (
-                    <div style={{ marginTop: 12, display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ flex: 1, height: 5, borderRadius: 9999, background: "color-mix(in oklab, var(--accent) 12%, transparent)", overflow: "hidden" }}>
-                        <m.div
-                          initial={{ width: 0 }}
-                          whileInView={{ width: "94.6%" }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                          style={{ height: "100%", borderRadius: 9999, background: "var(--accent)" }}
-                        />
-                      </div>
-                      <span style={{ fontFamily: "var(--font-data)", fontSize: 11, fontWeight: 700, color: "var(--accent)" }}>94.6%</span>
-                    </div>
-                  )}
                 </div>
-
-                {/* Dotted trace hint toward the next node (desktop) */}
-                <div className="ec-trace hidden lg:block" aria-hidden="true" style={{ position: "absolute", right: -22, top: "50%", width: 18, height: 2 }} />
               </m.article>
-            );
-          })}
-        </div>
+
+              {/* Connector between cards (not after the last one) */}
+              {index < NODES.length - 1 && (
+                <m.div variants={fadeUp} className="flex flex-col justify-center self-stretch">
+                  {/* Desktop: horizontal connector */}
+                  <div className="hidden lg:block">
+                    <PipelineConnector />
+                  </div>
+                  {/* Mobile: vertical connector */}
+                  <div className="lg:hidden">
+                    <PipelineConnector vertical />
+                  </div>
+                </m.div>
+              )}
+            </div>
+          ))}
+        </m.div>
       </div>
     </section>
   );

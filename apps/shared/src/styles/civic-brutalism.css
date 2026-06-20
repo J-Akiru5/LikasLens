@@ -1,9 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   CIVIC BRUTALISM — Backward-compat re-export of design-tokens.css
+   CIVIC BRUTALISM THEME (Next-Gen UI 2026)
    ═══════════════════════════════════════════════════════════════════════════
-   This file is kept for backward compatibility. Import design-tokens.css
-   directly for new code:
-     @import "@likaslens/shared/src/styles/design-tokens.css";
+   Import this file in apps that require the ultra-high contrast, raw aesthetic.
+   Usually overrides default design-tokens.css.
    ═══════════════════════════════════════════════════════════════════════════ */
 @import "./design-tokens.css";
 

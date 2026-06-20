@@ -1,10 +1,6 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
-@source "../../../shared/src/**/*.{ts,tsx}";
-@source "../shared/src/**/*.{ts,tsx}";
-@source "./node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
-@source "../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
-@source "../../shared/src/**/*.{ts,tsx}";
+@source "../../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @import "@likaslens/shared/src/styles/design-tokens.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -121,6 +117,17 @@ body {
   12%  { opacity: 1; }
   88%  { opacity: 1; }
   100% { top: 100%; opacity: 0; }
+}
+
+/* TacticalHUD keyframes */
+@keyframes hud-ping {
+  0%   { transform: scale(1); opacity: 0.9; }
+  80%  { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes hud-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
 /* Fine instrument grid — extremely subtle, not the 2px SaaS grid. */

@@ -380,7 +380,7 @@ export default function ReportPage() {
                 <div className="relative bg-black/90 border border-ink/10 overflow-hidden rounded-xl">
                   <video ref={videoRef} autoPlay playsInline muted className="w-full aspect-video object-cover" />
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
-                    <button type="button" onClick={capturePhoto} aria-label="Capture photo" className="px-5 py-2.5 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+                    <button type="button" onClick={capturePhoto} aria-label="Capture photo" className="px-5 py-2.5 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
                       <Camera className="w-4 h-4" aria-hidden="true" /> Capture
                     </button>
                     <button type="button" onClick={() => camera.stop()} aria-label="Cancel camera" className="px-5 py-2.5 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
@@ -534,7 +534,7 @@ export default function ReportPage() {
                 type="submit"
                 disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
                 aria-label="Submit report"
-                className="py-3 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                className="py-3 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
               >
                 {isSubmitting ? "Submitting..." : isTriaging ? "Analyzing..." : "Submit Report"}
               </button>

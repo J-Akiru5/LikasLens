@@ -82,7 +82,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Dashboard Overview</h1>
         <div className="flex items-center gap-3">
           <PulseBadge label="Live" size="sm" />
-          <Button asChild variant="primary" size="md">
+          <Button asChild variant="ink" size="md">
             <Link href="/report">Submit Report</Link>
           </Button>
         </div>

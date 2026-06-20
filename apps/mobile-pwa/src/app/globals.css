@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@source "../../../shared/src/**/*.{ts,tsx}";
+@source "../../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @import "@likaslens/shared/src/styles/design-tokens.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -151,6 +151,10 @@ body {
 @keyframes m-shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 .skeleton-shimmer {
   background: linear-gradient(

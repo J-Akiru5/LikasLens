@@ -178,7 +178,7 @@
     "publicRecordsAdmin": "Catatan Publik",
     "publicRecordsAdminDesc": "Lihat papan skor publik. Pastikan masalah yang terselesaikan tercermin dengan akurat untuk akuntabilitas komunitas.",
     "aiAssistance": "Bantuan AI",
-    "aiAssistanceDesc": "Gunakan Likasy, asisten AI, untuk menanyakan hukum lingkungan, menganalisis pola laporan, dan menghasilkan ringkasan.",
+    "aiAssistanceDesc": "Gunakan Liksi, asisten AI, untuk menanyakan hukum lingkungan, menganalisis pola laporan, dan menghasilkan ringkasan.",
     "role": "Peran",
     "actions": "Tindakan",
     "changeRole": "Ubah Peran",
@@ -353,13 +353,13 @@
     "lastUpdated": "Terakhir Diperbarui"
   },
   "chat": {
-    "title": "Likasy",
+    "title": "Liksi",
     "subtitle": "Asisten AI",
     "online": "Online",
-    "placeholder": "Tanya Likasy...",
+    "placeholder": "Tanya Liksi...",
     "send": "Kirim pesan",
     "closeChat": "Tutup obrolan",
-    "openChat": "Buka obrolan Likasy",
+    "openChat": "Buka obrolan Liksi",
     "errorFallback": "Ups! Saya tidak bisa berpikir sekarang. Silakan periksa koneksi Anda atau coba lagi nanti."
   },
   "offline": {

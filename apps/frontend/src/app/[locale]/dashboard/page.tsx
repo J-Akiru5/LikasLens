@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { laravelGet } from "@likaslens/shared";
 import { CitizenDashboardClient } from "./citizen-dashboard-client";
+import { LiksiBanner } from "@/components/dashboard/liksi-banner";
 import { ContributorProfile } from "@/components/dashboard/contributor-profile";
 import type { RecentAchievement, RankProgress, DashboardStats, ActivityFeedItem } from "@likaslens/shared";
 
@@ -44,7 +45,7 @@ export default async function DashboardPage() {
   const isAdmin = userRole === "super_admin" || userRole === "analyst" || userRole === "lgu" || userRole === "partner";
 
   return (
-    <DashboardContent greeting={userGreeting} userRole={userRole}>
+    <DashboardContent userRole={userRole}>
       {isAdmin ? (
         <div className="bento-grid">
           <div className="span-6 md:col-start-4">
@@ -74,6 +75,7 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <>
+          <LiksiBanner userName={userGreeting} />
           <ContributorProfile />
           <CitizenDashboardClient
             impact={impactData}

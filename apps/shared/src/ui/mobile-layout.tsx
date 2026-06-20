@@ -6,7 +6,7 @@ import { PullToRefresh } from "./pull-to-refresh";
 import { cn } from "../utils";
 import { Leaf, Bell, Fingerprint, Trophy, ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { LikasyChat } from "./chat/likasy-chat";
+import { LiksiChat } from "./chat/liksi-chat";
 
 import { locales } from "../i18n/config";
 import { usePathname } from "next/navigation";
@@ -142,8 +142,8 @@ export function MobileLayout({
         )}
       </main>
 
-      {/* Likasy Chatbot */}
-      <LikasyChat className="bottom-[90px] right-4" locale={hasLocale ? pathParts[1] : "en"} />
+      {/* Liksi Chatbot */}
+      <LiksiChat className="bottom-[90px] right-4" locale={hasLocale ? pathParts[1] : "en"} />
 
       {/* Bottom Navigation */}
       <BottomNav items={bottomNavItems} />

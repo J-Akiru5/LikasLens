@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {},
   images: {
-    qualities: [70, 75],
+    qualities: [70, 75, 85],
     remotePatterns: [
       {
         protocol: "https",

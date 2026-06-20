@@ -73,6 +73,7 @@ export function MobileHeader({
       {/* Right: Ghost Toggle + Notifications */}
       <div className="flex items-center gap-1 shrink-0">
         <button
+          suppressHydrationWarning
           onClick={onThemeToggle}
           aria-label={isGhostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
           className={cn(
@@ -83,9 +84,9 @@ export function MobileHeader({
           )}
         >
           {isGhostMode ? (
-            <Fingerprint className="w-5 h-5" />
+            <Fingerprint className="w-5 h-5" suppressHydrationWarning />
           ) : (
-            <Leaf className="w-5 h-5 text-green" />
+            <Leaf className="w-5 h-5 text-green" suppressHydrationWarning />
           )}
         </button>
 
