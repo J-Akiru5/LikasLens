@@ -378,5 +378,22 @@
     "coastalDamage": "Pinsala sa Baybayin",
     "wasteBurning": "Pagsusunog ng Basura",
     "unclassified": "Hindi Klasipikadong Isyung Pangkalikasan"
+  },
+  "seo": {
+    "homeTitle": "LikasLens — Nagpoprotekta sa Kalikasan ng Pilipinas | AI-Powered Civic Reporting",
+    "impactTitle": "Epekto — Community Environmental Reporting",
+    "impactDescription": "Tingnan ang totoong epekto ng civic environmental reporting sa Pilipinas. Subaybayan ang mga naresolveng insidente at aksyon ng komunidad.",
+    "lawsTitle": "Mga Batas sa Kalikasan ng Pilipinas",
+    "lawsDescription": "Alamin ang iyong mga karapatan sa pagpoprotekta sa kalikasan. Mga batas sa kagubatan, baybayin, biodiversity, at polusyon.",
+    "scoreboardTitle": "Leaderboard ng Komunidad — Mga Tagapagtanggol ng Kalikasan",
+    "scoreboardDescription": "Mga nangungunang tagapag-ulat at tagapagtanggol ng kalikasan sa Pilipinas. Sino ang may pinakamalaking epekto sa pagpoprotekta sa kalikasan.",
+    "reportTitle": "Mag-ulat ng Isyu sa Kalikasan",
+    "reportDescription": "I-snap at i-ulat ang mga isyu sa kalikasan sa Pilipinas. AI-powered na pagsusuri agad na pinapadala sa kinauukulang ahensya.",
+    "contactTitle": "Makipag-ugnayan sa LikasLens",
+    "contactDescription": "Makipag-ugnayan sa LikasLens. Samahan ang kilusan sa pagpoprotekta sa kalikasan ng Pilipinas.",
+    "changelogTitle": "Changelog — Lahat ng Update",
+    "changelogDescription": "Subaybayan ang lahat ng pagbabago, ayos, at pagpapabuti sa LikasLens.",
+    "privacyDescription": "Patakaran sa Privacy ng LikasLens. Protektado ang iyong data at EXIF metadata.",
+    "termsDescription": "Mga Tuntunin ng Serbisyo ng LikasLens."
   }
 }
