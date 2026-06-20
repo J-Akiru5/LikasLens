@@ -125,11 +125,11 @@
     --border-strong: rgba(232, 228, 220, 0.16);
 
     /* ── Brand ─────────────────────────────────────────────────────────────── */
-    --accent: #2ee6c8; /* teal is primary in Ghost Mode */
-    --accent-foreground: #06101e; /* dark navy for readable text on bright teal */
-    --accent-hover: #3df0d2;
-    --accent-subtle: rgba(46, 230, 200, 0.08);
-    --accent-bright: #2ee6c8;
+    --accent: #facc15; /* yellow-gold is primary in Ghost Mode */
+    --accent-foreground: #06101e; /* dark navy for readable text */
+    --accent-hover: #fde047;
+    --accent-subtle: rgba(250, 204, 21, 0.08);
+    --accent-bright: #facc15;
     --accent-glow: color-mix(in oklab, var(--accent) 22%, transparent);
     --accent-soft: color-mix(in oklab, var(--accent) 10%, transparent);
     --accent-strong: color-mix(in oklab, var(--accent) 90%, #000 0%);
