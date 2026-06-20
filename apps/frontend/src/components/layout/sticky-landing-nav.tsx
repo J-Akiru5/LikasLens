@@ -42,11 +42,11 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then(({ data }) => {
-      setIsAuthenticated(!!data.session);
+    supabase.auth.getSession().then((response: any) => {
+      setIsAuthenticated(!!response?.data?.session);
     });
     
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setIsAuthenticated(!!session);
     });
     
