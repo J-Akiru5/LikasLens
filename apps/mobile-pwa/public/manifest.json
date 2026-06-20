@@ -64,5 +64,31 @@
       "type": "image/png",
       "form_factor": "narrow"
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/report",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "description",
+      "url": "link",
+      "files": [
+        {
+          "name": "photo",
+          "accept": ["image/jpeg", "image/png", "image/webp"]
+        }
+      ]
+    }
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }

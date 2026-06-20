@@ -216,16 +216,16 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
         transition: "background-color 0.6s ease",
       }}
     >
-      {/* Custom AI Glassmorphic Hero Background */}
-      <div style={{ position: "absolute", inset: 0, opacity: ghostMode ? 0.7 : 1, transition: "opacity 0.6s ease" }}>
-        <AnimatedAuroraBackground ghostMode={ghostMode} />
+      {/* Premium Data Topography Background */}
+      <div style={{ position: "absolute", inset: 0, opacity: ghostMode ? 0.6 : 1, transition: "opacity 0.6s ease" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/landing_hero_bg_premium.png')", backgroundSize: "cover", backgroundPosition: "center", mixBlendMode: "luminosity" }} />
         {/* Subtle dark gradient overlay to ensure text remains perfectly readable */}
         <div
           style={{
             position: "absolute", inset: 0,
             background: ghostMode 
-              ? "linear-gradient(180deg, rgba(13,26,18,0.95) 0%, rgba(13,26,18,0.5) 45%, rgba(13,26,18,0.95) 100%)"
-              : "linear-gradient(180deg, rgba(13,26,18,0.85) 0%, rgba(13,26,18,0.4) 45%, rgba(13,26,18,0.9) 100%)",
+              ? "linear-gradient(180deg, rgba(13,26,18,0.98) 0%, rgba(13,26,18,0.7) 45%, rgba(13,26,18,0.95) 100%)"
+              : "linear-gradient(180deg, rgba(13,26,18,0.9) 0%, rgba(13,26,18,0.4) 45%, rgba(13,26,18,0.85) 100%)",
             transition: "background 0.6s ease",
             pointerEvents: "none",
             zIndex: 1

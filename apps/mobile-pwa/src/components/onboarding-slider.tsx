@@ -194,7 +194,7 @@ export function OnboardingSlider() {
         >
           {/* Subtle swipe shimmer effect */}
           <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
-          <span className="relative z-10">{isLastSlide ? "Initialize Systems" : "Continue"}</span>
+          <span className="relative z-10">{isLastSlide ? "Get Started" : "Continue"}</span>
           <ChevronRight className="w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1" />
         </button>
       </div>
