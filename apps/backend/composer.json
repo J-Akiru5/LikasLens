@@ -7,7 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "doctrine/dbal": "^3.0",
+        "doctrine/dbal": "^4.0",
         "fakerphp/faker": "*",
         "laravel/framework": "^12.62.0",
         "laravel/sanctum": "^4.3",
