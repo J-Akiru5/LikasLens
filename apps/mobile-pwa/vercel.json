@@ -1,0 +1,5 @@
+{
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm --filter mobile-pwa build",
+  "outputDirectory": ".next"
+}
