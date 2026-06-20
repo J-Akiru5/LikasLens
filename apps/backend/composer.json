@@ -11,7 +11,7 @@
         "fakerphp/faker": "*",
         "laravel/framework": "^12.62.0",
         "laravel/sanctum": "^4.3",
-        "laravel/tinker": "^2.10.1",
+        "laravel/tinker": "^3.0.2",
         "league/flysystem-aws-s3-v3": "*"
     },
     "require-dev": {
