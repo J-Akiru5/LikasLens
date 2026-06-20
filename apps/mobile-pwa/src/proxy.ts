@@ -1,8 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { locales } from "@likaslens/shared";
+import createMiddleware from "next-intl/middleware";
 
-const publicRoutes = ["/login", "/register", "/onboarding", "/splash"];
+const publicRoutes = ["/login", "/register", "/onboarding", "/splash", "/install"];
+
+const intlMiddleware = createMiddleware({
+  locales,
+  defaultLocale: "en",
+  localePrefix: "always",
+  localeDetection: true,
+});
 
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -18,13 +26,18 @@ export default async function middleware(request: NextRequest) {
       (loc) => pathname === `/${loc}` || pathname.startsWith(`/${loc}/`),
     ) || locales[0];
 
-  let supabaseResponse = NextResponse.next({ request });
+  let supabaseResponse = intlMiddleware(request);
 
   // If Supabase is not configured yet, apply simple public-route logic only
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   ) {
+    return supabaseResponse;
+  }
+  
+  // COMPLETELY EXEMPT the /install route from all auth redirections
+  if (pathname.endsWith("/install")) {
     return supabaseResponse;
   }
 

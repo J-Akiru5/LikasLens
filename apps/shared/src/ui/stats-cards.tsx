@@ -90,7 +90,7 @@ function MiniSparkline({ points, color }: { points: number[]; color: string }) {
 
 export function StatsCards({ items, className, gridClassName }: StatsCardsProps) {
   return (
-    <div className={cn("grid grid-cols-3 gap-3 md:grid-cols-3 lg:grid-cols-4", gridClassName, className)}>
+    <div className={cn("grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4", gridClassName, className)}>
       {items.map((item) => {
         const accent = item.accent ?? "accent";
         return (
@@ -100,7 +100,7 @@ export function StatsCards({ items, className, gridClassName }: StatsCardsProps)
               "kpi-card group",
               accentClass[accent],
               bgTintClass[accent],
-              "relative flex flex-col gap-3 rounded-2xl border border-border p-3 sm:p-4 transition-colors duration-300 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklab,var(--accent)_18%,transparent)]"
+              "relative flex flex-col gap-3 rounded-2xl border border-border p-3 sm:p-4 transition-colors duration-300 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklab,var(--accent)_18%,transparent)] overflow-hidden"
             )}
           >
             {/* Semantic Background Icon */}
@@ -122,12 +122,12 @@ export function StatsCards({ items, className, gridClassName }: StatsCardsProps)
             {/* Top row: Label */}
             <div className="flex items-start justify-between gap-2 relative z-10 mb-2 sm:mb-3">
               {item.category ? (
-                <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40">
+                <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40 truncate">
                   {item.category}
                 </span>
               ) : (
-                <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                  <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40">{item.label}</span>
+                <div className="flex items-center gap-2 mb-2 sm:mb-3 min-w-0">
+                  <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40 truncate">{item.label}</span>
                 </div>
               )}
               {item.sparkline ? (
@@ -136,14 +136,14 @@ export function StatsCards({ items, className, gridClassName }: StatsCardsProps)
             </div>
 
             <div className={cn(
-              "text-2xl sm:text-3xl font-bold tracking-tight tabular-nums relative z-10",
+              "text-2xl sm:text-3xl font-bold tracking-tight tabular-nums relative z-10 truncate",
               valueColorClass[accent]
             )}>
               {item.value}
             </div>
 
-            <div className="flex items-center justify-between gap-2 relative z-10">
-              <span className="text-xs font-mono uppercase tracking-wider text-muted">
+            <div className="flex items-center justify-between gap-2 relative z-10 min-w-0">
+              <span className="text-xs font-mono uppercase tracking-wider text-muted truncate">
                 {item.label}
               </span>
               {item.trend ? (

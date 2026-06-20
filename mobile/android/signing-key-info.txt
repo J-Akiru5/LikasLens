@@ -1,0 +1,10 @@
+Keep this file and signing.keystore in a safe place. You'll need these files if you want to upload future versions of your PWA to the Google Play Store.
+
+Key store file: signing.keystore
+Key store password: bmTd18B6G32U
+Key alias: my-key-alias
+Key password: bmTd18B6G32U
+Signer's full name: LikasLens Admin
+Signer's organization: LikasLens
+Signer's organizational unit: Engineering
+Signer's country code: US

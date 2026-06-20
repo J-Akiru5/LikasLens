@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { m, AnimatePresence } from "framer-motion";
 import { Leaf, Fingerprint, Menu, X } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { UserNav } from "./user-nav";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Sticky Landing Nav — appears after scrolling past the hero.
@@ -22,6 +24,8 @@ const NAV_LINKS = [
   { href: "#scoreboard", label: "Records" },
   { href: "#impact", label: "Impact" },
   { href: "#architecture", label: "Architecture" },
+  { href: "#faq", label: "FAQ" },
+  { href: "#install-guide", label: "Install" },
 ];
 
 interface StickyLandingNavProps {
@@ -34,6 +38,20 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeSection, setActiveSection] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }) => {
+      setIsAuthenticated(!!data.session);
+    });
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleScroll = useCallback(() => {
     // Show frosted background after scrolling past a threshold
@@ -128,7 +146,10 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                   onClick={(e) => {
                     e.preventDefault();
                     const target = document.querySelector(href);
-                    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    if (target) {
+                      const y = target.getBoundingClientRect().top + window.pageYOffset - 80;
+                      window.scrollTo({ top: y, behavior: "smooth" });
+                    }
                   }}
                 >
                   {label}
@@ -175,30 +196,36 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
             </button>
 
             <div className="hidden sm:flex items-center gap-4 ml-2">
-              <Link
-                href="/login"
-                className="font-mono text-[11px] font-bold tracking-[0.1em] uppercase transition-colors"
-                style={{
-                  color: !visible || ghostMode ? "rgba(240,237,232,0.8)" : "rgba(17,24,20,0.7)",
-                  textDecoration: "none",
-                }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = !visible || ghostMode ? "#ffffff" : "#111814")}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = !visible || ghostMode ? "rgba(240,237,232,0.8)" : "rgba(17,24,20,0.7)")}
-              >
-                Log In
-              </Link>
-              <Link
-                href="/register"
-                className="px-4 py-2 rounded-lg text-xs font-bold transition-all no-underline shadow-sm"
-                style={{
-                  background: "#2ee6c8",
-                  color: "#0d1a12",
-                }}
-                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#40f0d4")}
-                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#2ee6c8")}
-              >
-                Sign Up
-              </Link>
+              {isAuthenticated ? (
+                <UserNav invert={!visible || ghostMode} />
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="font-mono text-[11px] font-bold tracking-[0.1em] uppercase transition-colors"
+                    style={{
+                      color: !visible || ghostMode ? "rgba(240,237,232,0.8)" : "rgba(17,24,20,0.7)",
+                      textDecoration: "none",
+                    }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = !visible || ghostMode ? "#ffffff" : "#111814")}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = !visible || ghostMode ? "rgba(240,237,232,0.8)" : "rgba(17,24,20,0.7)")}
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="px-4 py-2 rounded-lg text-xs font-bold transition-all no-underline shadow-sm"
+                    style={{
+                      background: "#2ee6c8",
+                      color: "#0d1a12",
+                    }}
+                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#40f0d4")}
+                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#2ee6c8")}
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -241,8 +268,14 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                   onClick={(e) => {
                     e.preventDefault();
                     setMobileMenuOpen(false);
-                    const target = document.querySelector(href);
-                    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    // Use setTimeout to allow the menu close animation to start before scrolling
+                    setTimeout(() => {
+                      const target = document.querySelector(href);
+                      if (target) {
+                        const y = target.getBoundingClientRect().top + window.pageYOffset - 80;
+                        window.scrollTo({ top: y, behavior: "smooth" });
+                      }
+                    }, 50);
                   }}
                 >
                   {label}
@@ -252,22 +285,35 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
               <div className="h-px w-full my-1" style={{ background: ghostMode ? "rgba(46, 230, 200, 0.1)" : "rgba(0, 0, 0, 0.05)" }} />
               
               <div className="flex flex-col gap-3 sm:hidden pt-1">
-                <Link
-                  href="/login"
-                  className="text-sm font-bold tracking-wide uppercase transition-colors text-center py-2"
-                  style={{ color: ghostMode ? "#ffffff" : "#111814" }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Log In
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold w-full text-center transition-colors shadow-sm"
-                  style={{ background: "#2ee6c8", color: "#0d1a12" }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Sign Up
-                </Link>
+                {isAuthenticated ? (
+                  <Link
+                    href="/dashboard"
+                    className="inline-flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold w-full text-center transition-colors shadow-sm"
+                    style={{ background: "#2ee6c8", color: "#0d1a12" }}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="text-sm font-bold tracking-wide uppercase transition-colors text-center py-2"
+                      style={{ color: ghostMode ? "#ffffff" : "#111814" }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="inline-flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold w-full text-center transition-colors shadow-sm"
+                      style={{ background: "#2ee6c8", color: "#0d1a12" }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </m.div>
