@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\ResolveTenant;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
