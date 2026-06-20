@@ -154,29 +154,39 @@ CRITICAL INSTRUCTIONS:
 4. Write exactly 2 sentences: one describing the violation and applicable law, one naming the agency to route to.
 5. Do NOT add disclaimers, caveats, or information not present in the retrieved context."""
 
-    try:
-        response = await asyncio.wait_for(
-            asyncio.to_thread(model.generate_content, prompt),
-            timeout=GEMINI_TIMEOUT_SECONDS,
-        )
-        text = response.text
-        if not text:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Gemini returned an empty response",
+    last_exc = None
+    for attempt in range(3):
+        try:
+            response = await asyncio.wait_for(
+                asyncio.to_thread(model.generate_content, prompt),
+                timeout=GEMINI_TIMEOUT_SECONDS,
             )
-        return text.strip()
-    except asyncio.TimeoutError:
-        logger.error("Gemini timed out after %ds for hazard_id=%s", GEMINI_TIMEOUT_SECONDS, hazard_id)
-        raise HTTPException(
-            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail=f"Gemini API timed out after {GEMINI_TIMEOUT_SECONDS}s",
-        )
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.error("Gemini API call failed for hazard_id=%s: %s", hazard_id, exc)
+            text = response.text
+            if not text:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Gemini returned an empty response",
+                )
+            return text.strip()
+        except asyncio.TimeoutError:
+            last_exc = None
+            logger.warning("Gemini timeout on attempt %d/3 for hazard_id=%s", attempt + 1, hazard_id)
+        except HTTPException:
+            raise
+        except Exception as exc:
+            last_exc = exc
+            logger.warning("Gemini error on attempt %d/3 for hazard_id=%s: %s", attempt + 1, hazard_id, exc)
+
+        if attempt < 2:
+            delay = 2 ** attempt  # 1s, 2s
+            await asyncio.sleep(delay)
+
+    if last_exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Gemini API call failed",
-        ) from exc
+            detail="Gemini API call failed after 3 attempts",
+        ) from last_exc
+    raise HTTPException(
+        status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+        detail=f"Gemini API timed out after 3 attempts",
+    )
