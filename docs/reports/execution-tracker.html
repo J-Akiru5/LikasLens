@@ -584,7 +584,7 @@
         <h4>Pre-flight Communication to Cha <span class="sub-count" data-group="phase0c"></span></h4>
         <ul class="checklist">
           <li>
-            <input type="checkbox" id="p0c-1" data-group="phase0 phase0c" onchange="saveState()">
+            <input type="checkbox" id="p0c-1" data-group="phase0 phase0c" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p0c-1">Tell Cha: All traversal queries must be Cypher, not Gremlin. Reference neo4j_client.py and graph_rag.py.</label>
               <div class="check-meta">
@@ -593,7 +593,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p0c-2" data-group="phase0 phase0c" onchange="saveState()">
+            <input type="checkbox" id="p0c-2" data-group="phase0 phase0c" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p0c-2">Tell Cha: SLA values are violation-specific (see table). illegal_dumping = 48h/168h, not generic 24h/72h.</label>
               <div class="check-meta">
@@ -603,10 +603,118 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p0c-3" data-group="phase0 phase0c" onchange="saveState()">
+            <input type="checkbox" id="p0c-3" data-group="phase0 phase0c" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p0c-3">Tell Cha: AGENTS.md line 10 says "Gremlin DB ONLY" — this is wrong. Codebase uses Neo4j/Cypher.</label>
               <div class="check-meta">
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4>0D. Composite Confidence Scoring + Triage Disposition <span class="sub-count" data-group="phase0d"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="p0d-1" data-group="phase0 phase0d" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0d-1">Add <code>compute_composite_score()</code> and <code>triage_disposition()</code> to image_analysis.py</label>
+              <div class="check-meta">
+                <code>apps/ai-service/image_analysis.py</code> — replaces old 0.50 threshold gate with three-tier gate (0.70/0.40)
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0d-2" data-group="phase0 phase0d" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0d-2">Create migration: add <code>triage_disposition</code> + <code>composite_confidence</code> to tickets table</label>
+              <div class="check-meta">
+                <code>2026_06_20_000001_add_triage_disposition_to_tickets_table.php</code> + update Ticket model
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0d-3" data-group="phase0 phase0d" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0d-3">Update TriageService to read composite from AI response, store on ticket, bump confidence 0.25→0.50</label>
+              <div class="check-meta">
+                <code>app/Services/TriageService.php</code>
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4>0E. Circuit Breaker + Gemini Retry <span class="sub-count" data-group="phase0e"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="p0e-1" data-group="phase0 phase0e" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0e-1">Add circuit breaker to TriageService: 3 failures → 60s cooldown, auto-reset</label>
+              <div class="check-meta">
+                <code>app/Services/TriageService.php</code> — static class-level state
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0e-2" data-group="phase0 phase0e" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0e-2">Add Gemini retry with exponential backoff (1s/2s) to hazard_analyzer.py</label>
+              <div class="check-meta">
+                <code>apps/ai-service/hazard_analyzer.py</code> — 3 attempts max
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4>0F. Research Doc Cleanup (Gremlin→Cypher) <span class="sub-count" data-group="phase0f"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="p0f-1" data-group="phase0 phase0f" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0f-1">Fix blueprint Phase 4 seed data: Gremlin g.addV/addE → Cypher CREATE/MATCH</label>
+              <div class="check-meta">
+                <code>docs/research/The Legal Graph & Routing Blueprint.md</code> lines 660-730
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0f-2" data-group="phase0 phase0f" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0f-2">Fix blueprint routing queries: Gremlin traversal → Cypher MATCH/RETURN</label>
+              <div class="check-meta">
+                <code>docs/research/The Legal Graph & Routing Blueprint.md</code> lines 740-768
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0f-3" data-group="phase0 phase0f" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0f-3">Fix LOCAL AND INTERNATIONAL STANDARD.md: "Azure Cosmos DB Gremlin Graph" → "Neo4j Graph"</label>
+              <div class="check-meta">
+                <code>docs/research/LOCAL AND INTERNATIONAL STANDARD.md</code> line 4
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0f-4" data-group="phase0 phase0f" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0f-4">Add SLA violation-specific note to blueprint escalation section</label>
+              <div class="check-meta">
+                <code>docs/research/The Legal Graph & Routing Blueprint.md</code> line 602
                 <span class="who-badge who-you">You</span>
               </div>
             </div>
