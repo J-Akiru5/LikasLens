@@ -19,7 +19,7 @@ function SubmitButton() {
       size="xl"
       type="submit"
       loading={pending}
-      className="w-full"
+      className="w-full !bg-[#0f4c5c] hover:!bg-[#0b3844] !text-white !border-transparent"
     >
       {pending ? "Creating account..." : (
         <>
@@ -59,36 +59,55 @@ export function RegisterClient() {
 
   return (
     <main className="min-h-dvh flex flex-col lg:flex-row-reverse bg-page selection:bg-accent/30 selection:text-current">
-      {/* Right Panel: Immersive Image (Hidden on small screens, 50% on large) */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-ink items-center justify-center overflow-hidden">
-        <Image
-          src="/images/frontend_auth_bg.png"
-          alt="Lush rainforest meeting pristine ocean"
-          fill
-          sizes="(max-width: 1024px) 100vw, 50vw"
-          className="object-cover opacity-90 scale-105"
-          priority
-        />
-        {/* Glassmorphic Overlay Box */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-          className="relative z-10 p-10 max-w-lg bg-page/10 backdrop-blur-md border border-page/20 rounded-3xl shadow-2xl mx-12"
-        >
-          <div className="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-xl flex items-center justify-center mb-6 shadow-sm">
-            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain" />
+      {/* Right Panel: Immersive Nature Image with Trust Text (Hidden on small screens, 50% on large) */}
+      <div className="hidden lg:flex lg:w-1/2 p-3">
+        <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-ink shadow-2xl flex flex-col justify-end">
+          {/* Light Mode: Crystal Clear Beach */}
+          <div className="light-mode-only absolute inset-0 z-0">
+            <Image
+              src="/images/auth-nature-bg-v2.png"
+              alt="Crystal clear tropical beach"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover scale-105"
+              priority
+            />
           </div>
-          <h2 className="text-4xl font-bold tracking-tight text-white mb-4 leading-tight drop-shadow-md">
-            Your lens can change <br/>the world.
-          </h2>
-          <p className="text-white/90 text-lg leading-relaxed drop-shadow-sm font-medium">
-            Join the movement of citizen scientists dedicated to monitoring and preserving environmental purity through state-of-the-art AI.
-          </p>
-        </motion.div>
-        
-        {/* Soft vignette overlay for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent pointer-events-none" />
+          
+          {/* Ghost Mode: Coral Reef Undersea */}
+          <div className="ghost-mode-only absolute inset-0 z-0">
+            <Image
+              src="/images/auth-undersea-bg.png"
+              alt="Beautiful colorful coral reef with fish"
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover scale-105"
+              priority
+            />
+          </div>
+          <div className="absolute inset-0 bg-ink/10 pointer-events-none z-0" />
+          
+          {/* Clean Gradient Overlay for Text Readability at Bottom */}
+          <div className="absolute inset-x-0 bottom-0 h-[40%] bg-gradient-to-t from-ink/95 via-ink/40 to-transparent pointer-events-none z-0" />
+          
+          {/* Minimalist Trust Text and Logo at the Bottom */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+            className="relative z-10 p-12 flex flex-col gap-4"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <img src="/images/likas-lens-logo.png" alt="LikasLens" className="w-8 h-8 object-contain drop-shadow-lg brightness-0 invert" />
+              <span className="font-heading tracking-[0.2em] text-white text-xl flex items-center drop-shadow-lg">
+                <span className="font-medium">LIK</span><span className="font-semibold mx-[1px]">Λ</span><span className="font-medium mr-2">S</span><span className="font-bold">LENS</span>
+              </span>
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight text-white leading-snug drop-shadow-lg max-w-md">
+              Your lens can change <br/>the world.
+            </h2>
+          </motion.div>
+        </div>
       </div>
 
       {/* Left Panel: Clean, ultra-minimalist Form */}
@@ -134,7 +153,7 @@ export function RegisterClient() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={isGoogleLoading}
-            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white border border-ink/10 hover:border-ink/20 hover:bg-ink/[0.02] hover:shadow-sm text-ink font-medium rounded-xl transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-transparent border border-ink/20 hover:border-ink/30 hover:bg-ink/5 hover:shadow-sm text-ink font-medium rounded-xl transition-all disabled:opacity-50"
           >
             {isGoogleLoading ? (
               <Loader2 className="w-5 h-5 animate-spin text-ink/50" />

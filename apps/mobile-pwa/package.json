@@ -14,6 +14,7 @@
     "@deck.gl/core": "^9.3.4",
     "@deck.gl/layers": "^9.3.4",
     "@deck.gl/mapbox": "^9.3.4",
+    "@ducanh2912/next-pwa": "^10.2.9",
     "@likaslens/shared": "workspace:*",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",

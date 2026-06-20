@@ -100,7 +100,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                   background: ghostMode ? "var(--accent-bright)" : "var(--accent)",
                   color: ghostMode ? "var(--hero-bg)" : "#fff",
                   boxShadow: ghostMode
-                    ? "0 8px 22px -10px rgba(46,230,200,0.5)"
+                    ? "0 8px 22px -10px rgba(250,204,21,0.5)"
                     : "0 8px 22px -10px rgba(27,67,50,0.4)",
                   transition: "all 0.3s ease",
                 }}
