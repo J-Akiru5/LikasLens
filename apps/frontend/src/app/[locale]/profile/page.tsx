@@ -142,7 +142,7 @@ function ProfilePageContent() {
             if (syncRes.ok) {
               const [retryAchievements, retryRank, retryProfile] = await Promise.all([
                 fetch(`${laravelUrl}/achievements/user/${supabaseUserId}`).then((r) => r.ok ? r.json() : null),
-                fetch(`${laravelUrl}/user/rank-progress`, { credentials: "include" }).then((r) => r.ok ? r.json() : null),
+                fetch("/api/user/rank-progress").then((r) => r.ok ? r.json() : null),
                 fetch(`${laravelUrl}/profile/${supabaseUserId}`).then((r) => r.ok ? r.json() : null),
               ]);
               achievementsRes = retryAchievements;
@@ -152,7 +152,7 @@ function ProfilePageContent() {
           } else if (achievementsResponse.ok) {
             achievementsRes = await achievementsResponse.json();
             [rankRes, profileRes] = await Promise.all([
-              fetch(`${laravelUrl}/user/rank-progress`, { credentials: "include" }).then((r) => r.ok ? r.json() : null),
+              fetch("/api/user/rank-progress").then((r) => r.ok ? r.json() : null),
               fetch(`${laravelUrl}/profile/${supabaseUserId}`).then((r) => r.ok ? r.json() : null),
             ]);
           }
