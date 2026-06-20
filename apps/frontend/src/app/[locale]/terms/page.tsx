@@ -89,7 +89,7 @@ export default function TermsPage() {
               </li>
               <li className="flex gap-3">
                 <span className="text-accent font-bold">!</span>
-                <span>Do not attempt to scrape or reverse-engineer the Likasy AI engine.</span>
+                <span>Do not attempt to scrape or reverse-engineer the Liksi AI engine.</span>
               </li>
             </ul>
           </motion.section>

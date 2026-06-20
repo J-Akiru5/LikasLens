@@ -281,7 +281,7 @@ export default function KnowledgeGraphPage() {
     nodesRef.current = fresh;
     setNodes(fresh);
     setSelectedId("inc");
-    const intro = `> Initializing LikasLens Neuro-Symbolic Engine\n> Connecting to Azure Cosmos DB Gremlin endpoint...\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.gremlinQuery}\n\n[OK] Traversal complete — ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[OK] Knowledge graph rendered in browser context`;
+    const intro = `> Initializing LikasLens Neuro-Symbolic Engine\n> Connecting to Neo4j AuraDB endpoint...\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.gremlinQuery}\n\n[OK] Traversal complete — ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[OK] Knowledge graph rendered in browser context`;
     setTerminalText("");
     setTerminalIdx(0);
     setIsTyping(true);

@@ -172,10 +172,21 @@ export function HeatmapWidget() {
         )}
 
         {error && (
-          <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-panel/90">
-            <div className="flex flex-col items-center gap-2 text-center px-4">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
-              <p className="text-xs text-ink/60">{error}</p>
+          <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-panel/60 backdrop-blur-sm">
+            <div className="bg-page border border-ink/5 shadow-xl rounded-2xl p-6 flex flex-col items-center gap-3 text-center max-w-[280px]">
+              <div className="w-12 h-12 rounded-full bg-red/10 flex items-center justify-center">
+                <AlertTriangle className="w-6 h-6 text-red" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-ink">Connection Lost</p>
+                <p className="text-xs text-ink/60 mt-1">Unable to load live map data. The system may be syncing.</p>
+              </div>
+              <button 
+                onClick={fetchData} 
+                className="mt-2 text-xs font-medium bg-ink/[0.04] hover:bg-ink/[0.08] text-ink px-4 py-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Try again
+              </button>
             </div>
           </div>
         )}

@@ -51,14 +51,14 @@ export function DashboardLayoutWrapper({
   userRole,
   headerChildren,
 }: DashboardLayoutWrapperProps) {
-  const [isGhostMode, setIsGhostMode] = useState(() => {
-    if (typeof document !== "undefined") {
-      return document.documentElement.getAttribute("data-theme") === "ghost";
-    }
-    return false;
-  });
+  const [isGhostMode, setIsGhostMode] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    setIsGhostMode(currentTheme === "ghost");
+
     const observer = new MutationObserver(() => {
       const current = document.documentElement.getAttribute("data-theme");
       setIsGhostMode(current === "ghost");
@@ -69,7 +69,8 @@ export function DashboardLayoutWrapper({
 
   const toggleGhostMode = () => {
     const newTheme = isGhostMode ? "civic" : "ghost";
-    document.documentElement.setAttribute("data-theme", newTheme);      try {
+    document.documentElement.setAttribute("data-theme", newTheme);
+      try {
         localStorage.setItem("likaslens-theme", newTheme);
       } catch {
         // Silently ignore localStorage errors

@@ -46,15 +46,15 @@
                     │         │  FastAPI AI Service │
                     │         │      :8001          │
                     │         │                     │
-                    │         │  ┌───────────────┐  │         ┌─────────────────┐
-                    │         │  │   YOLOv8 Nano      │  │         │  Cosmos DB      │
-                    │         │  │   Object      │  │         │  Gremlin Graph  │
-                    │         │  │   Detection   │  │         │  (Hazard→Law→   │
-                    │         │  └───────┬───────┘  │         │   Agency routing│
-                    │         │          │          │         └─────────────────┘
-                    │         │  ┌───────▼───────┐  │               ▲
-                    │         │  │   Gremlin     │──┼───────────────┘
-                    │         │  │   Traversal   │  │
+│         │  ┌───────────────┐  │         ┌─────────────────┐
+│         │  │   YOLOv8 Nano      │  │         │  Neo4j AuraDB   │
+│         │  │   Object      │  │         │  Graph DB       │
+│         │  │   Detection   │  │         │  (Hazard→Law→   │
+│         │  └───────┬───────┘  │         │   Agency routing│
+│         │          │          │         └─────────────────┘
+│         │  ┌───────▼───────┐  │               ▲
+│         │  │   Cypher      │──┼───────────────┘
+│         │  │   Traversal   │  │
                     │         │  │   (Symbolic)  │  │
                     │         │  └───────┬───────┘  │
                     │         │          │          │
@@ -131,8 +131,8 @@
                     │ detected classes                    │ incident summary
                     │                                     │
               ┌─────▼─────┐              ┌───────────────▼──┐
-              │  Gremlin  │──query──────>│  Cosmos DB       │
-              │  Traversal│<─results─────│  Gremlin Graph   │
+              │  Neo4j    │──query──────>│  Neo4j AuraDB    │
+              │  Traversal│<─results─────│  Graph DB        │
               │  (Symbolic)│              │  (Hazard→Law→    │
               └───────────┘              │   Agency)        │
                     │                    └──────────────────┘

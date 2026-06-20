@@ -178,7 +178,7 @@
     "publicRecordsAdmin": "Public Records",
     "publicRecordsAdminDesc": "View the public scoreboard. Ensure resolved issues are accurately reflected for community accountability.",
     "aiAssistance": "AI Assistance",
-    "aiAssistanceDesc": "Use Likasy, the AI assistant, to query environmental laws, analyze report patterns, and generate summaries.",
+    "aiAssistanceDesc": "Use Liksi, the AI assistant, to query environmental laws, analyze report patterns, and generate summaries.",
     "role": "Role",
     "actions": "Actions",
     "changeRole": "Change Role",
@@ -353,13 +353,13 @@
     "lastUpdated": "Last Updated"
   },
   "chat": {
-    "title": "Likasy",
+    "title": "Liksi",
     "subtitle": "AI Assistant",
     "online": "Online",
-    "placeholder": "Ask Likasy...",
+    "placeholder": "Ask Liksi...",
     "send": "Send message",
     "closeChat": "Close chat",
-    "openChat": "Open Likasy chat",
+    "openChat": "Open Liksi chat",
     "errorFallback": "Oops! I couldn't reach my brain right now. Please check your connection or try again later."
   },
   "offline": {

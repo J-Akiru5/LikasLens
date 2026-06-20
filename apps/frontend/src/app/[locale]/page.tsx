@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { LazyMotion, domAnimation } from "framer-motion";
 import { Footer } from "@/components/layout/footer";
+import { StickyLandingNav } from "@/components/layout/sticky-landing-nav";
 import { PartnerCarousel, FaqSection, LanguageSuggestionPopup } from "@likaslens/shared";
 import { HeroSection } from "@/components/marketing/sections/hero-section";
 
@@ -24,24 +25,53 @@ const ImpactSection = dynamic(
   () => import("@/components/marketing/sections/impact-section").then((m) => m.ImpactSection),
   { ssr: false }
 );
+const TechStackSection = dynamic(
+  () => import("@/components/marketing/sections/tech-stack-section").then((m) => m.TechStackSection),
+  { ssr: false }
+);
 const InstallCtaSection = dynamic(
   () => import("@/components/marketing/sections/install-cta-section").then((m) => m.InstallCtaSection),
   { ssr: false }
 );
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   Section Divider — smooth gradient transition between sections
+   ───────────────────────────────────────────────────────────────────────────── */
+function SectionDivider({ variant = "subtle" }: { variant?: "subtle" | "accent" }) {
+  return (
+    <div
+      className="w-full pointer-events-none"
+      style={{ height: variant === "accent" ? 80 : 48 }}
+    >
+      {variant === "accent" && (
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 h-full flex items-center">
+          <div
+            className="h-px w-full"
+            style={{
+              background: "linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent)",
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 /**
  * LikasLens Landing Page — modular, theme-aware, award-winning.
  *
  * Section order:
- *  1. Hero           — theme-aware (light civic / dark ghost)
- *  2. Partner Carousel — auto-scrolling marquee
- *  3. How It Works    — 3-step cards
- *  4. Ghost Mode      — interactive EXIF demo
- *  5. Public Scoreboard — real leaderboard
- *  6. Impact Section  — public stats and reports
- *  7. FAQ
- *  8. Install CTA     — PWA install guide
- *  9. Footer
+ *  1. Sticky Nav       — appears after scrolling past hero
+ *  2. Hero             — theme-aware (light civic / dark ghost)
+ *  3. Partner Carousel — auto-scrolling marquee
+ *  4. How It Works     — connected pipeline with flowing dots
+ *  5. Ghost Mode       — interactive EXIF demo
+ *  6. Public Scoreboard — real leaderboard
+ *  7. Impact Section   — public stats and reports
+ *  8. Tech Stack       — interactive architecture diagram
+ *  9. FAQ
+ * 10. Install CTA      — PWA install guide
+ * 11. Footer
  */
 export default function Home() {
   const params = useParams();
@@ -83,19 +113,29 @@ export default function Home() {
     (window as any).updateThemeColor?.();
   }, [ghostMode]);
 
+  const toggleGhost = () => setGhostMode(!ghostMode);
+
   return (
     <LazyMotion features={domAnimation}>
+      <StickyLandingNav ghostMode={ghostMode} onGhostToggle={toggleGhost} />
       <main
         className="relative min-h-dvh"
         style={{ background: "var(--page)", color: "var(--ink)" }}
       >
-        <HeroSection ghostMode={ghostMode} onGhostToggle={() => setGhostMode(!ghostMode)} />
+        <HeroSection ghostMode={ghostMode} onGhostToggle={toggleGhost} />
         <PartnerCarousel />
         <HowItWorksSection />
-        <GhostModeSection ghostMode={ghostMode} onGhostToggle={() => setGhostMode(!ghostMode)} />
+        <SectionDivider variant="accent" />
+        <GhostModeSection ghostMode={ghostMode} onGhostToggle={toggleGhost} />
+        <SectionDivider variant="accent" />
         <ScoreboardSection />
+        <SectionDivider />
         <ImpactSection />
+        <SectionDivider variant="accent" />
+        <TechStackSection />
+        <SectionDivider />
         <FaqSection />
+        <SectionDivider />
         <InstallCtaSection ghostMode={ghostMode} />
         <Footer ghostMode={ghostMode} />
         <LanguageSuggestionPopup currentLocale={locale as "en" | "fil" | "vi" | "id" | "ms" | "ta"} />

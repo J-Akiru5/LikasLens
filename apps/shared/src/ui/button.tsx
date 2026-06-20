@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "../utils";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "brutal";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "brutal" | "ink";
 type ButtonSize = "sm" | "md" | "lg" | "xl" | "icon";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -35,6 +35,14 @@ const variantClasses: Record<ButtonVariant, string> = {
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 " +
     "transition-all duration-200 ease-out " +
     "motion-reduce:transition-none motion-reduce:hover:translate-y-0 " +
+    "disabled:opacity-50 disabled:pointer-events-none",
+  ink:
+    "inline-flex items-center justify-center gap-2 rounded-xl bg-ink text-page font-semibold " +
+    "shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_1px_0_0_rgba(0,0,0,0.08)] " +
+    "hover:-translate-y-px " +
+    "hover:shadow-[0_6px_20px_-4px_rgba(0,0,0,0.2)] " +
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 " +
+    "transition-all duration-200 ease-out " +
     "disabled:opacity-50 disabled:pointer-events-none",
   secondary:
     "inline-flex items-center justify-center gap-2 rounded-xl border border-accent/50 bg-transparent text-accent " +

@@ -40,7 +40,7 @@ RULES:
 3. Preserve ALL {placeholders} like {variable} or {{doubleBraces}} exactly as-is.
 4. Preserve ALL HTML tags like <span>, <br />, <strong> unchanged.
 5. Preserve ALL special characters like &ldquo; &rdquo; &bull; &mdash; unchanged.
-6. Do NOT translate proper nouns like "LikasLens", "Likasy", "Ghost Mode", "Civic", or specific product feature names.
+6. Do NOT translate proper nouns like "LikasLens", "Liksi", "Ghost Mode", "Civic", or specific product feature names.
 7. Keep the tone friendly yet professional, matching the original.
 8. The output must be parseable by JSON.parse().
 

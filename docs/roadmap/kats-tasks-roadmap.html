@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kat — Computer Vision Dataset & Annotation Roadmap</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --yellow: #d29922;
+            --red: #f85149;
+            --purple: #bc8cff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container { max-width: 960px; margin: 0 auto; }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .progress-bar-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .progress-track {
+            background: var(--border);
+            border-radius: 6px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--green), var(--accent));
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.4s ease;
+        }
+
+        .stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .stats span { color: var(--text); font-weight: 600; }
+
+        .phase {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .phase-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .phase-header:hover { background: rgba(88, 166, 255, 0.04); }
+
+        .phase-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .badge-critical { background: rgba(248, 81, 73, 0.15); color: var(--red); }
+        .badge-high { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
+        .badge-medium { background: rgba(188, 140, 255, 0.15); color: var(--purple); }
+
+        .phase-title { font-size: 1.05rem; font-weight: 600; flex: 1; }
+
+        .phase-count {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .phase-body { padding: 0.5rem 1.25rem 1rem; }
+
+        .task-group {
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 0;
+        }
+
+        .task-group:last-child { border-bottom: none; }
+
+        .task-group-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 0.4rem;
+        }
+
+        .task {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.3rem 0;
+            font-size: 0.88rem;
+        }
+
+        .task input[type="checkbox"] {
+            margin-top: 0.3rem;
+            accent-color: var(--green);
+            cursor: pointer;
+        }
+
+        .task.done { color: var(--text-muted); text-decoration: line-through; }
+
+        .task-label { flex: 1; }
+
+        .example-box {
+            background: rgba(88, 166, 255, 0.06);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            margin: 0.5rem 0;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .example-box strong { color: var(--accent); }
+
+        .output-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 2rem;
+        }
+
+        .output-section h3 {
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+            color: var(--green);
+        }
+
+        .deliverable {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0;
+            font-size: 0.88rem;
+        }
+
+        .deliverable::before {
+            content: '→';
+            color: var(--accent);
+        }
+
+        footer {
+            margin-top: 2.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 1rem; }
+            h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <header>
+        <h1>Kat — Computer Vision Dataset & Annotation</h1>
+        <p class="subtitle">LikasLens · ASEAN AI Hackathon · Researcher Roadmap</p>
+    </header>
+
+    <!-- LICENSED SOURCE TABLE -->
+    <div class="progress-bar-container">
+        <div class="progress-header">
+            <span>Licensed Data Sources</span>
+        </div>
+        <table style="width:100%;font-size:0.82rem;border-collapse:collapse;">
+            <thead><tr style="color:var(--text-muted);text-align:left;"><th style="padding:0.3rem 0;">Dataset</th><th>Source</th><th>License</th><th>Target Count</th></tr></thead>
+            <tbody>
+                <tr><td style="padding:0.3rem 0;">Own field photos</td><td>Iloilo Western Visayas</td><td>CC0 / CC-BY</td><td>50-80</td></tr>
+                <tr><td>Roboflow Universe</td><td>Search "litter", "waste", "dumping"</td><td>CC-BY 4.0</td><td>80-100</td></tr>
+                <tr><td>TrashNet</td><td>Kaggle</td><td>MIT</td><td>40-50</td></tr>
+                <tr><td>FloodNet</td><td>Kaggle</td><td>CC-BY 4.0</td><td>30-40</td></tr>
+            </tbody>
+        </table>
+        <div class="example-box" style="margin-top:0.75rem;">
+            <strong>⚠️ ZERO TOLERANCE:</strong> No Google Image Scraping, no Selenium/Scrapy, no Bing/DuckDuckGo parsers. Only properly licensed datasets from the table above. Violation = disqualification.
+        </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-bar-container">
+        <div class="progress-header">
+            <span>Overall Progress</span>
+            <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+        <div class="stats">
+            <span id="stat-done">0</span> done &nbsp;/&nbsp;
+            <span id="stat-total">0</span> total &nbsp;·&nbsp;
+            <span id="stat-remaining">0</span> remaining
+        </div>
+    </div>
+
+    <!-- ===== PHASE 1 ===== -->
+    <div class="phase">
+        <div class="phase-header" onclick="togglePhase(this)">
+            <span class="phase-badge badge-critical">Critical</span>
+            <span class="phase-title">Phase 1 — Source Licensed Datasets + Annotation</span>
+            <span class="phase-count" data-group="phase1"></span>
+        </div>
+        <div class="phase-body">
+            <div class="task-group">
+                <div class="task-group-title">1A · Licensed Data Collection</div>
+                <label class="task"><input type="checkbox"><span class="task-label">Collect 50-80 own field photos from Iloilo Western Visayas (illegal dumping, clogged waterways, air emissions)</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Download Roboflow Universe datasets — CC-BY licensed, ASEAN-relevant litter/dumping/waste classes</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Download TrashNet (MIT license) from Kaggle — solid waste classification baseline</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Download FloodNet (CC-BY 4.0) from Kaggle — flooding/water discharge baseline</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Create dataset_manifest.json with image_id, source, license, location, classes, split per image → apps/ai-service/test_data/dataset_manifest.json</span></label>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-title">1B · Annotation in Roboflow</div>
+                <label class="task"><input type="checkbox"><span class="task-label">Set up Roboflow project with YOLOv8 export format</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Upload all sourced datasets (field photos + Roboflow Universe + TrashNet + FloodNet)</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Standardize annotations: bounding boxes for all 5 hazard classes (illegal_dumping, air_emission, water_discharge, clogged_waterway, deforestation)</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Class balancing checks — prevent class imbalance (e.g., 1000 plastic bottles vs 5 clogged drains)</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Apply augmentation: horizontal flips, brightness adjustments (sunny vs overcast field conditions)</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Enforce split: 70% Train / 20% Validation / 10% Test</span></label>
+            </div>
+
+            <div class="example-box">
+                <strong>Judge-facing metric:</strong> "Sourced 4 licensed datasets (own field photos + Roboflow Universe CC-BY + TrashNet MIT + FloodNet CC-BY), totaling ~200-270 images across 5 environmental hazard classes. Annotated with YOLOv8 bounding boxes, class-balanced, with 70/20/10 split."
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PHASE 2 ===== -->
+    <div class="phase">
+        <div class="phase-header" onclick="togglePhase(this)">
+            <span class="phase-badge badge-high">High</span>
+            <span class="phase-title">Phase 2 — Local Validation Set + Eval Metrics</span>
+            <span class="phase-count" data-group="phase2"></span>
+        </div>
+        <div class="phase-body">
+            <div class="task-group">
+                <div class="task-group-title">2A · Local Validation Imagery</div>
+                <label class="task"><input type="checkbox"><span class="task-label">Gather 100-200 local Western Visayas photos — real field conditions, varying camera qualities</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Source from local news, public community boards, open-source regional datasets (NO Google scraping)</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Isolate into dedicated Local Validation/Test Set — never mixed with training data</span></label>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-title">2B · Eval Set + Metrics</div>
+                <label class="task"><input type="checkbox"><span class="task-label">Create eval set: 10-20 images per class × 5 classes = 50-100 images with COCO-format annotations</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Add metadata fields: license, source_url, region, collected_date</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Run mAP, precision, recall at confidence threshold 0.50 (composite scorer from §1.2)</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Document metrics for judge presentation</span></label>
+            </div>
+
+            <div class="example-box">
+                <strong>Judge-facing narrative:</strong> "We built an independent validation set of 100+ local Western Visayas photos to verify real-world field accuracy. YOLOv8 nano achieves [X] mAP at 0.50 confidence on our environmental hazard classes."
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PHASE 3 ===== -->
+    <div class="phase">
+        <div class="phase-header" onclick="togglePhase(this)">
+            <span class="phase-badge badge-medium">Medium</span>
+            <span class="phase-title">Phase 3 — Deployment Package + Handoff</span>
+            <span class="phase-count" data-group="phase3"></span>
+        </div>
+        <div class="phase-body">
+            <div class="task-group">
+                <div class="task-group-title">3A · YOLOv8 Readiness</div>
+                <label class="task"><input type="checkbox"><span class="task-label">Generate final balanced dataset in YOLOv8 format (data.yaml + train/val/test directories)</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Validate dataset loads correctly: python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Document dataset stats: total images, class distribution, license log for judge transparency</span></label>
+            </div>
+
+            <div class="task-group">
+                <div class="task-group-title">3B · Engineering Handoff</div>
+                <label class="task"><input type="checkbox"><span class="task-label">Place trained weights in apps/ai-service/weights/best.pt</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Update image_analysis.py MODEL_DIR to point to custom weights (replace COCO stock)</span></label>
+                <label class="task"><input type="checkbox"><span class="task-label">Test end-to-end: photo upload → YOLOv8 custom inference → triage response</span></label>
+            </div>
+
+            <div class="example-box">
+                <strong>Pipeline optimization:</strong> Custom-trained YOLOv8 nano replacing COCO stock weights, with class-balanced augmented dataset for robust performance across Western Visayas field conditions.
+            </div>
+        </div>
+    </div>
+
+    <!-- DELIVERABLES -->
+    <div class="output-section">
+        <h3>Final Deliverables</h3>
+        <div class="deliverable">dataset_manifest.json — image_id, source, license, location, classes, split per image</div>
+        <div class="deliverable">Licensed dataset portfolio: own field photos (CC0/CC-BY) + Roboflow Universe (CC-BY) + TrashNet (MIT) + FloodNet (CC-BY)</div>
+        <div class="deliverable">Roboflow workspace with YOLOv8 bounding box annotations, class-balanced, 70/20/10 split</div>
+        <div class="deliverable">Local validation set: 100-200 Western Visayas photos (isolated from training)</div>
+        <div class="deliverable">Eval metrics at 0.50 confidence: mAP, precision, recall across 5 hazard classes</div>
+        <div class="deliverable">YOLOv8 custom-trained weights → apps/ai-service/weights/best.pt</div>
+        <div class="deliverable">Judge-facing transparency doc: image counts, class distribution, license log</div>
+    </div>
+
+        <footer>
+            LikasLens · Kat Roadmap · Updated to align with unified execution plan · Licensed sources only
+        </footer>
+
+</div>
+
+<script>
+function togglePhase(header) {
+    const body = header.nextElementSibling;
+    body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+function updateProgress() {
+    const boxes = document.querySelectorAll('input[type="checkbox"]');
+    const total = boxes.length;
+    const done = [...boxes].filter(b => b.checked).length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('stat-done').textContent = done;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-remaining').textContent = total - done;
+
+    document.querySelectorAll('.phase').forEach(phase => {
+        const pBoxes = phase.querySelectorAll('input[type="checkbox"]');
+        const pDone = [...pBoxes].filter(b => b.checked).length;
+        const countEl = phase.querySelector('.phase-count');
+        if (countEl) countEl.textContent = pDone + '/' + pBoxes.length;
+    });
+
+    boxes.forEach(b => {
+        b.closest('.task').classList.toggle('done', b.checked);
+    });
+
+    localStorage.setItem('kat-roadmap', JSON.stringify([...boxes].map(b => b.checked)));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const saved = JSON.parse(localStorage.getItem('kat-roadmap') || '[]');
+    const boxes = document.querySelectorAll('input[type="checkbox"]');
+    saved.forEach((v, i) => { if (boxes[i]) boxes[i].checked = v; });
+    boxes.forEach(b => b.addEventListener('change', updateProgress));
+    updateProgress();
+});
+</script>
+</body>
+</html>

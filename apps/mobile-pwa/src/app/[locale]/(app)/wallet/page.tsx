@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Award, Trophy, BarChart3, Shield, List, Leaf, BookOpen, HelpCircle, Zap, X, Clock, Loader2, AlertCircle } from "lucide-react";
 import { cn, laravelGet, laravelPost, showToast } from "@likaslens/shared";
 import Image from "next/image";
 import Link from "next/link";
 import { useHaptics } from "@/hooks/use-haptics";
+import { usePullToRefresh } from "@/context/pull-to-refresh";
+import { useSwipeDownToClose } from "@/hooks/use-swipe-down-to-close";
 
 interface WalletData {
   available_credits: number;
@@ -42,21 +44,28 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [redeeming, setRedeeming] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      laravelGet<any>("/user/wallet"),
-      laravelGet<any>("/user/rewards?per_page=20"),
-    ])
-      .then(([walletRes, rewardsRes]) => {
-        if (walletRes.success) setWallet(walletRes.data);
-        if (rewardsRes.success) setRewards(rewardsRes.data);
-      })
-      .catch((err) => {
-        console.error(err);
-        showToast("Failed to load wallet data", "error");
-      })
-      .finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [walletRes, rewardsRes] = await Promise.all([
+        laravelGet<any>("/user/wallet"),
+        laravelGet<any>("/user/rewards?per_page=20"),
+      ]);
+      if (walletRes.success) setWallet(walletRes.data);
+      if (rewardsRes.success) setRewards(rewardsRes.data);
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load wallet data", "error");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  usePullToRefresh(load);
 
   const handleRedeem = async (rewardId: string) => {
     haptic("medium");
@@ -93,10 +102,12 @@ export default function WalletPage() {
     return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   };
 
+  const modalRef = useSwipeDownToClose(() => setActiveModal(null));
+
   if (loading) {
     return (
       <div className="min-h-full pb-24 bg-page">
-        <header className="h-16 flex items-center justify-center px-5">
+        <header className="h-16 flex items-center justify-center relative px-5">
           <h1 className="ios-large-title ios-large-title--xl">Eco-Wallet</h1>
         </header>
         <div className="flex items-center justify-center py-20">
@@ -208,9 +219,11 @@ export default function WalletPage() {
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setActiveModal(null)} />
 
-          <div className="relative bg-white rounded-t-3xl shadow-2xl w-full max-h-[85vh] flex flex-col">
-            <div className="flex justify-center pt-3 pb-2">
-              <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+          <div ref={modalRef} className="relative bg-white rounded-t-3xl shadow-2xl w-full max-h-[85vh] flex flex-col">
+            <div className="flex justify-center pt-1 pb-1">
+              <div className="w-16 h-7 flex items-center justify-center">
+                <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+              </div>
             </div>
 
             <div className="px-6 pb-4 flex justify-between items-center border-b border-gray-100">

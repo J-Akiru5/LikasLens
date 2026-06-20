@@ -29,13 +29,16 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <div
           style={{
-            borderRadius: 16,
+            borderRadius: "20px",
             overflow: "hidden",
-            border: `1px solid ${ghostMode ? "color-mix(in oklab, var(--accent-bright) 35%, transparent)" : "var(--border)"}`,
-            boxShadow: ghostMode ? "0 0 0 1px color-mix(in oklab, var(--accent-bright) 8%, transparent)" : "none",
+            border: `1px solid ${ghostMode ? "color-mix(in oklab, var(--accent-bright) 30%, transparent)" : "color-mix(in oklab, var(--border) 80%, transparent)"}`,
+            boxShadow: ghostMode 
+              ? "0 20px 40px -10px color-mix(in oklab, var(--accent-bright) 10%, transparent)" 
+              : "0 10px 40px -10px rgba(0,0,0,0.05)",
             background: ghostMode
-              ? "linear-gradient(150deg, var(--hero-bg) 0%, var(--page) 78%)"
+              ? "linear-gradient(150deg, rgba(13,26,18,0.9) 0%, rgba(13,26,18,0.7) 100%)"
               : "var(--panel)",
+            backdropFilter: ghostMode ? "blur(24px)" : "none",
             transition: "all 0.6s cubic-bezier(0.16,1,0.3,1)",
           }}
         >

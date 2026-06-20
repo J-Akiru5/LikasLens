@@ -12,6 +12,14 @@ class TriageService
 {
     private string $aiServiceUrl;
 
+    private static int $circuitFailures = 0;
+
+    private static int $circuitOpenedAt = 0;
+
+    private const CIRCUIT_THRESHOLD = 3;
+
+    private const CIRCUIT_COOLDOWN = 60;
+
     public function __construct()
     {
         $this->aiServiceUrl = rtrim(config('services.ai.url', 'http://127.0.0.1:8001'), '/');
@@ -19,10 +27,24 @@ class TriageService
 
     public function analyze(string $base64Image, Ticket $ticket): array
     {
+        if (self::$circuitFailures >= self::CIRCUIT_THRESHOLD) {
+            $elapsed = time() - self::$circuitOpenedAt;
+            if ($elapsed < self::CIRCUIT_COOLDOWN) {
+                Log::warning('AI service circuit breaker open, skipping call', [
+                    'ticket_id' => $ticket->id,
+                    'failures' => self::$circuitFailures,
+                    'retry_in' => self::CIRCUIT_COOLDOWN - $elapsed,
+                ]);
+
+                return $this->fallbackResult($ticket);
+            }
+            self::$circuitFailures = 0;
+        }
+
         try {
             $response = Http::timeout(120)->post("{$this->aiServiceUrl}/analyze/base64", [
                 'image' => $base64Image,
-                'confidence' => 0.25,
+                'confidence' => 0.50,
             ]);
 
             if (! $response->successful()) {
@@ -30,32 +52,46 @@ class TriageService
                     'status' => $response->status(),
                     'ticket_id' => $ticket->id,
                 ]);
+                self::$circuitFailures++;
+                if (self::$circuitFailures >= self::CIRCUIT_THRESHOLD) {
+                    self::$circuitOpenedAt = time();
+                }
 
                 return $this->fallbackResult($ticket);
             }
 
+            self::$circuitFailures = 0;
+
             $analysis = $response->json('analysis', []);
             $assessment = $analysis['environmental_assessment'] ?? [];
+            $composite = $analysis['composite_confidence'] ?? 0.0;
+            $disposition = $analysis['triage_disposition'] ?? 'pending_review';
 
-            $this->storeAnalysis($ticket, $analysis);
+            $this->storeAnalysis($ticket, $analysis, $composite, $disposition);
 
             return [
                 'success' => true,
                 'has_concern' => $assessment['has_environmental_concern'] ?? false,
                 'indicators' => $assessment['indicators'] ?? [],
                 'detections' => $analysis['detections'] ?? [],
+                'composite_confidence' => $composite,
+                'triage_disposition' => $disposition,
             ];
         } catch (\Throwable $e) {
             Log::error('AI service connection failed', [
                 'error' => $e->getMessage(),
                 'ticket_id' => $ticket->id,
             ]);
+            self::$circuitFailures++;
+            if (self::$circuitFailures >= self::CIRCUIT_THRESHOLD) {
+                self::$circuitOpenedAt = time();
+            }
 
             return $this->fallbackResult($ticket);
         }
     }
 
-    private function storeAnalysis(Ticket $ticket, array $analysis): void
+    private function storeAnalysis(Ticket $ticket, array $analysis, float $composite, string $disposition): void
     {
         $assessment = $analysis['environmental_assessment'] ?? [];
         $indicators = $assessment['indicators'] ?? [];
@@ -70,13 +106,15 @@ class TriageService
                 'ticket_id' => $ticket->id,
                 'violation_type_id' => $violationType->id,
                 'classified_by' => 'ai-yolov8',
-                'confidence_score' => 0.75,
+                'confidence_score' => $composite,
             ]);
         }
 
         $ticket->update([
             'ai_triage_summary' => $this->buildSummary($analysis),
             'ai_confidence' => $this->calculateConfidence($analysis),
+            'composite_confidence' => $composite,
+            'triage_disposition' => $disposition,
         ]);
     }
 

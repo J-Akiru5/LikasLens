@@ -37,12 +37,14 @@ export function ScoreboardSection() {
         </m.div>
 
         <div
+          className="group hover:shadow-lg transition-all duration-500"
           style={{
             background: "var(--panel)",
             border: "1px solid var(--border)",
-            borderRadius: 16,
+            borderRadius: "20px",
             overflow: "hidden",
             padding: "8px 0",
+            boxShadow: "0 10px 40px -10px rgba(0,0,0,0.05)",
           }}
         >
           <PublicScoreboard />
