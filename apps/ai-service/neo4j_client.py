@@ -128,10 +128,12 @@ async def execute_query(
 async def query_hazard_laws_and_agencies(
     hazard_code: str,
     location: str | None = None,
+    jurisdiction: str | None = None,
 ) -> dict[str, list[str]]:
     """Find laws violated by a hazard and their enforcing agencies.
 
     If location is provided, narrows results to laws governing that location.
+    If jurisdiction is provided, filters by Law.jurisdictionCode (e.g. "PH-NATIONAL").
     Traversal: HazardType -[:VIOLATES]-> Law <-[:GOVERNED_BY]- Location
                Law -[:ENFORCED_BY]-> Agency
     """
@@ -140,7 +142,16 @@ async def query_hazard_laws_and_agencies(
 
     safe_hazard = _sanitize_id(hazard_code, "hazard_code")
 
-    if location:
+    if location and jurisdiction:
+        query = """
+        MATCH (h:HazardType {code: $hazard_code})-[:VIOLATES]->(l:Law)
+        WHERE l.jurisdictionCode = $jurisdiction
+          AND exists((l)<-[:GOVERNED_BY](:Location {name: $location}))
+        MATCH (l)-[:ENFORCED_BY]->(a:Agency)
+        RETURN DISTINCT l.title AS law, a.name AS agency
+        """
+        params = {"hazard_code": safe_hazard, "location": location, "jurisdiction": jurisdiction}
+    elif location:
         query = """
         MATCH (h:HazardType {code: $hazard_code})-[:VIOLATES]->(l:Law)
         WHERE exists((l)<-[:GOVERNED_BY](:Location {name: $location}))
@@ -148,6 +159,14 @@ async def query_hazard_laws_and_agencies(
         RETURN DISTINCT l.title AS law, a.name AS agency
         """
         params = {"hazard_code": safe_hazard, "location": location}
+    elif jurisdiction:
+        query = """
+        MATCH (h:HazardType {code: $hazard_code})-[:VIOLATES]->(l:Law)
+        WHERE l.jurisdictionCode = $jurisdiction
+        MATCH (l)-[:ENFORCED_BY]->(a:Agency)
+        RETURN DISTINCT l.title AS law, a.name AS agency
+        """
+        params = {"hazard_code": safe_hazard, "jurisdiction": jurisdiction}
     else:
         query = """
         MATCH (h:HazardType {code: $hazard_code})-[:VIOLATES]->(l:Law)
