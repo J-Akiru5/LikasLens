@@ -16,6 +16,8 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
   const cookieStore = await cookies();
   const existingToken = cookieStore.get("laravel_token")?.value;
 
+  console.log(`[laravelAuthProxy] Request for ${path}. Existing token length: ${existingToken?.length || 0}`);
+
   // ── Fast path: forward the existing token ──────────────────────────
   if (existingToken) {
     const res = await fetch(`${LARAVEL_API}${path}`, {
@@ -26,6 +28,8 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
       cache: "no-store",
     });
 
+    console.log(`[laravelAuthProxy] Fast path response status for ${path}: ${res.status}`);
+
     if (res.ok) {
       return Response.json(await res.json());
     }
@@ -33,6 +37,7 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
     // Non-401 errors: pass through as-is
     if (res.status !== 401) {
       const body = await res.json().catch(() => null);
+      console.log(`[laravelAuthProxy] Fast path non-401 error: ${res.status}`, body);
       return Response.json(
         body ?? { success: false, message: "Upstream error" },
         { status: res.status },
@@ -40,6 +45,7 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
     }
 
     // 401 → token expired or invalid — fall through to re-sync
+    console.log(`[laravelAuthProxy] Fast path 401 encountered, falling through to re-sync`);
   }
 
   // ── Re-sync: Supabase session → Laravel token ─────────────────────
@@ -57,14 +63,18 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (userError || !user) {
+    console.log(`[laravelAuthProxy] Supabase user check failed:`, userError);
     return Response.json(
       { success: false, message: "Unauthenticated." },
       { status: 401 },
     );
   }
+
+  console.log(`[laravelAuthProxy] Supabase user found: ${user.id} (${user.email}). Syncing with Laravel backend...`);
 
   const syncRes = await fetch(`${LARAVEL_API}/auth/sync`, {
     method: "POST",
@@ -82,7 +92,11 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
     }),
   });
 
+  console.log(`[laravelAuthProxy] Sync request response status: ${syncRes.status}`);
+
   if (!syncRes.ok) {
+    const errorBody = await syncRes.text().catch(() => "");
+    console.error(`[laravelAuthProxy] Sync request failed status: ${syncRes.status}, body: ${errorBody}`);
     return Response.json(
       { success: false, message: "Backend sync failed." },
       { status: 401 },
@@ -92,11 +106,14 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
   const syncBody = await syncRes.json();
   const newToken: string | undefined = syncBody?.data?.token;
   if (!newToken) {
+    console.error(`[laravelAuthProxy] Sync succeeded but did not return a token:`, syncBody);
     return Response.json(
       { success: false, message: "Backend sync failed." },
       { status: 401 },
     );
   }
+
+  console.log(`[laravelAuthProxy] Sync succeeded. New token acquired.`);
 
   // Persist the fresh token
   cookieStore.set("laravel_token", newToken, {
@@ -116,9 +133,12 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
     cache: "no-store",
   });
 
+  console.log(`[laravelAuthProxy] Retry response status for ${path}: ${retryRes.status}`);
+
   const body = await retryRes.json().catch(() => null);
 
   if (!retryRes.ok) {
+    console.error(`[laravelAuthProxy] Retry request failed status: ${retryRes.status}`, body);
     return Response.json(
       body ?? { success: false, message: "Upstream error" },
       { status: retryRes.status },
