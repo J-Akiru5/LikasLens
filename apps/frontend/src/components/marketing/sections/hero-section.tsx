@@ -76,60 +76,6 @@ interface HeroSectionProps {
 }
 
 
-const AnimatedAuroraBackground = ({ ghostMode }: { ghostMode: boolean }) => {
-  const color1 = ghostMode ? "6, 78, 59" : "5, 150, 105"; // #064e3b : #059669
-  const color2 = ghostMode ? "15, 118, 110" : "13, 148, 136"; // #0f766e : #0d9488
-  const color3 = ghostMode ? "2, 44, 34" : "16, 185, 129"; // #022c22 : #10b981
-
-  return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: ghostMode ? "#040c07" : "#05160d", transition: "background 0.8s ease", zIndex: 0 }}>
-      <m.div
-        animate={{ 
-          x: ["0%", "15%", "0%"],
-          y: ["0%", "20%", "0%"],
-          scale: [1, 1.25, 1]
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          top: "-20%", left: "-20%", width: "80vw", height: "80vh",
-          background: `radial-gradient(circle at center, rgba(${color1}, 0.5) 0%, rgba(${color1}, 0) 65%)`,
-          willChange: "transform"
-        }}
-      />
-      <m.div
-        animate={{ 
-          x: ["0%", "-15%", "0%"],
-          y: ["0%", "-20%", "0%"],
-          scale: [1, 1.35, 1]
-        }}
-        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          bottom: "-20%", right: "-10%", width: "90vw", height: "90vh",
-          background: `radial-gradient(circle at center, rgba(${color2}, 0.45) 0%, rgba(${color2}, 0) 65%)`,
-          willChange: "transform"
-        }}
-      />
-      <m.div
-        animate={{ 
-          x: ["0%", "-20%", "0%"],
-          y: ["0%", "15%", "0%"],
-          scale: [1, 1.2, 1]
-        }}
-        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          top: "20%", left: "10%", width: "70vw", height: "70vh",
-          background: `radial-gradient(circle at center, rgba(${color3}, 0.35) 0%, rgba(${color3}, 0) 60%)`,
-          willChange: "transform"
-        }}
-      />
-      {/* Premium SaaS noise grain overlay */}
-      <div style={{ position: "absolute", inset: 0, opacity: 0.1, backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')", mixBlendMode: "overlay", pointerEvents: "none" }} />
-    </div>
-  );
-};
 
 export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -206,7 +152,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
     <section
       ref={sectionRef}
       style={{
-        minHeight: "100svh",
+        minHeight: "100vh",
         backgroundColor: heroBg,
         display: "flex",
         flexDirection: "column",
@@ -216,16 +162,16 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
         transition: "background-color 0.6s ease",
       }}
     >
-      {/* Custom AI Glassmorphic Hero Background */}
-      <div style={{ position: "absolute", inset: 0, opacity: ghostMode ? 0.7 : 1, transition: "opacity 0.6s ease" }}>
-        <AnimatedAuroraBackground ghostMode={ghostMode} />
+      {/* Premium Data Topography Background */}
+      <div style={{ position: "absolute", inset: 0, opacity: ghostMode ? 0.6 : 1, transition: "opacity 0.6s ease" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/landing_hero_bg_premium.png')", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.8 }} />
         {/* Subtle dark gradient overlay to ensure text remains perfectly readable */}
         <div
           style={{
             position: "absolute", inset: 0,
             background: ghostMode 
-              ? "linear-gradient(180deg, rgba(13,26,18,0.95) 0%, rgba(13,26,18,0.5) 45%, rgba(13,26,18,0.95) 100%)"
-              : "linear-gradient(180deg, rgba(13,26,18,0.85) 0%, rgba(13,26,18,0.4) 45%, rgba(13,26,18,0.9) 100%)",
+              ? "linear-gradient(180deg, rgba(13,26,18,0.98) 0%, rgba(13,26,18,0.7) 45%, rgba(13,26,18,0.95) 100%)"
+              : "linear-gradient(180deg, rgba(13,26,18,0.9) 0%, rgba(13,26,18,0.4) 45%, rgba(13,26,18,0.85) 100%)",
             transition: "background 0.6s ease",
             pointerEvents: "none",
             zIndex: 1
@@ -268,7 +214,6 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 lineHeight: 1.02,
                 color: "#ffffff",
                 margin: 0,
-                textWrap: "balance" as const,
                 textShadow: "0 4px 24px rgba(0,0,0,0.6)"
               }}
             >

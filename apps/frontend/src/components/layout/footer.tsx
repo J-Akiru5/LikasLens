@@ -58,19 +58,19 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
         style={{ opacity: ghostMode ? 1 : 0 }}
       >
         <Image 
-          src="/images/footer-ghost-deepsea.png" 
+          src="/images/footer-ghost-deepsea-v2.png" 
           alt="" 
           fill 
           sizes="100vw"
-          className="object-cover object-center" 
+          className="object-cover object-top" 
           priority={false}
           quality={75}
         />
-        {/* Dark overlay for text readability */}
+        {/* Dark overlay adjusted to let light rays shine through */}
         <div 
           className="absolute inset-0"
           style={{
-            background: "linear-gradient(180deg, rgba(3,11,6,0.92) 0%, rgba(3,11,6,0.7) 40%, rgba(3,11,6,0.5) 100%)",
+            background: "linear-gradient(180deg, rgba(3,11,6,0.4) 0%, rgba(3,11,6,0.6) 50%, rgba(3,11,6,0.85) 100%)",
           }}
         />
       </div>

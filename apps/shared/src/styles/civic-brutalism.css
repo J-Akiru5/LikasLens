@@ -31,6 +31,24 @@
   --secondary-fg: #2ee6c8;
   --ghost-panel: hsl(220, 60%, 12%);
   --ghost-primary: hsl(120, 80%, 82%);
+
+  /* GHOST MODE (Deep Sea) - Toggled via class .ghost-mode on <body> or html */
+  .ghost-mode {
+    --color-page: #030b06; /* Deep abyss black-green */
+    --color-ink: #f0fdf4; /* Pale bioluminescent green/white */
+    --color-accent: #facc15; /* Bright yellow-gold glowing data */
+    --color-surface: #0a1711;
+  }
+  
+  /* Ghost Mode Visibility Helpers */
+  html.ghost-mode .light-mode-only,
+  body.ghost-mode .light-mode-only { display: none !important; }
+  
+  html.ghost-mode .ghost-mode-only,
+  body.ghost-mode .ghost-mode-only { display: block !important; }
+  
+  html:not(.ghost-mode) .ghost-mode-only,
+  body:not(.ghost-mode) .ghost-mode-only { display: none !important; }
 }
 
 .brutal-panel {

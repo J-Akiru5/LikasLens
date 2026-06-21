@@ -34,9 +34,12 @@ export async function laravelFetch<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  const authToken = token || getCookie("laravel_token");
-  if (authToken) {
-    headers["Authorization"] = `Bearer ${authToken}`;
+  // On the server (Node/React Server Components), cookies() from next/headers
+  // can read httpOnly cookies. Pass the token explicitly via the `token` param.
+  // On the client, document.cookie cannot read httpOnly cookies — use a
+  // Next.js API route proxy instead of trying to read the cookie here.
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
   // Multi-tenant: extract subdomain and pass to backend

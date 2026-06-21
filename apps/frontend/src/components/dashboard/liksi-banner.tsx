@@ -36,8 +36,9 @@ export function LiksiBanner({ userName }: LiksiBannerProps) {
           <p className="text-[10px] sm:text-xs font-bold text-ink/40 tracking-widest uppercase mb-1 min-h-[15px]">
             {timeState.dateStr}
           </p>
-          <h1 className="text-xl sm:text-[32px] font-medium tracking-tight text-ink m-0" style={{ letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
-            {timeState.greeting} <strong className="font-bold">{userName}!</strong>
+          <h1 className="text-2xl sm:text-[32px] font-medium tracking-tight text-ink m-0 leading-tight pr-2" style={{ letterSpacing: "-0.02em" }}>
+            <span className="block sm:inline">{timeState.greeting}</span>{" "}
+            <strong className="font-bold block sm:inline truncate sm:overflow-visible">{userName}!</strong>
           </h1>
         </div>
 

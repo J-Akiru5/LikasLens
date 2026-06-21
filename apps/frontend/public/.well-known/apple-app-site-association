@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "<YOUR_TEAM_ID>.dev.syntaxure.likaslensapp",
+        "paths": [ "*" ]
+      }
+    ]
+  }
+}

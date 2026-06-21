@@ -378,5 +378,22 @@
     "coastalDamage": "Coastal Damage",
     "wasteBurning": "Waste Burning",
     "unclassified": "Unclassified Environmental Issue"
+  },
+  "seo": {
+    "homeTitle": "LikasLens — Protecting Nature Philippines | AI-Powered Civic Reporting",
+    "impactTitle": "Impact — Community Environmental Reporting",
+    "impactDescription": "See the real-world impact of citizen environmental reporting in the Philippines. Track resolved incidents, community action, and nature protection outcomes.",
+    "lawsTitle": "Philippine Environmental Laws & Regulations",
+    "lawsDescription": "Know your rights for protecting nature. Philippine environmental laws on forests, coasts, biodiversity, and pollution.",
+    "scoreboardTitle": "Community Leaderboard — Environmental Defenders",
+    "scoreboardDescription": "Top community reporters and environmental defenders in the Philippines. See who's making the biggest impact protecting nature.",
+    "reportTitle": "Report an Environmental Issue",
+    "reportDescription": "Snap and report environmental issues in the Philippines. AI-powered analysis with instant agency dispatch for nature protection.",
+    "contactTitle": "Contact LikasLens",
+    "contactDescription": "Get in touch with LikasLens. Join the movement protecting Philippine nature through civic action.",
+    "changelogTitle": "Changelog — Track All Updates",
+    "changelogDescription": "Track all changes, fixes, and improvements to LikasLens.",
+    "privacyDescription": "LikasLens privacy policy. Your data and EXIF metadata are protected.",
+    "termsDescription": "LikasLens terms of service."
   }
 }

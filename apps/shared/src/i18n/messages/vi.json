@@ -378,5 +378,22 @@
     "coastalDamage": "Thiệt hại Ven biển",
     "wasteBurning": "Đốt Rác",
     "unclassified": "Vấn đề Môi trường Chưa Phân loại"
+  },
+  "seo": {
+    "homeTitle": "LikasLens — Bảo vệ Thiên nhiên Philippines | Báo cáo Công dân AI",
+    "impactTitle": "Tác động — Báo cáo Môi trường Cộng đồng",
+    "impactDescription": "Xem tác động thực tế của báo cáo môi trường công dân tại Philippines. Theo dõi các sự cố đã giải quyết và hành động cộng đồng.",
+    "lawsTitle": "Luật và Quy định Môi trường Philippines",
+    "lawsDescription": "Biết quyền của bạn để bảo vệ thiên nhiên. Luật môi trường Philippines về rừng, bờ biển, đa dạng sinh học và ô nhiễm.",
+    "scoreboardTitle": "Bảng xếp hạng Cộng đồng — Những Người Bảo vệ Môi trường",
+    "scoreboardDescription": "Những người báo cáo cộng đồng hàng đầu và người bảo vệ môi trường ở Philippines. Xem ai đang tạo ra tác động lớn nhất.",
+    "reportTitle": "Báo cáo Vấn đề Môi trường",
+    "reportDescription": "Chụp và báo cáo các vấn đề môi trường tại Philippines. Phân tích AI vớidispatch tức thì đến cơ quan chức năng.",
+    "contactTitle": "Liên hệ LikasLens",
+    "contactDescription": "Liên hệ với LikasLens. Tham gia phong trào bảo vệ thiên nhiên Philippines thông qua hành động công dân.",
+    "changelogTitle": "Changelog — Theo dõi Tất cả Cập nhật",
+    "changelogDescription": "Theo dõi tất cả thay đổi, sửa lỗi và cải tiến LikasLens.",
+    "privacyDescription": "Chính sách bảo mật LikasLens. Dữ liệu và metadata EXIF của bạn được bảo vệ.",
+    "termsDescription": "Điều khoản dịch vụ LikasLens."
   }
 }

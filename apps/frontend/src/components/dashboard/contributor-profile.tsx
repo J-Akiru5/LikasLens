@@ -1,73 +1,61 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import Link from "next/link";
-import type { UserProfile, Achievement } from "@likaslens/shared";
+import { useEffect, useState, useCallback } from "react";
+import type { UserProfile } from "@likaslens/shared";
 import { RankProgressCard, AchievementCard } from "@likaslens/shared";
-import { createClient } from "@/utils/supabase/client";
 import {
-  MapPin, Crosshair, Globe, Eye, EyeOff, Loader2, ChevronRight, AlertCircle,
+  MapPin, Crosshair, Globe, Eye, EyeOff, Loader2,
   BarChart3, User,
 } from "lucide-react";
 
 interface ContributorProfileProps {
   locale?: string;
-  paramsPromise?: Promise<{ userId: string }>;
 }
 
-export function ContributorProfile({ locale, paramsPromise }: ContributorProfileProps) {
-  const params = paramsPromise ? use(paramsPromise) : null;
+export function ContributorProfile({ locale }: ContributorProfileProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ghostMode, setGhostMode] = useState(false);
 
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-        const endpoint = params?.userId
-          ? `${baseUrl}/users/${params.userId}`
-          : `${baseUrl}/user/profile`;
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10_000);
 
-        const headers: Record<string, string> = { Accept: "application/json" };
-        if (session?.access_token) {
-          headers["Authorization"] = `Bearer ${session.access_token}`;
-        }
+      const res = await fetch("/api/user/profile", {
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeout));
 
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 10_000);
-
-        const res = await fetch(endpoint, {
-          headers,
-          credentials: "include",
-          signal: controller.signal,
-        }).finally(() => clearTimeout(timeout));
-
-        if (!res.ok) {
-          if (res.status === 404) {
-            setError("User not found");
-          } else {
-            setError("Failed to load profile");
-          }
-          return;
-        }
-        const body = await res.json();
-        setProfile(body.data || body);
-      } catch (err: unknown) {
-        if (err instanceof Error && err.name === "AbortError") {
-          setError("Request timed out");
+      if (!res.ok) {
+        if (res.status === 401) {
+          setError("Unauthenticated");
+        } else if (res.status === 404) {
+          setError("User not found");
         } else {
-          setError("Unable to connect to server");
+          setError("Failed to load profile");
         }
-      } finally {
-        setLoading(false);
+        return;
       }
+      const body = await res.json();
+      setProfile(body.data || body);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
+        setError("Request timed out");
+      } else {
+        setError("Unable to connect to server");
+      }
+    } finally {
+      setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
     fetchProfile();
-  }, [params?.userId]);
+  }, [fetchProfile]);
 
   const anonName = `Contributor #${((profile?.id?.toString() || "").slice(-4) || "0000").padStart(4, "0")}`;
 
@@ -94,22 +82,6 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
       </div>
     );
   }
-
-  const fetchMoreAchievements = async (cursor?: string) => {
-    if (!params?.userId) return { data: [] as Achievement[], next_cursor: undefined as string | undefined };
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const cursorParam = cursor ? `&cursor=${cursor}` : "";
-      const res = await fetch(`${baseUrl}/users/${params.userId}/achievements?per_page=10${cursorParam}`, {
-        headers: { Accept: "application/json" },
-      });
-      if (!res.ok) return { data: [] as Achievement[], next_cursor: undefined as string | undefined };
-      const body = await res.json();
-      return { data: body.data || ([] as Achievement[]), next_cursor: body.meta?.next_cursor as string | undefined };
-    } catch {
-      return { data: [] as Achievement[], next_cursor: undefined as string | undefined };
-    }
-  };
 
   return (
     <div className="space-y-16">
@@ -198,14 +170,6 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
       <section>
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-semibold tracking-tight text-2xl text-ink">Credentials</h2>
-          {profile?.achievements && profile.achievements.length > 10 && params?.userId && (
-            <Link
-              href={`/${locale || ""}/profile/${params.userId}/achievements`}
-              className="flex items-center gap-1 font-mono text-xs text-ink/40 hover:text-ink transition-colors"
-            >
-              View All <ChevronRight className="w-3 h-3" />
-            </Link>
-          )}
         </div>
         {profile?.achievements && profile.achievements.length > 0 ? (
           <div>

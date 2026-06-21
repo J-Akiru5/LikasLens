@@ -378,5 +378,22 @@
     "coastalDamage": "Kerusakan Pesisir",
     "wasteBurning": "Pembakaran Sampah",
     "unclassified": "Masalah Lingkungan Tidak Terklasifikasi"
+  },
+  "seo": {
+    "homeTitle": "LikasLens — Melindungi Alam Filipina | Pelaporan Sipil Berbasis AI",
+    "impactTitle": "Dampak — Pelaporan Lingkungan Komunitas",
+    "impactDescription": "Lihat dampak nyata pelaporan lingkungan warga di Filipina. Lacak insiden yang terselesaikan dan aksi komunitas.",
+    "lawsTitle": "Hukum dan Peraturan Lingkungan Filipina",
+    "lawsDescription": "Ketahui hak Anda untuk melindungi alam. Hukum lingkungan Filipina tentang hutan, pesisir, keanekaragaman hayati, dan polusi.",
+    "scoreboardTitle": "Papan Skor Komunitas — Pelindung Lingkungan",
+    "scoreboardDescription": "Pelapor komunitas teratas dan pelindung lingkungan di Filipina. Lihat siapa yang paling berdampak dalam melindungi alam.",
+    "reportTitle": "Laporkan Isu Lingkungan",
+    "reportDescription": "Ambil foto dan laporkan isu lingkungan di Filipina. Analisis AI dengan dispatch instan ke instansi yang tepat.",
+    "contactTitle": "Hubungi LikasLens",
+    "contactDescription": "Hubungi LikasLens. Bergabunglah dalam gerakan melindungi alam Filipina melalui aksi sipil.",
+    "changelogTitle": "Changelog — Lacak Semua Pembaruan",
+    "changelogDescription": "Lacak semua perubahan, perbaikan, dan peningkatan LikasLens.",
+    "privacyDescription": "Kebijakan privasi LikasLens. Data dan metadata EXIF Anda terlindungi.",
+    "termsDescription": "Syarat layanan LikasLens."
   }
 }
