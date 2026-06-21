@@ -19,7 +19,7 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { PageSkeleton } from "@likaslens/shared";
+import { PageSkeleton, Skeleton } from "@likaslens/shared";
 import { AchievementCard, RankProgressCard, Dropdown, EmptyState } from "@likaslens/shared";
 import { fetchEcoCreditRate } from "@likaslens/shared";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
@@ -293,18 +293,18 @@ function ProfilePageContent() {
     return (
       <DashboardLayoutWrapper>
         <div className="space-y-6 animate-fade-in">
-          <div className="rounded-[40px] h-52 bg-ink/5 animate-shimmer" />
+          <Skeleton className="h-52 rounded-[40px]" />
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="space-y-4">
-              <div className="h-32 rounded-3xl bg-ink/5 animate-shimmer" />
-              <div className="h-20 rounded-3xl bg-ink/5 animate-shimmer" />
+              <Skeleton className="h-32 rounded-3xl" />
+              <Skeleton className="h-20 rounded-3xl" />
             </div>
             <div className="lg:col-span-2 space-y-4">
               <div className="flex gap-3">
-                <div className="h-10 w-28 rounded-xl bg-ink/5 animate-shimmer" />
-                <div className="h-10 w-36 rounded-xl bg-ink/5 animate-shimmer" />
+                <Skeleton className="h-10 w-28 rounded-xl" />
+                <Skeleton className="h-10 w-36 rounded-xl" />
               </div>
-              <div className="h-64 rounded-3xl bg-ink/5 animate-shimmer" />
+              <Skeleton className="h-64 rounded-3xl" />
             </div>
           </div>
         </div>

@@ -51,20 +51,7 @@
       ]
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/dashboard.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "/screenshots/report.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow"
-    }
-  ],
+  "prefer_related_applications": false,
   "share_target": {
     "action": "/report",
     "method": "POST",
@@ -86,7 +73,8 @@
   },
   "display_override": [
     "window-controls-overlay",
-    "standalone"
+    "standalone",
+    "minimal-ui"
   ],
   "edge_side_panel": {
     "preferred_width": 400

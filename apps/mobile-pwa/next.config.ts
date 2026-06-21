@@ -9,7 +9,9 @@ const withPWA = withPWAInit({
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
-  disable: process.env.NODE_ENV === "development",
+  // Custom SW handles all PWA behavior (offline queue, caching, background sync).
+  // disable: true ensures next-pwa doesn't overwrite public/sw.js.
+  disable: true,
   workboxOptions: {
     disableDevLogs: true,
   },

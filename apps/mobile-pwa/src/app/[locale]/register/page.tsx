@@ -49,29 +49,13 @@ export default function RegisterPage() {
       
       if (laravelData?.data?.token) {
         const token = laravelData.data.token;
-        document.cookie = `laravel_token=${token}; path=/; max-age=2592000; SameSite=Strict; Secure`; // 30 days
+        const isSecure = window.location.protocol === "https:";
+        document.cookie = `laravel_token=${token}; path=/; max-age=2592000; SameSite=Strict${isSecure ? "; Secure" : ""}`;
       } else {
         console.error("No token returned from backend:", laravelData);
       }
     } catch (syncErr) {
       console.error("Failed to sync with backend", syncErr);
-    }
-
-    // Sync user to Laravel backend (non-blocking, best-effort)
-    if (data.user) {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-      if (apiBase) {
-        fetch(`${apiBase}/auth/sync`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({
-            supabase_auth_user_id: data.user.id,
-            email: data.user.email ?? email,
-            name: name || email.split("@")[0],
-            role: "citizen",
-          }),
-        }).catch(() => {});
-      }
     }
 
     router.push(`/${locale}/dashboard`);

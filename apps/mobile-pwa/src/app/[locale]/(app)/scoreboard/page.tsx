@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { Trophy, Medal, Crown, Users, RefreshCw } from "lucide-react";
 import { cn, laravelGet } from "@likaslens/shared";
 import { ScoreboardSkeleton, EmptyState } from "@likaslens/shared";
 import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
+import { usePullToRefresh } from "@/context/pull-to-refresh";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -64,7 +65,6 @@ const PODIUM = [
 ];
 
 export default function ScoreboardPage() {
-  const scrollRef = useRef<HTMLElement>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("all-time");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
 
@@ -75,11 +75,6 @@ export default function ScoreboardPage() {
   const [tabLoading, setTabLoading] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const haptic = useHaptics();
-
-  const pullDistance = useRef(0);
-  const startY = useRef(0);
-  const pulling = useRef(false);
-  const [pullPx, setPullPx] = useState(0);
 
   useEffect(() => {
     try {
@@ -117,54 +112,18 @@ export default function ScoreboardPage() {
     }
   }, []);
 
+  const refreshAll = useCallback(() => {
+    haptic("light");
+    loadData(activeTab, true);
+    loadSpotlight();
+  }, [activeTab, loadData, loadSpotlight, haptic]);
+
+  usePullToRefresh(refreshAll);
+
   useEffect(() => {
     loadData(activeTab);
     loadSpotlight();
   }, [activeTab, loadData, loadSpotlight]);
-
-  /* Pull-to-refresh with haptic + spring cue.
-     The shell's <main> is the real scroller, so read its scrollTop via the
-     nearest scrolling ancestor instead of a per-page scroll container. */
-  const scroller = (): HTMLElement | null => {
-    const el = scrollRef.current;
-    if (!el) return null;
-    const main = el.closest("main");
-    return (main as HTMLElement) || el;
-  };
-  const onTouchStart = (e: React.TouchEvent) => {
-    const el = scroller();
-    if (el && el.scrollTop === 0) {
-      startY.current = e.touches[0].clientY;
-      pulling.current = true;
-    }
-  };
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (!pulling.current) return;
-    const delta = e.touches[0].clientY - startY.current;
-    if (delta > 0) {
-      pullDistance.current = delta;
-      setPullPx(Math.min(delta * 0.5, 64));
-    }
-  };
-  const onTouchEnd = () => {
-    if (pulling.current) {
-      pulling.current = false;
-      const fired = pullDistance.current > 70;
-      setPullPx(0);
-      pullDistance.current = 0;
-      if (fired) {
-        haptic("medium");
-        loadData(activeTab, true);
-        loadSpotlight();
-      }
-    }
-  };
-
-  const handleManualRefresh = () => {
-    haptic("light");
-    loadData(activeTab, true);
-    loadSpotlight();
-  };
 
   const isCurrentUser = (entry: LeaderboardEntry) =>
     currentUserId && entry.id === currentUserId;
@@ -182,20 +141,14 @@ export default function ScoreboardPage() {
   const rest = entries.slice(3);
 
   return (
-    <div
-      ref={scrollRef as unknown as React.RefObject<HTMLDivElement>}
-      className="pb-28"
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onTouchEnd}
-    >
+    <div className="pb-28">
       <div className="px-5">
         <LargeTitle
           title="Leaderboard"
           subtitle="Top environmental reporters, updating live."
           trailing={
             <button
-              onClick={handleManualRefresh}
+              onClick={refreshAll}
               aria-label="Refresh"
               className="touch-target"
               style={{ color: "var(--accent)" }}
@@ -204,11 +157,6 @@ export default function ScoreboardPage() {
             </button>
           }
         />
-      </div>
-
-      {/* Pull-to-refresh cue */}
-      <div style={{ height: pullPx, display: pullPx > 0 ? "flex" : "none", alignItems: "flex-end", justifyContent: "center" }} aria-hidden="true">
-        <RefreshCw className="w-4 h-4" style={{ color: "var(--accent)", marginBottom: 4, opacity: pullPx / 64 }} />
       </div>
 
       <div className="px-5">

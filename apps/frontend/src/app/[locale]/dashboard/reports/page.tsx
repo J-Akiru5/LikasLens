@@ -5,6 +5,7 @@ import {
   getTickets,
   getDashboardStats,
   AdminKPIsSkeleton,
+  Skeleton,
   EmptyState,
   StatsCards,
   RevealSection,
@@ -69,7 +70,7 @@ export default function ReportsPage() {
         <div className="space-y-6 pb-20 animate-fade-in">
           <div className="bento-grid">
             <div className="span-12">
-              <div className="rounded-[40px] h-44 bg-ink/5 animate-shimmer" />
+              <Skeleton variant="brand" className="h-44 rounded-[40px]" />
             </div>
           </div>
           <div className="bento-grid">
@@ -82,28 +83,28 @@ export default function ReportsPage() {
           <div className="bento-grid">
             <div className="span-6">
               <div className="bg-panel rounded-3xl p-6 border border-ink/5 space-y-4">
-                <div className="h-5 w-36 rounded bg-ink/5 animate-shimmer" />
+                <Skeleton className="h-5 w-36" />
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="space-y-2">
                     <div className="flex justify-between">
-                      <div className="h-3 w-24 rounded bg-ink/5 animate-shimmer" />
-                      <div className="h-3 w-12 rounded bg-ink/5 animate-shimmer" />
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-3 w-12" />
                     </div>
-                    <div className="h-2 w-full rounded-full bg-ink/5 animate-shimmer" />
+                    <Skeleton className="h-2 w-full rounded-full" />
                   </div>
                 ))}
               </div>
             </div>
             <div className="span-6">
               <div className="bg-panel rounded-3xl p-6 border border-ink/5 space-y-4">
-                <div className="h-5 w-36 rounded bg-ink/5 animate-shimmer" />
+                <Skeleton className="h-5 w-36" />
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="space-y-2">
                     <div className="flex justify-between">
-                      <div className="h-3 w-24 rounded bg-ink/5 animate-shimmer" />
-                      <div className="h-3 w-12 rounded bg-ink/5 animate-shimmer" />
+                      <Skeleton className="h-3 w-24" />
+                      <Skeleton className="h-3 w-12" />
                     </div>
-                    <div className="h-2 w-full rounded-full bg-ink/5 animate-shimmer" />
+                    <Skeleton className="h-2 w-full rounded-full" />
                   </div>
                 ))}
               </div>

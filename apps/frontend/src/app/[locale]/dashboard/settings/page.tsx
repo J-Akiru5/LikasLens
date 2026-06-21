@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { locales, localeNames, defaultLocale, showToast, ToastContainer, Dropdown } from "@likaslens/shared";
+import { locales, localeNames, defaultLocale, showToast, ToastContainer, Dropdown, notifyThemeColor } from "@likaslens/shared";
 import { createClient } from "@/utils/supabase/client";
 import { deleteAccount } from "@/app/[locale]/actions/account";
 
@@ -464,7 +464,7 @@ function PlatformSection() {
     setTheme(value);
     try { localStorage.setItem("likaslens-theme", value); } catch { /* ignore */ }
     document.documentElement.setAttribute("data-theme", value);
-    (window as any).updateThemeColor?.();
+    notifyThemeColor();
     window.dispatchEvent(new Event("themechange"));
     showToast(`Theme switched to ${value === "civic" ? "Civic" : "Ghost"} mode`, "success");
   };

@@ -7,7 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
-import { ToastContainer, showToast, EmptyState, Skeleton } from "@likaslens/shared";
+import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
@@ -92,7 +92,7 @@ export default function ReportPage() {
     const newTheme = checked ? "ghost" : "civic";
     document.documentElement.setAttribute("data-theme", newTheme);
     try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
-    (window as any).updateThemeColor?.();
+    notifyThemeColor();
   };
 
   const stripExif = async (base64: string) => {
@@ -429,7 +429,7 @@ export default function ReportPage() {
                 </div>
               ) : camera.isLoading ? (
                 <div className="border border-ink/10 rounded-xl overflow-hidden">
-                  <Skeleton className="w-full aspect-video rounded-none" />
+                  <Skeleton variant="brand" className="w-full aspect-video rounded-none" />
                   <div className="flex justify-center gap-3 p-4">
                     <Skeleton className="h-10 w-24 rounded-lg" />
                     <Skeleton className="h-10 w-20 rounded-lg" />

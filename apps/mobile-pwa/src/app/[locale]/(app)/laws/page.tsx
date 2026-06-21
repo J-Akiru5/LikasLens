@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Scale, Search, ExternalLink, Loader2 } from "lucide-react";
 import { laravelGet, Button, type PaginatedResponse } from "@likaslens/shared";
 
@@ -20,8 +20,12 @@ export default function LawsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    const fetchLaws = async () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(async () => {
       setLoading(true);
       try {
         const params: Record<string, string> = { per_page: "50" };
@@ -34,8 +38,11 @@ export default function LawsPage() {
       } finally {
         setLoading(false);
       }
+    }, 300);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-    fetchLaws();
   }, [search]);
 
   const filtered = useMemo(

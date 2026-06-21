@@ -95,19 +95,7 @@ export const metadata: Metadata = {
     ],
     apple: "/icons/apple-touch-icon.png",
   },
-  openGraph: {
-    title: "LikasLens",
-    description: "Neuro-symbolic civic reporting platform",
-    images: ["/opengraph-image.png"],
-    type: "website",
-    siteName: "LikasLens",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "LikasLens",
-    description: "Neuro-symbolic civic reporting platform",
-    images: ["/twitter-image.png"],
-  },
+
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

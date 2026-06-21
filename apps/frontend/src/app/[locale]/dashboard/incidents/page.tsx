@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getTickets, AdminTableSkeleton, EmptyState, IncidentDrawer, RevealSection } from "@likaslens/shared";
+import { getTickets, AdminTableSkeleton, Skeleton, EmptyState, IncidentDrawer, RevealSection } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { createClient } from "@/utils/supabase/client";
@@ -37,8 +37,8 @@ export default function IncidentsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      const role = data.user?.user_metadata?.role as string | undefined;
+    supabase.auth.getUser().then(({ data }: { data: { user: { user_metadata?: { role?: string } } | null } | null }) => {
+      const role = data?.user?.user_metadata?.role as string | undefined;
       setIsAdmin(
         role === "super_admin" || role === "analyst" || role === "lgu" || role === "partner"
       );
@@ -111,7 +111,7 @@ export default function IncidentsPage() {
       <DashboardLayoutWrapper>
         <div className="space-y-6 animate-fade-in">
           <div className="pb-5 border-b border-ink/10">
-            <div className="h-12 w-64 rounded-xl bg-ink/5 animate-shimmer" />
+            <Skeleton variant="brand" className="h-12 w-64 rounded-xl" />
           </div>
           <AdminTableSkeleton rows={8} columns={4} showSearch={true} />
         </div>
