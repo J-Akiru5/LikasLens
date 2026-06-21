@@ -529,7 +529,7 @@ async def analyze_hazard(payload: dict):
             detail=f"Invalid request body: {exc}",
         )
 
-    context = await retrieve_legal_context(request.hazard_id, request.location)
+    context = await retrieve_legal_context(request.hazard_id, request.location, request.jurisdiction)
     ai_summary = await generate_grounded_report(
         request.hazard_id,
         request.location,
@@ -541,6 +541,7 @@ async def analyze_hazard(payload: dict):
     return HazardResponse(
         hazard_id=request.hazard_id,
         location=request.location,
+        jurisdiction=request.jurisdiction,
         violated_laws=context["laws"],
         enforcing_agencies=context["agencies"],
         retrieval_method=context["method"],
