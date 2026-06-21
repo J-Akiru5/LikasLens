@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AI Service**: `image_analysis.py` — Roboflow detections merged into pipeline via `_merge_detections()` as third source (COCO → ENV → Roboflow)
 - **AI Service**: `compute_composite_score()` now evaluates three detection sources for confidence scoring
 - **AI Service**: `Dockerfile` — CMD changed to `./start.sh` for startup verification; `start-period` increased to 15s
-- **Docs**: Execution tracker Phase 1 (Roboflow integration) marked complete; Phase 0 Gremlin cleanup marked complete
+- **Docs**: Execution tracker Phase 1 (Roboflow integration) marked complete
 
 ### Fixed
 - **AI Service**: Graceful fallback — if Roboflow API is unreachable, detection silently falls back to COCO + ENV model only
