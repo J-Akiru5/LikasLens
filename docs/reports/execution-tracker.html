@@ -397,7 +397,7 @@
   <!-- ═══════════════════════════════════ HERO ═══════════════════════════════════ -->
   <div class="hero">
     <h1>LikasLens — Unified Execution Tracker</h1>
-    <p class="subtitle">Progress tracker for the revised execution plan addressing hackathon judge feedback. Covers stability fixes, dataset building, cross-border graph, LGU escalation, and pipeline integration.</p>
+    <p class="subtitle">Progress tracker for the revised execution plan. Covers Roboflow Hosted API integration, Gremlin→Cypher cleanup across all docs/frontend, cross-border graph, LGU escalation, and pipeline integration.</p>
     <div class="meta">
       <div class="meta-item"><strong>Started</strong>June 19, 2026</div>
       <div class="meta-item"><strong>Team</strong>3 people</div>
@@ -420,12 +420,12 @@
   <div class="team-row">
     <div class="team-card team-kat">
       <h3><span class="avatar avatar-kat">K</span> Kat</h3>
-      <div class="role">CV / Dataset Track</div>
+      <div class="role">Roboflow Integration / Detection Track</div>
       <ul>
-        <li>Source datasets with license tracking</li>
-        <li>Annotate in Roboflow (YOLOv8 format)</li>
-        <li>Class balance, 70/20/10 split</li>
-        <li>Run eval_metrics.py, publish results</li>
+        <li>Pick Roboflow public model (TACO/waste), get API key</li>
+        <li>Implement <code>roboflow_client.py</code> module</li>
+        <li>Wire Roboflow into <code>image_analysis.py</code> merge pipeline</li>
+        <li>Graceful fallback if API unreachable</li>
       </ul>
     </div>
     <div class="team-card team-cha">
@@ -456,7 +456,7 @@
       <div class="section-icon icon-phase0">&#9889;</div>
       <div class="section-info">
         <div class="section-title">Phase 0 — Immediate Fixes</div>
-        <div class="section-subtitle">Today, ~1 hour, zero-risk. Independent of Kat and Cha's tracks.</div>
+        <div class="section-subtitle">Today, ~2 hrs, zero-risk. Gremlin removal, threshold fix, composite scoring, Roboflow prep.</div>
       </div>
       <span class="section-badge badge-today">Today</span>
       <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
@@ -678,6 +678,11 @@
 
       <div class="sub-group">
         <h4>0F. Research Doc Cleanup (Gremlin→Cypher) <span class="sub-count" data-group="phase0f"></span></h4>
+
+        <div class="alert alert-info">
+          <strong>Scope:</strong> ~200+ Gremlin/Cosmos DB references remain across docs. Fix judge-facing docs first. <code>docs/archive/gremlin/</code> is historical — leave untouched.
+        </div>
+
         <ul class="checklist">
           <li>
             <input type="checkbox" id="p0f-1" data-group="phase0 phase0f" onchange="saveState()" checked>
@@ -719,41 +724,113 @@
               </div>
             </div>
           </li>
+          <li>
+            <input type="checkbox" id="p0f-5" data-group="phase0 phase0f" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="p0f-5">Fix judge-facing docs: <code>one-pager.md</code>, <code>demo-script.md</code>, <code>data-architecture.html</code>, <code>dataflow.html</code></label>
+              <div class="check-meta">
+                ~30+ refs across 4 files
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0f-6" data-group="phase0 phase0f" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="p0f-6">Fix roadmap docs: <code>asean-hackathon-report.md</code>, <code>sprint-dev2-ai.md</code>, <code>sprint-dev3-backend.md</code></label>
+              <div class="check-meta">
+                ~30+ refs across 3 files
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0f-7" data-group="phase0 phase0f" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="p0f-7">Fix audit docs: <code>AUDIT_REPORT.md</code>, <code>HACKATHON_AUDIT_REPORT.md</code></label>
+              <div class="check-meta">
+                ~15 refs across 2 files
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4>0G. Frontend Gremlin Removal (Cosmetic — Judge-Facing) <span class="sub-count" data-group="phase0g"></span></h4>
+
+        <div class="alert alert-warning">
+          <strong>Note:</strong> These knowledge-graph pages are hardcoded demos, not live API integrations. The <code>gremlinQuery</code> strings are decorative — never sent to any backend. This is a cosmetic fix to avoid judge confusion. Pages remain static visualizations.
+        </div>
+
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="p0g-1" data-group="phase0 phase0g" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0g-1"><code>apps/frontend/.../impact/page.tsx</code>: Replace "Gremlin Graph Router" label (line 649) and "Platform (YOL0v8 + Gremlin + Gemini)" cost line (line 734)</label>
+              <div class="check-meta">
+                <code>apps/frontend/src/app/[locale]/dashboard/impact/page.tsx:649,734</code>
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0g-2" data-group="phase0 phase0g" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0g-2"><code>apps/frontend/.../knowledge-graph/page.tsx</code>: Rename <code>gremlinQuery</code> → <code>cypherQuery</code>, replace Gremlin syntax with Cypher, update "Gremlin Query Log" label</label>
+              <div class="check-meta">
+                <code>apps/frontend/src/app/[locale]/dashboard/knowledge-graph/page.tsx:54,200,215,230,245,284,442,842</code>
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p0g-3" data-group="phase0 phase0g" onchange="saveState()" checked>
+            <div class="check-content">
+              <label class="check-label" for="p0g-3"><code>apps/mobile-pwa/.../knowledge-graph/page.tsx</code>: Same rename + syntax replacement (lines 34,117,129,141,153,190,432)</label>
+              <div class="check-meta">
+                <code>apps/mobile-pwa/src/app/[locale]/(app)/knowledge-graph/page.tsx</code>
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
         </ul>
       </div>
 
     </div>
   </div>
-
-  <!-- ═══════════════════════════════════ PHASE 1 ═══════════════════════════════════ -->
   <div class="section" id="phase1" data-phase="phase1">
     <div class="section-header" onclick="toggleSection(this)">
       <div class="section-icon icon-phase1">&#128247;</div>
       <div class="section-info">
-        <div class="section-title">Phase 1 — Kat's Track: CV/Dataset</div>
-        <div class="section-subtitle">Days 1-2. Build eval set, annotate, run metrics.</div>
+        <div class="section-title">Phase 1 — Roboflow Hosted API Integration</div>
+        <div class="section-subtitle">Today, ~3.5 hrs. Call pre-trained garbage detection model via Roboflow Serverless API. Zero training.</div>
       </div>
-      <span class="section-badge badge-days">Days 1-2</span>
+      <span class="section-badge badge-today">Today</span>
       <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
     </div>
     <div class="section-body">
 
+      <div class="alert alert-info">
+        <strong>Strategy:</strong> Use Option A from Roboflow plan — call a pre-trained, already-hosted garbage detection model on Roboflow's servers via their API. Zero training, zero dataset curation. Gives us real-time waste/litter/plastic detection in ~2 hours. Fork-and-train is a post-hackathon task.
+      </div>
+
       <div class="sub-group">
-        <h4>1A. Source Datasets with License Tracking <span class="sub-count" data-group="phase1a"></span></h4>
+        <h4>1A. Roboflow Account & Model Selection <span class="sub-count" data-group="phase1a"></span></h4>
         <table>
-          <thead><tr><th>Dataset</th><th>Source</th><th>License</th><th>Count</th></tr></thead>
+          <thead><tr><th>Model</th><th>Model ID (approx)</th><th>Classes</th><th>Why</th></tr></thead>
           <tbody>
-            <tr><td>Own field photos</td><td>Iloilo Western Visayas</td><td>CC0 / CC-BY</td><td>50-80</td></tr>
-            <tr><td>Roboflow Universe</td><td>Search "litter", "waste"</td><td>CC-BY 4.0</td><td>80-100</td></tr>
-            <tr><td>TrashNet</td><td>Kaggle</td><td>MIT</td><td>40-50</td></tr>
-            <tr><td>FloodNet</td><td>Kaggle</td><td>CC-BY 4.0</td><td>30-40</td></tr>
+            <tr><td><strong>TACO (Trash Annotations in Context)</strong></td><td><code>taco-trash-annotations-in-context/1</code></td><td>~60 waste sub-classes (plastic bag, bottle, cup, can, carton)</td><td>Research-grade, most diverse</td></tr>
+            <tr><td>yolov8-trash-detections</td><td><code>yolov8-trash-detections/11</code></td><td>General trash, litter, plastic</td><td>High community adoption, fast</td></tr>
+            <tr><td>Garbage Classification</td><td>Various community projects</td><td>cardboard, glass, metal, paper, plastic, trash</td><td>Good class coverage for sorting</td></tr>
           </tbody>
         </table>
         <ul class="checklist">
           <li>
             <input type="checkbox" id="p1a-1" data-group="phase1 phase1a" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1a-1">Collect 50-80 own field photos from Iloilo Western Visayas</label>
+              <label class="check-label" for="p1a-1">Browse Roboflow Universe, pick garbage detection model, copy model_id</label>
               <div class="check-meta">
                 <span class="who-badge who-kat">Kat</span>
               </div>
@@ -762,8 +839,9 @@
           <li>
             <input type="checkbox" id="p1a-2" data-group="phase1 phase1a" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1a-2">Download Roboflow Universe datasets (CC-BY licensed, ASEAN-relevant litter/dumping)</label>
+              <label class="check-label" for="p1a-2">Create Roboflow account (if needed), get API key from app.roboflow.com</label>
               <div class="check-meta">
+                Free tier: $60/month credits (~60,000 inferences)
                 <span class="who-badge who-kat">Kat</span>
               </div>
             </div>
@@ -771,19 +849,10 @@
           <li>
             <input type="checkbox" id="p1a-3" data-group="phase1 phase1a" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1a-3">Download TrashNet (MIT) and FloodNet (CC-BY 4.0) from Kaggle</label>
+              <label class="check-label" for="p1a-3">Add <code>ROBOFLOW_API_KEY</code> and <code>ROBOFLOW_MODEL_ID</code> to <code>.env</code></label>
               <div class="check-meta">
-                <span class="who-badge who-kat">Kat</span>
-              </div>
-            </div>
-          </li>
-          <li>
-            <input type="checkbox" id="p1a-4" data-group="phase1 phase1a" onchange="saveState()">
-            <div class="check-content">
-              <label class="check-label" for="p1a-4">Create dataset_manifest.json with image_id, source, license, location, classes, split per image</label>
-              <div class="check-meta">
-                <code>apps/ai-service/test_data/dataset_manifest.json</code>
-                <span class="who-badge who-kat">Kat</span>
+                <code>apps/ai-service/.env</code>
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
@@ -791,33 +860,35 @@
       </div>
 
       <div class="sub-group">
-        <h4>1B. Annotate in Roboflow <span class="sub-count" data-group="phase1b"></span></h4>
+        <h4>1B. Implement <code>roboflow_client.py</code> <span class="sub-count" data-group="phase1b"></span></h4>
         <ul class="checklist">
           <li>
             <input type="checkbox" id="p1b-1" data-group="phase1 phase1b" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1b-1">Set up Roboflow project with YOLOv8 export format</label>
+              <label class="check-label" for="p1b-1">Create <code>roboflow_client.py</code> module using <code>inference-sdk</code> to call Roboflow Serverless API</label>
               <div class="check-meta">
-                <span class="who-badge who-kat">Kat</span>
+                <code>apps/ai-service/roboflow_client.py</code> (new file)
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
           <li>
             <input type="checkbox" id="p1b-2" data-group="phase1 phase1b" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1b-2">Annotate bounding boxes mapped to 22 ENV_MODEL_CLASS_MAP classes</label>
+              <label class="check-label" for="p1b-2">Return bounding boxes + labels + confidence in same format as COCO detections</label>
               <div class="check-meta">
-                <code>image_analysis.py:112-143</code>
-                <span class="who-badge who-kat">Kat</span>
+                Output: <code>[{"bbox": [x,y,w,h], "class": "...", "confidence": 0.85}, ...]</code>
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
           <li>
             <input type="checkbox" id="p1b-3" data-group="phase1 phase1b" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1b-3">Export in YOLOv8 format (data.yaml + image/label dirs)</label>
+              <label class="check-label" for="p1b-3">Add <code>/roboflow/health</code> endpoint to <code>main.py</code> for connectivity check</label>
               <div class="check-meta">
-                <span class="who-badge who-kat">Kat</span>
+                <code>apps/ai-service/main.py</code>
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
@@ -825,33 +896,45 @@
       </div>
 
       <div class="sub-group">
-        <h4>1C. Class Balance & Split <span class="sub-count" data-group="phase1c"></span></h4>
+        <h4>1C. Wire into <code>image_analysis.py</code> Merge Pipeline <span class="sub-count" data-group="phase1c"></span></h4>
         <ul class="checklist">
           <li>
             <input type="checkbox" id="p1c-1" data-group="phase1 phase1c" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1c-1">Split 70% train / 20% validation / 10% test</label>
+              <label class="check-label" for="p1c-1">Add Roboflow as third detection source (alongside COCO + ENV model)</label>
               <div class="check-meta">
-                <span class="who-badge who-kat">Kat</span>
+                <code>apps/ai-service/image_analysis.py</code> — import roboflow_client, call in analyze flow
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
           <li>
             <input type="checkbox" id="p1c-2" data-group="phase1 phase1c" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1c-2">Verify min 10 images per class in test set</label>
+              <label class="check-label" for="p1c-2">Update <code>_merge_detections()</code> to handle Roboflow results (IoU dedup with COCO/ENV)</label>
               <div class="check-meta">
-                <span class="who-badge who-kat">Kat</span>
+                <code>apps/ai-service/image_analysis.py</code>
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
           <li>
             <input type="checkbox" id="p1c-3" data-group="phase1 phase1c" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1c-3">Create ground_truth.jsonl in eval_metrics.py format</label>
+              <label class="check-label" for="p1c-3">Update <code>compute_composite_score()</code> for three-source scoring</label>
               <div class="check-meta">
-                <code>{"image_id":"img_001","classes":[39],"has_violation":true}</code>
-                <span class="who-badge who-kat">Kat</span>
+                <code>apps/ai-service/image_analysis.py</code>
+                <span class="who-badge who-you">You</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="p1c-4" data-group="phase1 phase1c" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="p1c-4">Graceful fallback: if Roboflow unreachable, silently use COCO-only (already works today)</label>
+              <div class="check-meta">
+                try/except around roboflow call, log warning, continue with COCO
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
@@ -859,48 +942,44 @@
       </div>
 
       <div class="sub-group">
-        <h4>1D. Run eval_metrics.py & Publish Results <span class="sub-count" data-group="phase1d"></span></h4>
+        <h4>1D. End-to-End Test <span class="sub-count" data-group="phase1d"></span></h4>
         <ul class="checklist">
           <li>
             <input type="checkbox" id="p1d-1" data-group="phase1 phase1d" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1d-1">Enable metrics logging: <code>export LIKASLENS_METRICS_LOG=...</code></label>
+              <label class="check-label" for="p1d-1">Submit garbage photo through <code>/analyze</code> endpoint, verify Roboflow detections appear</label>
               <div class="check-meta">
-                <code>INFERENCE_METRICS.md</code>
-                <span class="who-badge who-kat">Kat</span>
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
           <li>
             <input type="checkbox" id="p1d-2" data-group="phase1 phase1d" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1d-2">Run 200+ inferences through the analysis pipeline</label>
+              <label class="check-label" for="p1d-2">Verify Roboflow detections merge correctly with COCO results (no duplicate bboxes)</label>
               <div class="check-meta">
-                <span class="who-badge who-kat">Kat</span>
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
           <li>
             <input type="checkbox" id="p1d-3" data-group="phase1 phase1d" onchange="saveState()">
             <div class="check-content">
-              <label class="check-label" for="p1d-3">Run eval_metrics.py with --log, --ground-truth, --output</label>
+              <label class="check-label" for="p1d-3">Check triage scoring with three detection sources</label>
               <div class="check-meta">
-                <code>python apps/ai-service/eval_metrics.py --log ... --ground-truth ... --output ...</code>
-                <span class="who-badge who-kat">Kat</span>
-              </div>
-            </div>
-          </li>
-          <li>
-            <input type="checkbox" id="p1d-4" data-group="phase1 phase1d" onchange="saveState()">
-            <div class="check-content">
-              <label class="check-label" for="p1d-4">Publish METRICS_REPORT.md with real mAP, precision, recall, FPR, latency numbers</label>
-              <div class="check-meta">
-                <code>apps/ai-service/METRICS_REPORT.md</code>
-                <span class="who-badge who-kat">Kat</span>
+                Verify composite_confidence >= 0.70 → auto_routed for clear garbage photos
+                <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
         </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4>Post-Hackathon: Fork & Train (Deferred) <span class="sub-count"></span></h4>
+        <div class="alert alert-warning">
+          <strong>Not today.</strong> These tasks move to post-hackathon Week 1. Fork TACO dataset, add 50 field photos, train custom YOLOv8n, export .pt weights for local inference.
+        </div>
       </div>
 
     </div>
@@ -1354,6 +1433,100 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════════════ ROBOFLOW PLAN ═══════════════════════════════════ -->
+  <div class="section collapsed" id="roboflow-plan" data-phase="roboflow">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-phase1">&#129302;</div>
+      <div class="section-info">
+        <div class="section-title">Roboflow Integration Plan</div>
+        <div class="section-subtitle">Full strategy reference. Hosted API today, fork-and-train post-hackathon.</div>
+      </div>
+      <span class="section-badge badge-shared">Reference</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+
+      <div class="alert alert-info">
+        <strong>Decision (June 21):</strong> Go with Option A (Hosted API). Fork-and-train is post-hackathon. With ~15 hours left, spending 6-8 hrs on training leaves zero margin for bugs and demo prep.
+      </div>
+
+      <div class="sub-group">
+        <h4>Option A: Hosted API (Today) <span class="sub-count"></span></h4>
+        <table>
+          <thead><tr><th>Factor</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Time to working demo</strong></td><td>~2 hours</td></tr>
+            <tr><td><strong>What you get</strong></td><td>Real-time garbage/litter/plastic detection on submitted photos</td></tr>
+            <tr><td><strong>What you skip</strong></td><td>Dataset curation, annotation, training, export, model loading</td></tr>
+            <tr><td><strong>How it works</strong></td><td>ai-service sends image to <code>https://serverless.roboflow.com</code> → gets bounding boxes + labels → merges with COCO results</td></tr>
+            <tr><td><strong>Cost</strong></td><td>Free tier: $60/month in credits (~60,000 inferences)</td></tr>
+            <tr><td><strong>Fallback</strong></td><td>If Roboflow unreachable, silently fall back to COCO-only (already works today)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4>Candidate Models <span class="sub-count"></span></h4>
+        <table>
+          <thead><tr><th>Model</th><th>Model ID (approx)</th><th>Classes</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td><strong>TACO</strong></td><td><code>taco-trash-annotations-in-context/1</code></td><td>~60 waste sub-classes</td><td>Research-grade, most diverse</td></tr>
+            <tr><td>yolov8-trash-detections</td><td><code>yolov8-trash-detections/11</code></td><td>General trash, litter, plastic</td><td>High community adoption, fast</td></tr>
+            <tr><td>Garbage Classification</td><td>Various community</td><td>cardboard, glass, metal, paper, plastic</td><td>Good class coverage</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4>What's In Scope Today <span class="sub-count"></span></h4>
+        <ul style="list-style: none; padding: 0;">
+          <li style="font-size: 0.85rem; padding: 0.3rem 0; padding-left: 1.5rem; position: relative;"><span style="position: absolute; left: 0; color: var(--green-600);">&#10003;</span> Roboflow API key setup</li>
+          <li style="font-size: 0.85rem; padding: 0.3rem 0; padding-left: 1.5rem; position: relative;"><span style="position: absolute; left: 0; color: var(--green-600);">&#10003;</span> <code>roboflow_client.py</code> module using inference-sdk</li>
+          <li style="font-size: 0.85rem; padding: 0.3rem 0; padding-left: 1.5rem; position: relative;"><span style="position: absolute; left: 0; color: var(--green-600);">&#10003;</span> Merge Roboflow results into image_analysis.py</li>
+          <li style="font-size: 0.85rem; padding: 0.3rem 0; padding-left: 1.5rem; position: relative;"><span style="position: absolute; left: 0; color: var(--green-600);">&#10003;</span> /roboflow/health endpoint</li>
+          <li style="font-size: 0.85rem; padding: 0.3rem 0; padding-left: 1.5rem; position: relative;"><span style="position: absolute; left: 0; color: var(--green-600);">&#10003;</span> Three-source composite scoring</li>
+          <li style="font-size: 0.85rem; padding: 0.3rem 0; padding-left: 1.5rem; position: relative;"><span style="position: absolute; left: 0; color: var(--green-600);">&#10003;</span> Graceful fallback to COCO-only</li>
+        </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4>v1 Detection Coverage <span class="sub-count"></span></h4>
+        <table>
+          <thead><tr><th>Class</th><th>Status</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Garbage / Litter / Plastic</td><td style="color: var(--green-600); font-weight: 700;">&#10003; Strong</td><td>Covered by public TACO/waste models</td></tr>
+            <tr><td>Water pollution</td><td style="color: var(--amber-500); font-weight: 700;">&#9888; Weak</td><td>No good public dataset; COCO has no water classes</td></tr>
+            <tr><td>Smoke / Fire</td><td style="color: var(--amber-500); font-weight: 700;">&#9888; Weak</td><td>Some models exist but quality varies</td></tr>
+            <tr><td>Deforestation</td><td style="color: var(--red-500); font-weight: 700;">&#10007; Absent</td><td>Requires satellite/drone imagery datasets</td></tr>
+            <tr><td>Oil spill</td><td style="color: var(--red-500); font-weight: 700;">&#10007; Absent</td><td>Requires specialized marine imagery</td></tr>
+          </tbody>
+        </table>
+        <div class="alert alert-info" style="margin-top: 0.75rem;">
+          <strong>Demo story:</strong> "v1 excels at waste/litter detection — the #1 reported violation type in the Philippines. Our active learning pipeline will expand to water, fire, and deforestation as field data flows in."
+        </div>
+      </div>
+
+      <div class="sub-group">
+        <h4>Post-Hackathon: Active Learning Loop <span class="sub-count"></span></h4>
+        <p style="font-size: 0.82rem; color: var(--slate-600); margin-bottom: 0.75rem;">The real long-term data flywheel. Moves from "Phase 4" to "Phase 2" post-hackathon.</p>
+        <table>
+          <thead><tr><th>Week</th><th>Task</th><th>Issue</th></tr></thead>
+          <tbody>
+            <tr><td>Week 1</td><td>Fork TACO dataset + light fine-tune with 50 field photos</td><td>#179 (revised)</td></tr>
+            <tr><td>Week 1</td><td>Export trained .pt weights for local inference</td><td>#179</td></tr>
+            <tr><td>Week 2</td><td>Active learning pipeline (image sync to Roboflow)</td><td>#181</td></tr>
+            <tr><td>Week 2-3</td><td>Expand to fire/smoke/water classes</td><td>New issue</td></tr>
+            <tr><td>Week 2</td><td>Add 50 field photos to training set</td><td>New issue</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size: 0.82rem; color: var(--slate-600); margin-top: 0.75rem;">
+          <strong>5 components:</strong> Image storage (Supabase, exists) → Admin review gate (approved_for_training flag) → Sync job (artisan command, strips EXIF, uploads to Roboflow) → Retrain on Roboflow dashboard (manual) → Model versioning (.env update)
+        </p>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ═══════════════════════════════════ RISK REGISTER ═══════════════════════════════════ -->
   <div class="section collapsed" id="risk" data-phase="risk">
     <div class="section-header" onclick="toggleSection(this)">
@@ -1368,11 +1541,13 @@
       <table>
         <thead><tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr></thead>
         <tbody>
-          <tr><td>Can't find 200 properly licensed images</td><td>Medium</td><td>High</td><td>Roboflow Universe CC-BY datasets. Fallback: 150 with heavier field photo weighting.</td></tr>
-          <tr><td>Cha writes Gremlin before being corrected</td><td>High</td><td>Medium</td><td>Communicate corrections today (Phase 0C).</td></tr>
-          <tr><td>Pitch deck Gremlin refs seen by judges</td><td>Medium</td><td>High</td><td>Phase 0B is first-hour work.</td></tr>
+          <tr><td>Roboflow API unavailable during demo</td><td>Low</td><td>High</td><td>Graceful fallback to COCO-only (already works). Pre-test connectivity. Health endpoint.</td></tr>
+          <tr><td>Can't find 200 properly licensed images (post-hackathon)</td><td>Medium</td><td>Medium</td><td>Deferred to post-hackathon. Roboflow Universe CC-BY datasets available.</td></tr>
+          <tr><td>Cha writes Gremlin before being corrected</td><td>High</td><td>Medium</td><td>Communicate corrections today (Phase 0C). All queries must be Cypher.</td></tr>
+          <tr><td>Gremlin references visible to judges in docs</td><td>Medium</td><td>High</td><td>Phase 0B + 0F + 0G cover all docs, frontend, and AI service comments.</td></tr>
           <tr><td>Confidence thresholds produce bad results</td><td>Medium</td><td>Medium</td><td>Run eval set through composite scorer before committing.</td></tr>
           <tr><td>Jurisdiction scoping breaks existing PH queries</td><td>Low</td><td>High</td><td>Optional param, default None = no filter. Existing behavior preserved.</td></tr>
+          <tr><td>Knowledge graph pages are demos, not live (judge expectation gap)</td><td>Medium</td><td>Medium</td><td>Phase 0G fixes cosmetic Gremlin refs. Pages remain static demos — acceptable for hackathon.</td></tr>
         </tbody>
       </table>
     </div>
@@ -1405,49 +1580,67 @@
         <li>
           <input type="checkbox" id="v-3" data-group="verify" onchange="saveState()">
           <div class="check-content">
-            <label class="check-label" for="v-3">data-architecture.md describes Neo4j, not Cosmos DB</label>
+            <label class="check-label" for="v-3">data-architecture.html describes Neo4j, not Cosmos DB</label>
           </div>
         </li>
         <li>
           <input type="checkbox" id="v-4" data-group="verify" onchange="saveState()">
           <div class="check-content">
-            <label class="check-label" for="v-4">eval_metrics.py has been run and METRICS_REPORT.md exists with real numbers</label>
+            <label class="check-label" for="v-4">Roboflow API key is set and <code>/roboflow/health</code> returns OK</label>
           </div>
         </li>
         <li>
           <input type="checkbox" id="v-5" data-group="verify" onchange="saveState()">
           <div class="check-content">
-            <label class="check-label" for="v-5">Confidence threshold is 0.50 (not 0.25)</label>
+            <label class="check-label" for="v-5">Garbage photo submitted through <code>/analyze</code> shows Roboflow detections merged with COCO</label>
           </div>
         </li>
         <li>
           <input type="checkbox" id="v-6" data-group="verify" onchange="saveState()">
           <div class="check-content">
-            <label class="check-label" for="v-6"><code>illegal_dumping</code> SLA is 48h/168h in both seeder and escalation narrative</label>
+            <label class="check-label" for="v-6">Confidence threshold is 0.50 (not 0.25)</label>
           </div>
         </li>
         <li>
           <input type="checkbox" id="v-7" data-group="verify" onchange="saveState()">
           <div class="check-content">
-            <label class="check-label" for="v-7"><code>hybrid_retrieve</code> accepts jurisdiction param and filters Cypher queries</label>
+            <label class="check-label" for="v-7"><code>illegal_dumping</code> SLA is 48h/168h in both seeder and escalation narrative</label>
           </div>
         </li>
         <li>
           <input type="checkbox" id="v-8" data-group="verify" onchange="saveState()">
           <div class="check-content">
-            <label class="check-label" for="v-8">Indonesia law entries exist in baseline_rules.py with jurisdictionCode "ID-NATIONAL"</label>
+            <label class="check-label" for="v-8"><code>hybrid_retrieve</code> accepts jurisdiction param and filters Cypher queries</label>
           </div>
         </li>
         <li>
           <input type="checkbox" id="v-9" data-group="verify" onchange="saveState()">
           <div class="check-content">
-            <label class="check-label" for="v-9">TriageService computes composite score and sets triage_disposition</label>
+            <label class="check-label" for="v-9">Indonesia law entries exist in baseline_rules.py with jurisdictionCode "ID-NATIONAL"</label>
           </div>
         </li>
         <li>
           <input type="checkbox" id="v-10" data-group="verify" onchange="saveState()">
           <div class="check-content">
-            <label class="check-label" for="v-10">Knowledge graph pages say "Cypher query" not "Gremlin query"</label>
+            <label class="check-label" for="v-10">TriageService computes composite score and sets triage_disposition</label>
+          </div>
+        </li>
+        <li>
+            <input type="checkbox" id="v-11" data-group="verify" onchange="saveState()" checked>
+          <div class="check-content">
+            <label class="check-label" for="v-11">Knowledge graph pages display Cypher syntax, not Gremlin (cosmetic — pages are hardcoded demos)</label>
+          </div>
+        </li>
+        <li>
+            <input type="checkbox" id="v-12" data-group="verify" onchange="saveState()" checked>
+          <div class="check-content">
+            <label class="check-label" for="v-12">Impact page has zero Gremlin references</label>
+          </div>
+        </li>
+        <li>
+          <input type="checkbox" id="v-13" data-group="verify" onchange="saveState()">
+          <div class="check-content">
+            <label class="check-label" for="v-13">Judge-facing docs (one-pager, demo-script, data-architecture, dataflow) have zero Gremlin/Cosmos refs</label>
           </div>
         </li>
       </ul>
@@ -1456,7 +1649,7 @@
 
   <!-- ═══════════════════════════════════ FOOTER ═══════════════════════════════════ -->
   <div class="footer">
-    <div>LikasLens Unified Execution Tracker — June 19, 2026</div>
+    <div>LikasLens Unified Execution Tracker — June 21, 2026 (Revised)</div>
     <button onclick="resetAll()">Reset All Checkboxes</button>
   </div>
 
