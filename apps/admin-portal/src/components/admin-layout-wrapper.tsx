@@ -2,8 +2,12 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardLayout, type NavItem } from "@likaslens/shared";
+import { DashboardLayout, type NavItem, GlobalSearch } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase";
+import { initAuthRefresh } from "@/lib/auth-init";
+
+// Register the 401 token refresh handler once at app startup
+initAuthRefresh();
 import {
   LayoutDashboard,
   BarChart3,
@@ -92,7 +96,9 @@ export function AdminDashboardLayoutWrapper({
   };
 
   return (
-    <DashboardLayout
+    <>
+      <GlobalSearch />
+      <DashboardLayout
       navItems={SIDEBAR_NAV_ITEMS}
       userRole={role}
       isGhostMode={isGhostMode}
@@ -112,5 +118,6 @@ export function AdminDashboardLayoutWrapper({
         {children}
       </div>
     </DashboardLayout>
+    </>
   );
 }

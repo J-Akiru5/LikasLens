@@ -1,0 +1,106 @@
+"use client";
+
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { laravelPost } from "@likaslens/shared";
+
+function CallbackHandler() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function handleCallback() {
+      try {
+        const supabase = createClient();
+
+        // Exchange the auth code for a session
+        const { data, error } = await supabase.auth.exchangeCodeForSession(
+          window.location.href
+        );
+
+        if (error) {
+          setError(error.message);
+          return;
+        }
+
+        if (!data.session?.user) {
+          setError("No user session returned");
+          return;
+        }
+
+        // Sync with Laravel to get Sanctum token
+        try {
+          const laravelData = await laravelPost<any>("/auth/sync", {
+            supabase_auth_user_id: data.session.user.id,
+            email: data.session.user.email,
+            name: data.session.user.user_metadata?.full_name || data.session.user.email?.split("@")[0],
+          });
+
+          if (laravelData?.data?.token) {
+            const token = laravelData.data.token;
+            const isSecure = window.location.protocol === "https:";
+            document.cookie = `laravel_token=${token}; path=/; max-age=2592000; SameSite=Strict${isSecure ? "; Secure" : ""}`;
+          }
+        } catch {
+          // Sync failure is non-blocking
+        }
+
+        // Redirect to the original destination or dashboard
+        const locale = data.session.user.user_metadata?.locale || "en";
+        const redirectTo = searchParams.get("redirect_to") || `/${locale}/dashboard`;
+        router.replace(redirectTo);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Authentication failed");
+      }
+    }
+
+    handleCallback();
+  }, [router, searchParams]);
+
+  if (error) {
+    return (
+      <div className="h-dvh flex items-center justify-center p-6 bg-page">
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
+            <span className="text-red-500 text-2xl font-bold">!</span>
+          </div>
+          <h1 className="font-semibold text-xl text-ink">Authentication Failed</h1>
+          <p className="text-sm text-ink/60">{error}</p>
+          <button
+            onClick={() => router.replace("/login")}
+            className="mt-4 px-6 py-3 bg-accent text-white rounded-xl font-semibold text-sm"
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-dvh flex items-center justify-center bg-page">
+      <div className="text-center space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-accent mx-auto" />
+        <p className="text-sm text-ink/60 font-medium">Completing sign in...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-dvh flex items-center justify-center bg-page">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 animate-spin text-accent mx-auto" />
+          <p className="text-sm text-ink/60 font-medium">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CallbackHandler />
+    </Suspense>
+  );
+}

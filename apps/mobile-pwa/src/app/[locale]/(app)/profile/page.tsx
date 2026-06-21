@@ -24,6 +24,7 @@ import { createClient } from "@/lib/supabase/client";
 import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
+import { MobileProfileSkeleton } from "@likaslens/shared";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Profile — identity header card + grouped inset list (iOS Settings pattern).
@@ -78,13 +79,7 @@ export default function ProfilePage() {
   }
 
   if (loading) {
-    return (
-      <div className="p-5 space-y-4">
-        <div className="skeleton-shimmer" style={{ height: 132 }} />
-        <div className="skeleton-shimmer" style={{ height: 58 }} />
-        <div className="skeleton-shimmer" style={{ height: 58 }} />
-      </div>
-    );
+    return <MobileProfileSkeleton />;
   }
 
   return (

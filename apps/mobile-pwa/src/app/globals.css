@@ -147,27 +147,6 @@ body {
   margin: 8px auto 4px;
 }
 
-/* ── Skeleton shimmer ─────────────────────────────────────────────────────── */
-@keyframes m-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-.skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklab, var(--ink) 5%, transparent) 25%,
-    color-mix(in oklab, var(--ink) 9%, transparent) 37%,
-    color-mix(in oklab, var(--ink) 5%, transparent) 63%
-  );
-  background-size: 200% 100%;
-  animation: m-shimmer 1.4s ease-in-out infinite;
-  border-radius: 8px;
-}
-
 /* ── Forensic photo banner ──────────────────────────────────────────────────
    Reliable over fragile: no mix-blend-mode (which made slow/failed images
    vanish into the gradient). The dark scrim overlay guarantees text contrast
@@ -230,7 +209,6 @@ body {
 
 /* ── Reduced motion (PRODUCT.md: this is a field tool, not a showcase) ────── */
 @media (prefers-reduced-motion: reduce) {
-  .skeleton-shimmer { animation: none; }
   * {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
@@ -246,5 +224,18 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* ── Haptic visual pulse fallback ────────────────────────────────────────────
+   Minimal scale bounce when vibration API isn't available.
+   Subtle and short — not a ring, not a flash. */
+.haptic-pulse {
+  animation: haptic-pulse 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes haptic-pulse {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.995); }
+  60%  { transform: scale(1.002); }
+  100% { transform: scale(1); }
 }
 

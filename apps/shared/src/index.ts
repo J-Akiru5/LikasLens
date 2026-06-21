@@ -2,6 +2,8 @@ export * from "./types";
 export * from "./api";
 export * from "./ui";
 export * from "./utils";
+export * from "./lib/format";
+export { notifyThemeColor } from "./lib/theme";
 export * from "./hooks/useGeminiChat";
 export * from "./i18n/config";
 export type { LangSuggestionText } from "./i18n/language-suggestion";

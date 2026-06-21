@@ -19,7 +19,7 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { PageSkeleton } from "@likaslens/shared";
+import { PageSkeleton, Skeleton } from "@likaslens/shared";
 import { AchievementCard, RankProgressCard, Dropdown, EmptyState } from "@likaslens/shared";
 import { fetchEcoCreditRate } from "@likaslens/shared";
 import { AvatarUpload } from "@/components/profile/avatar-upload";
@@ -293,18 +293,18 @@ function ProfilePageContent() {
     return (
       <DashboardLayoutWrapper>
         <div className="space-y-6 animate-fade-in">
-          <div className="rounded-[40px] h-52 bg-ink/5 animate-shimmer" />
+          <Skeleton className="h-52 rounded-[40px]" />
           <div className="grid gap-8 lg:grid-cols-3">
             <div className="space-y-4">
-              <div className="h-32 rounded-3xl bg-ink/5 animate-shimmer" />
-              <div className="h-20 rounded-3xl bg-ink/5 animate-shimmer" />
+              <Skeleton className="h-32 rounded-3xl" />
+              <Skeleton className="h-20 rounded-3xl" />
             </div>
             <div className="lg:col-span-2 space-y-4">
               <div className="flex gap-3">
-                <div className="h-10 w-28 rounded-xl bg-ink/5 animate-shimmer" />
-                <div className="h-10 w-36 rounded-xl bg-ink/5 animate-shimmer" />
+                <Skeleton className="h-10 w-28 rounded-xl" />
+                <Skeleton className="h-10 w-36 rounded-xl" />
               </div>
-              <div className="h-64 rounded-3xl bg-ink/5 animate-shimmer" />
+              <Skeleton className="h-64 rounded-3xl" />
             </div>
           </div>
         </div>
@@ -353,6 +353,13 @@ function ProfilePageContent() {
                 {(rewardPoints ?? 0).toLocaleString()}
               </span>
             </div>
+            <button
+              onClick={() => setActiveTab("settings")}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-ink/5 hover:bg-ink/10 text-ink text-sm font-medium rounded-xl transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Edit Profile
+            </button>
           </div>
           
           {/* Subtle background decoration */}
@@ -385,55 +392,62 @@ function ProfilePageContent() {
         {activeTab === "overview" && (
           <>
             <div className="space-y-8">
-              <div className="grid lg:grid-cols-2 gap-8">
-                <div className="bg-panel rounded-3xl p-8 border border-ink/5 shadow-sm flex flex-col justify-center">
-                  <div className="grid grid-cols-3 gap-2 text-center divide-x divide-ink/5">
-                    <div className="space-y-2 px-2 sm:px-4">
-                      <span className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink block">
+              <div className="grid lg:grid-cols-2 gap-6">
+                <div className="group relative bg-panel border border-ink/5 rounded-[32px] p-8 shadow-sm overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:border-ink/10 hover:shadow-md">
+                  <div className="absolute -top-16 -left-16 w-48 h-48 rounded-full bg-accent/5 blur-[50px] opacity-50 transition-opacity duration-700 pointer-events-none" />
+                  <div className="relative z-10 grid grid-cols-3 gap-2 h-full items-center text-center divide-x divide-ink/5">
+                    <div className="space-y-3 px-2 sm:px-4 transition-transform duration-500 hover:scale-105">
+                      <span className="font-semibold tracking-tight text-5xl sm:text-6xl text-ink block leading-none">
                         {profileStats.reports_filed}
                       </span>
-                      <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold block">
+                      <span className="font-mono text-[9px] sm:text-[10px] text-ink/40 uppercase tracking-[0.2em] font-bold block">
                         Filed
                       </span>
                     </div>
-                    <div className="space-y-2 px-2 sm:px-4">
-                      <span className="font-semibold tracking-tight text-3xl sm:text-4xl text-green block">
+                    <div className="space-y-3 px-2 sm:px-4 transition-transform duration-500 hover:scale-105">
+                      <span className="font-semibold tracking-tight text-5xl sm:text-6xl text-green block leading-none">
                         {profileStats.reports_verified}
                       </span>
-                      <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold block">
+                      <span className="font-mono text-[9px] sm:text-[10px] text-ink/40 uppercase tracking-[0.2em] font-bold block">
                         Verified
                       </span>
                     </div>
-                    <div className="space-y-2 px-2 sm:px-4">
-                      <span className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink block">
+                    <div className="space-y-3 px-2 sm:px-4 transition-transform duration-500 hover:scale-105">
+                      <span className="font-semibold tracking-tight text-5xl sm:text-6xl text-ink block leading-none">
                         {achievements.filter((a) => a.unlocked).length}
                       </span>
-                      <span className="font-mono text-[10px] sm:text-xs text-ink/40 uppercase tracking-widest font-bold block">
+                      <span className="font-mono text-[9px] sm:text-[10px] text-ink/40 uppercase tracking-[0.2em] font-bold block">
                         {tp("achievementBadges")}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-panel rounded-3xl p-8 border border-ink/5 shadow-sm grid sm:grid-cols-2 gap-8">
-                  <div className="space-y-2 relative">
-                    <span className="font-mono text-xs text-ink/50 uppercase tracking-widest font-bold flex items-center gap-2">
+                <div className="group relative bg-gradient-to-br from-[#10b981] to-[#047857] text-white border border-white/20 rounded-[32px] p-8 shadow-[0_12px_40px_-12px_rgba(16,185,129,0.5)] grid sm:grid-cols-2 gap-8 overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_50px_-12px_rgba(16,185,129,0.7)]">
+                  {/* Glass reflection overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/[0.07] to-white/[0.25] pointer-events-none" />
+                  
+                  {/* Decorative glowing orb */}
+                  <div className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full bg-white/20 blur-[50px] pointer-events-none" />
+                  
+                  <div className="relative z-10 space-y-3">
+                    <span className="font-mono text-[10px] text-white/80 uppercase tracking-[0.2em] font-bold flex items-center gap-2">
                       Eco-Credits Balance
                     </span>
-                    <span className="font-semibold tracking-tight text-5xl text-ink block">
+                    <span className="font-semibold tracking-tight text-6xl text-white block leading-none drop-shadow-sm">
                       {(ecoCredits ?? 0).toLocaleString()}
                     </span>
                     {userRank && (
-                      <span className="inline-flex px-3 py-1 bg-green/10 text-green rounded-full font-mono text-[10px] uppercase tracking-widest font-bold mt-2">
+                      <span className="inline-flex px-3 py-1 bg-white/20 backdrop-blur-md text-white rounded-full font-mono text-[10px] uppercase tracking-widest font-bold mt-2 border border-white/20 shadow-sm">
                         Rank #{userRank}
                       </span>
                     )}
                     {ecoCreditEquivalent && (
-                      <div className="pt-6 mt-4 border-t border-ink/5">
-                        <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest font-bold block mb-1">
+                      <div className="pt-6 mt-4 border-t border-white/20">
+                        <span className="font-mono text-[9px] text-white/70 uppercase tracking-[0.2em] font-bold block mb-1.5">
                           Eco Value (Fiat)
                         </span>
-                        <span className="font-semibold tracking-tight text-2xl text-ink/80 block">
+                        <span className="font-medium tracking-tight text-3xl text-white block leading-none">
                           {ecoCreditEquivalent}
                         </span>
                       </div>
@@ -441,16 +455,15 @@ function ProfilePageContent() {
                   </div>
 
                   {rewardPoints !== null && (
-                    <div className="space-y-2 relative sm:border-l sm:border-ink/5 sm:pl-8">
-                      <span className="font-mono text-xs text-ink/50 uppercase tracking-widest font-bold flex items-center gap-2">
+                    <div className="relative z-10 space-y-3 sm:border-l sm:border-white/20 sm:pl-8">
+                      <span className="font-mono text-[10px] text-white/80 uppercase tracking-[0.2em] font-bold flex items-center gap-2">
                         Total Impact Score
                       </span>
-                      <span className="font-semibold tracking-tight text-5xl text-ink block">
+                      <span className="font-semibold tracking-tight text-6xl text-white block leading-none drop-shadow-sm">
                         {(rewardPoints ?? 0).toLocaleString()}
                       </span>
-                      <p className="font-mono text-xs text-ink/40 mt-4 leading-relaxed max-w-[200px]">
-                        Earn impact score by submitting accurate reports and
-                        verifying data.
+                      <p className="font-mono text-[10px] text-white/70 mt-4 leading-relaxed max-w-[200px] uppercase tracking-widest">
+                        Earn impact score by submitting accurate reports and verifying data.
                       </p>
                     </div>
                   )}
@@ -518,24 +531,27 @@ function ProfilePageContent() {
                   return items.map((item, idx) => (
                     <div
                       key={idx}
-                      className="bg-panel border border-ink/5 rounded-2xl p-6 shadow-sm flex flex-col justify-between hover:border-ink/10 transition-colors gap-6"
+                      className="group relative bg-panel border border-ink/5 rounded-[24px] p-6 shadow-sm flex flex-col justify-between hover:-translate-y-1 hover:shadow-md hover:border-ink/10 transition-all duration-500 gap-6 overflow-hidden"
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="text-sm font-medium text-ink/80 leading-snug">
+                      {/* Subtle Glow */}
+                      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-green/5 blur-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                      <div className="relative z-10 flex items-start justify-between gap-4">
+                        <div className="text-sm font-medium tracking-tight text-ink/80 leading-snug">
                           {item.activity}
                         </div>
-                        <div className="font-semibold tracking-tight text-xl text-ink min-w-fit">
+                        <div className="font-semibold tracking-tight text-2xl text-ink min-w-fit">
                           {item.amount}
                         </div>
                       </div>
-                      <div className="space-y-2 mt-auto">
-                        <div className="flex justify-between items-center text-[10px] uppercase font-mono tracking-widest text-ink/40">
+                      <div className="relative z-10 space-y-2 mt-auto">
+                        <div className="flex justify-between items-center text-[10px] uppercase font-mono tracking-widest text-ink/40 font-bold">
                           <span>Contribution</span>
                           <span>{item.percentage}%</span>
                         </div>
-                        <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
+                        <div className="h-2 bg-ink/5 shadow-[inset_0_1px_0_rgba(0,0,0,0.05)] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-ink/40 rounded-full transition-all duration-500"
+                            className="h-full bg-gradient-to-r from-[#10b981] to-[#34d399] rounded-full transition-all duration-1000 shadow-sm"
                             style={{
                               width: `${Math.max(item.percentage, 5)}%`,
                             }}
@@ -552,29 +568,31 @@ function ProfilePageContent() {
 
         {activeTab === "achievements" && (
           <>
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 pb-8 border-b border-ink/10">
-              <div className="bg-panel rounded-2xl p-6 border border-ink/5 shadow-sm flex flex-col justify-center">
-                <span className="font-semibold tracking-tight text-3xl text-ink block">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 pb-8 border-b border-ink/5">
+              <div className="group relative bg-panel rounded-[20px] p-6 border border-ink/5 shadow-sm flex flex-col justify-center overflow-hidden hover:-translate-y-1 transition-all duration-500 hover:border-ink/10 hover:shadow-md">
+                <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-accent/20 blur-[30px] opacity-20 group-hover:opacity-40 transition-opacity duration-700 pointer-events-none" />
+                <span className="relative z-10 font-black tracking-tighter text-4xl text-ink block leading-none">
                   {achievements.filter((a) => a.unlocked).length}
-                  <span className="text-base text-ink/30">
+                  <span className="text-xl text-ink/30 font-medium">
                     /{achievements.length}
                   </span>
                 </span>
-                <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mt-1 block">
+                <span className="relative z-10 font-mono text-[9px] text-ink/40 uppercase tracking-widest mt-2 block font-bold">
                   {t("unlockedCount", {
                     unlocked: achievements.filter((a) => a.unlocked).length,
                     total: achievements.length,
                   })}
                 </span>
               </div>
-              <div className="bg-panel rounded-2xl p-6 border border-ink/5 shadow-sm flex flex-col justify-center">
-                <span className="font-semibold tracking-tight text-3xl text-ink block">
+              <div className="group relative bg-panel rounded-[20px] p-6 border border-ink/5 shadow-sm flex flex-col justify-center overflow-hidden hover:-translate-y-1 transition-all duration-500 hover:border-ink/10 hover:shadow-md">
+                <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-green/20 blur-[30px] opacity-20 group-hover:opacity-40 transition-opacity duration-700 pointer-events-none" />
+                <span className="relative z-10 font-black tracking-tighter text-4xl text-ink block leading-none">
                   {achievements
                     .filter((a) => a.unlocked)
                     .reduce((sum, a) => sum + a.points_awarded, 0)
                     .toLocaleString()}
                 </span>
-                <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mt-1 block">
+                <span className="relative z-10 font-mono text-[9px] text-ink/40 uppercase tracking-widest mt-2 block font-bold">
                   {t("xpEarned", {
                     xp: achievements
                       .filter((a) => a.unlocked)
@@ -597,18 +615,21 @@ function ProfilePageContent() {
                 const tierUnlocked = tierAchievements.filter(
                   (a) => a.unlocked,
                 ).length;
+                
+                const BigIcon = tier === "basic" ? BadgeCheck : tier === "verified" ? Shield : tier === "advanced" ? Star : Medal;
+
                 return (
-                  <div key={tier} className="bg-panel rounded-2xl p-5 border border-ink/5 shadow-sm flex flex-col justify-center">
-                    <div className="flex items-center gap-2 mb-2 text-ink/40">
-                      {tierIcons[tier]}
+                  <div key={tier} className="group relative bg-panel rounded-[20px] p-5 border border-ink/5 shadow-sm flex flex-col justify-center overflow-hidden hover:-translate-y-1 transition-all duration-500 hover:border-ink/10 hover:shadow-md">
+                    <div className="absolute -bottom-4 -right-4 transition-transform duration-700 pointer-events-none group-hover:scale-125 group-hover:-rotate-6 text-ink/5">
+                      <BigIcon className="w-24 h-24" />
                     </div>
-                    <span className="font-semibold tracking-tight text-xl text-ink/70 block">
+                    <span className="relative z-10 font-black tracking-tighter text-3xl text-ink/80 block leading-none mt-2">
                       {tierUnlocked}
-                      <span className="text-sm text-ink/30">
+                      <span className="text-lg text-ink/30 font-medium">
                         /{tierAchievements.length}
                       </span>
                     </span>
-                    <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mt-1 block">
+                    <span className="relative z-10 font-mono text-[9px] text-ink/40 uppercase tracking-widest mt-2 block font-bold">
                       {tier === "basic"
                         ? t("tierBasic")
                         : tier === "verified"

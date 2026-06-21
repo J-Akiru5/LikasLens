@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MobileLayout, RouteProgress } from "@likaslens/shared";
+import { MobileLayout, RouteProgress, notifyThemeColor } from "@likaslens/shared";
 import { LayoutDashboard, Camera, Trophy, User, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PageTransition } from "@/components/page-transition";
@@ -43,7 +43,7 @@ function AppLayoutInner({
       const current = document.documentElement.getAttribute("data-theme");
       setIsGhostMode(current === "ghost");
     });
-    observer.observe(document.documentElement, { attributes: true });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => observer.disconnect();
   }, []);
 
@@ -53,7 +53,8 @@ function AppLayoutInner({
     try {
       localStorage.setItem("likaslens-theme", newTheme);
     } catch {}
-    setIsGhostMode(!isGhostMode);
+    // MutationObserver will update isGhostMode state
+    notifyThemeColor();
   };
 
   const localePrefix = pathname.split("/")[1] ? `/${pathname.split("/")[1]}` : "";

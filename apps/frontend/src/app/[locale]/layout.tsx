@@ -8,6 +8,7 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
+import { AuthRefreshInit } from "@/lib/auth-init";
 import { createClient } from "@/utils/supabase/server";
 
 export default async function LocaleLayout({
@@ -27,6 +28,7 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <JsonLd locale={locale} />
+      <AuthRefreshInit />
       <OfflineBanner />
       <div className="flex-1">{children}</div>
       <LiksiChat persona="citizen" locale={locale} isAuthenticated={isAuthenticated} />

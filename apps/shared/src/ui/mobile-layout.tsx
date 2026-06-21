@@ -80,12 +80,13 @@ export function MobileLayout({
             <button
               onClick={onThemeToggle}
               className={cn(
-                "p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
+                "p-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 active:scale-90 transition-transform duration-75",
                 isGhostMode
                   ? "text-secondary bg-secondary/10"
                   : "text-ink/40 hover:text-ink"
               )}
               aria-label={isGhostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
+              style={{ touchAction: "manipulation" }}
             >
               <Fingerprint className="w-5 h-5" aria-hidden="true" />
             </button>

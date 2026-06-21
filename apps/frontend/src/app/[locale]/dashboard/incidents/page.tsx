@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getTickets, AdminTableSkeleton, EmptyState, IncidentDrawer, RevealSection } from "@likaslens/shared";
+import { getTickets, AdminTableSkeleton, Skeleton, EmptyState, IncidentDrawer, RevealSection } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
+import { createClient } from "@/utils/supabase/client";
 import {
   Filter,
   MoreVertical,
@@ -32,6 +33,17 @@ export default function IncidentsPage() {
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Ticket | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }: { data: { user: { user_metadata?: { role?: string } } | null } | null }) => {
+      const role = data?.user?.user_metadata?.role as string | undefined;
+      setIsAdmin(
+        role === "super_admin" || role === "analyst" || role === "lgu" || role === "partner"
+      );
+    });
+  }, []);
 
   useEffect(() => {
     getTickets({ per_page: "50" })
@@ -99,7 +111,7 @@ export default function IncidentsPage() {
       <DashboardLayoutWrapper>
         <div className="space-y-6 animate-fade-in">
           <div className="pb-5 border-b border-ink/10">
-            <div className="h-12 w-64 rounded-xl bg-ink/5 animate-shimmer" />
+            <Skeleton variant="brand" className="h-12 w-64 rounded-xl" />
           </div>
           <AdminTableSkeleton rows={8} columns={4} showSearch={true} />
         </div>
@@ -216,75 +228,14 @@ export default function IncidentsPage() {
                       onClick={() => setSelectedIncident(ticket)}
                       className="bg-panel rounded-[1.5rem] p-4 sm:p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer flex flex-col h-full relative"
                     >
-                      <div className="absolute top-4 right-4 z-10">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuId(
-                              openMenuId === ticket.id ? null : ticket.id,
-                            );
-                          }}
-                          className="p-1.5 text-ink/40 hover:text-ink transition-colors rounded-full hover:bg-ink/[0.04]"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
-                        {openMenuId === ticket.id && (
-                          <div
-                            ref={menuRef}
-                            className="absolute right-0 mt-1 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden z-50"
-                          >
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                closeMenu();
-                                setSelectedIncident(ticket);
-                              }}
-                              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
-                            >
-                              <Eye className="w-4 h-4" /> View Details
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                closeMenu();
-                              }}
-                              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
-                            >
-                              <UserCheck className="w-4 h-4" /> Assign
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                closeMenu();
-                              }}
-                              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
-                            >
-                              <Flag className="w-4 h-4" /> Change Status
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                closeMenu();
-                              }}
-                              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/50 hover:text-[#b23b3b] transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" /> Remove
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex justify-between items-center mb-4 pr-8">
-                        <span className="font-mono text-[10px] text-ink/40 font-bold tracking-widest uppercase">
+                      {/* Header row: ID + Status */}
+                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 mb-3">
+                        <span className="font-mono text-[10px] text-ink/40 font-bold tracking-widest uppercase truncate pr-2">
                           {ticket.display_id ||
                             `INC-${String(i + 1).padStart(3, "0")}`}
                         </span>
                         <span
-                          className={`px-2.5 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${statusPillBg} ${statusPillText}`}
+                          className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[8px] sm:text-[9px] font-mono uppercase tracking-widest font-bold ${statusPillBg} ${statusPillText}`}
                         >
                           {ticket.status}
                         </span>

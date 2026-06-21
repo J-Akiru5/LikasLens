@@ -1,11 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import dynamic from "next/dynamic";
 import { StatsCards, ActivityFeed, PublicScoreboard, EmptyState, cn, Dropdown, Button, RevealSection, SpotlightCard, PulseBadge } from "@likaslens/shared";
 import type { DashboardStats, ActivityFeedItem } from "@likaslens/shared";
-import { Camera, AlertTriangle, Scale, Activity, Clock, CheckCircle, TriangleAlert, Leaf, TrendingUp } from "lucide-react";
-import { HeatmapWidget } from "@/components/dashboard/heatmap-widget-deck";
+import { AlertTriangle, Activity, Clock, CheckCircle, TriangleAlert, TrendingUp, Loader2 } from "lucide-react";
 import Link from "next/link";
+
+const HeatmapWidget = dynamic(
+  () =>
+    import("@/components/dashboard/heatmap-widget-deck").then((m) => ({
+      default: m.HeatmapWidget,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-[450px] bg-panel rounded-xl border border-ink/5">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-6 h-6 text-green animate-spin" />
+          <span className="text-xs text-ink/40 font-mono">Loading map...</span>
+        </div>
+      </div>
+    ),
+  }
+);
 
 interface CitizenDashboardProps {
   locale?: string;
@@ -31,41 +49,69 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
 
   const statCards = stats ? [
     {
-      label: "Active Incidents", value: String(stats.active_incidents),
-      total: `/${stats.active_incidents_total}`, trend: stats.active_incidents_trend,
-      trendUp: stats.active_incidents === 0,
-      icon: TriangleAlert, color: "text-amber",
-      progress: stats.active_incidents_progress, progressColor: "bg-amber",
-      description: "Current active cases",
-      sparklineData: [12, 8, 15, 6, 10, 9, stats.active_incidents],
+      id: "active-incidents",
+      label: "Active Incidents",
+      value: String(stats.active_incidents),
+      trend: stats.active_incidents === 0 ? "up" as const : "down" as const,
+      delta: stats.active_incidents_trend,
+      sparkline: [12, 8, 15, 6, 10, 9, stats.active_incidents],
+      category: "Current Cases",
+      icon: TriangleAlert,
+      accent: "amber" as const,
     },
     {
-      label: "Resolved Today", value: String(stats.resolved_today),
-      total: `/${stats.resolved_today_total}`, trend: stats.resolved_today_trend,
-      trendUp: true, icon: CheckCircle, color: "text-green",
-      progress: stats.resolved_today_progress, progressColor: "bg-green",
-      description: "Daily resolution quota",
-      sparklineData: [3, 7, 4, 9, 6, 8, stats.resolved_today],
+      id: "resolved-today",
+      label: "Resolved Today",
+      value: String(stats.resolved_today),
+      trend: "up" as const,
+      delta: stats.resolved_today_trend,
+      sparkline: [3, 7, 4, 9, 6, 8, stats.resolved_today],
+      category: "Daily Resolution",
+      icon: CheckCircle,
+      accent: "green" as const,
     },
     {
-      label: "Avg Response", value: `${stats.avg_response_minutes}`,
-      total: "m", trend: stats.avg_response_trend,
-      trendUp: true, icon: Clock, color: "text-accent",
-      progress: stats.avg_response_progress, progressColor: "bg-accent",
-      description: `vs ${stats.avg_response_sla}m SLA`,
-      sparklineData: [5.2, 4.8, 4.5, 4.1, 3.8, 3.5, stats.avg_response_minutes],
+      id: "avg-response",
+      label: "Avg Response",
+      value: `${stats.avg_response_minutes}`,
+      trend: "up" as const,
+      delta: stats.avg_response_trend,
+      sparkline: [5.2, 4.8, 4.5, 4.1, 3.8, 3.5, stats.avg_response_minutes],
+      category: `vs ${stats.avg_response_sla}m SLA`,
+      icon: Clock,
+      accent: "accent" as const,
     },
     {
-      label: "Total Reports", value: String(stats.total_reports),
-      total: "", trend: `${stats.total_users} users`,
-      trendUp: undefined, icon: Activity, color: "text-secondary",
-      progress: 100, progressColor: "bg-secondary",
-      description: "Platform total",
-      sparklineData: [120, 145, 132, 158, 140, 165, stats.total_reports],
+      id: "total-reports",
+      label: "Total Reports",
+      value: String(stats.total_reports),
+      trend: "flat" as const,
+      delta: `${stats.total_users} users`,
+      sparkline: [120, 145, 132, 158, 140, 165, stats.total_reports],
+      category: "Platform Total",
+      icon: Activity,
+      accent: "muted" as const,
     },
   ] : undefined;
 
-  const feedItems = feed?.map((item) => ({
+  const feedItems = feed
+    ?.filter((item) => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        item.title?.toLowerCase().includes(q) ||
+        item.location?.toLowerCase().includes(q) ||
+        item.status?.toLowerCase().includes(q) ||
+        (item.display_id || item.id)?.toLowerCase().includes(q)
+      );
+    })
+    ?.sort((a, b) => {
+      if (sortBy === "impact") {
+        return (b as any).impact_score - (a as any).impact_score || 0;
+      }
+      return 0; // default "latest" - already sorted from API
+    })
+    .map((item) => ({
     id: item.display_id || item.id,
     type: item.type,
     title: item.title,
@@ -145,7 +191,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
             <section>
               <h2 className="font-semibold text-base text-ink mb-4">Environmental Impact Insights</h2>
               {statCards ? (
-                <StatsCards items={statCards as any} />
+                <StatsCards items={statCards} />
               ) : (
                 <EmptyState
                   icon={Activity}
@@ -160,8 +206,8 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
           <RevealSection stagger={0.12}>
             <section>
               <h2 className="font-semibold text-base text-ink mb-4">Incident & Reporting Tracking</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                <div className="lg:col-span-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                <div>
                   <SpotlightCard spotlightColor="rgba(46,230,200,0.04)">
                     <div className="p-5">
                       <div className="flex items-center justify-between mb-4">

@@ -66,9 +66,16 @@ const valueColorClass: Record<Accent, string> = {
   muted: "text-ink",
 };
 
+const orbColorClass: Record<Accent, string> = {
+  green: "bg-green",
+  amber: "bg-amber-500",
+  accent: "bg-accent",
+  muted: "bg-ink",
+};
+
 function MiniSparkline({ points, color }: { points: number[]; color: string }) {
   if (!points.length) return null;
-  const w = 80;
+  const w = 70;
   const h = 24;
   const min = Math.min(...points);
   const max = Math.max(...points);
@@ -82,80 +89,102 @@ function MiniSparkline({ points, color }: { points: number[]; color: string }) {
     })
     .join(" ");
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true" className="shrink-0">
-      <path d={path} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true" className="shrink-0 overflow-visible">
+      <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
 export function StatsCards({ items, className, gridClassName }: StatsCardsProps) {
   return (
-    <div className={cn("grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4", gridClassName, className)}>
+    <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6", gridClassName, className)}>
       {items.map((item) => {
         const accent = item.accent ?? "accent";
         return (
           <div
             key={item.id}
             className={cn(
-              "kpi-card group",
-              accentClass[accent],
-              bgTintClass[accent],
-              "relative flex flex-col gap-3 rounded-2xl border border-border p-3 sm:p-4 transition-colors duration-300 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklab,var(--accent)_18%,transparent)] overflow-hidden"
+              "group relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 overflow-hidden transition-all duration-500",
+              "bg-panel/60 backdrop-blur-xl border border-ink/5 dark:border-white/5 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.02)] dark:shadow-none",
+              "hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-ink/10 hover:dark:border-white/10",
+              accentClass[accent]
             )}
           >
+            {/* Glowing Orb */}
+            <div 
+              className={cn(
+                "absolute -top-12 -right-12 w-40 h-40 rounded-full blur-[50px] opacity-[0.08] dark:opacity-[0.15] group-hover:opacity-[0.15] dark:group-hover:opacity-[0.25] transition-opacity duration-700 pointer-events-none",
+                orbColorClass[accent]
+              )}
+            />
+
             {/* Semantic Background Icon */}
-            {item.icon ? (
+            {item.icon && (
               <div 
                 className={cn(
-                  "absolute right-0 bottom-0 translate-x-2 translate-y-2 sm:translate-x-4 sm:translate-y-4 transition-all duration-500 pointer-events-none group-hover:scale-110",
+                  "absolute -right-4 -bottom-4 transition-transform duration-700 pointer-events-none group-hover:scale-110 group-hover:-rotate-3",
                   bgIconColor[accent]
                 )}
-                style={{ opacity: 0.05 }}
+                style={{ opacity: 0.03 }}
               >
                 {React.isValidElement(item.icon) 
-                  ? React.cloneElement(item.icon as React.ReactElement, { className: "w-16 h-16 sm:w-28 sm:h-28" } as any) 
-                  : React.createElement(item.icon as any, { className: "w-16 h-16 sm:w-28 sm:h-28" })
+                  ? React.cloneElement(item.icon as React.ReactElement, { className: "w-36 h-36" } as any) 
+                  : React.createElement(item.icon as any, { className: "w-36 h-36" })
                 }
               </div>
-            ) : null}
+            )}
             
-            {/* Top row: Label */}
-            <div className="flex items-start justify-between gap-2 relative z-10 mb-2 sm:mb-3">
-              {item.category ? (
-                <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40 truncate">
-                  {item.category}
-                </span>
-              ) : (
-                <div className="flex items-center gap-2 mb-2 sm:mb-3 min-w-0">
-                  <span className="font-mono text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40 truncate">{item.label}</span>
+            <div className="relative z-10 flex items-start justify-between gap-2 sm:gap-4">
+              <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
+                {item.category ? (
+                  <div className="font-mono text-[8.5px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-ink/40 line-clamp-2">
+                    {item.category}
+                  </div>
+                ) : null}
+                <div className={cn(
+                  "text-2xl sm:text-5xl font-black tracking-tighter tabular-nums leading-none",
+                  valueColorClass[accent]
+                )}>
+                  {item.value}
                 </div>
-              )}
-              {item.sparkline ? (
-                <MiniSparkline points={item.sparkline} color={sparklineColor[accent]} />
-              ) : null}
+              </div>
+              
+              <div className="shrink-0 p-1 transition-all duration-300">
+                {item.sparkline ? (
+                  <MiniSparkline points={item.sparkline} color={sparklineColor[accent]} />
+                ) : item.icon && (
+                  <div className={cn("w-6 h-6 opacity-40", valueColorClass[accent])}>
+                    {React.isValidElement(item.icon) 
+                      ? React.cloneElement(item.icon as React.ReactElement, { className: "w-full h-full" } as any) 
+                      : React.createElement(item.icon as any, { className: "w-full h-full" })
+                    }
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className={cn(
-              "text-2xl sm:text-3xl font-bold tracking-tight tabular-nums relative z-10 truncate",
-              valueColorClass[accent]
-            )}>
-              {item.value}
-            </div>
-
-            <div className="flex items-center justify-between gap-2 relative z-10 min-w-0">
-              <span className="text-xs font-mono uppercase tracking-wider text-muted truncate">
+            <div className="relative z-10 flex items-center justify-between gap-3 mt-6 pt-4 border-t border-ink/5">
+              <span className="text-[11px] font-bold uppercase tracking-widest text-ink/60 truncate">
                 {item.label}
               </span>
-              {item.trend ? (
+              {item.trend && (
                 <span
                   className={cn(
-                    "stat-chip inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-mono",
-                    trendColor[item.trend]
+                    "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider",
+                    item.trend === "up" ? "bg-green/10 text-green" : 
+                    item.trend === "down" ? "bg-red/10 text-red" : 
+                    "bg-ink/5 text-ink/60"
                   )}
                 >
-                  {item.delta ?? (item.trend === "up" ? "+" : item.trend === "down" ? "-" : "=")}
+                  <span className={cn(
+                    "w-1.5 h-1.5 rounded-full",
+                    item.trend === "up" ? "bg-green" : 
+                    item.trend === "down" ? "bg-red" : 
+                    "bg-ink/40"
+                  )} />
+                  {item.delta ?? (item.trend === "up" ? "Up" : item.trend === "down" ? "Down" : "Flat")}
                 </span>
-              ) : null}
+              )}
             </div>
           </div>
         );

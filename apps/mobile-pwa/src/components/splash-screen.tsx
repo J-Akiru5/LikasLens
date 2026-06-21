@@ -5,15 +5,30 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export function SplashScreen() {
   const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(true);
   
   useEffect(() => {
     setMounted(true);
+    
+    // Auto-dismiss after 2.5 seconds (matches the redirect timer in root page)
+    const timer = setTimeout(() => {
+      setVisible(false);
+    }, 2500);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   if (!mounted) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-page overflow-hidden">
+    <AnimatePresence>
+      {visible && (
+        <motion.div 
+          initial={{ opacity: 1 }}
+          exit={{ opacity: 0, scale: 1.05 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-page overflow-hidden"
+        >
       {/* High-tech radial background */}
       <div className="absolute inset-0">
         <motion.div
@@ -128,6 +143,8 @@ export function SplashScreen() {
           Syntaxure SEA
         </span>
       </motion.div>
-    </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

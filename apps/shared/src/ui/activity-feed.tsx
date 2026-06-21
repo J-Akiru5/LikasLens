@@ -92,40 +92,69 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
       </div>
 
       {displayed.map((item, idx) => (
-        <div key={item.id} className="relative pl-7 pb-6">
+        <div key={item.id} className="relative pl-8 pb-6 group">
           {idx < displayed.length - 1 && (
-            <div className="absolute left-[9px] top-3 bottom-0 w-px bg-border" />
+            <div className="absolute left-[9px] top-4 bottom-[-16px] w-[2px] bg-ink/5 group-hover:bg-accent/20 transition-colors" />
           )}
-          <div className={`absolute left-0 top-1.5 w-[18px] h-[18px] rounded-full border-2 border-border ${typeDot[item.type]} flex items-center justify-center`}>
-            <div className={`w-[8px] h-[8px] rounded-full ${typeDot[item.type]}`} />
+          <div className={`absolute left-0 top-1.5 w-[20px] h-[20px] rounded-full ring-4 ring-page bg-page flex items-center justify-center shadow-sm`}>
+            <div className={`w-[10px] h-[10px] rounded-full shadow-sm ${typeDot[item.type]}`} />
           </div>
-          <div className="flex items-start justify-between gap-4">
+          
+          <div className="flex items-start justify-between gap-4 bg-panel border border-ink/5 p-4 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:border-ink/10 transition-all duration-300 transform hover:-translate-y-0.5">
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-3 mb-1">
-                <span className="font-mono text-sm text-muted">{item.id}</span>
-                <span className={`font-mono text-sm font-medium ${typeColor[item.type]}`}>{item.type}</span>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2.5 py-1 rounded-md bg-ink/[0.04] font-mono text-[10px] font-semibold text-ink/50 uppercase tracking-widest">{item.id}</span>
+                <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest ${
+                  item.type === 'Critical' ? 'bg-red/10 text-red' :
+                  item.type === 'Warning' ? 'bg-amber/10 text-amber' :
+                  'bg-accent/10 text-accent'
+                }`}>{item.type}</span>
               </div>
-              <h3 className="text-lg font-semibold text-ink mb-1">{item.title}</h3>
-              <p className="font-mono text-sm text-muted mb-2">{item.location}</p>
-              <span className="font-mono text-sm text-muted">{item.status}</span>
+              <h3 className="text-[15px] font-bold text-ink mb-1.5 group-hover:text-accent transition-colors leading-snug">{item.title}</h3>
+              <p className="text-xs font-medium text-ink/50 mb-3 flex items-center gap-1.5">
+                 <MapPin className="w-3.5 h-3.5 opacity-40" />
+                 {item.location}
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 text-[11px] font-bold text-ink/60 bg-ink/5 px-2.5 py-1 rounded-full tracking-wide">
+                  <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Open' ? 'bg-red' : 'bg-green'}`} />
+                  {item.status}
+                </span>
+              </div>
             </div>
-            <span className="font-mono text-sm text-muted shrink-0">{item.time}</span>
+            <span className="text-[10px] font-bold text-ink/40 shrink-0 uppercase tracking-widest pt-1">{item.time}</span>
           </div>
         </div>
       ))}
 
-      <div className="pt-3">
+      <div className="pt-4 pb-2">
         {displayedCount < allItems.length && (
           <button
             onClick={handleLoadMore}
             disabled={isLoadingMore}
-            className="font-mono text-sm text-muted hover:text-ink transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl border border-ink/5 bg-panel hover:bg-ink/[0.02] hover:border-ink/10 hover:shadow-[0_2px_10px_rgba(0,0,0,0.02)] font-bold text-[11px] uppercase tracking-widest text-ink/60 hover:text-ink transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group transform hover:-translate-y-0.5"
           >
-            {isLoadingMore ? "Loading..." : `Load Older Logs (${allItems.length - displayedCount} more)`}
+            {isLoadingMore ? (
+              <span className="flex items-center gap-2.5">
+                <span className="w-3.5 h-3.5 rounded-full border-2 border-ink/20 border-t-ink/60 animate-spin" />
+                Retrieving Logs...
+              </span>
+            ) : (
+              <>
+                Load Older Logs
+                <span className="bg-ink/5 text-ink/50 group-hover:bg-accent/10 group-hover:text-accent px-2 py-0.5 rounded-md transition-colors text-[10px]">
+                  {allItems.length - displayedCount} MORE
+                </span>
+              </>
+            )}
           </button>
         )}
         {displayedCount >= allItems.length && (
-          <span className="font-mono text-sm text-muted">All {allItems.length} incidents loaded</span>
+          <div className="flex items-center justify-center gap-4 py-4 text-[10px] font-bold text-ink/30 uppercase tracking-widest">
+            <div className="h-px w-12 bg-ink/5" />
+            End of Live Feed
+            <div className="h-px w-12 bg-ink/5" />
+          </div>
         )}
       </div>
     </div>

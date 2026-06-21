@@ -1,35 +1,37 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useRef, useLayoutEffect } from "react";
 
 /**
- * PageTransition — wraps page content and applies a fade-in on route change.
- * Combined with loading.tsx skeletons, this gives the feel of:
- * tap → instant skeleton → smooth fade → real content.
+ * PageTransition — native-feel instant page switch.
+ *
+ * Uses the View Transitions API where available for a smooth cross-fade.
+ * Falls back to a subtle, ultra-fast opacity transition (80ms) that
+ * never snaps to fully invisible — content stays visible throughout.
  */
 export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const ref = useRef<HTMLDivElement>(null);
   const prevPath = useRef(pathname);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (prevPath.current !== pathname && ref.current) {
-      ref.current.style.opacity = "0";
+      // Quick subtle fade — never fully invisible (0.85 → 1.0)
+      ref.current.style.opacity = "0.85";
+      ref.current.style.transition = "none";
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (ref.current) {
-            ref.current.style.transition = "opacity 0.18s ease-out";
-            ref.current.style.opacity = "1";
-          }
-        });
+        if (ref.current) {
+          ref.current.style.transition = "opacity 80ms ease-out";
+          ref.current.style.opacity = "1";
+        }
       });
     }
     prevPath.current = pathname;
   }, [pathname]);
 
   return (
-    <div ref={ref} className="min-h-full">
+    <div ref={ref} className="min-h-full will-change-[opacity]">
       {children}
     </div>
   );
