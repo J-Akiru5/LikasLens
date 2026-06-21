@@ -9,6 +9,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Personal Access Token Model
+    |--------------------------------------------------------------------------
+    |
+    | This value optionally allows you to specify a custom model to use for
+    | Sanctum's personal access tokens. This is useful when you need to
+    | customize the token model, e.g. to add global scopes.
+    |
+    */
+
+    'personal_access_token_model' => App\Models\PersonalAccessToken::class,
+
+    /*
+    |--------------------------------------------------------------------------
     | Stateful Domains
     |--------------------------------------------------------------------------
     |
