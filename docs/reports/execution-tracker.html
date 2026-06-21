@@ -432,10 +432,10 @@
       <h3><span class="avatar avatar-cha">C</span> Cha</h3>
       <div class="role">Legal / Routing Track</div>
       <ul>
-        <li>Map all 16 PH laws (structured table)</li>
-        <li>Draft Indonesia comparison layer</li>
-        <li>Add jurisdiction scoping to Cypher</li>
-        <li>LGU escalation/re-routing spec</li>
+        <li style="text-decoration: line-through; opacity: 0.6;">Map all 16 PH laws (structured table) &#10003;</li>
+        <li style="text-decoration: line-through; opacity: 0.6;">Draft Indonesia comparison layer &#10003;</li>
+        <li style="text-decoration: line-through; opacity: 0.6;">Add jurisdiction scoping to Cypher &#10003;</li>
+        <li style="text-decoration: line-through; opacity: 0.6;">LGU escalation/re-routing spec &#10003;</li>
       </ul>
     </div>
     <div class="team-card team-you">
@@ -725,7 +725,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p0f-5" data-group="phase0 phase0f" onchange="saveState()">
+            <input type="checkbox" id="p0f-5" data-group="phase0 phase0f" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p0f-5">Fix judge-facing docs: <code>one-pager.md</code>, <code>demo-script.md</code>, <code>data-architecture.html</code>, <code>dataflow.html</code></label>
               <div class="check-meta">
@@ -735,7 +735,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p0f-6" data-group="phase0 phase0f" onchange="saveState()">
+            <input type="checkbox" id="p0f-6" data-group="phase0 phase0f" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p0f-6">Fix roadmap docs: <code>asean-hackathon-report.md</code>, <code>sprint-dev2-ai.md</code>, <code>sprint-dev3-backend.md</code></label>
               <div class="check-meta">
@@ -745,7 +745,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p0f-7" data-group="phase0 phase0f" onchange="saveState()">
+            <input type="checkbox" id="p0f-7" data-group="phase0 phase0f" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p0f-7">Fix audit docs: <code>AUDIT_REPORT.md</code>, <code>HACKATHON_AUDIT_REPORT.md</code></label>
               <div class="check-meta">
@@ -993,13 +993,13 @@
         <div class="section-title">Phase 2 — Cha's Track: Legal/Routing</div>
         <div class="section-subtitle">Days 1-3. PH laws, Indonesia layer, jurisdiction scoping, LGU spec.</div>
       </div>
-      <span class="section-badge badge-days">Days 1-3</span>
+      <span class="section-badge badge-days" style="background: var(--green-100); color: var(--green-800);">Completed</span>
       <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
     </div>
     <div class="section-body">
 
-      <div class="alert alert-warning">
-        <strong>Pre-flight for Cha:</strong> (1) All queries must be Cypher, not Gremlin. (2) SLA values are violation-specific — see table below. (3) AGENTS.md line 10 is wrong.
+      <div class="alert" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534;">
+        <strong>Phase 2 Complete (June 21):</strong> Cha committed PH law mapping, Indonesia comparison layer, jurisdiction-scoped Cypher queries, and LGU escalation workflow in <code>ec8e047</code>. All 18 items checked. Escalation migration + docs also landed.
       </div>
 
       <div class="sub-group">
@@ -1022,7 +1022,7 @@
         <h4>2A. PH Law Mapping <span class="sub-count" data-group="phase2a"></span></h4>
         <ul class="checklist">
           <li>
-            <input type="checkbox" id="p2a-1" data-group="phase2 phase2a" onchange="saveState()">
+            <input type="checkbox" id="p2a-1" data-group="phase2 phase2a" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2a-1">Map all 16 PH laws from baseline_rules.py into structured reference table (code, title, agency, hazard types)</label>
               <div class="check-meta">
@@ -1032,7 +1032,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2a-2" data-group="phase2 phase2a" onchange="saveState()">
+            <input type="checkbox" id="p2a-2" data-group="phase2 phase2a" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2a-2">Map hazard→law edges for all 18 hazard types (verify against HAZARD_LAW_EDGES)</label>
               <div class="check-meta">
@@ -1042,7 +1042,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2a-3" data-group="phase2 phase2a" onchange="saveState()">
+            <input type="checkbox" id="p2a-3" data-group="phase2 phase2a" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2a-3">Map law→agency enforcement edges (verify against LAW_AGENCY_EDGES)</label>
               <div class="check-meta">
@@ -1058,7 +1058,7 @@
         <h4>2B. Indonesia Comparison Layer <span class="sub-count" data-group="phase2b"></span></h4>
         <ul class="checklist">
           <li>
-            <input type="checkbox" id="p2b-1" data-group="phase2 phase2b" onchange="saveState()">
+            <input type="checkbox" id="p2b-1" data-group="phase2 phase2b" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2b-1">Draft Indonesia law entries for 2-3 overlapping hazard types (illegal_dumping, open_burning, peatland_fire)</label>
               <div class="check-meta">
@@ -1068,7 +1068,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2b-2" data-group="phase2 phase2b" onchange="saveState()">
+            <input type="checkbox" id="p2b-2" data-group="phase2 phase2b" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2b-2">Draft Indonesia enforcement agencies (1-2 agencies)</label>
               <div class="check-meta">
@@ -1077,7 +1077,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2b-3" data-group="phase2 phase2b" onchange="saveState()">
+            <input type="checkbox" id="p2b-3" data-group="phase2 phase2b" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2b-3">Draft hazard→law and law→agency edges for Indonesia</label>
               <div class="check-meta">
@@ -1086,7 +1086,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2b-4" data-group="phase2 phase2b" onchange="saveState()">
+            <input type="checkbox" id="p2b-4" data-group="phase2 phase2b" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2b-4">Document PH vs ID comparison table (same hazard, different law/enforcement)</label>
               <div class="check-meta">
@@ -1101,7 +1101,7 @@
         <h4>2C. Jurisdiction-Scoped Cypher Queries <span class="sub-count" data-group="phase2c"></span></h4>
         <ul class="checklist">
           <li>
-            <input type="checkbox" id="p2c-1" data-group="phase2 phase2c" onchange="saveState()">
+            <input type="checkbox" id="p2c-1" data-group="phase2 phase2c" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2c-1">Add <code>jurisdiction</code> param to <code>query_hazard_laws_and_agencies</code> (neo4j_client.py:128)</label>
               <div class="check-meta">
@@ -1111,7 +1111,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2c-2" data-group="phase2 phase2c" onchange="saveState()">
+            <input type="checkbox" id="p2c-2" data-group="phase2 phase2c" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2c-2">Add <code>jurisdiction</code> param to <code>hybrid_retrieve</code> (graph_rag.py:198), pass through to query function</label>
               <div class="check-meta">
@@ -1121,7 +1121,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2c-3" data-group="phase2 phase2c" onchange="saveState()">
+            <input type="checkbox" id="p2c-3" data-group="phase2 phase2c" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2c-3">Add jurisdiction post-filter to vector search results (graph_rag.py:168-177)</label>
               <div class="check-meta">
@@ -1131,7 +1131,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2c-4" data-group="phase2 phase2c" onchange="saveState()">
+            <input type="checkbox" id="p2c-4" data-group="phase2 phase2c" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2c-4">Add <code>jurisdiction</code> param to <code>retrieve_legal_context</code> (hazard_analyzer.py:55), update HazardRequest model</label>
               <div class="check-meta">
@@ -1141,7 +1141,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2c-5" data-group="phase2 phase2c" onchange="saveState()">
+            <input type="checkbox" id="p2c-5" data-group="phase2 phase2c" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2c-5">Test: same hazard_code returns PH laws when jurisdiction="PH", ID laws when jurisdiction="ID"</label>
               <div class="check-meta">
@@ -1156,7 +1156,7 @@
         <h4>2D. LGU Escalation/Re-routing Workflow Spec <span class="sub-count" data-group="phase2d"></span></h4>
         <ul class="checklist">
           <li>
-            <input type="checkbox" id="p2d-1" data-group="phase2 phase2d" onchange="saveState()">
+            <input type="checkbox" id="p2d-1" data-group="phase2 phase2d" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2d-1">Document new Ticket fields: reassigned_at, reassigned_to, escalation_level (enum: none/lgu/admin/regional/national)</label>
               <div class="check-meta">
@@ -1166,7 +1166,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2d-2" data-group="phase2 phase2d" onchange="saveState()">
+            <input type="checkbox" id="p2d-2" data-group="phase2 phase2d" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2d-2">Write escalation timeline for illegal_dumping (48h response / 168h resolution)</label>
               <div class="check-meta">
@@ -1176,7 +1176,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2d-3" data-group="phase2 phase2d" onchange="saveState()">
+            <input type="checkbox" id="p2d-3" data-group="phase2 phase2d" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2d-3">Write escalation timeline for chemical_spill (4h response / 24h resolution)</label>
               <div class="check-meta">
@@ -1186,7 +1186,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2d-4" data-group="phase2 phase2d" onchange="saveState()">
+            <input type="checkbox" id="p2d-4" data-group="phase2 phase2d" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2d-4">Specify re-route logic: call routing_learner.get_best_lgu() for alternative LGU at response breach</label>
               <div class="check-meta">
@@ -1196,7 +1196,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2d-5" data-group="phase2 phase2d" onchange="saveState()">
+            <input type="checkbox" id="p2d-5" data-group="phase2 phase2d" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2d-5">Specify notification events: TicketReassigned, TicketEscalated, TicketOverdue</label>
               <div class="check-meta">
@@ -1205,7 +1205,7 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p2d-6" data-group="phase2 phase2d" onchange="saveState()">
+            <input type="checkbox" id="p2d-6" data-group="phase2 phase2d" onchange="saveState()" checked>
             <div class="check-content">
               <label class="check-label" for="p2d-6">Specify public scoreboard overdue query</label>
               <div class="check-meta">
@@ -1543,10 +1543,10 @@
         <tbody>
           <tr><td>Roboflow API unavailable during demo</td><td>Low</td><td>High</td><td>Graceful fallback to COCO-only (already works). Pre-test connectivity. Health endpoint.</td></tr>
           <tr><td>Can't find 200 properly licensed images (post-hackathon)</td><td>Medium</td><td>Medium</td><td>Deferred to post-hackathon. Roboflow Universe CC-BY datasets available.</td></tr>
-          <tr><td>Cha writes Gremlin before being corrected</td><td>High</td><td>Medium</td><td>Communicate corrections today (Phase 0C). All queries must be Cypher.</td></tr>
+          <tr><td>Cha writes Gremlin before being corrected</td><td>Low</td><td>Low</td><td style="text-decoration: line-through; opacity: 0.6;">Communicate corrections today (Phase 0C). All queries must be Cypher.</td> <td style="color: var(--green-600); font-weight: 700;">Resolved</td></tr>
           <tr><td>Gremlin references visible to judges in docs</td><td>Medium</td><td>High</td><td>Phase 0B + 0F + 0G cover all docs, frontend, and AI service comments.</td></tr>
           <tr><td>Confidence thresholds produce bad results</td><td>Medium</td><td>Medium</td><td>Run eval set through composite scorer before committing.</td></tr>
-          <tr><td>Jurisdiction scoping breaks existing PH queries</td><td>Low</td><td>High</td><td>Optional param, default None = no filter. Existing behavior preserved.</td></tr>
+          <tr><td>Jurisdiction scoping breaks existing PH queries</td><td>Low</td><td>Low</td><td style="text-decoration: line-through; opacity: 0.6;">Optional param, default None = no filter. Existing behavior preserved.</td> <td style="color: var(--green-600); font-weight: 700;">Resolved</td></tr>
           <tr><td>Knowledge graph pages are demos, not live (judge expectation gap)</td><td>Medium</td><td>Medium</td><td>Phase 0G fixes cosmetic Gremlin refs. Pages remain static demos — acceptable for hackathon.</td></tr>
         </tbody>
       </table>
@@ -1566,19 +1566,19 @@
     <div class="section-body">
       <ul class="checklist">
         <li>
-          <input type="checkbox" id="v-1" data-group="verify" onchange="saveState()">
+            <input type="checkbox" id="v-1" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
             <label class="check-label" for="v-1">AGENTS.md says "Neo4j DB ONLY" (not Gremlin)</label>
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-2" data-group="verify" onchange="saveState()">
+            <input type="checkbox" id="v-2" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
             <label class="check-label" for="v-2">Pitch deck has zero Gremlin/Cosmos DB references</label>
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-3" data-group="verify" onchange="saveState()">
+            <input type="checkbox" id="v-3" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
             <label class="check-label" for="v-3">data-architecture.html describes Neo4j, not Cosmos DB</label>
           </div>
@@ -1596,31 +1596,31 @@
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-6" data-group="verify" onchange="saveState()">
+            <input type="checkbox" id="v-6" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
             <label class="check-label" for="v-6">Confidence threshold is 0.50 (not 0.25)</label>
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-7" data-group="verify" onchange="saveState()">
+            <input type="checkbox" id="v-7" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
             <label class="check-label" for="v-7"><code>illegal_dumping</code> SLA is 48h/168h in both seeder and escalation narrative</label>
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-8" data-group="verify" onchange="saveState()">
+          <input type="checkbox" id="v-8" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
             <label class="check-label" for="v-8"><code>hybrid_retrieve</code> accepts jurisdiction param and filters Cypher queries</label>
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-9" data-group="verify" onchange="saveState()">
+          <input type="checkbox" id="v-9" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
             <label class="check-label" for="v-9">Indonesia law entries exist in baseline_rules.py with jurisdictionCode "ID-NATIONAL"</label>
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-10" data-group="verify" onchange="saveState()">
+            <input type="checkbox" id="v-10" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
             <label class="check-label" for="v-10">TriageService computes composite score and sets triage_disposition</label>
           </div>
@@ -1638,7 +1638,7 @@
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-13" data-group="verify" onchange="saveState()">
+            <input type="checkbox" id="v-13" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
             <label class="check-label" for="v-13">Judge-facing docs (one-pager, demo-script, data-architecture, dataflow) have zero Gremlin/Cosmos refs</label>
           </div>
@@ -1649,7 +1649,7 @@
 
   <!-- ═══════════════════════════════════ FOOTER ═══════════════════════════════════ -->
   <div class="footer">
-    <div>LikasLens Unified Execution Tracker — June 21, 2026 (Revised)</div>
+    <div>LikasLens Unified Execution Tracker — June 21, 2026 (Revised, updated 12:30 PHT)</div>
     <button onclick="resetAll()">Reset All Checkboxes</button>
   </div>
 
