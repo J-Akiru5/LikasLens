@@ -1,23 +1,18 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('personal_access_tokens', function (Blueprint $table) {
-            // Change tokenable_id from bigint to uuid to match HasUuids trait
-            $table->uuid('tokenable_id')->change();
-        });
+        // Two-step cast: bigint → text → uuid (PostgreSQL can't cast bigint directly to uuid)
+        DB::statement('ALTER TABLE personal_access_tokens ALTER COLUMN tokenable_id TYPE UUID USING tokenable_id::text::uuid');
     }
 
     public function down(): void
     {
-        Schema::table('personal_access_tokens', function (Blueprint $table) {
-            $table->unsignedBigInteger('tokenable_id')->change();
-        });
+        DB::statement('ALTER TABLE personal_access_tokens ALTER COLUMN tokenable_id TYPE BIGINT USING uuid_send(tokenable_id)::bigint');
     }
 };

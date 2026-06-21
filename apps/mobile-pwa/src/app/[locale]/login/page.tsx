@@ -63,22 +63,6 @@ export default function LoginPage() {
       console.error("Failed to sync with backend", syncErr);
     }
 
-    // Sync user to Laravel backend (non-blocking, best-effort)
-    if (data.user) {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-      if (apiBase) {
-        fetch(`${apiBase}/auth/sync`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify({
-            supabase_auth_user_id: data.user.id,
-            email: data.user.email ?? email,
-            name: data.user.user_metadata?.full_name as string | undefined,
-          }),
-        }).catch(() => {});
-      }
-    }
-
     router.push(`/${locale}/dashboard`);
   }
 
