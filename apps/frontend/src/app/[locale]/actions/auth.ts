@@ -37,7 +37,7 @@ async function syncUserToLaravel(supabaseUserId: string, email: string, name?: s
       const token: string | undefined = body?.data?.token;
       if (token) {
         (await cookies()).set("laravel_token", token, {
-          httpOnly: true,
+          httpOnly: false,
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",

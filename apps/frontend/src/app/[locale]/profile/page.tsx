@@ -353,6 +353,13 @@ function ProfilePageContent() {
                 {(rewardPoints ?? 0).toLocaleString()}
               </span>
             </div>
+            <button
+              onClick={() => setActiveTab("settings")}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-ink/5 hover:bg-ink/10 text-ink text-sm font-medium rounded-xl transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Edit Profile
+            </button>
           </div>
           
           {/* Subtle background decoration */}

@@ -100,7 +100,7 @@ export function PublicScoreboard() {
 
   return (
     <div className="space-y-1">
-      <div className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr] sm:grid-cols-[2fr_2fr_1fr_1fr] gap-2 sm:gap-4 px-3 sm:px-4 pb-3 border-b border-border font-mono text-[9px] sm:text-[10px] text-muted uppercase tracking-wider">
+      <div className="grid grid-cols-[1fr_1.5fr_0.8fr_0.6fr] sm:grid-cols-[1.5fr_2fr_1fr_0.8fr] gap-2 sm:gap-4 px-3 sm:px-4 pb-3 border-b border-border font-mono text-[9px] sm:text-[10px] text-muted uppercase tracking-wider">
         <div>Reporter / Location</div>
         <div>Issue</div>
         <div>Status</div>
@@ -111,10 +111,10 @@ export function PublicScoreboard() {
         return (
           <div
             key={idx}
-            className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr] sm:grid-cols-[2fr_2fr_1fr_1fr] gap-2 sm:gap-4 px-3 sm:px-4 py-3 rounded-lg hover:bg-ink/3 transition-colors border border-transparent hover:border-border"
+            className="grid grid-cols-[1fr_1.5fr_0.8fr_0.6fr] sm:grid-cols-[1.5fr_2fr_1fr_0.8fr] gap-2 sm:gap-4 px-3 sm:px-4 py-3 rounded-lg hover:bg-ink/3 transition-colors border border-transparent hover:border-border"
           >
-            <div className="font-medium text-sm text-ink truncate">{row.agency}</div>
-            <div className="text-sm text-muted truncate">{row.title}</div>
+            <div className="font-medium text-sm text-ink break-words">{row.agency}</div>
+            <div className="text-sm text-muted break-words">{row.title}</div>
             <div>
               <span
                 className={cn(

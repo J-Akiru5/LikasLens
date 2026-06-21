@@ -58,9 +58,9 @@ const ENDPOINTS: Record<TabKey, string> = {
 
 // Tonal podium accent per rank — not the neon-green block.
 const PODIUM = [
-  { ring: "color-mix(in oklab, #d4a017 35%, transparent)", ink: "#b8860b", glow: "color-mix(in oklab, #d4a017 16%, transparent)", order: 1, scale: 1.12 },
+  { ring: "color-mix(in oklab, #d4a017 35%, transparent)", ink: "#b8860b", glow: "color-mix(in oklab, #d4a017 16%, transparent)", order: 1, scale: 1.05 },
   { ring: "color-mix(in oklab, #8a9aa8 35%, transparent)", ink: "#5f6b76", glow: "color-mix(in oklab, #8a9aa8 14%, transparent)", order: 0, scale: 0.96 },
-  { ring: "color-mix(in oklab, #b87333 35%, transparent)", ink: "#9a5a22", glow: "color-mix(in oklab, #b87333 14%, transparent)", order: 2, scale: 1.02 },
+  { ring: "color-mix(in oklab, #b87333 35%, transparent)", ink: "#9a5a22", glow: "color-mix(in oklab, #b87333 14%, transparent)", order: 2, scale: 1.0 },
 ];
 
 export default function ScoreboardPage() {
@@ -290,20 +290,20 @@ export default function ScoreboardPage() {
           <>
             {/* Podium — tonal, only when there are >=3 entries */}
             {top3.length >= 3 && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", alignItems: "flex-end", gap: 8, marginBottom: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", alignItems: "flex-end", gap: 8, marginBottom: 16, overflow: "visible" }}>
                 {[1, 0, 2].map((idx) => {
                   const entry = top3[idx];
                   if (!entry) return <div key={idx} />;
                   const p = PODIUM[idx];
                   return (
-                    <div key={entry.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, order: p.order, transform: `scale(${p.scale})` }}>
-                      <div style={{ width: 52, height: 52, borderRadius: "50%", background: p.glow, border: `2px solid ${p.ring}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        {idx === 0 ? <Crown style={{ width: 26, height: 26, color: p.ink }} /> : <Medal style={{ width: 24, height: 24, color: p.ink }} />}
+                    <div key={entry.id} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, order: p.order, transform: `scale(${p.scale})`, transformOrigin: "bottom center", minWidth: 0 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: "50%", background: p.glow, border: `2px solid ${p.ring}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        {idx === 0 ? <Crown style={{ width: 24, height: 24, color: p.ink }} /> : <Medal style={{ width: 22, height: 22, color: p.ink }} />}
                       </div>
-                      <p style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: 0, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
+                      <p style={{ fontFamily: "var(--font-body)", fontSize: 12, fontWeight: 600, color: "var(--ink)", margin: 0, textAlign: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", width: "100%", padding: "0 2px" }}>
                         {entry.name || "Citizen"}
                       </p>
-                      <p style={{ fontFamily: "var(--font-data)", fontSize: 13, fontWeight: 700, color: p.ink, margin: 0 }}>
+                      <p style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: p.ink, margin: 0 }}>
                         {(entry.reward_points_balance || entry.eco_credits || 0).toLocaleString()}
                       </p>
                     </div>
