@@ -58,6 +58,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+import { AppleSplashScreens } from "@/components/apple-splash-screens";
+
 export default async function RootLayout({
   children,
 }: {
@@ -73,6 +75,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <AppleSplashScreens />
         <Script id="theme-initializer" strategy="beforeInteractive">
           {`try {
             var savedTheme = localStorage.getItem('likaslens-theme');
