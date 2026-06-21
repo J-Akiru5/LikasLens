@@ -16,13 +16,18 @@ COPY . .
 
 RUN chown -R appuser:appuser /app
 
-RUN python -c "from image_analysis import load_model; load_model()" || echo "Model will load on first request"
+# Preload models at build time (best-effort — gracefully skipped if weights missing)
+RUN python -c "from image_analysis import load_coco_model; load_coco_model()" || echo "YOLO models will load on first request"
+
+RUN chmod +x start.sh
+
+RUN chown -R appuser:appuser /app
 
 USER appuser
 
 EXPOSE 8001
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')" || exit 1
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["./start.sh"]

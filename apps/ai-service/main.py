@@ -53,6 +53,16 @@ async def lifespan(app: FastAPI):
     except Exception as exc:
         logger.warning("YOLO model preload failed (will load on first request): %s", exc)
 
+    # Roboflow config check
+    from roboflow_client import is_configured
+    if is_configured():
+        logger.info(
+            "Roboflow integration ENABLED — model: %s",
+            os.getenv("ROBOFLOW_MODEL_ID"),
+        )
+    else:
+        logger.info("Roboflow integration DISABLED (ROBOFLOW_API_KEY or ROBOFLOW_MODEL_ID not set)")
+
     yield
 
     from neo4j_client import reset_driver
@@ -275,6 +285,17 @@ async def graph_bootstrap_queries():
     vertices = build_seed_vertices()
     edges = build_seed_edges()
     return build_bootstrap_queries(vertices, edges)
+
+
+# ---------------------------------------------------------------------------
+# Roboflow integration
+# ---------------------------------------------------------------------------
+
+@app.get("/roboflow/health", dependencies=[Depends(verify_api_key)])
+async def roboflow_health():
+    """Check Roboflow Serverless API connectivity."""
+    from roboflow_client import health_check
+    return health_check()
 
 
 # ---------------------------------------------------------------------------
