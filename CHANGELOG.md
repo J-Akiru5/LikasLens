@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-06-21
+
+### Added
+- **AI Service**: `roboflow_client.py` — raw HTTP client for Roboflow Serverless API (Python 3.13+ compatible, no `inference` SDK dependency)
+- **AI Service**: Roboflow garbage detection (`garbage-detection-sht1u/4`) as third detection source alongside COCO and environmental model
+- **AI Service**: `/roboflow/health` endpoint for Roboflow API connectivity verification
+- **AI Service**: `start.sh` — startup script with Roboflow health check and YOLO model preload verification before uvicorn launch
+- **AI Service**: Roboflow env vars in `.env.example` (`ROBOFLOW_API_KEY`, `ROBOFLOW_MODEL_ID`) and `.env` with model credentials
+
+### Changed
+- **AI Service**: `image_analysis.py` — Roboflow detections merged into pipeline via `_merge_detections()` as third source (COCO → ENV → Roboflow)
+- **AI Service**: `compute_composite_score()` now evaluates three detection sources for confidence scoring
+- **AI Service**: `Dockerfile` — CMD changed to `./start.sh` for startup verification; `start-period` increased to 15s
+- **Docs**: Execution tracker Phase 1 (Roboflow integration) marked complete; Phase 0 Gremlin cleanup marked complete
+
+### Fixed
+- **AI Service**: Graceful fallback — if Roboflow API is unreachable, detection silently falls back to COCO + ENV model only
+- **AI Service**: Startup log reports Roboflow integration status (`ENABLED` / `DISABLED`) at boot
+
 ## [0.9.2] - 2026-06-21
 
 ### Added
@@ -451,7 +470,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Agents**: Specialized agent instructions for backend, frontend, and AI service
 - **Agents**: LikasLens Copilot Skills Library
 
-[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.9.1...HEAD
+[Unreleased]: https://github.com/J-Akiru5/LikasLens/compare/v0.9.3...HEAD
+[0.9.3]: https://github.com/J-Akiru5/LikasLens/compare/v0.9.2...v0.9.3
+[0.9.2]: https://github.com/J-Akiru5/LikasLens/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/J-Akiru5/LikasLens/compare/v0.9.0...v0.9.1
 [0.8.5]: https://github.com/J-Akiru5/LikasLens/compare/v0.8.0...v0.8.5
 [0.8.0]: https://github.com/J-Akiru5/LikasLens/compare/v0.7.4...v0.8.0
