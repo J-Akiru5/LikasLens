@@ -397,8 +397,27 @@ def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.50) -> dic
 
     latency_ms = round((time.perf_counter() - started) * 1000, 2)
 
-    # Merge detections
+    # Roboflow Serverless API inference (if configured)
+    roboflow_detections: list[dict[str, Any]] = []
+    try:
+        from roboflow_client import detect_from_bytes, is_configured, normalize_predictions
+
+        if is_configured():
+            raw = detect_from_bytes(image_bytes, confidence=confidence_threshold)
+            roboflow_detections = normalize_predictions(raw)
+            logger.info(
+                "Roboflow returned %d detections in %.1f ms",
+                len(roboflow_detections),
+                raw.get("latency_ms", 0),
+            )
+    except RuntimeError as exc:
+        logger.warning("Roboflow inference skipped: %s", exc)
+    except Exception as exc:
+        logger.warning("Roboflow inference unexpected error: %s", exc)
+
+    # Merge all detection sources
     merged_detections = _merge_detections(detections, env_detections)
+    merged_detections = _merge_detections(merged_detections, roboflow_detections)
     env_assessment = classify_environmental_risk(merged_detections)
 
     _record_metrics(latency_ms, merged_detections, env_assessment, _COCO_MODEL_NAME)

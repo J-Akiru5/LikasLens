@@ -150,6 +150,7 @@ async def vector_search_laws(
     driver,
     query_text: str,
     top_k: int = 5,
+    jurisdiction: str | None = None,
 ) -> list[dict[str, Any]]:
     """Search for laws using vector similarity.
 
@@ -157,6 +158,7 @@ async def vector_search_laws(
         driver: Neo4j async driver
         query_text: Natural language query (e.g., "illegal dumping of waste")
         top_k: Number of results to return
+        jurisdiction: Optional jurisdiction filter (e.g. "PH-NATIONAL", "ID-NATIONAL")
 
     Returns:
         List of matching law nodes with similarity scores
@@ -183,7 +185,7 @@ async def vector_search_laws(
         )
         records = await result.data()
 
-    return [
+    results = [
         {
             "code": r["code"],
             "title": r["title"],
@@ -194,17 +196,24 @@ async def vector_search_laws(
         for r in records
     ]
 
+    # Post-filter by jurisdiction if specified
+    if jurisdiction:
+        results = [r for r in results if r["jurisdiction_code"] == jurisdiction]
+
+    return results
+
 
 async def hybrid_retrieve(
     driver,
     hazard_code: str,
     location: str | None = None,
+    jurisdiction: str | None = None,
     top_k: int = 5,
 ) -> dict[str, Any]:
     """Hybrid retrieval: Graph traversal + Vector search.
 
-    1. First tries graph traversal (Location-aware)
-    2. Falls back to vector search if no location-specific results
+    1. First tries graph traversal (Location-aware, jurisdiction-scoped)
+    2. Falls back to vector search if no results (jurisdiction post-filtered)
 
     Returns:
         {
@@ -218,7 +227,9 @@ async def hybrid_retrieve(
 
     # Step 1: Graph traversal (symbolic)
     try:
-        graph_result = await query_hazard_laws_and_agencies(hazard_code, location)
+        graph_result = await query_hazard_laws_and_agencies(
+            hazard_code, location, jurisdiction
+        )
     except Exception as exc:
         logger.warning("Graph traversal failed, falling back to vector: %s", exc)
         graph_result = {"laws": [], "agencies": []}
@@ -233,14 +244,18 @@ async def hybrid_retrieve(
         }
 
     # Step 2: Vector search fallback (neural)
-    logger.info("No graph results for %s in %s, trying vector search", hazard_code, location)
+    logger.info(
+        "No graph results for %s (jurisdiction=%s), trying vector search",
+        hazard_code, jurisdiction,
+    )
 
     # Build a search query from the hazard code
     hazard_name = hazard_code.replace("_", " ")
-    search_query = f"Philippine environmental law about {hazard_name}"
+    jurisdiction_label = "Philippine" if jurisdiction == "PH-NATIONAL" else "Indonesian" if jurisdiction == "ID-NATIONAL" else "environmental"
+    search_query = f"{jurisdiction_label} environmental law about {hazard_name}"
 
     try:
-        vector_results = await vector_search_laws(driver, search_query, top_k)
+        vector_results = await vector_search_laws(driver, search_query, top_k, jurisdiction)
     except Exception as exc:
         logger.error("Vector search also failed: %s", exc)
         return {

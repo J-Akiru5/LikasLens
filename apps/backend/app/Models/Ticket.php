@@ -47,6 +47,9 @@ class Ticket extends Model
         'sla_resolution_breached',
         'sla_escalated_at',
         'escalated_to',
+        'reassigned_at',
+        'reassigned_to',
+        'escalation_level',
     ];
 
     protected $casts = [
@@ -61,6 +64,8 @@ class Ticket extends Model
         'sla_response_breached' => 'boolean',
         'sla_resolution_breached' => 'boolean',
         'sla_escalated_at' => 'datetime',
+        'reassigned_at' => 'datetime',
+        'escalation_level' => 'string',
     ];
 
     public function tenant(): BelongsTo
@@ -99,5 +104,64 @@ class Ticket extends Model
     public function chain(): BelongsTo
     {
         return $this->belongsTo(ReportChain::class, 'chain_id');
+    }
+
+    // ── Escalation Constants ──────────────────────────────────────────────
+
+    public const ESCALATION_LEVELS = [
+        'none' => 0,
+        'lgu' => 1,
+        'admin' => 2,
+        'regional' => 3,
+        'national' => 4,
+    ];
+
+    // ── Escalation Helpers ────────────────────────────────────────────────
+
+    /**
+     * Check if the response SLA has been breached.
+     */
+    public function isResponseBreached(): bool
+    {
+        return $this->sla_response_breached === true;
+    }
+
+    /**
+     * Check if the resolution SLA has been breached.
+     */
+    public function isResolutionBreached(): bool
+    {
+        return $this->sla_resolution_breached === true;
+    }
+
+    /**
+     * Get the numeric escalation level for comparison.
+     */
+    public function getEscalationLevelInt(): int
+    {
+        return self::ESCALATION_LEVELS[$this->escalation_level] ?? 0;
+    }
+
+    /**
+     * Check if this ticket can be escalated further.
+     */
+    public function canEscalate(): bool
+    {
+        return $this->escalation_level !== 'national';
+    }
+
+    /**
+     * Get the next escalation level.
+     */
+    public function getNextEscalationLevel(): string
+    {
+        $current = $this->getEscalationLevelInt();
+        $levels = array_flip(self::ESCALATION_LEVELS);
+
+        if ($current >= 4) {
+            return 'national';
+        }
+
+        return $levels[$current + 1] ?? 'national';
     }
 }

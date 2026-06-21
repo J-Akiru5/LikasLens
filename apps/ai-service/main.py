@@ -46,11 +46,22 @@ async def lifespan(app: FastAPI):
         )
 
     try:
-        from image_analysis import load_model
-        await asyncio.to_thread(load_model)
-        logger.info("YOLO model preloaded")
+        from image_analysis import load_coco_model, load_env_model
+        await asyncio.to_thread(load_coco_model)
+        await asyncio.to_thread(load_env_model)
+        logger.info("YOLO models preloaded")
     except Exception as exc:
         logger.warning("YOLO model preload failed (will load on first request): %s", exc)
+
+    # Roboflow config check
+    from roboflow_client import is_configured
+    if is_configured():
+        logger.info(
+            "Roboflow integration ENABLED — model: %s",
+            os.getenv("ROBOFLOW_MODEL_ID"),
+        )
+    else:
+        logger.info("Roboflow integration DISABLED (ROBOFLOW_API_KEY or ROBOFLOW_MODEL_ID not set)")
 
     yield
 
@@ -277,6 +288,17 @@ async def graph_bootstrap_queries():
 
 
 # ---------------------------------------------------------------------------
+# Roboflow integration
+# ---------------------------------------------------------------------------
+
+@app.get("/roboflow/health", dependencies=[Depends(verify_api_key)])
+async def roboflow_health():
+    """Check Roboflow Serverless API connectivity."""
+    from roboflow_client import health_check
+    return health_check()
+
+
+# ---------------------------------------------------------------------------
 # Image analysis
 # ---------------------------------------------------------------------------
 
@@ -321,11 +343,13 @@ async def analyze_base64_image(payload: dict):
 
 @app.get("/analyze/model", dependencies=[Depends(verify_api_key)])
 async def analyze_model_status():
-    from image_analysis import ENVIRONMENTAL_KEYWORDS, _MODEL_NAME, get_model_path
+    from image_analysis import ENVIRONMENTAL_KEYWORDS, _COCO_MODEL_NAME, _ENV_MODEL_NAME, get_coco_model_path, get_env_model_path
 
     return {
-        "model": _MODEL_NAME or "not loaded",
-        "model_path": get_model_path(),
+        "coco_model": _COCO_MODEL_NAME or "not loaded",
+        "coco_model_path": get_coco_model_path(),
+        "env_model": _ENV_MODEL_NAME or "not loaded",
+        "env_model_path": get_env_model_path(),
         "known_classes": len(ENVIRONMENTAL_KEYWORDS),
     }
 
@@ -529,7 +553,7 @@ async def analyze_hazard(payload: dict):
             detail=f"Invalid request body: {exc}",
         )
 
-    context = await retrieve_legal_context(request.hazard_id, request.location)
+    context = await retrieve_legal_context(request.hazard_id, request.location, request.jurisdiction)
     ai_summary = await generate_grounded_report(
         request.hazard_id,
         request.location,
@@ -541,6 +565,7 @@ async def analyze_hazard(payload: dict):
     return HazardResponse(
         hazard_id=request.hazard_id,
         location=request.location,
+        jurisdiction=request.jurisdiction,
         violated_laws=context["laws"],
         enforcing_agencies=context["agencies"],
         retrieval_method=context["method"],

@@ -37,11 +37,16 @@ class HazardRequest(BaseModel):
         None,
         description="Location of the incident (e.g. Iloilo City). Enables location-aware law lookup.",
     )
+    jurisdiction: str | None = Field(
+        None,
+        description="Jurisdiction code to scope law lookup (e.g. 'PH-NATIONAL', 'ID-NATIONAL'). If omitted, all jurisdictions are returned.",
+    )
 
 
 class HazardResponse(BaseModel):
     hazard_id: str
     location: str | None
+    jurisdiction: str | None = None
     violated_laws: list[str] = Field(default_factory=list)
     enforcing_agencies: list[str] = Field(default_factory=list)
     retrieval_method: str = "none"
@@ -55,11 +60,12 @@ class HazardResponse(BaseModel):
 async def retrieve_legal_context(
     hazard_code: str,
     location: str | None = None,
+    jurisdiction: str | None = None,
 ) -> dict[str, Any]:
     """Retrieve legal context using hybrid GraphRAG.
 
-    1. Graph traversal (Location-aware) for high-confidence matches
-    2. Vector search fallback for broader legal context
+    1. Graph traversal (Location-aware, jurisdiction-scoped) for high-confidence matches
+    2. Vector search fallback for broader legal context (jurisdiction post-filtered)
     """
     if not is_configured():
         raise HTTPException(
@@ -79,7 +85,7 @@ async def retrieve_legal_context(
 
     try:
         driver = await get_driver()
-        result = await hybrid_retrieve(driver, hazard_code, location)
+        result = await hybrid_retrieve(driver, hazard_code, location, jurisdiction)
     except Exception as exc:
         logger.error("Legal context retrieval failed for hazard=%s: %s", hazard_code, exc)
         raise HTTPException(

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roboflow Setup Guide — LikasLens</title>
+  <style>
+    :root {
+      --primary: #1B4332;
+      --primary-light: #2D6A4F;
+      --accent: #40916C;
+      --accent-light: #52B788;
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --text: #212529;
+      --text-muted: #6c757d;
+      --border: #dee2e6;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border: 1px solid var(--border);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .card-header h2 {
+      font-size: 1.15rem;
+      color: var(--primary);
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.2em 0.7em;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-required { background: #fef2f2; color: var(--danger); }
+    .badge-optional { background: #eff6ff; color: var(--info); }
+    .badge-tip { background: #f0fdf4; color: var(--success); }
+    .badge-warning { background: #fffbeb; color: var(--warning); }
+    .badge-info { background: #eff6ff; color: var(--info); }
+    .badge-phase { background: #f0fdf4; color: var(--success); }
+    code {
+      background: #f1f3f5;
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+      font-size: 0.88em;
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      color: #c7254e;
+    }
+    pre {
+      background: #1a1a2e;
+      color: #a7f3d0;
+      padding: 1.25rem;
+      border-radius: 8px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+      white-space: pre;
+      position: relative;
+    }
+    .step {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid var(--primary);
+    }
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-right: 0.5rem;
+      flex-shrink: 0;
+    }
+    .warning {
+      background: #fffbeb;
+      border-left: 4px solid var(--warning);
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .info {
+      background: #eff6ff;
+      border-left: 4px solid var(--info);
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .success {
+      background: #f0fdf4;
+      border-left: 4px solid var(--success);
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .danger {
+      background: #fef2f2;
+      border-left: 4px solid var(--danger);
+      padding: 0.75rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    th {
+      background: var(--primary);
+      color: #fff;
+      padding: 0.6rem 1rem;
+      text-align: left;
+      font-weight: 600;
+    }
+    td {
+      padding: 0.6rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: #374151;
+    }
+    tr:nth-child(even) td { background: #f8f9fa; }
+    tr:hover td { background: #e8f5e9; }
+    .phase-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 2.5rem 0 1.5rem;
+    }
+    .phase-divider::after {
+      content: "";
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+    }
+    .phase-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary);
+      white-space: nowrap;
+    }
+    .checklist { list-style: none; margin-left: 0; }
+    .checklist li {
+      padding: 0.5rem 0.5rem 0.5rem 2rem;
+      position: relative;
+      border-bottom: 1px solid #f1f3f5;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .checklist li:hover { background: #f0fdf4; }
+    .checklist li::before {
+      content: "☐";
+      position: absolute;
+      left: 0.5rem;
+      color: var(--primary);
+      font-weight: 700;
+      transition: color 0.15s;
+    }
+    .checklist li.done {
+      color: #9ca3af;
+      text-decoration: line-through;
+      text-decoration-color: #d1d5db;
+    }
+    .checklist li.done::before {
+      content: "☑";
+      color: var(--success);
+    }
+    .copy-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0.3em 0.8em;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      float: right;
+      margin-top: -0.5rem;
+    }
+    .copy-btn:hover { background: var(--primary-light); }
+    .architecture-box {
+      background: #1a1a2e;
+      color: #a7f3d0;
+      padding: 1.25rem;
+      border-radius: 8px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+      white-space: pre;
+    }
+    .footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 2px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .footer a { color: var(--primary); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+    .progress-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--primary);
+      color: #fff;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0 0 var(--radius) var(--radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin: -2rem -2rem 2rem;
+    }
+    .progress-header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .progress-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+    .progress-bar-track {
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+      margin-bottom: 0.35rem;
+    }
+    .progress-bar-fill {
+      background: var(--accent-light);
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .progress-stats {
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+    .phase-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+    .phase-nav a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 0.75rem;
+      padding: 0.2em 0.6em;
+      border-radius: 4px;
+      transition: background 0.15s;
+    }
+    .phase-nav a:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    .phase-nav a.phase-done { color: var(--accent-light); font-weight: 600; }
+    .reset-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.7);
+      padding: 0.15em 0.5em;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .reset-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    @media (max-width: 640px) {
+      body { padding: 1rem; }
+      h1 { font-size: 1.5rem; }
+      .card { padding: 1.25rem; }
+      table { font-size: 0.8rem; }
+      th, td { padding: 0.4rem 0.6rem; }
+      .progress-header { margin: -1rem -1rem 1.5rem; padding: 0.75rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sticky Progress Header ── -->
+<div class="progress-header">
+  <div class="progress-header-inner">
+    <div class="progress-title">
+      Setup Progress
+      <button class="reset-btn" id="resetProgress" title="Reset all progress">Reset</button>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="progress-stats" id="progressStats">
+      <strong>0 / 4</strong> phases complete &mdash; 0%
+    </div>
+    <nav class="phase-nav" id="phaseNav">
+      <a href="#phase-1">1. Account &amp; API Key</a>
+      <a href="#phase-2">2. Pick a Model</a>
+      <a href="#phase-3">3. Configure ai-service</a>
+      <a href="#phase-4">4. Verify</a>
+    </nav>
+  </div>
+</div>
+
+<h1>Roboflow Setup Guide</h1>
+<p class="subtitle">Configure hosted waste detection via Roboflow's Serverless Inference API &mdash; LikasLens Hackathon Edition</p>
+
+<!-- ── Overview ── -->
+<div class="card">
+  <div class="card-header">
+    <h2>Overview</h2>
+    <span class="badge badge-info">Hackathon Setup</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">This guide walks you through integrating a pre-trained garbage/litter detection model from <a href="https://universe.roboflow.com" target="_blank">Roboflow Universe</a> into LikasLens's AI service. You will:</p>
+
+  <ul style="margin-left:1.5rem; margin-bottom:1rem;">
+    <li>Create a free Roboflow account and get an API key</li>
+    <li>Pick a public waste detection model (no training required)</li>
+    <li>Add credentials to <code>apps/ai-service/.env</code></li>
+    <li>Verify the integration works end-to-end</li>
+  </ul>
+
+  <div class="info">
+    <strong>Time estimate:</strong> ~30 minutes for account + model selection. The code implementation (<code>roboflow_client.py</code>) is handled separately.
+  </div>
+
+  <table>
+    <tr><th>Prerequisite</th><th>Status</th></tr>
+    <tr><td>AI service running locally</td><td>Required (<code>cd apps/ai-service && python -m uvicorn main:app --reload</code>)</td></tr>
+    <tr><td>Google Gemini API key</td><td>Already configured in <code>.env</code></td></tr>
+    <tr><td>Neo4j connection</td><td>Already configured in <code>.env</code></td></tr>
+  </table>
+</div>
+
+<!-- ── Architecture ── -->
+<div class="card">
+  <div class="card-header">
+    <h2>How It Works</h2>
+    <span class="badge badge-info">Architecture</span>
+  </div>
+
+  <div class="architecture-box">┌─────────────────────────────────────────────────────────────────┐
+│                    ROBOFLOW DETECTION FLOW                       │
+│                                                                 │
+│  ┌──────────┐    ┌──────────────┐    ┌──────────────────────┐  │
+│  │ Citizen   │───▶│ AI Service   │───▶│ Roboflow API         │  │
+│  │ submits   │    │ /analyze     │    │ serverless.roboflow  │  │
+│  │ photo     │    │              │    │ .com/infer           │  │
+│  └──────────┘    └──────┬───────┘    └──────────┬───────────┘  │
+│                         │                        │              │
+│                         ▼                        ▼              │
+│                  ┌──────────────┐    ┌──────────────────────┐  │
+│                  │ COCO + ENV   │    │ Bounding boxes +      │  │
+│                  │ detections   │    │ confidence scores     │  │
+│                  └──────┬───────┘    └──────────┬───────────┘  │
+│                         │                        │              │
+│                         ▼                        ▼              │
+│                  ┌──────────────────────────────────────────┐  │
+│                  │  Merge → Composite confidence scoring    │  │
+│                  │  → TriageService routing decision        │  │
+│                  └──────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘</div>
+
+  <div class="success">
+    <strong>Fallback:</strong> If the Roboflow API is unreachable, detection silently falls back to COCO-only results. The app never breaks.
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PHASE 1: Account & API Key -->
+<!-- ============================================ -->
+<div class="phase-divider">
+  <input type="checkbox" class="phase-checkbox" data-phase="1" id="cb-1" />
+  <span class="phase-title">Phase 1 &mdash; Create Roboflow Account &amp; Get API Key</span>
+</div>
+
+<div class="card" id="phase-1">
+  <div class="card-header">
+    <h2>Step 1: Create a Free Roboflow Account</h2>
+    <span class="badge badge-required">Required</span>
+  </div>
+
+  <div class="step">
+    <span class="step-number">1</span>
+    Go to <a href="https://app.roboflow.com" target="_blank"><strong>app.roboflow.com</strong></a> and click <strong>Sign Up</strong>.
+  </div>
+
+  <div class="step">
+    <span class="step-number">2</span>
+    Sign up with your email, Google, or GitHub. The free tier is sufficient for the hackathon.
+  </div>
+
+  <div class="step">
+    <span class="step-number">3</span>
+    After verifying your email, you'll land on the Roboflow dashboard.
+  </div>
+
+  <div class="info">
+    <strong>Free tier includes:</strong> $60/month in inference credits (~60,000 API calls). More than enough for the hackathon and early testing.
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Step 2: Generate an API Key</h2>
+    <span class="badge badge-required">Required</span>
+  </div>
+
+  <div class="step">
+    <span class="step-number">1</span>
+    In the Roboflow dashboard, click your <strong>profile icon</strong> (top right) → <strong>Settings</strong>.
+  </div>
+
+  <div class="step">
+    <span class="step-number">2</span>
+    Navigate to the <strong>API Keys</strong> section in the left sidebar.
+  </div>
+
+  <div class="step">
+    <span class="step-number">3</span>
+    Click <strong>Create Private API Key</strong>. Name it something like <code>likaslens-dev</code>.
+  </div>
+
+  <div class="step">
+    <span class="step-number">4</span>
+    Copy the API key immediately. It will only be shown once.
+  </div>
+
+  <div class="warning">
+    <strong>Keep this secret.</strong> Never commit the API key to Git. It goes in your local <code>.env</code> file only.
+  </div>
+
+  <pre>Format: looks like a long alphanumeric string, e.g.
+aB3dE5fG7hI9jK1lM3nO5pQ7rS9tU1vW3xY5zA7b</pre>
+</div>
+
+<!-- ============================================ -->
+<!-- PHASE 2: Pick a Model -->
+<!-- ============================================ -->
+<div class="phase-divider">
+  <input type="checkbox" class="phase-checkbox" data-phase="2" id="cb-2" />
+  <span class="phase-title">Phase 2 &mdash; Pick a Waste Detection Model</span>
+</div>
+
+<div class="card" id="phase-2">
+  <div class="card-header">
+    <h2>Browse Roboflow Universe</h2>
+    <span class="badge badge-required">Required</span>
+  </div>
+
+  <div class="step">
+    <span class="step-number">1</span>
+    Go to <a href="https://universe.roboflow.com" target="_blank"><strong>universe.roboflow.com</strong></a>.
+  </div>
+
+  <div class="step">
+    <span class="step-number">2</span>
+    Search for <strong>"garbage detection"</strong>, <strong>"TACO"</strong>, or <strong>"waste detection"</strong>.
+  </div>
+
+  <div class="step">
+    <span class="step-number">3</span>
+    Click a project that looks promising. Look for models with:
+    <ul style="margin-left:1.5rem; margin-top:0.5rem;">
+      <li>High accuracy (mAP > 0.5)</li>
+      <li>Multiple waste classes (plastic, paper, glass, metal, etc.)</li>
+      <li>Recent training date</li>
+      <li>Good community usage count</li>
+    </ul>
+  </div>
+
+  <div class="step">
+    <span class="step-number">4</span>
+    Go to the <strong>Deploy</strong> tab of the chosen project.
+  </div>
+
+  <div class="step">
+    <span class="step-number">5</span>
+    Select <strong>Serverless API</strong> (not Local or Docker).
+  </div>
+
+  <div class="step">
+    <span class="step-number">6</span>
+    Copy the <strong>Model ID</strong>. It looks like:
+    <pre>project-name/version-number
+Examples:
+  taco-trash-annotations-in-context/1
+  garbage-detection-v3/2
+  waste-classification-yolov8/5</pre>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Recommended Models</h2>
+    <span class="badge badge-tip">Quick Start</span>
+  </div>
+
+  <table>
+    <tr><th>Model</th><th>Classes</th><th>Why</th></tr>
+    <tr>
+      <td><strong>TACO (Trash Annotations in Context)</strong></td>
+      <td>~60 waste sub-classes (plastic bag, bottle, cup, can, carton, etc.)</td>
+      <td>Research-grade, most diverse coverage</td>
+    </tr>
+    <tr>
+      <td><strong>Garbage Classification YOLOv8</strong></td>
+      <td>cardboard, glass, metal, paper, plastic, trash</td>
+      <td>Good class coverage for waste sorting</td>
+    </tr>
+    <tr>
+      <td><strong>YOLOv8 Trash Detections</strong></td>
+      <td>General trash, litter, plastic</td>
+      <td>High community adoption, fast inference</td>
+    </tr>
+  </table>
+
+  <div class="info">
+    <strong>For the hackathon:</strong> Any of these will work. TACO is the most comprehensive. Pick whichever loads fastest for your demo.
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PHASE 3: Configure ai-service -->
+<!-- ============================================ -->
+<div class="phase-divider">
+  <input type="checkbox" class="phase-checkbox" data-phase="3" id="cb-3" />
+  <span class="phase-title">Phase 3 &mdash; Configure ai-service Environment</span>
+</div>
+
+<div class="card" id="phase-3">
+  <div class="card-header">
+    <h2>Update <code>.env</code></h2>
+    <span class="badge badge-required">Required</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">Add the two Roboflow variables to <code>apps/ai-service/.env</code>:</p>
+
+  <pre>ROBOFLOW_API_KEY=your_api_key_here
+ROBOFLOW_MODEL_ID=taco-trash-annotations-in-context/1</pre>
+
+  <p style="margin-bottom:1rem;">If you don't already have these variables, here's the full list of AI service env vars you should have:</p>
+
+  <pre>AI_SERVICE_PORT=8001
+AI_SERVICE_API_KEY=dev-ai-service-key-change-in-production
+GOOGLE_API_KEY=your_gemini_api_key
+NEO4J_URI=neo4j+s://your-instance.databases.neo4j.io
+NEO4J_USER=neo4j
+NEO4J_PASSWORD=your_neo4j_password
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001
+YOLO_MODEL_PATH=yolov8n.pt
+ENV_MODEL_PATH=best.pt
+ROBOFLOW_API_KEY=your_roboflow_api_key
+ROBOFLOW_MODEL_ID=taco-trash-annotations-in-context/1
+LIKASLENS_METRICS_LOG=true
+APP_DEBUG=true</pre>
+
+  <div class="warning">
+    <strong>Don't change existing values.</strong> Only add or update <code>ROBOFLOW_API_KEY</code> and <code>ROBOFLOW_MODEL_ID</code>. Leave everything else as-is.
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Roboflow API Access</h2>
+    <span class="badge badge-tip">No extra install needed</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">The AI service calls Roboflow's Serverless API directly via HTTP using the <code>requests</code> library (already installed). No additional SDK is required.</p>
+
+  <div class="info">
+    <strong>Why not the <code>inference</code> SDK?</strong> The official Roboflow <code>inference</code> package requires Python &lt;3.13. The AI service runs on Python 3.13+, so we use Roboflow's REST API directly at <code>https://serverless.roboflow.com/{model_id}</code>. Same functionality, zero dependency issues.
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Verify <code>.env</code> is Loaded</h2>
+    <span class="badge badge-tip">Quick Check</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">Restart the AI service after updating <code>.env</code>:</p>
+
+  <pre># Stop any running AI service, then:
+cd apps/ai-service
+python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001</pre>
+
+  <p style="margin-bottom:1rem;">Check the startup logs for any missing variable warnings.</p>
+</div>
+
+<!-- ============================================ -->
+<!-- PHASE 4: Verify -->
+<!-- ============================================ -->
+<div class="phase-divider">
+  <input type="checkbox" class="phase-checkbox" data-phase="4" id="cb-4" />
+  <span class="phase-title">Phase 4 &mdash; Verify Integration</span>
+</div>
+
+<div class="card" id="phase-4">
+  <div class="card-header">
+    <h2>Health Check</h2>
+    <span class="badge badge-tip">Verification</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">Once the code is wired up, test with these endpoints:</p>
+
+  <div class="step">
+    <span class="step-number">1</span>
+    <strong>Check Roboflow connectivity:</strong>
+    <pre>curl http://localhost:8001/roboflow/health
+# Expected: {"status": "ok", "model": "taco-trash-annotations-in-context/1", "roboflow_connected": true}</pre>
+  </div>
+
+  <div class="step">
+    <span class="step-number">2</span>
+    <strong>Test with a garbage photo:</strong>
+    <pre>curl -X POST http://localhost:8001/analyze \
+  -F "file=@test_garbage.jpg" \
+  -F "latitude=10.3157" \
+  -F "longitude=123.8854" \
+  -H "X-API-Key: dev-ai-service-key-change-in-production"
+# Expected: detections array with both COCO and Roboflow results merged</pre>
+  </div>
+
+  <div class="step">
+    <span class="step-number">3</span>
+    <strong>Check the response includes Roboflow detections:</strong>
+    <pre># Look for detections with "source": "roboflow" in the response
+# These should have class names like "Plastic", "Bottle", "Bag", etc.</pre>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Expected Detection Coverage</h2>
+    <span class="badge badge-info">Reference</span>
+  </div>
+
+  <table>
+    <tr><th>Violation Type</th><th>v1 Coverage</th><th>Detection Source</th></tr>
+    <tr><td>Garbage / Litter / Plastic</td><td style="color:var(--success);">&#10003; Strong</td><td>Roboflow (TACO) + COCO</td></tr>
+    <tr><td>Illegal dumping (large piles)</td><td style="color:var(--success);">&#10003; Strong</td><td>Roboflow + COCO</td></tr>
+    <tr><td>Smoke / Fire</td><td style="color:var(--warning);">&#9888; Weak</td><td>COCO only (limited)</td></tr>
+    <tr><td>Water pollution</td><td style="color:var(--warning);">&#9888; Weak</td><td>COCO only (no water classes)</td></tr>
+    <tr><td>Deforestation</td><td style="color:var(--danger);">&#10007; Absent</td><td>Requires satellite imagery</td></tr>
+    <tr><td>Oil spill</td><td style="color:var(--danger);">&#10007; Absent</td><td>Requires marine imagery</td></tr>
+  </table>
+
+  <div class="success">
+    <strong>Demo narrative:</strong> <em>"v1 excels at waste/litter detection — the #1 reported violation type in the Philippines. Our active learning pipeline will expand to water, fire, and deforestation as field data flows in."</em>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- TROUBLESHOOTING -->
+<!-- ============================================ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Troubleshooting</h2>
+    <span class="badge badge-warning">Common Issues</span>
+  </div>
+
+  <table>
+    <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+    <tr>
+      <td><code>ModuleNotFoundError: No module named 'inference'</code></td>
+      <td>Trying to use old SDK approach</td>
+      <td>Not needed — AI service uses raw HTTP via <code>requests</code>. Ignore this error if using the current codebase.</td>
+    </tr>
+    <tr>
+      <td><code>401 Unauthorized</code> from Roboflow</td>
+      <td>Wrong or missing API key</td>
+      <td>Check <code>ROBOFLOW_API_KEY</code> in <code>.env</code></td>
+    </tr>
+    <tr>
+      <td><code>404 Not Found</code> from Roboflow</td>
+      <td>Wrong model ID</td>
+      <td>Verify <code>ROBOFLOW_MODEL_ID</code> matches the Deploy tab exactly</td>
+    </tr>
+    <tr>
+      <td><code>ConnectionError</code> or timeout</td>
+      <td>Roboflow API unreachable</td>
+      <td>Check internet connection. Service falls back to COCO-only if unreachable.</td>
+    </tr>
+    <tr>
+      <td>Detections have no <code>source: "roboflow"</code></td>
+      <td>Roboflow integration not wired yet</td>
+      <td>Ensure <code>roboflow_client.py</code> is implemented and called from <code>image_analysis.py</code></td>
+    </tr>
+    <tr>
+      <td>AI service won't start</td>
+      <td>Missing env vars</td>
+      <td>Check all required env vars are set. Restart after <code>.env</code> changes.</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ============================================ -->
+<!-- CREDENTIAL REFERENCE -->
+<!-- ============================================ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Where to Get Credentials</h2>
+    <span class="badge badge-info">Reference</span>
+  </div>
+
+  <table>
+    <tr><th>Credential</th><th>Location</th></tr>
+    <tr><td>Roboflow API Key</td><td>app.roboflow.com → Settings → API Keys → Create Private API Key</td></tr>
+    <tr><td>Roboflow Model ID</td><td>universe.roboflow.com → Project → Deploy tab → Serverless API → Copy Model ID</td></tr>
+    <tr><td>Google Gemini API Key</td><td>Google AI Studio → API Keys</td></tr>
+    <tr><td>Neo4j AuraDB Credentials</td><td>Neo4j Console → https://console.neo4j.io</td></tr>
+    <tr><td>Supabase DB Password</td><td>Supabase Dashboard → Settings → Database → Connection string</td></tr>
+  </table>
+</div>
+
+<!-- ============================================ -->
+<!-- ENV VARS REFERENCE -->
+<!-- ============================================ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Full <code>.env</code> Reference — AI Service</h2>
+    <span class="badge badge-info">Reference</span>
+  </div>
+
+  <table>
+    <tr><th>Variable</th><th>Required</th><th>Purpose</th></tr>
+    <tr><td><code>AI_SERVICE_PORT</code></td><td>Yes</td><td>Port the AI service runs on (default: 8001)</td></tr>
+    <tr><td><code>AI_SERVICE_API_KEY</code></td><td>Yes</td><td>Internal API key for authenticating requests</td></tr>
+    <tr><td><code>GOOGLE_API_KEY</code></td><td>Yes</td><td>Gemini API key for hazard analysis</td></tr>
+    <tr><td><code>NEO4J_URI</code></td><td>Yes</td><td>Neo4j Bolt/URI connection string</td></tr>
+    <tr><td><code>NEO4J_USER</code></td><td>Yes</td><td>Neo4j database username</td></tr>
+    <tr><td><code>NEO4J_PASSWORD</code></td><td>Yes</td><td>Neo4j database password</td></tr>
+    <tr><td><code>CORS_ORIGINS</code></td><td>Yes</td><td>Comma-separated allowed origins</td></tr>
+    <tr><td><code>YOLO_MODEL_PATH</code></td><td>Yes</td><td>Path to YOLOv8 COCO model weights</td></tr>
+    <tr><td><code>ENV_MODEL_PATH</code></td><td>Yes</td><td>Path to custom environmental model weights (default: models/yolov8-waste.pt)</td></tr>
+    <tr><td><code>ROBOFLOW_API_KEY</code></td><td>Yes (new)</td><td>Roboflow Serverless API key</td></tr>
+    <tr><td><code>ROBOFLOW_MODEL_ID</code></td><td>Yes (new)</td><td>Roboflow model ID (project/version format)</td></tr>
+    <tr><td><code>LIKASLENS_METRICS_LOG</code></td><td>No</td><td>Enable metrics logging (true/false)</td></tr>
+    <tr><td><code>APP_DEBUG</code></td><td>No</td><td>Enable debug mode (true/false)</td></tr>
+  </table>
+</div>
+
+<!-- ============================================ -->
+<!-- POST-HACKATHON ROADMAP -->
+<!-- ============================================ -->
+<div class="card">
+  <div class="card-header">
+    <h2>Post-Hackathon Roadmap</h2>
+    <span class="badge badge-phase">Deferred</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">After the hackathon, these items are planned:</p>
+
+  <table>
+    <tr><th>Item</th><th>Timeline</th><th>Details</th></tr>
+    <tr>
+      <td>Fork TACO dataset + train custom model</td>
+      <td>Week 1</td>
+      <td>Roboflow fork → add field photos → train YOLOv8</td>
+    </tr>
+    <tr>
+      <td>Export <code>.pt</code> weights for local inference</td>
+      <td>Week 1</td>
+      <td>Remove API dependency for production</td>
+    </tr>
+    <tr>
+      <td>Active learning pipeline</td>
+      <td>Week 2</td>
+      <td>Admin approval gate → sync job → Roboflow retrain</td>
+    </tr>
+    <tr>
+      <td>Expand to fire/smoke/water classes</td>
+      <td>Week 2-3</td>
+      <td>New training data, new model versions</td>
+    </tr>
+    <tr>
+      <td>Add 50 field photos to training set</td>
+      <td>Week 2</td>
+      <td>Real-world Philippine violation imagery</td>
+    </tr>
+  </table>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>LikasLens &bull; Roboflow Setup Guide &bull; Hackathon Edition &bull; 2026-06-21</p>
+  <p><a href="../roadmap/Roboflow plan.md">View Markdown version</a> &bull; <a href="GCP_DEPLOYMENT.html">GCP Deployment Guide</a></p>
+</div>
+
+</div>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'roboflow-setup-progress';
+  const TOTAL_PHASES = 4;
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+  }
+  function save(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function updateProgress(state) {
+    const done = Object.values(state).filter(Boolean).length;
+    const pct = Math.round((done / TOTAL_PHASES) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressStats').innerHTML =
+      '<strong>' + done + ' / ' + TOTAL_PHASES + '</strong> phases complete &mdash; ' + pct + '%';
+
+    document.querySelectorAll('#phaseNav a').forEach(function(a) {
+      var id = a.getAttribute('href').replace('#phase-', '');
+      a.classList.toggle('phase-done', !!state[id]);
+    });
+  }
+
+  function init() {
+    var state = load();
+
+    document.querySelectorAll('.phase-checkbox').forEach(function(cb) {
+      var phase = cb.dataset.phase;
+      cb.checked = !!state[phase];
+      cb.addEventListener('change', function() {
+        state[phase] = cb.checked;
+        save(state);
+        updateProgress(state);
+      });
+    });
+
+    document.getElementById('resetProgress').addEventListener('click', function() {
+      if (confirm('Reset all setup progress?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        document.querySelectorAll('.phase-checkbox').forEach(function(cb) { cb.checked = false; });
+        updateProgress({});
+      }
+    });
+
+    updateProgress(state);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
