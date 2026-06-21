@@ -18,8 +18,8 @@ RUN chown -R appuser:appuser /app
 
 # Preload models at build time (best-effort — gracefully skipped if weights missing)
 RUN python -c "from image_analysis import load_coco_model; load_coco_model()" || echo "YOLO models will load on first request"
-    && chmod +x start.sh
-    && chown -R appuser:appuser /app
+
+RUN chmod +x start.sh && chown -R appuser:appuser /app
 
 USER appuser
 
