@@ -228,84 +228,17 @@ export default function IncidentsPage() {
                       onClick={() => setSelectedIncident(ticket)}
                       className="bg-panel rounded-[1.5rem] p-4 sm:p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer flex flex-col h-full relative"
                     >
-                      {/* Header row: ID + Status + Menu */}
-                      <div className="flex items-center justify-between gap-2 mb-4">
-                        <span className="font-mono text-[10px] text-ink/40 font-bold tracking-widest uppercase shrink-0">
+                      {/* Header row: ID + Status */}
+                      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 mb-3">
+                        <span className="font-mono text-[10px] text-ink/40 font-bold tracking-widest uppercase truncate pr-2">
                           {ticket.display_id ||
                             `INC-${String(i + 1).padStart(3, "0")}`}
                         </span>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span
-                            className={`px-2.5 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${statusPillBg} ${statusPillText}`}
-                          >
-                            {ticket.status}
-                          </span>
-                          <div className="relative">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenMenuId(
-                                  openMenuId === ticket.id ? null : ticket.id,
-                                );
-                              }}
-                              className="p-1.5 text-ink/40 hover:text-ink transition-colors rounded-full hover:bg-ink/[0.04]"
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
-                            {openMenuId === ticket.id && (
-                              <div
-                                ref={menuRef}
-                                className="absolute right-0 mt-1 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden z-50"
-                              >
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    closeMenu();
-                                    setSelectedIncident(ticket);
-                                  }}
-                                  className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
-                                >
-                                  <Eye className="w-4 h-4" /> View Details
-                                </button>
-                                {isAdmin && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        closeMenu();
-                                      }}
-                                      className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
-                                    >
-                                      <UserCheck className="w-4 h-4" /> Assign
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        closeMenu();
-                                      }}
-                                      className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
-                                    >
-                                      <Flag className="w-4 h-4" /> Change Status
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        closeMenu();
-                                      }}
-                                      className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/50 hover:text-[#b23b3b] transition-colors"
-                                    >
-                                      <Trash2 className="w-4 h-4" /> Remove
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                        <span
+                          className={`px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full text-[8px] sm:text-[9px] font-mono uppercase tracking-widest font-bold ${statusPillBg} ${statusPillText}`}
+                        >
+                          {ticket.status}
+                        </span>
                       </div>
 
                       <h3 className="font-bold text-[17px] text-ink leading-snug mb-4 line-clamp-2 flex-1">

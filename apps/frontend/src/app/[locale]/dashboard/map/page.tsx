@@ -22,23 +22,11 @@ const EnhancedMap = dynamic(
 
 export default function MapPage() {
   return (
-    <DashboardLayoutWrapper greeting="Analyst">
-      <div className="space-y-8">
-        {/* Page header */}
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-green/10 flex items-center justify-center">
-            <MapPin className="w-6 h-6 text-green" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-ink tracking-tight">
-              Environmental Report Map
-            </h1>
-            <p className="text-sm text-ink/50">
-              Geographic visualization of reports, clusters, and hot zones across
-              the Philippines
-            </p>
-          </div>
-        </div>
+    <DashboardLayoutWrapper 
+      pageTitle="Environmental Report Map" 
+      pageSubtitle="Geographic visualization of reports, clusters, and hot zones across the Philippines"
+    >
+      <div className="space-y-4">
 
         {/* Full map with deck.gl + MapLibre + satellite */}
         <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">

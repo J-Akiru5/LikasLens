@@ -71,16 +71,22 @@ export function PublicScoreboard() {
   if (loading) {
     return (
       <div className="space-y-3 animate-pulse">
-        <div className="grid grid-cols-[1fr_1.5fr_1fr_0.8fr] gap-4 pb-4 border-b border-border">
+        <div className="hidden sm:grid sm:grid-cols-[1.2fr_2.5fr_1fr_0.8fr] gap-4 pb-4 border-b border-border">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-4 rounded bg-ink/5" />
           ))}
         </div>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="grid grid-cols-[1fr_1.5fr_1fr_0.8fr] gap-4 py-4 border-b border-border last:border-0">
-            {[1, 2, 3, 4].map((j) => (
-              <div key={j} className="h-5 rounded bg-ink/5" />
-            ))}
+          <div key={i} className="flex flex-col gap-2.5 sm:grid sm:grid-cols-[1.2fr_2.5fr_1fr_0.8fr] sm:gap-4 py-4 border-b border-border last:border-0">
+            <div className="flex items-center gap-2.5">
+               <div className="w-6 h-6 rounded-full bg-ink/5" />
+               <div className="h-4 w-24 rounded bg-ink/5" />
+            </div>
+            <div className="h-4 w-full sm:w-3/4 rounded bg-ink/5 ml-[34px] sm:ml-0" />
+            <div className="flex items-center justify-between sm:contents mt-1 sm:mt-0 ml-[34px] sm:ml-0">
+              <div className="h-4 w-16 rounded bg-ink/5" />
+              <div className="h-4 w-10 sm:w-12 rounded bg-ink/5" />
+            </div>
           </div>
         ))}
       </div>
@@ -100,7 +106,7 @@ export function PublicScoreboard() {
 
   return (
     <div className="space-y-1">
-      <div className="grid grid-cols-[1fr_1.5fr_0.8fr_0.6fr] sm:grid-cols-[1.5fr_2fr_1fr_0.8fr] gap-2 sm:gap-4 px-3 sm:px-4 pb-3 border-b border-border font-mono text-[9px] sm:text-[10px] text-muted uppercase tracking-wider">
+      <div className="hidden sm:grid sm:grid-cols-[1.2fr_2.5fr_0.8fr_0.5fr] gap-4 px-4 pb-3 mb-2 border-b border-ink/5 font-mono text-[10px] font-bold text-ink/40 uppercase tracking-widest">
         <div>Reporter / Location</div>
         <div>Issue</div>
         <div>Status</div>
@@ -111,25 +117,38 @@ export function PublicScoreboard() {
         return (
           <div
             key={idx}
-            className="grid grid-cols-[1fr_1.5fr_0.8fr_0.6fr] sm:grid-cols-[1.5fr_2fr_1fr_0.8fr] gap-2 sm:gap-4 px-3 sm:px-4 py-3 rounded-lg hover:bg-ink/3 transition-colors border border-transparent hover:border-border"
+            className="flex flex-col gap-2.5 sm:grid sm:grid-cols-[1.2fr_2.5fr_0.8fr_0.5fr] sm:items-center sm:gap-4 px-4 py-3 mb-2 rounded-xl bg-panel border border-ink/5 shadow-[0_1px_3px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)] hover:border-ink/10 transition-all duration-300 group"
           >
-            <div className="font-medium text-sm text-ink break-words">{row.agency}</div>
-            <div className="text-sm text-muted break-words">{row.title}</div>
-            <div>
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full",
-                  isResolved ? "bg-[rgba(45,106,79,0.12)] text-[#2d6a4f]" : "bg-[rgba(184,134,11,0.12)] text-[#b8860b]"
-                )}
-              >
-                <span className={cn(
-                  "w-[5px] h-[5px] rounded-full flex-shrink-0 inline-block",
-                  isResolved ? "bg-[#2d6a4f]" : "bg-[#b8860b]"
-                )} />
-                {row.status}
-              </span>
+            <div className="flex items-center justify-between sm:justify-start">
+              <div className="flex items-center gap-2.5">
+                <div className="w-6 h-6 shrink-0 rounded-full bg-ink/[0.04] flex items-center justify-center font-mono text-[9px] font-bold text-ink/40 group-hover:bg-accent/10 group-hover:text-accent transition-colors">
+                  {row.rank}
+                </div>
+                <div className="font-bold text-[12px] text-ink leading-tight">{row.agency}</div>
+              </div>
             </div>
-            <div className="text-xs text-muted text-right font-mono">{row.time}</div>
+            
+            <div className="text-[12px] font-medium text-ink/70 truncate sm:pr-2 ml-[34px] sm:ml-0" title={row.title}>
+              {row.title}
+            </div>
+            
+            <div className="flex items-center justify-between sm:contents mt-1 sm:mt-0 ml-[34px] sm:ml-0">
+              <div>
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1 text-[8.5px] font-bold px-2 py-0.5 rounded-md uppercase tracking-widest",
+                    isResolved ? "bg-green/10 text-green" : "bg-amber/10 text-amber"
+                  )}
+                >
+                  <span className={cn(
+                    "w-1 h-1 rounded-full",
+                    isResolved ? "bg-green" : "bg-amber"
+                  )} />
+                  {row.status}
+                </span>
+              </div>
+              <div className="text-[9.5px] font-bold text-ink/40 uppercase tracking-widest sm:text-right">{row.time}</div>
+            </div>
           </div>
         );
       })}
