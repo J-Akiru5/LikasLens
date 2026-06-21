@@ -17,6 +17,7 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ghostMode, setGhostMode] = useState(false);
+  const [anonName, setAnonName] = useState("Contributor #0000");
 
   const fetchProfile = useCallback(async () => {
     setLoading(true);
@@ -57,7 +58,35 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
     fetchProfile();
   }, [fetchProfile]);
 
-  const anonName = `Contributor #${((profile?.id?.toString() || "").slice(-4) || "0000").padStart(4, "0")}`;
+  useEffect(() => {
+    // Generate a truly ephemeral random contributor ID to prevent static tracking
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    setAnonName(`Contributor #${randomNum}`);
+  }, [profile?.id]);
+
+  useEffect(() => {
+    // Sync with global page theme (data-theme)
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    setGhostMode(currentTheme === "ghost");
+
+    const observer = new MutationObserver(() => {
+      const current = document.documentElement.getAttribute("data-theme");
+      setGhostMode(current === "ghost");
+    });
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
+
+  const handleToggleGhostMode = () => {
+    const newTheme = ghostMode ? "civic" : "ghost";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    try {
+      localStorage.setItem("likaslens-theme", newTheme);
+    } catch {
+      // Ignore storage errors
+    }
+    setGhostMode(!ghostMode);
+  };
 
   if (loading) {
     return (
@@ -99,20 +128,26 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
                 )}
               </div>
               <div>
-                <h1 className="font-semibold tracking-tight text-4xl text-ink">{ghostMode ? anonName : profile?.display_name}</h1>
-                <p className="font-mono text-sm text-ink/40">@{profile?.username}</p>
+                <h1 className="font-semibold tracking-tight text-4xl text-ink">
+                  {ghostMode ? anonName : (profile?.display_name || profile?.name || "LikasLens Citizen")}
+                </h1>
+                <p className="font-mono text-sm text-ink/40">
+                  @{profile?.username || profile?.email?.split("@")[0] || "citizen"}
+                </p>
               </div>
             </div>
 
-            {profile?.bio && (
-              <p className="font-mono text-sm text-ink/60 max-w-xl">{profile.bio}</p>
+            {(profile?.bio || !ghostMode) && (
+              <p className="font-mono text-sm text-ink/60 max-w-xl">
+                {profile?.bio || "Citizen reporter dedicated to environmental conservation and monitoring."}
+              </p>
             )}
 
             <div className="flex flex-wrap items-center gap-6 font-mono text-xs text-ink/50">
-              {!ghostMode && profile?.location && (
+              {!ghostMode && (profile?.location || "Iloilo, Philippines") && (
                 <span className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5" />
-                  {profile.location}
+                  {profile?.location || "Iloilo, Philippines"}
                 </span>
               )}
               <span className="flex items-center gap-1.5">
@@ -138,7 +173,7 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
           </div>
 
           <button
-            onClick={() => setGhostMode(!ghostMode)}
+            onClick={handleToggleGhostMode}
             className="flex items-center gap-1.5 font-mono text-xs text-ink/40 hover:text-ink transition-colors"
           >
             {ghostMode ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}

@@ -354,17 +354,17 @@
   },
   "chat": {
     "title": "Liksi",
-    "subtitle": "AI Assistant",
-    "online": "Online",
-    "placeholder": "Ask Liksi...",
+    "subtitle": "ผู้ช่วย AI",
+    "online": "ออนไลน์",
+    "placeholder": "ถาม Liksi...",
     "send": "Send message",
     "closeChat": "Close chat",
     "openChat": "Open Liksi chat",
-    "errorFallback": "Oops! I couldn't reach my brain right now. Please check your connection or try again later.",
-    "welcomeCitizen": "Hey! I'm Liksi, your AI guide to LikasLens. Ask me anything about reporting environmental issues, using the platform, or Philippine environmental laws!",
-    "welcomeAdmin": "Welcome to the LikasLens Admin Portal! I'm Liksi, your AI operations assistant. I can help you triage reports, analyze trends, check laws, and manage the platform.",
-    "signInPrompt": "Please sign in to chat with Liksi",
-    "errorProcess": "Sorry, I couldn't process that. Try again!"
+    "errorFallback": "อ๊ะ! ผมไม่สามารถเข้าถึงสมองของผมได้ในตอนนี้ กรุณาตรวจสอบการเชื่อมต่อหรือลองอีกครั้งในภายหลังครับ",
+    "welcomeCitizen": "สวัสดีครับ! ผมคือ Liksi ผู้ช่วย AI ของคุณใน LikasLens ถามผมเกี่ยวกับการรายงานปัญหาสิ่งแวดล้อม การใช้งานแพลตฟอร์ม หรือกฎหมายสิ่งแวดล้อมของฟิลิปปินส์ได้เลยครับ!",
+    "welcomeAdmin": "ยินดีต้อนรับสู่ LikasLens Admin Portal! ผมคือ Liksi ผู้ช่วย AI ด้านการปฏิบัติงานของคุณ ผมสามารถช่วยคุณจัดลำดับความสำคัญของรายงาน วิเคราะห์แนวโน้ม ตรวจสอบกฎหมาย และจัดการแพลตฟอร์มได้ครับ",
+    "signInPrompt": "กรุณาเข้าสู่ระบบเพื่อแชทกับ Liksi",
+    "errorProcess": "ขออภัย ผมไม่สามารถประมวลผลได้ กรุณาลองอีกครั้ง!"
   },
   "offline": {
     "banner": "You are offline. Reports will be queued until connection is restored.",

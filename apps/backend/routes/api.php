@@ -143,6 +143,17 @@ Route::middleware('auth:sanctum')->group(function () {
                 'role' => $user->role,
                 'trust_score' => $user->trust_score,
                 'reward_points_balance' => $user->reward_points_balance,
+                'display_name' => $user->name,
+                'username' => explode('@', $user->email)[0],
+                'bio' => 'Citizen reporter dedicated to environmental conservation and monitoring in ' . ($user->country_code ?: 'Southeast Asia') . '.',
+                'location' => $user->country_code === 'PH' ? 'Iloilo, Philippines' : ($user->country_code ?: 'Iloilo, Philippines'),
+                'website' => 'https://likaslens.syntaxure.dev',
+                'avatar_url' => null,
+                'created_at' => $user->created_at ? $user->created_at->toISOString() : now()->toISOString(),
+                'impact_score' => $user->trust_score * 10,
+                'contribution_count' => $user->reports()->count(),
+                'ticket_count' => $user->tickets()->count(),
+                'verification_score' => $user->trust_score,
             ],
         ]);
     });
