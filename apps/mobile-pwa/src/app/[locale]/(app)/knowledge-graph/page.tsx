@@ -32,7 +32,7 @@ interface Preset {
   title: string;
   severity: "low" | "moderate" | "high" | "critical";
   category: string;
-  gremlinQuery: string;
+  cypherQuery: string;
   nodes: GraphNode[];
   links: GraphLink[];
 }
@@ -115,7 +115,7 @@ const BASE_LINKS: GraphLink[] = [
 const PRESETS: Preset[] = [
   {
     id: "solid-waste", title: "Illegal Solid Waste Dumping", severity: "high", category: "Solid Waste",
-    gremlinQuery: "g.V().has('incident','type','SOLID_WASTE')\n   .outE('violates').inV().as('law')\n   .outE('enforced_by').inV().as('agency')\n   .select('law','agency')",
+    cypherQuery: "MATCH (h:HazardType {code: 'SOLID_WASTE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Trash Heap — Brgy. 143", sublabel: "Manila, NCR", details: "Illegal dumping site (~4×5m) blocking pedestrian walkway.", meta: { Type: "Solid Waste", Confidence: "94.2%", GPS: "14.5995°N 120.9842°E", Status: "Active" } },
       { label: "YOLOv8 Classifier", sublabel: "FastAPI AI-Service", details: "Computer vision model detecting 47 environmental violation classes.", meta: { Model: "YOLOv8-Env-v2", Accuracy: "94.2%", Latency: "~120ms" } },
@@ -127,7 +127,7 @@ const PRESETS: Preset[] = [
   },
   {
     id: "deforestation", title: "Illegal Deforestation", severity: "critical", category: "Forest Cover",
-    gremlinQuery: "g.V().has('incident','type','DEFORESTATION')\n   .outE('violates').inV().as('law')\n   .outE('enforced_by').inV().as('agency')\n   .select('law','agency')",
+    cypherQuery: "MATCH (h:HazardType {code: 'DEFORESTATION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Canopy Loss — Mt. Apo", sublabel: "Davao del Sur", details: "Satellite imagery confirms commercial chain-sawing in protected buffer zone.", meta: { Type: "Illegal Logging", Area: "~3.2 hectares", Status: "Active" } },
       { label: "Forestry Sentinel AI", sublabel: "Multispectral Analysis", details: "NDVI change-detection model comparing satellite bands to baseline.", meta: { Model: "NDVI-ChangeNet", Change: "-12% NDVI" } },
@@ -139,7 +139,7 @@ const PRESETS: Preset[] = [
   },
   {
     id: "water-pollution", title: "Industrial Wastewater", severity: "critical", category: "Water Quality",
-    gremlinQuery: "g.V().has('incident','type','WATER_POLLUTION')\n   .outE('violates').inV().as('law')\n   .outE('enforced_by').inV().as('agency')\n   .select('law','agency')",
+    cypherQuery: "MATCH (h:HazardType {code: 'WATER_POLLUTION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Toxic Runoff — Laguna Lake", sublabel: "Laguna de Bay", details: "Elevated COD levels and visible discoloration near discharge pipe.", meta: { Type: "Chemical Discharge", pH: "4.2 (Acidic)", COD: "380 mg/L" } },
       { label: "Water Sentinel AI", sublabel: "Spectral Analysis", details: "Analyzes photo color histograms against baseline water profiles.", meta: { Model: "WaterSpec-v1.3", Confidence: "88.5%" } },
@@ -151,7 +151,7 @@ const PRESETS: Preset[] = [
   },
   {
     id: "coral-damage", title: "Marine Coral Reef Destruction", severity: "high", category: "Marine Protection",
-    gremlinQuery: "g.V().has('incident','type','CORAL_DAMAGE')\n   .outE('violates').inV().as('law')\n   .outE('enforced_by').inV().as('agency')\n   .select('law','agency')",
+    cypherQuery: "MATCH (h:HazardType {code: 'CORAL_DAMAGE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Blast Fishing — Sulu Sea", sublabel: "Tawi-Tawi Sanctuary", details: "Hydrophone arrays detected explosive frequency signatures.", meta: { Type: "Dynamite Fishing", Zone: "Strict Protection" } },
       { label: "Marine Audio-Visual AI", sublabel: "WaveformNet Classifier", details: "Audio pattern matching on underwater explosion frequencies.", meta: { Model: "WaveformNet-v2", Accuracy: "95.4%" } },
@@ -189,7 +189,7 @@ export default function KnowledgeGraphPage() {
     setNodes(fresh);
     setSelectedId("inc");
     
-    const intro = `> Initializing LikasLens Engine\n> Connecting to Gremlin endpoint...\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.gremlinQuery}\n\n[OK] Traversal complete — ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[OK] Graph rendered`;
+    const intro = `> Initializing LikasLens Engine\n> Connecting to Neo4j AuraDB endpoint...\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.cypherQuery}\n\n[OK] Traversal complete — ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[OK] Graph rendered`;
     setTerminalText("");
     setTerminalIdx(0);
     setIsTyping(true);
@@ -431,7 +431,7 @@ export default function KnowledgeGraphPage() {
         <button onClick={() => setShowTerminal(!showTerminal)} className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#080c15] border border-white/10">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse" />
-            <span className="text-[10px] font-mono text-white/40">GREMLIN QUERY LOG</span>
+            <span className="text-[10px] font-mono text-white/40">CYPHER QUERY LOG</span>
           </div>
           {showTerminal ? <ChevronDown className="w-3 h-3 text-white/30" /> : <ChevronUp className="w-3 h-3 text-white/30" />}
         </button>

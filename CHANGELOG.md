@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-06-21
+
+### Added
+- **Backend**: `doctrine/dbal ^4.0` added to `composer.json` — enables column-type-altering migrations (specifically the `personal_access_tokens.tokenable_id` bigint→uuid conversion that was silently failing on every deploy)
+- **Frontend**: `/api/user/rank-progress` Next.js API route — server-side proxy that reads the `laravel_token` httpOnly cookie and forwards as Bearer to Laravel, avoiding cross-origin cookie auth issues
+- **Frontend**: `/api/user/profile` Next.js API route — same server-side proxy pattern for authenticated profile fetch
+
+### Fixed
+- **Backend**: `personal_access_tokens` migration (`fix_personal_access_tokens_tokenable_id_to_uuid`) now runs successfully on Cloud Run deploy — previously failed silently on every boot because `doctrine/dbal` was missing and `start.sh` swallowed the error
+- **Backend**: `SANCTUM_STATEFUL_DOMAINS` now includes `likaslens.syntaxure.dev` so cookie-based SPA auth from the production frontend is recognized as stateful
+- **Backend**: `sprintf` separator in `config/sanctum.php` corrected from `%s%s` to `%s,%s` (missing comma between domain list and `Sanctum::currentApplicationUrlWithPort()`)
+- **Backend**: `LOG_STACK` updated to include `stderr` so Laravel exceptions are visible in Cloud Run Logs Explorer instead of vanishing into ephemeral container filesystem
+- **Backend**: Pint lint fixes — `ordered_imports` in `bootstrap/app.php`, `not_operator_with_successor_space` in `routes/api.php`
+- **Frontend**: Profile page now fetches `/user/rank-progress` through Next.js API proxy (`/api/user/rank-progress`) instead of direct cross-origin call — resolves the 500 error on the profile page
+- **Frontend**: `ContributorProfile` component refactored to use `/api/user/profile` proxy, removed Supabase client dependency, simplified to single endpoint
+- **Shared**: `laravelFetch` client no longer attempts to read cookies via `document.cookie` (cannot access httpOnly cookies); relies on explicit `token` parameter instead
+
 ## [0.9.1] - 2026-06-19
 
 ### Added
