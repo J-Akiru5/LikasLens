@@ -13,14 +13,14 @@ import {
   ArrowLeft,
   Shield,
   Key,
-  UserCircle,
-  SignOut,
+  UserCircle2,
+  LogOut,
   Sun,
   Moon,
   X,
-  Warning,
-  Spinner,
-} from "@phosphor-icons/react";
+  AlertTriangle,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -287,7 +287,7 @@ function AccountSection() {
 
         <section className="space-y-5">
           <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
-            <SignOut className="w-4 h-4 text-muted" />
+            <LogOut className="w-4 h-4 text-muted" />
             Account
           </h2>
           <div className="space-y-3">
@@ -299,7 +299,7 @@ function AccountSection() {
             >
               {actionLoading === "logout" ? (
                 <span className="inline-flex items-center gap-2">
-                  <Spinner className="w-4 h-4 animate-spin" weight="bold" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Logging out...
                 </span>
               ) : (
@@ -367,7 +367,7 @@ function AccountSection() {
                 >
                   {actionLoading === "password" ? (
                     <span className="inline-flex items-center gap-2">
-                      <Spinner className="w-4 h-4 animate-spin" weight="bold" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       Sending...
                     </span>
                   ) : (
@@ -386,7 +386,7 @@ function AccountSection() {
           <div className="relative w-full max-w-md bg-page border border-ink/10 shadow-lg rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-ink/10">
               <div className="flex items-center gap-3">
-                <Warning className="w-4 h-4 text-muted" />
+                    <AlertTriangle className="w-4 h-4 text-muted" />
                 <h3 className="font-semibold tracking-tight text-lg text-ink">Delete Account</h3>
               </div>
               <button
@@ -423,7 +423,7 @@ function AccountSection() {
                 >
                   {actionLoading === "delete" ? (
                     <span className="inline-flex items-center gap-2">
-                      <Spinner className="w-4 h-4 animate-spin" weight="bold" />
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       Deleting...
                     </span>
                   ) : (
@@ -545,7 +545,7 @@ export default function SettingsPage() {
     { id: "platform", label: t("platform"), icon: Globe },
     { id: "notifications", label: t("notifications"), icon: Bell },
     { id: "security", label: t("security"), icon: Shield },
-    { id: "account", label: t("account"), icon: UserCircle },
+    { id: "account", label: t("account"), icon: UserCircle2 },
   ];
 
   return (

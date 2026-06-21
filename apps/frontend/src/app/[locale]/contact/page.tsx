@@ -2,18 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Envelope, ChatCircle, MapPin, PaperPlaneRight, CheckCircle } from "@phosphor-icons/react";
+import { ArrowLeft, Mail, MessageCircle, MapPin, Send, CheckCircle, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AppHeader } from "@/components/layout/header";
 import { showToast } from "@likaslens/shared";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/contact-messages`, {
@@ -25,6 +26,7 @@ export default function ContactPage() {
         body: JSON.stringify(formData),
       });
       if (response.ok) {
+        setSubmitted(true);
         showToast("Message sent successfully", "success");
       } else {
         showToast("Failed to send message. Please try again.", "error");
@@ -32,12 +34,16 @@ export default function ContactPage() {
     } catch (error) {
       console.error("Failed to submit contact form", error);
       showToast("Failed to send message. Check your connection.", "error");
+    } finally {
+      setSubmitting(false);
     }
 
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: "", email: "", message: "" });
-    }, 5000);
+    if (submitted) {
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ name: "", email: "", message: "" });
+      }, 5000);
+    }
   };
 
   return (
@@ -59,7 +65,7 @@ export default function ContactPage() {
           <div>
             <div className="mb-8">
               <div className="inline-flex items-center gap-2 px-4 py-2 border border-border mb-4 rounded-lg">
-                <ChatCircle className="w-4 h-4 text-green" />
+                <MessageCircle className="w-4 h-4 text-green" />
                 <span className="font-mono text-xs font-medium uppercase tracking-widest text-accent">
                   Get in Touch
                 </span>
@@ -74,7 +80,7 @@ export default function ContactPage() {
 
             <div className="space-y-6">
               <div className="flex items-start gap-4 p-4 panel">
-                <Envelope className="w-6 h-6 text-green shrink-0" />
+                <Mail className="w-6 h-6 text-green shrink-0" />
                 <div>
                   <h3 className="font-semibold tracking-tight uppercase text-sm text-ink">Email</h3>
                   <p className="font-mono text-sm">hello@likaslens.ph</p>
@@ -142,10 +148,20 @@ export default function ContactPage() {
                   </div>
                   <button 
                     type="submit"
-                    className="w-full bg-accent text-white rounded-lg px-6 py-4 font-semibold tracking-tight text-lg flex items-center justify-center gap-2"
+                    disabled={submitting}
+                    className="w-full bg-accent text-white rounded-lg px-6 py-4 font-semibold tracking-tight text-lg flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
                   >
-                    <PaperPlaneRight className="w-5 h-5" />
-                    Send Message
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-5 h-5" />
+                        Send Message
+                      </>
+                    )}
                   </button>
                 </motion.form>
               ) : (
@@ -155,7 +171,7 @@ export default function ContactPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="h-full flex flex-col items-center justify-center text-center py-12"
                 >
-                  <CheckCircle className="w-16 h-16 text-green mb-6" weight="fill" />
+                  <CheckCircle className="w-16 h-16 text-green mb-6 fill-current" />
                   <h2 className="font-semibold tracking-tight text-3xl text-ink mb-2">Received!</h2>
                   <p className="text-ink/70 font-semibold">
                     Thanks for reaching out, {formData.name.split(' ')[0]}. We&rsquo;ll get back to you shortly.

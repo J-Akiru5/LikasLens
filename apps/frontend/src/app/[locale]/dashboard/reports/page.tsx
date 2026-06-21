@@ -6,7 +6,7 @@ import type { Ticket, DashboardStats } from "@likaslens/shared";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { AppHeader } from "@/components/layout/header";
-import { ChartBar, TrendUp, Download } from "@phosphor-icons/react";
+import { BarChart3, TrendingUp, Download } from "lucide-react";
 import { ToastContainer } from "@/components/ui/toast";
 
 export default function ReportsPage() {
@@ -109,14 +109,14 @@ export default function ReportsPage() {
                 }}
                 className="flex items-center gap-2 px-5 py-2.5 text-sm text-ink/50 hover:text-ink border border-ink/10 transition-colors"
               >
-                <Download className="w-4 h-4" weight="bold" /> Export Data
+                <Download className="w-4 h-4" /> Export Data
               </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
               <section className="space-y-6">
                 <h2 className="font-semibold tracking-tight text-2xl md:text-3xl text-ink flex items-center gap-2">
-                  <ChartBar className="w-5 h-5 text-muted" />
+                  <BarChart3 className="w-5 h-5 text-muted" />
                   Incident Types
                 </h2>
                 <div className="space-y-5">
@@ -139,7 +139,7 @@ export default function ReportsPage() {
 
               <section className="space-y-6">
                 <h2 className="font-semibold tracking-tight text-2xl md:text-3xl text-ink flex items-center gap-2">
-                  <TrendUp className="w-5 h-5 text-muted" />
+                  <TrendingUp className="w-5 h-5 text-muted" />
                   Status Breakdown
                 </h2>
                 <div className="space-y-5">

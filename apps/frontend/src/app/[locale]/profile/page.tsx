@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { ArrowLeft, User, Envelope, CalendarBlank, Gear, Lock, Sparkle, CaretDown, X, Star, CheckCircle, Shield, SealCheck, Medal } from "@phosphor-icons/react";
+import { User, Calendar, Settings, Lock, Sparkles, X, Star, CheckCircle, Shield, BadgeCheck, Medal } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
@@ -20,10 +20,10 @@ type TierFilter = "all" | AchievementTier;
 type SortKey = "default" | "progress" | "recent" | "tier";
 
 const tierIcons: Record<string, React.ReactNode> = {
-  basic: <SealCheck className="w-4 h-4" weight="fill" />,
-  verified: <Shield className="w-4 h-4" weight="fill" />,
-  advanced: <Star className="w-4 h-4" weight="fill" />,
-  authority: <Medal className="w-4 h-4" weight="fill" />,
+  basic: <BadgeCheck className="w-4 h-4 fill-current" />,
+  verified: <Shield className="w-4 h-4 fill-current" />,
+  advanced: <Star className="w-4 h-4 fill-current" />,
+  authority: <Medal className="w-4 h-4 fill-current" />,
 };
 
 const tierOrder: Record<string, number> = {
@@ -210,7 +210,7 @@ function ProfilePageContent() {
               href="/dashboard/profile"
               className="font-mono text-xs text-ink/40 hover:text-ink transition-colors flex items-center gap-1.5 pb-3"
             >
-              <Gear className="w-3.5 h-3.5" /> Edit
+              <Settings className="w-3.5 h-3.5" /> Edit
             </Link>
           </div>
         </div>
@@ -233,7 +233,7 @@ function ProfilePageContent() {
                   )}
                   {userCreated && (
                     <p className="font-mono text-xs text-ink/30 mt-2 flex items-center gap-1.5">
-                      <CalendarBlank className="w-3 h-3" />
+                      <Calendar className="w-3 h-3" />
                       Joined {userCreated}
                     </p>
                   )}
@@ -369,7 +369,7 @@ function ProfilePageContent() {
                     }`}
                   >
                     {f === "all" && t("all")}
-                    {f === "unlocked" && <span className="flex items-center gap-1"><Sparkle className="w-3 h-3" weight="fill" /> {t("unlocked")}</span>}
+                    {f === "unlocked" && <span className="flex items-center gap-1"><Sparkles className="w-3 h-3 fill-current" /> {t("unlocked")}</span>}
                     {f === "locked" && <span className="flex items-center gap-1"><Lock className="w-3 h-3" /> {t("locked")}</span>}
                   </button>
                 ))}
@@ -489,7 +489,7 @@ function ProfilePageContent() {
                       <div>
                         <div className="font-mono text-[10px] text-ink/40 uppercase tracking-wide mb-1">{t("detailDate")}</div>
                         <div className="flex items-center gap-2 text-green">
-                          <CheckCircle className="w-4 h-4" weight="fill" />
+                          <CheckCircle className="w-4 h-4 fill-current" />
                           <span className="font-mono text-xs uppercase tracking-wide">
                             {new Date(selectedAchievement.unlocked_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
                           </span>
@@ -500,7 +500,7 @@ function ProfilePageContent() {
                     {selectedAchievement.unlocked && (
                       <div className="text-center pt-2 border-t border-ink/10">
                         <span className="inline-flex items-center gap-1 text-xs uppercase tracking-wide text-green">
-                          <CheckCircle className="w-3 h-3" weight="fill" /> {t("unlocked")}
+                          <CheckCircle className="w-3 h-3 fill-current" /> {t("unlocked")}
                         </span>
                       </div>
                     )}

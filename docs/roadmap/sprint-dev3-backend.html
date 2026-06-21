@@ -1,0 +1,1025 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="civic">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens Sprint — Developer 3: Backend, Infrastructure & Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #1b4332;
+  --accent-bright: #2ee6c8;
+  --amber: #b8860b;
+  --page: #f5f5f0;
+  --ink: #1a1d1a;
+  --panel: #eeeee8;
+  --border: rgba(26, 29, 26, 0.08);
+  --muted: rgba(26, 29, 26, 0.5);
+  --dev-accent: #388e3c;
+  --secondary: #5a7d6a;
+  --green: #2d6a4f;
+  --red: #b23b3b;
+  --hero-bg: #0d1a12;
+  --hero-ink: #f0ede8;
+  --hero-muted: rgba(240, 237, 232, 0.5);
+  --hero-border: rgba(240, 237, 232, 0.08);
+  --hero-panel: rgba(255, 255, 255, 0.04);
+  --shadow-color: #1B4332;
+}
+[data-theme="ghost"] {
+  --secondary: #e8ad55;
+            --green: #2ee6c8;
+            --red: #e85a5a;
+            --hero-bg: #06101e;
+            --hero-ink: #e8e0d4;
+            --hero-muted: rgba(232, 224, 212, 0.45);
+            --hero-border: rgba(46, 230, 200, 0.08);
+            --hero-panel: rgba(46, 230, 200, 0.03);
+            --accent: #2ee6c8;
+  --accent-bright: #2ee6c8;
+  --amber: #e8ad55;
+  --page: #0c1628;
+  --ink: #e8e0d4;
+  --panel: rgba(12, 22, 40, 0.92);
+  --border: rgba(232, 224, 212, 0.06);
+  --muted: rgba(232, 224, 212, 0.4);
+  --shadow-color: #2DE1C2;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  background: var(--page);
+  color: var(--ink);
+  line-height: 1.6;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+code, pre, .font-data { font-family: 'JetBrains Mono', monospace; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+
+.theme-toggle {
+  position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--panel); border: 1px solid var(--border);
+  box-shadow: 4px 4px 0px rgba(27, 67, 50, 0.15);
+  padding: 0.5rem 1rem; cursor: pointer;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif; font-weight: 700;
+  font-size: 0.75rem; text-transform: uppercase;
+  color: var(--ink); transition: all 0.3s ease;
+}
+.theme-toggle:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px rgba(27, 67, 50, 0.15); }
+.theme-toggle .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--amber); transition: background 0.3s ease;
+}
+[data-theme="ghost"] .theme-toggle .dot { background: var(--accent-bright); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.hero {
+  background: var(--hero-bg);
+  color: var(--hero-ink);
+  padding: 3rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.hero .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+.hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+.hero .accent-line { color: var(--dev-accent); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;
+}
+.hero-meta .meta-chip {
+  background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
+  padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.brutal-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 8px 8px 0px rgba(27, 67, 50, 0.15);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.2s ease;
+}
+.brutal-panel:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0px rgba(27, 67, 50, 0.15); }
+
+.section-header {
+  font-size: 1.5rem;
+  color: var(--accent);
+  margin: 2.5rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 4px solid var(--dev-accent);
+  display: inline-block;
+}
+[data-theme="ghost"] .section-header { color: var(--accent-bright); }
+
+.day-section { margin: 2rem 0; }
+.day-header {
+  background: var(--dev-accent);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 900;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.day-header .day-num {
+  background: rgba(255,255,255,0.2);
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.task-card { margin-bottom: 2rem; }
+.task-title {
+  font-size: 1.1rem; font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+.task-title .task-id {
+  background: var(--dev-accent); color: #fff;
+  padding: 0.15rem 0.5rem; font-size: 0.7rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+.task-problem {
+  background: rgba(56, 142, 60, 0.08);
+  border-left: 4px solid var(--dev-accent);
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+[data-theme="ghost"] .task-problem { background: rgba(46, 230, 200, 0.08); }
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+}
+.badge-time { background: var(--amber); color: var(--ink); }
+.badge-high { background: #d32f2f; color: #fff; border-color: #d32f2f; }
+.badge-medium { background: var(--amber); color: var(--ink); }
+.badge-low { background: #4caf50; color: #fff; border-color: #4caf50; }
+.badge-critical { background: #b71c1c; color: #fff; border-color: #b71c1c; }
+
+.code-block {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border: 1px solid var(--border);
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 0.75rem 0;
+}
+.code-block .comment { color: #6a9955; }
+.code-block .keyword { color: #c586c0; }
+.code-block .string { color: #ce9178; }
+.code-block .cmd { color: #dcdcaa; }
+.code-block .prop { color: #9cdcfe; }
+
+.check-list { list-style: none; padding: 0; margin: 0.75rem 0; }
+.check-list li {
+  padding: 0.35rem 0 0.35rem 2rem;
+  position: relative;
+  font-size: 0.9rem;
+}
+.check-list li {
+  padding: 0.35rem 0 0.35rem 0;
+  position: relative;
+  font-size: 0.9rem;
+}
+.check-list li::before {
+  content: none;
+}
+
+.file-list { list-style: none; padding: 0; margin: 0.5rem 0; }
+.file-list li {
+  padding: 0.25rem 0 0.25rem 1.5rem;
+  position: relative;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.file-list li::before {
+  content: '📄';
+  position: absolute; left: 0; top: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.dep-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.dep-table th {
+  background: var(--hero-bg);
+  color: var(--hero-ink);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+}
+.dep-table td {
+  padding: 0.6rem 0.75rem;
+  border: 2px solid var(--border);
+  vertical-align: top;
+}
+.dep-table tr:nth-child(even) { background: rgba(0,0,0,0.03); }
+[data-theme="ghost"] .dep-table tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  margin: 0.75rem 0;
+}
+.data-table th {
+  background: var(--dev-accent);
+  color: #fff;
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+}
+.data-table td {
+  padding: 0.5rem 0.6rem;
+  border: 2px solid var(--border);
+  vertical-align: top;
+}
+.data-table tr:nth-child(even) { background: rgba(0,0,0,0.03); }
+[data-theme="ghost"] .data-table tr:nth-child(even) { background: rgba(255,255,255,0.03); }
+
+.risk-card {
+  border-left: 6px solid #d32f2f;
+  background: rgba(211, 47, 47, 0.05);
+}
+[data-theme="ghost"] .risk-card { background: rgba(211, 47, 47, 0.1); }
+.risk-card .risk-title {
+  font-weight: 700; color: #d32f2f;
+  font-size: 0.9rem; margin-bottom: 0.25rem;
+}
+.risk-card .risk-mitigation { font-size: 0.85rem; color: var(--muted); }
+
+.dod-section .dod-item {
+  padding: 0.4rem 0 0.4rem 0;
+  position: relative;
+  font-size: 0.9rem;
+}
+.dod-section .dod-item::before {
+  content: none;
+}
+
+.subsection-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--dev-accent);
+  margin: 1rem 0 0.5rem;
+  text-transform: uppercase;
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+.admin-grid .admin-card {
+  border: 2px solid var(--border);
+  padding: 0.75rem;
+}
+.admin-grid .admin-card strong {
+  font-size: 0.8rem;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.footer {
+  background: var(--hero-bg);
+  color: var(--hero-ink);
+  padding: 1.5rem 0;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  margin-top: 3rem;
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Interactive checkboxes */
+.task-check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--dev-accent);
+  background: transparent;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  position: relative;
+  flex-shrink: 0;
+}
+.task-check:checked {
+  background: var(--dev-accent);
+}
+.task-check:checked::after {
+  content: '\2713';
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.check-list li label,
+.dod-section .dod-item label {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+.check-list li label:hover,
+.dod-section .dod-item label:hover {
+  background: rgba(46, 230, 200, 0.06);
+}
+.task-check:checked + span,
+.task-check:checked ~ span {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Progress Bar */
+.progress-container {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: 8px 8px 0px rgba(27, 67, 50, 0.15);
+  padding: 1.25rem 1.5rem;
+  margin: 2rem 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.progress-title {
+  font-family: 'Geist', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 900;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.progress-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--dev-accent);
+}
+.progress-track {
+  height: 12px;
+  background: rgba(8, 28, 21, 0.1);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+[data-theme="ghost"] .progress-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+.progress-fill {
+  height: 100%;
+  background: var(--dev-accent);
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-detail {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .hero h1 { font-size: 1.75rem; }
+  .hero-meta { flex-direction: column; }
+  .brutal-panel { padding: 1rem; }
+  .dep-table, .data-table { font-size: 0.75rem; }
+  .dep-table th, .dep-table td, .data-table th, .data-table td { padding: 0.4rem; }
+  .day-header { font-size: 1rem; flex-direction: column; align-items: flex-start; }
+  .task-title { font-size: 1rem; }
+  .theme-toggle { top: 0.5rem; right: 0.5rem; padding: 0.35rem 0.75rem; font-size: 0.65rem; }
+  .container { padding: 0 1rem; }
+  .section-header { font-size: 1.2rem; }
+  .admin-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .hero { padding: 2rem 0; }
+  .hero h1 { font-size: 1.4rem; }
+  .code-block { font-size: 0.7rem; padding: 0.75rem; }
+}
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+  <span class="dot"></span>
+  <span id="theme-label">CIVIC</span>
+</button>
+
+<header class="hero">
+  <div class="container">
+    <div class="icon">⚡</div>
+    <h1>Developer 3 — Backend, Infrastructure & Data</h1>
+    <div class="accent-line">ASEAN AI Hackathon Sprint Plan</div>
+    <div class="hero-meta">
+      <span class="meta-chip">📅 June 5–8, 2026 (Thu–Sun)</span>
+      <span class="meta-chip">⏱ 26 Hours</span>
+      <span class="meta-chip">🎯 Fix Blockers · DB Seeding · Admin Portal · Production APIs</span>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="progress-container" id="progress-bar">
+    <div class="progress-header">
+      <span class="progress-title">Sprint Progress</span>
+      <span class="progress-pct" id="progress-pct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-detail">
+      <span id="progress-done">0</span> / <span id="progress-total">0</span> tasks completed
+    </div>
+  </div>
+
+  <!-- Dependencies -->
+  <h2 class="section-header">Dependencies on Other Developers</h2>
+  <div class="brutal-panel">
+    <table class="dep-table">
+      <thead>
+        <tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>New violation type codes</td><td>Dev 2 (AI)</td><td>Fri</td><td>Violation codes must match between Gremlin and DB</td></tr>
+        <tr><td>Demo script requirements</td><td>Dev 4 (Integration)</td><td>Fri</td><td>Know what demo scenarios need seeded data</td></tr>
+        <tr><td>APK build support</td><td>Dev 4 (Integration)</td><td>Sun</td><td>Backend CORS config for APK origin</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Day 1 -->
+  <section class="day-section">
+    <div class="day-header">
+      <span class="day-num">Day 1</span> Thursday, June 5
+    </div>
+
+    <div class="brutal-panel task-card">
+      <div class="task-title">
+        <span class="task-id">1.1</span> Fix Supabase Connection
+        <span class="badge badge-time">3h</span>
+        <span class="badge badge-critical">CRITICAL</span>
+      </div>
+      <div class="task-problem">
+        <strong>Problem:</strong> Supabase DNS may be unresolved or project paused.
+      </div>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Steps:</p>
+      <ol style="font-size:0.85rem;padding-left:1.5rem;color:var(--muted);margin:0.5rem 0;">
+        <li>Verify Supabase project status at <code>app.supabase.com</code></li>
+        <li>If project paused → unpause</li>
+        <li>If DNS fails → check if project needs to be recreated</li>
+        <li>Update <code>apps/backend/.env</code> with correct credentials</li>
+        <li>Test connection: <code>php artisan migrate:status</code></li>
+        <li>Run any pending migrations: <code>php artisan migrate</code></li>
+      </ol>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Environment Config:</p>
+      <div class="code-block">
+<span class="prop">DB_CONNECTION</span>=pgsql
+<span class="prop">DB_HOST</span>=db.&lt;project-ref&gt;.supabase.co
+<span class="prop">DB_PORT</span>=5432
+<span class="prop">DB_DATABASE</span>=postgres
+<span class="prop">DB_USERNAME</span>=postgres
+<span class="prop">DB_PASSWORD</span>=&lt;password&gt;
+      </div>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-1-1"> <span><code>php artisan migrate:status</code> shows all migrations</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-1-2"> <span><code>php artisan db:seed</code> runs without errors</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-1-3"> <span><code>/api/health</code> returns 200</span></label></li>
+      </ul>
+    </div>
+
+    <div class="brutal-panel task-card">
+      <div class="task-title">
+        <span class="task-id">1.2</span> Fix Azure Container Apps — Switch Registry from ACR to ghcr.io
+        <span class="badge badge-time">3h</span>
+        <span class="badge badge-critical">CRITICAL</span>
+      </div>
+      <div class="task-problem">
+        <strong>Problem:</strong> The Azure Container Registry (<code>likaslensregistry</code>) was deleted due to cost. Both Container Apps (backend + AI service) have <code>ImagePullBackOff</code> errors — they can't pull images from a registry that no longer exists.
+      </div>
+      <p style="font-size:0.85rem;margin:0.75rem 0;"><strong>Solution:</strong> Switch CI/CD to push images to <strong>GitHub Container Registry (ghcr.io)</strong>. Since the LikasLens repo is public, ghcr.io is completely free — no ACR needed.</p>
+
+      <div class="subsection-title">Step 1: Update Backend GitHub Actions Workflow</div>
+      <p style="font-size:0.85rem;margin:0.5rem 0;"><strong>File:</strong> <code>.github/workflows/likaslens-backend-AutoDeployTrigger-*.yml</code></p>
+      <table class="data-table">
+        <thead><tr><th>Setting</th><th>Current (broken)</th><th>New</th></tr></thead>
+        <tbody>
+          <tr><td><code>permissions</code></td><td><code>contents: read</code></td><td>Add <code>packages: write</code></td></tr>
+          <tr><td><code>registryUrl</code></td><td><code>likaslensregistry.azurecr.io</code></td><td><code>ghcr.io</code></td></tr>
+          <tr><td><code>registryUsername</code></td><td><code>${{ secrets.LIKASLENSBACKEND_REGISTRY_USERNAME }}</code></td><td><code>${{ github.actor }}</code></td></tr>
+          <tr><td><code>registryPassword</code></td><td><code>${{ secrets.LIKASLENSBACKEND_REGISTRY_PASSWORD }}</code></td><td><code>${{ secrets.GITHUB_TOKEN }}</code></td></tr>
+          <tr><td><code>imageToBuild</code></td><td><code>likaslensregistry.azurecr.io/likaslens-backend:${{ github.sha }}</code></td><td><code>ghcr.io/${{ github.repository }}/likaslens-backend:${{ github.sha }}</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="subsection-title">Step 2: Update AI Service GitHub Actions Workflow</div>
+      <p style="font-size:0.85rem;margin:0.5rem 0;"><strong>File:</strong> <code>.github/workflows/likaslens-ai-service-AutoDeployTrigger-*.yml</code></p>
+      <p style="font-size:0.85rem;color:var(--muted);">Same registry changes as Step 1, but for the AI service image name.</p>
+
+      <div class="subsection-title">Step 3: Push Changes to <code>main</code></div>
+      <p style="font-size:0.85rem;color:var(--muted);">Merge the updated workflow files to <code>main</code>. The pipeline will build the Docker image and push it to <code>ghcr.io</code>, then deploy to the Container App.</p>
+
+      <div class="subsection-title">Step 4: Set Backend Container App Environment Variables</div>
+      <p style="font-size:0.85rem;margin:0.5rem 0;">Run in Azure Cloud Shell after the first successful deploy:</p>
+      <div class="code-block">
+<span class="cmd">az containerapp update</span> \
+  <span class="prop">--name</span> likaslens-backend \
+  <span class="prop">--resource-group</span> likaslens \
+  <span class="prop">--set-env-vars</span> \
+    <span class="prop">APP_ENV</span>=production \
+    <span class="prop">APP_DEBUG</span>=false \
+    <span class="prop">APP_KEY</span>=<span class="string">"base64:isMyFTXZYcT+KplXlw37lFSrpd8k95X3lzIS3G2nJiI="</span> \
+    <span class="prop">DB_CONNECTION</span>=pgsql \
+    <span class="prop">DB_HOST</span>=<span class="string">"db.sfklmmtimelotqvrldni.supabase.co"</span> \
+    <span class="prop">DB_PORT</span>=5432 \
+    <span class="prop">DB_DATABASE</span>=postgres \
+    <span class="prop">DB_USERNAME</span>=<span class="string">"postgres.sfklmmtimelotqvrldni"</span> \
+    <span class="prop">DB_PASSWORD</span>=<span class="string">"RZCpSUDmyRJ1uKVH"</span> \
+    <span class="prop">LOG_CHANNEL</span>=stderr \
+    <span class="prop">LOG_LEVEL</span>=warning \
+    <span class="prop">CACHE_STORE</span>=file \
+    <span class="prop">SESSION_DRIVER</span>=file \
+    <span class="prop">AI_SERVICE_URL</span>=<span class="string">"http://likaslens-ai-service:8001"</span>
+      </div>
+
+      <div class="subsection-title">Step 5: Set AI Service Container App Environment Variables</div>
+      <div class="code-block">
+<span class="cmd">az containerapp update</span> \
+  <span class="prop">--name</span> likaslens-ai-service \
+  <span class="prop">--resource-group</span> likaslens \
+  <span class="prop">--set-env-vars</span> \
+    <span class="prop">AI_SERVICE_PORT</span>=8001 \
+    <span class="prop">GOOGLE_API_KEY</span>=<span class="string">"&lt;GOOGLE_API_KEY&gt;"</span> \
+    <span class="prop">COSMOS_GREMLIN_ENDPOINT</span>=<span class="string">"wss://&lt;account&gt;.gremlin.cosmos.azure.com:443/"</span> \
+    <span class="prop">COSMOS_GREMLIN_KEY</span>=<span class="string">"&lt;COSMOS_KEY&gt;"</span> \
+    <span class="prop">COSMOS_GREMLIN_DATABASE</span>=likaslens \
+    <span class="prop">COSMOS_GREMLIN_GRAPH</span>=routing_graph \
+    <span class="prop">COSMOS_GREMLIN_PARTITION_KEY</span>=likaslens-routing-seed \
+    <span class="prop">ENVIRONMENT</span>=production
+      </div>
+
+      <div class="subsection-title">Step 6: Verify</div>
+      <div class="code-block">
+<span class="comment"># Check revision status</span>
+<span class="cmd">az containerapp revision list</span> \
+  <span class="prop">--name</span> likaslens-backend \
+  <span class="prop">--resource-group</span> likaslens \
+  <span class="prop">--output</span> table
+
+<span class="comment"># Get the backend FQDN</span>
+<span class="cmd">az containerapp show</span> \
+  <span class="prop">--name</span> likaslens-backend \
+  <span class="prop">--resource-group</span> likaslens \
+  <span class="prop">--query</span> <span class="string">"properties.configuration.ingress.fqdn"</span> \
+  <span class="prop">--output</span> tsv
+
+<span class="comment"># Health check</span>
+<span class="cmd">curl</span> https://&lt;fQdn&gt;/api/health
+<span class="cmd">curl</span> https://&lt;fQdn&gt;/api/tickets
+      </div>
+
+      <div class="subsection-title">Step 7: Clean Up Old ACR Secrets (Optional)</div>
+      <p style="font-size:0.85rem;color:var(--muted);">Remove obsolete secrets from GitHub repo settings: <code>LIKASLENSBACKEND_REGISTRY_USERNAME</code>, <code>LIKASLENSBACKEND_REGISTRY_PASSWORD</code>, <code>LIKASLENSAISERVICE_REGISTRY_USERNAME</code>, <code>LIKASLENSAISERVICE_REGISTRY_PASSWORD</code></p>
+
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-2-1"> <span>Backend workflow pushes image to ghcr.io successfully</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-2-2"> <span>AI service workflow pushes image to ghcr.io successfully</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-2-3"> <span>Backend Container App shows <code>Running</code> (not <code>ImagePullBackOff</code>)</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-2-4"> <span>AI service Container App shows <code>Running</code></span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-2-5"> <span>Backend returns 200 on <code>/api/health</code></span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-2-6"> <span>Backend can query Supabase (test <code>/api/tickets</code>)</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-2-7"> <span>Backend can reach AI service internally</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-1-2-8"> <span>No 500 errors on any endpoint</span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Day 2 -->
+  <section class="day-section">
+    <div class="day-header">
+      <span class="day-num">Day 2</span> Friday, June 6
+    </div>
+
+    <div class="brutal-panel task-card">
+      <div class="task-title">
+        <span class="task-id">2.1</span> Add New Violation Types Migration + Seeder
+        <span class="badge badge-time">3h</span>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <p style="font-size:0.85rem;margin:0.5rem 0;"><strong>New migration:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;">database/migrations/2026_06_05_000001_add_asean_violation_types.php</code></p>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">New Violation Types to add:</p>
+      <table class="data-table">
+        <thead><tr><th>Code</th><th>Name</th><th>Linked Law</th><th>Default Penalty</th></tr></thead>
+        <tbody>
+          <tr><td><code>ILLEGAL-LOGGING</code></td><td>Illegal Logging / Deforestation</td><td>PD-705</td><td>PHP 50K-500K + 6-12 yrs</td></tr>
+          <tr><td><code>WILDLIFE-TRAFFICKING</code></td><td>Wildlife Trafficking</td><td>RA-9147</td><td>PHP 100K-1M + 4-6 yrs</td></tr>
+          <tr><td><code>MARINE-POLLUTION</code></td><td>Marine Pollution</td><td>PD-979</td><td>PHP 50K-200K + 6-8 yrs</td></tr>
+          <tr><td><code>OPEN-BURNING</code></td><td>Open Burning</td><td>RA-8749</td><td>PHP 10K-100K + 6 mos-6 yrs</td></tr>
+          <tr><td><code>MANGROVE-DESTRUCTION</code></td><td>Mangrove Clearing</td><td>RA-7611</td><td>PHP 50K-500K + 4-8 yrs</td></tr>
+          <tr><td><code>CORAL-REEF-DAMAGE</code></td><td>Coral Reef Destruction</td><td>RA-9147</td><td>PHP 100K-1M + 4-6 yrs</td></tr>
+          <tr><td><code>PROTECTED-AREA-INTRUSION</code></td><td>Protected Area Violation</td><td>RA-7586</td><td>PHP 20K-200K + 1-4 yrs</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.85rem;margin:0.5rem 0;"><strong>Update seeder:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;">database/seeders/ViolationTypeSeeder.php</code></p>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-1-1"> <span>Migration runs successfully</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-1-2"> <span>11 total violation types in database (4 existing + 7 new)</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-1-3"> <span>Each violation type linked to correct <code>environmental_laws_ph</code> record</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-1-4"> <span>Default penalties populated</span></label></li>
+      </ul>
+    </div>
+
+    <div class="brutal-panel task-card">
+      <div class="task-title">
+        <span class="task-id">2.2</span> Seed Demo Data
+        <span class="badge badge-time">5h</span>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <p style="font-size:0.85rem;margin:0.5rem 0;"><strong>Create or update:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;">database/seeders/DemoDataSeeder.php</code></p>
+
+      <div class="admin-grid">
+        <div class="admin-card">
+          <strong>Users (8)</strong>
+          <span style="font-size:0.75rem;color:var(--muted);">Maria Santos (citizen) · Juan dela Cruz (citizen) · Ana Reyes (ghost) · Carlo Mendoza (analyst) · Admin User (super_admin) + 3 more</span>
+        </div>
+        <div class="admin-card">
+          <strong>Tickets (15-20)</strong>
+          <span style="font-size:0.75rem;color:var(--muted);">Locations: Aklan, Antique, Capiz, Guimaras, Iloilo, Negros Occidental · Types: dumping, emission, discharge, logging, wildlife, burning, marine, mangrove</span>
+        </div>
+        <div class="admin-card">
+          <strong>Achievements</strong>
+          <span style="font-size:0.75rem;color:var(--muted);">First Report · Hawk Eye · Water Guardian · Pollution Buster · Sharp Shooter · Truth Seeker · Environmental Guardian</span>
+        </div>
+        <div class="admin-card">
+          <strong>Eco-Credit Wallet</strong>
+          <span style="font-size:0.75rem;color:var(--muted);">Maria: 2,500 credits (5K lifetime) · Juan: 150 credits · CreditPool: "San Miguel ESG Demo Pool" 1M credits</span>
+        </div>
+        <div class="admin-card">
+          <strong>NGOs (5)</strong>
+          <span style="font-size:0.75rem;color:var(--muted);">Green Dingle Initiative · Bantay Kalikasan · Coastal Guardians PH · Forest Watch Negros · Panay Eco Warriors</span>
+        </div>
+        <div class="admin-card">
+          <strong>Ticket Assignments (8)</strong>
+          <span style="font-size:0.75rem;color:var(--muted);">Link resolved/investigating tickets to NGOs</span>
+        </div>
+      </div>
+
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-2-1"> <span>Seeder runs without errors</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-2-2"> <span>8 users created with correct roles</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-2-3"> <span>15-20 tickets with GPS coordinates in Western Visayas</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-2-4"> <span>Achievements unlocked for demo user</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-2-5"> <span>Eco-credit wallets populated</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-2-6"> <span>5 NGOs with ticket assignments</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-2-2-7"> <span>Leaderboard shows ranked users</span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Day 3 -->
+  <section class="day-section">
+    <div class="day-header">
+      <span class="day-num">Day 3</span> Saturday, June 7
+    </div>
+
+    <div class="brutal-panel task-card">
+      <div class="task-title">
+        <span class="task-id">3.1</span> Admin Portal Polish
+        <span class="badge badge-time">5h</span>
+        <span class="badge badge-medium">MEDIUM</span>
+      </div>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.5rem 0 0.5rem;">Ensure all admin CRUD operations work:</p>
+
+      <div class="subsection-title">NGO Management — <code style="font-size:0.75rem;">/api/admin/ngos</code></div>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-1"> <span>List all NGOs with search/filter</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-2"> <span>Create new NGO with all fields</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-3"> <span>Edit NGO details</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-4"> <span>Deactivate/activate NGO</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-5"> <span>Verify NGO (is_verified toggle)</span></label></li>
+      </ul>
+
+      <div class="subsection-title">Law Management — <code style="font-size:0.75rem;">/api/admin/laws</code></div>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-6"> <span>List all 16+ laws with search</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-7"> <span>View law detail with penalties</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-8"> <span>Create new law</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-9"> <span>Edit law</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-10"> <span>Delete law (soft delete or cascade)</span></label></li>
+      </ul>
+
+      <div class="subsection-title">User Management — <code style="font-size:0.75rem;">/api/admin/users</code></div>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-11"> <span>List all users with role filter</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-12"> <span>View user detail</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-13"> <span>Change user role (citizen/analyst/super_admin)</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-14"> <span>Deactivate user</span></label></li>
+      </ul>
+
+      <div class="subsection-title">Rewards Catalog — <code style="font-size:0.75rem;">/api/admin/rewards</code></div>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-15"> <span>List rewards</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-16"> <span>Create/edit reward</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-17"> <span>Link to partner stores</span></label></li>
+      </ul>
+
+      <div class="subsection-title">Audit Logs — <code style="font-size:0.75rem;">/api/admin/audit-logs</code></div>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-18"> <span>View all audit entries</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-19"> <span>Filter by actor, action, entity</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-20"> <span>Detail view with old/new values</span></label></li>
+      </ul>
+
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-21"> <span>All admin endpoints return correct data</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-22"> <span>CRUD operations work for NGOs, Laws, Users, Rewards</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-1-23"> <span>Audit logs capture RBAC denials and role changes</span></label></li>
+      </ul>
+    </div>
+
+    <div class="brutal-panel task-card">
+      <div class="task-title">
+        <span class="task-id">3.2</span> Optimize Dashboard Queries
+        <span class="badge badge-time">3h</span>
+        <span class="badge badge-medium">MEDIUM</span>
+      </div>
+      <p style="font-size:0.85rem;margin:0.5rem 0;"><strong>File:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;">app/Http/Controllers/DashboardController.php</code></p>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Optimize:</p>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-2-1"> <span><code>/api/dashboard/stats</code> — use DB query builder instead of loading all tickets</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-2-2"> <span><code>/api/dashboard/feed</code> — limit to 20 items, eager load reporter</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-2-3"> <span><code>/api/leaderboard</code> — cache top 20 for 5 minutes</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-2-4"> <span>Add indexes if missing on <code>tickets.status</code>, <code>tickets.created_at</code></span></label></li>
+      </ul>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-2-5"> <span><code>/api/dashboard/stats</code> responds in &lt; 200ms</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-2-6"> <span><code>/api/leaderboard</code> responds in &lt; 100ms</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-3-2-7"> <span>No N+1 queries on dashboard feed</span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Day 4 -->
+  <section class="day-section">
+    <div class="day-header">
+      <span class="day-num">Day 4</span> Sunday, June 8
+    </div>
+
+    <div class="brutal-panel task-card">
+      <div class="task-title">
+        <span class="task-id">4.1</span> Backend Hardening
+        <span class="badge badge-time">3h</span>
+        <span class="badge badge-medium">MEDIUM</span>
+      </div>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-4-1-1"> <span>Add rate limiting to public endpoints (60/min for <code>/api/reports</code>, <code>/api/reports/triage</code>)</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-4-1-2"> <span>Verify CORS config allows frontend origin</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-4-1-3"> <span>Add CORS for APK origin if Dev 4 provides it</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-4-1-4"> <span>Ensure all error responses return proper JSON (not HTML)</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-4-1-5"> <span>Verify Sanctum token expiry settings</span></label></li>
+      </ul>
+    </div>
+
+    <div class="brutal-panel task-card">
+      <div class="task-title">
+        <span class="task-id">4.2</span> Production Verification
+        <span class="badge badge-time">1h</span>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.5rem 0 0.25rem;">Test all 40+ endpoints on deployed environment:</p>
+      <div class="code-block">
+<span class="comment"># Health</span>
+<span class="cmd">curl</span> https://&lt;backend&gt;/api/health
+
+<span class="comment"># Public</span>
+<span class="cmd">curl</span> https://&lt;backend&gt;/api/leaderboard
+<span class="cmd">curl</span> https://&lt;backend&gt;/api/achievements
+<span class="cmd">curl</span> https://&lt;backend&gt;/api/laws
+<span class="cmd">curl</span> https://&lt;backend&gt;/api/tickets
+
+<span class="comment"># Auth (requires token)</span>
+<span class="cmd">curl</span> -H <span class="string">"Authorization: Bearer &lt;token&gt;"</span> https://&lt;backend&gt;/api/user/profile
+<span class="cmd">curl</span> -H <span class="string">"Authorization: Bearer &lt;token&gt;"</span> https://&lt;backend&gt;/api/user/impact
+<span class="cmd">curl</span> -H <span class="string">"Authorization: Bearer &lt;token&gt;"</span> https://&lt;backend&gt;/api/dashboard/stats
+
+<span class="comment"># Admin (requires admin token)</span>
+<span class="cmd">curl</span> -H <span class="string">"Authorization: Bearer &lt;admin-token&gt;"</span> https://&lt;backend&gt;/api/admin/ngos
+<span class="cmd">curl</span> -H <span class="string">"Authorization: Bearer &lt;admin-token&gt;"</span> https://&lt;backend&gt;/api/admin/laws
+      </div>
+      <p style="font-size:0.85rem;font-weight:600;margin:0.75rem 0 0.25rem;">Acceptance Criteria:</p>
+      <ul class="check-list">
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-4-2-1"> <span>All public endpoints return 200</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-4-2-2"> <span>All authenticated endpoints return 200 with valid token</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-4-2-3"> <span>All admin endpoints return 200 with admin token</span></label></li>
+        <li><label><input type="checkbox" class="task-check" data-id="dev3-4-2-4"> <span>No 500 errors on any endpoint</span></label></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Risk Items -->
+  <h2 class="section-header">Risk Items</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;">
+    <div class="brutal-panel risk-card">
+      <div class="risk-title">Supabase project permanently lost</div>
+      <div class="risk-mitigation">Create new Supabase project, re-run all migrations</div>
+    </div>
+    <div class="brutal-panel risk-card">
+      <div class="risk-title">Azure Container App won't start</div>
+      <div class="risk-mitigation">Check logs with <code>az containerapp logs tail</code>; fix env vars</div>
+    </div>
+    <div class="brutal-panel risk-card" style="border-left-color:#4caf50;background:rgba(76,175,80,0.05);">
+      <div class="risk-title" style="color:#4caf50;">~~ACR deleted — ImagePullBackOff~~</div>
+      <div class="risk-mitigation"><strong>RESOLVED:</strong> Switched CI/CD to ghcr.io (free for public repos)</div>
+    </div>
+    <div class="brutal-panel risk-card">
+      <div class="risk-title">ghcr.io push fails</div>
+      <div class="risk-mitigation">Verify <code>packages: write</code> permission in workflow; check <code>GITHUB_TOKEN</code> scope</div>
+    </div>
+    <div class="brutal-panel risk-card">
+      <div class="risk-title">Container App can't pull from ghcr.io</div>
+      <div class="risk-mitigation">Ensure repo/package is public; for private repos, set image pull credentials on Container App</div>
+    </div>
+    <div class="brutal-panel risk-card">
+      <div class="risk-title">Seeder fails on foreign keys</div>
+      <div class="risk-mitigation">Ensure law seeder runs before violation type seeder</div>
+    </div>
+    <div class="brutal-panel risk-card">
+      <div class="risk-title">CORS blocks APK</div>
+      <div class="risk-mitigation">Add APK origin to <code>config/cors.php</code> allowed_origins</div>
+    </div>
+  </div>
+
+  <!-- Definition of Done -->
+  <h2 class="section-header">Definition of Done</h2>
+  <div class="brutal-panel dod-section">
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-1"> <span>Supabase connection working (local and production)</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-2"> <span>CI/CD pipelines pushing to ghcr.io (backend + AI service)</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-3"> <span>Azure backend deployed and healthy (no ImagePullBackOff)</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-4"> <span>Azure AI service deployed and healthy</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-5"> <span>Backend Container App env vars set (Supabase, APP_KEY, AI_SERVICE_URL)</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-6"> <span>AI service Container App env vars set (Cosmos Gremlin, Google API key)</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-7"> <span>All 16 PH laws seeded with violation types</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-8"> <span>Demo data seeded (users, tickets, achievements, NGOs)</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-9"> <span>All admin CRUD endpoints functional</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-10"> <span>All 40+ endpoints verified on production</span></label></div>
+    <div class="dod-item"><label><input type="checkbox" class="task-check" data-id="dev3-dod-11"> <span>No 500 errors on any endpoint</span></label></div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <div class="container">
+    LIKASLENS · DEVELOPER 3 · BACKEND, INFRASTRUCTURE & DATA · ASEAN AI HACKATHON 2026
+  </div>
+</footer>
+
+<script>
+(function() {
+  const STORAGE_KEY = 'likaslens-sprint-progress';
+
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch(e) {
+      return {};
+    }
+  }
+
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {
+      console.warn('Could not save progress to localStorage');
+    }
+  }
+
+  function updateProgress() {
+    const checks = document.querySelectorAll('.task-check');
+    const checked = document.querySelectorAll('.task-check:checked');
+    const total = checks.length;
+    const done = checked.length;
+    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-done').textContent = done;
+    document.getElementById('progress-total').textContent = total;
+
+    const fill = document.getElementById('progress-fill');
+    if (pct >= 100) {
+      fill.style.background = '#4caf50';
+    } else if (pct >= 50) {
+      fill.style.background = 'var(--dev-accent)';
+    } else {
+      fill.style.background = 'var(--amber)';
+    }
+  }
+
+  function init() {
+    const state = loadState();
+    const checks = document.querySelectorAll('.task-check');
+
+    checks.forEach(function(cb) {
+      const id = cb.getAttribute('data-id');
+
+      if (state[id]) {
+        cb.checked = true;
+      }
+
+      cb.addEventListener('change', function() {
+        const currentState = loadState();
+        if (this.checked) {
+          currentState[id] = true;
+        } else {
+          delete currentState[id];
+        }
+        saveState(currentState);
+        updateProgress();
+      });
+    });
+
+    updateProgress();
+  }
+
+  window.toggleTheme = function() {
+    const html = document.documentElement;
+    const label = document.getElementById('theme-label');
+    if (html.getAttribute('data-theme') === 'ghost') {
+      html.setAttribute('data-theme', 'civic');
+      label.textContent = 'CIVIC';
+      localStorage.setItem('likaslens-theme', 'civic');
+    } else {
+      html.setAttribute('data-theme', 'ghost');
+      label.textContent = 'GHOST';
+      localStorage.setItem('likaslens-theme', 'ghost');
+    }
+  };
+
+  const savedTheme = localStorage.getItem('likaslens-theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const label = document.getElementById('theme-label');
+    if (label) label.textContent = savedTheme.toUpperCase();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

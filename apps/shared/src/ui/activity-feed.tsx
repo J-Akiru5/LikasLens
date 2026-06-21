@@ -1,6 +1,6 @@
 "use client";
 
-import { Warning, Info, MapPin } from "@phosphor-icons/react";
+import { AlertTriangle, Info, MapPin, AlertCircle } from "lucide-react";
 import { useState } from "react";
 
 interface FeedItem {
@@ -13,14 +13,14 @@ interface FeedItem {
 }
 
 const typeColor: Record<string, string> = {
-  Critical: "text-[#b23b3b]",
-  Warning: "text-[#b8860b]",
+  Critical: "text-red",
+  Warning: "text-amber",
   Info: "text-accent",
 };
 
 const typeDot: Record<string, string> = {
-  Critical: "bg-[#b23b3b]",
-  Warning: "bg-[#b8860b]",
+  Critical: "bg-red",
+  Warning: "bg-amber",
   Info: "bg-accent",
 };
 
@@ -63,9 +63,9 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
 
   if (error) {
     return (
-      <div className="rounded-xl border border-[#b23b3b]/20 bg-[#b23b3b]/5 p-6 text-center">
-        <WarningCircle weight="fill" className="mx-auto h-8 w-8 text-[#b23b3b] mb-2" />
-        <p className="text-sm text-[#b23b3b]">{error}</p>
+      <div className="rounded-xl border border-red/20 bg-red/5 p-6 text-center">
+        <AlertCircle className="mx-auto h-8 w-8 text-red mb-2 fill-red" />
+        <p className="text-sm text-red">{error}</p>
         <p className="text-xs text-muted mt-1">Try refreshing the page.</p>
       </div>
     );
@@ -74,7 +74,7 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
   if (!items || items.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border p-8 text-center">
-        <Info weight="light" className="mx-auto h-8 w-8 text-muted mb-2" />
+        <Info className="mx-auto h-8 w-8 text-muted mb-2" />
         <p className="text-sm text-muted">No activity yet</p>
       </div>
     );

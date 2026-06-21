@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { WifiSlash } from "@phosphor-icons/react";
+import { WifiOff } from "lucide-react";
 
 export function OnlineStatusBar() {
   const [isOnline, setIsOnline] = useState(
@@ -24,7 +24,7 @@ export function OnlineStatusBar() {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[100] bg-accent px-4 py-3 flex items-center justify-center gap-2 text-sm font-medium text-white shadow-lg">
-      <WifiSlash weight="bold" className="w-4 h-4" />
+      <WifiOff className="w-4 h-4" />
       You are offline. Reports will queue and sync when connection returns.
     </div>
   );

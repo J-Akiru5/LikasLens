@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "../utils";
-import { ArrowUpRight, ArrowDownRight, Clock, CheckCircle, WarningOctagon, Pulse } from "@phosphor-icons/react";
+import { ArrowUpRight, ArrowDownRight, Clock, CheckCircle, TriangleAlert, Activity } from "lucide-react";
 
 interface StatItem {
   label: string;
@@ -20,7 +20,7 @@ export function StatsCards({ stats, loading, error }: { stats?: StatItem[]; load
   const defaultStats: StatItem[] = [
     {
       label: "Active Incidents", value: "5", total: "/ 200", trend: "+12%", isPositive: false,
-      icon: WarningOctagon, color: "text-[#b8860b]", progress: 15, progressColor: "bg-[#b8860b]", description: "Current active cases",
+      icon: TriangleAlert, color: "text-amber", progress: 15, progressColor: "bg-amber", description: "Current active cases",
     },
     {
       label: "Resolved Today", value: "2", total: "/ 50", trend: "+5%", isPositive: true,
@@ -32,7 +32,7 @@ export function StatsCards({ stats, loading, error }: { stats?: StatItem[]; load
     },
     {
       label: "System Load", value: "15", total: "%", trend: "Stable", isPositive: true,
-      icon: Pulse, color: "text-secondary", progress: 15, progressColor: "bg-secondary", description: "Capacity utilization",
+      icon: Activity, color: "text-secondary", progress: 15, progressColor: "bg-secondary", description: "Capacity utilization",
     },
   ];
 
@@ -53,9 +53,9 @@ export function StatsCards({ stats, loading, error }: { stats?: StatItem[]; load
 
   if (error) {
     return (
-      <div className="rounded-xl border border-[#b23b3b]/20 bg-[#b23b3b]/5 p-6 text-center">
-        <WarningOctagon weight="fill" className="mx-auto h-8 w-8 text-[#b23b3b] mb-2" />
-        <p className="text-sm text-[#b23b3b]">{error}</p>
+      <div className="rounded-xl border border-red/20 bg-red/5 p-6 text-center">
+         <TriangleAlert className="mx-auto h-8 w-8 text-red mb-2 fill-red" />
+        <p className="text-sm text-red">{error}</p>
       </div>
     );
   }
@@ -65,7 +65,7 @@ export function StatsCards({ stats, loading, error }: { stats?: StatItem[]; load
   if (displayStats.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-border p-8 text-center">
-        <Pulse weight="light" className="mx-auto h-8 w-8 text-muted mb-2" />
+         <Activity className="mx-auto h-8 w-8 text-muted mb-2" />
         <p className="text-sm text-muted">No statistics available</p>
       </div>
     );
@@ -79,7 +79,7 @@ export function StatsCards({ stats, loading, error }: { stats?: StatItem[]; load
           <div key={idx} className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs text-muted uppercase tracking-wider">{stat.label}</span>
-              <Icon className={`w-5 h-5 ${stat.color}`} weight="bold" />
+              <Icon className={`w-5 h-5 ${stat.color}`} />
             </div>
             <div className="flex items-end gap-2">
               <span className="text-5xl md:text-6xl text-ink leading-none font-semibold tracking-tight">{stat.value}</span>
@@ -90,8 +90,8 @@ export function StatsCards({ stats, loading, error }: { stats?: StatItem[]; load
             </div>
             <div className="flex items-center justify-between">
               <span className="font-mono text-xs text-muted">{stat.description}</span>
-              <span className={`flex items-center gap-0.5 font-mono text-xs font-medium ${stat.isPositive ? "text-green" : "text-[#b8860b]"}`}>
-                {stat.isPositive ? <ArrowDownRight className="w-3.5 h-3.5" weight="bold" /> : <ArrowUpRight className="w-3.5 h-3.5" weight="bold" />}
+              <span className={`flex items-center gap-0.5 font-mono text-xs font-medium ${stat.isPositive ? "text-green" : "text-amber"}`}>
+                {stat.isPositive ? <ArrowDownRight className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
                 {stat.trend}
               </span>
             </div>

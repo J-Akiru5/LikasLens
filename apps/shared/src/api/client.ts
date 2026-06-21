@@ -44,18 +44,40 @@ export async function laravelFetch<T>(
 
   const url = baseUrl + (baseUrl.endsWith("/") && endpoint.startsWith("/") ? endpoint.slice(1) : endpoint);
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    credentials: "include",
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    throw new Error(body?.message || `API error: ${res.status}`);
+  // Chain caller's abort signal with our timeout controller
+  if (options.signal) {
+    if (options.signal.aborted) {
+      controller.abort();
+    } else {
+      options.signal.addEventListener("abort", () => controller.abort(), { once: true });
+    }
   }
 
-  return res.json();
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      credentials: "include",
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.message || `API error: ${res.status}`);
+    }
+
+    return res.json();
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("API request timed out");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export function laravelGet<T>(endpoint: string, signal?: AbortSignal) {

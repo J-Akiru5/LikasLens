@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, FloppyDisk, User, Globe } from "@phosphor-icons/react";
+import { Save, Globe } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
 import { BottomNav } from "@/components/layout/bottom-nav";
@@ -177,7 +177,7 @@ export default function ProfileSettingsPage() {
                   disabled={saving}
                   className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
                 >
-                  <FloppyDisk className="w-4 h-4" />
+                  <Save className="w-4 h-4" />
                   {saving ? "Saving..." : "Save Changes"}
                 </button>
               </div>

@@ -4,10 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import NextImage from "next/image";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { ArrowLeft, Camera, MapPin, Fingerprint, ArrowsClockwise, FileText } from "@phosphor-icons/react";
+import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
-import { useOfflineQueue } from "@/hooks/useOfflineQueue";
 import { ToastContainer, showToast } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
@@ -34,7 +33,7 @@ export default function ReportPage() {
   const [longitude, setLongitude] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGhostMode, setIsGhostMode] = useState(false);
-  const { isOnline, queueSize, enqueue } = useOfflineQueue();
+  const [isOnline, setIsOnline] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isTriaging, setIsTriaging] = useState(false);
   const [triageIndicators, setTriageIndicators] = useState<string[]>([]);
@@ -44,6 +43,10 @@ export default function ReportPage() {
   const [description, setDescription] = useState("");
   const [reportType, setReportType] = useState("");
   const [useMapPinning, setUseMapPinning] = useState(false);
+
+  const offlineQueueKey = "likaslens_offline_reports";
+  const offlineDbName = "likaslens-offline";
+  const offlineStoreName = "report-queue";
 
   const camera = useCamera("environment");
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -107,6 +110,109 @@ export default function ReportPage() {
     });
   };
 
+  const openOfflineDb = useCallback(
+    () =>
+      new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open(offlineDbName, 1);
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains(offlineStoreName)) {
+            db.createObjectStore(offlineStoreName, { keyPath: "id" });
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      }),
+    [offlineDbName, offlineStoreName]
+  );
+
+  const queueOfflineReport = async (payload: Record<string, unknown>) => {
+    const queuedPayload = { ...payload, queuedAt: new Date().toISOString() };
+    try {
+      const db = await openOfflineDb();
+      const tx = db.transaction(offlineStoreName, "readwrite");
+      const store = tx.objectStore(offlineStoreName);
+      store.put({ id: crypto.randomUUID(), payload: queuedPayload });
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+      return;
+    } catch {
+      const existing = localStorage.getItem(offlineQueueKey);
+      const queue = existing ? JSON.parse(existing) : [];
+      queue.push(queuedPayload);
+      localStorage.setItem(offlineQueueKey, JSON.stringify(queue));
+    }
+  };
+
+  const flushOfflineQueue = useCallback(async () => {
+    const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
+
+    try {
+      const db = await openOfflineDb();
+      const tx = db.transaction(offlineStoreName, "readonly");
+      const store = tx.objectStore(offlineStoreName);
+      const request = store.getAll();
+      const items = await new Promise<Array<{ id: string; payload: Record<string, unknown> }>>(
+        (resolve, reject) => {
+          request.onsuccess = () => resolve(request.result as Array<{ id: string; payload: Record<string, unknown> }>);
+          request.onerror = () => reject(request.error);
+        }
+      );
+      queued.push(...items);
+    } catch {
+      const existing = localStorage.getItem(offlineQueueKey);
+      const items = existing ? JSON.parse(existing) : [];
+      queued.push(...items.map((payload: Record<string, unknown>, idx: number) => ({ id: String(idx), payload })));
+    }
+
+    if (!queued.length) return;
+
+    const successfulIds: string[] = [];
+    for (const item of queued) {
+      try {
+        const response = await fetch(`${laravelUrl}/reports`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(item.payload),
+        });
+        if (response.ok) successfulIds.push(item.id);
+      } catch {
+        // keep queued
+      }
+    }
+
+    try {
+      const db = await openOfflineDb();
+      const tx = db.transaction(offlineStoreName, "readwrite");
+      const store = tx.objectStore(offlineStoreName);
+      successfulIds.forEach((id) => store.delete(id));
+      await new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch {
+      const existing = localStorage.getItem(offlineQueueKey);
+      const items = existing ? JSON.parse(existing) : [];
+      const remaining = items.filter((_: unknown, idx: number) => !successfulIds.includes(String(idx)));
+      localStorage.setItem(offlineQueueKey, JSON.stringify(remaining));
+    }
+  }, [openOfflineDb, offlineQueueKey, offlineStoreName]);
+
+  useEffect(() => {
+    const handleOnline = () => { setIsOnline(true); void flushOfflineQueue(); showToast("Connection restored. Syncing queued reports.", "success"); };
+    const handleOffline = () => { setIsOnline(false); showToast("Connection lost. Reports will queue until you are back online.", "error"); };
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    setIsOnline(navigator.onLine);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [flushOfflineQueue]);
+
   const capturePhoto = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -166,7 +272,7 @@ export default function ReportPage() {
     if (!isGhostMode && userId) payload.user_id = userId;
 
     if (!navigator.onLine) {
-      await enqueue(payload);
+      await queueOfflineReport(payload);
       showToast("You are offline. Report queued securely.", "info");
       setIsSubmitting(false);
       return;
@@ -195,7 +301,7 @@ export default function ReportPage() {
     const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
     try {
-      const cleanedImage = isGhostMode ? await stripExif(base64Image) : base64Image;
+      const cleanedImage = await stripExif(base64Image);
 
       if (!isGhostMode && navigator.onLine) {
         setIsTriaging(true);
@@ -295,7 +401,7 @@ export default function ReportPage() {
                     <p className="font-mono text-sm text-ink/40">No image captured yet</p>
                     <button type="button" onClick={() => camera.start()} disabled={camera.isLoading} className="px-5 py-2.5 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity inline-flex items-center gap-2 disabled:opacity-50 rounded-lg">
                       {camera.isLoading ? (
-                        <><ArrowsClockwise className="w-4 h-4 animate-spin" weight="bold" /> Opening Camera...</>
+                         <><RefreshCw className="w-4 h-4 animate-spin" /> Opening Camera...</>
                       ) : (
                         <><Camera className="w-4 h-4" /> Capture Photo</>
                       )}

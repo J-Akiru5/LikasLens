@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { TrendUp, Trophy, User } from "@phosphor-icons/react";
+import { TrendingUp, Trophy, User } from "lucide-react";
 
 type LeaderboardEntry = {
   id: string;
@@ -45,10 +45,35 @@ export default function ScoreboardPage() {
   const maxCredits = data ? Math.max(...data.map((u) => u.eco_credits ?? u.score), 1) : 1;
 
   const rankIcon = (rank: number) => {
-    if (rank === 1) return <Trophy className="w-4 h-4 text-ink/60" weight="fill" />;
-    if (rank === 2) return <Trophy className="w-4 h-4 text-ink/40" weight="fill" />;
-    if (rank === 3) return <Trophy className="w-4 h-4 text-ink/30" weight="fill" />;
+    if (rank === 1)
+      return (
+        <div className="flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-amber-400 fill-current" />
+          <span className="font-mono text-xs font-bold text-amber-400 uppercase">1st</span>
+        </div>
+      );
+    if (rank === 2)
+      return (
+        <div className="flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-gray-400 fill-current" />
+          <span className="font-mono text-xs font-bold text-gray-400 uppercase">2nd</span>
+        </div>
+      );
+    if (rank === 3)
+      return (
+        <div className="flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-amber-700 fill-current" />
+          <span className="font-mono text-xs font-bold text-amber-700 uppercase">3rd</span>
+        </div>
+      );
     return <span className="font-mono text-sm text-ink/30">#{rank}</span>;
+  };
+
+  const rankRowClass = (rank: number) => {
+    if (rank === 1) return "bg-amber-400/[0.06] border-amber-400/20 shadow-[0_0_16px_rgba(255,183,3,0.12)]";
+    if (rank === 2) return "bg-gray-400/[0.04] border-gray-400/15";
+    if (rank === 3) return "bg-amber-700/[0.04] border-amber-700/15";
+    return "border-ink/10";
   };
 
   return (
@@ -57,7 +82,7 @@ export default function ScoreboardPage() {
         <div className="space-y-3">
           <h1 className="font-semibold tracking-tight text-4xl sm:text-5xl text-ink">Contributor Rankings</h1>
           <p className="font-mono text-sm text-ink/50 flex items-center gap-2">
-            <TrendUp className="w-4 h-4" />
+             <TrendingUp className="w-4 h-4" />
             Top contributors ranked by environmental impact
           </p>
         </div>
@@ -93,12 +118,13 @@ export default function ScoreboardPage() {
                   <span className="text-right">Score</span>
                 </div>
                 {data.map((u, idx) => {
+                  const rank = idx + 1;
                   const credits = u.eco_credits ?? u.score;
                   const percent = Math.min((credits / maxCredits) * 100, 100);
                   return (
                     <div
                       key={u.id}
-                      className="grid grid-cols-[0.5fr_2fr_1fr_1fr] gap-4 py-3 border-b border-ink/10 last:border-0 items-center"
+                      className={`grid grid-cols-[0.5fr_2fr_1fr_1fr] gap-4 py-3 border-b border-ink/10 last:border-0 items-center rounded-lg px-2 -mx-2 transition-all ${rankRowClass(rank)}`}
                     >
                       <div className="flex items-center gap-2">
                         {rankIcon(idx + 1)}

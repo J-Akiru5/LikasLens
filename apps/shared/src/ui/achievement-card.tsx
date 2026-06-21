@@ -2,10 +2,10 @@
 
 import { cn } from "../utils";
 import type { Achievement, AchievementTier } from "../types/user";
-import { Lock, CheckCircle, SealCheck, Shield, Star, Medal } from "@phosphor-icons/react";
+import { Lock, CheckCircle, BadgeCheck, Shield, Star, Medal } from "lucide-react";
 
 const tierIcons: Record<AchievementTier, React.ReactNode> = {
-  basic: <SealCheck className="w-4 h-4" />,
+  basic: <BadgeCheck className="w-4 h-4" />,
   verified: <Shield className="w-4 h-4" />,
   advanced: <Star className="w-4 h-4" />,
   authority: <Medal className="w-4 h-4" />,
@@ -37,7 +37,7 @@ export function AchievementCard({ achievement, variant = "full", className }: Ac
           <p className="text-sm font-medium text-ink truncate">{name}</p>
         </div>
         {unlocked ? (
-          <CheckCircle weight="fill" className="w-5 h-5 text-green shrink-0" />
+          <CheckCircle className="w-5 h-5 text-green shrink-0" />
         ) : (
           <span className="font-mono text-sm text-muted shrink-0">{progress_value}/{threshold}</span>
         )}
@@ -60,7 +60,7 @@ export function AchievementCard({ achievement, variant = "full", className }: Ac
           <div className="shrink-0 text-right">
             {unlocked && unlocked_at ? (
               <div className="flex items-center gap-1.5 text-green">
-                <CheckCircle weight="fill" className="w-4 h-4" />
+                <CheckCircle className="w-4 h-4" />
                 <span className="font-mono text-xs">{new Date(unlocked_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
               </div>
             ) : (

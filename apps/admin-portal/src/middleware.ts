@@ -47,7 +47,11 @@ export async function middleware(request: NextRequest) {
 
   if (isPublic) {
     if (user && isLoginPage) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      const role = user.user_metadata?.role as string | undefined;
+      if (role === "analyst" || role === "super_admin") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+      // Citizen/ghost users stay on login page — no redirect loop
     }
     return supabaseResponse;
   }
@@ -60,7 +64,9 @@ export async function middleware(request: NextRequest) {
 
   const role = user.user_metadata?.role as string | undefined;
   if (!role || role === "citizen" || role === "ghost") {
-    return NextResponse.redirect(new URL("/login?error=access_denied", request.url));
+    // Don't redirect to /login (causes loop) — show access denied on a static page
+    const deniedUrl = new URL("/login?error=access_denied", request.url);
+    return NextResponse.redirect(deniedUrl);
   }
 
   const isAdminOnly = ADMIN_ONLY_ROUTES.some((r) => pathWithoutLocale.startsWith(r));
