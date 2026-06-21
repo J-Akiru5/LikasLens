@@ -37,6 +37,16 @@ const INCIDENT_TYPES = [
 
 type Step = "camera" | "preview" | "form";
 
+const getBrowserInstructions = (): string => {
+  if (typeof window === "undefined") return "";
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /ipad|iphone|ipod/.test(ua);
+  if (isIOS) {
+    return "Camera access is blocked. Tap the aA icon in your address bar, select Website Settings, and allow Camera.";
+  }
+  return "Camera access is blocked. Tap the lock icon 🔒 in your address bar, go to Permissions, and allow Camera access.";
+};
+
 export default function ReportPage() {
   const router = useRouter();
   const params = useParams();
@@ -67,7 +77,10 @@ export default function ReportPage() {
     setTranscript,
   } = useVoiceInput();
 
+  const [cameraError, setCameraError] = useState<"NOT_ALLOWED" | "NOT_FOUND" | "UNKNOWN" | null>(null);
+
   const startCamera = useCallback(async () => {
+    setCameraError(null);
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
@@ -85,9 +98,61 @@ export default function ReportPage() {
         setStream(fallbackStream);
       } catch (fallbackErr) {
         console.error("Camera access denied:", fallbackErr);
+        const errName = (fallbackErr as Error)?.name;
+        if (errName === "NotAllowedError" || errName === "PermissionDeniedError") {
+          setCameraError("NOT_ALLOWED");
+        } else if (errName === "NotFoundError" || errName === "DevicesNotFoundError") {
+          setCameraError("NOT_FOUND");
+        } else {
+          setCameraError("UNKNOWN");
+        }
         showToast("Camera access denied or unavailable", "error");
       }
     }
+  }, []);
+
+  // Proactively check camera permission state on mount
+  useEffect(() => {
+    if (typeof window === "undefined" || !navigator.permissions?.query) return;
+
+    let active = true;
+    let cleanupListener: (() => void) | undefined;
+
+    const checkPermission = async () => {
+      try {
+        const result = await navigator.permissions.query({
+          name: "camera" as PermissionName,
+        });
+        if (!active) return;
+        if (result.state === "denied") {
+          setCameraError("NOT_ALLOWED");
+        }
+
+        const handleChange = () => {
+          if (!active) return;
+          if (result.state === "denied") {
+            setCameraError("NOT_ALLOWED");
+          } else if (result.state === "granted" || result.state === "prompt") {
+            setCameraError((prev) => (prev === "NOT_ALLOWED" ? null : prev));
+          }
+        };
+
+        result.addEventListener("change", handleChange);
+        cleanupListener = () => {
+          result.removeEventListener("change", handleChange);
+        };
+      } catch (err) {
+        console.warn("Permissions API check for camera failed:", err);
+      }
+    };
+
+    void checkPermission();
+    return () => {
+      active = false;
+      if (cleanupListener) {
+        cleanupListener();
+      }
+    };
   }, []);
 
   const stopCamera = useCallback(() => {
@@ -97,6 +162,20 @@ export default function ReportPage() {
     }
     setStream(null);
   }, []);
+
+  const handleFileCaptureMobile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      setPhoto(dataUrl);
+      setStep("preview");
+      stopCamera();
+    };
+    reader.readAsDataURL(file);
+  }, [stopCamera]);
 
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -252,15 +331,41 @@ export default function ReportPage() {
 
         {/* Video or image */}
         {step === "camera" ? (
-          <>
-            <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
-            <canvas ref={canvasRef} className="hidden" />
-            {/* Rule-of-thirds guide */}
-            <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{
-              backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.14) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.14) 1px, transparent 1px)",
-              backgroundSize: "33.33% 33.33%",
-            }} />
-          </>
+          cameraError === "NOT_ALLOWED" ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-zinc-950 text-white space-y-6">
+              <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center">
+                <Camera className="w-8 h-8" />
+              </div>
+              <div className="space-y-2 max-w-sm">
+                <h3 className="text-lg font-bold">Camera Access Blocked</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  {getBrowserInstructions()}
+                </p>
+              </div>
+              
+              <label className="touch-target inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#3a7d54] text-white text-sm font-semibold active:scale-95 transition-transform cursor-pointer">
+                <Camera className="w-4 h-4" />
+                Upload Photo / Capture
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileCaptureMobile}
+                  className="sr-only"
+                />
+              </label>
+            </div>
+          ) : (
+            <>
+              <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
+              <canvas ref={canvasRef} className="hidden" />
+              {/* Rule-of-thirds guide */}
+              <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{
+                backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.14) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.14) 1px, transparent 1px)",
+                backgroundSize: "33.33% 33.33%",
+              }} />
+            </>
+          )
         ) : (
           <img src={photo!} alt="Captured evidence preview" className="absolute inset-0 w-full h-full object-cover" />
         )}
@@ -268,13 +373,15 @@ export default function ReportPage() {
         {/* Bottom controls */}
         <div className="absolute bottom-0 left-0 right-0 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-16 flex justify-center items-center bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           {step === "camera" ? (
-            <button
-              onClick={capturePhoto}
-              aria-label="Capture photo"
-              className="w-[76px] h-[76px] rounded-full bg-white/20 border-4 border-white flex items-center justify-center active:scale-95 transition-transform"
-            >
-              <div className="w-[58px] h-[58px] rounded-full bg-white" />
-            </button>
+            cameraError !== "NOT_ALLOWED" && (
+              <button
+                onClick={capturePhoto}
+                aria-label="Capture photo"
+                className="w-[76px] h-[76px] rounded-full bg-white/20 border-4 border-white flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <div className="w-[58px] h-[58px] rounded-full bg-white" />
+              </button>
+            )
           ) : (
             <div className="flex w-full px-12 justify-between items-center">
               <button

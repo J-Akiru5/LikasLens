@@ -32,8 +32,61 @@ const dataFont = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LikasLens",
-  description: "Neuro-symbolic civic reporting platform",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://likaslens.syntaxure.dev"
+  ),
+  title: {
+    default: "LikasLens — Protecting Nature Philippines",
+    template: "%s | LikasLens",
+  },
+  description:
+    "AI-powered civic reporting platform protecting Philippine nature. Report environmental issues, track community impact, and hold agencies accountable.",
+  keywords: [
+    "protecting nature Philippines",
+    "environmental reporting",
+    "civic reporting Philippines",
+    "AI environmental monitoring",
+    "Philippine biodiversity",
+    "citizen science Philippines",
+    "nature conservation Philippines",
+    "environmental accountability",
+  ],
+  authors: [{ name: "LikasLens" }],
+  creator: "LikasLens",
+  publisher: "LikasLens",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: "LikasLens",
+    title: "LikasLens — Protecting Nature Philippines",
+    description:
+      "AI-powered civic reporting platform protecting Philippine nature. Report environmental issues, track community impact, and hold agencies accountable.",
+    images: [
+      {
+        url: "/opengraph-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "LikasLens — From snapshot to solution",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LikasLens — Protecting Nature Philippines",
+    description:
+      "AI-powered civic reporting platform protecting Philippine nature. Report environmental issues, track community impact.",
+    images: ["/twitter-image.jpg"],
+  },
   manifest: "/manifest.json",
   icons: {
     icon: [

@@ -1,11 +1,41 @@
 import { getChangelog } from "@/lib/changelog";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Changelog — LikasLens",
-  description: "Track all changes, fixes, and improvements to LikasLens.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "seo" });
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://likaslens.syntaxure.dev";
+
+  return {
+    title: t("changelogTitle"),
+    description: t("changelogDescription"),
+    alternates: {
+      canonical: `${baseUrl}/${locale}/changelog`,
+      languages: {
+        en: `${baseUrl}/en/changelog`,
+        fil: `${baseUrl}/fil/changelog`,
+        vi: `${baseUrl}/vi/changelog`,
+        id: `${baseUrl}/id/changelog`,
+        ms: `${baseUrl}/ms/changelog`,
+        ta: `${baseUrl}/ta/changelog`,
+        "x-default": `${baseUrl}/en/changelog`,
+      } as Record<string, string>,
+    },
+    openGraph: {
+      title: t("changelogTitle"),
+      description: t("changelogDescription"),
+      locale,
+      url: `${baseUrl}/${locale}/changelog`,
+    },
+  };
+}
 
 const SECTION_COLORS: Record<string, string> = {
   Added: "bg-green/10 text-green border-green/30",

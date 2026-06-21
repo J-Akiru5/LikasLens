@@ -594,7 +594,7 @@ export default function ImpactPage() {
               </div>
             </RevealSection>
 
-            {/* Row 6: AI Model Performance + Gremlin Router + Gemini */}
+            {/* Row 6: AI Model Performance + Graph Router + Gemini */}
             <RevealSection className="span-6">
               <div className="panel p-4 sm:p-6 space-y-4 h-full relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-secondary/20">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -mr-20 -mt-20 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
@@ -646,7 +646,7 @@ export default function ImpactPage() {
               <div className="panel p-4 sm:p-6 space-y-4 h-full relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-accent/20">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-accent/5 rounded-full blur-3xl -mr-10 -mt-10 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 <div className="relative z-10">
-                  <div className="text-xs font-mono text-muted uppercase tracking-widest mb-2">Gremlin Graph Router</div>
+                  <div className="text-xs font-mono text-muted uppercase tracking-widest mb-2">Neo4j Graph Router</div>
                 <div className="text-2xl font-bold text-accent">99.1%</div>
                 <div className="text-xs text-muted mt-1">Routing Success Rate</div>
                 <div className="mt-3 space-y-1.5">
@@ -731,7 +731,7 @@ export default function ImpactPage() {
                     </h3>
                     <div className="space-y-2">
                       {[
-                        { label: "Platform (YOL0v8 + Gremlin + Gemini)", amount: "₱ 2.1M" },
+                        { label: "Platform (YOLOv8 + Neo4j + Gemini)", amount: "₱ 2.1M" },
                         { label: "Community engagement", amount: "₱ 0.8M" },
                         { label: "Government integration", amount: "₱ 1.2M" },
                         { label: "Training & deployment", amount: "₱ 0.6M" },

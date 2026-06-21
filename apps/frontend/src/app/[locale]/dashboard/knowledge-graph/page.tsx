@@ -51,7 +51,7 @@ interface Preset {
   title: string;
   severity: "low" | "moderate" | "high" | "critical";
   category: string;
-  gremlinQuery: string;
+  cypherQuery: string;
   nodes: GraphNode[];
   links: GraphLink[];
 }
@@ -197,7 +197,7 @@ const PRESETS: Preset[] = [
     title: "Illegal Solid Waste Dumping",
     severity: "high",
     category: "Solid Waste",
-    gremlinQuery: "g.V().has('incident','type','SOLID_WASTE')\n   .outE('violates').inV().as('law')\n   .outE('enforced_by').inV().as('agency')\n   .select('law','agency')",
+    cypherQuery: "MATCH (h:HazardType {code: 'SOLID_WASTE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Trash Heap — Brgy. 143", sublabel: "Manila, NCR", details: "Illegal dumping site (~4×5m) blocking pedestrian walkway. Classified via YOLOv8 vision pipeline.", meta: { Type: "Solid Waste", Confidence: "94.2%", GPS: "14.5995°N 120.9842°E", Status: "Active" } },
       { label: "YOLOv8 Classifier", sublabel: "FastAPI AI-Service", details: "Computer vision model running on LikasLens AI microservice. Detects 47 environmental violation classes.", meta: { Model: "YOLOv8-Env-v2", Accuracy: "94.2%", Latency: "~120ms", Framework: "FastAPI / Python 3.12" } },
@@ -212,7 +212,7 @@ const PRESETS: Preset[] = [
     title: "Illegal Deforestation",
     severity: "critical",
     category: "Forest Cover",
-    gremlinQuery: "g.V().has('incident','type','DEFORESTATION')\n   .outE('violates').inV().as('law')\n   .outE('enforced_by').inV().as('agency')\n   .select('law','agency')",
+    cypherQuery: "MATCH (h:HazardType {code: 'DEFORESTATION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Canopy Loss — Mt. Apo Buffer", sublabel: "Davao del Sur", details: "Satellite imagery + citizen reports confirm commercial chain-sawing in protected forest buffer zone.", meta: { Type: "Illegal Logging", Area_Lost: "~3.2 hectares", Sat_Source: "Sentinel-2", Status: "Active" } },
       { label: "Forestry Sentinel AI", sublabel: "Multispectral Analysis", details: "NDVI change-detection model comparing bi-weekly satellite bands to baseline forest coverage.", meta: { Model: "NDVI-ChangeNet", Bands: "B04,B08 (NIR)", Change: "-12% NDVI", Confidence: "91.0%" } },
@@ -227,7 +227,7 @@ const PRESETS: Preset[] = [
     title: "Industrial Wastewater Discharge",
     severity: "critical",
     category: "Water Quality",
-    gremlinQuery: "g.V().has('incident','type','WATER_POLLUTION')\n   .outE('violates').inV().as('law')\n   .outE('enforced_by').inV().as('agency')\n   .select('law','agency')",
+    cypherQuery: "MATCH (h:HazardType {code: 'WATER_POLLUTION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Toxic Runoff — Laguna Lake", sublabel: "Laguna de Bay Watershed", details: "Elevated chemical COD levels and visible discoloration detected near industrial discharge pipe #7.", meta: { Type: "Chemical Discharge", pH_Level: "4.2 (Acidic)", COD: "380 mg/L (3× limit)", Status: "Active Spill" } },
       { label: "Water Sentinel AI", sublabel: "Spectral Analysis Engine", details: "Analyzes photo color histograms and user-reported parameters against baseline water quality profiles.", meta: { Model: "WaterSpec-v1.3", Indicators: "Color, pH, COD", Confidence: "88.5%", Engine: "FastAPI" } },
@@ -242,7 +242,7 @@ const PRESETS: Preset[] = [
     title: "Marine Coral Reef Destruction",
     severity: "high",
     category: "Marine Protection",
-    gremlinQuery: "g.V().has('incident','type','CORAL_DAMAGE')\n   .outE('violates').inV().as('law')\n   .outE('enforced_by').inV().as('agency')\n   .select('law','agency')",
+    cypherQuery: "MATCH (h:HazardType {code: 'CORAL_DAMAGE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Blast Fishing — Sulu Sea", sublabel: "Tawi-Tawi Marine Sanctuary", details: "Hydrophone arrays detected explosive frequency signatures. Visible coral fragmentation confirmed by citizen divers.", meta: { Type: "Dynamite Fishing", Zone: "Strict Protection Area", Hydrophone: "Positive Match", Depth: "8–15m" } },
       { label: "Marine Audio-Visual AI", sublabel: "WaveformNet Classifier", details: "Audio pattern matching model trained on documented underwater explosion frequencies from 12 hydrophone stations.", meta: { Model: "WaveformNet-v2", Accuracy: "95.4%", Signal: "87–120 Hz blast", Latency: "<2s detection" } },
@@ -281,7 +281,7 @@ export default function KnowledgeGraphPage() {
     nodesRef.current = fresh;
     setNodes(fresh);
     setSelectedId("inc");
-    const intro = `> Initializing LikasLens Neuro-Symbolic Engine\n> Connecting to Neo4j AuraDB endpoint...\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.gremlinQuery}\n\n[OK] Traversal complete — ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[OK] Knowledge graph rendered in browser context`;
+    const intro = `> Initializing LikasLens Neuro-Symbolic Engine\n> Connecting to Neo4j AuraDB endpoint...\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.cypherQuery}\n\n[OK] Traversal complete — ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[OK] Knowledge graph rendered in browser context`;
     setTerminalText("");
     setTerminalIdx(0);
     setIsTyping(true);
@@ -439,7 +439,7 @@ export default function KnowledgeGraphPage() {
   return (
     <DashboardLayoutWrapper
       pageTitle="Graph Explorer"
-      pageSubtitle="Neuro-symbolic knowledge graph — Gremlin traversal engine connecting incidents to statutes and agencies"
+      pageSubtitle="Neuro-symbolic knowledge graph — Cypher traversal engine connecting incidents to statutes and agencies"
     >
       {/*
         ╔══════════════════════════════════════════════════════════════╗
@@ -839,7 +839,7 @@ export default function KnowledgeGraphPage() {
           >
             <div className="flex items-center gap-2.5">
               <Terminal className="w-3.5 h-3.5 text-[#2ee6c8]" />
-              <span className="text-[11px] font-mono tracking-wider uppercase">Gremlin Query Log</span>
+              <span className="text-[11px] font-mono tracking-wider uppercase">Cypher Query Log</span>
               <div className="flex items-center gap-1 text-[10px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
                 <span className="text-[#22c55e] font-mono">live</span>
