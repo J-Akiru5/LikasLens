@@ -81,8 +81,9 @@ export default function WalletPage() {
         showToast(res.message || "Redemption failed", "error");
         haptic("error");
       }
-    } catch (err: any) {
-      const message = err?.response?.data?.message || err?.message || "Redemption failed";
+    } catch (err: unknown) {
+      const apiErr = err as { response?: { data?: { message?: string } }; message?: string } | null;
+      const message = apiErr?.response?.data?.message || apiErr?.message || "Redemption failed";
       showToast(message, "error");
       haptic("error");
     } finally {

@@ -7,7 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
-import { ToastContainer, showToast, EmptyState, Skeleton } from "@likaslens/shared";
+import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
@@ -92,7 +92,7 @@ export default function ReportPage() {
     const newTheme = checked ? "ghost" : "civic";
     document.documentElement.setAttribute("data-theme", newTheme);
     try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
-    (window as any).updateThemeColor?.();
+    notifyThemeColor();
   };
 
   const stripExif = async (base64: string) => {
@@ -429,7 +429,7 @@ export default function ReportPage() {
                 </div>
               ) : camera.isLoading ? (
                 <div className="border border-ink/10 rounded-xl overflow-hidden">
-                  <Skeleton className="w-full aspect-video rounded-none" />
+                  <Skeleton variant="brand" className="w-full aspect-video rounded-none" />
                   <div className="flex justify-center gap-3 p-4">
                     <Skeleton className="h-10 w-24 rounded-lg" />
                     <Skeleton className="h-10 w-20 rounded-lg" />
@@ -437,38 +437,38 @@ export default function ReportPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {camera.error === "NOT_ALLOWED" ? (
-                    <div className="flex flex-col items-center justify-center p-12 text-center min-h-[240px] group rounded-2xl border border-dashed border-ink/10 bg-ink/[0.015]">
-                      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-gradient-to-b from-red-500/10 to-red-500/20 border border-red-500/20 text-red-500 shadow-sm">
-                        <Camera className="w-7 h-7 currentColor" aria-hidden="true" />
-                      </div>
-                      <h3 className="text-base font-medium text-ink mb-1.5">Camera access is blocked</h3>
-                      <p className="text-sm text-ink/50 max-w-sm leading-relaxed mx-auto mb-6">
-                        {getBrowserInstructions()}
-                      </p>
-                      <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer focus-within:ring-2 focus-within:ring-accent/40">
-                        <Camera className="w-4 h-4" />
-                        Choose Photo / Capture
+                  <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center min-h-[240px] group rounded-2xl border border-dashed border-ink/10 bg-ink/[0.015]">
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-ink/[0.04] text-ink/40 group-hover:bg-accent/10 group-hover:text-accent transition-colors">
+                      <Camera className="w-7 h-7" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-base font-medium text-ink mb-1.5">Evidence Photo</h3>
+                    <p className="text-sm text-ink/50 max-w-sm leading-relaxed mx-auto mb-6">
+                      Upload an existing photo from your gallery or capture a new one using your camera.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <label className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-5 py-2.5 rounded-lg border border-ink/10 text-ink/70 text-sm font-medium hover:text-ink hover:bg-ink/[0.02] transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-accent/40">
+                        Upload Photo
                         <input
                           type="file"
                           accept="image/*"
-                          capture="environment"
                           onChange={handleFileCapture}
                           className="sr-only"
                         />
                       </label>
+                      <button
+                        type="button"
+                        onClick={() => camera.start()}
+                        className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-5 py-2.5 rounded-lg bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+                      >
+                        <Camera className="w-4 h-4" />
+                        Open Camera
+                      </button>
                     </div>
-                  ) : (
-                    <EmptyState
-                      icon={Camera}
-                      title="No image captured yet"
-                      description="Capture a photo of the environmental issue to document it."
-                      action={{ label: "Capture Photo", onClick: () => camera.start() }}
-                      className="border border-ink/10 rounded-xl"
-                    />
-                  )}
-                  {camera.error && camera.error !== "NOT_ALLOWED" && (
-                    <p className="font-mono text-xs text-ink/50 text-center">{camera.errorMessage}</p>
+                  </div>
+                  {camera.error && (
+                    <p className="font-mono text-xs text-red-500/80 text-center max-w-md mx-auto">
+                      {camera.error === "NOT_ALLOWED" ? getBrowserInstructions() : camera.errorMessage}
+                    </p>
                   )}
                 </div>
               )}

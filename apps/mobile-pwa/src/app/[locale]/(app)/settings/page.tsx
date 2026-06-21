@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -17,8 +17,9 @@ import {
   AlertTriangle,
   X,
   User,
+  Mail,
 } from "lucide-react";
-import { cn, locales, localeNames, defaultLocale, showToast } from "@likaslens/shared";
+import { cn, locales, localeNames, defaultLocale, showToast, notifyThemeColor } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
 import { useHaptics } from "@/hooks/use-haptics";
 
@@ -49,8 +50,20 @@ export default function SettingsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const currentLocale = locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) ?? defaultLocale;
+  const [userInfo, setUserInfo] = useState<{ name: string; email: string } | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) {
+        setUserInfo({
+          name: (data.user.user_metadata?.name as string) || data.user.email?.split("@")[0] || "User",
+          email: data.user.email || "",
+        });
+      }
+    });
+  }, [supabase]);
 
   useEffect(() => {
     const current = document.documentElement.getAttribute("data-theme");
@@ -77,7 +90,7 @@ export default function SettingsPage() {
     haptic("medium");
     try { localStorage.setItem("likaslens-theme", value); } catch { /* ignore */ }
     document.documentElement.setAttribute("data-theme", value);
-    (window as any).updateThemeColor?.();
+    notifyThemeColor();
     window.dispatchEvent(new Event("themechange"));
   };
 
@@ -98,6 +111,7 @@ export default function SettingsPage() {
       await supabase.auth.signOut();
       try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
       try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
+      document.cookie = "laravel_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
       showToast("Logged out successfully", "success");
       setTimeout(() => { window.location.href = "/login"; }, 500);
     } catch {
@@ -279,6 +293,21 @@ export default function SettingsPage() {
         {/* Account */}
         <SectionTitle icon={User}>Account</SectionTitle>
         <div className="ios-grouped-list mx-4">
+          {/* User info card */}
+          {userInfo && (
+            <div className="ios-list-row" style={{ minHeight: 60, gap: 12 }}>
+              <div className="ios-row-icon bg-accent/10 text-accent">
+                <User className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-ink truncate">{userInfo.name}</p>
+                <p className="text-xs text-ink/50 truncate flex items-center gap-1.5 mt-0.5">
+                  <Mail className="w-3 h-3 shrink-0" />
+                  {userInfo.email}
+                </p>
+              </div>
+            </div>
+          )}
           <button
             onClick={() => { haptic("light"); setShowPasswordModal(true); }}
             className="ios-list-row w-full"

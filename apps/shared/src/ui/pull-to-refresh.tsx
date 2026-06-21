@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, type ReactNode, useEffect } from "react";
+import { useState, useRef, useCallback, type ReactNode } from "react";
 import { Loader2, ArrowDown } from "lucide-react";
 import { cn } from "../utils";
 
@@ -13,7 +13,6 @@ interface PullToRefreshProps {
 
 const THRESHOLD = 80;
 const MAX_PULL = 120;
-const TOP_RATIO = 0.2; // top 20% of viewport
 
 export function PullToRefresh({
   children,
@@ -25,33 +24,37 @@ export function PullToRefresh({
   const [refreshing, setRefreshing] = useState(false);
   const startY = useRef<number | null>(null);
   const pulling = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const handleTouchStart = useCallback(
-    (e: TouchEvent) => {
+    (e: React.TouchEvent) => {
       if (disabled || refreshing) return;
-      const touch = e.touches[0];
-      if (touch.clientY > window.innerHeight * TOP_RATIO) {
-        startY.current = null;
-        return;
-      }
-      startY.current = touch.clientY;
+      const el = containerRef.current;
+      // Only activate when scrolled to top
+      if (el && el.scrollTop > 0) return;
+      startY.current = e.touches[0].clientY;
       pulling.current = false;
     },
     [disabled, refreshing],
   );
 
   const handleTouchMove = useCallback(
-    (e: TouchEvent) => {
-      if (disabled || refreshing) return;
-      const touch = e.touches[0];
-      if (startY.current === null) return;
-      const dy = touch.clientY - startY.current;
+    (e: React.TouchEvent) => {
+      if (disabled || refreshing || startY.current === null) return;
+      const el = containerRef.current;
+      if (el && el.scrollTop > 0) {
+        startY.current = null;
+        return;
+      }
+      const dy = e.touches[0].clientY - startY.current;
       if (dy < 10) return;
       pulling.current = true;
-      const el = document.querySelector("[data-ptr-content]") as HTMLElement | null;
-      if (el) {
-        el.style.transform = `translateY(${Math.min(dy * 0.5, MAX_PULL)}px)`;
-        el.style.transition = "none";
+      const distance = Math.min(dy * 0.5, MAX_PULL);
+      setPullDistance(distance);
+      if (contentRef.current) {
+        contentRef.current.style.transform = `translateY(${distance}px)`;
+        contentRef.current.style.transition = "none";
       }
     },
     [disabled, refreshing],
@@ -64,12 +67,15 @@ export function PullToRefresh({
       return;
     }
     pulling.current = false;
-    const el = document.querySelector("[data-ptr-content]") as HTMLElement | null;
-    const pull = el ? parseFloat(el.style.transform.match(/translateY\((.+)px\)/)?.[1] ?? "0") : 0;
+    const currentPull = pullDistance;
 
-    if (pull >= THRESHOLD) {
+    if (currentPull >= THRESHOLD) {
       setRefreshing(true);
       setPullDistance(40);
+      if (contentRef.current) {
+        contentRef.current.style.transition = "transform 0.2s ease-out";
+        contentRef.current.style.transform = "translateY(40px)";
+      }
       try {
         await onRefresh();
       } catch {
@@ -80,48 +86,34 @@ export function PullToRefresh({
 
     setPullDistance(0);
     startY.current = null;
-    if (el) {
-      el.style.transition = "transform 0.25s ease-out";
-      el.style.transform = "translateY(0)";
-      setTimeout(() => { el.style.transition = ""; }, 260);
+    if (contentRef.current) {
+      contentRef.current.style.transition = "transform 0.25s ease-out";
+      contentRef.current.style.transform = "translateY(0)";
+      setTimeout(() => {
+        if (contentRef.current) contentRef.current.style.transition = "";
+      }, 260);
     }
-  }, [disabled, onRefresh]);
+  }, [disabled, pullDistance, onRefresh]);
 
-  useEffect(() => {
-    if (disabled) return;
-    document.addEventListener("touchstart", handleTouchStart, { passive: true });
-    document.addEventListener("touchmove", handleTouchMove, { passive: true });
-    document.addEventListener("touchend", handleTouchEnd, { passive: true });
-    return () => {
-      document.removeEventListener("touchstart", handleTouchStart);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, [disabled, handleTouchStart, handleTouchMove, handleTouchEnd]);
+  const progress = Math.min(pullDistance / THRESHOLD, 1);
 
   return (
     <>
-      {/* Fixed invisible pull zone — top 20% of viewport, only receives touches here */}
-      <div
-        className="fixed inset-x-0 z-[999]"
-        style={{ top: 0, height: `${TOP_RATIO * 100}vh`, touchAction: "none" }}
-      />
-
-      {/* Indicator */}
+      {/* Indicator — pointer-events-none so it never blocks header clicks */}
       <div
         className="fixed top-0 left-0 right-0 flex items-center justify-center overflow-hidden z-[998] pointer-events-none"
         style={{ height: pullDistance || (refreshing ? 40 : 0), paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
         <div
           className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-page/90 border border-ink/10 shadow-sm text-ink text-xs font-medium backdrop-blur-sm"
-          style={{ opacity: 0.2 + Math.min(pullDistance / THRESHOLD, 1) * 0.8 }}
+          style={{ opacity: 0.2 + progress * 0.8 }}
         >
           {refreshing ? (
             <Loader2 className="w-4 h-4 animate-spin text-green" />
           ) : (
             <ArrowDown
               className="w-4 h-4 transition-transform duration-150"
-              style={{ transform: `rotate(${Math.min(pullDistance / THRESHOLD, 1) * 180}deg)` }}
+              style={{ transform: `rotate(${progress * 180}deg)` }}
             />
           )}
           <span>
@@ -130,17 +122,16 @@ export function PullToRefresh({
         </div>
       </div>
 
-      {/* Scrollable content */}
+      {/* Scrollable content — touch handlers are on this container, not a fixed overlay */}
       <div
+        ref={containerRef}
         data-ptr-content
         className={cn("h-full overflow-y-auto overscroll-contain", className)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
-        <div
-          style={{
-            transform: pullDistance > 0 && !refreshing ? `translateY(${pullDistance}px)` : undefined,
-            transition: pullDistance === 0 && !refreshing ? "transform 0.25s ease-out" : undefined,
-          }}
-        >
+        <div ref={contentRef}>
           {children}
         </div>
       </div>

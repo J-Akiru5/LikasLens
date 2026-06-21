@@ -1,12 +1,28 @@
+import { AdminKPIsSkeleton } from "@likaslens/shared";
+
 export default function Loading() {
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="h-8 w-48 rounded-xl bg-ink/5 animate-shimmer" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1,2,3,4].map(i => <div key={i} className="bg-panel rounded-2xl border border-ink/5 p-5 h-28 animate-shimmer" />)}
+    <div className="space-y-8 animate-fade-in">
+      <div className="space-y-2">
+        <div className="h-12 w-36 rounded-xl animate-shimmer" />
+        <div className="h-5 w-64 rounded animate-shimmer" />
       </div>
-      <div className="bg-panel rounded-2xl border border-ink/5 p-4 sm:p-6 space-y-3">
-        {[1,2,3,4,5].map(i => <div key={i} className="h-12 rounded-lg bg-ink/5 animate-shimmer" />)}
+      <AdminKPIsSkeleton count={3} />
+      <div className="grid gap-8 lg:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, idx) => (
+          <div key={idx} className="rounded-3xl border border-ink/5 p-4 sm:p-6 space-y-4">
+            <div className="h-5 w-36 rounded animate-shimmer" />
+            {Array.from({ length: 5 }).map((_, j) => (
+              <div key={j} className="space-y-2">
+                <div className="flex justify-between">
+                  <div className="h-3 w-24 rounded animate-shimmer" />
+                  <div className="h-3 w-12 rounded animate-shimmer" />
+                </div>
+                <div className="h-2 w-full rounded-full animate-shimmer" />
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );

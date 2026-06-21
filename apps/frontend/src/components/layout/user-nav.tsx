@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { User, LogOut, LayoutGrid, UserCircle2, ChevronDown, Settings } from "lucide-react";
@@ -14,7 +14,7 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
     async function getUser() {

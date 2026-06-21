@@ -489,6 +489,17 @@ body {
     }
 }
 
+@keyframes pwa-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ───────────────────────────────────────────────────────────────────────────
    UTILITY CLASSES — Animation
    ─────────────────────────────────────────────────────────────────────────── */
@@ -510,15 +521,51 @@ body {
 .animate-scale-in {
     animation: scale-in 0.2s ease-out both;
 }
+
+/* Skeleton shimmer — neutral ink-based (default). 5-stop oklab gradient. */
 .animate-shimmer {
     background: linear-gradient(
         90deg,
-        color-mix(in srgb, var(--ink) 3%, transparent) 25%,
-        color-mix(in srgb, var(--ink) 6%, transparent) 37%,
-        color-mix(in srgb, var(--ink) 3%, transparent) 63%
+        color-mix(in oklab, var(--ink) 4%, transparent) 25%,
+        color-mix(in oklab, var(--ink) 8%, transparent) 45%,
+        color-mix(in oklab, var(--ink) 11%, transparent) 50%,
+        color-mix(in oklab, var(--ink) 8%, transparent) 55%,
+        color-mix(in oklab, var(--ink) 4%, transparent) 75%
     );
     background-size: 200% 100%;
-    animation: shimmer 1.5s ease-in-out infinite;
+    animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* Brand shimmer — uses --accent-bright (teal #2ee6c8 in Civic Mode,
+   gold #facc15 in Ghost Mode). For high-visibility skeleton states like
+   dashboards, scoreboards, and hero placeholders. */
+.animate-shimmer-brand {
+    background: linear-gradient(
+        90deg,
+        color-mix(in oklab, var(--accent-bright) 4%, transparent) 25%,
+        color-mix(in oklab, var(--accent-bright) 10%, transparent) 45%,
+        color-mix(in oklab, var(--accent-bright) 16%, transparent) 50%,
+        color-mix(in oklab, var(--accent-bright) 10%, transparent) 55%,
+        color-mix(in oklab, var(--accent-bright) 4%, transparent) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Subtle shimmer — uses --accent (forest green #1b4332 in Civic Mode,
+   falls back gracefully in Ghost Mode). For low-key branded skeletons
+   like admin KPIs and card grids. */
+.animate-shimmer-subtle {
+    background: linear-gradient(
+        90deg,
+        color-mix(in oklab, var(--accent) 2%, transparent) 25%,
+        color-mix(in oklab, var(--accent) 5%, transparent) 45%,
+        color-mix(in oklab, var(--accent) 8%, transparent) 50%,
+        color-mix(in oklab, var(--accent) 5%, transparent) 55%,
+        color-mix(in oklab, var(--accent) 2%, transparent) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -528,7 +575,9 @@ body {
     .animate-fade-up,
     .animate-fade-in,
     .animate-scale-in,
-    .animate-shimmer {
+    .animate-shimmer,
+    .animate-shimmer-brand,
+    .animate-shimmer-subtle {
         animation: none;
     }
     html {

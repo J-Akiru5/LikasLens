@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { SplashScreen } from "@/components/splash-screen";
 
 export default function RootPage() {
   const router = useRouter();
@@ -16,5 +15,5 @@ export default function RootPage() {
     return () => clearTimeout(timer);
   }, [router]);
 
-  return <SplashScreen />;
+  return null;
 }

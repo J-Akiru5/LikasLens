@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { LazyMotion, domAnimation } from "framer-motion";
 import { Footer } from "@/components/layout/footer";
 import { StickyLandingNav } from "@/components/layout/sticky-landing-nav";
-import { PartnerCarousel, FaqSection, LanguageSuggestionPopup } from "@likaslens/shared";
+import { PartnerCarousel, FaqSection, LanguageSuggestionPopup, notifyThemeColor } from "@likaslens/shared";
 import { HeroSection } from "@/components/marketing/sections/hero-section";
 
 const HowItWorksSection = dynamic(
@@ -91,7 +91,7 @@ export default function HomeClient() {
         try { localStorage.setItem("likaslens-theme", "civic"); } catch {}
       }
     }
-    (window as any).updateThemeColor?.();
+    notifyThemeColor();
   }, [ghostMode]);
 
   const toggleGhost = () => setGhostMode(!ghostMode);

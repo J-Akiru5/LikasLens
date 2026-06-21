@@ -32,6 +32,7 @@ export default function DashboardPage() {
   const [rewards, setRewards] = useState<RewardOffer[]>([]);
   const [walletPoints, setWalletPoints] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [rewardsLoading, setRewardsLoading] = useState(true);
   const haptic = useHaptics();
 
   const chatMessages = [
@@ -68,6 +69,9 @@ export default function DashboardPage() {
 
       if (rewardsRes?.success && rewardsRes.data) {
         setRewards(rewardsRes.data);
+        setRewardsLoading(false);
+      } else {
+        setRewardsLoading(false);
       }
 
       if (walletRes?.success && walletRes.data) {
@@ -271,7 +275,21 @@ export default function DashboardPage() {
               All <ChevronRight style={{ width: 14, height: 14 }} />
             </Link>
           </div>
-          {rewards.length === 0 ? (
+          {rewardsLoading ? (
+            <div className="flex gap-3 overflow-hidden -mx-5 px-5">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="w-[148px] shrink-0 rounded-2xl border border-ink/5 p-3.5 space-y-2 animate-pulse">
+                  <div className="w-9 h-9 rounded-xl bg-ink/10" />
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-3/4 rounded bg-ink/10" />
+                    <div className="h-3 w-1/2 rounded bg-ink/10" />
+                  </div>
+                  <div className="h-px bg-ink/5" />
+                  <div className="h-3 w-14 rounded bg-ink/10" />
+                </div>
+              ))}
+            </div>
+          ) : rewards.length === 0 ? (
             <div className="ios-grouped-list p-6 text-center flex flex-col items-center justify-center">
               <Gift className="w-8 h-8 text-ink/20 mb-2" />
               <p className="text-xs font-medium text-ink/40">No rewards available yet.</p>

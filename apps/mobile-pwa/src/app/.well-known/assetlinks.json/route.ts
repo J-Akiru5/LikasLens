@@ -1,0 +1,18 @@
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  const assetLinks = [
+    {
+      relation: ["delegate_permission/common.handle_all_urls"],
+      target: {
+        namespace: "android_app",
+        package_name: "dev.syntaxure.likaslensapp.twa",
+        sha256_cert_fingerprints: [
+          "FB:32:B3:72:E4:B8:0F:45:A6:F4:B9:09:D9:48:B7:37:75:F5:4F:1D:25:13:46:28:15:01:AC:B7:EE:4E:B6:60"
+        ],
+      },
+    },
+  ];
+
+  return NextResponse.json(assetLinks);
+}

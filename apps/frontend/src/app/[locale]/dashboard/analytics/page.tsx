@@ -16,28 +16,29 @@ import {
   RevealSection,
   SpotlightCard,
   PulseBadge,
+  Skeleton,
 } from "@likaslens/shared";
 import dynamic from "next/dynamic";
 
 const AqiGauge = dynamic(
   () => import("@/components/dashboard/aqi-gauge").then((m) => m.AqiGauge),
-  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6 animate-pulse" style={{ minHeight: 340 }} /> }
+  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6" style={{ minHeight: 340 }}><Skeleton variant="brand" className="w-full h-full rounded-2xl" /></div> }
 );
 const TimeSeriesChart = dynamic(
   () => import("@/components/dashboard/time-series-chart").then((m) => m.TimeSeriesChart),
-  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6 animate-pulse" style={{ minHeight: 360 }} /> }
+  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6" style={{ minHeight: 360 }}><Skeleton variant="brand" className="w-full h-full rounded-2xl" /></div> }
 );
 const ViolationDonut = dynamic(
   () => import("@/components/dashboard/violation-donut").then((m) => m.ViolationDonut),
-  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6 animate-pulse" style={{ minHeight: 300 }} /> }
+  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6" style={{ minHeight: 300 }}><Skeleton variant="brand" className="w-full h-full rounded-2xl" /></div> }
 );
 const SankeyFlow = dynamic(
   () => import("@/components/dashboard/sankey-flow").then((m) => m.SankeyFlow),
-  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6 animate-pulse" style={{ minHeight: 300 }} /> }
+  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6" style={{ minHeight: 300 }}><Skeleton variant="brand" className="w-full h-full rounded-2xl" /></div> }
 );
 const HotspotList = dynamic(
   () => import("@/components/dashboard/hotspot-list").then((m) => m.HotspotList),
-  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6 animate-pulse" style={{ minHeight: 300 }} /> }
+  { ssr: false, loading: () => <div className="rounded-2xl border border-ink/10 bg-panel p-6" style={{ minHeight: 300 }}><Skeleton variant="brand" className="w-full h-full rounded-2xl" /></div> }
 );
 
 interface DashboardStats {

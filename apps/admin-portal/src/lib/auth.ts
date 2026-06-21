@@ -3,7 +3,8 @@ import { laravelPost } from "@likaslens/shared";
 
 function setCookie(name: string, value: string, days: number) {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict; Secure`;
+  const isSecure = window.location.protocol === "https:";
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict${isSecure ? "; Secure" : ""}`;
 }
 
 export async function signIn(email: string, password: string) {

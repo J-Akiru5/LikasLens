@@ -55,19 +55,16 @@ export function BottomNav({ items, className }: BottomNavProps) {
         key={item.href}
         href={fullHref}
         prefetch={true}
+        scroll={false}
         onClick={tapHaptic}
         aria-current={isActive ? "page" : undefined}
-        // Humanist type for labels (no mono-as-decoration); native app
-        // tab bars use sentence-case, readable labels.
         className={cn(
-          "flex flex-col items-center justify-center h-full gap-1 px-1 py-1 text-[10px] transition-all min-w-[60px]",
+          "flex flex-col items-center justify-center h-full gap-1 px-1 py-1 text-[10px] min-w-[60px] active:scale-95 transition-transform duration-75",
           isActive ? "text-green font-semibold" : "text-ink/40 hover:text-ink/60 font-medium"
         )}
-        style={{ fontFamily: "var(--font-body)" }}
+        style={{ fontFamily: "var(--font-body)", touchAction: "manipulation" }}
       >
         <div className="relative flex items-center justify-center w-12 h-7 sm:w-14 sm:h-8 mb-0.5">
-          {/* Refined active indicator: a small dot above the icon, not a
-              filled pill behind it. Reads cleaner and more native. */}
           {isActive && (
             <span
               aria-hidden="true"
@@ -108,15 +105,17 @@ export function BottomNav({ items, className }: BottomNavProps) {
             <Link
               href={`${localePrefix}${primaryItem.href === "/" ? "" : primaryItem.href}` || "/"}
               prefetch={true}
+              scroll={false}
               onClick={tapHaptic}
               aria-label={primaryItem.label}
               className={cn(
-                "absolute -top-6 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-transform active:scale-95",
+                "absolute -top-6 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-transform duration-75 active:scale-90",
                 "border-4 border-page"
               )}
               style={{
                 background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 100%)",
                 boxShadow: "0 8px 20px -6px color-mix(in oklab, var(--accent) 45%, transparent)",
+                touchAction: "manipulation",
               }}
             >
               <primaryItem.icon className="w-6 h-6 text-white" />

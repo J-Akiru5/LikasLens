@@ -15,16 +15,21 @@ const intlMiddleware = createMiddleware({
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if this is a public route (exact segment match, not substring)
+  // Check if this is a public route (uses exact path matching to avoid false positives)
   const isPublicRoute = publicRoutes.some((route) => {
-    const segments = pathname.split("/");
-    return segments.includes(route.replace("/", ""));
+    const pathWithoutLocale = pathname.replace(/^\/[a-z]{2,3}\b/, "") || "/";
+    return pathWithoutLocale === route || pathWithoutLocale === `${route}/`;
   });
 
   const locale =
     locales.find(
       (loc) => pathname === `/${loc}` || pathname.startsWith(`/${loc}/`),
     ) || locales[0];
+
+  // Completely bypass next-intl for the root path to prevent auto-routing to /en
+  if (pathname === "/") {
+    return NextResponse.next({ request });
+  }
 
   let supabaseResponse = intlMiddleware(request);
 
@@ -70,10 +75,17 @@ export default async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
+  // Helper: check if a path matches a locale-prefixed route
+  const matchesPath = (target: string): boolean => {
+    const pathWithoutLocale = pathname.replace(/^\/[a-z]{2,3}\b/, "") || "/";
+    return pathWithoutLocale === target || pathWithoutLocale === `${target}/`;
+  };
+
   // If user is logged in
   if (user) {
     // If they are trying to access a public route (login, register, onboarding) or the root page, redirect to dashboard
-    if (isPublicRoute || pathname === "/") {
+    const isRoot = matchesPath("/");
+    if (isPublicRoute || isRoot) {
       const url = request.nextUrl.clone();
       url.pathname = `/${locale}/dashboard`;
       return NextResponse.redirect(url);
@@ -84,7 +96,8 @@ export default async function middleware(request: NextRequest) {
   // If user is NOT logged in
   if (!user) {
     // If they are on a public route or root page, allow them (root page has client logic to redirect to onboarding)
-    if (isPublicRoute || pathname === "/") {
+    const isRoot = matchesPath("/");
+    if (isPublicRoute || isRoot) {
       return supabaseResponse;
     }
     // Otherwise, redirect to login
@@ -97,5 +110,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/(en|fil|vi|id|ms|ta)/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/(en|fil|vi|id|ms|ta)/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
 };

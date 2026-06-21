@@ -18,7 +18,7 @@ import {
   Activity,
 } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
-import { laravelGet } from "@likaslens/shared";
+import { laravelGet, Skeleton } from "@likaslens/shared";
 import type { PublicImpactData } from "@likaslens/shared";
 
 /* ── Animations ────────────────────────────────────────── */
@@ -43,103 +43,69 @@ const fadeUp = {
 };
 
 /* ── Skeleton Components ───────────────────────────────── */
-function StatCardSkeleton() {
-  return (
-    <div
-      className="rounded-2xl p-6 animate-pulse"
-      style={{
-        background: "var(--panel)",
-        border: "1px solid var(--border)",
-      }}
-    >
-      <div className="h-4 w-10 rounded bg-ink/5 mb-3" />
-      <div className="h-8 w-20 rounded bg-ink/5 mb-2" />
-      <div className="h-3 w-24 rounded bg-ink/5" />
-    </div>
-  );
-}
-
-function BarChartSkeleton() {
-  return (
-    <div
-      className="rounded-2xl p-6 animate-pulse"
-      style={{
-        background: "var(--panel)",
-        border: "1px solid var(--border)",
-        minHeight: 300,
-      }}
-    >
-      <div className="h-5 w-40 rounded bg-ink/5 mb-6" />
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-3 mb-4">
-          <div className="h-3 w-24 rounded bg-ink/5" />
-          <div className="flex-1 h-6 rounded bg-ink/5" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function FeedSkeleton() {
-  return (
-    <div
-      className="rounded-2xl p-6 animate-pulse"
-      style={{
-        background: "var(--panel)",
-        border: "1px solid var(--border)",
-      }}
-    >
-      <div className="h-5 w-48 rounded bg-ink/5 mb-6" />
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="flex items-start gap-3 mb-4 pb-4"
-          style={{ borderBottom: "1px solid var(--border)" }}
-        >
-          <div className="h-8 w-8 rounded-full bg-ink/5 flex-shrink-0" />
-          <div className="flex-1 space-y-2">
-            <div className="h-3 w-full rounded bg-ink/5" />
-            <div className="h-3 w-2/3 rounded bg-ink/5" />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function LoadingSkeleton() {
   return (
     <div
-      className="min-h-dvh"
+      className="min-h-dvh animate-fade-in"
       style={{ background: "var(--page)", color: "var(--ink)" }}
     >
       {/* Hero skeleton */}
       <div
-        className="flex items-center justify-center"
+        className="flex flex-col items-center justify-center gap-6"
         style={{
-          minHeight: 360,
+          minHeight: 400,
           background: "var(--accent)",
-          padding: "96px 32px 64px",
+          padding: "120px 32px 80px",
         }}
       >
-        <div className="text-center space-y-4 animate-pulse">
-          <div className="h-5 w-48 rounded bg-white/10 mx-auto" />
-          <div className="h-12 w-80 rounded bg-white/10 mx-auto" />
-          <div className="h-16 w-64 rounded bg-white/10 mx-auto" />
+        <div className="text-center space-y-4">
+          <div className="h-5 w-48 rounded-lg bg-white/10 animate-shimmer mx-auto" />
+          <div className="h-12 w-80 rounded-lg bg-white/10 animate-shimmer mx-auto" />
+          <div className="h-16 w-64 rounded-lg bg-white/[0.08] animate-shimmer mx-auto" />
         </div>
       </div>
-      <div
-        className="max-w-6xl mx-auto px-6 py-12 space-y-8"
-        style={{ maxWidth: 1280 }}
-      >
+      <div className="max-w-6xl mx-auto px-6 py-12 space-y-8">
+        {/* Stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <StatCardSkeleton key={i} />
+            <div key={i} className="rounded-2xl border border-ink/5 p-6 space-y-3">
+              <div className="flex items-center justify-between">
+                <Skeleton className="w-5 h-5 rounded" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+              <Skeleton className="h-8 w-20" />
+            </div>
           ))}
         </div>
+        {/* Bar chart + Feed */}
         <div className="grid md:grid-cols-2 gap-6">
-          <BarChartSkeleton />
-          <FeedSkeleton />
+          <div className="rounded-2xl border border-ink/5 p-6 space-y-4" style={{ minHeight: 300 }}>
+            <div className="flex items-center gap-2 mb-4">
+              <Skeleton className="w-4 h-4 rounded" />
+              <Skeleton className="h-5 w-40" />
+            </div>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="flex-1 h-6 rounded" />
+              </div>
+            ))}
+          </div>
+          <div className="rounded-2xl border border-ink/5 p-6 space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Skeleton className="w-4 h-4 rounded" />
+              <Skeleton className="h-5 w-48" />
+            </div>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-3 pb-4 border-b border-ink/5 last:border-0">
+                <Skeleton className="w-8 h-8 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-2/3" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Map, { useMap, useControl } from "react-map-gl/maplibre";
 import type { Map as MaplibreMap } from "maplibre-gl";
 import { MapboxOverlay } from "@deck.gl/mapbox";
@@ -17,8 +18,64 @@ import {
   Satellite,
   Play,
   Pause,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { laravelGet } from "@likaslens/shared";
+
+// ── Constants ────────────────────────────────────────────────────────────
+
+const FAST_LIGHT_MAP = {
+  version: 8,
+  sources: {
+    "carto-light": {
+      type: "raster",
+      tiles: [
+        "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+      ],
+      tileSize: 256,
+      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+    }
+  },
+  layers: [
+    {
+      id: "carto-light-layer",
+      type: "raster",
+      source: "carto-light",
+      minzoom: 0,
+      maxzoom: 20
+    }
+  ]
+};
+
+const FAST_DARK_MAP = {
+  version: 8,
+  sources: {
+    "carto-dark": {
+      type: "raster",
+      tiles: [
+        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+      ],
+      tileSize: 256,
+      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+    }
+  },
+  layers: [
+    {
+      id: "carto-dark-layer",
+      type: "raster",
+      source: "carto-dark",
+      minzoom: 0,
+      maxzoom: 20
+    }
+  ]
+};
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -176,6 +233,7 @@ function DeckGLOverlay({
       weight: p.weight,
       type: p.type,
       urgency: urgencyFromScore(p.urgency_score),
+      urgency_score: p.urgency_score ?? 1,
     }));
 
     if (viewMode === "hexagon") {
@@ -185,22 +243,25 @@ function DeckGLOverlay({
           data: points,
           getPosition: (d: (typeof points)[0]) => d.position,
           getElevationWeight: (d: (typeof points)[0]) => d.weight,
-          elevationScale: 20,
+          getColorWeight: (d: (typeof points)[0]) => d.urgency_score,
+          colorAggregation: 'MAX',
+          elevationScale: 30,
           extruded: true,
           radius: 2000,
-          coverage: 0.85,
+          coverage: 0.92,
           colorRange: [
-            [34, 211, 238],
-            [52, 211, 153],
-            [251, 191, 36],
-            [251, 146, 60],
-            [248, 113, 113],
-            [239, 68, 68],
+            [147, 197, 253], // Very Low (Light Blue)
+            [59, 130, 246],  // Low (Blue)
+            [251, 191, 36],  // Medium-Low (Yellow/Amber)
+            [245, 158, 11],  // Medium (Orange/Amber)
+            [239, 68, 68],   // High (Light Red)
+            [220, 38, 38],   // Critical (Deep Red)
           ],
-          opacity: 0.8,
+          opacity: 0.9,
           pickable: true,
           autoHighlight: true,
-          highlightColor: isGhost ? [255, 255, 255, 40] : [0, 0, 0, 40],
+          highlightColor: isGhost ? [255, 255, 255, 80] : [0, 0, 0, 80],
+          parameters: { depthTest: false },
         }),
       ];
     }
@@ -211,18 +272,19 @@ function DeckGLOverlay({
           id: "heatmap",
           data: points,
           getPosition: (d: (typeof points)[0]) => d.position,
-          getWeight: (d: (typeof points)[0]) => d.weight,
-          radiusPixels: 40,
-          intensity: 1,
-          threshold: 0.1,
+          getWeight: (d: (typeof points)[0]) => d.urgency_score * 2, // Boost critical heat
+          radiusPixels: 55,
+          intensity: 1.2,
+          threshold: 0.05,
           colorRange: [
-            [59, 130, 246],
-            [34, 211, 238],
-            [245, 158, 11],
-            [239, 68, 68],
-            [220, 38, 38],
+            [147, 197, 253], // Very Low (Light Blue)
+            [59, 130, 246],  // Low (Blue)
+            [251, 191, 36],  // Medium-Low (Yellow/Amber)
+            [245, 158, 11],  // Medium (Orange/Amber)
+            [239, 68, 68],   // High (Light Red)
+            [220, 38, 38],   // Critical (Deep Red)
           ],
-          opacity: 0.7,
+          opacity: 0.85,
         }),
       ];
     }
@@ -235,13 +297,17 @@ function DeckGLOverlay({
         getRadius: 80,
         getFillColor: (d: (typeof points)[0]) => {
           const c = URGENCY_COLORS[d.urgency] ?? [59, 130, 246];
-          return [...c, 200];
+          return [...c, 230];
         },
-        radiusMinPixels: 4,
-        radiusMaxPixels: 12,
+        stroked: true,
+        getLineColor: [255, 255, 255, 200],
+        lineWidthMinPixels: 2,
+        radiusMinPixels: 5,
+        radiusMaxPixels: 15,
         pickable: true,
         autoHighlight: true,
-        highlightColor: isGhost ? [255, 255, 255, 60] : [0, 0, 0, 60],
+        highlightColor: isGhost ? [255, 255, 255, 100] : [0, 0, 0, 80],
+        parameters: { depthTest: false },
       }),
     ];
   }, [data, viewMode, isGhost]);
@@ -249,12 +315,13 @@ function DeckGLOverlay({
   const overlay = useControl(
     () =>
       new MapboxOverlay({
-        layers,
         interleaved: true,
       })
   );
 
-  overlay.setProps({ layers });
+  useEffect(() => {
+    overlay.setProps({ layers });
+  }, [layers, overlay]);
 
   return null;
 }
@@ -275,8 +342,9 @@ export function EnhancedMap({
   const [data, setData] = useState<HeatmapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>("hexagon");
+  const [viewMode, setViewMode] = useState<ViewMode>("heatmap");
   const [selectedType, setSelectedType] = useState<string>("");
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [violationTypes, setViolationTypes] = useState<ViolationType[]>([]);
   const [showSatellite, setShowSatellite] = useState(false);
   const [satelliteDate, setSatelliteDate] = useState(() =>
@@ -357,8 +425,8 @@ export function EnhancedMap({
           {/* View mode toggle */}
           <div className="flex rounded-xl bg-ink/[0.04] p-1">
             {[
-              { mode: "hexagon" as const, icon: Grid3X3, label: "Hexagon" },
               { mode: "heatmap" as const, icon: Layers, label: "Heatmap" },
+              { mode: "hexagon" as const, icon: Grid3X3, label: "Hexagon" },
               { mode: "points" as const, icon: Filter, label: "Points" },
             ].map(({ mode, icon: Icon, label }) => (
               <button
@@ -376,19 +444,66 @@ export function EnhancedMap({
             ))}
           </div>
 
-          {/* Violation type filter */}
-          <select
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="bg-panel border border-ink/10 rounded-xl px-3 py-1.5 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-accent/30"
-          >
-            <option value="">All Types</option>
-            {violationTypes.map((vt) => (
-              <option key={vt.code} value={vt.code}>
-                {vt.name}
-              </option>
-            ))}
-          </select>
+          {/* Custom Violation Type Dropdown */}
+          <div className="relative z-50">
+            <button
+              onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
+              className="flex items-center justify-between min-w-[160px] max-w-[220px] bg-panel border border-ink/10 rounded-xl px-3 py-1.5 text-xs text-ink focus:outline-none hover:border-ink/20 transition-all shadow-sm"
+            >
+              <span className="truncate pr-2 font-medium">
+                {selectedType ? violationTypes.find((vt) => vt.code === selectedType)?.name : "All Types"}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 text-ink/50 transition-transform duration-200 shrink-0 ${isTypeDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            <AnimatePresence>
+              {isTypeDropdownOpen && (
+                <>
+                  {/* Invisible overlay to close dropdown on outside click */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsTypeDropdownOpen(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute top-full left-0 mt-1.5 w-[240px] bg-panel border border-ink/10 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-xl py-1.5 z-50 overflow-hidden"
+                  >
+                    <div className="max-h-[280px] overflow-y-auto">
+                      <button
+                        onClick={() => {
+                          setSelectedType("");
+                          setIsTypeDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between transition-colors hover:bg-ink/[0.04] ${!selectedType ? "text-accent font-semibold bg-accent/[0.05]" : "text-ink/70"}`}
+                      >
+                        All Types
+                        {!selectedType && <Check className="w-3.5 h-3.5 shrink-0" />}
+                      </button>
+                      {violationTypes.map((vt) => {
+                        const isSelected = selectedType === vt.code;
+                        return (
+                          <button
+                            key={vt.code}
+                            onClick={() => {
+                              setSelectedType(vt.code);
+                              setIsTypeDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between transition-colors hover:bg-ink/[0.04] ${isSelected ? "text-accent font-semibold bg-accent/[0.05]" : "text-ink/70"}`}
+                          >
+                            <span className="truncate pr-2">{vt.name}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Satellite toggle */}
           <button
@@ -517,9 +632,11 @@ export function EnhancedMap({
         {!loading && !error && data && data.points.length === 0 && (
           <div className="absolute inset-0 z-[999] flex items-center justify-center pointer-events-none">
             <div className="text-center px-6">
-              <Layers className="w-8 h-8 text-ink/40 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-ink/70">No reports found for this area</p>
-              <p className="text-xs text-ink/50 mt-1">Try expanding the date range or clearing filters</p>
+              <Layers className="w-8 h-8 text-ink/50 mx-auto mb-2 drop-shadow-sm" />
+              <p className="text-base font-bold text-ink drop-shadow-md">No records match the selected criteria</p>
+              <p className="text-sm font-medium text-ink/80 mt-1 drop-shadow-sm">
+                We couldn't find any environmental reports. Try adjusting your filters or expanding the date range.
+              </p>
             </div>
           </div>
         )}

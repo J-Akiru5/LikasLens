@@ -486,7 +486,7 @@ export default function ReportPage() {
           <div className="flex-1">
             <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>Quick report</h1>
             <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: "3px 0 0" }}>
-              {incidentType} · GPS {gps ? "detected" : "pending"}
+              GPS {gps ? "detected" : "pending"}
             </p>
           </div>
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-[#facc15]/20 text-[#b8860b] border border-[#facc15]/30">
@@ -509,6 +509,21 @@ export default function ReportPage() {
               <span style={{ fontFamily: "var(--font-data)", fontSize: 10 }}>{gps.lat.toFixed(4)}, {gps.lng.toFixed(4)}</span>
             </div>
           )}
+        </div>
+
+        {/* Incident type selector */}
+        <div>
+          <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Incident type</label>
+          <button
+            onClick={() => { setTypeSheetOpen(true); haptic("light"); }}
+            className="ios-list-row w-full"
+            style={{ borderRadius: 16, border: "1px solid var(--border)", background: "var(--panel)", minHeight: 56 }}
+          >
+            <span style={{ flex: 1, textAlign: "left", fontFamily: "var(--font-body)", fontSize: 15, color: incidentType ? "var(--ink)" : "var(--muted-subtle)" }}>
+              {incidentType || "Select classification"}
+            </span>
+            <Camera style={{ width: 18, height: 18, color: "var(--muted)" }} />
+          </button>
         </div>
 
         <GhostToggle />
