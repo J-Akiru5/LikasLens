@@ -612,17 +612,14 @@ APP_DEBUG=true</pre>
 
 <div class="card">
   <div class="card-header">
-    <h2>Install the Roboflow SDK</h2>
-    <span class="badge badge-required">Required</span>
+    <h2>Roboflow API Access</h2>
+    <span class="badge badge-tip">No extra install needed</span>
   </div>
 
-  <p style="margin-bottom:1rem;">The AI service needs the <code>inference</code> SDK to call Roboflow's API. Install it:</p>
-
-  <pre>cd apps/ai-service
-pip install inference</pre>
+  <p style="margin-bottom:1rem;">The AI service calls Roboflow's Serverless API directly via HTTP using the <code>requests</code> library (already installed). No additional SDK is required.</p>
 
   <div class="info">
-    <strong>What this installs:</strong> The <code>inference</code> package provides a Python client for Roboflow's Serverless Inference API. It handles authentication, image encoding, and response parsing automatically.
+    <strong>Why not the <code>inference</code> SDK?</strong> The official Roboflow <code>inference</code> package requires Python &lt;3.13. The AI service runs on Python 3.13+, so we use Roboflow's REST API directly at <code>https://serverless.roboflow.com/{model_id}</code>. Same functionality, zero dependency issues.
   </div>
 </div>
 
@@ -717,8 +714,8 @@ python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001</pre>
     <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
     <tr>
       <td><code>ModuleNotFoundError: No module named 'inference'</code></td>
-      <td>SDK not installed</td>
-      <td>Run <code>pip install inference</code> in the ai-service directory</td>
+      <td>Trying to use old SDK approach</td>
+      <td>Not needed — AI service uses raw HTTP via <code>requests</code>. Ignore this error if using the current codebase.</td>
     </tr>
     <tr>
       <td><code>401 Unauthorized</code> from Roboflow</td>
@@ -786,7 +783,7 @@ python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001</pre>
     <tr><td><code>NEO4J_PASSWORD</code></td><td>Yes</td><td>Neo4j database password</td></tr>
     <tr><td><code>CORS_ORIGINS</code></td><td>Yes</td><td>Comma-separated allowed origins</td></tr>
     <tr><td><code>YOLO_MODEL_PATH</code></td><td>Yes</td><td>Path to YOLOv8 COCO model weights</td></tr>
-    <tr><td><code>ENV_MODEL_PATH</code></td><td>Yes</td><td>Path to custom environmental model weights</td></tr>
+    <tr><td><code>ENV_MODEL_PATH</code></td><td>Yes</td><td>Path to custom environmental model weights (default: models/yolov8-waste.pt)</td></tr>
     <tr><td><code>ROBOFLOW_API_KEY</code></td><td>Yes (new)</td><td>Roboflow Serverless API key</td></tr>
     <tr><td><code>ROBOFLOW_MODEL_ID</code></td><td>Yes (new)</td><td>Roboflow model ID (project/version format)</td></tr>
     <tr><td><code>LIKASLENS_METRICS_LOG</code></td><td>No</td><td>Enable metrics logging (true/false)</td></tr>
