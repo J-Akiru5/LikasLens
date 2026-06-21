@@ -30,6 +30,7 @@ use App\Http\Controllers\TicketAssignmentController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserImpactController;
 use App\Http\Controllers\UserWalletController;
+use App\Http\Controllers\Admin\TenantController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -251,6 +252,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/users/bulk-deactivate', [AdminBulkController::class, 'bulkUserDeactivate']);
         Route::post('/admin/ngos/bulk-verify', [AdminBulkController::class, 'bulkNgoVerify']);
         Route::post('/admin/ngos/bulk-delete', [AdminBulkController::class, 'bulkNgoDelete']);
+
+        // Tenant management (multi-tenancy CRUD)
+        Route::get('/admin/tenants', [TenantController::class, 'index']);
+        Route::post('/admin/tenants', [TenantController::class, 'store']);
+        Route::get('/admin/tenants/{id}', [TenantController::class, 'show']);
+        Route::put('/admin/tenants/{id}', [TenantController::class, 'update']);
+        Route::delete('/admin/tenants/{id}', [TenantController::class, 'destroy']);
     });
 
     // Ticket status transition (analyst+ can update status)

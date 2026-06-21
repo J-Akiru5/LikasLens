@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Models\SlaConfig;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Notifications\SlaEscalationNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class SlaService
 {
@@ -114,8 +116,15 @@ class SlaService
         Log::alert("SLA: Ticket {$ticket->id} ESCALATED to {$escalatedTo}. ".
             "Response breached: {$ticket->sla_response_breached}, Resolution breached: {$ticket->sla_resolution_breached}.");
 
-        // TODO: When notification system is implemented, send notification to escalated_to user
-        // e.g., Notification::send($admin, new SlaEscalationNotification($ticket));
+        // Dispatch SLA escalation notification to the assigned admin
+        if ($admin) {
+            try {
+                Notification::send($admin, new SlaEscalationNotification($ticket));
+                Log::info("SLA: Escalation notification sent to {$escalatedTo} for ticket {$ticket->id}.");
+            } catch (\Exception $e) {
+                Log::error("SLA: Failed to send escalation notification for ticket {$ticket->id}: {$e->getMessage()}");
+            }
+        }
     }
 
     /**

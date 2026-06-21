@@ -45,10 +45,12 @@ def health_check() -> dict[str, Any]:
     url = f"{ROBOFLOW_API_URL}/{model_id}"
     try:
         resp = requests.get(url, params={"api_key": api_key}, timeout=10)
-        # The serverless endpoint returns 404 for GET on valid models
-        # (it only accepts POST with an image). So 404 actually means
-        # the model exists — connection succeeded.
-        if resp.status_code in (200, 404, 405):
+        # The serverless endpoint returns various codes:
+        # - 200: OK (unlikely on GET)
+        # - 400: Missing Content-Type (expected for GET — means endpoint is reachable)
+        # - 404: Not found on GET (means model exists, just doesn't accept GET)
+        # - 405: Method not allowed (means model exists)
+        if resp.status_code in (200, 400, 404, 405):
             return {
                 "status": "ok",
                 "model": model_id,

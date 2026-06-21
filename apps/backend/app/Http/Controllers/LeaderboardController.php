@@ -164,6 +164,11 @@ class LeaderboardController extends Controller
                 'total_reports' => Ticket::count(),
                 'total_citizens' => User::whereNull('deleted_at')->count(),
                 'avg_eco_credits' => (int) round(User::whereNull('deleted_at')->avg('reward_points_balance') ?? 0),
+                'overdue_tickets' => Ticket::where('sla_resolution_breached', true)
+                    ->whereNotIn('status', ['resolved', 'closed'])
+                    ->count(),
+                'response_breached' => Ticket::where('sla_response_breached', true)->count(),
+                'resolution_breached' => Ticket::where('sla_resolution_breached', true)->count(),
             ];
         });
 

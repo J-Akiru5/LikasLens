@@ -1,9 +1,9 @@
 import { locales, defaultLocale } from "@likaslens/shared";
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-import createIntlMiddleware from "next-intl/middleware";
+import createMiddleware from "next-intl/middleware";
 
-const intlMiddleware = createIntlMiddleware({
+const intlMiddleware = createMiddleware({
   locales,
   defaultLocale,
   localePrefix: "always",
@@ -22,6 +22,9 @@ export default async function middleware(request: NextRequest) {
   ) {
     return response;
   }
+
+  // Store original cookies so we can restore them if Supabase token refresh fails
+  const originalCookies = request.cookies.getAll();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -48,7 +51,10 @@ export default async function middleware(request: NextRequest) {
     const { data } = await supabase.auth.getUser();
     user = data.user;
   } catch {
-    // Supabase unreachable — treat as unauthenticated, allow public pages
+    // Supabase unreachable or token refresh failed — restore original cookies
+    originalCookies.forEach(({ name, value }) => {
+      response.cookies.set(name, value);
+    });
     return response;
   }
   const pathname = request.nextUrl.pathname;
