@@ -9,6 +9,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Personal Access Token Model
+    |--------------------------------------------------------------------------
+    |
+    | This value optionally allows you to specify a custom model to use for
+    | Sanctum's personal access tokens. This is useful when you need to
+    | customize the token model, e.g. to add global scopes.
+    |
+    */
+
+    'personal_access_token_model' => App\Models\PersonalAccessToken::class,
+
+    /*
+    |--------------------------------------------------------------------------
     | Stateful Domains
     |--------------------------------------------------------------------------
     |
@@ -19,10 +32,9 @@ return [
     */
 
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
-        '%s%s',
-        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
+        '%s,%s',
+        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,likaslens.syntaxure.dev',
         Sanctum::currentApplicationUrlWithPort(),
-        // Sanctum::currentRequestHost(),
     ))),
 
     /*
@@ -50,7 +62,7 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => (int) env('SANCTUM_EXPIRATION_MINUTES', 1440),  // 24 hours
 
     /*
     |--------------------------------------------------------------------------

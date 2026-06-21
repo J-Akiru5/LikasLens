@@ -2,17 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\EnvironmentalLawPh;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class LawSeeder extends Seeder
 {
     public function run(): void
     {
-        $now = Carbon::now();
-
         $laws = [
             [
                 'law_code' => 'RA 9003',
@@ -88,16 +84,11 @@ class LawSeeder extends Seeder
             ],
         ];
 
-        DB::table('environmental_laws_ph')->upsert(
-            array_map(function (array $law) use ($now): array {
-                $law['id'] = (string) Str::uuid();
-                $law['created_at'] = $now;
-                $law['updated_at'] = $now;
-
-                return $law;
-            }, $laws),
-            ['law_code'],
-            ['title', 'summary', 'issuing_agency', 'jurisdiction_scope', 'source_url', 'is_active', 'updated_at']
-        );
+        foreach ($laws as $law) {
+            EnvironmentalLawPh::updateOrCreate(
+                ['law_code' => $law['law_code']],
+                array_merge($law, ['country_code' => 'PH'])
+            );
+        }
     }
 }

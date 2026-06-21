@@ -22,8 +22,9 @@ class UserImpactController extends Controller
             ->limit(10)
             ->get();
 
-        $reportUserIds = $reports->pluck('user_id')->filter()->unique();
-        $tickets = Ticket::whereIn('reporter_user_id', $reportUserIds)
+        // Single query to get all tickets for these reports instead of N+1
+        $reportIds = $reports->pluck('id')->filter()->unique();
+        $tickets = Ticket::whereIn('reporter_user_id', [$user->id])
             ->get()
             ->keyBy('reporter_user_id');
 

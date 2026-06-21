@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { Leaf, Eye, EyeOff } from "lucide-react";
+import { Leaf, Eye, EyeOff, Check } from "lucide-react";
+import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { setLaravelAuthToken } from "@likaslens/shared";
+import { laravelPost } from "@likaslens/shared";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState("");
 
   async function handleRegister(e: React.FormEvent) {
@@ -37,9 +39,23 @@ export default function RegisterPage() {
       return;
     }
 
-    // Wire Supabase session token to shared API client (if session exists immediately)
-    if (data.session?.access_token) {
-      setLaravelAuthToken(data.session.access_token);
+    // Sync with Laravel to get Sanctum token
+    try {
+      const laravelData = await laravelPost<any>("/auth/sync", {
+        supabase_auth_user_id: data.user?.id,
+        email: data.user?.email,
+        name: name || data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0],
+      });
+      
+      if (laravelData?.data?.token) {
+        const token = laravelData.data.token;
+        const isSecure = window.location.protocol === "https:";
+        document.cookie = `laravel_token=${token}; path=/; max-age=2592000; SameSite=Strict${isSecure ? "; Secure" : ""}`;
+      } else {
+        console.error("No token returned from backend:", laravelData);
+      }
+    } catch (syncErr) {
+      console.error("Failed to sync with backend", syncErr);
     }
 
     router.push(`/${locale}/dashboard`);
@@ -63,7 +79,7 @@ export default function RegisterPage() {
         {/* Floating Logo */}
         <div className="absolute -top-10 left-8">
           <div className="w-20 h-20 rounded-3xl bg-page shadow-xl flex items-center justify-center border border-accent/10">
-            <Leaf className="w-10 h-10 text-accent" />
+            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-14 h-14 object-contain drop-shadow-sm" />
           </div>
         </div>
 
@@ -139,12 +155,47 @@ export default function RegisterPage() {
                 {error}
               </p>
             )}
+
+            <label 
+              className="flex items-start gap-3 py-2 cursor-pointer group"
+              onClick={(e) => {
+                e.preventDefault();
+                setAgreed(!agreed);
+              }}
+            >
+              <div className="mt-0.5 relative">
+                <input
+                  type="checkbox"
+                  name="agreeToUpdates"
+                  checked={agreed}
+                  onChange={() => {}}
+                  className="sr-only"
+                  required
+                />
+                <div
+                  className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors shadow-sm ${
+                    agreed ? "bg-accent border-accent" : "bg-transparent border-ink/20"
+                  }`}
+                >
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: agreed ? 1 : 0 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                  >
+                    <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                  </motion.div>
+                </div>
+              </div>
+              <span className="text-sm font-medium text-ink/60 leading-snug group-hover:text-ink/80 transition-colors">
+                I agree to help keep my community safe and only submit real, accurate reports.
+              </span>
+            </label>
           </div>
 
           <div className="pt-4">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreed}
               className="w-full bg-accent text-white rounded-2xl py-4 font-semibold tracking-wide text-lg flex items-center justify-center gap-2 hover:bg-accent/90 disabled:opacity-50 transition-colors shadow-lg"
             >
               {loading ? (

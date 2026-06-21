@@ -1,55 +1,61 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
-import Link from "next/link";
-import type { UserProfile, Achievement } from "@likaslens/shared";
+import { useEffect, useState, useCallback } from "react";
+import type { UserProfile } from "@likaslens/shared";
 import { RankProgressCard, AchievementCard } from "@likaslens/shared";
 import {
-  MapPin, Crosshair, Globe, Eye, EyeOff, Loader2, ChevronRight, AlertCircle,
+  MapPin, Crosshair, Globe, Eye, EyeOff, Loader2,
   BarChart3, User,
 } from "lucide-react";
 
 interface ContributorProfileProps {
   locale?: string;
-  paramsPromise?: Promise<{ userId: string }>;
 }
 
-export function ContributorProfile({ locale, paramsPromise }: ContributorProfileProps) {
-  const params = paramsPromise ? use(paramsPromise) : null;
+export function ContributorProfile({ locale }: ContributorProfileProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ghostMode, setGhostMode] = useState(false);
 
-  useEffect(() => {
-    async function fetchProfile() {
-      try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-        const endpoint = params?.userId
-          ? `${baseUrl}/users/${params.userId}`
-          : `${baseUrl}/api/user/profile`;
-        const res = await fetch(endpoint, {
-          headers: { Accept: "application/json" },
-          credentials: params ? "omit" : "include",
-        });
-        if (!res.ok) {
-          if (res.status === 404) {
-            setError("User not found");
-          } else {
-            setError("Failed to load profile");
-          }
-          return;
+  const fetchProfile = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10_000);
+
+      const res = await fetch("/api/user/profile", {
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeout));
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          setError("Unauthenticated");
+        } else if (res.status === 404) {
+          setError("User not found");
+        } else {
+          setError("Failed to load profile");
         }
-        const body = await res.json();
-        setProfile(body.data || body);
-      } catch {
-        setError("Unable to connect to server");
-      } finally {
-        setLoading(false);
+        return;
       }
+      const body = await res.json();
+      setProfile(body.data || body);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
+        setError("Request timed out");
+      } else {
+        setError("Unable to connect to server");
+      }
+    } finally {
+      setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
     fetchProfile();
-  }, [params?.userId]);
+  }, [fetchProfile]);
 
   const anonName = `Contributor #${((profile?.id?.toString() || "").slice(-4) || "0000").padStart(4, "0")}`;
 
@@ -64,29 +70,18 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
   if (error) {
     return (
       <div className="py-24 text-center">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <AlertCircle className="w-5 h-5 text-amber" />
-          <h2 className="font-semibold tracking-tight text-xl text-ink">{error}</h2>
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-ink/[0.02] to-ink/[0.06] flex items-center justify-center mx-auto mb-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.08] ring-8 ring-ink/[0.015]">
+          <User className="w-7 h-7 text-ink/30" />
         </div>
+        <h2 className="font-semibold tracking-tight text-lg text-ink mb-1.5">Profile Unavailable</h2>
+        <p className="text-sm text-ink/50 max-w-sm mx-auto leading-relaxed">
+          {error === "User not found" 
+            ? "This citizen hasn't set up their public profile yet." 
+            : "We couldn't load this profile right now. The systems might be syncing."}
+        </p>
       </div>
     );
   }
-
-  const fetchMoreAchievements = async (cursor?: string) => {
-    if (!params?.userId) return { data: [] as Achievement[], next_cursor: undefined as string | undefined };
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const cursorParam = cursor ? `&cursor=${cursor}` : "";
-      const res = await fetch(`${baseUrl}/users/${params.userId}/achievements?per_page=10${cursorParam}`, {
-        headers: { Accept: "application/json" },
-      });
-      if (!res.ok) return { data: [] as Achievement[], next_cursor: undefined as string | undefined };
-      const body = await res.json();
-      return { data: body.data || ([] as Achievement[]), next_cursor: body.meta?.next_cursor as string | undefined };
-    } catch {
-      return { data: [] as Achievement[], next_cursor: undefined as string | undefined };
-    }
-  };
 
   return (
     <div className="space-y-16">
@@ -175,14 +170,6 @@ export function ContributorProfile({ locale, paramsPromise }: ContributorProfile
       <section>
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-semibold tracking-tight text-2xl text-ink">Credentials</h2>
-          {profile?.achievements && profile.achievements.length > 10 && params?.userId && (
-            <Link
-              href={`/${locale || ""}/profile/${params.userId}/achievements`}
-              className="flex items-center gap-1 font-mono text-xs text-ink/40 hover:text-ink transition-colors"
-            >
-              View All <ChevronRight className="w-3 h-3" />
-            </Link>
-          )}
         </div>
         {profile?.achievements && profile.achievements.length > 0 ? (
           <div>

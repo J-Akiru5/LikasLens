@@ -1,50 +1,14 @@
 @import "tailwindcss";
-@source "../../../shared/src/**/*.{ts,tsx}";
-@import "@likaslens/shared/src/styles/civic-brutalism.css";
+@source "../../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
+@import "@likaslens/shared/src/styles/design-tokens.css";
 
-:root {
-  --page: #f5f5f0;
-  --ink: #1a1d1a;
-  --panel: #eeeee8;
-  --border: rgba(26, 29, 26, 0.08);
-  --muted: rgba(26, 29, 26, 0.5);
-  --accent: #1b4332;
-  --accent-bright: #2ee6c8;
-  --green: #2d6a4f;
-  --red: #b23b3b;
-  --amber: #b8860b;
-}
-
-:root[data-theme="ghost"] {
-  --page: #0c1628;
-  --ink: #e8e0d4;
-  --panel: rgba(12, 22, 40, 0.92);
-  --border: rgba(232, 224, 212, 0.06);
-  --muted: rgba(232, 224, 212, 0.4);
-  --accent: #2ee6c8;
-  --accent-bright: #2ee6c8;
-  --green: #2ee6c8;
-  --red: #e85a5a;
-  --amber: #e8ad55;
-}
-
-@theme inline {
-  --color-page: var(--page);
-  --color-ink: var(--ink);
-  --color-panel: var(--panel);
-  --color-accent: var(--accent);
-  --color-secondary: var(--accent-bright);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-  --color-green: var(--green);
-  --color-red: var(--red);
-  --color-amber: var(--amber);
-  --font-sans: var(--font-body);
-  --font-mono: var(--font-data);
-}
-
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE PWA — iOS-aesthetic native design system (2026 redesign)
+   Scoped to mobile-pwa. Shared tokens untouched.
+   Design language: large collapsing titles, frosted bars, grouped inset
+   lists, spring sheets, 44pt touch targets. Runs on Android identically.
+   ═══════════════════════════════════════════════════════════════════════════ */
 * {
-  -webkit-tap-highlight-color: transparent;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -54,49 +18,224 @@ html {
 }
 
 body {
-  background: var(--page);
-  color: var(--ink);
-  font-family: var(--font-body), "Helvetica Neue", Arial, sans-serif;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
   transition: background-color 0.4s ease, color 0.4s ease;
+  font-family: var(--font-body), "Public Sans", system-ui, -apple-system, sans-serif;
 }
 
-*:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Smooth page transitions in standalone mode */
 @media (display-mode: standalone) {
   @view-transition {
     navigation: auto;
   }
 }
 
-/* Hide scrollbar on mobile for clean native feel */
-.hide-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/* ── Font variable bindings (shared tokens inherit the new voice) ────────── */
+:root {
+  --font-body: var(--font-body), "Public Sans", system-ui, -apple-system, sans-serif;
+  --font-data: var(--font-data), "JetBrains Mono", ui-monospace, monospace;
+  --font-heading: var(--font-display), "Bricolage Grotesque", system-ui, sans-serif;
+  --font-sans: var(--font-body), "Public Sans", system-ui, sans-serif;
 }
-.hide-scrollbar::-webkit-scrollbar {
+
+/* ── Radius scale (one coherent system) ─────────────────────────────────────
+   Cards 16px · sheets 24px top · icons 12px · pills full. No more 16/24/32/40
+   mixed on one screen. */
+:root {
+  --r-card: 16px;
+  --r-sheet: 24px;
+  --r-icon: 12px;
+  --r-pill: 9999px;
+}
+
+/* ── Frosted bar — translucent top & bottom chrome ────────────────────────── */
+.frosted-bar {
+  background: color-mix(in oklab, var(--page) 72%, transparent);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* ── Large collapsing title (iOS large-title pattern) ─────────────────────── */
+.ios-large-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  color: var(--ink);
+}
+.ios-large-title--xl {
+  font-size: clamp(2rem, 9vw, 2.6rem);
+}
+.ios-section-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--muted);
+  text-transform: none; /* no decorative uppercase tracking */
+}
+
+/* ── Grouped inset list (iOS Settings pattern) ────────────────────────────── */
+.ios-grouped-list {
+  background: var(--panel);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.ios-list-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  padding: 13px 14px;
+  min-height: 58px; /* comfortable touch target incl. padding */
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  transition: background 120ms ease-out;
+}
+.ios-list-row:last-child {
+  border-bottom: none;
+}
+.ios-list-row:active {
+  background: color-mix(in oklab, var(--ink) 4%, transparent);
+}
+.ios-row-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Touch target — enforce 44pt minimum on key controls ──────────────────── */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Bottom sheet (native feel) ───────────────────────────────────────────── */
+.ios-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 60;
+}
+.ios-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;
+  background: var(--panel);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.18);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  max-height: 92dvh;
+  overflow-y: auto;
+}
+.ios-sheet-grabber {
+  width: 36px;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: color-mix(in oklab, var(--ink) 18%, transparent);
+  margin: 8px auto 4px;
+}
+
+/* ── Forensic photo banner ──────────────────────────────────────────────────
+   Reliable over fragile: no mix-blend-mode (which made slow/failed images
+   vanish into the gradient). The dark scrim overlay guarantees text contrast
+   even while the photo loads or if it fails to load. */
+.m-banner-wrap {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-card);
+  min-height: 120px;
+  background: linear-gradient(135deg, var(--accent) 0%, #0d1a12 75%);
+}
+.m-banner-wrap > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.85) brightness(0.62);
+}
+.m-banner-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(13, 26, 18, 0.45) 0%, rgba(13, 26, 18, 0.72) 100%);
+  pointer-events: none;
+}
+
+/* ── Status dot (color paired with label/icon, never color alone) ─────────── */
+.m-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-pill);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* ── Tonal tab pills (segmented control) ──────────────────────────────────── */
+.m-segmented {
+  display: flex;
+  gap: 2px;
+  background: color-mix(in oklab, var(--ink) 5%, transparent);
+  border-radius: var(--r-pill);
+  padding: 3px;
+}
+.m-segmented-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  transition: all 180ms ease-out;
+  white-space: nowrap;
+}
+.m-segmented-btn--active {
+  background: var(--accent);
+  color: var(--page);
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--accent) 25%, transparent);
+}
+
+/* ── Reduced motion (PRODUCT.md: this is a field tool, not a showcase) ────── */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Hide scrollbars on horizontal rails ──────────────────────────────────── */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-/* Entrance animations */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ── Haptic visual pulse fallback ────────────────────────────────────────────
+   Minimal scale bounce when vibration API isn't available.
+   Subtle and short — not a ring, not a flash. */
+.haptic-pulse {
+  animation: haptic-pulse 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes haptic-pulse {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.995); }
+  60%  { transform: scale(1.002); }
+  100% { transform: scale(1); }
 }
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.animate-fade-up {
-  animation: fade-up 0.5s ease-out both;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.4s ease-out both;
-}

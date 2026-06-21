@@ -45,15 +45,15 @@ flowchart TB
 
     %% AI Service
     subgraph AIService["FastAPI AI Service :8001"]
-        YOLO["YOLOv8<br/>Object Detection"]
-        Gremlin["Gremlin Traversal<br/>Law + Agency Routing"]
+        YOLO["YOLOv8 Nano<br/>Object Detection"]
+        Neo4j["Neo4j Traversal<br/>Cypher Query"]
         Gemini["Gemini 2.5 Flash<br/>Summary + Chatbot"]
     end
 
     %% Data Stores
     SupabaseDB[("Supabase<br/>PostgreSQL")]
     SupabaseStorage[("Supabase<br/>Storage")]
-    CosmosDB[("Cosmos DB<br/>Gremlin Graph")]
+    CosmosDB[("Neo4j<br/>Graph DB")]
 
     %% Citizen flows
     Citizen -->|photo + GPS| ReportPage
@@ -71,8 +71,8 @@ flowchart TB
 
     %% AI Pipeline (Neuro-Symbolic)
     TriageSvc -->|base64 image| YOLO
-    YOLO -->|detected objects + classes| Gremlin
-    Gremlin -->|hazard → law → agency| Gemini
+    YOLO -->|detected objects + classes| Neo4j
+    Neo4j -->|hazard → law → agency| Gemini
     Gemini -->|incident summary + routing| TriageSvc
     TriageSvc -->|classification results| SupabaseDB
 
@@ -115,7 +115,7 @@ flowchart TB
     class Citizen,GhostUser,Analyst,SuperAdmin,NGO,Sponsor stakeholder
     class ReportPage,Dashboard,Leaderboard,Laws,GhostToggle,AdminDash,TicketMgmt,UserMgmt,NGOMgmt,LawMgmt frontend
     class AuthSync,ReportCtrl,TriageSvc,AchieveSvc,RankSvc,TicketCtrl,AssignCtrl backend
-    class YOLO,Gremlin,Gemini ai
+    class YOLO,Neo4j,Gemini ai
     class SupabaseDB,SupabaseStorage,CosmosDB storage
 ```
 
@@ -129,8 +129,8 @@ sequenceDiagram
     participant Storage as Supabase Storage
     participant DB as PostgreSQL
     participant AI as AI Service
-    participant YOLO as YOLOv8
-    participant Graph as Gremlin Graph
+    participant YOLO as YOLOv8 Nano
+    participant Graph as Neo4j Graph
     participant LLM as Gemini
 
     Citizen->>PWA: Capture photo + GPS
@@ -181,20 +181,20 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     subgraph Neural["Neural Layer"]
-        YOLO["YOLOv8<br/>Object Detection<br/>(yolov8n.pt)"]
+        YOLO["YOLOv8 Nano<br/>Object Detection<br/>(yolov8n.pt)"]
         Gemini["Gemini 2.5 Flash<br/>NL Summarization"]
     end
 
     subgraph Symbolic["Symbolic Layer"]
-        Gremlin["Gremlin Traversal<br/>Graph Query"]
-        GraphDB[("Cosmos DB<br/>Hazard→Law→Agency")]
+        Neo4j2["Neo4j Traversal<br/>Cypher Query"]
+        GraphDB[("Neo4j<br/>Hazard→Law→Agency")]
     end
 
     Image[("Evidence<br/>Image")] --> YOLO
-    YOLO -->|detected classes| Gremlin
-    Gremlin -->|graph query| GraphDB
-    GraphDB -->|matched laws + agencies| Gremlin
-    Gremlin -->|structured data| Gemini
+    YOLO -->|detected classes| Neo4j2
+    Neo4j2 -->|graph query| GraphDB
+    GraphDB -->|matched laws + agencies| Neo4j2
+    Neo4j2 -->|structured data| Gemini
     Gemini -->|incident summary| Output["Classification<br/>+ Routing"]
 
     style Neural fill:#fff3e0,stroke:#f57c00,stroke-width:2px

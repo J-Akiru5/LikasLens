@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\NgoGroup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -56,6 +57,16 @@ class AdminNgoController extends Controller
 
         $ngo = NgoGroup::create($validated);
 
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'ngo_created',
+            'entity_type' => 'NgoGroup',
+            'entity_id' => $ngo->id,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'NGO created.',
@@ -66,6 +77,7 @@ class AdminNgoController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $ngo = NgoGroup::findOrFail($id);
+        $old = $ngo->toArray();
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
@@ -75,7 +87,19 @@ class AdminNgoController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        $oldValues = $ngo->only(array_keys($validated));
         $ngo->update($validated);
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'ngo_updated',
+            'entity_type' => 'NgoGroup',
+            'entity_id' => $ngo->id,
+            'old_values' => $old,
+            'new_values' => $ngo->fresh()->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -84,10 +108,21 @@ class AdminNgoController extends Controller
         ]);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $ngo = NgoGroup::findOrFail($id);
+        $old = $ngo->toArray();
         $ngo->delete();
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'ngo_deleted',
+            'entity_type' => 'NgoGroup',
+            'entity_id' => $id,
+            'old_values' => $old,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,

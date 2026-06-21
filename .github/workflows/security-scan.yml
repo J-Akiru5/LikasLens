@@ -1,0 +1,144 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Security Scan – Weekly container & dependency vulnerability scanning
+# 2026 industry standard: pinned SHAs, Trivy, SBOM generation
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Security Scan
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC (14:00 PHT)
+    - cron: "0 6 * * 1"
+  workflow_dispatch: # allow manual trigger
+
+env:
+  NODE_VERSION: 22
+  PNPM_VERSION: 10
+
+jobs:
+  # ── 1. Trivy container scan (backend image) ─────────────────────────
+  trivy-backend:
+    name: 🔍 Trivy – Backend container
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write # for uploading SARIF results
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t likaslens-backend:scan .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: likaslens-backend:scan
+          format: sarif
+          output: trivy-backend-results.sarif
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          vuln-type: os,library
+        continue-on-error: true
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: apps/backend/trivy-backend-results.sarif
+          category: backend-container
+
+  # ── 2. Trivy container scan (AI service image) ──────────────────────
+  trivy-ai-service:
+    name: 🔍 Trivy – AI Service container
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    defaults:
+      run:
+        working-directory: apps/ai-service
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build AI service image
+        run: docker build -t likaslens-ai-service:scan .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: likaslens-ai-service:scan
+          format: sarif
+          output: trivy-ai-results.sarif
+          severity: HIGH,CRITICAL
+          exit-code: 1
+          vuln-type: os,library
+        continue-on-error: true
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: apps/ai-service/trivy-ai-results.sarif
+          category: ai-service-container
+
+  # ── 3. Dependency audit – npm/pnpm ──────────────────────────────────
+  npm-audit:
+    name: 📦 pnpm audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run pnpm audit
+        run: pnpm audit --audit-level=moderate
+      - name: Generate SBOM (npm)
+        run: npx @cyclonedx/cyclonedx-npm --output-file sbom.json
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-sbom
+          path: sbom.json
+
+  # ── 4. Dependency audit – Composer ──────────────────────────────────
+  composer-audit:
+    name: 🐘 Composer audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Run composer audit
+        run: composer audit
+
+  # ── 5. Dependency audit – pip / Python ──────────────────────────────
+  pip-audit:
+    name: 🐍 pip audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ai-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements.txt pip-audit
+      - name: Run pip audit
+        run: pip-audit

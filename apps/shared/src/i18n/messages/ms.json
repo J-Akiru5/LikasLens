@@ -178,7 +178,7 @@
     "publicRecordsAdmin": "Rekod Awam",
     "publicRecordsAdminDesc": "Lihat papan skor awam. Pastikan isu yang diselesaikan dicerminkan dengan tepat untuk akauntabiliti komuniti.",
     "aiAssistance": "Bantuan AI",
-    "aiAssistanceDesc": "Gunakan Likasy, pembantu AI, untuk menanyakan undang-undang alam sekitar, menganalisis corak laporan, dan menghasilkan ringkasan.",
+    "aiAssistanceDesc": "Gunakan Liksi, pembantu AI, untuk menanyakan undang-undang alam sekitar, menganalisis corak laporan, dan menghasilkan ringkasan.",
     "role": "Peranan",
     "actions": "Tindakan",
     "changeRole": "Tukar Peranan",
@@ -340,7 +340,7 @@
     "sendMessage": "Hantar Mesej",
     "sending": "Menghantar...",
     "successMessage": "Mesej dihantar! Kami akan menghubungi anda kembali tidak lama lagi.",
-    "officeAddress": "Manila, Filipina",
+    "officeAddress": "Iloilo, Filipina",
     "getInTouch": "Hubungi"
   },
   "privacy": {
@@ -353,13 +353,13 @@
     "lastUpdated": "Kemas Kini Terakhir"
   },
   "chat": {
-    "title": "Likasy",
+    "title": "Liksi",
     "subtitle": "Pembantu AI",
     "online": "Dalam Talian",
-    "placeholder": "Tanya Likasy...",
+    "placeholder": "Tanya Liksi...",
     "send": "Hantar mesej",
     "closeChat": "Tutup sembang",
-    "openChat": "Buka sembang Likasy",
+    "openChat": "Buka sembang Liksi",
     "errorFallback": "Alamak! Saya tidak dapat berfikir sekarang. Sila periksa sambungan anda atau cuba lagi nanti."
   },
   "offline": {
@@ -378,5 +378,22 @@
     "coastalDamage": "Kerosakan Pantai",
     "wasteBurning": "Pembakaran Sisa",
     "unclassified": "Isu Alam Sekitar Tidak Terkelas"
+  },
+  "seo": {
+    "homeTitle": "LikasLens — Melindungi Alam Filipina | Pelaporan Sivik Berasaskan AI",
+    "impactTitle": "Kesan — Pelaporan Alam Sekitar Komuniti",
+    "impactDescription": "Lihat kesan sebenar pelaporan alam sekitar warga di Filipina. Jejak insiden yang diselesaikan dan tindakan komuniti.",
+    "lawsTitle": "Undang-undang dan Peraturan Alam Sekitar Filipina",
+    "lawsDescription": "Ketahui hak anda untuk melindungi alam. Undang-undang alam sekitar Filipina tentang hutan, pesisir, kepelbagaian biologi, dan pencemaran.",
+    "scoreboardTitle": "Papan Pendahulu Komuniti — Pelindung Alam Sekitar",
+    "scoreboardDescription": "Pelapor komuniti teratas dan pelindung alam sekitar di Filipina. Lihat siapa yang memberi kesan terbesar dalam melindungi alam.",
+    "reportTitle": "Laporkan Isu Alam Sekitar",
+    "reportDescription": "Ambil gambar dan laporkan isu alam sekitar di Filipina. Analisis AI dengan penghantaran segera ke agensi yang betul.",
+    "contactTitle": "Hubungi LikasLens",
+    "contactDescription": "Hubungi LikasLens. Sertai pergerakan melindungi alam Filipina melalui tindakan sivik.",
+    "changelogTitle": "Changelog — Jejak Semua Kemas Kini",
+    "changelogDescription": "Jejak semua perubahan, pembaikan, dan penambahbaikan LikasLens.",
+    "privacyDescription": "Dasar privasi LikasLens. Data dan metadata EXIF anda dilindungi.",
+    "termsDescription": "Syarat perkhidmatan LikasLens."
   }
 }

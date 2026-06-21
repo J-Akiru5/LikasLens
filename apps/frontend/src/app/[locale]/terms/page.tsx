@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, Scale, Hammer, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { AppHeader } from "@/components/layout/header";
+import { AppHeader } from "@likaslens/shared";
 
 export default function TermsPage() {
   return (
@@ -89,7 +89,7 @@ export default function TermsPage() {
               </li>
               <li className="flex gap-3">
                 <span className="text-accent font-bold">!</span>
-                <span>Do not attempt to scrape or reverse-engineer the Likasy AI engine.</span>
+                <span>Do not attempt to scrape or reverse-engineer the Liksi AI engine.</span>
               </li>
             </ul>
           </motion.section>

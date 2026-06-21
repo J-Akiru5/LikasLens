@@ -1,0 +1,5185 @@
+openapi: 3.0.3
+info:
+  title: LikasLens API
+  description: |
+    LikasLens AI Environmental Detection Platform API.
+
+    This is the **sole contract** governing inter-service communication between
+    frontend, mobile-pwa, admin-portal, backend, and ai-service — as mandated by
+    the AGENTS.md architectural boundary rules.
+
+    All endpoints return JSON. Public endpoints are rate-limited per IP.
+    Authenticated endpoints require a Sanctum Bearer token issued via
+    `/auth/sync`, `/auth/login`, or `/auth/register`.
+  version: 1.0.0
+  contact:
+    name: LikasLens Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: http://localhost:8000/api
+    description: Local development
+  - url: https://api.likaslens.com/api
+    description: Production
+
+tags:
+  - name: Health
+    description: Service health checks
+  - name: Auth
+    description: Authentication and user sync
+  - name: Reports
+    description: Environmental report submission and triage
+  - name: Tickets
+    description: Public ticket tracking
+  - name: Laws
+    description: Environmental laws reference data
+  - name: Leaderboard
+    description: Gamification leaderboards and stats
+  - name: Achievements
+    description: Achievement catalog
+  - name: NGOs
+    description: NGO partner directory
+  - name: Dashboard
+    description: Public dashboard stats and activity feed
+  - name: Impact
+    description: Aggregate impact statistics
+  - name: Map
+    description: Heatmap and geographic data
+  - name: Profile
+    description: Public profile viewing
+  - name: User
+    description: Authenticated user endpoints
+  - name: Chat
+    description: AI chatbot proxy
+  - name: Admin-Users
+    description: Admin user management
+  - name: Admin-NGOs
+    description: Admin NGO management
+  - name: Admin-Laws
+    description: Admin law management
+  - name: Admin-Rewards
+    description: Admin reward management
+  - name: Admin-AuditLogs
+    description: Admin audit log viewing
+  - name: Admin-Triage
+    description: Admin triage queue management
+  - name: Admin-LGU
+    description: Admin LGU performance metrics
+  - name: Admin-Predictions
+    description: Admin predictive hotspot detection
+  - name: Admin-Bulk
+    description: Admin bulk operations
+  - name: Admin-ContactMessages
+    description: Admin contact message management
+
+# ---------------------------------------------------------------------------
+# Security Schemes
+# ---------------------------------------------------------------------------
+security: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Supabase-issued JWT token. Obtain via `/auth/sync` (Supabase identity),
+        `/auth/login` (email/password), or `/auth/register`.
+
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: PAT
+      description: |
+        Personal Access Token issued via the Admin Portal for Public API access.
+
+  # ---------------------------------------------------------------------------
+  # Reusable Schemas
+  # ---------------------------------------------------------------------------
+  schemas:
+
+    # -- Generic Wrappers --
+    ApiResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          description: Varies per endpoint
+
+    ErrorResponse:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Validation error"
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+    PaginationMeta:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          example: 1
+        last_page:
+          type: integer
+          example: 5
+        per_page:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 100
+
+    # -- Core Domain Models --
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        supabase_auth_user_id:
+          type: string
+          nullable: true
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        country_code:
+          type: string
+          nullable: true
+          example: "PH"
+        role:
+          $ref: "#/components/schemas/Role"
+        trust_score:
+          type: integer
+          example: 100
+        reward_points_balance:
+          type: integer
+          example: 250
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    Role:
+      type: string
+      enum:
+        - citizen
+        - ghost
+        - lgu
+        - partner
+        - analyst
+        - super_admin
+
+    Ticket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_id:
+          type: string
+          example: "INC-A1B2C3"
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        status:
+          $ref: "#/components/schemas/TicketStatus"
+        urgency_score:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 10
+        category:
+          type: string
+          nullable: true
+        reporter:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    TicketStatus:
+      type: string
+      enum:
+        - open
+        - investigating
+        - monitoring
+        - resolved
+        - closed
+        - pending_review
+        - verified
+
+    TicketDetail:
+      allOf:
+        - $ref: "#/components/schemas/Ticket"
+        - type: object
+          properties:
+            address_text:
+              type: string
+              nullable: true
+            ai_triage_summary:
+              type: string
+              nullable: true
+            ai_confidence:
+              type: number
+              format: float
+              nullable: true
+            evidence:
+              type: array
+              items:
+                $ref: "#/components/schemas/TicketEvidence"
+            classifications:
+              type: array
+              items:
+                $ref: "#/components/schemas/TicketClassification"
+            assignments:
+              type: array
+              items:
+                $ref: "#/components/schemas/TicketAssignment"
+
+    TicketEvidence:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ticket_id:
+          type: string
+          format: uuid
+        uploaded_by_user_id:
+          type: string
+          format: uuid
+          nullable: true
+        storage_path:
+          type: string
+        mime_type:
+          type: string
+        file_size_bytes:
+          type: integer
+        checksum_sha256:
+          type: string
+        yolo_status:
+          type: string
+          enum: [pending, processed, failed]
+        captured_at:
+          type: string
+          format: date-time
+          nullable: true
+        exif_removed_at:
+          type: string
+          format: date-time
+          nullable: true
+        uploaded_by:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+
+    TicketClassification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ticket_id:
+          type: string
+          format: uuid
+        violation_type_id:
+          type: string
+          format: uuid
+        violation_type:
+          type: string
+          nullable: true
+        classified_by:
+          type: string
+        confidence_score:
+          type: number
+          format: float
+          nullable: true
+
+    TicketAssignment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        ticket_id:
+          type: string
+          format: uuid
+        assigned_group_id:
+          type: string
+          format: uuid
+        assigned_by_user_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        assignment_reason:
+          type: string
+          nullable: true
+        completed_at:
+          type: string
+          format: date-time
+          nullable: true
+        ngo_group:
+          $ref: "#/components/schemas/Ngo"
+        assigned_by:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+
+    TicketTimelineEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        from_status:
+          type: string
+          nullable: true
+        to_status:
+          type: string
+        transition_label:
+          type: string
+          nullable: true
+        actor_type:
+          type: string
+        note:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        actor:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            role:
+              $ref: "#/components/schemas/Role"
+
+    Report:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+          nullable: true
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        image_path:
+          type: string
+          nullable: true
+        image_size:
+          type: integer
+          nullable: true
+        storage_disk:
+          type: string
+          nullable: true
+        status:
+          type: string
+        evidence_hash:
+          type: string
+          nullable: true
+        blockchain_tx:
+          type: string
+          nullable: true
+        blockchain_verified_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    Law:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        law_code:
+          type: string
+          example: "RA-9275"
+        country_code:
+          type: string
+          example: "PH"
+        title:
+          type: string
+        summary:
+          type: string
+        issuing_agency:
+          type: string
+        jurisdiction_scope:
+          type: string
+          nullable: true
+        source_url:
+          type: string
+          format: uri
+          nullable: true
+        is_active:
+          type: boolean
+        penalties:
+          type: array
+          items:
+            $ref: "#/components/schemas/LawPenalty"
+        violation_types:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              code:
+                type: string
+              name:
+                type: string
+              description:
+                type: string
+                nullable: true
+
+    LawPenalty:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        law_id:
+          type: string
+          format: uuid
+        violation_name:
+          type: string
+        penalty_type:
+          type: string
+        min_fine_php:
+          type: number
+          format: double
+          nullable: true
+        max_fine_php:
+          type: number
+          format: double
+          nullable: true
+        min_imprisonment_days:
+          type: integer
+          nullable: true
+        max_imprisonment_days:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+
+    Ngo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        focus_area:
+          type: string
+          nullable: true
+        region:
+          type: string
+        province:
+          type: string
+          nullable: true
+        city_municipality:
+          type: string
+          nullable: true
+        contact_email:
+          type: string
+          format: email
+          nullable: true
+        contact_phone:
+          type: string
+          nullable: true
+        contact_number:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        is_verified:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+    Reward:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        partner_store_id:
+          type: string
+          format: uuid
+        reward_name:
+          type: string
+        reward_type:
+          type: string
+        points_cost:
+          type: integer
+        stock_quantity:
+          type: integer
+        valid_from:
+          type: string
+          format: date-time
+          nullable: true
+        valid_until:
+          type: string
+          format: date-time
+          nullable: true
+        is_active:
+          type: boolean
+        partner_store:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+
+    Achievement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        criteria_type:
+          type: string
+        criteria_value:
+          type: object
+          nullable: true
+        icon:
+          type: string
+        tier:
+          $ref: "#/components/schemas/AchievementTier"
+        points_awarded:
+          type: integer
+        is_hidden:
+          type: boolean
+        sort_order:
+          type: integer
+        unlocked:
+          type: boolean
+          description: Only present in user-context responses
+        progress_value:
+          type: integer
+          description: Only present in user-context responses
+        threshold:
+          type: integer
+          description: Only present in user-context responses
+        unlocked_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    AchievementTier:
+      type: string
+      enum:
+        - basic
+        - verified
+        - advanced
+        - authority
+
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        actor_user_id:
+          type: string
+          format: uuid
+        action:
+          type: string
+        entity_type:
+          type: string
+        entity_id:
+          type: string
+          format: uuid
+        old_values:
+          type: object
+          nullable: true
+        new_values:
+          type: object
+          nullable: true
+        ip_address:
+          type: string
+          nullable: true
+        user_agent:
+          type: string
+          nullable: true
+        request_id:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        actor:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+            role:
+              $ref: "#/components/schemas/Role"
+
+    RankProgress:
+      type: object
+      properties:
+        current_level:
+          type: string
+        level_number:
+          type: integer
+        current_xp:
+          type: integer
+        xp_to_next_level:
+          type: integer
+        next_level:
+          type: string
+          nullable: true
+        next_level_xp:
+          type: integer
+          nullable: true
+        progress_percent:
+          type: number
+          format: float
+        eco_credit_bonus:
+          type: integer
+
+    DashboardStats:
+      type: object
+      properties:
+        active_incidents:
+          type: integer
+        active_incidents_total:
+          type: integer
+        active_incidents_progress:
+          type: integer
+        active_incidents_trend:
+          type: string
+        resolved_today:
+          type: integer
+        resolved_today_total:
+          type: integer
+        resolved_today_progress:
+          type: integer
+        resolved_today_trend:
+          type: string
+        avg_response_minutes:
+          type: number
+          format: float
+        avg_response_sla:
+          type: integer
+        avg_response_progress:
+          type: integer
+        avg_response_trend:
+          type: string
+        system_load:
+          type: integer
+        system_load_total:
+          type: integer
+        system_load_progress:
+          type: integer
+        system_load_trend:
+          type: string
+        total_tickets:
+          type: integer
+        total_reports:
+          type: integer
+        total_users:
+          type: integer
+        ghost_reports:
+          type: integer
+        tickets_by_status:
+          type: object
+          additionalProperties:
+            type: integer
+
+    ActivityFeedItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_id:
+          type: string
+          example: "INC-A1B2C3"
+        type:
+          type: string
+          enum: [Critical, Warning, Info]
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        time:
+          type: string
+          description: Human-readable relative time
+        status:
+          type: string
+        reporter:
+          type: string
+
+    PublicImpactData:
+      type: object
+      properties:
+        total_reports:
+          type: integer
+        total_resolved:
+          type: integer
+        total_citizens:
+          type: integer
+        total_ngos:
+          type: integer
+        resolution_rate:
+          type: number
+          format: float
+        recent_verified:
+          type: array
+          items:
+            $ref: "#/components/schemas/VerifiedReport"
+        reports_by_type:
+          type: object
+          additionalProperties:
+            type: integer
+        top_barangays:
+          type: array
+          items:
+            $ref: "#/components/schemas/TopBarangay"
+
+    VerifiedReport:
+      type: object
+      properties:
+        location:
+          type: string
+        status:
+          type: string
+        date:
+          type: string
+          format: date
+        title:
+          type: string
+
+    TopBarangay:
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: integer
+
+    HeatmapData:
+      type: object
+      properties:
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeatmapPoint"
+        clusters:
+          type: array
+          items:
+            $ref: "#/components/schemas/HeatmapCluster"
+        hot_zones:
+          type: array
+          items:
+            $ref: "#/components/schemas/HotZone"
+
+    HeatmapPoint:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        weight:
+          type: integer
+        type:
+          type: string
+        urgency_score:
+          type: integer
+          nullable: true
+
+    HeatmapCluster:
+      type: object
+      properties:
+        center_lat:
+          type: number
+          format: double
+        center_lng:
+          type: number
+          format: double
+        count:
+          type: integer
+        location:
+          type: string
+        dominant_type:
+          type: string
+
+    HotZone:
+      type: object
+      properties:
+        bounds:
+          type: object
+          properties:
+            south:
+              type: number
+              format: double
+            west:
+              type: number
+              format: double
+            north:
+              type: number
+              format: double
+            east:
+              type: number
+              format: double
+        report_count:
+          type: integer
+        dominant_type:
+          type: string
+        urgency:
+          type: string
+          enum: [critical, high, medium, low]
+        location:
+          type: string
+
+    ViolationType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+
+    LeaderboardEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        eco_credits:
+          type: integer
+        score:
+          type: integer
+        level:
+          type: string
+        level_number:
+          type: integer
+        report_count:
+          type: integer
+
+    BarangayLeaderboardEntry:
+      type: object
+      properties:
+        barangay:
+          type: string
+        report_count:
+          type: integer
+
+    SpotlightUser:
+      type: object
+      nullable: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        eco_credits:
+          type: integer
+        total_balance:
+          type: integer
+        level:
+          type: string
+        level_number:
+          type: integer
+        report_count:
+          type: integer
+
+    LeaderboardStats:
+      type: object
+      properties:
+        total_reports:
+          type: integer
+        total_citizens:
+          type: integer
+        avg_eco_credits:
+          type: integer
+
+    UserImpact:
+      type: object
+      properties:
+        eco_credits:
+          type: integer
+        trust_score:
+          type: integer
+        community_rank:
+          type: integer
+        total_reports:
+          type: integer
+        total_citizens:
+          type: integer
+        rank_progress:
+          $ref: "#/components/schemas/RankProgress"
+        recent_achievements:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecentAchievement"
+        reports:
+          type: array
+          items:
+            $ref: "#/components/schemas/CitizenReport"
+
+    RecentAchievement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        icon:
+          type: string
+        tier:
+          $ref: "#/components/schemas/AchievementTier"
+        description:
+          type: string
+        unlocked_at:
+          type: string
+          format: date-time
+
+    CitizenReport:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        image_path:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    LguPerformanceData:
+      type: object
+      properties:
+        lgus:
+          type: array
+          items:
+            $ref: "#/components/schemas/LguPerformanceRow"
+        platform_averages:
+          $ref: "#/components/schemas/LguPlatformAverages"
+
+    LguPerformanceRow:
+      type: object
+      properties:
+        lgu_id:
+          type: string
+          format: uuid
+        lgu_name:
+          type: string
+        region:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        total_assigned:
+          type: integer
+        total_resolved:
+          type: integer
+        resolution_rate:
+          type: number
+          format: float
+        avg_response_hours:
+          type: number
+          format: float
+        avg_resolution_hours:
+          type: number
+          format: float
+        sla_compliance_rate:
+          type: number
+          format: float
+        pending_count:
+          type: integer
+        breached_count:
+          type: integer
+        status:
+          type: string
+          enum: [green, amber, red]
+
+    LguPlatformAverages:
+      type: object
+      properties:
+        total_lgus:
+          type: integer
+        avg_resolution_rate:
+          type: number
+          format: float
+        avg_response_hours:
+          type: number
+          format: float
+        avg_resolution_hours:
+          type: number
+          format: float
+        sla_compliance_rate:
+          type: number
+          format: float
+        total_assigned:
+          type: integer
+        total_resolved:
+          type: integer
+
+    TriageTicket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        display_id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        ai_confidence:
+          type: number
+          format: float
+          nullable: true
+        ai_triage_summary:
+          type: string
+          nullable: true
+        urgency_score:
+          type: integer
+          nullable: true
+        location:
+          type: string
+        latitude:
+          type: number
+          format: double
+          nullable: true
+        longitude:
+          type: number
+          format: double
+          nullable: true
+        photo_url:
+          type: string
+          nullable: true
+        photo_mime:
+          type: string
+          nullable: true
+        classifications:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              violation_type:
+                type: string
+              confidence:
+                type: number
+                format: float
+                nullable: true
+        reporter:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        time_since:
+          type: string
+
+    Prediction:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        location_name:
+          type: string
+        violation_type:
+          type: string
+        risk_score:
+          type: number
+          format: float
+        predicted_reports:
+          type: integer
+        confidence:
+          type: number
+          format: float
+
+    ContactMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        message:
+          type: string
+        status:
+          type: string
+          enum: [unread, read]
+        read_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    BlockchainVerification:
+      type: object
+      properties:
+        report_id:
+          type: string
+          format: uuid
+        evidence_hash:
+          type: string
+        tx_hash:
+          type: string
+          nullable: true
+        explorer_url:
+          type: string
+          format: uri
+          nullable: true
+        on_chain_verified:
+          type: boolean
+        verified_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    CurrencySetting:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        country_code:
+          type: string
+        country_name:
+          type: string
+        currency_code:
+          type: string
+        currency_name:
+          type: string
+        eco_credit_rate:
+          type: number
+          format: float
+        is_active:
+          type: boolean
+
+# ===========================================================================
+# PATHS
+# ===========================================================================
+paths:
+
+  # -------------------------------------------------------------------------
+  # Public API (External Developers)
+  # -------------------------------------------------------------------------
+  /public/v1/reports:
+    get:
+      tags: [Public-API]
+      summary: Retrieve public reports
+      description: Returns a paginated list of public, verified environmental reports.
+      operationId: getPublicReports
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: A list of reports
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Report"
+                      meta:
+                        $ref: "#/components/schemas/PaginationMeta"
+
+  # -------------------------------------------------------------------------
+  # Health
+  # -------------------------------------------------------------------------
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns service status. No authentication required.
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  service:
+                    type: string
+                    example: "likaslens-backend"
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  # -------------------------------------------------------------------------
+  # Auth
+  # -------------------------------------------------------------------------
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      description: Creates a new citizen account and returns a Sanctum token.
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+                supabase_auth_user_id:
+                  type: string
+                  description: Optional Supabase identity UUID
+      responses:
+        "201":
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: "#/components/schemas/User"
+                      token:
+                        type: string
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: "#/components/schemas/User"
+                      token:
+                        type: string
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/sync:
+    post:
+      tags: [Auth]
+      summary: Sync Supabase identity
+      description: |
+        Creates or updates a local user record from a Supabase Auth identity.
+        Used by the frontend/mobile-pwa after Supabase OAuth or magic-link flows.
+        Returns a Sanctum token for subsequent API calls.
+      operationId: authSync
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [supabase_auth_user_id, email]
+              properties:
+                supabase_auth_user_id:
+                  type: string
+                  description: Supabase Auth user UUID
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                  maxLength: 255
+                  nullable: true
+      responses:
+        "200":
+          description: User synced successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: "#/components/schemas/User"
+                      token:
+                        type: string
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh authentication token
+      description: Revokes the current token and issues a fresh one with 24-hour expiry.
+      operationId: authRefresh
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout
+      description: Revokes the current Sanctum token.
+      operationId: authLogout
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # -------------------------------------------------------------------------
+  # Reports
+  # -------------------------------------------------------------------------
+  /reports:
+    post:
+      tags: [Reports]
+      summary: Submit an environmental report
+      description: |
+        Creates a new ticket, evidence record, and report from a base64-encoded
+        image. The image is EXIF-stripped server-side (Ghost Mode). AI triage,
+        blockchain evidence hashing, and similarity checks run asynchronously
+        after creation.
+
+        Rate limited to 10 requests/minute per IP.
+      operationId: submitReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [base64Image, latitude, longitude]
+              properties:
+                base64Image:
+                  type: string
+                  description: Base64-encoded image (may include data: URI prefix)
+                latitude:
+                  type: number
+                  format: double
+                longitude:
+                  type: number
+                  format: double
+                user_id:
+                  type: string
+                  description: Supabase Auth user ID. Omit or send "ANONYMOUS_GHOST" for ghost mode.
+                  nullable: true
+                description:
+                  type: string
+                  maxLength: 5000
+                  nullable: true
+                report_type:
+                  type: string
+                  maxLength: 100
+                  description: "One of: illegal_logging, water_pollution, illegal_fishing, waste_dumping, wildlife_poaching, mining_violation, air_pollution, land_encroachment, other"
+                  nullable: true
+      responses:
+        "201":
+          description: Report submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      ticket_id:
+                        type: string
+                        format: uuid
+                      evidence_id:
+                        type: string
+                        format: uuid
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+                      imageSize:
+                        type: integer
+                      checksum:
+                        type: string
+                      triage:
+                        type: object
+                        properties:
+                          success:
+                            type: boolean
+                          has_concern:
+                            type: boolean
+                          indicators:
+                            type: array
+                            items:
+                              type: object
+                      blockchain:
+                        type: object
+                        properties:
+                          evidence_hash:
+                            type: string
+                            nullable: true
+                          tx_hash:
+                            type: string
+                            nullable: true
+                          explorer_url:
+                            type: string
+                            nullable: true
+                          verified_at:
+                            type: string
+                            format: date-time
+                            nullable: true
+                      chain:
+                        type: object
+                        nullable: true
+                        properties:
+                          chain_id:
+                            type: string
+                            format: uuid
+                          is_new_chain:
+                            type: boolean
+                          total_reports:
+                            type: integer
+                          urgency_boost:
+                            type: integer
+                      similar_reports:
+                        type: array
+                        items:
+                          type: object
+                      similar_reports_message:
+                        type: string
+                        nullable: true
+        "422":
+          description: Invalid image data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Processing failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reports/triage:
+    post:
+      tags: [Reports]
+      summary: AI triage only (no storage)
+      description: |
+        Sends an image to the AI triage service and returns the analysis
+        without creating any database records. Useful for pre-submission checks.
+        Rate limited to 20 requests/minute.
+      operationId: triageReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [base64Image]
+              properties:
+                base64Image:
+                  type: string
+      responses:
+        "200":
+          description: Triage result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  has_concern:
+                    type: boolean
+                  indicators:
+                    type: array
+                    items:
+                      type: object
+        "500":
+          description: Triage failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reports/chain/{chainId}:
+    get:
+      tags: [Reports]
+      summary: Get report chain details
+      description: Returns details of a report chain including all linked tickets.
+      operationId: getReportChain
+      parameters:
+        - name: chainId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Chain details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      chain_id:
+                        type: string
+                        format: uuid
+                      primary_ticket_id:
+                        type: string
+                        format: uuid
+                      location_name:
+                        type: string
+                        nullable: true
+                      latitude:
+                        type: number
+                        format: double
+                        nullable: true
+                      longitude:
+                        type: number
+                        format: double
+                        nullable: true
+                      radius_meters:
+                        type: integer
+                        nullable: true
+                      total_reports:
+                        type: integer
+                      urgency_boost:
+                        type: integer
+                      first_reported_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      last_reported_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+                      status:
+                        type: string
+                      tickets:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            title:
+                              type: string
+                            status:
+                              type: string
+                            urgency_score:
+                              type: integer
+                              nullable: true
+                            created_at:
+                              type: string
+                              format: date-time
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /reports/{id}/verify-evidence:
+    get:
+      tags: [Reports]
+      summary: Verify blockchain evidence
+      description: |
+        Returns blockchain evidence verification status for a report.
+        Rate limited to 30 requests/minute.
+      operationId: verifyEvidence
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/BlockchainVerification"
+        "404":
+          description: Report not found or no blockchain evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /reports/verify:
+    post:
+      tags: [Reports]
+      summary: LGU-verify a report
+      description: Marks a report as verified by an LGU analyst. Requires analyst or super_admin role.
+      operationId: verifyReport
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [report_id]
+              properties:
+                report_id:
+                  type: string
+                  format: uuid
+      responses:
+        "200":
+          description: Report verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      report_id:
+                        type: string
+                        format: uuid
+                      status:
+                        type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /reports/batch-sync:
+    post:
+      tags: [Reports]
+      summary: Batch sync offline reports
+      description: |
+        Accepts an array of queued offline reports (max 50) and processes each
+        as an individual report submission.
+      operationId: batchSyncReports
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reports]
+              properties:
+                reports:
+                  type: array
+                  minItems: 1
+                  maxItems: 50
+                  items:
+                    type: object
+                    required: [base64Image, latitude, longitude]
+                    properties:
+                      base64Image:
+                        type: string
+                      latitude:
+                        type: number
+                        format: double
+                      longitude:
+                        type: number
+                        format: double
+                      user_id:
+                        type: string
+                        nullable: true
+                      description:
+                        type: string
+                        maxLength: 5000
+                        nullable: true
+                      report_type:
+                        type: string
+                        maxLength: 100
+                        nullable: true
+      responses:
+        "200":
+          description: Batch sync result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      synced:
+                        type: integer
+                      total:
+                        type: integer
+                      results:
+                        type: array
+                        items:
+                          type: object
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # -------------------------------------------------------------------------
+  # Heatmap / Map
+  # -------------------------------------------------------------------------
+  /reports/heatmap:
+    get:
+      tags: [Map]
+      summary: Get heatmap data
+      description: |
+        Returns GeoJSON-like heatmap data with individual points, spatial
+        clusters (within 100m), and hot zones (5+ reports in 7 days).
+        Rate limited to 60 requests/minute.
+      operationId: getHeatmap
+      parameters:
+        - name: days
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 365
+            default: 30
+          description: Lookback window in days
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: Violation type code filter
+        - name: bounds
+          in: query
+          schema:
+            type: string
+          description: "Map viewport bounds as: south,west,north,east"
+      responses:
+        "200":
+          description: Heatmap data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/HeatmapData"
+
+  /reports/heatmap/violation-types:
+    get:
+      tags: [Map]
+      summary: Get available violation types
+      description: Returns violation type codes for the heatmap filter dropdown. Cached for 1 hour.
+      operationId: getViolationTypes
+      responses:
+        "200":
+          description: Violation types list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        name:
+                          type: string
+
+  # -------------------------------------------------------------------------
+  # Tickets
+  # -------------------------------------------------------------------------
+  /tickets:
+    get:
+      tags: [Tickets]
+      summary: List tickets (public, paginated)
+      description: Returns a paginated list of tickets. Rate limited to 60 req/min.
+      operationId: listTickets
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search in title, description, address, status
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/TicketStatus"
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            maximum: 50
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: Paginated ticket list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Ticket"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+
+  /tickets/{id}:
+    get:
+      tags: [Tickets]
+      summary: Get ticket detail
+      description: Returns full ticket detail including evidence, classifications, and assignments.
+      operationId: getTicket
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ticket detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/TicketDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /tickets/{id}/timeline:
+    get:
+      tags: [Tickets]
+      summary: Get ticket status timeline
+      description: |
+        Returns the full status transition timeline for a ticket.
+        Ghost-mode safe: reporter identity is never exposed.
+      operationId: getTicketTimeline
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Timeline data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      ticket_id:
+                        type: string
+                        format: uuid
+                      display_id:
+                        type: string
+                      timeline:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/TicketTimelineEntry"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /tickets/{id}/status:
+    patch:
+      tags: [Tickets]
+      summary: Update ticket status
+      description: |
+        Transition a ticket to a new status. Validates allowed transitions.
+        Requires analyst or super_admin role.
+      operationId: updateTicketStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: "#/components/schemas/TicketStatus"
+      responses:
+        "200":
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      old_status:
+                        type: string
+                      new_status:
+                        type: string
+                      resolved_at:
+                        type: string
+                        format: date-time
+                        nullable: true
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          description: Invalid status transition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # -------------------------------------------------------------------------
+  # Laws
+  # -------------------------------------------------------------------------
+  /laws:
+    get:
+      tags: [Laws]
+      summary: List environmental laws
+      description: Paginated list of environmental laws with penalties and violation types.
+      operationId: listLaws
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search in title, summary, law_code
+        - name: active_only
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            maximum: 50
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: Paginated law list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Law"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+
+  /laws/{id}:
+    get:
+      tags: [Laws]
+      summary: Get law detail
+      description: Returns a single environmental law with all penalties and violation types.
+      operationId: getLaw
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Law detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/Law"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # -------------------------------------------------------------------------
+  # Leaderboard
+  # -------------------------------------------------------------------------
+  /leaderboard:
+    get:
+      tags: [Leaderboard]
+      summary: All-time leaderboard
+      description: Top 20 citizens by eco-credit balance. Cached for 5 minutes.
+      operationId: getLeaderboard
+      responses:
+        "200":
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LeaderboardEntry"
+
+  /leaderboard/weekly:
+    get:
+      tags: [Leaderboard]
+      summary: Weekly leaderboard
+      description: Top 20 citizens by eco-credits earned this week.
+      operationId: getWeeklyLeaderboard
+      responses:
+        "200":
+          description: Weekly leaderboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LeaderboardEntry"
+
+  /leaderboard/monthly:
+    get:
+      tags: [Leaderboard]
+      summary: Monthly leaderboard
+      description: Top 20 citizens by eco-credits earned this month.
+      operationId: getMonthlyLeaderboard
+      responses:
+        "200":
+          description: Monthly leaderboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LeaderboardEntry"
+
+  /leaderboard/barangay:
+    get:
+      tags: [Leaderboard]
+      summary: Barangay leaderboard
+      description: Top 10 barangays by report count this month.
+      operationId: getBarangayLeaderboard
+      responses:
+        "200":
+          description: Barangay leaderboard
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BarangayLeaderboardEntry"
+
+  /leaderboard/spotlight:
+    get:
+      tags: [Leaderboard]
+      summary: Eco-Warrior of the Month
+      description: The highest eco-credit earner this month.
+      operationId: getSpotlight
+      responses:
+        "200":
+          description: Spotlight user (null if no data)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/SpotlightUser"
+
+  /leaderboard/stats:
+    get:
+      tags: [Leaderboard]
+      summary: Platform leaderboard stats
+      description: Aggregate stats: total reports, total citizens, average eco-credits.
+      operationId: getLeaderboardStats
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/LeaderboardStats"
+
+  # -------------------------------------------------------------------------
+  # Achievements
+  # -------------------------------------------------------------------------
+  /achievements:
+    get:
+      tags: [Achievements]
+      summary: Achievement catalog
+      description: Paginated list of all achievements. Hidden achievements show redacted info.
+      operationId: getAchievementCatalog
+      parameters:
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: Achievement catalog
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Achievement"
+                      meta:
+                        $ref: "#/components/schemas/PaginationMeta"
+
+  /achievements/user/{supabaseUserId}:
+    get:
+      tags: [Achievements]
+      summary: Get user achievements by Supabase ID
+      description: Returns all achievements with unlock status for the given user.
+      operationId: getUserAchievementsBySupabaseId
+      parameters:
+        - name: supabaseUserId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User achievements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Achievement"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # -------------------------------------------------------------------------
+  # NGOs (public read)
+  # -------------------------------------------------------------------------
+  /admin/ngos:
+    get:
+      tags: [NGOs]
+      summary: List NGOs (public)
+      description: Paginated NGO directory. Rate limited to 60 req/min.
+      operationId: listNgos
+      parameters:
+        - name: active_only
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: region
+          in: query
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            maximum: 50
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: Paginated NGO list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Ngo"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+
+  /admin/ngos/{id}:
+    get:
+      tags: [NGOs]
+      summary: Get NGO detail (public)
+      description: Returns NGO detail with assignments. Rate limited to 60 req/min.
+      operationId: getNgo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: NGO detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/Ngo"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # -------------------------------------------------------------------------
+  # Dashboard (public)
+  # -------------------------------------------------------------------------
+  /dashboard/stats:
+    get:
+      tags: [Dashboard]
+      summary: Public dashboard stats
+      description: Aggregate platform statistics. Cached for 5 minutes.
+      operationId: getDashboardStats
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/DashboardStats"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /dashboard/feed:
+    get:
+      tags: [Dashboard]
+      summary: Public activity feed
+      description: Returns the 20 most recent tickets as activity feed items.
+      operationId: getDashboardFeed
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Activity feed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ActivityFeedItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # -------------------------------------------------------------------------
+  # Public Impact
+  # -------------------------------------------------------------------------
+  /public/impact:
+    get:
+      tags: [Impact]
+      summary: Aggregate impact stats
+      description: |
+        Public impact dashboard: total reports, resolved count, citizen count,
+        NGO count, resolution rate, recent verified reports, reports by type,
+        and top barangays. Cached for 10 minutes.
+      operationId: getPublicImpact
+      responses:
+        "200":
+          description: Impact data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/PublicImpactData"
+
+  # -------------------------------------------------------------------------
+  # Profile (public, by Supabase ID)
+  # -------------------------------------------------------------------------
+  /profile/{supabaseUserId}:
+    get:
+      tags: [Profile]
+      summary: Get public user profile
+      description: Returns a user profile by their Supabase Auth ID, including badges and rank progress.
+      operationId: getProfile
+      parameters:
+        - name: supabaseUserId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      country_code:
+                        type: string
+                        nullable: true
+                      eco_credits:
+                        type: integer
+                      trust_score:
+                        type: integer
+                      role:
+                        $ref: "#/components/schemas/Role"
+                      stats:
+                        type: object
+                        properties:
+                          reports_filed:
+                            type: integer
+                          reports_verified:
+                            type: integer
+                          avg_response_minutes:
+                            type: number
+                      badges:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              format: uuid
+                            name:
+                              type: string
+                            icon:
+                              type: string
+                            tier:
+                              $ref: "#/components/schemas/AchievementTier"
+                            description:
+                              type: string
+                            unlocked_at:
+                              type: string
+                              format: date-time
+                              nullable: true
+                            points_awarded:
+                              type: integer
+                      level:
+                        type: string
+                      rank_progress:
+                        $ref: "#/components/schemas/RankProgress"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # -------------------------------------------------------------------------
+  # Settings
+  # -------------------------------------------------------------------------
+  /settings/eco-credit-rate:
+    get:
+      tags: [Impact]
+      summary: Get eco-credit exchange rate
+      description: Returns the current eco-credit to local currency exchange rate.
+      operationId: getEcoCreditRate
+      responses:
+        "200":
+          description: Exchange rate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/CurrencySetting"
+
+  # -------------------------------------------------------------------------
+  # Contact Messages
+  # -------------------------------------------------------------------------
+  /contact-messages:
+    post:
+      tags: [Impact]
+      summary: Submit a contact message
+      description: Public contact form submission. Rate limited to 10 req/min.
+      operationId: submitContactMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, message]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                message:
+                  type: string
+                  maxLength: 2000
+      responses:
+        "201":
+          description: Message saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/ContactMessage"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # -------------------------------------------------------------------------
+  # Chat
+  # -------------------------------------------------------------------------
+  /v1/chat:
+    post:
+      tags: [Chat]
+      summary: Likasy chatbot proxy
+      description: |
+        Proxies a chat request to the internal AI service. The AI service
+        is not directly accessible from the browser; this backend bridges the gap.
+        Rate limited to 10 requests/minute.
+      operationId: sendChat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messages]
+              properties:
+                messages:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required: [role, content]
+                    properties:
+                      role:
+                        type: string
+                        enum: [user, assistant]
+                      content:
+                        type: string
+                system_prompt:
+                  type: string
+                  nullable: true
+                temperature:
+                  type: number
+                  minimum: 0
+                  maximum: 2
+                  nullable: true
+                max_output_tokens:
+                  type: integer
+                  minimum: 1
+                  maximum: 8192
+                  nullable: true
+                top_p:
+                  type: number
+                  minimum: 0
+                  maximum: 1
+                  nullable: true
+      responses:
+        "200":
+          description: Chat response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reply:
+                    type: string
+        "502":
+          description: AI service unreachable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reply:
+                    type: string
+
+  # =========================================================================
+  # Authenticated User Endpoints
+  # =========================================================================
+
+  /user:
+    get:
+      tags: [User]
+      summary: Get current user (minimal)
+      description: Returns the minimal authenticated user object.
+      operationId: getCurrentUser
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        $ref: "#/components/schemas/Role"
+                      trust_score:
+                        type: integer
+                      reward_points_balance:
+                        type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /user/profile:
+    get:
+      tags: [User]
+      summary: Get current user profile
+      description: Returns the authenticated user's profile.
+      operationId: getUserProfile
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      role:
+                        $ref: "#/components/schemas/Role"
+                      trust_score:
+                        type: integer
+                      reward_points_balance:
+                        type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /user/impact:
+    get:
+      tags: [User]
+      summary: Get user impact stats
+      description: |
+        Returns the authenticated user's eco-credits, trust score, community
+        rank, recent achievements, and recent reports.
+      operationId: getUserImpact
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: User impact data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/UserImpact"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /user/achievements:
+    get:
+      tags: [User]
+      summary: Get user achievements
+      description: Returns all achievements with unlock/progress status for the authenticated user.
+      operationId: getUserAchievements
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: User achievements
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Achievement"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /user/rank-progress:
+    get:
+      tags: [User]
+      summary: Get rank progress
+      description: Returns the authenticated user's rank and XP progress.
+      operationId: getRankProgress
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Rank progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/RankProgress"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  # =========================================================================
+  # Admin - Users
+  # =========================================================================
+
+  /admin/users:
+    get:
+      tags: [Admin-Users]
+      summary: List users
+      description: Paginated user list. Optionally triggers Supabase sync.
+      operationId: adminListUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search in name and email
+        - name: role
+          in: query
+          schema:
+            $ref: "#/components/schemas/Role"
+        - name: sync
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Force Supabase user sync
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            maximum: 50
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        "200":
+          description: Paginated user list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/users/{id}:
+    get:
+      tags: [Admin-Users]
+      summary: Get user detail
+      operationId: adminGetUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: User detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Admin-Users]
+      summary: Update user
+      operationId: adminUpdateUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                trust_score:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                reward_points_balance:
+                  type: integer
+                  minimum: 0
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Admin-Users]
+      summary: Deactivate user
+      description: Soft-deletes a user by setting deleted_at.
+      operationId: adminDeleteUser
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: User deactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/users/{id}/role:
+    put:
+      tags: [Admin-Users]
+      summary: Change user role
+      operationId: adminUpdateUserRole
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  $ref: "#/components/schemas/Role"
+      responses:
+        "200":
+          description: Role changed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # =========================================================================
+  # Admin - NGOs
+  # =========================================================================
+
+  /admin/ngos:
+    post:
+      tags: [Admin-NGOs]
+      summary: Create NGO
+      operationId: adminCreateNgo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, region]
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                region:
+                  type: string
+                  maxLength: 100
+                contact_email:
+                  type: string
+                  format: email
+                  nullable: true
+                contact_phone:
+                  type: string
+                  maxLength: 50
+                  nullable: true
+                is_active:
+                  type: boolean
+                  default: true
+      responses:
+        "201":
+          description: NGO created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/Ngo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/ngos/{id}:
+    put:
+      tags: [Admin-NGOs]
+      summary: Update NGO
+      operationId: adminUpdateNgo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                region:
+                  type: string
+                  maxLength: 100
+                contact_email:
+                  type: string
+                  format: email
+                  nullable: true
+                contact_phone:
+                  type: string
+                  maxLength: 50
+                  nullable: true
+                is_active:
+                  type: boolean
+      responses:
+        "200":
+          description: NGO updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/Ngo"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Admin-NGOs]
+      summary: Delete NGO
+      operationId: adminDeleteNgo
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: NGO deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================================================================
+  # Admin - Laws
+  # =========================================================================
+
+  /admin/laws:
+    get:
+      tags: [Admin-Laws]
+      summary: List laws (admin)
+      description: Same as public /laws but requires authentication.
+      operationId: adminListLaws
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: active_only
+          in: query
+          schema:
+            type: boolean
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            maximum: 50
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated law list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Law"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [Admin-Laws]
+      summary: Create law
+      operationId: adminCreateLaw
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [law_code, title, summary, issuing_agency]
+              properties:
+                law_code:
+                  type: string
+                  maxLength: 50
+                title:
+                  type: string
+                  maxLength: 255
+                summary:
+                  type: string
+                issuing_agency:
+                  type: string
+                  maxLength: 255
+                jurisdiction_scope:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                source_url:
+                  type: string
+                  format: uri
+                  maxLength: 500
+                  nullable: true
+                is_active:
+                  type: boolean
+                  default: true
+      responses:
+        "201":
+          description: Law created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/Law"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/laws/{id}:
+    get:
+      tags: [Admin-Laws]
+      summary: Get law detail (admin)
+      operationId: adminGetLaw
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Law detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/Law"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Admin-Laws]
+      summary: Update law
+      operationId: adminUpdateLaw
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                law_code:
+                  type: string
+                  maxLength: 50
+                title:
+                  type: string
+                  maxLength: 255
+                summary:
+                  type: string
+                issuing_agency:
+                  type: string
+                  maxLength: 255
+                jurisdiction_scope:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                source_url:
+                  type: string
+                  format: uri
+                  maxLength: 500
+                  nullable: true
+                is_active:
+                  type: boolean
+      responses:
+        "200":
+          description: Law updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/Law"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Admin-Laws]
+      summary: Delete law
+      operationId: adminDeleteLaw
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Law deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================================================================
+  # Admin - Rewards
+  # =========================================================================
+
+  /admin/rewards:
+    get:
+      tags: [Admin-Rewards]
+      summary: List rewards
+      operationId: adminListRewards
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: active_only
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            maximum: 50
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated reward list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Reward"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [Admin-Rewards]
+      summary: Create reward
+      operationId: adminCreateReward
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [partner_store_id, reward_name, reward_type, points_cost, stock_quantity]
+              properties:
+                partner_store_id:
+                  type: string
+                  format: uuid
+                reward_name:
+                  type: string
+                  maxLength: 255
+                reward_type:
+                  type: string
+                  maxLength: 100
+                points_cost:
+                  type: integer
+                  minimum: 1
+                stock_quantity:
+                  type: integer
+                  minimum: 0
+                valid_from:
+                  type: string
+                  format: date-time
+                  nullable: true
+                valid_until:
+                  type: string
+                  format: date-time
+                  nullable: true
+                is_active:
+                  type: boolean
+                  default: true
+      responses:
+        "201":
+          description: Reward created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/Reward"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/rewards/{id}:
+    get:
+      tags: [Admin-Rewards]
+      summary: Get reward detail
+      operationId: adminGetReward
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reward detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/Reward"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Admin-Rewards]
+      summary: Update reward
+      operationId: adminUpdateReward
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                partner_store_id:
+                  type: string
+                  format: uuid
+                reward_name:
+                  type: string
+                  maxLength: 255
+                reward_type:
+                  type: string
+                  maxLength: 100
+                points_cost:
+                  type: integer
+                  minimum: 1
+                stock_quantity:
+                  type: integer
+                  minimum: 0
+                valid_from:
+                  type: string
+                  format: date-time
+                  nullable: true
+                valid_until:
+                  type: string
+                  format: date-time
+                  nullable: true
+                is_active:
+                  type: boolean
+      responses:
+        "200":
+          description: Reward updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/Reward"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Admin-Rewards]
+      summary: Delete reward
+      operationId: adminDeleteReward
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Reward deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================================================================
+  # Admin - Audit Logs
+  # =========================================================================
+
+  /admin/audit-logs:
+    get:
+      tags: [Admin-AuditLogs]
+      summary: List audit logs
+      operationId: adminListAuditLogs
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: action
+          in: query
+          schema:
+            type: string
+          description: Filter by action name
+        - name: entity_type
+          in: query
+          schema:
+            type: string
+          description: Filter by entity type (e.g., ticket, user, ngo_group)
+        - name: actor_user_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by actor user ID
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            maximum: 100
+            default: 50
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated audit log list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AuditLog"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/audit-logs/{id}:
+    get:
+      tags: [Admin-AuditLogs]
+      summary: Get audit log detail
+      operationId: adminGetAuditLog
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Audit log detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/AuditLog"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================================================================
+  # Admin - Triage
+  # =========================================================================
+
+  /admin/triage:
+    get:
+      tags: [Admin-Triage]
+      summary: Triage queue
+      description: |
+        Returns tickets requiring manual review: AI confidence < 0.6 or
+        status is pending_review. Sorted by urgency descending.
+      operationId: adminListTriage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            maximum: 50
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated triage queue
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TriageTicket"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/triage/violation-types:
+    get:
+      tags: [Admin-Triage]
+      summary: List violation types for classification
+      description: Returns all violation types for the classify modal dropdown.
+      operationId: adminListViolationTypes
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Violation types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ViolationType"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/triage/{id}/classify:
+    post:
+      tags: [Admin-Triage]
+      summary: Manually classify a ticket
+      description: Adds a manual violation classification and moves the ticket to investigating status.
+      operationId: adminClassifyTicket
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [violation_type_id, severity]
+              properties:
+                violation_type_id:
+                  type: string
+                  format: uuid
+                severity:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                notes:
+                  type: string
+                  maxLength: 2000
+                  nullable: true
+      responses:
+        "200":
+          description: Ticket classified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      old_status:
+                        type: string
+                      new_status:
+                        type: string
+                      violation_type:
+                        type: string
+                      severity:
+                        type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/triage/{id}/dismiss:
+    post:
+      tags: [Admin-Triage]
+      summary: Dismiss triage ticket as spam
+      operationId: adminDismissTriage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ticket dismissed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      old_status:
+                        type: string
+                      new_status:
+                        type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /admin/triage/{id}/escalate:
+    post:
+      tags: [Admin-Triage]
+      summary: Escalate triage ticket
+      description: Escalates a ticket to senior analyst by increasing urgency score and reopening.
+      operationId: adminEscalateTriage
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ticket escalated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      old_status:
+                        type: string
+                      new_status:
+                        type: string
+                      urgency_score:
+                        type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================================================================
+  # Admin - LGU Performance
+  # =========================================================================
+
+  /admin/lgu-performance:
+    get:
+      tags: [Admin-LGU]
+      summary: LGU performance metrics
+      description: |
+        Returns aggregated performance data for all LGUs including resolution
+        rate, response time, SLA compliance, and platform averages. Cached for 5 minutes.
+      operationId: adminGetLguPerformance
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: LGU performance data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/LguPerformanceData"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  # =========================================================================
+  # Admin - Predictions
+  # =========================================================================
+
+  /admin/predictions:
+    get:
+      tags: [Admin-Predictions]
+      summary: Hotspot predictions
+      description: Returns predicted environmental hotspots based on historical report data.
+      operationId: adminGetPredictions
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: days_back
+          in: query
+          schema:
+            type: integer
+            minimum: 7
+            maximum: 365
+            default: 90
+          description: Historical lookback window
+        - name: top_n
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of predictions to return
+        - name: violation_type
+          in: query
+          schema:
+            type: string
+          description: Filter by violation type code
+      responses:
+        "200":
+          description: Predictions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Prediction"
+                  meta:
+                    type: object
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  # =========================================================================
+  # Admin - Bulk Operations
+  # =========================================================================
+
+  /admin/tickets/bulk-status:
+    post:
+      tags: [Admin-Bulk]
+      summary: Bulk ticket status change
+      description: |
+        Update status for up to 100 tickets at once. Validates status transitions
+        per-ticket; failures are reported individually.
+      operationId: adminBulkTicketStatus
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids, status]
+              properties:
+                ids:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: string
+                    format: uuid
+                status:
+                  type: string
+                  enum: [open, investigating, monitoring, resolved, closed, verified]
+      responses:
+        "200":
+          description: Bulk result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      updated:
+                        type: integer
+                      failed:
+                        type: array
+                        items:
+                          type: string
+                          format: uuid
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/tickets/bulk-assign:
+    post:
+      tags: [Admin-Bulk]
+      summary: Bulk ticket assignment
+      description: Assign up to 100 tickets to an NGO/LGU at once.
+      operationId: adminBulkTicketAssign
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids, lgu_id]
+              properties:
+                ids:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: string
+                    format: uuid
+                lgu_id:
+                  type: string
+                  format: uuid
+                  description: NGO group ID to assign tickets to
+      responses:
+        "200":
+          description: Bulk result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      created:
+                        type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/users/bulk-role:
+    post:
+      tags: [Admin-Bulk]
+      summary: Bulk user role change
+      operationId: adminBulkUserRole
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids, role]
+              properties:
+                ids:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: string
+                    format: uuid
+                role:
+                  $ref: "#/components/schemas/Role"
+      responses:
+        "200":
+          description: Bulk result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      updated:
+                        type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/users/bulk-deactivate:
+    post:
+      tags: [Admin-Bulk]
+      summary: Bulk user deactivation
+      operationId: adminBulkUserDeactivate
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "200":
+          description: Bulk result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      deactivated:
+                        type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/ngos/bulk-verify:
+    post:
+      tags: [Admin-Bulk]
+      summary: Bulk NGO verification
+      operationId: adminBulkNgoVerify
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "200":
+          description: Bulk result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      verified:
+                        type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/ngos/bulk-delete:
+    post:
+      tags: [Admin-Bulk]
+      summary: Bulk NGO deletion
+      operationId: adminBulkNgoDelete
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              properties:
+                ids:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "200":
+          description: Bulk result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      deleted:
+                        type: integer
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  # =========================================================================
+  # Admin - Contact Messages
+  # =========================================================================
+
+  /admin/contact-messages:
+    get:
+      tags: [Admin-ContactMessages]
+      summary: List contact messages
+      operationId: adminListContactMessages
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated contact messages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ContactMessage"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /admin/contact-messages/{id}/read:
+    patch:
+      tags: [Admin-ContactMessages]
+      summary: Mark contact message as read
+      operationId: adminMarkContactMessageRead
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Message marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/ContactMessage"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================================================================
+  # Admin - Eco-Credit Engine
+  # =========================================================================
+
+  /v1/likaslens-engine/credits/award:
+    post:
+      tags: [Admin-Bulk]
+      summary: Award eco-credits
+      description: Awards eco-credits to a user from a corporate ESG credit pool.
+      operationId: awardCredits
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, ticket_id, credit_amount]
+              properties:
+                user_id:
+                  type: string
+                  format: uuid
+                ticket_id:
+                  type: string
+                  format: uuid
+                credit_amount:
+                  type: integer
+                  minimum: 1
+      responses:
+        "200":
+          description: Credits awarded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      user_id:
+                        type: string
+                        format: uuid
+                      awarded:
+                        type: integer
+                      new_balance:
+                        type: integer
+                      sponsored_by:
+                        type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Ticket does not belong to user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Wallet or user not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "503":
+          description: Credit pools depleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # =========================================================================
+  # Admin - Currency Settings
+  # =========================================================================
+
+  /admin/currency-settings:
+    get:
+      tags: [Admin-Rewards]
+      summary: List currency settings
+      operationId: adminListCurrencySettings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated currency settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/CurrencySetting"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [Admin-Rewards]
+      summary: Create currency setting
+      operationId: adminCreateCurrencySetting
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CurrencySetting"
+      responses:
+        "201":
+          description: Currency setting created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/CurrencySetting"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /admin/currency-settings/{id}:
+    get:
+      tags: [Admin-Rewards]
+      summary: Get currency setting
+      operationId: adminGetCurrencySetting
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Currency setting
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/CurrencySetting"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Admin-Rewards]
+      summary: Update currency setting
+      operationId: adminUpdateCurrencySetting
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CurrencySetting"
+      responses:
+        "200":
+          description: Currency setting updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/CurrencySetting"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Admin-Rewards]
+      summary: Delete currency setting
+      operationId: adminDeleteCurrencySetting
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Currency setting deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================================================================
+  # Admin - Ticket Assignments (Analyst+)
+  # =========================================================================
+
+  /ticket-assignments:
+    get:
+      tags: [Admin-Bulk]
+      summary: List ticket assignments
+      operationId: listTicketAssignments
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated assignments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TicketAssignment"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      tags: [Admin-Bulk]
+      summary: Create ticket assignment
+      operationId: createTicketAssignment
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ticket_id, assigned_group_id]
+              properties:
+                ticket_id:
+                  type: string
+                  format: uuid
+                assigned_group_id:
+                  type: string
+                  format: uuid
+                status:
+                  type: string
+                  default: assigned
+                assignment_reason:
+                  type: string
+                  nullable: true
+      responses:
+        "201":
+          description: Assignment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/TicketAssignment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /ticket-assignments/{id}:
+    get:
+      tags: [Admin-Bulk]
+      summary: Get ticket assignment detail
+      operationId: getTicketAssignment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Assignment detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/TicketAssignment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Admin-Bulk]
+      summary: Update ticket assignment
+      operationId: updateTicketAssignment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                assignment_reason:
+                  type: string
+                  nullable: true
+                completed_at:
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        "200":
+          description: Assignment updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: "#/components/schemas/TicketAssignment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+    delete:
+      tags: [Admin-Bulk]
+      summary: Delete ticket assignment
+      operationId: deleteTicketAssignment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Assignment deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # =========================================================================
+  # Admin - User Sync (v1 prefix)
+  # =========================================================================
+
+  /v1/likaslens-admin/users/sync:
+    get:
+      tags: [Admin-Users]
+      summary: Sync and list users
+      description: |
+        Triggers a Supabase Auth user sync and returns the full user list.
+        Super admin only.
+      operationId: adminSyncUsers
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            $ref: "#/components/schemas/Role"
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            maximum: 50
+            default: 20
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Paginated user list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+# ===========================================================================
+# Reusable Responses
+# ===========================================================================
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: "Unauthenticated."
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: "Unauthorized."
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: "Resource not found."
+
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            success: false
+            message: "The given data was invalid."
+            errors:
+              field: ["The field is required."]

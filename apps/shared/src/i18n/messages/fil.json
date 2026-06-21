@@ -178,7 +178,7 @@
     "publicRecordsAdmin": "Pampublikong Rekord",
     "publicRecordsAdminDesc": "Tingnan ang pampublikong scoreboard. Siguraduhing tamang naipapakita ang mga naresolbang isyu para sa pananagutan ng komunidad.",
     "aiAssistance": "Tulong ng AI",
-    "aiAssistanceDesc": "Gamitin si Likasy, ang AI assistant, upang mag-query ng mga batas pangkalikasan, suriin ang mga pattern ng ulat, at gumawa ng mga buod.",
+    "aiAssistanceDesc": "Gamitin si Liksi, ang AI assistant, upang mag-query ng mga batas pangkalikasan, suriin ang mga pattern ng ulat, at gumawa ng mga buod.",
     "role": "Role",
     "actions": "Mga Aksyon",
     "changeRole": "Palitan ang Role",
@@ -340,7 +340,7 @@
     "sendMessage": "Ipadala ang Mensahe",
     "sending": "Ipinapadala...",
     "successMessage": "Naipadala ang mensahe! Babalikan ka namin sa lalong madaling panahon.",
-    "officeAddress": "Maynila, Pilipinas",
+    "officeAddress": "Iloilo, Pilipinas",
     "getInTouch": "Makipag-ugnayan"
   },
   "privacy": {
@@ -353,13 +353,13 @@
     "lastUpdated": "Huling Na-update"
   },
   "chat": {
-    "title": "Likasy",
+    "title": "Liksi",
     "subtitle": "AI Assistant",
     "online": "Online",
-    "placeholder": "Magtanong kay Likasy...",
+    "placeholder": "Magtanong kay Liksi...",
     "send": "Magpadala ng mensahe",
     "closeChat": "Isara ang chat",
-    "openChat": "Buksan ang Likasy chat",
+    "openChat": "Buksan ang Liksi chat",
     "errorFallback": "Oops! Hindi ko maabot ang aking utak ngayon. Pakitingnan ang iyong koneksyon o subukang muli mamaya."
   },
   "offline": {
@@ -378,5 +378,22 @@
     "coastalDamage": "Pinsala sa Baybayin",
     "wasteBurning": "Pagsusunog ng Basura",
     "unclassified": "Hindi Klasipikadong Isyung Pangkalikasan"
+  },
+  "seo": {
+    "homeTitle": "LikasLens — Nagpoprotekta sa Kalikasan ng Pilipinas | AI-Powered Civic Reporting",
+    "impactTitle": "Epekto — Community Environmental Reporting",
+    "impactDescription": "Tingnan ang totoong epekto ng civic environmental reporting sa Pilipinas. Subaybayan ang mga naresolveng insidente at aksyon ng komunidad.",
+    "lawsTitle": "Mga Batas sa Kalikasan ng Pilipinas",
+    "lawsDescription": "Alamin ang iyong mga karapatan sa pagpoprotekta sa kalikasan. Mga batas sa kagubatan, baybayin, biodiversity, at polusyon.",
+    "scoreboardTitle": "Leaderboard ng Komunidad — Mga Tagapagtanggol ng Kalikasan",
+    "scoreboardDescription": "Mga nangungunang tagapag-ulat at tagapagtanggol ng kalikasan sa Pilipinas. Sino ang may pinakamalaking epekto sa pagpoprotekta sa kalikasan.",
+    "reportTitle": "Mag-ulat ng Isyu sa Kalikasan",
+    "reportDescription": "I-snap at i-ulat ang mga isyu sa kalikasan sa Pilipinas. AI-powered na pagsusuri agad na pinapadala sa kinauukulang ahensya.",
+    "contactTitle": "Makipag-ugnayan sa LikasLens",
+    "contactDescription": "Makipag-ugnayan sa LikasLens. Samahan ang kilusan sa pagpoprotekta sa kalikasan ng Pilipinas.",
+    "changelogTitle": "Changelog — Lahat ng Update",
+    "changelogDescription": "Subaybayan ang lahat ng pagbabago, ayos, at pagpapabuti sa LikasLens.",
+    "privacyDescription": "Patakaran sa Privacy ng LikasLens. Protektado ang iyong data at EXIF metadata.",
+    "termsDescription": "Mga Tuntunin ng Serbisyo ng LikasLens."
   }
 }

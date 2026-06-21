@@ -12,11 +12,11 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from gremlin_bootstrap import build_bootstrap_queries
+from neo4j_bootstrap import build_bootstrap_queries
 from graph_topology import build_seed_edges, build_seed_vertices, get_topology_config
 
 load_dotenv()
@@ -30,23 +30,43 @@ logging.basicConfig(
 
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
     logger.info("LikasLens AI Service starting...")
 
+    # API key startup check
+    api_key = os.getenv("AI_SERVICE_API_KEY")
+    if api_key:
+        logger.info("AI_SERVICE_API_KEY is set — API key authentication is ENABLED")
+    else:
+        logger.warning(
+            "AI_SERVICE_API_KEY is NOT set — running in DEVELOPMENT MODE with "
+            "authentication DISABLED. Set AI_SERVICE_API_KEY in production!"
+        )
+
     try:
-        from image_analysis import load_model
-        await asyncio.to_thread(load_model)
-        logger.info("YOLO model preloaded")
+        from image_analysis import load_coco_model, load_env_model
+        await asyncio.to_thread(load_coco_model)
+        await asyncio.to_thread(load_env_model)
+        logger.info("YOLO models preloaded")
     except Exception as exc:
         logger.warning("YOLO model preload failed (will load on first request): %s", exc)
 
+    # Roboflow config check
+    from roboflow_client import is_configured
+    if is_configured():
+        logger.info(
+            "Roboflow integration ENABLED — model: %s",
+            os.getenv("ROBOFLOW_MODEL_ID"),
+        )
+    else:
+        logger.info("Roboflow integration DISABLED (ROBOFLOW_API_KEY or ROBOFLOW_MODEL_ID not set)")
+
     yield
 
-    from gremlin_client import reset_client
-    reset_client()
+    from neo4j_client import reset_driver
+    await reset_driver()
     logger.info("LikasLens AI Service shut down")
 
 
@@ -119,6 +139,28 @@ app.add_middleware(
 
 
 # ---------------------------------------------------------------------------
+# API key authentication dependency
+# ---------------------------------------------------------------------------
+
+def verify_api_key(request: Request):
+    """Validate X-API-Key header against the AI_SERVICE_API_KEY env var.
+
+    - If AI_SERVICE_API_KEY is not set, all requests are allowed (development mode).
+    - If set, requests must include a matching X-API-Key header or receive 401.
+    """
+    expected_key = os.getenv("AI_SERVICE_API_KEY")
+    if not expected_key:
+        return  # dev mode — no key configured, allow all
+
+    provided_key = request.headers.get("X-API-Key")
+    if provided_key != expected_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid API key. Provide a valid X-API-Key header.",
+        )
+
+
+# ---------------------------------------------------------------------------
 # Request logging middleware
 # ---------------------------------------------------------------------------
 
@@ -179,7 +221,7 @@ async def rate_limit_middleware(request: Request, call_next):
     path = request.url.path
 
     # Strict rate limit for expensive endpoints
-    if path in ("/analyze", "/analyze/base64", "/api/v1/chat", "/api/v1/analyze-hazard"):
+    if path in ("/analyze", "/analyze/base64", "/analyze/similarity", "/api/v1/chat", "/api/v1/analyze-hazard"):
         limit = RATE_LIMIT_MAX_REQUESTS_STRICT
     else:
         limit = RATE_LIMIT_MAX_REQUESTS
@@ -196,7 +238,6 @@ async def rate_limit_middleware(request: Request, call_next):
 # ---------------------------------------------------------------------------
 # Health & info
 # ---------------------------------------------------------------------------
-
 @app.get("/health")
 async def health_check():
     return {
@@ -228,7 +269,6 @@ async def graph_topology():
         "vertex_labels": topology.vertex_labels,
         "edge_labels": topology.edge_labels,
         "edge_properties": topology.edge_properties,
-        "partition_key": topology.partition_key,
     }
 
 
@@ -248,10 +288,21 @@ async def graph_bootstrap_queries():
 
 
 # ---------------------------------------------------------------------------
+# Roboflow integration
+# ---------------------------------------------------------------------------
+
+@app.get("/roboflow/health", dependencies=[Depends(verify_api_key)])
+async def roboflow_health():
+    """Check Roboflow Serverless API connectivity."""
+    from roboflow_client import health_check
+    return health_check()
+
+
+# ---------------------------------------------------------------------------
 # Image analysis
 # ---------------------------------------------------------------------------
 
-@app.post("/analyze")
+@app.post("/analyze", dependencies=[Depends(verify_api_key)])
 async def analyze_image_upload(file: UploadFile = File(...), confidence: float = Form(0.25)):
     """Run YOLOv8 inference on an uploaded image."""
     from image_analysis import analyze_image
@@ -270,7 +321,7 @@ async def analyze_image_upload(file: UploadFile = File(...), confidence: float =
     return {"success": True, "filename": file.filename, "analysis": result}
 
 
-@app.post("/analyze/base64")
+@app.post("/analyze/base64", dependencies=[Depends(verify_api_key)])
 async def analyze_base64_image(payload: dict):
     """Run YOLOv8 inference on a base64-encoded image."""
     from image_analysis import analyze_base64
@@ -290,14 +341,100 @@ async def analyze_base64_image(payload: dict):
     return {"success": True, "analysis": result}
 
 
-@app.get("/analyze/model")
+@app.get("/analyze/model", dependencies=[Depends(verify_api_key)])
 async def analyze_model_status():
-    from image_analysis import ENVIRONMENTAL_KEYWORDS, _MODEL_NAME, get_model_path
+    from image_analysis import ENVIRONMENTAL_KEYWORDS, _COCO_MODEL_NAME, _ENV_MODEL_NAME, get_coco_model_path, get_env_model_path
 
     return {
-        "model": _MODEL_NAME or "not loaded",
-        "model_path": get_model_path(),
+        "coco_model": _COCO_MODEL_NAME or "not loaded",
+        "coco_model_path": get_coco_model_path(),
+        "env_model": _ENV_MODEL_NAME or "not loaded",
+        "env_model_path": get_env_model_path(),
         "known_classes": len(ENVIRONMENTAL_KEYWORDS),
+    }
+
+
+@app.post("/analyze/similarity", dependencies=[Depends(verify_api_key)])
+async def analyze_similarity(payload: dict):
+    """Find visually similar reports by comparing image embeddings.
+
+    Request body::
+
+        {
+            "image": "<base64-encoded image>",
+            "report_id": "abc-123",          // optional
+            "violation_type": "solid_waste", // optional
+            "threshold": 0.85                // optional, default 0.85
+        }
+
+    Response::
+
+        {
+            "success": true,
+            "similar_reports": [
+                {"report_id": "xyz", "similarity": 0.92, "violation_type": "illegal_dumping"}
+            ],
+            "embedding_stored": true
+        }
+    """
+    import base64
+
+    from image_similarity import (
+        extract_features,
+        find_similar,
+        get_all_embeddings,
+        store_embedding,
+    )
+
+    base64_string = payload.get("image")
+    if not base64_string:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Missing 'image' field"},
+        )
+
+    # Strip data-URI prefix if present
+    if base64_string.startswith("data:"):
+        comma_pos = base64_string.find(",")
+        if comma_pos != -1:
+            base64_string = base64_string[comma_pos + 1 :]
+
+    try:
+        image_bytes = base64.b64decode(base64_string, validate=True)
+    except Exception as exc:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": f"Invalid base64 encoding: {exc}"},
+        )
+
+    if len(image_bytes) > MAX_UPLOAD_BYTES:
+        return JSONResponse(
+            status_code=413,
+            content={"success": False, "error": "Image too large (max 20 MB)"},
+        )
+
+    report_id = payload.get("report_id", str(uuid.uuid4()))
+    violation_type = payload.get("violation_type", "unknown")
+    threshold = float(payload.get("threshold", 0.85))
+
+    try:
+        embedding = await asyncio.to_thread(extract_features, image_bytes)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    # Compare against existing embeddings
+    existing = await asyncio.to_thread(get_all_embeddings)
+    similar = await asyncio.to_thread(find_similar, embedding, existing, threshold)
+
+    # Store the new embedding for future comparisons
+    stored = await asyncio.to_thread(store_embedding, report_id, embedding, violation_type)
+
+    return {
+        "success": True,
+        "similar_reports": similar,
+        "embedding_stored": stored,
     }
 
 
@@ -305,22 +442,21 @@ async def analyze_model_status():
 # Routing
 # ---------------------------------------------------------------------------
 
-@app.get("/routing/status")
+@app.get("/routing/status", dependencies=[Depends(verify_api_key)])
 async def routing_status():
-    from gremlin_client import get_connection_params, is_configured
+    from neo4j_client import get_connection_params, is_configured
 
     params = get_connection_params()
     return {
         "configured": is_configured(),
-        "endpoint_set": bool(params["endpoint"]),
-        "database": params["database"],
-        "graph": params["graph"],
+        "uri_set": bool(params["uri"]),
+        "user_set": bool(params["user"]),
     }
 
 
-@app.post("/routing/incident")
-async def route_incident(payload: dict):
-    from gremlin_client import route_incident
+@app.post("/routing/incident", dependencies=[Depends(verify_api_key)])
+async def route_incident_endpoint(payload: dict):
+    from neo4j_client import route_incident
 
     citizen_id = payload.get("citizen_id")
     incident_id = payload.get("incident_id")
@@ -334,12 +470,12 @@ async def route_incident(payload: dict):
     return {"success": result["success"], "routing": result}
 
 
-@app.get("/routing/traversal")
+@app.get("/routing/traversal", dependencies=[Depends(verify_api_key)])
 async def routing_traversal(citizen_id: str, incident_id: str, violation_code: str, ngo_id: str = ""):
-    from gremlin_client import build_incident_routing_traversal
+    from neo4j_client import build_incident_routing_queries
 
     try:
-        queries = build_incident_routing_traversal(
+        queries = await build_incident_routing_queries(
             citizen_id, incident_id, violation_code, ngo_id or None
         )
     except ValueError as exc:
@@ -348,14 +484,66 @@ async def routing_traversal(citizen_id: str, incident_id: str, violation_code: s
     return {"queries": queries}
 
 
+@app.get("/routing/stats", dependencies=[Depends(verify_api_key)])
+async def routing_stats():
+    """Return learned routing performance data across all violation types."""
+    from routing_learner import get_stats
+
+    return {"success": True, "data": get_stats()}
+
+
+@app.post("/routing/record-resolution", dependencies=[Depends(verify_api_key)])
+async def record_resolution(payload: dict):
+    """Feed the learning loop: record how long an LGU took to resolve a ticket.
+
+    Expected body:
+        {
+            "violation_type": "ILLEGAL_DUMPING",
+            "lgu_id": "uuid-of-ngo-group",
+            "resolution_hours": 48.5
+        }
+    """
+    from routing_learner import record_resolution
+
+    violation_type = payload.get("violation_type")
+    lgu_id = payload.get("lgu_id")
+    resolution_hours = payload.get("resolution_hours")
+
+    if not violation_type or not lgu_id or resolution_hours is None:
+        raise HTTPException(
+            status_code=422,
+            detail="violation_type, lgu_id, and resolution_hours are required",
+        )
+
+    try:
+        resolution_hours = float(resolution_hours)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=422, detail="resolution_hours must be a number")
+
+    if resolution_hours < 0:
+        raise HTTPException(status_code=422, detail="resolution_hours must be non-negative")
+
+    record_resolution(violation_type, lgu_id, resolution_hours)
+
+    return {
+        "success": True,
+        "message": "Resolution time recorded for routing learner",
+        "data": {
+            "violation_type": violation_type,
+            "lgu_id": lgu_id,
+            "resolution_hours": resolution_hours,
+        },
+    }
+
+
 # ---------------------------------------------------------------------------
 # Hazard analysis & chat
 # ---------------------------------------------------------------------------
 
-@app.post("/api/v1/analyze-hazard")
+@app.post("/api/v1/analyze-hazard", dependencies=[Depends(verify_api_key)])
 async def analyze_hazard(payload: dict):
-    """Neuro-symbolic hazard analysis: Gremlin graph traversal + Gemini LLM synthesis."""
-    from hazard_analyzer import HazardRequest, HazardResponse, generate_incident_summary, query_hazard_laws_and_agencies
+    """Neuro-symbolic hazard analysis: Neo4j GraphRAG + Gemini LLM synthesis."""
+    from hazard_analyzer import HazardRequest, HazardResponse, generate_grounded_report, retrieve_legal_context
 
     try:
         request = HazardRequest(**payload)
@@ -365,22 +553,27 @@ async def analyze_hazard(payload: dict):
             detail=f"Invalid request body: {exc}",
         )
 
-    graph_data = await query_hazard_laws_and_agencies(request.hazard_id)
-    ai_summary = await generate_incident_summary(
+    context = await retrieve_legal_context(request.hazard_id, request.location, request.jurisdiction)
+    ai_summary = await generate_grounded_report(
         request.hazard_id,
-        graph_data["laws"],
-        graph_data["agencies"],
+        request.location,
+        context["laws"],
+        context["agencies"],
+        context["method"],
     )
 
     return HazardResponse(
         hazard_id=request.hazard_id,
-        violated_laws=graph_data["laws"],
-        enforcing_agencies=graph_data["agencies"],
+        location=request.location,
+        jurisdiction=request.jurisdiction,
+        violated_laws=context["laws"],
+        enforcing_agencies=context["agencies"],
+        retrieval_method=context["method"],
         ai_summary=ai_summary,
     )
 
 
-@app.post("/api/v1/chat")
+@app.post("/api/v1/chat", dependencies=[Depends(verify_api_key)])
 async def chat_proxy(payload: dict):
     """Secure chat proxy for the Likasy chatbot."""
     from chat_proxy import ChatRequest, ChatResponse, generate_chat_reply

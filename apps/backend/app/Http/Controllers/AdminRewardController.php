@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AuditLog;
 use App\Models\RewardsCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -55,6 +56,16 @@ class AdminRewardController extends Controller
 
         $reward = RewardsCatalog::create($validated);
 
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'reward_created',
+            'entity_type' => 'RewardsCatalog',
+            'entity_id' => $reward->id,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Reward created.',
@@ -65,6 +76,7 @@ class AdminRewardController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         $reward = RewardsCatalog::findOrFail($id);
+        $old = $reward->toArray();
 
         $validated = $request->validate([
             'partner_store_id' => 'sometimes|string|exists:partner_stores,id',
@@ -77,7 +89,19 @@ class AdminRewardController extends Controller
             'is_active' => 'boolean',
         ]);
 
+        $oldValues = $reward->only(array_keys($validated));
         $reward->update($validated);
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'reward_updated',
+            'entity_type' => 'RewardsCatalog',
+            'entity_id' => $reward->id,
+            'old_values' => $old,
+            'new_values' => $reward->fresh()->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -86,10 +110,21 @@ class AdminRewardController extends Controller
         ]);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(Request $request, string $id): JsonResponse
     {
         $reward = RewardsCatalog::findOrFail($id);
+        $old = $reward->toArray();
         $reward->delete();
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()?->id,
+            'action' => 'reward_deleted',
+            'entity_type' => 'RewardsCatalog',
+            'entity_id' => $id,
+            'old_values' => $old,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,

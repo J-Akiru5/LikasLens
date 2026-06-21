@@ -15,8 +15,8 @@ class AdminUserController extends Controller
      */
     private function syncUsersWithSupabase(): void
     {
-        $supabaseUrl = env('SUPABASE_URL');
-        $serviceKey = env('SUPABASE_SERVICE_ROLE_KEY');
+        $supabaseUrl = config('services.supabase.url', '');
+        $serviceKey = config('services.supabase.service_role_key', '');
 
         // Safety check: Don't attempt to sync if keys aren't configured yet
         if (! $supabaseUrl || ! $serviceKey) {
@@ -57,10 +57,11 @@ class AdminUserController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        // 1. Run the sync process first to fetch fresh profiles from Supabase
-        $this->syncUsersWithSupabase();
+        // Sync Supabase users only if explicitly requested or at most once per 5 minutes
+        if ($request->boolean('sync') || $this->shouldSync()) {
+            $this->syncUsersWithSupabase();
+        }
 
-        // 2. Continue with your existing local database filtering, search, and pagination query logic
         $query = User::query()->orderBy('created_at', 'desc');
 
         if ($search = $request->input('search')) {
@@ -120,7 +121,19 @@ class AdminUserController extends Controller
             'reward_points_balance' => 'sometimes|integer|min:0',
         ]);
 
+        $oldValues = $user->only(array_keys($validated));
         $user->update($validated);
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()->id,
+            'action' => 'user_updated',
+            'entity_type' => 'user',
+            'entity_id' => $user->id,
+            'old_values' => $oldValues,
+            'new_values' => $validated,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -132,7 +145,7 @@ class AdminUserController extends Controller
     public function updateRole(Request $request, string $id): JsonResponse
     {
         $validated = $request->validate([
-            'role' => 'required|string|in:citizen,ghost,analyst,super_admin',
+            'role' => 'required|string|in:citizen,ghost,lgu,partner,analyst,super_admin',
         ]);
 
         $user = User::findOrFail($id);
@@ -162,9 +175,25 @@ class AdminUserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
 
+        AuditLog::create([
+            'actor_user_id' => request()->user()->id,
+            'action' => 'user_deactivated',
+            'entity_type' => 'user',
+            'entity_id' => $user->id,
+            'old_values' => ['deleted_at' => null],
+            'new_values' => ['deleted_at' => now()->toISOString()],
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'User deactivated.',
         ]);
+    }
+
+    private function shouldSync(): bool
+    {
+        return ! cache()->remember('admin_users_last_sync', 300, fn () => false);
     }
 }

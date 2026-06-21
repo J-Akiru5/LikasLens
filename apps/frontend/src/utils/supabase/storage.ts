@@ -21,7 +21,7 @@ export function validateProfileImage(file: File): string | null {
 }
 
 function stripExifFromFile(file: File): Promise<Blob> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {

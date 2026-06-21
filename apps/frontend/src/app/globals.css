@@ -1,510 +1,216 @@
 @import "tailwindcss";
-@source "../../../shared/src/**/*.{ts,tsx}";
-@source "../shared/src/**/*.{ts,tsx}";
-@source "./node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
-@source "../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
-@source "../../shared/src/**/*.{ts,tsx}";
-@import "@likaslens/shared/src/styles/civic-brutalism.css";
+@import "leaflet/dist/leaflet.css";
+@source "../../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
+@import "@likaslens/shared/src/styles/design-tokens.css";
 
-:root {
-  --page: #f5f5f0;
-  --ink: #1a1d1a;
-  --panel: #eeeee8;
-  --border: rgba(26, 29, 26, 0.08);
-  --muted: rgba(26, 29, 26, 0.5);
-
-  --accent: #1b4332;
-  --accent-bright: #2ee6c8;
-  --secondary: #5a7d6a;
-  --amber: #b8860b;
-  --green: #2d6a4f;
-  --red: #b23b3b;
-
-  /* Hero section dark vars */
-  --hero-bg: #0d1a12;
-  --hero-ink: #f0ede8;
-  --hero-muted: rgba(240, 237, 232, 0.5);
-  --hero-border: rgba(240, 237, 232, 0.08);
-  --hero-panel: rgba(255, 255, 255, 0.04);
-  --ghost-accent: #2ee6c8;
-  --ghost-accent-hover: #40f0d4;
-}
-
-:root[data-theme="ghost"] {
-  --page: #0c1628;
-  --ink: #e8e0d4;
-  --panel: rgba(12, 22, 40, 0.92);
-  --border: rgba(232, 224, 212, 0.06);
-  --muted: rgba(232, 224, 212, 0.4);
-
-  --accent: #2ee6c8;
-  --accent-bright: #2ee6c8;
-  --secondary: #e8ad55;
-  --amber: #e8ad55;
-  --green: #2ee6c8;
-  --red: #e85a5a;
-
-  --hero-bg: #06101e;
-  --hero-ink: #e8e0d4;
-  --hero-muted: rgba(232, 224, 212, 0.45);
-  --hero-border: rgba(46, 230, 200, 0.08);
-  --hero-panel: rgba(46, 230, 200, 0.03);
-  --ghost-accent: #facc15;
-  --ghost-accent-hover: #fde047;
-}
-
-@theme inline {
-  --color-page: var(--page);
-  --color-ink: var(--ink);
-  --color-panel: var(--panel);
-  --color-accent: var(--accent);
-      --color-secondary: var(--accent-bright);
-  --color-border: var(--border);
-  --color-muted: var(--muted);
-  --font-sans: var(--font-body);
-  --font-mono: var(--font-data);
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-*:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
+/* ═══════════════════════════════════════════════════════════════════════════
+   FRONTEND-ONLY OVERRIDES — Evidence Console (2026 redesign)
+   Scoped to the frontend. Shared tokens are untouched.
+   ═══════════════════════════════════════════════════════════════════════════ */
 body {
-  background: var(--page);
-  color: var(--ink);
-  font-family: var(--font-body), "Helvetica Neue", Arial, sans-serif;
   position: relative;
 }
 
-/* ─────────────────────────────────────────
-   PANEL SYSTEM
-───────────────────────────────────────── */
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
+/* -- Distinctive typography system -------------------------------------------------
+   Moves off the Inter / Montserrat / Space-Mono reflex monoculture. Fonts are
+   self-hosted via next/font (see layout.tsx); here we bind the shared token
+   names so the rest of the app inherits the new voice automatically. */
+:root {
+  --font-body: var(--font-body), "Public Sans", system-ui, -apple-system, sans-serif;
+  --font-data: var(--font-data), "JetBrains Mono", ui-monospace, monospace;
+  --font-heading: var(--font-display), "Bricolage Grotesque", system-ui, sans-serif;
+  --font-sans: var(--font-body), "Public Sans", system-ui, sans-serif;
+
+  /* Headline rhythm — display tightness within impeccable craft floors:
+     clamp max ≤ 6rem, letter-spacing ≥ -0.04em. */
+  --display-hero: clamp(2.75rem, 5.6vw, 5.5rem);
+  --display-section: clamp(2.1rem, 3.6vw, 3.25rem);
 }
 
-.panel-surface {
-  background: var(--panel);
-  color: var(--ink);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-}
+/* -- Evidence Console primitives --------------------------------------------------- */
 
-[data-theme="ghost"] .panel,
-[data-theme="ghost"] .panel-surface {
-  backdrop-filter: blur(20px);
-}
-
-.surface-muted { color: var(--muted); }
-
-.surface-chip {
-  background: var(--panel);
-  color: var(--ink);
-  border: 1px solid var(--border);
-  border-radius: 0.375rem;
-}
-
-.theme-input {
-  background: var(--page);
-  color: var(--ink);
-  border: 1px solid var(--border);
-  border-radius: 0.5rem;
-}
-
-.theme-input::placeholder { color: var(--muted); }
-
-.theme-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(27, 67, 50, 0.12);
-}
-
-:root[data-theme="ghost"] .theme-input:focus {
-  box-shadow: 0 0 0 2px rgba(46, 230, 200, 0.12);
-}
-
-.theme-status {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 0.375rem;
-}
-
-/* ─────────────────────────────────────────
-   KEYFRAMES
-───────────────────────────────────────── */
-@keyframes slide-in {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-
-@keyframes breathe {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.15); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-}
-
-@keyframes aurora-shift {
-  0%, 100% { opacity: 0.6; transform: scale(1) translateX(0); }
-  33% { opacity: 0.8; transform: scale(1.05) translateX(-10px); }
-  66% { opacity: 0.5; transform: scale(0.97) translateX(8px); }
-}
-
-@keyframes scan-line {
-  0% { transform: translateY(-100%); opacity: 0; }
-  10% { opacity: 0.4; }
-  90% { opacity: 0.4; }
-  100% { transform: translateY(100%); opacity: 0; }
-}
-
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes typing-cursor {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-/* ─────────────────────────────────────────
-   UTILITIES
-───────────────────────────────────────── */
-.animate-slide-in { animation: slide-in 0.25s ease-out; }
-.animate-float { animation: float 6s ease-in-out infinite; }
-.animate-aurora { animation: aurora-shift 12s ease-in-out infinite; }
-.animate-fade-up { animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-slide-in,
-  .animate-float,
-  .animate-aurora,
-  .animate-fade-up { animation: none; }
-}
-
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-.scrollbar-none { scrollbar-width: none; }
-.scrollbar-none::-webkit-scrollbar { display: none; }
-
-/* ─────────────────────────────────────────
-   HERO SECTION — Dark Aurora Background
-───────────────────────────────────────── */
-.aurora-bg {
-  background-color: var(--hero-bg);
-  background-image:
-    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(46, 230, 200, 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 80% 10%, rgba(27, 67, 50, 0.35) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 50% at 60% 80%, rgba(46, 230, 200, 0.07) 0%, transparent 50%),
-    radial-gradient(ellipse 40% 40% at 10% 70%, rgba(45, 106, 79, 0.2) 0%, transparent 60%);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-}
-
-[data-theme="ghost"] .aurora-bg {
-  background-image:
-    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(46, 230, 200, 0.15) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 80% 10%, rgba(12, 22, 40, 0.6) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 50% at 60% 80%, rgba(46, 230, 200, 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse 40% 40% at 10% 70%, rgba(46, 230, 200, 0.08) 0%, transparent 60%);
-}
-
-/* ─────────────────────────────────────────
-   GLASS CARD SYSTEM
-───────────────────────────────────────── */
-.glass-card {
-  background: var(--hero-panel);
-  border: 1px solid var(--hero-border);
-  border-radius: 1rem;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
+/* Streaming incident ledger — the hero centerpiece. A live case-file feed, not a
+   glass card. */
+.ec-ledger {
+  --ec-rule: rgba(240, 237, 232, 0.08);
+  background: color-mix(in oklab, var(--hero-bg) 78%, #000);
+  border: 1px solid var(--ec-rule);
+  border-radius: 12px;
   overflow: hidden;
 }
+.ec-ledger-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--ec-rule);
+}
+.ec-ledger-row {
+  display: grid;
+  grid-template-columns: 92px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--ec-rule);
+  position: relative;
+}
+.ec-ledger-row:last-child {
+  border-bottom: none;
+}
 
-.glass-card::before {
-  content: '';
+/* Status bar — color paired with a label + dot, never color alone. */
+.ec-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.ec-status-routing { background: var(--amber); }
+.ec-status-resolved { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+.ec-status-critical { background: var(--red); }
+.ec-status-active { background: var(--teal-ink); }
+
+/* The single live "in transit" row — animated scan beam. */
+.ec-ledger-row[data-state="live"]::after {
+  content: "";
   position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(46, 230, 200, 0.3), transparent);
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--accent-bright);
+  box-shadow: 0 0 12px var(--accent-bright);
 }
 
-.glass-card:hover::before { opacity: 1; }
-
-.glass-card:hover {
-  border-color: rgba(46, 230, 200, 0.18);
-  box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(46, 230, 200, 0.08);
-  transform: translateY(-2px);
+/* Forensic duotone photo treatment — turns stock into evidence. */
+.ec-duotone {
+  filter: grayscale(0.35) contrast(1.08) brightness(0.55);
+  mix-blend-mode: luminosity;
 }
-
-/* Light-bg glass card variant */
-.glass-card-light {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+.ec-duotone-wrap {
   position: relative;
+  background: linear-gradient(135deg, var(--accent) 0%, #0d1a12 70%);
   overflow: hidden;
 }
-
-.glass-card-light:hover {
-  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
-  box-shadow: 0 20px 40px -16px color-mix(in srgb, var(--accent) 20%, transparent);
-  transform: translateY(-3px);
+.ec-duotone-wrap > img,
+.ec-duotone-wrap picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* ─────────────────────────────────────────
-   GRADIENT TEXT
-───────────────────────────────────────── */
-.gradient-text {
-  background: linear-gradient(135deg, var(--accent-bright) 0%, #5aefb0 50%, #a8f5d0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Scan-line sweep over hero photo. */
+.ec-scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 14%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    color-mix(in oklab, var(--accent-bright) 22%, transparent) 50%,
+    transparent 100%
+  );
+  animation: ec-scan 7s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes ec-scan {
+  0%   { top: -16%; opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
 }
 
-.gradient-text-forest {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* TacticalHUD keyframes */
+@keyframes hud-ping {
+  0%   { transform: scale(1); opacity: 0.9; }
+  80%  { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@keyframes hud-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
-/* ─────────────────────────────────────────
-   STAT CHIP (hero metrics)
-───────────────────────────────────────── */
-.stat-chip {
+/* Fine instrument grid — extremely subtle, not the 2px SaaS grid. */
+.ec-grid {
+  background-image:
+    linear-gradient(rgba(240, 237, 232, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 237, 232, 0.035) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* Case-file artifact card (pipeline nodes) — solid, one border OR one shadow. */
+.ec-casefile {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: transform var(--transition-expressive), border-color var(--transition-std);
+}
+.ec-casefile:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+/* Pipeline connector — dotted forensic trace between nodes. */
+.ec-trace {
+  background-image: radial-gradient(circle, var(--border-strong) 1.2px, transparent 1.2px);
+  background-size: 10px 10px;
+  background-repeat: repeat-x;
+  background-position: left center;
+}
+
+/* Solid wordmark treatment (footer) — replaces gradient text. */
+.ec-wordmark-solid {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+/* Section cadence — fluid vertical rhythm, varied (not uniform). */
+.ec-section {
+  padding-block: clamp(64px, 9vw, 120px);
+}
+.ec-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.875rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 8px;
+  padding: 5px 12px;
   border-radius: 9999px;
-  font-family: var(--font-data), "JetBrains Mono", monospace;
-  font-size: 0.75rem;
-  color: var(--hero-muted);
-  white-space: nowrap;
-}
-
-/* ─────────────────────────────────────────
-   LABEL PILL (section eyebrow)
-───────────────────────────────────────── */
-.label-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-family: var(--font-data), monospace;
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  background: color-mix(in oklab, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in oklab, var(--accent) 20%, transparent);
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-.label-pill-dark {
-  background: rgba(46, 230, 200, 0.1);
-  border: 1px solid rgba(46, 230, 200, 0.2);
-  color: var(--accent-bright);
-}
-
-.label-pill-light {
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
   color: var(--accent);
 }
 
-/* ─────────────────────────────────────────
-   SECTION TRANSITION (hero → body)
-───────────────────────────────────────── */
-.section-divider {
-  height: 120px;
-  background: linear-gradient(to bottom, var(--hero-bg) 0%, var(--page) 100%);
+/* -- Reduced motion (PRODUCT.md: this is a field tool, not a showcase) ------------ */
+@media (prefers-reduced-motion: reduce) {
+  .ec-scanline { animation: none; opacity: 0.5; }
+  .ec-casefile { transition: none; }
+  .ec-casefile:hover { transform: none; }
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-[data-theme="ghost"] .section-divider {
-  background: linear-gradient(to bottom, var(--hero-bg) 0%, var(--page) 100%);
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LEAFLET MAP OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
+.heatmap-tooltip {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.75rem;
+  padding: 6px 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* ─────────────────────────────────────────
-   CTA BUTTONS
-───────────────────────────────────────── */
-.btn-primary-dark {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.875rem 2rem;
-  border-radius: 0.75rem;
-  background: var(--accent-bright);
-  color: var(--hero-bg);
-  font-weight: 700;
-  font-size: 0.9rem;
-  letter-spacing: -0.01em;
-  border: none;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 0 0 rgba(46, 230, 200, 0);
-}
-
-.btn-primary-dark:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px -8px rgba(46, 230, 200, 0.5);
-  background: var(--ghost-accent-hover);
-}
-
-.btn-secondary-dark {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.875rem 2rem;
-  border-radius: 0.75rem;
-  background: transparent;
-  color: var(--hero-ink);
-  font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: -0.01em;
-  border: 1px solid var(--hero-border);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-secondary-dark:hover {
-  border-color: rgba(46, 230, 200, 0.35);
-  color: var(--accent-bright);
-  background: rgba(46, 230, 200, 0.05);
-}
-
-.btn-primary-light {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.625rem;
-  padding: 0.875rem 2rem;
-  border-radius: 0.75rem;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.9rem;
-  letter-spacing: -0.01em;
-  border: none;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 16px -4px color-mix(in srgb, var(--accent) 40%, transparent);
-}
-
-.btn-primary-light:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px -8px color-mix(in srgb, var(--accent) 50%, transparent);
-  opacity: 0.92;
-}
-
-/* ─────────────────────────────────────────
-   STEP CARD (How It Works)
-───────────────────────────────────────── */
-.step-card {
-  position: relative;
-  padding: 2rem;
+.leaflet-container {
   border-radius: 1rem;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
-}
-
-.step-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--secondary));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.step-card:hover::after { transform: scaleX(1); }
-
-.step-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -16px color-mix(in srgb, var(--accent) 18%, transparent);
-  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
-}
-
-/* ─────────────────────────────────────────
-   MESH GRADIENT BG (light sections)
-───────────────────────────────────────── */
-.mesh-gradient-bg {
-  background-color: var(--page);
-  background-image:
-    radial-gradient(at 0% 0%, color-mix(in srgb, var(--accent) 6%, transparent) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, color-mix(in srgb, var(--secondary) 6%, transparent) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, color-mix(in srgb, var(--green) 6%, transparent) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, color-mix(in srgb, var(--amber) 4%, transparent) 0px, transparent 50%);
-}
-
-[data-theme="ghost"] .mesh-gradient-bg {
-  background-image:
-    radial-gradient(at 0% 0%, color-mix(in srgb, var(--accent) 8%, transparent) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, color-mix(in srgb, var(--secondary) 8%, transparent) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, color-mix(in srgb, var(--page) 5%, transparent) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, color-mix(in srgb, var(--amber) 5%, transparent) 0px, transparent 50%);
-}
-
-/* ─────────────────────────────────────────
-   LEGACY COMPAT (dashboard, shared UI)
-───────────────────────────────────────── */
-.premium-btn {
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.premium-btn:hover {
-  transform: translateY(-2px);
-}
-
-.feature-card-premium {
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-}
-.feature-card-premium:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -20px color-mix(in srgb, var(--accent) 30%, transparent);
-  border-color: color-mix(in srgb, var(--border) 40%, var(--accent));
-}
-
-[data-theme="ghost"] .feature-card-premium:hover {
-  box-shadow: 0 20px 40px -20px color-mix(in srgb, var(--accent) 25%, transparent);
 }

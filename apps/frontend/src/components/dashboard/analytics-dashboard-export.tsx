@@ -6,10 +6,10 @@ import { generateExportFilename } from "@/utils/pdf-export";
 import { Download, Loader2 } from "lucide-react";
 
 /**
- * Example: Analytics Dashboard with PDF Export
- * This component demonstrates how to use the usePdfExport hook to export
- * the Analytics & Reports section as a high-quality PDF while preserving
- * the Eco-Brutalism dark theme colors.
+ * Analytics Dashboard PDF Export Template
+ * NOTE: The data below is a static template for PDF export formatting.
+ * For live analytics, use the admin portal's analytics page which fetches real API data.
+ * This component is a template that will be connected to the API in a future iteration.
  */
 export function AnalyticsDashboardWithExport() {
   const { exportRef, handleExportPDF } = usePdfExport();

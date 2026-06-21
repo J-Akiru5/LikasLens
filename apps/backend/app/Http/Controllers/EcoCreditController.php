@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\CitizenWallet;
+use App\Models\CreditPool;
+use App\Models\Ticket;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,12 +15,22 @@ class EcoCreditController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|uuid|exists:users,id',
-            'ticket_id' => 'required|uuid',
+            'ticket_id' => 'required|uuid|exists:tickets,id',
             'credit_amount' => 'required|integer|min:1',
         ]);
 
         $userId = $validated['user_id'];
+        $ticketId = $validated['ticket_id'];
         $creditAmount = $validated['credit_amount'];
+
+        // Verify ticket belongs to the user
+        $ticket = Ticket::where('id', $ticketId)
+            ->where('reporter_user_id', $userId)
+            ->first();
+
+        if (! $ticket) {
+            return response()->json(['error' => 'Ticket not found or does not belong to this user.'], 403);
+        }
 
         try {
             $result = DB::transaction(function () use ($userId, $creditAmount) {
@@ -28,8 +40,7 @@ class EcoCreditController extends Controller
                     return response()->json(['error' => 'Citizen wallet not found. Ensure the user is registered.'], 404);
                 }
 
-                $pool = DB::table('credit_pools')
-                    ->where('is_active', true)
+                $pool = CreditPool::where('is_active', true)
                     ->where('remaining_credits', '>=', $creditAmount)
                     ->where(function ($q) {
                         $q->whereNull('valid_until')->orWhere('valid_until', '>', now());
@@ -41,9 +52,7 @@ class EcoCreditController extends Controller
                     return response()->json(['error' => 'Corporate ESG Credit Pools are currently depleted.'], 503);
                 }
 
-                DB::table('credit_pools')
-                    ->where('id', $pool->id)
-                    ->decrement('remaining_credits', $creditAmount);
+                $pool->decrement('remaining_credits', $creditAmount);
 
                 $wallet->increment('available_credits', $creditAmount);
                 $wallet->increment('lifetime_earned', $creditAmount);

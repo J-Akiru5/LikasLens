@@ -1,103 +1,172 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { User, LogOut, ChevronRight, Award, Settings } from "lucide-react";
+import {
+  User,
+  LogOut,
+  ChevronRight,
+  Award,
+  Settings,
+  Edit2,
+  History,
+  BarChart3,
+  TrendingUp,
+  Scale,
+  AlertCircle,
+  Network,
+  Map,
+  FileText,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { LargeTitle } from "@/components/native/large-title";
+import { useHaptics } from "@/hooks/use-haptics";
+import { usePullToRefresh } from "@/context/pull-to-refresh";
+import { MobileProfileSkeleton } from "@likaslens/shared";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Profile — identity header card + grouped inset list (iOS Settings pattern).
+   Two grouped sections (Account, Citizen tools) + a separated destructive row.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+const ACCOUNT_ITEMS = [
+  { href: "/history", label: "Report history", Icon: History, tint: "var(--accent)" },
+  { href: "/achievements", label: "Achievements", Icon: Award, tint: "#b8860b" },
+  { href: "/settings", label: "Settings", Icon: Settings, tint: "var(--muted)" },
+];
+
+const TOOL_ITEMS = [
+  { href: "/incidents", label: "Incidents", Icon: AlertCircle, tint: "var(--red)" },
+  { href: "/analytics", label: "Analytics", Icon: BarChart3, tint: "var(--accent)" },
+  { href: "/reports", label: "Reports analytics", Icon: FileText, tint: "var(--accent)" },
+  { href: "/impact", label: "Impact", Icon: TrendingUp, tint: "var(--green)" },
+  { href: "/map", label: "Map view", Icon: Map, tint: "#3b82f6" },
+  { href: "/knowledge-graph", label: "Knowledge graph", Icon: Network, tint: "#a78bfa" },
+  { href: "/laws", label: "Laws database", Icon: Scale, tint: "var(--secondary)" },
+];
 
 export default function ProfilePage() {
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
+  const haptic = useHaptics();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    }
-    load();
+  const load = useCallback(async () => {
+    setLoading(true);
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    setUser(user);
+    setLoading(false);
   }, []);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  usePullToRefresh(load);
+
   async function handleSignOut() {
+    haptic("warning");
     const supabase = createClient();
     await supabase.auth.signOut();
+    document.cookie = "laravel_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push(`/${locale}/login`);
   }
 
   if (loading) {
-    return (
-      <div className="p-4 space-y-4">
-        <div className="animate-pulse space-y-4">
-          <div className="h-20 rounded-2xl bg-ink/5" />
-          <div className="h-12 rounded-xl bg-ink/5" />
-          <div className="h-12 rounded-xl bg-ink/5" />
-        </div>
-      </div>
-    );
+    return <MobileProfileSkeleton />;
   }
 
   return (
-    <div className="p-4 space-y-4">
-      <h1
-        className="text-2xl font-bold text-ink"
-        style={{ fontFamily: "var(--font-heading), Montserrat, sans-serif" }}
-      >
-        Profile
-      </h1>
+    <div className="pb-28">
+      <div className="px-5">
+        <LargeTitle title="Profile" />
+      </div>
 
-      {/* User Card */}
-      <div className="p-5 rounded-2xl bg-ink/[0.03] border border-ink/5">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-green/10 border border-green/20 flex items-center justify-center">
-            <User className="w-7 h-7 text-green" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-ink truncate">
-              {user?.user_metadata?.name || user?.email?.split("@")[0] || "User"}
-            </p>
-            <p className="text-xs text-ink/40 font-mono truncate">
-              {user?.email}
-            </p>
+      <div className="px-5">
+        {/* ── Identity header card ────────────────────────────────────────── */}
+        <div className="m-banner-wrap" style={{ position: "relative", minHeight: 132, marginBottom: 22, background: "#4a7c59" }}>
+          <Link
+            href={`/${locale}/profile/edit`}
+            onClick={() => haptic("light")}
+            aria-label="Edit profile"
+            className="touch-target"
+            style={{ position: "absolute", top: 12, right: 12, borderRadius: 9999, background: "rgba(0,0,0,0.28)", backdropFilter: "blur(8px)", zIndex: 2 }}
+          >
+            <Edit2 style={{ width: 16, height: 16, color: "#f0ede8" }} />
+          </Link>
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", padding: 16, gap: 14 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(240,237,232,0.12)", backdropFilter: "blur(6px)", border: "1px solid rgba(240,237,232,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <User style={{ width: 28, height: 28, color: "#f0ede8" }} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontFamily: "var(--font-heading)", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", color: "#f0ede8", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {user?.user_metadata?.name || user?.email?.split("@")[0] || "User"}
+              </p>
+              <p style={{ fontFamily: "var(--font-data)", fontSize: 12, color: "rgba(240,237,232,0.65)", margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {user?.email}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Menu Items */}
-      <div className="space-y-2">
-        <button className="w-full flex items-center gap-4 p-4 rounded-2xl bg-ink/[0.03] border border-ink/5 hover:bg-ink/[0.06] transition-colors">
-          <div className="w-10 h-10 rounded-xl bg-amber/10 flex items-center justify-center">
-            <Award className="w-5 h-5 text-amber" />
-          </div>
-          <span className="flex-1 text-left text-sm font-medium text-ink">
-            Achievements
-          </span>
-          <ChevronRight className="w-4 h-4 text-ink/30" />
+        {/* ── Account group ──────────────────────────────────────────────── */}
+        <h2 className="ios-section-label" style={{ marginBottom: 8, padding: "0 4px" }}>Account</h2>
+        <div className="ios-grouped-list" style={{ marginBottom: 22 }}>
+          {ACCOUNT_ITEMS.map(({ href, label, Icon, tint }) => (
+            <Link
+              key={href}
+              href={`/${locale}${href}`}
+              onClick={() => haptic("light")}
+              className="ios-list-row"
+            >
+              <div className="ios-row-icon" style={{ background: `color-mix(in oklab, ${tint} 13%, transparent)` }}>
+                <Icon style={{ width: 16, height: 16, color: tint }} />
+              </div>
+              <span className="flex-1 font-medium text-[16px] text-ink tracking-tight">
+                {label}
+              </span>
+              <ChevronRight style={{ width: 18, height: 18, color: "var(--muted-subtle)" }} />
+            </Link>
+          ))}
+        </div>
+
+        {/* ── Citizen tools group ────────────────────────────────────────── */}
+        <h2 className="ios-section-label" style={{ marginBottom: 8, padding: "0 4px" }}>Citizen tools</h2>
+        <div className="ios-grouped-list" style={{ marginBottom: 28 }}>
+          {TOOL_ITEMS.map(({ href, label, Icon, tint }) => (
+            <Link
+              key={href}
+              href={`/${locale}${href}`}
+              onClick={() => haptic("light")}
+              className="ios-list-row"
+            >
+              <div className="ios-row-icon" style={{ background: `color-mix(in oklab, ${tint} 13%, transparent)` }}>
+                <Icon style={{ width: 16, height: 16, color: tint }} />
+              </div>
+              <span className="flex-1 font-medium text-[16px] text-ink tracking-tight">
+                {label}
+              </span>
+              <ChevronRight style={{ width: 18, height: 18, color: "var(--muted-subtle)" }} />
+            </Link>
+          ))}
+        </div>
+
+        {/* ── Sign out — separated destructive row ───────────────────────── */}
+        <button
+          onClick={handleSignOut}
+          className="ios-list-row"
+          style={{ width: "100%", justifyContent: "center", gap: 8, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 16, color: "var(--red)", minHeight: 52 }}
+        >
+          <LogOut style={{ width: 17, height: 17 }} />
+          <span style={{ fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 600 }}>Sign out</span>
         </button>
-
-        <button className="w-full flex items-center gap-4 p-4 rounded-2xl bg-ink/[0.03] border border-ink/5 hover:bg-ink/[0.06] transition-colors">
-          <div className="w-10 h-10 rounded-xl bg-ink/5 flex items-center justify-center">
-            <Settings className="w-5 h-5 text-ink/40" />
-          </div>
-          <span className="flex-1 text-left text-sm font-medium text-ink">
-            Settings
-          </span>
-          <ChevronRight className="w-4 h-4 text-ink/30" />
-        </button>
       </div>
-
-      {/* Sign Out */}
-      <button
-        onClick={handleSignOut}
-        className="w-full flex items-center justify-center gap-2 p-4 rounded-2xl border border-red/20 text-red text-sm font-medium hover:bg-red/5 transition-colors mt-8"
-      >
-        <LogOut className="w-4 h-4" />
-        Sign Out
-      </button>
     </div>
   );
 }

@@ -7,12 +7,10 @@ import { createClient } from "@/utils/supabase/client";
 import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
-import { ToastContainer, showToast } from "@likaslens/shared";
+import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { Sidebar } from "@/components/layout/sidebar";
-import { AppHeader } from "@/components/layout/header";
-import { BottomNav } from "@/components/layout/bottom-nav";
+import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { CustomSelect } from "@/components/ui/custom-select";
 
 const INCIDENT_TYPES = [
@@ -26,6 +24,16 @@ const INCIDENT_TYPES = [
   { value: "land_encroachment", label: "Land Encroachment" },
   { value: "other", label: "Other" },
 ];
+
+const getBrowserInstructions = (): string => {
+  if (typeof window === "undefined") return "";
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /ipad|iphone|ipod/.test(ua);
+  if (isIOS) {
+    return "Camera access is blocked. Tap the aA icon in your address bar, select Website Settings, and allow Camera.";
+  }
+  return "Camera access is blocked. Tap the lock icon 🔒 in your address bar, go to Permissions, and allow Camera access.";
+};
 
 export default function ReportPage() {
   const [base64Image, setBase64Image] = useState<string>("");
@@ -84,6 +92,7 @@ export default function ReportPage() {
     const newTheme = checked ? "ghost" : "civic";
     document.documentElement.setAttribute("data-theme", newTheme);
     try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
+    notifyThemeColor();
   };
 
   const stripExif = async (base64: string) => {
@@ -240,6 +249,35 @@ export default function ReportPage() {
     }
   }, [camera]);
 
+  const handleFileCapture = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      setBase64Image(dataUrl);
+      camera.stop();
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setLatitude(position.coords.latitude);
+            setLongitude(position.coords.longitude);
+          },
+          () => {
+            setShowManualCoords(true);
+            showToast("Could not get GPS location. Enter coordinates manually below.", "info");
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      } else {
+        setShowManualCoords(true);
+      }
+    };
+    reader.readAsDataURL(file);
+  }, [camera]);
+
   const clearForm = () => {
     setBase64Image("");
     setLatitude(null);
@@ -348,13 +386,8 @@ export default function ReportPage() {
         }}
       />
 
-      <div className="flex h-dvh overflow-hidden bg-page">
-        <Sidebar />
-        <div className="flex-1 min-w-0 flex flex-col h-full overflow-hidden relative">
-          <AppHeader />
-          <main className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 pb-20 lg:pb-6 relative z-10">
-            <BottomNav />
-        <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-8">
+      <DashboardLayoutWrapper>
+        <div className="space-y-8">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#3a7d54]" />
@@ -386,28 +419,57 @@ export default function ReportPage() {
                 <div className="relative bg-black/90 border border-ink/10 overflow-hidden rounded-xl">
                   <video ref={videoRef} autoPlay playsInline muted className="w-full aspect-video object-cover" />
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
-                    <button type="button" onClick={capturePhoto} className="px-5 py-2.5 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2 rounded-lg">
-                      <Camera className="w-4 h-4" /> Capture
+                    <button type="button" onClick={capturePhoto} aria-label="Capture photo" className="px-5 py-2.5 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                      <Camera className="w-4 h-4" aria-hidden="true" /> Capture
                     </button>
-                    <button type="button" onClick={() => camera.stop()} className="px-5 py-2.5 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg">
+                    <button type="button" onClick={() => camera.stop()} aria-label="Cancel camera" className="px-5 py-2.5 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                       Cancel
                     </button>
                   </div>
                 </div>
-              ) : (
-                <div className="border border-ink/10 p-8 flex items-center justify-center rounded-xl">
-                  <div className="text-center space-y-4">
-                    <Camera className="w-10 h-10 text-ink/20 mx-auto" />
-                    <p className="font-mono text-sm text-ink/40">No image captured yet</p>
-                    <button type="button" onClick={() => camera.start()} disabled={camera.isLoading} className="px-5 py-2.5 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity inline-flex items-center gap-2 disabled:opacity-50 rounded-lg">
-                      {camera.isLoading ? (
-                         <><RefreshCw className="w-4 h-4 animate-spin" /> Opening Camera...</>
-                      ) : (
-                        <><Camera className="w-4 h-4" /> Capture Photo</>
-                      )}
-                    </button>
-                    {camera.error && <p className="font-mono text-xs text-ink/50">{camera.errorMessage}</p>}
+              ) : camera.isLoading ? (
+                <div className="border border-ink/10 rounded-xl overflow-hidden">
+                  <Skeleton variant="brand" className="w-full aspect-video rounded-none" />
+                  <div className="flex justify-center gap-3 p-4">
+                    <Skeleton className="h-10 w-24 rounded-lg" />
+                    <Skeleton className="h-10 w-20 rounded-lg" />
                   </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center min-h-[240px] group rounded-2xl border border-dashed border-ink/10 bg-ink/[0.015]">
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-ink/[0.04] text-ink/40 group-hover:bg-accent/10 group-hover:text-accent transition-colors">
+                      <Camera className="w-7 h-7" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-base font-medium text-ink mb-1.5">Evidence Photo</h3>
+                    <p className="text-sm text-ink/50 max-w-sm leading-relaxed mx-auto mb-6">
+                      Upload an existing photo from your gallery or capture a new one using your camera.
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <label className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-5 py-2.5 rounded-lg border border-ink/10 text-ink/70 text-sm font-medium hover:text-ink hover:bg-ink/[0.02] transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-accent/40">
+                        Upload Photo
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileCapture}
+                          className="sr-only"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => camera.start()}
+                        className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-5 py-2.5 rounded-lg bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
+                      >
+                        <Camera className="w-4 h-4" />
+                        Open Camera
+                      </button>
+                    </div>
+                  </div>
+                  {camera.error && (
+                    <p className="font-mono text-xs text-red-500/80 text-center max-w-md mx-auto">
+                      {camera.error === "NOT_ALLOWED" ? getBrowserInstructions() : camera.errorMessage}
+                    </p>
+                  )}
                 </div>
               )}
             </section>
@@ -417,7 +479,7 @@ export default function ReportPage() {
                 <MapPin className="w-4 h-4 text-ink/40" />
                 Location Data
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 <div className="border border-ink/10 p-4 space-y-2 rounded-lg">
                   <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Latitude</span>
                   <p className="font-mono text-lg text-ink">{latitude?.toFixed(6) ?? "\u2014"}</p>
@@ -427,6 +489,7 @@ export default function ReportPage() {
                       inputMode="decimal"
                       step="any"
                       placeholder="e.g. 11.7053"
+                      aria-label="Latitude coordinate"
                       value={manualLat}
                       onChange={(e) => { setManualLat(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -90 && val <= 90) setLatitude(val); }}
                       className="w-full px-3 py-2 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none rounded-lg mt-2"
@@ -442,6 +505,7 @@ export default function ReportPage() {
                       inputMode="decimal"
                       step="any"
                       placeholder="e.g. 122.2970"
+                      aria-label="Longitude coordinate"
                       value={manualLng}
                       onChange={(e) => { setManualLng(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -180 && val <= 180) setLongitude(val); }}
                       className="w-full px-3 py-2 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none rounded-lg mt-2"
@@ -450,7 +514,7 @@ export default function ReportPage() {
                 </div>
               </div>
               {!showManualCoords && (
-                <button type="button" onClick={() => setShowManualCoords(true)} className="font-mono text-xs text-ink/40 hover:text-ink transition-colors">
+                <button type="button" onClick={() => setShowManualCoords(true)} aria-label="Enter coordinates manually" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                   Enter coordinates manually
                 </button>
               )}
@@ -470,10 +534,12 @@ export default function ReportPage() {
               {useMapPinning ? (
                 <GeoTagMap initialLat={latitude} initialLng={longitude} onLocationChange={(lat, lng) => { setLatitude(lat); setLongitude(lng); }} height="320px" />
               ) : (
-                <div className="border border-ink/10 p-8 text-center rounded-xl">
-                  <MapPin className="w-8 h-8 text-ink/20 mx-auto mb-2" />
-                  <p className="font-mono text-sm text-ink/40">Toggle Enable Map above to pin your exact location</p>
-                </div>
+                <EmptyState
+                  icon={MapPin}
+                  title="Map pinning is disabled"
+                  description={'Toggle "Enable Map" above to pin your exact location on the map.'}
+                  className="border border-ink/10 rounded-xl"
+                />
               )}
             </section>
 
@@ -507,38 +573,37 @@ export default function ReportPage() {
               </div>
             </section>
 
-            <section className={`border p-5 rounded-xl transition-colors duration-500 ${isGhostMode ? "border-[#2EE6C8]/20 bg-[#2EE6C8]/5" : "border-ink/10"}`}>
+            <label className={`cursor-pointer block border p-5 rounded-xl transition-all duration-300 ${isGhostMode ? "border-[#2EE6C8]/30 bg-[#2EE6C8]/5 shadow-[0_0_15px_rgba(46,230,200,0.1)]" : "border-ink/10 hover:border-ink/20 hover:bg-ink/[0.01]"}`}>
               <div className="flex items-center justify-between gap-6">
                 <div className="flex items-center gap-3">
-                  <Fingerprint className={`w-5 h-5 ${isGhostMode ? "text-[#2EE6C8]" : "text-ink/40"}`} />
+                  <Fingerprint className={`w-5 h-5 transition-colors ${isGhostMode ? "text-[#2EE6C8]" : "text-ink/40"}`} />
                   <div>
-                    <p className={`font-semibold tracking-tight text-base ${isGhostMode ? "text-[#2EE6C8]" : "text-ink"}`}>Ghost Mode</p>
+                    <p className={`font-semibold tracking-tight text-base transition-colors ${isGhostMode ? "text-[#2EE6C8]" : "text-ink"}`}>Ghost Mode</p>
                     <p className="font-mono text-xs text-ink/50">Send anonymously. Remove all identifying data.</p>
                   </div>
                 </div>
-                <label className="inline-flex items-center" aria-label="Toggle Ghost Mode">
-                  <input type="checkbox" checked={isGhostMode} onChange={(e) => handleGhostModeToggle(e.target.checked)} className="w-4 h-4 accent-green" />
-                </label>
+                <div className="inline-flex items-center" aria-label="Toggle Ghost Mode">
+                  <input type="checkbox" checked={isGhostMode} onChange={(e) => handleGhostModeToggle(e.target.checked)} className="w-4 h-4 accent-[#2EE6C8] cursor-pointer" />
+                </div>
               </div>
-            </section>
+            </label>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button type="button" onClick={clearForm} className="py-3 border border-ink/10 text-sm text-ink/50 hover:text-ink transition-colors rounded-lg">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+              <button type="button" onClick={clearForm} aria-label="Clear form" className="py-3 border border-ink/10 text-sm text-ink/50 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                 Clear Form
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
-                className="py-3 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
+                aria-label="Submit report"
+                className="py-3 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
               >
                 {isSubmitting ? "Submitting..." : isTriaging ? "Analyzing..." : "Submit Report"}
               </button>
             </div>
           </form>
             </div>
-          </main>
-        </div>
-      </div>
+      </DashboardLayoutWrapper>
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
     </>
   );
