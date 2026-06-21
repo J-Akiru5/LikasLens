@@ -3,6 +3,12 @@
 @source "../../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @import "@likaslens/shared/src/styles/design-tokens.css";
 
+/* Theme Visibility Helpers (Bypassing Workspace Cache) */
+[data-theme="ghost"] .light-mode-only { display: none !important; }
+[data-theme="ghost"] .ghost-mode-only { display: block !important; }
+html:not([data-theme="ghost"]) .ghost-mode-only, body:not([data-theme="ghost"]) .ghost-mode-only { display: none !important; }
+html:not([data-theme="ghost"]) .light-mode-only, body:not([data-theme="ghost"]) .light-mode-only { display: block !important; }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    FRONTEND-ONLY OVERRIDES — Evidence Console (2026 redesign)
    Scoped to the frontend. Shared tokens are untouched.

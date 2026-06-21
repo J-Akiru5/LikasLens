@@ -295,6 +295,23 @@ body {
     font-family: var(--font-body), "Helvetica Neue", Arial, sans-serif;
 }
 
+/* ── Theme Visibility Helpers ────────────────────────────────────────────── */
+[data-theme="ghost"] .light-mode-only {
+    display: none !important;
+}
+[data-theme="ghost"] .ghost-mode-only {
+    display: block !important;
+}
+
+html:not([data-theme="ghost"]) .ghost-mode-only,
+body:not([data-theme="ghost"]) .ghost-mode-only {
+    display: none !important;
+}
+html:not([data-theme="ghost"]) .light-mode-only,
+body:not([data-theme="ghost"]) .light-mode-only {
+    display: block !important;
+}
+
 /* ───────────────────────────────────────────────────────────────────────────
    PANEL SYSTEM
    ─────────────────────────────────────────────────────────────────────────── */
