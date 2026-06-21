@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **AI Service**: Graceful fallback — if Roboflow API is unreachable, detection silently falls back to COCO + ENV model only
 - **AI Service**: Startup log reports Roboflow integration status (`ENABLED` / `DISABLED`) at boot
+- **Frontend**: Removed Gremlin reference from `tech-stack-section.tsx` — Knowledge Graph node now says "Neo4j AuraDB" with "Neo4j-powered" instead of "Gremlin-powered" (judge-facing page)
+- **Frontend**: Knowledge Graph sublabel changed from "Apache TinkerPop" to "Neo4j AuraDB" to reflect migration from Cosmos DB Gremlin to Neo4j
+- **Mobile PWA**: Fixed broken card layouts — added `overflow-hidden` to laws page cards (#173), incidents page cards (#170), and impact page metric cards (#166)
+- **Mobile PWA**: Fixed leaderboard podium crowding — increased gap from 8 to 16 between top-3 rank cards (#172)
+- **Mobile PWA**: Fixed display name squeezed to edge — added right padding (48px) and max-width constraint to profile header card (#165)
+- **Mobile PWA**: Fixed i18n key typo — corrected `" signIn"` (leading space) to `"signIn"` in all 5 non-English locale files (fil, vi, id, ms, ta)
 
 ## [0.9.2] - 2026-06-21
 

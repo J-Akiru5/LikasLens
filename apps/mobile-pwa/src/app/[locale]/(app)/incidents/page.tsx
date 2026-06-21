@@ -67,7 +67,7 @@ export default function IncidentsPage() {
         </div>
 
         {/* Status Pills Scroll */}
-        <div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4 pb-2">
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
           {statuses.map((status) => {
             const isActive = (status === "All" && selectedStatus === null) || status === selectedStatus;
             return (
@@ -111,7 +111,7 @@ export default function IncidentsPage() {
               return (
                 <div
                   key={ticket.id}
-                  className="kpi-card kpi-accent-muted bg-panel rounded-[1.5rem] p-5 shadow-sm border border-ink/5 transition-transform active:scale-[0.98]"
+                  className="kpi-card kpi-accent-muted bg-panel rounded-[1.5rem] p-5 shadow-sm border border-ink/5 transition-transform active:scale-[0.98] overflow-hidden"
                 >
                   <div className="flex justify-between items-center mb-3">
                     <span className="font-mono text-[10px] text-ink/40 font-bold tracking-widest uppercase">

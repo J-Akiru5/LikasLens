@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+<<<<<<< HEAD
 import { CloudOff, RefreshCw, Trophy } from "lucide-react";
 import { getTickets } from "../api/admin";
 import { cn } from "../utils";
 import type { Ticket } from "../types/ticket";
 import type { PaginatedResponse } from "../types/api";
 import { EmptyLeaderboard } from "./empty-state";
+=======
+import { CloudOff, RefreshCw } from "lucide-react";
+import { cn } from "../utils";
+>>>>>>> fee95850a6fa844b4e66e06027fbcbe9da22860d
 
 interface PublicReportRow {
   rank: number;
@@ -35,8 +40,22 @@ export function PublicScoreboard() {
     setLoading(true);
     setError(null);
     try {
+<<<<<<< HEAD
       const body = await getTickets({ per_page: "10" });
       const tickets: Ticket[] = Array.isArray(body?.data) ? body.data : [];
+=======
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const res = await fetch(`${baseUrl}/tickets?per_page=10`, {
+        headers: { Accept: "application/json" },
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        setError("Failed to load reports");
+        return;
+      }
+      const body = await res.json();
+      const tickets: Record<string, unknown>[] = Array.isArray(body?.data) ? body.data : [];
+>>>>>>> fee95850a6fa844b4e66e06027fbcbe9da22860d
       setRows(
         tickets.map((t, i) => ({
           rank: i + 1,
@@ -119,6 +138,7 @@ export function PublicScoreboard() {
             key={idx}
             className="flex flex-col gap-2.5 sm:grid sm:grid-cols-[1.2fr_2.5fr_0.8fr_0.5fr] sm:items-center sm:gap-4 px-4 py-3 mb-2 rounded-xl bg-panel border border-ink/5 shadow-[0_1px_3px_rgba(0,0,0,0.01)] hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)] hover:border-ink/10 transition-all duration-300 group"
           >
+<<<<<<< HEAD
             <div className="flex items-center justify-between sm:justify-start">
               <div className="flex items-center gap-2.5">
                 <div className="w-6 h-6 shrink-0 rounded-full bg-ink/[0.04] flex items-center justify-center font-mono text-[9px] font-bold text-ink/40 group-hover:bg-accent/10 group-hover:text-accent transition-colors">
@@ -148,6 +168,23 @@ export function PublicScoreboard() {
                 </span>
               </div>
               <div className="text-[9.5px] font-bold text-ink/40 uppercase tracking-widest sm:text-right">{row.time}</div>
+=======
+            <div className="font-medium text-sm text-ink truncate">{row.agency}</div>
+            <div className="text-sm text-muted truncate">{row.title}</div>
+            <div>
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full",
+                  isResolved ? "bg-[rgba(45,106,79,0.12)] text-[#2d6a4f]" : "bg-[rgba(184,134,11,0.12)] text-[#b8860b]"
+                )}
+              >
+                <span className={cn(
+                  "w-[5px] h-[5px] rounded-full flex-shrink-0 inline-block",
+                  isResolved ? "bg-[#2d6a4f]" : "bg-[#b8860b]"
+                )} />
+                {row.status}
+              </span>
+>>>>>>> fee95850a6fa844b4e66e06027fbcbe9da22860d
             </div>
           </div>
         );

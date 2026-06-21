@@ -36,7 +36,7 @@
   "auth": {
     "email": "Email",
     "password": "Password",
-    " signIn": "Sign In",
+    "signIn": "Sign In",
     "createAccount": "Create Account",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?"

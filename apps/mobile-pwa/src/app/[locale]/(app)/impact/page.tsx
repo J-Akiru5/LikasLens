@@ -151,7 +151,7 @@ export default function ImpactPage() {
         {/* Impact metrics - real data */}
         <RevealSection stagger={0.1}>
           <div className="grid grid-cols-2 gap-3">
-            <div className="ios-grouped-list p-4 flex flex-col gap-3">
+            <div className="ios-grouped-list p-4 flex flex-col gap-3 overflow-hidden">
               <div className="w-12 h-12 rounded-2xl bg-[#2d6a4f]/10 flex items-center justify-center shrink-0">
                 <TreePine className="w-6 h-6 text-[#2d6a4f]" />
               </div>
@@ -163,7 +163,7 @@ export default function ImpactPage() {
               </div>
             </div>
 
-            <div className="ios-grouped-list p-4 flex flex-col gap-3">
+            <div className="ios-grouped-list p-4 flex flex-col gap-3 overflow-hidden">
               <div className="w-12 h-12 rounded-2xl bg-[#0284c7]/10 flex items-center justify-center shrink-0">
                 <Droplets className="w-6 h-6 text-[#0284c7]" />
               </div>
@@ -175,7 +175,7 @@ export default function ImpactPage() {
               </div>
             </div>
 
-            <div className="ios-grouped-list p-4 flex flex-col gap-3">
+            <div className="ios-grouped-list p-4 flex flex-col gap-3 overflow-hidden">
               <div className="w-12 h-12 rounded-2xl bg-[#c27a2e]/10 flex items-center justify-center shrink-0">
                 <Zap className="w-6 h-6 text-[#c27a2e]" />
               </div>
@@ -187,7 +187,7 @@ export default function ImpactPage() {
               </div>
             </div>
 
-            <div className="ios-grouped-list p-4 flex flex-col gap-3">
+            <div className="ios-grouped-list p-4 flex flex-col gap-3 overflow-hidden">
               <div className="w-12 h-12 rounded-2xl bg-ink/5 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-6 h-6 text-ink/60" />
               </div>

@@ -238,7 +238,7 @@ export default function ScoreboardPage() {
           <>
             {/* Podium — tonal, only when there are >=3 entries */}
             {top3.length >= 3 && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", alignItems: "flex-end", gap: 8, marginBottom: 16, overflow: "visible" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", alignItems: "flex-end", gap: 16, marginBottom: 16, overflow: "visible" }}>
                 {[1, 0, 2].map((idx) => {
                   const entry = top3[idx];
                   if (!entry) return <div key={idx} />;

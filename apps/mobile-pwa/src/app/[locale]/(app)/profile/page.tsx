@@ -100,11 +100,11 @@ export default function ProfilePage() {
           >
             <Edit2 style={{ width: 16, height: 16, color: "#f0ede8" }} />
           </Link>
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", padding: 16, gap: 14 }}>
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", padding: 16, gap: 14, paddingRight: 48 }}>
             <div style={{ width: 56, height: 56, borderRadius: 16, background: "rgba(240,237,232,0.12)", backdropFilter: "blur(6px)", border: "1px solid rgba(240,237,232,0.22)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <User style={{ width: 28, height: 28, color: "#f0ede8" }} />
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ flex: 1, minWidth: 0, maxWidth: "calc(100% - 70px)" }}>
               <p style={{ fontFamily: "var(--font-heading)", fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", color: "#f0ede8", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {user?.user_metadata?.name || user?.email?.split("@")[0] || "User"}
               </p>

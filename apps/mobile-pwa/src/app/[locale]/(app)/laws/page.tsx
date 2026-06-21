@@ -90,7 +90,7 @@ export default function LawsPage() {
               <span className="label-pill label-pill-light">{filtered.length} active records</span>
             </p>
             {filtered.map((law) => (
-              <div key={law.id} className="kpi-card kpi-accent-muted bg-panel rounded-3xl p-5 border border-ink/5 shadow-sm active:scale-[0.98] transition-transform">
+              <div key={law.id} className="kpi-card kpi-accent-muted bg-panel rounded-3xl p-5 border border-ink/5 shadow-sm active:scale-[0.98] transition-transform overflow-hidden">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-green/10 flex items-center justify-center shrink-0">
                     <Scale className="w-6 h-6 text-green" />
