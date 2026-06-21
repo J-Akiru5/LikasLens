@@ -131,6 +131,50 @@ export function useCamera(initialFacing: FacingMode = "environment"): UseCameraR
     }
   }, [acquireStream, facingMode, stopTracks]);
 
+  // Proactively check camera permission state on mount
+  useEffect(() => {
+    if (typeof window === "undefined" || !navigator.permissions?.query) return;
+
+    let active = true;
+    let cleanupListener: (() => void) | undefined;
+
+    const checkPermission = async () => {
+      try {
+        const result = await navigator.permissions.query({
+          name: "camera" as PermissionName,
+        });
+        if (!active) return;
+        if (result.state === "denied") {
+          setError("NOT_ALLOWED");
+        }
+
+        const handleChange = () => {
+          if (!active) return;
+          if (result.state === "denied") {
+            setError("NOT_ALLOWED");
+          } else if (result.state === "granted" || result.state === "prompt") {
+            setError((prev) => (prev === "NOT_ALLOWED" ? null : prev));
+          }
+        };
+
+        result.addEventListener("change", handleChange);
+        cleanupListener = () => {
+          result.removeEventListener("change", handleChange);
+        };
+      } catch (err) {
+        console.warn("Permissions API check for camera failed:", err);
+      }
+    };
+
+    void checkPermission();
+    return () => {
+      active = false;
+      if (cleanupListener) {
+        cleanupListener();
+      }
+    };
+  }, []);
+
   // Clean up all tracks when the component using this hook unmounts.
   useEffect(() => {
     return () => {

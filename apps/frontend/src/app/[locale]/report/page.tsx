@@ -25,6 +25,16 @@ const INCIDENT_TYPES = [
   { value: "other", label: "Other" },
 ];
 
+const getBrowserInstructions = (): string => {
+  if (typeof window === "undefined") return "";
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /ipad|iphone|ipod/.test(ua);
+  if (isIOS) {
+    return "Camera access is blocked. Tap the aA icon in your address bar, select Website Settings, and allow Camera.";
+  }
+  return "Camera access is blocked. Tap the lock icon 🔒 in your address bar, go to Permissions, and allow Camera access.";
+};
+
 export default function ReportPage() {
   const [base64Image, setBase64Image] = useState<string>("");
   const [latitude, setLatitude] = useState<number | null>(null);
@@ -239,6 +249,35 @@ export default function ReportPage() {
     }
   }, [camera]);
 
+  const handleFileCapture = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      setBase64Image(dataUrl);
+      camera.stop();
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setLatitude(position.coords.latitude);
+            setLongitude(position.coords.longitude);
+          },
+          () => {
+            setShowManualCoords(true);
+            showToast("Could not get GPS location. Enter coordinates manually below.", "info");
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      } else {
+        setShowManualCoords(true);
+      }
+    };
+    reader.readAsDataURL(file);
+  }, [camera]);
+
   const clearForm = () => {
     setBase64Image("");
     setLatitude(null);
@@ -398,14 +437,37 @@ export default function ReportPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <EmptyState
-                    icon={Camera}
-                    title="No image captured yet"
-                    description="Capture a photo of the environmental issue to document it."
-                    action={{ label: "Capture Photo", onClick: () => camera.start() }}
-                    className="border border-ink/10 rounded-xl"
-                  />
-                  {camera.error && (
+                  {camera.error === "NOT_ALLOWED" ? (
+                    <div className="flex flex-col items-center justify-center p-12 text-center min-h-[240px] group rounded-2xl border border-dashed border-ink/10 bg-ink/[0.015]">
+                      <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-gradient-to-b from-red-500/10 to-red-500/20 border border-red-500/20 text-red-500 shadow-sm">
+                        <Camera className="w-7 h-7 currentColor" aria-hidden="true" />
+                      </div>
+                      <h3 className="text-base font-medium text-ink mb-1.5">Camera access is blocked</h3>
+                      <p className="text-sm text-ink/50 max-w-sm leading-relaxed mx-auto mb-6">
+                        {getBrowserInstructions()}
+                      </p>
+                      <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity cursor-pointer focus-within:ring-2 focus-within:ring-accent/40">
+                        <Camera className="w-4 h-4" />
+                        Choose Photo / Capture
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleFileCapture}
+                          className="sr-only"
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <EmptyState
+                      icon={Camera}
+                      title="No image captured yet"
+                      description="Capture a photo of the environmental issue to document it."
+                      action={{ label: "Capture Photo", onClick: () => camera.start() }}
+                      className="border border-ink/10 rounded-xl"
+                    />
+                  )}
+                  {camera.error && camera.error !== "NOT_ALLOWED" && (
                     <p className="font-mono text-xs text-ink/50 text-center">{camera.errorMessage}</p>
                   )}
                 </div>
