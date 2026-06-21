@@ -1,705 +1,1095 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="civic">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LikasLens Sprint — Developer 4: Integration & PWA</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --primary: #1B4332;
-  --secondary: #2DE1C2;
-  --accent: #FFB703;
-  --background: #F8F9FA;
-  --foreground: #081C15;
-  --panel: #F8F9FA;
-  --panel-border: rgba(8, 28, 21, 0.2);
-  --muted-text: rgba(8, 28, 21, 0.85);
-  --dev-accent: #e65100;
-  --shadow-color: #1B4332;
-}
-[data-theme="ghost"] {
-  --primary: #2DE1C2;
-  --secondary: #2DE1C2;
-  --accent: #FFB703;
-  --background: #081C15;
-  --foreground: #F8F9FA;
-  --panel: rgba(8, 28, 21, 0.9);
-  --panel-border: rgba(45, 225, 194, 0.35);
-  --muted-text: rgba(248, 249, 250, 0.85);
-  --shadow-color: #2DE1C2;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Inter', sans-serif;
-  background: var(--background);
-  color: var(--foreground);
-  line-height: 1.6;
-  transition: background 0.4s ease, color 0.4s ease;
-}
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-}
-code, pre, .font-data { font-family: 'Space Mono', monospace; }
-.container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LikasLens — Dev 4 (Kat) Sprint Roadmap</title>
+  <style>
+    :root {
+      --amber-900: #78350f;
+      --amber-800: #92400e;
+      --amber-700: #b45309;
+      --amber-600: #d97706;
+      --amber-500: #f59e0b;
+      --amber-400: #fbbf24;
+      --amber-100: #fef3c7;
+      --amber-50: #fffbeb;
+      --green-700: #15803d;
+      --green-600: #16a34a;
+      --green-500: #22c55e;
+      --green-100: #dcfce7;
+      --green-50: #f0fdf4;
+      --red-500: #ef4444;
+      --red-100: #fee2e2;
+      --red-50: #fef2f2;
+      --blue-500: #3b82f6;
+      --blue-100: #dbeafe;
+      --blue-50: #eff6ff;
+      --slate-50: #f8fafc;
+      --slate-100: #f1f5f9;
+      --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1;
+      --slate-400: #94a3b8;
+      --slate-500: #64748b;
+      --slate-600: #475569;
+      --slate-700: #334155;
+      --slate-800: #1e293b;
+      --slate-900: #0f172a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-800);
+      line-height: 1.6;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
 
-/* Theme Toggle */
-.theme-toggle {
-  position: fixed; top: 1rem; right: 1rem; z-index: 1000;
-  display: flex; align-items: center; gap: 0.5rem;
-  background: var(--panel); border: 4px solid var(--foreground);
-  box-shadow: 4px 4px 0px var(--shadow-color);
-  padding: 0.5rem 1rem; cursor: pointer;
-  font-family: 'Montserrat', sans-serif; font-weight: 700;
-  font-size: 0.75rem; text-transform: uppercase;
-  color: var(--foreground); transition: all 0.3s ease;
-}
-.theme-toggle:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--shadow-color); }
-.theme-toggle .dot {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: var(--accent); transition: background 0.3s ease;
-}
-[data-theme="ghost"] .theme-toggle .dot { background: var(--secondary); animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    /* ── Hero ──────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, var(--amber-900) 0%, var(--amber-700) 50%, var(--amber-600) 100%);
+      color: #fff;
+      padding: 3rem 2.5rem;
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -50%; right: -20%;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; position: relative; z-index: 1; }
+    .hero .subtitle { font-size: 1rem; opacity: 0.9; margin-bottom: 0.5rem; position: relative; z-index: 1; max-width: 700px; }
+    .hero .note-banner {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 0.4rem 1rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(4px);
+    }
+    .hero .meta { display: flex; gap: 1.5rem; flex-wrap: wrap; position: relative; z-index: 1; }
+    .hero .meta-item {
+      background: rgba(255,255,255,0.12);
+      padding: 0.5rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      backdrop-filter: blur(4px);
+    }
+    .hero .meta-item strong { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; display: block; opacity: 0.7; }
 
-/* Hero */
-.hero {
-  background: var(--primary);
-  color: #F8F9FA;
-  padding: 3rem 0;
-  border-bottom: 4px solid var(--foreground);
-}
-.hero .icon { font-size: 3rem; margin-bottom: 0.5rem; }
-.hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; }
-.hero .accent-line { color: var(--dev-accent); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
-.hero-meta {
-  display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;
-}
-.hero-meta .meta-chip {
-  background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
-  padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
-  font-family: 'Space Mono', monospace;
-}
+    /* ── Progress Bar ──────────────────────── */
+    .progress-wrap {
+      background: #fff;
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .progress-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--slate-900); }
+    .progress-pct { font-size: 1.8rem; font-weight: 800; color: var(--amber-700); }
+    .progress-bar {
+      width: 100%;
+      height: 14px;
+      background: var(--slate-100);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--amber-700), var(--amber-500));
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      width: 0%;
+    }
+    .progress-phases {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+    }
+    .phase-stat {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 0.6rem 0.9rem;
+      text-align: center;
+    }
+    .phase-stat .phase-name { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate-500); margin-bottom: 0.25rem; }
+    .phase-stat .phase-count { font-size: 1.1rem; font-weight: 700; color: var(--slate-800); }
+    .phase-stat .phase-count span { color: var(--amber-600); }
 
-/* Progress Bar */
-.progress-container {
-  background: var(--panel);
-  border: 4px solid var(--foreground);
-  box-shadow: 8px 8px 0px var(--shadow-color);
-  padding: 1.5rem;
-  margin: 2rem 0;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-}
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-.progress-title {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 900;
-  font-size: 0.85rem;
-  color: var(--foreground);
-}
-.progress-pct {
-  font-family: 'Space Mono', monospace;
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: var(--dev-accent);
-}
-.progress-track {
-  height: 12px;
-  background: rgba(8, 28, 21, 0.1);
-  border: 2px solid var(--foreground);
-  overflow: hidden;
-}
-[data-theme="ghost"] .progress-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-.progress-fill {
-  height: 100%;
-  background: var(--dev-accent);
-  transition: width 0.4s ease;
-  width: 0%;
-}
-.progress-detail {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--muted-text);
-  margin-top: 0.5rem;
-}
+    /* ── Team Roster Card ──────────────────── */
+    .roster-card {
+      background: #fff;
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .roster-card h2 { font-size: 1.1rem; font-weight: 700; color: var(--slate-900); margin-bottom: 1rem; }
+    .roster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .roster-member {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    .roster-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .avatar-lou { background: var(--green-600); }
+    .avatar-jeff { background: var(--red-500); }
+    .avatar-cha { background: #8b5cf6; }
+    .avatar-kat { background: var(--amber-600); }
+    .roster-info .name { font-size: 0.9rem; font-weight: 700; color: var(--slate-800); }
+    .roster-info .role { font-size: 0.75rem; color: var(--slate-500); margin-bottom: 0.25rem; }
+    .roster-info .focus { font-size: 0.78rem; color: var(--slate-600); }
 
-/* Brutal Panel */
-.brutal-panel {
-  background: var(--panel);
-  border: 4px solid var(--foreground);
-  box-shadow: 8px 8px 0px var(--shadow-color);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  transition: all 0.2s ease;
-}
-.brutal-panel:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0px var(--shadow-color); }
+    /* ── Escalation Table ──────────────────── */
+    .escalation-card {
+      background: #fff;
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .escalation-card h2 { font-size: 1.1rem; font-weight: 700; color: var(--slate-900); margin-bottom: 1rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead { background: var(--slate-100); }
+    th { padding: 0.6rem 0.8rem; text-align: left; font-weight: 700; color: var(--slate-700); border-bottom: 2px solid var(--slate-200); }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--slate-100); color: var(--slate-600); }
+    tr:hover td { background: var(--slate-50); }
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    .badge-self { background: var(--green-100); color: var(--green-700); }
+    .badge-lou { background: #dcfce7; color: #15803d; }
+    .badge-cha { background: #ede9fe; color: #7c3aed; }
+    .badge-jeff { background: var(--red-100); color: #dc2626; }
+    .badge-escalate { background: var(--amber-100); color: var(--amber-800); }
 
-/* Section Headers */
-.section-header {
-  font-size: 1.5rem;
-  color: var(--primary);
-  margin: 2.5rem 0 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 4px solid var(--dev-accent);
-  display: inline-block;
-}
-[data-theme="ghost"] .section-header { color: var(--secondary); }
+    /* ── Section ────────────────────────────── */
+    .section {
+      background: #fff;
+      border: 1px solid var(--slate-200);
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .section-header {
+      padding: 1.25rem 1.75rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 1px solid var(--slate-200);
+      cursor: pointer;
+      user-select: none;
+    }
+    .section-header:hover { background: var(--slate-50); }
+    .section-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .icon-high { background: var(--red-100); }
+    .icon-medium { background: var(--amber-100); }
+    .icon-low { background: var(--blue-100); }
+    .icon-test { background: var(--green-100); }
+    .icon-done { background: var(--slate-100); }
+    .section-info { flex: 1; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--amber-900); }
+    .section-subtitle { font-size: 0.78rem; color: var(--slate-500); }
+    .section-badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.3rem 0.7rem;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .badge-high { background: var(--red-100); color: var(--red-500); }
+    .badge-medium { background: var(--amber-100); color: var(--amber-800); }
+    .badge-low { background: var(--blue-100); color: var(--blue-500); }
+    .badge-test { background: var(--green-100); color: var(--green-700); }
+    .chevron {
+      width: 20px; height: 20px;
+      transition: transform 0.2s;
+      color: var(--slate-400);
+    }
+    .section.collapsed .chevron { transform: rotate(-90deg); }
+    .section.collapsed .section-body { display: none; }
+    .section-body { padding: 1.5rem 1.75rem; }
 
-/* Day Section */
-.day-section { margin: 2rem 0; }
-.day-header {
-  background: var(--dev-accent);
-  color: #fff;
-  padding: 0.75rem 1.5rem;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 900;
-  font-size: 1.25rem;
-  text-transform: uppercase;
-  border: 4px solid var(--foreground);
-  margin-bottom: 1.5rem;
-  display: flex; align-items: center; gap: 0.75rem;
-}
-.day-header .day-num {
-  background: rgba(255,255,255,0.2);
-  padding: 0.25rem 0.6rem;
-  font-size: 0.85rem;
-}
+    /* ── Checklist ─────────────────────────── */
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--slate-100);
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px; height: 20px;
+      border: 2px solid var(--slate-300);
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+      position: relative;
+      transition: all 0.15s;
+    }
+    .checklist input[type="checkbox"]:checked {
+      background: var(--amber-600);
+      border-color: var(--amber-600);
+    }
+    .checklist input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 5px;
+      width: 5px; height: 9px;
+      border: solid #fff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .checklist input[type="checkbox"]:hover {
+      border-color: var(--amber-500);
+    }
+    .check-content { flex: 1; }
+    .check-label {
+      font-size: 0.9rem;
+      color: var(--slate-800);
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .check-label.done {
+      color: var(--slate-400);
+      text-decoration: line-through;
+    }
+    .check-meta {
+      font-size: 0.75rem;
+      color: var(--slate-500);
+      margin-top: 0.15rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .check-meta code {
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.72rem;
+      background: var(--slate-100);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      color: var(--amber-700);
+    }
+    .time-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: var(--amber-100);
+      color: var(--amber-800);
+      white-space: nowrap;
+    }
+    .issue-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: var(--slate-100);
+      color: var(--slate-600);
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .dep-note {
+      font-size: 0.72rem;
+      color: var(--amber-700);
+      font-style: italic;
+      margin-top: 0.15rem;
+    }
 
-/* Task Card */
-.task-card { margin-bottom: 2rem; }
-.task-title {
-  font-size: 1.1rem; font-weight: 800;
-  color: var(--foreground);
-  margin-bottom: 0.5rem;
-  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
-}
-.task-title .task-id {
-  background: var(--dev-accent); color: #fff;
-  padding: 0.15rem 0.5rem; font-size: 0.7rem;
-  font-family: 'Space Mono', monospace;
-}
+    /* ── Sub-groups ────────────────────────── */
+    .sub-group {
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .sub-group:last-child { margin-bottom: 0; }
+    .sub-group h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--slate-700);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .sub-group .sub-count {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--slate-400);
+    }
 
-/* Interactive Checkboxes */
-.task-check {
-  appearance: none;
-  width: 18px; height: 18px;
-  border: 3px solid var(--foreground);
-  background: transparent;
-  cursor: pointer;
-  position: relative;
-  vertical-align: middle;
-  margin-right: 0.5rem;
-  flex-shrink: 0;
-}
-.task-check:checked {
-  background: var(--secondary);
-}
-.task-check:checked::after {
-  content: '\2713';
-  position: absolute;
-  top: -2px; left: 2px;
-  font-size: 12px;
-  font-weight: 900;
-  color: var(--foreground);
-}
-.task-check-label {
-  display: flex;
-  align-items: center;
-  padding: 0.35rem 0;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-.task-check-label.done {
-  text-decoration: line-through;
-  opacity: 0.7;
-}
+    /* ── Alert Box ─────────────────────────── */
+    .alert {
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin: 1rem 0;
+    }
+    .alert-warning {
+      background: var(--amber-50);
+      border: 1px solid #fde68a;
+      color: var(--amber-800);
+    }
+    .alert-info {
+      background: var(--blue-50);
+      border: 1px solid #93c5fd;
+      color: #1e40af;
+    }
 
-/* Tags */
-.tag {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.65rem;
-  font-weight: 700;
-  font-family: 'Space Mono', monospace;
-  text-transform: uppercase;
-  border: 2px solid;
-  margin-right: 0.25rem;
-}
-.tag-done { background: rgba(45, 225, 194, 0.2); border-color: #2DE1C2; color: #1B4332; }
-.tag-pending { background: rgba(255, 183, 3, 0.15); border-color: #FFB703; color: #b8860b; }
-.tag-blocked { background: rgba(220, 53, 69, 0.1); border-color: #dc3545; color: #dc3545; }
+    /* ── Testing App Labels ────────────────── */
+    .app-label {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .app-mobile { background: #fce7f3; color: #be185d; }
+    .app-frontend { background: var(--blue-100); color: #1d4ed8; }
+    .app-admin { background: #ede9fe; color: #7c3aed; }
 
-/* Tables */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
-  font-size: 0.85rem;
-}
-th, td {
-  border: 2px solid var(--foreground);
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-}
-th {
-  background: var(--primary);
-  color: #F8F9FA;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-}
-tr:nth-child(even) { background: rgba(0,0,0,0.02); }
-[data-theme="ghost"] tr:nth-child(even) { background: rgba(255,255,255,0.02); }
-code {
-  background: rgba(0,0,0,0.06);
-  padding: 0.15rem 0.4rem;
-  font-size: 0.85em;
-  border: 1px solid rgba(0,0,0,0.1);
-}
-[data-theme="ghost"] code {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.15);
-}
-pre {
-  background: var(--foreground);
-  color: var(--background);
-  padding: 1rem;
-  border: 4px solid var(--foreground);
-  overflow-x: auto;
-  margin: 0.75rem 0;
-  font-size: 0.8rem;
-}
-pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  color: inherit;
-}
-.footer {
-  margin-top: 4rem;
-  padding: 2rem 0;
-  border-top: 4px solid var(--foreground);
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--muted-text);
-}
-.footer a { color: var(--dev-accent); font-weight: 700; }
-@media (max-width: 768px) {
-  .hero h1 { font-size: 1.75rem; }
-  .hero-meta { flex-direction: column; }
-  .brutal-panel { padding: 1rem; }
-  table { font-size: 0.75rem; }
-  th, td { padding: 0.35rem 0.5rem; }
-  .progress-container { position: static; }
-}
-</style>
+    /* ── Footer ─────────────────────────────── */
+    .footer {
+      text-align: center;
+      padding: 2rem 0 1rem;
+      color: var(--slate-500);
+      font-size: 0.78rem;
+    }
+    .footer button {
+      background: var(--slate-100);
+      border: 1px solid var(--slate-200);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: var(--slate-600);
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .footer button:hover { background: var(--slate-200); }
+
+    /* ── Responsive ────────────────────────── */
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      .hero { padding: 2rem 1.5rem; }
+      .hero h1 { font-size: 1.5rem; }
+      .section-body { padding: 1.25rem; }
+      .progress-phases { grid-template-columns: repeat(2, 1fr); }
+      .roster-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
+<div class="container">
 
-<button class="theme-toggle" onclick="toggleTheme()">
-  <span class="dot"></span>
-  <span class="label" id="theme-label">CIVIC</span>
-</button>
-
-<div class="hero">
-  <div class="container">
-    <div class="icon">🚀</div>
-    <h1>Developer 4: Integration & PWA</h1>
-    <div class="accent-line">ASEAN AI Hackathon Prep</div>
-    <div class="hero-meta">
-      <span class="meta-chip">📅 June 5-8, 2026 (Thu-Sun)</span>
-      <span class="meta-chip">⏱ 32h</span>
-      <span class="meta-chip">👤 Katherine (moved from Dev 1)</span>
-      
+  <!-- ═══════════════════════════════════ HERO ═══════════════════════════════════ -->
+  <div class="hero">
+    <div class="note-banner">Lightweight tasks — Kat is also video editing</div>
+    <h1>Dev 4 — Kat's Sprint Roadmap</h1>
+    <p class="subtitle">Quick CSS fixes, manual QA, documentation, content verification. ASEAN AI Hackathon Prep.</p>
+    <div class="meta">
+      <div class="meta-item"><strong>Sprint</strong>v0.9.3</div>
+      <div class="meta-item"><strong>Timeline</strong>June 21-22, 2026</div>
+      <div class="meta-item"><strong>Total Hours</strong>8-10h</div>
+      <div class="meta-item"><strong>Total Tasks</strong><span id="total-count">0</span></div>
     </div>
-    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.85">E2E testing, PWA offline, APK build, ASEAN data, demo materials</p>
   </div>
-</div>
 
-<main class="container">
-
-  <div class="progress-container" id="progress-bar">
+  <!-- ═══════════════════════════════════ PROGRESS BAR ═══════════════════════════════════ -->
+  <div class="progress-wrap">
     <div class="progress-header">
-      <span class="progress-title">Sprint Progress</span>
-      <span class="progress-pct" id="progress-pct">0%</span>
+      <h2>Overall Progress</h2>
+      <div class="progress-pct" id="overall-pct">0%</div>
     </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progress-fill"></div>
-    </div>
-    <div class="progress-detail">
-      <span id="progress-done">0</span> / <span id="progress-total">0</span> tasks completed
+    <div class="progress-bar"><div class="progress-fill" id="overall-fill"></div></div>
+    <div class="progress-phases" id="phase-stats"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════ TEAM ROSTER ═══════════════════════════════════ -->
+  <div class="roster-card">
+    <h2>Team Roster</h2>
+    <div class="roster-grid">
+      <div class="roster-member">
+        <div class="roster-avatar avatar-lou">L</div>
+        <div class="roster-info">
+          <div class="name">Dev 1 — Lou</div>
+          <div class="role">Frontend/UI</div>
+          <div class="focus">Next.js UI, Tailwind, responsive design, Ghost Mode theme</div>
+        </div>
+      </div>
+      <div class="roster-member">
+        <div class="roster-avatar avatar-jeff">J</div>
+        <div class="roster-info">
+          <div class="name">Dev 2 — Jeff</div>
+          <div class="role">AI/Backend</div>
+          <div class="focus">FastAPI AI service, YOLOv8, Gremlin graph, Gemini</div>
+        </div>
+      </div>
+      <div class="roster-member">
+        <div class="roster-avatar avatar-cha">C</div>
+        <div class="roster-info">
+          <div class="name">Dev 3 — Charlyn</div>
+          <div class="role">Backend/Infrastructure</div>
+          <div class="focus">Laravel API, Supabase, CI/CD, admin portal</div>
+        </div>
+      </div>
+      <div class="roster-member" style="border-color: var(--amber-400); background: var(--amber-50);">
+        <div class="roster-avatar avatar-kat">K</div>
+        <div class="roster-info">
+          <div class="name">Dev 4 — Katherine (Kat)</div>
+          <div class="role">Lightweight + QA</div>
+          <div class="focus">Quick fixes, testing, docs, video editing support</div>
+        </div>
+      </div>
     </div>
   </div>
 
-<p>> <strong>Sprint:</strong> ASEAN AI Hackathon Prep</p>
-<p>> <strong>Timeline:</strong> June 5-8, 2026 (Thu-Sun)</p>
-<p>> <strong>Total Hours:</strong> 32h</p>
-<p>> <strong>Assigned To:</strong> Katherine (moved from Dev 1)</p>
-<p>> <strong>Focus:</strong> E2E testing, PWA offline, APK build, ASEAN data, demo materials</p>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">👥 Team Roster</h2>
-<table>
-<tr><th>Dev</th><th>Name</th><th>Role</th><th>Focus</th></tr>
-<tr><td>Dev 1</td><td>Lou</td><td>Frontend/UI</td><td>Next.js UI, Tailwind, responsive design, Ghost Mode theme</td></tr>
-<tr><td>Dev 2</td><td>Jeff</td><td>AI/Backend</td><td>FastAPI AI service, YOLOv8, Gremlin graph, Gemini</td></tr>
-<tr><td>Dev 3</td><td>Charlyn</td><td>Backend/Infrastructure</td><td>Laravel API, Supabase, CI/CD, admin portal</td></tr>
-<tr><td>Dev 4</td><td>Katherine</td><td>Integration/PWA/APK</td><td>E2E testing, PWA offline, Capacitor APK, demo prep</td></tr>
-</table>
-<p>> <strong>Note:</strong> Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.</p>
-<div class="brutal-panel"><h3 style="margin-bottom:0.75rem">✅ Completed Work</h3>
-</div>
-<p style="padding-left:1rem">• ✅ Demo script written (docs/demo-script.md — 143 lines)</p>
-<p style="padding-left:1rem">• ✅ One-pager created (docs/one-pager.md — 115 lines)</p>
-<p style="padding-left:1rem">• ✅ Pitch deck created (docs/pitch-deck.md — 264 lines)</p>
-<p style="padding-left:1rem">• ✅ Mobile PWA substantially built (apps/mobile-pwa/)</p>
-<p style="padding-left:1rem">• ✅ PWA icons generated (192x192, 512x512, maskable, apple-touch)</p>
-<p style="padding-left:1rem">• ✅ i18n messages for 5 ASEAN locales (fil, id, ms, ta, vi)</p>
-<p style="padding-left:1rem">• ✅ Not-found page for mobile PWA</p>
-<p style="padding-left:1rem">• ✅ Offline queue built into frontend report page (IndexedDB + auto-flush)</p>
-<p style="padding-left:1rem">• ✅ Offline banner shows when network is down</p>
-<p style="padding-left:1rem">• ✅ Online toast shows when connection restored</p>
-<p style="padding-left:1rem">• ✅ Supabase token wired to shared API client after login/register (v0.7.1)</p>
-<p style="padding-left:1rem">• ✅ Mobile PWA .env.example created (v0.7.1)</p>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Dependencies on Other Developers</h2>
-<table>
-<tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Notes</th></tr>
-<tr><td>Working backend</td><td>Dev 3 (Charlyn)</td><td>Thu evening</td><td>Need <code>/api/health</code> working for E2E tests</td></tr>
-<tr><td>Working AI service</td><td>Dev 2 (Jeff)</td><td>Sat</td><td>Need triage pipeline for full demo rehearsal</td></tr>
-<tr><td>Demo data seeded</td><td>Dev 3 (Charlyn)</td><td>Fri afternoon</td><td>Need tickets/users for demo scenarios</td></tr>
-<tr><td>Polished UI</td><td>Dev 1 (Lou)</td><td>Sat evening</td><td>Need impact dashboard and Ghost Mode for demo</td></tr>
-</table>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 1</span>Thursday, June 5</div>
-<div class="task-card"><div class="task-title"><span class="task-id">1.1</span>End-to-End Integration Testing</div>
-<p><span class="tag tag-blocked">❌ Not Done</span></p>
-<p><strong>Current state:</strong> No integration test scripts exist in the repository. The <code>scripts/</code> directory was removed during cleanup.</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Test the full stack locally:</p>
-<p style="padding-left:1rem">1. **Start all services:**</p>
-<p>   <code>`</code>bash</p>
-<p>   # Terminal 1: Frontend</p>
-<p>   cd apps/frontend && pnpm dev</p>
-<p>   # Terminal 2: Backend</p>
-<p>   cd apps/backend && php artisan serve</p>
-<p>   # Terminal 3: AI Service</p>
-<p>   cd apps/ai-service && uvicorn main:app --reload --port 8001</p>
-<p>   <code>`</code></p>
-<p style="padding-left:1rem">2. **Test each integration point:**</p>
-<p>   - [ ] Frontend loads at http://localhost:3000</p>
-<p>   - [ ] Backend health: http://localhost:8000/api/health</p>
-<p>   - [ ] AI service health: http://localhost:8001/health</p>
-<p>   - [ ] Login flow: Supabase Auth → <code>/api/auth/sync</code> → Sanctum token</p>
-<p>   - [ ] Report submission: POST <code>/api/reports</code> with image</p>
-<p>   - [ ] Triage check: POST <code>/api/reports/triage</code></p>
-<p>   - [ ] Leaderboard: GET <code>/api/leaderboard</code></p>
-<p>   - [ ] Dashboard: GET <code>/api/user/impact</code></p>
-<p style="padding-left:1rem">3. **Document all broken integration points** in a shared doc</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-1"> All 3 services start without errors</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-2"> Auth flow works end-to-end</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-3"> Report submission works (even without AI)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-4"> All broken points documented with error messages</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">1.2</span>Start Capacitor APK Setup</div>
-<p><span class="tag tag-blocked">❌ Not Done</span></p>
-<p><strong>Current state:</strong> No Capacitor config, no <code>android/</code> directory, no <code>@capacitor/*</code> dependencies in frontend.</p>
-<p><strong>Goal:</strong> Convert Next.js PWA into an Android APK using Capacitor.</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-5"> Capacitor initialized in frontend project</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-6"> Android platform added</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-7"> `npx cap sync` runs without errors</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-8"> Android Studio opens the project</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-9"> App builds in Android Studio (debug APK)</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 2</span>Friday, June 6</div>
-<div class="task-card"><div class="task-title"><span class="task-id">2.1</span>PWA Offline Polish</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Current state:</p>
-<p style="padding-left:1rem">• `next-pwa` (v5.6.0) wired into `apps/frontend/next.config.ts` with runtime caching</p>
-<p style="padding-left:1rem">• PWA manifest exists in `apps/frontend/public/manifest.json`</p>
-<p style="padding-left:1rem">• Offline queue built inline in `report/page.tsx` (lines 113-202)</p>
-<p style="padding-left:1rem">• Offline banner shows when network is down (line 367-372)</p>
-<p style="padding-left:1rem">• Online toast shows when connection restored (line 205)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Enhancements:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-10" checked> `next-pwa` configured with runtime caching</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-11" checked> PWA manifest with icons and display mode</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-12" checked> Offline queue built into report page (IndexedDB + auto-flush on reconnect)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-13" checked> Offline banner shows when network is down</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-14" checked> Online banner shows when connection restored (toast notification)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-15"> Cache API responses for `/api/laws`, `/api/achievements` (static data)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-16"> Test: disconnect WiFi → navigate pages → reconnect → verify sync</label>
-</div>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-17"> App loads offline after first visit</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-18" checked> Reports queue in IndexedDB when offline</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-19" checked> Reports auto-sync when connection restored</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-20" checked> Offline banner appears/disappears correctly</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-21"> No data loss during offline→online transition</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">2.2</span>Build APK with Capacitor</div>
-<p><span class="tag tag-blocked">❌ Not Done</span></p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-22"> Debug APK builds successfully</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-23"> APK installs on Android device/emulator</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-24"> App loads production URL in WebView</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-25"> Camera works through WebView</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-26"> GPS works through WebView</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-27"> Offline queue works in APK</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-4-28"> Version number set in `build.gradle`</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 3</span>Saturday, June 7</div>
-<div class="task-card"><div class="task-title"><span class="task-id">3.1</span>ASEAN Multi-Country Data</div>
-<p><span class="tag tag-pending">⚠️ Partial</span></p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Current state:</p>
-<p style="padding-left:1rem">• `CurrencySettingSeeder.php` ✅ — Seeds 10 ASEAN countries with eco-credit exchange rates</p>
-<p style="padding-left:1rem">• `AseanLawSeeder.php` ❌ — Referenced in docs but file does not exist</p>
-<p style="padding-left:1rem">• PH-only law seeders exist (`EnvironmentalLawSeeder.php`, `LawSeeder.php`)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-29"> 5+ ASEAN countries have at least 1 law seeded</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-30"> Each country has at least 1 NGO</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-31" checked> Currency settings verified for all 10 ASEAN countries</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">3.2</span>Write Demo Script</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>File:</strong> <code>docs/demo-script.md</code> (143 lines)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">What was delivered:</p>
-<p style="padding-left:1rem">• 7-flow demo script (~10 min): Opening, Citizen Report, Ghost Mode, AI Pipeline & Dashboard, Failure Resilience, Offline PWA, Leaderboard & Credits</p>
-<p style="padding-left:1rem">• Pre-flight checklist</p>
-<p style="padding-left:1rem">• Backup plans per flow</p>
-<p style="padding-left:1rem">• Q&A prep</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-32" checked> Demo script written with timing</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-33" checked> All demo flows tested</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-34" checked> Backup plan for each step if live demo fails</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-35" checked> Screenshots/recordings as backup</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">3.3</span>Create Presentation Materials</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Files delivered:</p>
-<p style="padding-left:1rem">1. `docs/one-pager.md` (115 lines) — Problem/solution/architecture</p>
-<p style="padding-left:1rem">2. `docs/pitch-deck.md` (264 lines) — 7-slide deck with ASCII wireframes</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-36" checked> One-pager created</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-37" checked> Slide deck created</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-38" checked> Materials match LikasLens branding (Eco-Brutalism)</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 4</span>Sunday, June 8</div>
-<div class="task-card"><div class="task-title"><span class="task-id">4.1</span>Full Demo Rehearsal</div>
-<p><strong>Time:</strong> 4h | <strong>Priority:</strong> CRITICAL | <strong>Status:</strong> ⏳ PENDING</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Rehearsal checklist:</p>
-<p style="padding-left:1rem">1. **Pre-rehearsal:**</p>
-<p>   - [ ] All 3 services running (Frontend, Backend, AI)</p>
-<p>   - [ ] Demo data seeded</p>
-<p>   - [ ] APK installed on test device</p>
-<p>   - [ ] Backup screenshots ready</p>
-<p style="padding-left:1rem">2. **Run through demo script:**</p>
-<p>   - [ ] Flow 1: Citizen Report (3 min)</p>
-<p>   - [ ] Flow 2: Ghost Mode (2 min)</p>
-<p>   - [ ] Flow 3: Impact Dashboard (2 min)</p>
-<p>   - [ ] Flow 4: AI Pipeline (1 min)</p>
-<p>   - [ ] Flow 5: Leaderboard + Credits (1 min)</p>
-<p style="padding-left:1rem">3. **Time each flow** — must fit in 10 minutes</p>
-<p style="padding-left:1rem">4. **Test failure scenarios:**</p>
-<p>   - [ ] What if AI service is down? (report still saves)</p>
-<p>   - [ ] What if Supabase is slow? (loading states work)</p>
-<p>   - [ ] What if camera fails? (file upload fallback)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-39"> Full demo completes in < 12 minutes</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-40"> No errors during demo</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-41"> Backup plans tested for each failure scenario</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-42"> Demo can run on presenter's laptop + phone</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">4.2</span>APK Final Build + Testing</div>
-<p><span class="tag tag-blocked">❌ Not Done</span></p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-43"> Build release APK (signed)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-44"> Test on physical Android device</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-45"> Verify all demo flows work in APK</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-46"> Verify offline capability in APK</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-47"> Version number updated</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-9-48"> APK file ready for submission</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">4.3</span>Competition Submission</div>
-<p><strong>Time:</strong> 2h | <strong>Priority:</strong> CRITICAL | <strong>Status:</strong> ⏳ PENDING</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-49"> Write competition essay / submission document</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-50"> Include: problem, solution, technical architecture, impact, scalability</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-51"> Attach: screenshots, demo video link, APK download link</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-52"> Submit before deadline</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Mobile PWA (Bonus: `apps/mobile-pwa/`)</h2>
-<p><strong>Status:</strong> ✅ SUBSTANTIALLY BUILT</p>
-<p>A separate mobile PWA app was created at <code>apps/mobile-pwa/</code> with:</p>
-<p style="padding-left:1rem">• Full Next.js 16 app structure</p>
-<p style="padding-left:1rem">• Login, Register, Onboarding (4-step carousel)</p>
-<p style="padding-left:1rem">• Dashboard with stats grid + install banner</p>
-<p style="padding-left:1rem">• Report page with camera capture + GPS + Ghost Mode toggle</p>
-<p style="padding-left:1rem">• Scoreboard with leaderboard styling</p>
-<p style="padding-left:1rem">• Profile with achievements + settings</p>
-<p style="padding-left:1rem">• PWA manifest with standalone display</p>
-<p style="padding-left:1rem">• Supabase client/server integration</p>
-<p style="padding-left:1rem">• `next-intl` i18n support</p>
-<p style="padding-left:1rem">• PWA icons (192x192, 512x512, maskable, apple-touch) ✅</p>
-<p style="padding-left:1rem">• i18n messages for fil, id, ms, ta, vi locales ✅</p>
-<p style="padding-left:1rem">• Not-found page ✅</p>
-<p style="padding-left:1rem">• `.env.example` with required vars ✅</p>
-<p style="padding-left:1rem">• Supabase token wired to shared API client after login ✅</p>
-<p><strong>Note:</strong> This app does NOT have <code>next-pwa</code> integration or a service worker — relies on browser-level PWA via manifest.</p>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Risk Items</h2>
-<table>
-<tr><th>Risk</th><th>Status</th><th>Mitigation</th></tr>
-<tr><td>Capacitor APK won't build</td><td>⚠️ OPEN</td><td>Fallback: use TWA (Trusted Web Activity) with Bubblewrap</td></tr>
-<tr><td>Camera doesn't work in WebView</td><td>⚠️ OPEN</td><td>Use <code><input type="file" capture="camera"></code> as fallback</td></tr>
-<tr><td>Demo fails live</td><td>⚠️ OPEN</td><td>Pre-record backup video of each flow</td></tr>
-<tr><td>Supabase down during demo</td><td>⚠️ OPEN</td><td>Use local PostgreSQL as backup</td></tr>
-<tr><td>AI service slow</td><td>⚠️ OPEN</td><td>Pre-cache demo responses; show loading states</td></tr>
-</table>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Definition of Done</h2>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-53"> All 3 services connected and tested end-to-end</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-54"> APK builds and installs on Android</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-10-55" checked> PWA offline queue works reliably (inline in report page)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-56"> ASEAN data seeded for 5+ countries</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-10-57" checked> Demo script written and rehearsed</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-10-58" checked> Presentation materials created</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-10-59" checked> Mobile PWA substantially built with i18n, icons, auth</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-60"> Full demo completes in < 12 minutes</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-10-61"> Competition submission ready</label>
-</div>
+  <!-- ═══════════════════════════════════ ESCALATION RULES ═══════════════════════════════════ -->
+  <div class="escalation-card">
+    <h2>Escalation Rules</h2>
+    <table>
+      <thead><tr><th>Issue Type</th><th>Action</th><th>Who</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>CSS-only fix (spacing, grid, overflow)</td>
+          <td>Fix it yourself</td>
+          <td><span class="badge badge-self">Kat</span></td>
+        </tr>
+        <tr>
+          <td>Needs JS logic or state management</td>
+          <td>Escalate to Lou</td>
+          <td><span class="badge badge-lou">Lou</span></td>
+        </tr>
+        <tr>
+          <td>Backend API not responding</td>
+          <td>Escalate to Charlyn</td>
+          <td><span class="badge badge-cha">Charlyn</span></td>
+        </tr>
+        <tr>
+          <td>AI service issues</td>
+          <td>Escalate to Jeff</td>
+          <td><span class="badge badge-jeff">Jeff</span></td>
+        </tr>
+        <tr>
+          <td>Takes more than 30min</td>
+          <td>Stop and escalate</td>
+          <td><span class="badge badge-escalate">Escalate</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-<div class="footer">
-  <p>LikasLens Sprint Roadmap — Generated 2026-06-09</p>
-  <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a> · <a href="/">Home</a></p>
+  <!-- ═══════════════════════════════════ HIGH PRIORITY ═══════════════════════════════════ -->
+  <div class="section" id="high" data-phase="high">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-high">&#9888;</div>
+      <div class="section-info">
+        <div class="section-title">HIGH Priority — Mobile PWA Card Layouts</div>
+        <div class="section-subtitle">CSS-only fixes in apps/mobile-pwa. Grid/flex/overflow issues.</div>
+      </div>
+      <span class="section-badge badge-high">HIGH</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+      <div class="sub-group">
+        <h4>UI Fixes <span class="sub-count" data-group="high"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="h-1" data-group="high" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="h-1"><strong>#173</strong> Laws Database: Broken Card Layout</label>
+              <div class="check-meta">
+                <code>apps/mobile-pwa/src/app/[locale]/laws/page.tsx</code>
+                <span class="time-badge">30min</span>
+                <span class="issue-badge">#173</span>
+              </div>
+              <div class="dep-note">Card grid layout broken on mobile — likely grid columns or overflow issue</div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="h-2" data-group="high" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="h-2"><strong>#170</strong> Incidents: Broken Card Layout</label>
+              <div class="check-meta">
+                <code>apps/mobile-pwa/src/app/[locale]/incidents/page.tsx</code>
+                <span class="time-badge">30min</span>
+                <span class="issue-badge">#170</span>
+              </div>
+              <div class="dep-note">Card layout broken — check grid/flex properties</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ MEDIUM PRIORITY ═══════════════════════════════════ -->
+  <div class="section" id="medium" data-phase="medium">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-medium">&#9881;</div>
+      <div class="section-info">
+        <div class="section-title">MEDIUM Priority — Spacing & Layout</div>
+        <div class="section-subtitle">Mobile PWA spacing, leaderboard, profile, search bar issues.</div>
+      </div>
+      <span class="section-badge badge-medium">MEDIUM</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+      <div class="sub-group">
+        <h4>UI Fixes — Spacing & Layout <span class="sub-count" data-group="medium"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="m-1" data-group="medium" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="m-1"><strong>#172</strong> Leaderboard: 1st-3rd Placement Crowded</label>
+              <div class="check-meta">
+                <code>apps/mobile-pwa/src/app/[locale]/scoreboard/page.tsx</code>
+                <span class="time-badge">20min</span>
+                <span class="issue-badge">#172</span>
+              </div>
+              <div class="dep-note">Top 3 rank cards overlapping — add spacing/gap between podium items</div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="m-2" data-group="medium" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="m-2"><strong>#165</strong> Display Name Squeezed to Side</label>
+              <div class="check-meta">
+                <code>apps/mobile-pwa/src/app/[locale]/profile/page.tsx</code>
+                <span class="time-badge">15min</span>
+                <span class="issue-badge">#165</span>
+              </div>
+              <div class="dep-note">Display name text pushed to edge — add padding or fix flex alignment</div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="m-3" data-group="medium" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="m-3"><strong>#166</strong> Impact Insights: Broken Card Layout</label>
+              <div class="check-meta">
+                <code>apps/mobile-pwa/src/app/[locale]/dashboard/impact/page.tsx</code>
+                <span class="time-badge">30min</span>
+                <span class="issue-badge">#166</span>
+              </div>
+              <div class="dep-note">Stats/insight cards layout broken — grid or flex issue</div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="m-4" data-group="medium" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="m-4"><strong>#168</strong> Dashboard Search Bar Not Working</label>
+              <div class="check-meta">
+                <code>apps/mobile-pwa/src/app/[locale]/dashboard/page.tsx</code>
+                <span class="time-badge">30min</span>
+                <span class="issue-badge">#168</span>
+              </div>
+              <div class="dep-note">Search bar may need JS event handler or API wiring. <strong>Escalate to Lou</strong> if it requires search logic, API calls, or state management.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ LOW PRIORITY ═══════════════════════════════════ -->
+  <div class="section collapsed" id="low" data-phase="low">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-low">&#128221;</div>
+      <div class="section-info">
+        <div class="section-title">LOW Priority — Documentation & Content</div>
+        <div class="section-subtitle">CHANGELOG, README, AGENTS.md verification, i18n translations.</div>
+      </div>
+      <span class="section-badge badge-low">LOW</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+      <div class="sub-group">
+        <h4>Documentation <span class="sub-count" data-group="low-docs"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="l-1" data-group="low low-docs" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="l-1">Update CHANGELOG.md for v0.9.3 release</label>
+              <div class="check-meta">
+                <code>CHANGELOG.md</code>
+                <span class="time-badge">20min</span>
+              </div>
+              <div class="dep-note">Add entries for recent fixes and features</div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="l-2" data-group="low low-docs" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="l-2">Verify README.md is accurate</label>
+              <div class="check-meta">
+                <code>README.md</code>
+                <span class="time-badge">15min</span>
+              </div>
+              <div class="dep-note">Check setup instructions, project structure, team credits</div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="l-3" data-group="low low-docs" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="l-3">Verify AGENTS.md files are accurate</label>
+              <div class="check-meta">
+                <code>AGENTS.md</code> (root), <code>apps/*/AGENTS.md</code>
+                <span class="time-badge">15min</span>
+              </div>
+              <div class="dep-note">Confirm instructions match current project state</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="sub-group">
+        <h4>Content — i18n Translations <span class="sub-count" data-group="low-i18n"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="l-4" data-group="low low-i18n" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="l-4">Verify all 6 locales are complete</label>
+              <div class="check-meta">
+                <code>apps/mobile-pwa/messages/{fil,id,ms,ta,vi,en}.json</code>
+                <span class="time-badge">20min</span>
+              </div>
+              <div class="dep-note">Check no missing keys across locale files</div>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="l-5" data-group="low low-i18n" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="l-5">Verify frontend i18n if applicable</label>
+              <div class="check-meta">
+                <code>apps/frontend/messages/*.json</code>
+                <span class="time-badge">10min</span>
+              </div>
+              <div class="dep-note">Spot-check translation completeness</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ TESTING CHECKLIST ═══════════════════════════════════ -->
+  <div class="section collapsed" id="testing" data-phase="testing">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-test">&#9989;</div>
+      <div class="section-info">
+        <div class="section-title">Testing Checklist (Manual QA)</div>
+        <div class="section-subtitle">Smoke test each app. Report issues as GitHub issues — don't fix complex bugs yourself.</div>
+      </div>
+      <span class="section-badge badge-test">QA</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+
+      <div class="sub-group">
+        <h4><span class="app-label app-mobile">Mobile PWA</span> apps/mobile-pwa <span class="sub-count" data-group="test-mobile"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="t-m1" data-group="testing test-mobile" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-m1">App loads at <code>http://localhost:3001</code> (or assigned port)</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-m2" data-group="testing test-mobile" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-m2">Register flow works</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-m3" data-group="testing test-mobile" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-m3">Login flow works</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-m4" data-group="testing test-mobile" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-m4">Dashboard renders with stats</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-m5" data-group="testing test-mobile" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-m5">Report page loads (camera/GPS may not work in dev)</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-m6" data-group="testing test-mobile" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-m6">Scoreboard/leaderboard renders</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-m7" data-group="testing test-mobile" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-m7">Profile page loads</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-m8" data-group="testing test-mobile" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-m8">PWA install prompt appears in browser</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-m9" data-group="testing test-mobile" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-m9">Pages are responsive at 375px width</label>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-label app-frontend">Frontend</span> apps/frontend <span class="sub-count" data-group="test-frontend"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="t-f1" data-group="testing test-frontend" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-f1">App loads at <code>http://localhost:3000</code></label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-f2" data-group="testing test-frontend" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-f2">Landing page renders</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-f3" data-group="testing test-frontend" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-f3">Auth flow: register → login → logout</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-f4" data-group="testing test-frontend" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-f4">Dashboard loads with data</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-f5" data-group="testing test-frontend" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-f5">Impact dashboard charts render</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-f6" data-group="testing test-frontend" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-f6">Laws page loads</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-f7" data-group="testing test-frontend" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-f7">Scoreboard loads</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-f8" data-group="testing test-frontend" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-f8">Contact form submits</label>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-label app-admin">Admin Portal</span> apps/admin-portal <span class="sub-count" data-group="test-admin"></span></h4>
+        <ul class="checklist">
+          <li>
+            <input type="checkbox" id="t-a1" data-group="testing test-admin" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-a1">App loads at assigned port</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-a2" data-group="testing test-admin" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-a2">Admin login works</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-a3" data-group="testing test-admin" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-a3">Dashboard renders</label>
+            </div>
+          </li>
+          <li>
+            <input type="checkbox" id="t-a4" data-group="testing test-admin" onchange="saveState()">
+            <div class="check-content">
+              <label class="check-label" for="t-a4">Key admin pages accessible</label>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ DEFINITION OF DONE ═══════════════════════════════════ -->
+  <div class="section collapsed" id="done" data-phase="done">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-done">&#127937;</div>
+      <div class="section-info">
+        <div class="section-title">Definition of Done</div>
+        <div class="section-subtitle">All items must be checked before sprint is complete.</div>
+      </div>
+      <span class="section-badge" style="background: var(--slate-100); color: var(--slate-500);">DoD</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+      <ul class="checklist">
+        <li>
+          <input type="checkbox" id="dod-1" data-group="done" onchange="saveState()">
+          <div class="check-content">
+            <label class="check-label" for="dod-1">All HIGH priority card layout fixes merged</label>
+          </div>
+        </li>
+        <li>
+          <input type="checkbox" id="dod-2" data-group="done" onchange="saveState()">
+          <div class="check-content">
+            <label class="check-label" for="dod-2">MEDIUM priority fixes attempted (escalate if stuck &gt;30min)</label>
+          </div>
+        </li>
+        <li>
+          <input type="checkbox" id="dod-3" data-group="done" onchange="saveState()">
+          <div class="check-content">
+            <label class="check-label" for="dod-3">Manual QA smoke test completed for all 3 apps</label>
+          </div>
+        </li>
+        <li>
+          <input type="checkbox" id="dod-4" data-group="done" onchange="saveState()">
+          <div class="check-content">
+            <label class="check-label" for="dod-4">CHANGELOG.md updated</label>
+          </div>
+        </li>
+        <li>
+          <input type="checkbox" id="dod-5" data-group="done" onchange="saveState()">
+          <div class="check-content">
+            <label class="check-label" for="dod-5">i18n locales verified complete</label>
+          </div>
+        </li>
+        <li>
+          <input type="checkbox" id="dod-6" data-group="done" onchange="saveState()">
+          <div class="check-content">
+            <label class="check-label" for="dod-6">All issues found during QA logged as GitHub issues</label>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ DEPENDENCIES ═══════════════════════════════════ -->
+  <div class="section collapsed" id="deps" data-phase="deps">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon" style="background: #fce7f3;">&#128279;</div>
+      <div class="section-info">
+        <div class="section-title">Dependencies on Other Developers</div>
+        <div class="section-subtitle">What Kat needs from the team to complete her tasks.</div>
+      </div>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+      <table>
+        <thead><tr><th>Dependency</th><th>From</th><th>Needed For</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Complex CSS/layout issues</td>
+            <td><span class="badge badge-lou">Lou</span></td>
+            <td>#168 Dashboard Search Bar</td>
+            <td>If search bar needs JS logic, hand off to Lou</td>
+          </tr>
+          <tr>
+            <td>Backend API verification</td>
+            <td><span class="badge badge-cha">Charlyn</span></td>
+            <td>QA testing</td>
+            <td>Need working endpoints for manual testing</td>
+          </tr>
+          <tr>
+            <td>AI service health</td>
+            <td><span class="badge badge-jeff">Jeff</span></td>
+            <td>Report submission QA</td>
+            <td>Need triage pipeline for full flow test</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ FOOTER ═══════════════════════════════════ -->
+  <div class="footer">
+    <div>LikasLens Dev 4 Sprint Roadmap — June 21-22, 2026</div>
+    <button onclick="resetAll()">Reset All Checkboxes</button>
+  </div>
+
 </div>
-</main>
 
 <script>
-(function() {
-  var STORAGE_KEY = 'likaslens-sprint-progress';
+  const STORAGE_KEY = 'likaslens-dev4-roadmap-v1';
+
+  function getAllCheckboxes() {
+    return document.querySelectorAll('.checklist input[type="checkbox"]');
+  }
+
+  function saveState() {
+    const state = {};
+    getAllCheckboxes().forEach(cb => {
+      state[cb.id] = cb.checked;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    updateProgress();
+    updateLabels();
+  }
 
   function loadState() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-    } catch(e) {
-      return {};
-    }
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const state = JSON.parse(raw);
+      Object.entries(state).forEach(([id, checked]) => {
+        const cb = document.getElementById(id);
+        if (cb) cb.checked = checked;
+      });
+    } catch(e) {}
+    updateProgress();
+    updateLabels();
   }
 
-  function saveState(state) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch(e) {
-      console.warn('Could not save progress to localStorage');
-    }
+  function updateLabels() {
+    getAllCheckboxes().forEach(cb => {
+      const label = cb.closest('li')?.querySelector('.check-label');
+      if (label) {
+        if (cb.checked) {
+          label.classList.add('done');
+        } else {
+          label.classList.remove('done');
+        }
+      }
+    });
   }
 
   function updateProgress() {
-    var checks = document.querySelectorAll('.task-check');
-    var checked = document.querySelectorAll('.task-check:checked');
-    var total = checks.length;
-    var done = checked.length;
-    var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    const all = getAllCheckboxes();
+    const total = all.length;
+    const checked = [...all].filter(cb => cb.checked).length;
+    const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
 
-    document.getElementById('progress-pct').textContent = pct + '%';
-    document.getElementById('progress-fill').style.width = pct + '%';
-    document.getElementById('progress-done').textContent = done;
-    document.getElementById('progress-total').textContent = total;
+    document.getElementById('overall-pct').textContent = pct + '%';
+    document.getElementById('overall-fill').style.width = pct + '%';
+    document.getElementById('total-count').textContent = total;
 
-    var fill = document.getElementById('progress-fill');
-    if (pct >= 100) {
-      fill.style.background = '#4caf50';
-    } else if (pct >= 50) {
-      fill.style.background = 'var(--dev-accent)';
-    } else {
-      fill.style.background = 'var(--accent)';
-    }
-  }
-
-  function init() {
-    var state = loadState();
-    var checks = document.querySelectorAll('.task-check');
-
-    checks.forEach(function(cb) {
-      var id = cb.getAttribute('data-id');
-
-      if (state[id]) {
-        cb.checked = true;
-      }
-
-      cb.addEventListener('change', function() {
-        var currentState = loadState();
-        if (this.checked) {
-          currentState[id] = true;
-          this.parentElement.classList.add('done');
-        } else {
-          delete currentState[id];
-          this.parentElement.classList.remove('done');
-        }
-        saveState(currentState);
-        updateProgress();
+    const phases = {};
+    all.forEach(cb => {
+      const groups = (cb.dataset.group || '').split(' ').filter(Boolean);
+      groups.forEach(g => {
+        if (!phases[g]) phases[g] = { total: 0, checked: 0 };
+        phases[g].total++;
+        if (cb.checked) phases[g].checked++;
       });
-
-      // Set initial done class
-      if (cb.checked) {
-        cb.parentElement.classList.add('done');
-      }
     });
 
+    const statsEl = document.getElementById('phase-stats');
+    const phaseOrder = ['high', 'medium', 'low', 'testing', 'done'];
+    const phaseNames = {
+      high: 'High Priority',
+      medium: 'Medium Priority',
+      low: 'Low Priority',
+      testing: 'QA Testing',
+      done: 'Definition of Done'
+    };
+    statsEl.innerHTML = phaseOrder.map(p => {
+      const d = phases[p] || { total: 0, checked: 0 };
+      return `<div class="phase-stat">
+        <div class="phase-name">${phaseNames[p] || p}</div>
+        <div class="phase-count"><span>${d.checked}</span>/${d.total}</div>
+      </div>`;
+    }).join('');
+
+    document.querySelectorAll('[data-group]').forEach(el => {
+      if (el.tagName === 'SPAN' && el.dataset.group) {
+        const d = phases[el.dataset.group];
+        if (d) el.textContent = `${d.checked}/${d.total}`;
+      }
+    });
+  }
+
+  function toggleSection(header) {
+    header.closest('.section').classList.toggle('collapsed');
+  }
+
+  function resetAll() {
+    if (!confirm('Reset all checkboxes? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    getAllCheckboxes().forEach(cb => { cb.checked = false; });
     updateProgress();
+    updateLabels();
   }
 
-  window.toggleTheme = function() {
-    var html = document.documentElement;
-    var label = document.getElementById('theme-label');
-    if (html.getAttribute('data-theme') === 'ghost') {
-      html.setAttribute('data-theme', 'civic');
-      label.textContent = 'CIVIC';
-      localStorage.setItem('likaslens-theme', 'civic');
-    } else {
-      html.setAttribute('data-theme', 'ghost');
-      label.textContent = 'GHOST';
-      localStorage.setItem('likaslens-theme', 'ghost');
-    }
-  };
-
-  var savedTheme = localStorage.getItem('likaslens-theme');
-  if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    var label = document.getElementById('theme-label');
-    if (label) label.textContent = savedTheme.toUpperCase();
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
+  loadState();
 </script>
 </body>
 </html>

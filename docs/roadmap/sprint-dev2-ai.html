@@ -3,35 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LikasLens Sprint — Developer 2: AI Services</title>
+<title>LikasLens Sprint — Developer 2: Backend + AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --primary: #1B4332;
-  --secondary: #2DE1C2;
-  --accent: #FFB703;
-  --background: #F8F9FA;
-  --foreground: #081C15;
-  --panel: #F8F9FA;
-  --panel-border: rgba(8, 28, 21, 0.2);
-  --muted-text: rgba(8, 28, 21, 0.85);
-  --dev-accent: #1565c0;
-  --shadow-color: #1B4332;
+  --green-900: #1B4332;
+  --green-700: #40916C;
+  --green-500: #52B788;
+  --green-100: #D8F3DC;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --primary: var(--green-900);
+  --accent: var(--green-500);
+  --accent-dark: var(--green-700);
+  --background: var(--slate-50);
+  --foreground: var(--slate-900);
+  --panel: #ffffff;
+  --panel-border: var(--slate-300);
+  --muted-text: var(--slate-500);
+  --shadow-color: rgba(27,67,50,0.15);
+  --dev-accent: var(--green-700);
 }
+
 [data-theme="ghost"] {
-  --primary: #2DE1C2;
-  --secondary: #2DE1C2;
-  --accent: #FFB703;
-  --background: #081C15;
-  --foreground: #F8F9FA;
-  --panel: rgba(8, 28, 21, 0.9);
-  --panel-border: rgba(45, 225, 194, 0.35);
-  --muted-text: rgba(248, 249, 250, 0.85);
-  --shadow-color: #2DE1C2;
+  --primary: var(--green-500);
+  --accent: var(--green-500);
+  --accent-dark: var(--green-700);
+  --background: var(--slate-900);
+  --foreground: var(--slate-100);
+  --panel: var(--slate-800);
+  --panel-border: rgba(82,183,136,0.3);
+  --muted-text: var(--slate-400);
+  --shadow-color: rgba(82,183,136,0.2);
+  --dev-accent: var(--green-500);
 }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
   font-family: 'Inter', sans-serif;
   background: var(--background);
@@ -39,6 +60,7 @@ body {
   line-height: 1.6;
   transition: background 0.4s ease, color 0.4s ease;
 }
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Montserrat', sans-serif;
   font-weight: 800;
@@ -46,7 +68,9 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
+
 code, pre, .font-data { font-family: 'Space Mono', monospace; }
+
 .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
 
 /* Theme Toggle */
@@ -65,19 +89,19 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   width: 10px; height: 10px; border-radius: 50%;
   background: var(--accent); transition: background 0.3s ease;
 }
-[data-theme="ghost"] .theme-toggle .dot { background: var(--secondary); animation: pulse 2s infinite; }
+[data-theme="ghost"] .theme-toggle .dot { background: var(--accent); animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* Hero */
 .hero {
-  background: var(--primary);
-  color: #F8F9FA;
+  background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%);
+  color: #fff;
   padding: 3rem 0;
-  border-bottom: 4px solid var(--foreground);
+  border-bottom: 4px solid var(--green-500);
 }
 .hero .icon { font-size: 3rem; margin-bottom: 0.5rem; }
-.hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; }
-.hero .accent-line { color: var(--dev-accent); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+.hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; color: #fff; }
+.hero .accent-line { color: var(--green-100); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
 .hero-meta {
   display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;
 }
@@ -118,16 +142,16 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
 }
 .progress-track {
   height: 12px;
-  background: rgba(8, 28, 21, 0.1);
+  background: var(--slate-200);
   border: 2px solid var(--foreground);
   overflow: hidden;
 }
 [data-theme="ghost"] .progress-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255,255,255,0.1);
 }
 .progress-fill {
   height: 100%;
-  background: var(--dev-accent);
+  background: var(--green-500);
   transition: width 0.4s ease;
   width: 0%;
 }
@@ -136,6 +160,23 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   font-size: 0.7rem;
   color: var(--muted-text);
   margin-top: 0.5rem;
+}
+.progress-bar-breakdown {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+.progress-bar-breakdown .breakdown-item {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted-text);
+}
+.breakdown-dot {
+  width: 8px; height: 8px; border-radius: 50%; display: inline-block;
 }
 
 /* Brutal Panel */
@@ -158,40 +199,161 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   border-bottom: 4px solid var(--dev-accent);
   display: inline-block;
 }
-[data-theme="ghost"] .section-header { color: var(--secondary); }
+[data-theme="ghost"] .section-header { color: var(--accent); }
 
-/* Day Section */
-.day-section { margin: 2rem 0; }
-.day-header {
-  background: var(--dev-accent);
-  color: #fff;
-  padding: 0.75rem 1.5rem;
+/* Priority Sections (Collapsible) */
+.priority-section {
+  margin: 2rem 0;
+  border: 4px solid var(--foreground);
+  box-shadow: 6px 6px 0px var(--shadow-color);
+  overflow: hidden;
+}
+.priority-header {
+  padding: 1rem 1.5rem;
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   text-transform: uppercase;
-  border: 4px solid var(--foreground);
-  margin-bottom: 1.5rem;
-  display: flex; align-items: center; gap: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  transition: all 0.2s ease;
+  color: #fff;
 }
-.day-header .day-num {
-  background: rgba(255,255,255,0.2);
-  padding: 0.25rem 0.6rem;
-  font-size: 0.85rem;
+.priority-header:hover { filter: brightness(1.1); }
+.priority-header .chevron {
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+.priority-header.open .chevron { transform: rotate(90deg); }
+.priority-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  background: var(--panel);
+}
+.priority-body.open {
+  max-height: 8000px;
+}
+.priority-body-inner {
+  padding: 1.5rem;
+}
+
+.priority-critical { background: var(--red); }
+.priority-high { background: var(--amber); color: var(--slate-900); }
+.priority-medium { background: #eab308; color: var(--slate-900); }
+.priority-low { background: var(--blue); }
+.priority-post { background: var(--slate-500); }
+
+/* Sub-section Headers */
+.subsection-header {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--dev-accent);
+  margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 2px solid var(--panel-border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.subsection-header:first-child { margin-top: 0; }
+.subsection-icon {
+  font-size: 1.1rem;
 }
 
 /* Task Card */
-.task-card { margin-bottom: 2rem; }
+.task-card {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--slate-50);
+  border: 2px solid var(--panel-border);
+  border-radius: 0;
+  transition: all 0.2s ease;
+}
+[data-theme="ghost"] .task-card {
+  background: var(--slate-700);
+}
+.task-card:hover {
+  border-color: var(--green-500);
+}
+
 .task-title {
-  font-size: 1.1rem; font-weight: 800;
+  font-size: 1rem; font-weight: 800;
   color: var(--foreground);
   margin-bottom: 0.5rem;
   display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
 }
-.task-title .task-id {
-  background: var(--dev-accent); color: #fff;
-  padding: 0.15rem 0.5rem; font-size: 0.7rem;
+.task-title .task-time {
+  background: var(--green-100);
+  color: var(--green-900);
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
   font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  border: 2px solid var(--green-700);
+}
+[data-theme="ghost"] .task-title .task-time {
+  background: rgba(82,183,136,0.2);
+  color: var(--green-500);
+  border-color: var(--green-700);
+}
+.task-issue {
+  background: var(--slate-800);
+  color: #fff;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+[data-theme="ghost"] .task-issue {
+  background: var(--slate-600);
+}
+.task-issue:hover {
+  background: var(--green-700);
+}
+.task-desc {
+  font-size: 0.85rem;
+  color: var(--muted-text);
+  margin-bottom: 0.5rem;
+}
+.task-files {
+  margin: 0.5rem 0;
+}
+.task-files code {
+  display: inline-block;
+  background: rgba(0,0,0,0.06);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  border: 1px solid rgba(0,0,0,0.1);
+  margin: 0.15rem 0.25rem 0.15rem 0;
+}
+[data-theme="ghost"] .task-files code {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+}
+.task-action {
+  font-size: 0.8rem;
+  color: var(--slate-600);
+  margin: 0.5rem 0;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--green-500);
+}
+[data-theme="ghost"] .task-action {
+  color: var(--slate-400);
+}
+.task-dep {
+  font-size: 0.75rem;
+  color: var(--amber);
+  font-weight: 600;
+  margin-top: 0.35rem;
 }
 
 /* Interactive Checkboxes */
@@ -205,9 +367,11 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   vertical-align: middle;
   margin-right: 0.5rem;
   flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 .task-check:checked {
-  background: var(--secondary);
+  background: var(--green-500);
+  border-color: var(--green-700);
 }
 .task-check:checked::after {
   content: '\2713';
@@ -215,34 +379,35 @@ code, pre, .font-data { font-family: 'Space Mono', monospace; }
   top: -2px; left: 2px;
   font-size: 12px;
   font-weight: 900;
-  color: var(--foreground);
+  color: #fff;
 }
 .task-check-label {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 0.35rem 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: pointer;
+  line-height: 1.4;
 }
 .task-check-label.done {
   text-decoration: line-through;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 /* Tags */
 .tag {
   display: inline-block;
   padding: 0.15rem 0.5rem;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
   font-family: 'Space Mono', monospace;
   text-transform: uppercase;
   border: 2px solid;
   margin-right: 0.25rem;
 }
-.tag-done { background: rgba(45, 225, 194, 0.2); border-color: #2DE1C2; color: #1B4332; }
-.tag-pending { background: rgba(255, 183, 3, 0.15); border-color: #FFB703; color: #b8860b; }
-.tag-blocked { background: rgba(220, 53, 69, 0.1); border-color: #dc3545; color: #dc3545; }
+.tag-done { background: rgba(82,183,136,0.2); border-color: var(--green-500); color: var(--green-900); }
+.tag-pending { background: rgba(245,158,11,0.15); border-color: var(--amber); color: #92400e; }
+.tag-blocked { background: rgba(239,68,68,0.1); border-color: var(--red); color: var(--red); }
 
 /* Tables */
 table {
@@ -258,39 +423,179 @@ th, td {
 }
 th {
   background: var(--primary);
-  color: #F8F9FA;
+  color: #fff;
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
   text-transform: uppercase;
   font-size: 0.75rem;
 }
+[data-theme="ghost"] th {
+  background: var(--green-900);
+}
 tr:nth-child(even) { background: rgba(0,0,0,0.02); }
 [data-theme="ghost"] tr:nth-child(even) { background: rgba(255,255,255,0.02); }
-code {
-  background: rgba(0,0,0,0.06);
-  padding: 0.15rem 0.4rem;
-  font-size: 0.85em;
-  border: 1px solid rgba(0,0,0,0.1);
+
+/* Dependency Map */
+.dep-map {
+  background: var(--panel);
+  border: 4px solid var(--foreground);
+  box-shadow: 8px 8px 0px var(--shadow-color);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  overflow-x: auto;
 }
-[data-theme="ghost"] code {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.15);
-}
-pre {
+.dep-map pre {
   background: var(--foreground);
   color: var(--background);
-  padding: 1rem;
-  border: 4px solid var(--foreground);
+  padding: 1.25rem;
+  border: 2px solid var(--green-700);
   overflow-x: auto;
-  margin: 0.75rem 0;
+  margin: 0;
   font-size: 0.8rem;
+  line-height: 1.6;
 }
-pre code {
-  background: none;
-  border: none;
+[data-theme="ghost"] dep-map pre {
+  background: var(--slate-700);
+  color: var(--green-100);
+}
+
+/* Standup Grid */
+.standup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.standup-card {
+  background: var(--panel);
+  border: 3px solid var(--panel-border);
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+.standup-card:hover {
+  border-color: var(--green-500);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px var(--shadow-color);
+}
+.standup-day {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+.standup-date {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted-text);
+  margin-bottom: 0.5rem;
+}
+.standup-focus {
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.standup-badge {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+  border: 2px solid;
+}
+.badge-critical { background: rgba(239,68,68,0.15); border-color: var(--red); color: var(--red); }
+.badge-high { background: rgba(245,158,11,0.15); border-color: var(--amber); color: #92400e; }
+.badge-medium { background: rgba(234,179,8,0.15); border-color: #eab308; color: #854d0e; }
+.badge-low { background: rgba(59,130,246,0.15); border-color: var(--blue); color: var(--blue); }
+.badge-demo { background: rgba(139,92,246,0.15); border-color: #8b5cf6; color: #8b5cf6; }
+
+/* Roster */
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.roster-card {
+  background: var(--panel);
+  border: 3px solid var(--panel-border);
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+.roster-card:hover {
+  border-color: var(--green-500);
+  box-shadow: 4px 4px 0px var(--shadow-color);
+}
+.roster-avatar {
+  width: 40px; height: 40px;
+  background: var(--green-700);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+.roster-name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+.roster-role {
+  font-size: 0.75rem;
+  color: var(--muted-text);
+  font-weight: 600;
+}
+.roster-stack {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--green-700);
+  margin-top: 0.25rem;
+}
+[data-theme="ghost"] .roster-stack {
+  color: var(--green-500);
+}
+
+/* Notes */
+.notes-panel {
+  background: var(--green-100);
+  border: 4px solid var(--green-700);
+  padding: 1.25rem;
+  margin: 1.5rem 0;
+}
+[data-theme="ghost"] .notes-panel {
+  background: rgba(82,183,136,0.1);
+  border-color: var(--green-700);
+}
+.notes-panel h3 {
+  font-size: 0.9rem;
+  color: var(--green-900);
+  margin-bottom: 0.75rem;
+}
+[data-theme="ghost"] .notes-panel h3 {
+  color: var(--green-500);
+}
+.notes-panel ul {
+  list-style: none;
   padding: 0;
-  color: inherit;
 }
+.notes-panel li {
+  font-size: 0.8rem;
+  padding: 0.25rem 0;
+  padding-left: 1.25rem;
+  position: relative;
+}
+.notes-panel li::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  color: var(--green-700);
+  font-weight: 900;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Footer */
 .footer {
   margin-top: 4rem;
   padding: 2rem 0;
@@ -299,7 +604,25 @@ pre code {
   font-size: 0.8rem;
   color: var(--muted-text);
 }
-.footer a { color: var(--dev-accent); font-weight: 700; }
+.footer a { color: var(--dev-accent); font-weight: 700; text-decoration: none; }
+.footer a:hover { text-decoration: underline; }
+
+/* Collapsible toggle animation */
+.priority-header::after {
+  content: '';
+  width: 0; height: 0;
+  border-left: 6px solid currentColor;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  margin-left: 0.75rem;
+}
+.priority-header.open::after {
+  transform: rotate(90deg);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .hero h1 { font-size: 1.75rem; }
   .hero-meta { flex-direction: column; }
@@ -307,6 +630,20 @@ pre code {
   table { font-size: 0.75rem; }
   th, td { padding: 0.35rem 0.5rem; }
   .progress-container { position: static; }
+  .standup-grid { grid-template-columns: 1fr; }
+  .roster-grid { grid-template-columns: 1fr; }
+  .priority-header { font-size: 1rem; padding: 0.75rem 1rem; }
+  .task-card { padding: 0.75rem; }
+  .container { padding: 0 1rem; }
+  .theme-toggle { top: 0.5rem; right: 0.5rem; padding: 0.35rem 0.75rem; }
+}
+
+@media (max-width: 480px) {
+  .hero { padding: 2rem 0; }
+  .hero h1 { font-size: 1.4rem; }
+  .progress-header { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+  .task-title { font-size: 0.9rem; }
+  .dep-map pre { font-size: 0.65rem; padding: 0.75rem; }
 }
 </style>
 </head>
@@ -320,20 +657,21 @@ pre code {
 <div class="hero">
   <div class="container">
     <div class="icon">🧠</div>
-    <h1>Developer 2: AI Services</h1>
-    <div class="accent-line">ASEAN AI Hackathon Prep</div>
+    <h1>Developer 2: Backend + AI</h1>
+    <div class="accent-line">ASEAN Hackathon Final Push</div>
     <div class="hero-meta">
-      <span class="meta-chip">📅 June 5-8, 2026 (Thu-Sun)</span>
-      <span class="meta-chip">⏱ 26h</span>
+      <span class="meta-chip">📅 Jun 21 – Jun 28, 2026</span>
+      <span class="meta-chip">🎯 v0.9.3 → v0.9.4</span>
       <span class="meta-chip">👤 Jeff</span>
-      <span class="meta-chip">✅ **COMPLETE** — All tasks delivered</span>
+      <span class="meta-chip">⚙️ Laravel 12 + FastAPI</span>
     </div>
-    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.85">Environmental YOLOv8 model, Gremlin graph seeding, Gemini prompts</p>
+    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.85">Backend core logic, AI pipeline, Roboflow integration, composite scoring &amp; triage</p>
   </div>
 </div>
 
 <main class="container">
 
+  <!-- Progress Bar -->
   <div class="progress-container" id="progress-bar">
     <div class="progress-header">
       <span class="progress-title">Sprint Progress</span>
@@ -345,222 +683,457 @@ pre code {
     <div class="progress-detail">
       <span id="progress-done">0</span> / <span id="progress-total">0</span> tasks completed
     </div>
+    <div class="progress-bar-breakdown" id="progress-breakdown">
+      <span class="breakdown-item"><span class="breakdown-dot" style="background:var(--red)"></span> Critical: <span id="bd-critical">0/0</span></span>
+      <span class="breakdown-item"><span class="breakdown-dot" style="background:var(--amber)"></span> High: <span id="bd-high">0/0</span></span>
+      <span class="breakdown-item"><span class="breakdown-dot" style="background:#eab308"></span> Medium: <span id="bd-medium">0/0</span></span>
+      <span class="breakdown-item"><span class="breakdown-dot" style="background:var(--blue)"></span> Low: <span id="bd-low">0/0</span></span>
+      <span class="breakdown-item"><span class="breakdown-dot" style="background:var(--slate-500)"></span> Post: <span id="bd-post">0/0</span></span>
+    </div>
   </div>
 
-<p>> <strong>Sprint:</strong> ASEAN AI Hackathon Prep</p>
-<p>> <strong>Timeline:</strong> June 5-8, 2026 (Thu-Sun)</p>
-<p>> <strong>Total Hours:</strong> 26h</p>
-<p>> <strong>Assigned To:</strong> Jeff</p>
-<p>> <strong>Focus:</strong> Environmental YOLOv8 model, Gremlin graph seeding, Gemini prompts</p>
-<p>> <strong>Status:</strong> ✅ <strong>COMPLETE</strong> — All tasks delivered</p>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">👥 Team Roster</h2>
-<table>
-<tr><th>Dev</th><th>Name</th><th>Role</th><th>Focus</th></tr>
-<tr><td>Dev 1</td><td>Lou</td><td>Frontend/UI</td><td>Next.js UI, Tailwind, responsive design, Ghost Mode theme</td></tr>
-<tr><td>Dev 2</td><td>Jeff</td><td>AI/Backend</td><td>FastAPI AI service, YOLOv8, Gremlin graph, Gemini</td></tr>
-<tr><td>Dev 3</td><td>Charlyn</td><td>Backend/Infrastructure</td><td>Laravel API, Supabase, CI/CD, admin portal</td></tr>
-<tr><td>Dev 4</td><td>Katherine</td><td>Integration/PWA/APK</td><td>E2E testing, PWA offline, Capacitor APK, demo prep</td></tr>
-</table>
-<p>> <strong>Note:</strong> Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.</p>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Dependencies on Other Developers</h2>
-<table>
-<tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Status</th><th>Notes</th></tr>
-<tr><td>Supabase connection</td><td>Dev 3 (Charlyn)</td><td>Thu evening</td><td>✅ Resolved</td><td>DB accessible, seeders running</td></tr>
-<tr><td>Test images</td><td>Dev 4 (Katherine)</td><td>Sat</td><td>✅ Resolved</td><td>Demo images tested</td></tr>
-<tr><td>Azure AI Service deployment</td><td>Dev 3 (Charlyn)</td><td>Sun</td><td>⚠️ Blocked</td><td>CI/CD still points to deleted ACR; needs ghcr.io migration</td></tr>
-</table>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 1</span>Thursday, June 5</div>
-<div class="task-card"><div class="task-title"><span class="task-id">1.1</span>Research Community Environmental YOLOv8 Models</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Result:</strong> Selected <code>HrutikAdsare/waste-detection-yolov8</code> from HuggingFace. Model downloaded at Docker build time via <code>huggingface-hub</code>. Custom-trained YOLOv8 for waste/trash detection with good inference speed (nano variant).</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-1" checked> At least 1 environmental model identified and downloaded</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-2" checked> Model tested on sample images</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-3" checked> Performance metrics documented (mAP, inference speed)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-4" checked> Decision: use model as-is (no fine-tuning needed)</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">1.2</span>Integrate Environmental Model into `image_analysis.py`</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>File modified:</strong> <code>apps/ai-service/image_analysis.py</code> (+382 lines rewritten)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">What was built:</p>
-<p style="padding-left:1rem">• Dual-model detection: COCO (`yolov8n.pt`) + environmental (`waste-detection-yolov8`)</p>
-<p style="padding-left:1rem">• `ENV_MODEL_CLASS_MAP` updated with actual model classes</p>
-<p style="padding-left:1rem">• Results merged with deduplication logic</p>
-<p style="padding-left:1rem">• Environmental detections include severity levels</p>
-<p style="padding-left:1rem">• Fallback to COCO-only if environmental model fails</p>
-<p style="padding-left:1rem">• `/analyze/model` endpoint reports both models</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-5" checked> Environmental model loads at startup</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-6" checked> Dual inference runs on each image (COCO + environmental)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-7" checked> Results merged with deduplication</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-8" checked> Environmental detections include severity levels</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-9" checked> Fallback to COCO-only if environmental model fails</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-10" checked> `/analyze/base64` endpoint returns enhanced results</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 2</span>Friday, June 6</div>
-<div class="task-card"><div class="task-title"><span class="task-id">2.1</span>Seed All 16 PH Laws into Gremlin Graph</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>File modified:</strong> <code>apps/ai-service/gremlin_upserts/baseline_rules.py</code> (+478 lines)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">What was built:</p>
-<p style="padding-left:1rem">• All 16 PH environmental law vertices with full properties</p>
-<p style="padding-left:1rem">• 5 baseline jurisdictions (Region VI focus)</p>
-<p style="padding-left:1rem">• Enforcement agency vertices (DENR, MGB, EMB, etc.)</p>
-<p style="padding-left:1rem">• `governed_by` and `enforced_by` edges connecting laws → jurisdictions → agencies</p>
-<p style="padding-left:1rem">• Idempotent upserts (safe to re-run)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-11" checked> All 16 laws exist as vertices in Gremlin graph</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-12" checked> Each law has correct properties (code, title, agency, jurisdiction)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-13" checked> `/graph/topology` returns all 16 laws</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-14" checked> No duplicate vertices on re-run (idempotent upserts)</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">2.2</span>Add Violation Types + Hazard-Law Edges</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">What was built:</p>
-<p style="padding-left:1rem">• 11 ViolationType vertices (4 existing + 7 new)</p>
-<p style="padding-left:1rem">• 18 HazardType vertices</p>
-<p style="padding-left:1rem">• 40 edges total: `violates`, `enforced_by`, `classified_from`</p>
-<p style="padding-left:1rem">• Each violation linked to correct PH law</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">New Violation Types Seeded:</p>
-<table>
-<tr><th>Code</th><th>Name</th><th>Linked Law</th></tr>
-<tr><td><code>ILLEGAL-LOGGING</code></td><td>Illegal Logging / Deforestation</td><td>PD-705</td></tr>
-<tr><td><code>WILDLIFE-TRAFFICKING</code></td><td>Wildlife Trafficking</td><td>RA-9147</td></tr>
-<tr><td><code>MARINE-POLLUTION</code></td><td>Marine Pollution</td><td>PD-979</td></tr>
-<tr><td><code>OPEN-BURNING</code></td><td>Open Burning</td><td>RA-8749</td></tr>
-<tr><td><code>MANGROVE-DESTRUCTION</code></td><td>Mangrove Clearing</td><td>RA-7611</td></tr>
-<tr><td><code>CORAL-REEF-DAMAGE</code></td><td>Coral Reef Destruction</td><td>RA-9147</td></tr>
-<tr><td><code>PROTECTED-AREA-INTRUSION</code></td><td>Protected Area Violation</td><td>RA-7586</td></tr>
-</table>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-4-15" checked> 7+ new ViolationType vertices in Gremlin</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-4-16" checked> 9+ HazardType vertices in Gremlin</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-4-17" checked> `violates` edges connect violations to correct laws</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-4-18" checked> `/routing/traversal` shows full hazard→law→agency chains</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 3</span>Saturday, June 7</div>
-<div class="task-card"><div class="task-title"><span class="task-id">3.1</span>Seed ASEAN-Relevant Hazard Types</div>
-<p><strong>Time:</strong> 3h | <strong>Priority:</strong> MEDIUM | <strong>Status:</strong> ⚠️ FILE REMOVED</p>
-<p><strong>File created:</strong> <code>apps/ai-service/gremlin_upserts/asean_expansion.py</code> (391 lines)</p>
-<p>> <strong>⚠️ WARNING:</strong> This file was removed during codebase cleanup (commit <code>34d71c0</code>). The ASEAN hazard seeding code no longer exists in the repo. If ASEAN hazards need to be re-seeded, this file must be restored from git history.</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">What was built (before removal):</p>
-<p style="padding-left:1rem">• 5 new ASEAN jurisdiction vertices (ID, TH, VN, MY, SG)</p>
-<p style="padding-left:1rem">• 1 anchor environmental law per country</p>
-<p style="padding-left:1rem">• 1 enforcement agency/NGO per country</p>
-<p style="padding-left:1rem">• `governed_by`, `enforced_by`, `violates` edges connecting ASEAN hazards → ASEAN laws</p>
-<p style="padding-left:1rem">• Supports `--dry-run` and `--gremlin` output modes</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-19" checked> 6+ ASEAN-specific HazardType vertices (before file removal)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-20" checked> Each linked to closest PH law equivalent</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-21" checked> Graph traversal returns ASEAN hazards</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">3.2</span>Update Gemini System Prompt for Environmental Education</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>File modified:</strong> <code>apps/ai-service/chat_proxy.py</code> (+30 lines)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">What was built:</p>
-<p style="padding-left:1rem">• "Likasy" persona with environmental education focus</p>
-<p style="padding-left:1rem">• Ghost Mode safety guidance for dangerous situations</p>
-<p style="padding-left:1rem">• Eco-credit system explanation capability</p>
-<p style="padding-left:1rem">• Philippine law references (RA-9003, RA-8749, RA-9275, PD-705, etc.)</p>
-<p style="padding-left:1rem">• Grade 8 reading level, non-legal-advisor disclaimer</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-22" checked> `/api/v1/chat` uses new environmental persona</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-23" checked> Likasy explains laws correctly (references actual law codes)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-24" checked> Likasy recommends Ghost Mode for dangerous situations</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-25" checked> Likasy explains eco-credit system</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-26" checked> Response quality tested with 5 sample queries</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 4</span>Sunday, June 8</div>
-<div class="task-card"><div class="task-title"><span class="task-id">4.1</span>End-to-End AI Pipeline Testing</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Test Results:</p>
-<p style="padding-left:1rem">1. **YOLOv8 Detection** — Dual-model detection working (COCO + environmental)</p>
-<p style="padding-left:1rem">2. **Gremlin Routing** — 16 laws + 11 violation types + 18 hazard types all traversable</p>
-<p style="padding-left:1rem">3. **Gemini Summary** — Hazard analysis endpoint returns correct law references</p>
-<p style="padding-left:1rem">4. **Chatbot** — Likasy persona active with Ghost Mode + eco-credit guidance</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-27" checked> All 4 test categories pass</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-28" checked> No hallucinated laws in Gemini output</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-29" checked> Gremlin traversal returns correct agency for each hazard</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-7-30" checked> Environmental model detections are accurate</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">4.2</span>Fix Integration Issues</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Commit:</strong> <code>fa080d4</code> — "fix(ai): make service deployment-ready"</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Fixes applied:</p>
-<p style="padding-left:1rem">• Dockerfile: replaced broken `load_model()` with proper COCO + ENV model preload</p>
-<p style="padding-left:1rem">• Added HuggingFace model download step in Docker build</p>
-<p style="padding-left:1rem">• Added `.gitignore` for `models/` directory</p>
-<p style="padding-left:1rem">• CORS origins configurable via `CORS_ORIGINS` env var</p>
-<p style="padding-left:1rem">• Preload both models at startup in lifespan handler</p>
-<p style="padding-left:1rem">• Switched from deprecated `google-generativeai` to `google-genai`</p>
-<p style="padding-left:1rem">• Added `huggingface-hub` to requirements.txt</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-31" checked> AI service starts cleanly with new model</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-32" checked> `/health` endpoint works</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-33" checked> `/analyze/model` reports environmental model info</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-34" checked> Dockerfile builds successfully</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Post-Sprint Work (Not in Original Sprint)</h2>
-<h3 style="font-size:1.1rem;margin:1.5rem 0 0.75rem">AI Service Stability Hardening (v0.6.2-v0.6.3)</h3>
-<p style="padding-left:1rem">• ✅ Comprehensive P0/P1 stability fixes (commit `1b56f32`)</p>
-<p>  - <code>analyze_image()</code>: try/except with proper error handling</p>
-<p>  - Image size validation: 20MB max, 16MP cap with auto-resize</p>
-<p>  - Gremlin injection protection: all IDs validated against safe pattern</p>
-<p>  - Gremlin timeouts: 30s via <code>asyncio.wait_for()</code></p>
-<p>  - Gremlin reconnection: 2 retries on stale connection</p>
-<p>  - <code>analyze_image</code> moved to <code>asyncio.to_thread</code> (no longer blocks event loop)</p>
-<p>  - Global FastAPI exception handler with consistent JSON errors</p>
-<p>  - Gemini API timeouts (30s) in both <code>chat_proxy.py</code> and <code>hazard_analyzer.py</code></p>
-<p>  - <code>genai.configure()</code> called once at startup</p>
-<p>  - Error messages no longer leak internal details</p>
-<p>  - CORS reads from <code>CORS_ORIGINS</code> env var</p>
-<p>  - Dependencies pinned with upper bounds</p>
-<p>  - Dockerfile: non-root user + <code>HEALTHCHECK</code></p>
-<p style="padding-left:1rem">• ✅ Request logging middleware (commit `694cdef`)</p>
-<p style="padding-left:1rem">• ✅ Rate limiting middleware (60 req/min general, 10 req/min for expensive endpoints)</p>
-<p style="padding-left:1rem">• ✅ Synced `pyproject.toml` with `requirements.txt`</p>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Risk Items</h2>
-<table>
-<tr><th>Risk</th><th>Status</th><th>Mitigation</th></tr>
-<tr><td>No community environmental model found</td><td>✅ Resolved</td><td><code>HrutikAdsare/waste-detection-yolov8</code> from HuggingFace</td></tr>
-<tr><td>Model inference too slow</td><td>✅ Resolved</td><td>Using <code>yolov8n</code> (nano) variant for speed</td></tr>
-<tr><td>Gremlin connection fails</td><td>✅ Resolved</td><td>Fallback handling in <code>gremlin_client.py</code>; Cosmos DB online</td></tr>
-<tr><td>Gemini hallucinates laws</td><td>✅ Resolved</td><td>System prompt explicitly forbids invented laws; tested</td></tr>
-<tr><td><code>asean_expansion.py</code> removed</td><td>⚠️ Open</td><td>File removed in cleanup commit; needs restoration if ASEAN seeding required</td></tr>
-</table>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Definition of Done</h2>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-35" checked> Environmental YOLOv8 model integrated and detecting hazards</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-36" checked> All 16 PH laws seeded in Gremlin graph</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-37" checked> 7+ violation types with hazard→law→agency edges</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-38" checked> 6+ ASEAN-specific hazard types seeded (file removed, needs restoration)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-39" checked> Gemini chatbot has environmental persona (Likasy)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-40" checked> Full AI pipeline tested end-to-end</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-41" checked> No hallucinated laws in any output</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-42" checked> Service deployment-ready (Dockerfile, CORS, model preload)</label>
-</div>
+  <!-- Team Roster -->
+  <h2 class="section-header">👥 Team Roster</h2>
+  <div class="roster-grid">
+    <div class="roster-card">
+      <div class="roster-avatar">L</div>
+      <div class="roster-name">Lou</div>
+      <div class="roster-role">Dev 1 — Frontend / UI</div>
+      <div class="roster-stack">Next.js 16 · Tailwind · Ghost Mode</div>
+    </div>
+    <div class="roster-card" style="border-color:var(--green-500);box-shadow:4px 4px 0px var(--shadow-color)">
+      <div class="roster-avatar" style="background:var(--green-500)">J</div>
+      <div class="roster-name">Jeff</div>
+      <div class="roster-role">Dev 2 — Backend + AI</div>
+      <div class="roster-stack">Laravel 12 · FastAPI · YOLOv8 · Neo4j</div>
+    </div>
+    <div class="roster-card">
+      <div class="roster-avatar">C</div>
+      <div class="roster-name">Charlyn</div>
+      <div class="roster-role">Dev 3 — Backend / Infra</div>
+      <div class="roster-stack">Laravel API · Supabase · CI/CD</div>
+    </div>
+    <div class="roster-card">
+      <div class="roster-avatar">K</div>
+      <div class="roster-name">Katherine</div>
+      <div class="roster-role">Dev 4 — Integration / PWA</div>
+      <div class="roster-stack">E2E Testing · PWA · Capacitor</div>
+    </div>
+  </div>
 
-<div class="footer">
-  <p>LikasLens Sprint Roadmap — Generated 2026-06-09</p>
-  <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a> · <a href="/">Home</a></p>
-</div>
+  <!-- Responsibilities Table -->
+  <h2 class="section-header">📋 Responsibilities</h2>
+  <div class="brutal-panel">
+    <table>
+      <tr><th>Domain</th><th>Stack</th><th>Location</th></tr>
+      <tr><td>Backend Core Logic</td><td>Laravel 12, PHP 8.2</td><td><code>apps/backend/</code></td></tr>
+      <tr><td>AI Service</td><td>FastAPI, YOLOv8, Neo4j</td><td><code>apps/ai-service/</code></td></tr>
+      <tr><td>Roboflow Integration</td><td>Roboflow Inference API</td><td><code>apps/ai-service/roboflow_client.py</code></td></tr>
+      <tr><td>Composite Scoring &amp; Triage</td><td>Python + Laravel bridge</td><td><code>apps/ai-service/</code>, <code>apps/backend/app/Services/</code></td></tr>
+      <tr><td>OpenAPI Contract Alignment</td><td>YAML/JSON specs</td><td><code>docs/openapi/</code></td></tr>
+    </table>
+  </div>
+
+  <!-- Priority Legend -->
+  <h2 class="section-header">📊 Priority Legend</h2>
+  <div class="brutal-panel">
+    <table>
+      <tr><th>Priority</th><th>Meaning</th><th>Deadline</th></tr>
+      <tr><td><span class="tag" style="background:rgba(239,68,68,0.15);border-color:var(--red);color:var(--red)">CRITICAL</span></td><td>Blocks hackathon demo</td><td>Jun 23</td></tr>
+      <tr><td><span class="tag" style="background:rgba(245,158,11,0.15);border-color:var(--amber);color:#92400e">HIGH</span></td><td>Degraded UX or security gap</td><td>Jun 24</td></tr>
+      <tr><td><span class="tag" style="background:rgba(234,179,8,0.15);border-color:#eab308;color:#854d0e">MEDIUM</span></td><td>Polish / edge-case fixes</td><td>Jun 26</td></tr>
+      <tr><td><span class="tag" style="background:rgba(59,130,246,0.15);border-color:var(--blue);color:var(--blue)">LOW</span></td><td>Nice-to-have for demo</td><td>Jun 28</td></tr>
+      <tr><td><span class="tag" style="background:rgba(100,116,139,0.15);border-color:var(--slate-500);color:var(--slate-500)">POST</span></td><td>Post-hackathon backlog</td><td>Jul+</td></tr>
+    </table>
+  </div>
+
+  <!-- ==================== CRITICAL ==================== -->
+  <div class="priority-section">
+    <div class="priority-header priority-critical open" onclick="toggleSection(this)">
+      <span>🔴 CRITICAL — Must Ship Before Demo (Jun 23)</span>
+      <span class="chevron"></span>
+    </div>
+    <div class="priority-body open">
+      <div class="priority-body-inner">
+
+        <div class="subsection-header"><span class="subsection-icon">🔧</span> Backend Fixes</div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="c-1" data-priority="critical"></label>
+            Fix Google OAuth login/signup flow
+            <span class="task-time">~3h</span>
+            <a href="https://github.com/J-Akiru5/LikasLens/issues/162" class="task-issue" target="_blank">#162</a>
+          </div>
+          <div class="task-desc">Users cannot authenticate via Google.</div>
+          <div class="task-files">
+            <code>apps/backend/app/Http/Controllers/Auth/SocialiteController.php</code>
+          </div>
+          <div class="task-action">Verify <code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code>, callback URL in <code>config/services.php</code>. Test full OAuth round-trip. Ensure <code>Socialite::driver('google')->redirect()</code> and callback both resolve.</div>
+          <div class="task-dep">⬆ Depends on: dev1 (frontend callback route must match)</div>
+        </div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="c-2" data-priority="critical"></label>
+            Fix session retention on "Back to Home"
+            <span class="task-time">~2h</span>
+            <a href="https://github.com/J-Akiru5/LikasLens/issues/177" class="task-issue" target="_blank">#177</a>
+          </div>
+          <div class="task-desc">Session lost when navigating back to landing.</div>
+          <div class="task-files">
+            <code>apps/backend/app/Http/Middleware/</code>
+            <code>apps/backend/config/session.php</code>
+          </div>
+          <div class="task-action">Check <code>SESSION_DOMAIN</code>, <code>SESSION_SECURE_COOKIE</code>, SameSite policy. Verify Sanctum stateful domains include the frontend origin. Test with browser back-button flow.</div>
+          <div class="task-dep">⬆ Depends on: dev1 (frontend must send <code>X-XSRF-TOKEN</code> cookie)</div>
+        </div>
+
+        <div class="subsection-header"><span class="subsection-icon">🧠</span> AI Pipeline — End-to-End Validation</div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="c-3" data-priority="critical"></label>
+            Run full pipeline smoke test
+            <span class="task-time">~2h</span>
+          </div>
+          <div class="task-desc">Scenario: <code>image upload → EXIF strip → YOLOv8 detect → hazard_id → hybrid_retrieve → Gemini classify → triage_disposition</code></div>
+          <div class="task-files">
+            <code>apps/ai-service/main.py</code>
+            <code>apps/ai-service/roboflow_client.py</code>
+            <code>apps/ai-service/hybrid_retrieve.py</code>
+            <code>apps/ai-service/gemini_client.py</code>
+            <code>apps/backend/app/Services/TriageService.php</code>
+          </div>
+          <div class="task-action">Upload a known test image (illegal dumping sample). Verify each stage returns expected shape. Confirm circuit breaker in <code>TriageService</code> does NOT trip on healthy calls.</div>
+          <div class="task-dep">⬆ Depends on: None (self-contained)</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== HIGH ==================== -->
+  <div class="priority-section">
+    <div class="priority-header priority-high" onclick="toggleSection(this)">
+      <span>🟠 HIGH — Ship Within 24h of Demo (Jun 24)</span>
+      <span class="chevron"></span>
+    </div>
+    <div class="priority-body">
+      <div class="priority-body-inner">
+
+        <div class="subsection-header"><span class="subsection-icon">🏗️</span> Backend Infrastructure</div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="h-1" data-priority="high"></label>
+            Wire <code>ResolveTenant</code> middleware into <code>routes/api.php</code>
+            <span class="task-time">~1.5h</span>
+          </div>
+          <div class="task-files">
+            <code>apps/backend/routes/api.php</code>
+          </div>
+          <div class="task-action">Register <code>ResolveTenant</code> on all tenant-scoped route groups. Verify it extracts <code>tenant_id</code> from subdomain or header and binds to request context.</div>
+          <div class="task-dep">⬆ Depends on: None</div>
+        </div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="h-2" data-priority="high"></label>
+            Register <code>TenantController</code> routes
+            <span class="task-time">~1h</span>
+          </div>
+          <div class="task-files">
+            <code>apps/backend/routes/api.php</code>
+            <code>apps/backend/app/Http/Controllers/TenantController.php</code>
+          </div>
+          <div class="task-action">Add CRUD routes (<code>GET /tenants</code>, <code>POST /tenants</code>, <code>GET /tenants/{id}</code>, <code>PUT /tenants/{id}</code>, <code>DELETE /tenants/{id}</code>). Apply <code>auth:sanctum</code> + <code>ResolveTenant</code> middleware.</div>
+          <div class="task-dep">⬆ Depends on: <code>ResolveTenant</code> wiring above</div>
+        </div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="h-3" data-priority="high"></label>
+            Fix <code>AI_SERVICE_API_KEY</code> missing from <code>.env.example</code>
+            <span class="task-time">~15m</span>
+          </div>
+          <div class="task-files">
+            <code>apps/backend/.env.example</code>
+          </div>
+          <div class="task-action">Add <code>AI_SERVICE_API_KEY=your-ai-service-key</code> with a comment explaining it's required for backend → ai-service auth.</div>
+          <div class="task-dep">⬆ Depends on: None</div>
+        </div>
+
+        <div class="subsection-header"><span class="subsection-icon">📈</span> AI Pipeline — Scoring &amp; Triage</div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="h-4" data-priority="high"></label>
+            Run FPR validation via <code>eval_metrics.py</code>
+            <span class="task-time">~2h</span>
+          </div>
+          <div class="task-files">
+            <code>apps/ai-service/eval_metrics.py</code>
+          </div>
+          <div class="task-action">Run evaluation on held-out test set. Confirm false positive rate ≤ 15%. If FPR > 15%, tune confidence threshold in <code>roboflow_client.py</code>. Document results in <code>docs/eval/fpr-report.md</code>.</div>
+          <div class="task-dep">⬆ Depends on: Test dataset availability</div>
+        </div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="h-5" data-priority="high"></label>
+            Implement SLA notification dispatch
+            <span class="task-time">~2.5h</span>
+          </div>
+          <div class="task-files">
+            <code>apps/backend/app/Services/SlaService.php:117</code>
+          </div>
+          <div class="task-action">Complete the TODO at line 117. Dispatch <code>SlaViolationNotification</code> via Laravel notification system (mail + database channel). Trigger when <code>sla_breached_at</code> is set on a report.</div>
+          <div class="task-dep">⬆ Depends on: dev1 (frontend notification bell component)</div>
+        </div>
+
+        <div class="subsection-header"><span class="subsection-icon">🤖</span> Roboflow</div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="h-6" data-priority="high"></label>
+            Validate <code>roboflow_client.py</code> error handling
+            <span class="task-time">~1h</span>
+          </div>
+          <div class="task-files">
+            <code>apps/ai-service/roboflow_client.py</code> (202 lines)
+          </div>
+          <div class="task-action">Test with: invalid API key, model not found, network timeout, malformed image. Ensure each returns a structured error dict (not raw exception). Confirm circuit breaker state transitions.</div>
+          <div class="task-dep">⬆ Depends on: None</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MEDIUM ==================== -->
+  <div class="priority-section">
+    <div class="priority-header priority-medium" onclick="toggleSection(this)">
+      <span>🟡 MEDIUM — Polish &amp; Edge Cases (Jun 26)</span>
+      <span class="chevron"></span>
+    </div>
+    <div class="priority-body">
+      <div class="priority-body-inner">
+
+        <div class="subsection-header"><span class="subsection-icon">🔧</span> Backend</div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="m-1" data-priority="medium"></label>
+            Add overdue counts to public leaderboard query
+            <span class="task-time">~1.5h</span>
+          </div>
+          <div class="task-files">
+            <code>apps/backend/app/Http/Controllers/LeaderboardController.php</code>
+            <code>apps/backend/app/Models/Report.php</code>
+          </div>
+          <div class="task-action">Add <code>where('status', 'overdue')->count()</code> aggregate to leaderboard response. Include <code>overdue_count</code> field per tenant in JSON response.</div>
+          <div class="task-dep">⬆ Depends on: None</div>
+        </div>
+
+        <div class="subsection-header"><span class="subsection-icon">🌏</span> AI Pipeline — Regional Scenario Tests</div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="m-2" data-priority="medium"></label>
+            PH scenario: illegal_dumping in Iloilo
+            <span class="task-time">~1.5h</span>
+          </div>
+          <div class="task-desc">Input: Test image of illegal dumping site. Expected: <code>hazard_id = illegal_dumping</code> → <code>hybrid_retrieve</code> returns RA-9003 (Philippine Ecological Solid Waste Management Act) → Gemini labels "Green Dingle Initiative" as relevant local action.</div>
+          <div class="task-files">
+            <code>apps/ai-service/hybrid_retrieve.py</code>
+            <code>apps/ai-service/data/</code> (legal corpus)
+          </div>
+          <div class="task-action">Run end-to-end. Verify Neo4j returns PH-specific legal node. Verify Gemini prompt includes PH context.</div>
+          <div class="task-dep">⬆ Depends on: Neo4j populated with PH legal data</div>
+        </div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="m-3" data-priority="medium"></label>
+            ID scenario: illegal_dumping in Jakarta
+            <span class="task-time">~1.5h</span>
+          </div>
+          <div class="task-desc">Input: Test image of illegal dumping site (Indonesian context). Expected: <code>hazard_id = illegal_dumping</code> → <code>hybrid_retrieve</code> returns UU-18-2008 (Indonesian Waste Management Law) → Gemini returns Indonesian agency reference.</div>
+          <div class="task-files">
+            <code>apps/ai-service/hybrid_retrieve.py</code>
+            <code>apps/ai-service/data/</code> (legal corpus)
+          </div>
+          <div class="task-action">Run end-to-end. Verify Neo4j returns ID-specific legal node. Verify locale detection drives correct retrieval.</div>
+          <div class="task-dep">⬆ Depends on: Neo4j populated with ID legal data</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LOW ==================== -->
+  <div class="priority-section">
+    <div class="priority-header priority-low" onclick="toggleSection(this)">
+      <span>🔵 LOW — Demo Nice-to-Have (Jun 28)</span>
+      <span class="chevron"></span>
+    </div>
+    <div class="priority-body">
+      <div class="priority-body-inner">
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="l-1" data-priority="low"></label>
+            Add health check endpoint for AI service
+            <span class="task-time">~30m</span>
+          </div>
+          <div class="task-files">
+            <code>apps/ai-service/main.py</code>
+          </div>
+          <div class="task-action">Add <code>GET /health</code> returning <code>{"status": "ok", "model_loaded": true, "neo4j_connected": true}</code>. Useful for demo dashboard.</div>
+          <div class="task-dep">⬆ Depends on: None</div>
+        </div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="l-2" data-priority="low"></label>
+            Add request logging to AI service
+            <span class="task-time">~1h</span>
+          </div>
+          <div class="task-files">
+            <code>apps/ai-service/main.py</code>
+          </div>
+          <div class="task-action">Log request method, path, response status, latency to stdout (structured JSON). Helps demo-time debugging.</div>
+          <div class="task-dep">⬆ Depends on: None</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== POST ==================== -->
+  <div class="priority-section">
+    <div class="priority-header priority-post" onclick="toggleSection(this)">
+      <span>⚪ POST — Post-Hackathon Backlog (Jul+)</span>
+      <span class="chevron"></span>
+    </div>
+    <div class="priority-body">
+      <div class="priority-body-inner">
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="p-1" data-priority="post"></label>
+            Train custom Roboflow model
+            <span class="task-time">~2-3 days</span>
+            <a href="https://github.com/J-Akiru5/LikasLens/issues/179" class="task-issue" target="_blank">#179</a>
+          </div>
+          <div class="task-desc">Curate dataset from collected evidentiary images. Annotate with Roboflow annotation tool. Train YOLOv8 custom model targeting LikasLens-specific hazard classes (illegal_dumping, flood_debris, oil_spill, etc.). Evaluate mAP@50. Replace generic model endpoint in <code>roboflow_client.py</code>.</div>
+          <div class="task-dep">⬆ Depends on: #181 (dataset annotation pipeline)</div>
+        </div>
+
+        <div class="task-card">
+          <div class="task-title">
+            <label class="task-check-label"><input type="checkbox" class="task-check" data-id="p-2" data-priority="post"></label>
+            Dataset annotation pipeline
+            <span class="task-time">~1-2 days</span>
+            <a href="https://github.com/J-Akiru5/LikasLens/issues/181" class="task-issue" target="_blank">#181</a>
+          </div>
+          <div class="task-desc">Build semi-automated annotation workflow: pre-label with current model → human review → export to Roboflow format. Include active learning loop: flag low-confidence predictions for human review.</div>
+          <div class="task-dep">⬆ Depends on: Sufficient collected images (&gt;500 per class)</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Dependency Map -->
+  <h2 class="section-header">🔗 Dependency Map</h2>
+  <div class="dep-map">
+    <pre><code>dev1 (Frontend)                    dev2 (Jeff — Backend + AI)
+─────────────────                  ──────────────────────────
+Google OAuth callback route  ←──── #162 Google login fix
+X-XSRF-TOKEN cookie handling ←──── #177 Session retention
+Notification bell component  ←──── SLA notification dispatch
+EXIF strip in upload UI      ────→ AI pipeline smoke test
+Public leaderboard UI        ←──── Overdue counts query</code></pre>
+  </div>
+
+  <!-- Daily Standup Focus -->
+  <h2 class="section-header">📅 Daily Standup Focus</h2>
+  <div class="standup-grid">
+    <div class="standup-card">
+      <div class="standup-badge badge-critical">CRITICAL</div>
+      <div class="standup-day">Saturday</div>
+      <div class="standup-date">Jun 21</div>
+      <div class="standup-focus">#162 Google OAuth, #177 session fix, end-to-end pipeline test</div>
+    </div>
+    <div class="standup-card">
+      <div class="standup-badge badge-high">HIGH</div>
+      <div class="standup-day">Sunday</div>
+      <div class="standup-date">Jun 22</div>
+      <div class="standup-focus">ResolveTenant wiring, TenantController routes, FPR validation</div>
+    </div>
+    <div class="standup-card">
+      <div class="standup-badge badge-high">HIGH</div>
+      <div class="standup-day">Monday</div>
+      <div class="standup-date">Jun 23</div>
+      <div class="standup-focus">SLA dispatch, roboflow error handling, .env.example fix</div>
+    </div>
+    <div class="standup-card">
+      <div class="standup-badge badge-medium">MEDIUM</div>
+      <div class="standup-day">Tuesday</div>
+      <div class="standup-date">Jun 24</div>
+      <div class="standup-focus">PH + ID scenario tests, overdue counts</div>
+    </div>
+    <div class="standup-card">
+      <div class="standup-badge badge-medium">MEDIUM</div>
+      <div class="standup-day">Wednesday</div>
+      <div class="standup-date">Jun 25</div>
+      <div class="standup-focus">Bug fixes from integration testing with dev1</div>
+    </div>
+    <div class="standup-card">
+      <div class="standup-badge badge-low">LOW</div>
+      <div class="standup-day">Thursday</div>
+      <div class="standup-date">Jun 26</div>
+      <div class="standup-focus">Health check, logging, demo rehearsal</div>
+    </div>
+    <div class="standup-card">
+      <div class="standup-badge badge-demo">DEMO PREP</div>
+      <div class="standup-day">Friday</div>
+      <div class="standup-date">Jun 27</div>
+      <div class="standup-focus">Full dry run, smoke tests, rollback plan</div>
+    </div>
+    <div class="standup-card">
+      <div class="standup-badge" style="background:rgba(16,185,129,0.15);border-color:#10b981;color:#065f46">SUBMISSION</div>
+      <div class="standup-day">Saturday</div>
+      <div class="standup-date">Jun 28</div>
+      <div class="standup-focus">🏆 HACKATHON SUBMISSION</div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <h2 class="section-header">📝 Notes</h2>
+  <div class="notes-panel">
+    <h3>Architecture &amp; Security Reminders</h3>
+    <ul>
+      <li>All backend routes must be Sanctum-protected and tenant-scoped.</li>
+      <li>AI service communicates with backend <strong>only</strong> via OpenAPI-defined REST endpoints.</li>
+      <li>EXIF stripping happens <strong>before</strong> image leaves the frontend — backend/AI never receive raw GPS.</li>
+      <li>Composite scoring weights are configurable in <code>apps/ai-service/config/scoring.yaml</code>.</li>
+      <li>Circuit breaker in <code>TriageService</code> trips after 3 consecutive AI service failures — resets after 60s.</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <p>LikasLens Sprint Roadmap — Developer 2 (Jeff) — Generated 2026-06-21</p>
+    <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a> · <a href="/">Home</a></p>
+  </div>
 </main>
 
 <script>
 (function() {
-  var STORAGE_KEY = 'likaslens-sprint-progress';
+  var STORAGE_KEY = 'likaslens-dev2-progress';
+  var THEME_KEY = 'likaslens-dev2-theme';
 
   function loadState() {
     try {
@@ -592,12 +1165,23 @@ pre code {
 
     var fill = document.getElementById('progress-fill');
     if (pct >= 100) {
-      fill.style.background = '#4caf50';
+      fill.style.background = '#10b981';
     } else if (pct >= 50) {
-      fill.style.background = 'var(--dev-accent)';
+      fill.style.background = 'var(--green-500)';
     } else {
-      fill.style.background = 'var(--accent)';
+      fill.style.background = 'var(--amber)';
     }
+
+    // Breakdown by priority
+    var priorities = ['critical', 'high', 'medium', 'low', 'post'];
+    priorities.forEach(function(p) {
+      var pChecks = document.querySelectorAll('.task-check[data-priority="' + p + '"]');
+      var pChecked = document.querySelectorAll('.task-check[data-priority="' + p + '"]:checked');
+      var el = document.getElementById('bd-' + p);
+      if (el) {
+        el.textContent = pChecked.length + '/' + pChecks.length;
+      }
+    });
   }
 
   function init() {
@@ -615,10 +1199,10 @@ pre code {
         var currentState = loadState();
         if (this.checked) {
           currentState[id] = true;
-          this.parentElement.classList.add('done');
+          this.closest('.task-check-label').classList.add('done');
         } else {
           delete currentState[id];
-          this.parentElement.classList.remove('done');
+          this.closest('.task-check-label').classList.remove('done');
         }
         saveState(currentState);
         updateProgress();
@@ -626,28 +1210,36 @@ pre code {
 
       // Set initial done class
       if (cb.checked) {
-        cb.parentElement.classList.add('done');
+        cb.closest('.task-check-label').classList.add('done');
       }
     });
 
     updateProgress();
   }
 
+  // Toggle collapsible sections
+  window.toggleSection = function(header) {
+    header.classList.toggle('open');
+    var body = header.nextElementSibling;
+    body.classList.toggle('open');
+  };
+
+  // Theme toggle
   window.toggleTheme = function() {
     var html = document.documentElement;
     var label = document.getElementById('theme-label');
     if (html.getAttribute('data-theme') === 'ghost') {
       html.setAttribute('data-theme', 'civic');
       label.textContent = 'CIVIC';
-      localStorage.setItem('likaslens-theme', 'civic');
+      localStorage.setItem(THEME_KEY, 'civic');
     } else {
       html.setAttribute('data-theme', 'ghost');
       label.textContent = 'GHOST';
-      localStorage.setItem('likaslens-theme', 'ghost');
+      localStorage.setItem(THEME_KEY, 'ghost');
     }
   };
 
-  var savedTheme = localStorage.getItem('likaslens-theme');
+  var savedTheme = localStorage.getItem(THEME_KEY);
   if (savedTheme) {
     document.documentElement.setAttribute('data-theme', savedTheme);
     var label = document.getElementById('theme-label');

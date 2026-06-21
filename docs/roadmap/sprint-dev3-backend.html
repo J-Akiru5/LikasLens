@@ -3,309 +3,270 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LikasLens Sprint — Developer 3: Backend & Infrastructure</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<title>LikasLens Sprint — Dev 3: Backend & Admin Portal</title>
 <style>
 :root {
-  --primary: #1B4332;
-  --secondary: #2DE1C2;
-  --accent: #FFB703;
-  --background: #F8F9FA;
-  --foreground: #081C15;
-  --panel: #F8F9FA;
-  --panel-border: rgba(8, 28, 21, 0.2);
-  --muted-text: rgba(8, 28, 21, 0.85);
-  --dev-accent: #2e7d32;
-  --shadow-color: #1B4332;
+  --purple-900: #4c1d95;
+  --purple-700: #7c3aed;
+  --purple-500: #8b5cf6;
+  --purple-300: #a78bfa;
+  --purple-100: #ede9fe;
+  --green: #22c55e;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-500: #64748b;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --bg: var(--slate-50);
+  --fg: var(--slate-900);
+  --panel: #ffffff;
+  --panel-border: var(--slate-200);
+  --muted: var(--slate-500);
+  --primary: var(--purple-700);
+  --primary-light: var(--purple-100);
+  --shadow: rgba(124, 58, 237, 0.08);
+  --radius: 12px;
 }
-[data-theme="ghost"] {
-  --primary: #2DE1C2;
-  --secondary: #2DE1C2;
-  --accent: #FFB703;
-  --background: #081C15;
-  --foreground: #F8F9FA;
-  --panel: rgba(8, 28, 21, 0.9);
-  --panel-border: rgba(45, 225, 194, 0.35);
-  --muted-text: rgba(248, 249, 250, 0.85);
-  --shadow-color: #2DE1C2;
+[data-theme="dark"] {
+  --bg: var(--slate-900);
+  --fg: var(--slate-100);
+  --panel: var(--slate-800);
+  --panel-border: var(--slate-700);
+  --muted: var(--slate-400);
+  --primary-light: rgba(124, 58, 237, 0.15);
+  --shadow: rgba(0, 0, 0, 0.3);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: 'Inter', sans-serif;
-  background: var(--background);
-  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
   line-height: 1.6;
-  transition: background 0.4s ease, color 0.4s ease;
+  transition: background 0.3s, color 0.3s;
 }
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+h1, h2, h3, h4 { font-weight: 700; line-height: 1.3; }
+code, .mono {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.85em;
+  background: var(--primary-light);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
 }
-code, pre, .font-data { font-family: 'Space Mono', monospace; }
+a { color: var(--primary); text-decoration: none; font-weight: 600; }
+a:hover { text-decoration: underline; }
 .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
 
 /* Theme Toggle */
 .theme-toggle {
   position: fixed; top: 1rem; right: 1rem; z-index: 1000;
   display: flex; align-items: center; gap: 0.5rem;
-  background: var(--panel); border: 4px solid var(--foreground);
-  box-shadow: 4px 4px 0px var(--shadow-color);
-  padding: 0.5rem 1rem; cursor: pointer;
-  font-family: 'Montserrat', sans-serif; font-weight: 700;
-  font-size: 0.75rem; text-transform: uppercase;
-  color: var(--foreground); transition: all 0.3s ease;
+  background: var(--panel); border: 2px solid var(--panel-border);
+  border-radius: 999px; padding: 0.5rem 1rem; cursor: pointer;
+  font-weight: 600; font-size: 0.75rem; text-transform: uppercase;
+  color: var(--fg); box-shadow: 0 2px 8px var(--shadow);
+  transition: all 0.2s;
 }
-.theme-toggle:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--shadow-color); }
+.theme-toggle:hover { border-color: var(--primary); }
 .theme-toggle .dot {
   width: 10px; height: 10px; border-radius: 50%;
-  background: var(--accent); transition: background 0.3s ease;
+  background: var(--purple-500);
 }
-[data-theme="ghost"] .theme-toggle .dot { background: var(--secondary); animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
 /* Hero */
 .hero {
-  background: var(--primary);
-  color: #F8F9FA;
-  padding: 3rem 0;
-  border-bottom: 4px solid var(--foreground);
+  background: linear-gradient(135deg, var(--purple-900), var(--purple-700));
+  color: #fff;
+  padding: 2.5rem 0 2rem;
+  border-bottom: 3px solid var(--purple-500);
 }
-.hero .icon { font-size: 3rem; margin-bottom: 0.5rem; }
-.hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; }
-.hero .accent-line { color: var(--dev-accent); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
-.hero-meta {
-  display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;
+.hero h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+.hero .subtitle { color: var(--purple-300); font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.meta-chip {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px; padding: 0.35rem 0.75rem;
+  font-size: 0.8rem; font-weight: 600;
+  font-family: 'SF Mono', monospace;
 }
-.hero-meta .meta-chip {
-  background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
-  padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
-  font-family: 'Space Mono', monospace;
-}
+.hero-desc { margin-top: 1rem; font-size: 0.9rem; opacity: 0.85; max-width: 700px; }
 
 /* Progress Bar */
 .progress-container {
-  background: var(--panel);
-  border: 4px solid var(--foreground);
-  box-shadow: 8px 8px 0px var(--shadow-color);
-  padding: 1.5rem;
-  margin: 2rem 0;
-  position: sticky;
-  top: 0;
-  z-index: 50;
+  background: var(--panel); border: 2px solid var(--panel-border);
+  border-radius: var(--radius); padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0; position: sticky; top: 0.5rem; z-index: 50;
+  box-shadow: 0 4px 16px var(--shadow);
 }
-.progress-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-.progress-title {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 900;
-  font-size: 0.85rem;
-  color: var(--foreground);
-}
-.progress-pct {
-  font-family: 'Space Mono', monospace;
-  font-weight: 700;
-  font-size: 1.5rem;
-  color: var(--dev-accent);
-}
-.progress-track {
-  height: 12px;
-  background: rgba(8, 28, 21, 0.1);
-  border: 2px solid var(--foreground);
-  overflow: hidden;
-}
-[data-theme="ghost"] .progress-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-.progress-fill {
-  height: 100%;
-  background: var(--dev-accent);
-  transition: width 0.4s ease;
-  width: 0%;
-}
-.progress-detail {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.7rem;
-  color: var(--muted-text);
-  margin-top: 0.5rem;
-}
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.progress-title { font-weight: 700; font-size: 0.85rem; }
+.progress-pct { font-family: 'SF Mono', monospace; font-weight: 700; font-size: 1.5rem; color: var(--primary); }
+.progress-track { height: 10px; background: var(--slate-200); border-radius: 99px; overflow: hidden; }
+[data-theme="dark"] .progress-track { background: var(--slate-700); }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--purple-700), var(--purple-500)); border-radius: 99px; transition: width 0.5s ease; width: 0%; }
+.progress-detail { font-family: 'SF Mono', monospace; font-size: 0.7rem; color: var(--muted); margin-top: 0.5rem; }
 
-/* Brutal Panel */
-.brutal-panel {
-  background: var(--panel);
-  border: 4px solid var(--foreground);
-  box-shadow: 8px 8px 0px var(--shadow-color);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  transition: all 0.2s ease;
+/* Cards */
+.card {
+  background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: var(--radius); padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 4px var(--shadow);
+  transition: box-shadow 0.2s;
 }
-.brutal-panel:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0px var(--shadow-color); }
+.card:hover { box-shadow: 0 4px 16px var(--shadow); }
+.card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.card-header h3 { font-size: 1rem; }
 
-/* Section Headers */
-.section-header {
-  font-size: 1.5rem;
-  color: var(--primary);
-  margin: 2.5rem 0 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 4px solid var(--dev-accent);
-  display: inline-block;
+/* Collapsible Section */
+.collapsible { margin: 2rem 0; }
+.collapsible-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1.25rem; cursor: pointer;
+  background: var(--panel); border: 2px solid var(--panel-border);
+  border-radius: var(--radius); font-weight: 700; font-size: 1.1rem;
+  transition: all 0.2s; user-select: none;
 }
-[data-theme="ghost"] .section-header { color: var(--secondary); }
+.collapsible-header:hover { border-color: var(--primary); }
+.collapsible-header .chevron {
+  transition: transform 0.3s; font-size: 0.9rem; color: var(--muted);
+}
+.collapsible-header.open .chevron { transform: rotate(90deg); }
+.collapsible-header.open { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.collapsible-body {
+  display: none; border: 2px solid var(--panel-border); border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 1.25rem; background: var(--panel);
+}
+.collapsible-body.open { display: block; }
 
-/* Day Section */
-.day-section { margin: 2rem 0; }
-.day-header {
-  background: var(--dev-accent);
-  color: #fff;
-  padding: 0.75rem 1.5rem;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 900;
-  font-size: 1.25rem;
-  text-transform: uppercase;
-  border: 4px solid var(--foreground);
-  margin-bottom: 1.5rem;
-  display: flex; align-items: center; gap: 0.75rem;
+/* Priority Badges */
+.badge {
+  display: inline-block; padding: 0.2em 0.6em; border-radius: 6px;
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
-.day-header .day-num {
-  background: rgba(255,255,255,0.2);
-  padding: 0.25rem 0.6rem;
-  font-size: 0.85rem;
-}
+.badge-critical { background: rgba(239,68,68,0.12); color: var(--red); border: 1px solid var(--red); }
+.badge-high { background: rgba(245,158,11,0.12); color: var(--amber); border: 1px solid var(--amber); }
+.badge-medium { background: rgba(139,92,246,0.12); color: var(--purple-500); border: 1px solid var(--purple-500); }
+.badge-low { background: rgba(100,116,139,0.12); color: var(--slate-500); border: 1px solid var(--slate-400); }
+.badge-done { background: rgba(34,197,94,0.12); color: var(--green); border: 1px solid var(--green); }
 
 /* Task Card */
-.task-card { margin-bottom: 2rem; }
-.task-title {
-  font-size: 1.1rem; font-weight: 800;
-  color: var(--foreground);
-  margin-bottom: 0.5rem;
-  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+.task-card { margin-bottom: 1.5rem; }
+.task-card-header {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  margin-bottom: 0.75rem; flex-wrap: wrap;
 }
-.task-title .task-id {
-  background: var(--dev-accent); color: #fff;
-  padding: 0.15rem 0.5rem; font-size: 0.7rem;
-  font-family: 'Space Mono', monospace;
+.task-id {
+  background: var(--purple-700); color: #fff;
+  padding: 0.15em 0.5em; border-radius: 6px;
+  font-size: 0.75rem; font-weight: 700;
+  font-family: 'SF Mono', monospace;
+  white-space: nowrap;
 }
+.task-title { font-size: 1.05rem; font-weight: 700; flex: 1; }
+.task-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.task-meta .meta-item {
+  font-size: 0.75rem; color: var(--muted);
+  display: flex; align-items: center; gap: 0.25rem;
+}
+.task-desc { font-size: 0.9rem; color: var(--slate-600); margin-bottom: 0.75rem; }
+[data-theme="dark"] .task-desc { color: var(--slate-300); }
+.task-files { margin: 0.5rem 0; }
+.task-files code { display: inline-block; margin: 0.15rem 0; }
 
-/* Interactive Checkboxes */
+/* Checkboxes */
 .task-check {
-  appearance: none;
-  width: 18px; height: 18px;
-  border: 3px solid var(--foreground);
-  background: transparent;
-  cursor: pointer;
-  position: relative;
-  vertical-align: middle;
-  margin-right: 0.5rem;
-  flex-shrink: 0;
+  appearance: none; -webkit-appearance: none;
+  width: 18px; height: 18px; flex-shrink: 0;
+  border: 2px solid var(--slate-400);
+  border-radius: 4px; background: transparent;
+  cursor: pointer; position: relative;
+  transition: all 0.15s;
 }
 .task-check:checked {
-  background: var(--secondary);
+  background: var(--green); border-color: var(--green);
 }
 .task-check:checked::after {
-  content: '\2713';
-  position: absolute;
-  top: -2px; left: 2px;
-  font-size: 12px;
-  font-weight: 900;
-  color: var(--foreground);
+  content: '\2713'; position: absolute;
+  top: -1px; left: 2px; font-size: 12px;
+  font-weight: 900; color: #fff;
 }
-.task-check-label {
-  display: flex;
-  align-items: center;
-  padding: 0.35rem 0;
-  font-size: 0.9rem;
-  cursor: pointer;
+.check-label {
+  display: flex; align-items: flex-start; gap: 0.5rem;
+  padding: 0.3rem 0; font-size: 0.88rem; cursor: pointer;
 }
-.task-check-label.done {
-  text-decoration: line-through;
-  opacity: 0.7;
-}
-
-/* Tags */
-.tag {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.65rem;
-  font-weight: 700;
-  font-family: 'Space Mono', monospace;
-  text-transform: uppercase;
-  border: 2px solid;
-  margin-right: 0.25rem;
-}
-.tag-done { background: rgba(45, 225, 194, 0.2); border-color: #2DE1C2; color: #1B4332; }
-.tag-pending { background: rgba(255, 183, 3, 0.15); border-color: #FFB703; color: #b8860b; }
-.tag-blocked { background: rgba(220, 53, 69, 0.1); border-color: #dc3545; color: #dc3545; }
+.check-label.done { text-decoration: line-through; opacity: 0.6; }
 
 /* Tables */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
-  font-size: 0.85rem;
-}
-th, td {
-  border: 2px solid var(--foreground);
-  padding: 0.5rem 0.75rem;
-  text-align: left;
-}
+table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.85rem; }
+th, td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid var(--panel-border); }
 th {
-  background: var(--primary);
-  color: #F8F9FA;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.75rem;
+  background: var(--primary-light); font-weight: 700;
+  font-size: 0.75rem; text-transform: uppercase;
+  letter-spacing: 0.03em; color: var(--primary);
 }
-tr:nth-child(even) { background: rgba(0,0,0,0.02); }
-[data-theme="ghost"] tr:nth-child(even) { background: rgba(255,255,255,0.02); }
-code {
-  background: rgba(0,0,0,0.06);
-  padding: 0.15rem 0.4rem;
-  font-size: 0.85em;
-  border: 1px solid rgba(0,0,0,0.1);
+[data-theme="dark"] th { color: var(--purple-300); }
+tr:hover td { background: rgba(124,58,237,0.04); }
+[data-theme="dark"] tr:hover td { background: rgba(124,58,237,0.08); }
+td code { font-size: 0.8em; }
+
+/* Sprint Metrics */
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+.metric-card {
+  background: var(--panel); border: 1px solid var(--panel-border);
+  border-radius: 10px; padding: 1rem; text-align: center;
 }
-[data-theme="ghost"] code {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.15);
+.metric-value { font-size: 1.75rem; font-weight: 800; color: var(--primary); font-family: 'SF Mono', monospace; }
+.metric-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: 600; margin-top: 0.25rem; }
+
+/* Section Divider */
+.divider { border: none; border-top: 2px solid var(--panel-border); margin: 2rem 0; }
+
+/* Section Header */
+.section-header {
+  font-size: 1.3rem; color: var(--primary);
+  margin: 2rem 0 1rem; display: flex; align-items: center; gap: 0.5rem;
 }
-pre {
-  background: var(--foreground);
-  color: var(--background);
-  padding: 1rem;
-  border: 4px solid var(--foreground);
-  overflow-x: auto;
-  margin: 0.75rem 0;
-  font-size: 0.8rem;
+.section-header::after {
+  content: ''; flex: 1; height: 2px;
+  background: linear-gradient(90deg, var(--primary), transparent);
 }
-pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  color: inherit;
+
+/* Completed Section */
+.completed-list { list-style: none; padding: 0; }
+.completed-list li {
+  padding: 0.4rem 0; padding-left: 1.75rem;
+  position: relative; font-size: 0.9rem;
 }
+.completed-list li::before {
+  content: '\2713'; position: absolute; left: 0;
+  color: var(--green); font-weight: 700;
+}
+
+/* Footer */
 .footer {
-  margin-top: 4rem;
-  padding: 2rem 0;
-  border-top: 4px solid var(--foreground);
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--muted-text);
+  margin-top: 3rem; padding: 1.5rem 0;
+  border-top: 2px solid var(--panel-border);
+  text-align: center; font-size: 0.8rem; color: var(--muted);
 }
-.footer a { color: var(--dev-accent); font-weight: 700; }
+
+/* Responsive */
 @media (max-width: 768px) {
-  .hero h1 { font-size: 1.75rem; }
+  .hero h1 { font-size: 1.5rem; }
   .hero-meta { flex-direction: column; }
-  .brutal-panel { padding: 1rem; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .collapsible-header { font-size: 0.95rem; padding: 0.75rem 1rem; }
+  .card { padding: 1rem; }
   table { font-size: 0.75rem; }
-  th, td { padding: 0.35rem 0.5rem; }
+  th, td { padding: 0.4rem 0.5rem; }
   .progress-container { position: static; }
 }
 </style>
@@ -314,299 +275,728 @@ pre code {
 
 <button class="theme-toggle" onclick="toggleTheme()">
   <span class="dot"></span>
-  <span class="label" id="theme-label">CIVIC</span>
+  <span id="theme-label">LIGHT</span>
 </button>
 
 <div class="hero">
   <div class="container">
-    <div class="icon">⚙️</div>
-    <h1>Developer 3: Backend & Infrastructure</h1>
-    <div class="accent-line">ASEAN AI Hackathon Prep</div>
+    <h1>Developer 3: Backend & Admin Portal</h1>
+    <div class="subtitle">ASEAN Hackathon Sprint (v0.9.x &rarr; v1.0)</div>
     <div class="hero-meta">
-      <span class="meta-chip">📅 June 5-8, 2026 (Thu-Sun)</span>
-      <span class="meta-chip">⏱ 26h</span>
-      <span class="meta-chip">👤 Charlyn</span>
-      
+      <span class="meta-chip">June 21&ndash;28, 2026</span>
+      <span class="meta-chip">Cha (Charlyn)</span>
+      <span class="meta-chip">18 tasks</span>
     </div>
-    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.85">Fix blockers, database seeding, admin portal, production APIs</p>
+    <p class="hero-desc">Admin portal polish, backend admin APIs, multi-tenancy, RBAC hardening</p>
   </div>
 </div>
 
 <main class="container">
 
-  <div class="progress-container" id="progress-bar">
-    <div class="progress-header">
-      <span class="progress-title">Sprint Progress</span>
-      <span class="progress-pct" id="progress-pct">0%</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progress-fill"></div>
-    </div>
-    <div class="progress-detail">
-      <span id="progress-done">0</span> / <span id="progress-total">0</span> tasks completed
-    </div>
+<!-- Progress Bar -->
+<div class="progress-container" id="progress-bar">
+  <div class="progress-header">
+    <span class="progress-title">Sprint Progress</span>
+    <span class="progress-pct" id="progress-pct">0%</span>
   </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <div class="progress-detail">
+    <span id="progress-done">0</span> / <span id="progress-total">0</span> acceptance criteria completed
+  </div>
+</div>
 
-<p>> <strong>Sprint:</strong> ASEAN AI Hackathon Prep</p>
-<p>> <strong>Timeline:</strong> June 5-8, 2026 (Thu-Sun)</p>
-<p>> <strong>Total Hours:</strong> 26h</p>
-<p>> <strong>Assigned To:</strong> Charlyn</p>
-<p>> <strong>Focus:</strong> Fix blockers, database seeding, admin portal, production APIs</p>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">👥 Team Roster</h2>
-<table>
-<tr><th>Dev</th><th>Name</th><th>Role</th><th>Focus</th></tr>
-<tr><td>Dev 1</td><td>Lou</td><td>Frontend/UI</td><td>Next.js UI, Tailwind, responsive design, Ghost Mode theme</td></tr>
-<tr><td>Dev 2</td><td>Jeff</td><td>AI/Backend</td><td>FastAPI AI service, YOLOv8, Gremlin graph, Gemini</td></tr>
-<tr><td>Dev 3</td><td>Charlyn</td><td>Backend/Infrastructure</td><td>Laravel API, Supabase, CI/CD, admin portal</td></tr>
-<tr><td>Dev 4</td><td>Katherine</td><td>Integration/PWA/APK</td><td>E2E testing, PWA offline, Capacitor APK, demo prep</td></tr>
-</table>
-<p>> <strong>Note:</strong> Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.</p>
-<div class="brutal-panel"><h3 style="margin-bottom:0.75rem">✅ Completed Work</h3>
+<!-- Sprint Metrics -->
+<h2 class="section-header">Sprint Metrics</h2>
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-value" id="metric-critical">0/3</div>
+    <div class="metric-label">Critical</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-value" id="metric-high">0/6</div>
+    <div class="metric-label">High</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-value" id="metric-medium">0/5</div>
+    <div class="metric-label">Medium</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-value" id="metric-low">0/4</div>
+    <div class="metric-label">Low</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-value" id="metric-bulk">0/6</div>
+    <div class="metric-label">Bulk Ops</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-value" id="metric-rbac">0%</div>
+    <div class="metric-label">RBAC Coverage</div>
+  </div>
 </div>
-<p style="padding-left:1rem">• ✅ Violation types migration + seeder (embedded in EnvironmentalLawSeeder)</p>
-<p style="padding-left:1rem">• ✅ Demo data seeder (LikasLensSeeder.php — 237 lines)</p>
-<p style="padding-left:1rem">• ✅ 5 Admin CRUD controllers (Users, Rewards, NGOs, Laws, Audit Logs)</p>
-<p style="padding-left:1rem">• ✅ Audit log middleware captures RBAC denials with full context</p>
-<p style="padding-left:1rem">• ✅ Health check + feature tests (3 test suites)</p>
-<p style="padding-left:1rem">• ✅ CORS configuration (production-ready)</p>
-<p style="padding-left:1rem">• ✅ PostgreSQL syntax fix (JULIANDAY → EXTRACT/EPOCH) — v0.7.0</p>
-<p style="padding-left:1rem">• ✅ Rate limiting on auth + report endpoints — v0.7.1</p>
-<p style="padding-left:1rem">• ✅ P0 security fixes (role escalation, admin endpoint protection, etc.) — v0.7.0</p>
-<p style="padding-left:1rem">• ✅ HasApiTokens trait added to User model — v0.7.0</p>
-<p style="padding-left:1rem">• ✅ Vercel outputDirectory corrected — v0.6.1</p>
-<p style="padding-left:1rem">• ✅ Contact message controller + admin endpoints</p>
-<p style="padding-left:1rem">• ✅ Achievements table rebuild</p>
-<p style="padding-left:1rem">• ✅ Reporter email PII leak fixed (removed from public ticket response) — v0.7.1</p>
-<p style="padding-left:1rem">• ✅ N+1 query fix in UserImpactController — v0.7.1</p>
-<p style="padding-left:1rem">• ✅ TicketAssignment + Achievement pagination — v0.7.2</p>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+
+<!-- Team Roster -->
+<h2 class="section-header">Team Roster</h2>
+<div class="card">
+  <table>
+    <thead><tr><th>Dev</th><th>Name</th><th>Role</th><th>Focus</th></tr></thead>
+    <tbody>
+      <tr><td>Dev 1</td><td>Lou</td><td>Frontend/UI</td><td>Next.js UI, Tailwind, responsive design, Ghost Mode theme</td></tr>
+      <tr><td>Dev 2</td><td>Jeff</td><td>AI/Backend</td><td>FastAPI AI service, YOLOv8, Neo4j graph, Gemini</td></tr>
+      <tr><td style="font-weight:700;color:var(--primary)">Dev 3</td><td style="font-weight:700">Cha</td><td style="font-weight:700">Backend + Admin</td><td style="font-weight:700">Laravel API, admin portal, multi-tenancy, RBAC</td></tr>
+      <tr><td>Dev 4</td><td>Katherine</td><td>Integration/PWA</td><td>E2E testing, PWA offline, Capacitor APK, demo prep</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Dependencies -->
 <h2 class="section-header">Dependencies on Other Developers</h2>
-<table>
-<tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Notes</th></tr>
-<tr><td>New violation type codes</td><td>Dev 2 (Jeff)</td><td>Fri</td><td>Violation codes must match between Gremlin and DB</td></tr>
-<tr><td>Demo script requirements</td><td>Dev 4 (Katherine)</td><td>Fri</td><td>Know what demo scenarios need seeded data</td></tr>
-<tr><td>APK build support</td><td>Dev 4 (Katherine)</td><td>Sun</td><td>Backend CORS config for APK origin</td></tr>
-</table>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 1</span>Thursday, June 5</div>
-<div class="task-card"><div class="task-title"><span class="task-id">1.1</span>Fix Supabase Connection</div>
-<p><span class="tag tag-pending">⚠️ Partial</span></p>
-<p><strong>Problem:</strong> Supabase DNS may be unresolved or project paused.</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Current state:</p>
-<p style="padding-left:1rem">• `.env.example` is properly templated for Supabase PostgreSQL</p>
-<p style="padding-left:1rem">• Live `.env` still uses SQLite (`DB_CONNECTION=sqlite`) as local fallback</p>
-<p style="padding-left:1rem">• Supabase S3 storage keys present but empty</p>
-<p style="padding-left:1rem">• No `SUPABASE_URL` or `SUPABASE_SERVICE_ROLE_KEY` set</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Steps:</p>
-<p style="padding-left:1rem">1. Verify Supabase project status at https://app.supabase.com</p>
-<p style="padding-left:1rem">2. If project paused → unpause</p>
-<p style="padding-left:1rem">3. If DNS fails → check if project needs to be recreated</p>
-<p style="padding-left:1rem">4. Update `apps/backend/.env` with correct credentials</p>
-<p style="padding-left:1rem">5. Test connection: `php artisan migrate:status`</p>
-<p style="padding-left:1rem">6. Run any pending migrations: `php artisan migrate`</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-1"> `php artisan migrate:status` shows all migrations</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-2"> `php artisan db:seed` runs without errors</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-3" checked> `/api/health` returns 200</label>
+<div class="card">
+  <table>
+    <thead><tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>AI triage confidence scores</td><td>Dev 2 (Jeff)</td><td>Wed</td><td>Triage queue filters on <code>ai_confidence &lt; 0.6000</code></td></tr>
+      <tr><td>Prediction model endpoints</td><td>Dev 2 (Jeff)</td><td>Thu</td><td><code>PredictionService</code> calls AI service for hotspot data</td></tr>
+      <tr><td>Frontend admin route links</td><td>Dev 1 (Lou)</td><td>Tue</td><td>Shared sidebar nav must link to admin-portal routes</td></tr>
+      <tr><td>PWA admin access test</td><td>Dev 4 (Katherine)</td><td>Fri</td><td>Verify admin features NOT exposed on mobile-pwa (#171)</td></tr>
+      <tr><td>OpenAPI spec alignment</td><td>Dev 4 (Katherine)</td><td>Wed</td><td>New/changed admin endpoints documented in OpenAPI</td></tr>
+    </tbody>
+  </table>
 </div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">1.2</span>Fix Azure Container Apps — Switch Registry from ACR to ghcr.io</div>
-<p><span class="tag tag-blocked">❌ Not Done</span></p>
-<p><strong>Problem:</strong> The Azure Container Registry (<code>likaslensregistry</code>) was deleted due to cost. Both Container Apps (backend + AI service) have <code>ImagePullBackOff</code> errors — they can't pull images from a registry that no longer exists.</p>
-<p><strong>Current state:</strong> Both GitHub Actions workflows still push to <code>likaslensregistry.azurecr.io</code>. No migration to <code>ghcr.io</code> has occurred.</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-4"> Backend workflow pushes image to ghcr.io successfully</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-5"> AI service workflow pushes image to ghcr.io successfully</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-6"> Backend Container App revision shows `Provisioned` → `Running` (not `ImagePullBackOff`)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-7"> AI service Container App revision shows `Provisioned` → `Running`</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-8"> Backend returns 200 on `/api/health`</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-9"> Backend can query Supabase (test `/api/tickets`)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-10"> Backend can reach AI service internally</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-11"> No 500 errors on any endpoint</label>
+
+<!-- Completed Work -->
+<h2 class="section-header">Completed Work (Pre-Sprint)</h2>
+<div class="card">
+  <ul class="completed-list">
+    <li>PH law mapping + violation types seeder &mdash; <code>database/seeders/EnvironmentalLawSeeder.php</code></li>
+    <li>Indonesia comparison layer for multi-tenancy expansion</li>
+    <li>Jurisdiction-scoped Cypher queries (Neo4j integration)</li>
+    <li>LGU escalation workflow spec (commit <code>ec8e047</code>)</li>
+    <li>5 Admin CRUD controllers: <code>AdminUserController</code>, <code>AdminRewardController</code>, <code>AdminNgoController</code>, <code>AdminLawController</code>, <code>AdminAuditLogController</code></li>
+    <li>Audit log middleware captures RBAC denials &mdash; <code>EnsureRole.php:29-38</code></li>
+    <li><code>TenantController</code> full CRUD &mdash; <code>app/Http/Controllers/Admin/TenantController.php</code></li>
+    <li><code>ResolveTenant</code> middleware &mdash; <code>app/Http/Middleware/ResolveTenant.php</code></li>
+    <li><code>auth-init.ts</code> for admin portal token refresh &mdash; <code>apps/admin-portal/src/lib/auth-init.ts</code></li>
+    <li>Contact message controller + admin endpoints</li>
+    <li>Bulk operations controller &mdash; <code>AdminBulkController.php</code> (6 endpoints)</li>
+    <li><code>AdminTriageController</code> &mdash; classify, dismiss, escalate</li>
+    <li><code>AdminLguPerformanceController</code> &mdash; LGU performance dashboard</li>
+    <li><code>PredictionController</code> &mdash; predictive hotspots</li>
+    <li><code>BiasRiskRegisterController</code> &mdash; bias/risk register</li>
+    <li>Loading pages + error boundaries for all admin routes</li>
+  </ul>
 </div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 2</span>Friday, June 6</div>
-<div class="task-card"><div class="task-title"><span class="task-id">2.1</span>Add New Violation Types Migration + Seeder</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Current state:</p>
-<p style="padding-left:1rem">• Migration exists: `2026_04_11_000100_create_likaslens_domain_tables.php` (creates `violation_types` table)</p>
-<p style="padding-left:1rem">• Model exists: `ViolationType.php` with `HasUuids`, `law()` and `defaultPenalty()` relationships</p>
-<p style="padding-left:1rem">• Seeder embedded in `EnvironmentalLawSeeder.php` (lines 214-258)</p>
-<p style="padding-left:1rem">• 4 violation types seeded: `SWM-ILLEGAL-DUMPING`, `AIR-EMISSION-VIOLATION`, `WATER-UNAUTHORIZED-DISCHARGE`, `HAZWASTE-HANDLING`</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-12" checked> Migration runs successfully</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-13" checked> 4 violation types in database (embedded in EnvironmentalLawSeeder)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-14" checked> Each violation type linked to correct `environmental_laws_ph` record</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-15" checked> Default penalties populated</label>
+
+<hr class="divider">
+
+<!-- CRITICAL Priority -->
+<div class="collapsible" data-priority="critical">
+  <div class="collapsible-header" onclick="toggleSection(this)">
+    <span><span class="badge badge-critical">CRITICAL</span> &nbsp; Priority Tasks (3)</span>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="collapsible-body">
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">C1</span>
+        <span class="task-title">Wire <code>ResolveTenant</code> into Admin Route Groups</span>
+        <span class="badge badge-critical">CRITICAL</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">2h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">The <code>ResolveTenant</code> middleware exists but is not applied to admin route groups in <code>api.php</code>. All admin endpoints need tenant context for multi-tenant data isolation.</p>
+      <div class="task-files"><code>apps/backend/routes/api.php</code></div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c1-1" data-priority="critical"> All <code>/admin/*</code> routes resolve tenant context</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c1-2" data-priority="critical"> <code>Tenant::getCurrent()</code> returns non-null inside admin controllers</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c1-3" data-priority="critical"> Single-tenant mode still works (falls back to <code>default</code> tenant)</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c1-4" data-priority="critical"> Multi-tenant header (<code>X-Tenant-Slug</code>) correctly scopes data</label>
+      </div>
+      <p style="margin-top:0.5rem;font-size:0.75rem;color:var(--muted)">Ref: <code>app/Http/Middleware/ResolveTenant.php</code>, <code>routes/api.php:189-254</code></p>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">C2</span>
+        <span class="task-title">Register <code>TenantController</code> Routes for Admin CRUD</span>
+        <span class="badge badge-critical">CRITICAL</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">1h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc"><code>TenantController</code> has full CRUD but no routes are registered in <code>api.php</code>. Add routes under <code>super_admin</code> middleware.</p>
+      <div class="task-files"><code>apps/backend/routes/api.php</code></div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c2-1" data-priority="critical"> <code>GET /admin/tenants</code> returns tenant list</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c2-2" data-priority="critical"> <code>POST /admin/tenants</code> creates tenant with valid slug</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c2-3" data-priority="critical"> <code>PUT /admin/tenants/{id}</code> updates branding/config</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c2-4" data-priority="critical"> <code>DELETE /admin/tenants/{id}</code> soft-deletes (not default tenant)</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c2-5" data-priority="critical"> 403 returned for <code>analyst</code> role</label>
+      </div>
+      <p style="margin-top:0.5rem;font-size:0.75rem;color:var(--muted)">Ref: <code>app/Http/Controllers/Admin/TenantController.php</code></p>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">C3</span>
+        <span class="task-title">Fix #171 &mdash; Admin-Side Status/Remove Actions</span>
+        <span class="badge badge-critical">CRITICAL</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">3h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">Issue #171</span>
+      </div>
+      <p class="task-desc">Issue #171 reports citizens see admin-only actions on mobile-pwa. The admin-portal must have these features working correctly: Change Status and Remove on tickets.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/tickets/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/TicketController.php</code><br>
+        <code>apps/backend/routes/api.php:257-260</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c3-1" data-priority="critical"> Admin portal: status change works for <code>analyst</code> and <code>super_admin</code></label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c3-2" data-priority="critical"> Admin portal: remove works for <code>super_admin</code> only</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c3-3" data-priority="critical"> API returns 403 for unauthorized role attempts</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="c3-4" data-priority="critical"> Audit log records all status changes and deletions</label>
+      </div>
+    </div>
+
+  </div>
 </div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">2.2</span>Seed Demo Data</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>File:</strong> <code>database/seeders/LikasLensSeeder.php</code> (237 lines)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">What was seeded:</p>
-<p style="padding-left:1rem">• 4 user roles: citizen, analyst, super_admin, ghost</p>
-<p style="padding-left:1rem">• 4 additional citizen users with randomized trust scores</p>
-<p style="padding-left:1rem">• Achievement unlocks for each user</p>
-<p style="padding-left:1rem">• 15 tickets across all statuses with realistic Philippine locations</p>
-<p style="padding-left:1rem">• Ticket evidence records with EXIF removal timestamps</p>
-<p style="padding-left:1rem">• 10 Reports + 1 ghost anonymous report</p>
-<p style="padding-left:1rem">• 5 NGOs (Green Earth Coalition, Clean Rivers Foundation, Philippine Reef Patrol, Forest Guardians PH, Save Sierra Madre Alliance)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-4-16" checked> Seeder runs without errors</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-4-17" checked> 8 users created with correct roles</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-4-18" checked> 15 tickets with GPS coordinates in Western Visayas</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-4-19" checked> Achievements unlocked for demo user</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-4-20" checked> 5 NGOs with ticket assignments</label>
+
+<!-- HIGH Priority -->
+<div class="collapsible" data-priority="high">
+  <div class="collapsible-header" onclick="toggleSection(this)">
+    <span><span class="badge badge-high">HIGH</span> &nbsp; Priority Tasks (6)</span>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="collapsible-body">
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">H1</span>
+        <span class="task-title">Polish Admin Triage Queue</span>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">3h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc"><code>AdminTriageController</code> has classify, dismiss, and escalate actions. Ensure the admin-portal triage page renders the queue correctly with urgency sorting, AI confidence badges, and action buttons.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/triage/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/AdminTriageController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h1-1" data-priority="high"> Triage queue loads with correct sort order</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h1-2" data-priority="high"> Classify action assigns violation type and updates ticket</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h1-3" data-priority="high"> Dismiss action records reason in audit log</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h1-4" data-priority="high"> Escalate action creates LGU escalation record</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h1-5" data-priority="high"> Loading/empty states render correctly</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">H2</span>
+        <span class="task-title">Polish LGU Performance Dashboard</span>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">2h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc"><code>AdminLguPerformanceController</code> provides LGU response time metrics. Ensure admin-portal page displays performance data with proper charts and filtering.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/lgu-performance/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/AdminLguPerformanceController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h2-1" data-priority="high"> LGU performance page loads with data</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h2-2" data-priority="high"> Filters work (region, date range)</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h2-3" data-priority="high"> Metrics display: avg response time, escalation count, resolution rate</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h2-4" data-priority="high"> Empty state shows when no data available</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">H3</span>
+        <span class="task-title">Polish Predictions Page</span>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">2h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc"><code>PredictionController</code> returns environmental hotspots. Ensure admin-portal predictions page shows hotspot data with map visualization and filtering.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/predictions/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/PredictionController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h3-1" data-priority="high"> Predictions page loads with hotspot data</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h3-2" data-priority="high"> Violation type filter works</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h3-3" data-priority="high"> Hotspot list shows risk scores and coordinates</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h3-4" data-priority="high"> Loading skeleton renders during fetch</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">H4</span>
+        <span class="task-title">Polish Bias Risk Register Page</span>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">1.5h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc"><code>BiasRiskRegisterController</code> returns bias/risk data. Ensure admin-portal page displays the register with proper formatting.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/analytics/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/BiasRiskRegisterController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h4-1" data-priority="high"> Bias register page loads with data</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h4-2" data-priority="high"> Risks grouped by category</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h4-3" data-priority="high"> Mitigation status visible</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h4-4" data-priority="high"> Empty state handled</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">H5</span>
+        <span class="task-title">Bulk Operations End-to-End Testing</span>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">3h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc"><code>AdminBulkController</code> has 6 bulk endpoints. Test each thoroughly with valid and invalid payloads, and verify audit logging.</p>
+      <div class="task-files">
+        <code>apps/backend/app/Http/Controllers/AdminBulkController.php</code><br>
+        <code>apps/admin-portal/src/components/bulk-actions-bar.tsx</code><br>
+        <code>apps/admin-portal/src/hooks/use-bulk-select.ts</code>
+      </div>
+      <p style="margin-top:0.75rem;font-weight:600;font-size:0.85rem">Endpoints to test:</p>
+      <table>
+        <thead><tr><th>Endpoint</th><th>Method</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td><code>/admin/tickets/bulk-status</code></td><td>POST</td><td>Update status for up to 100 tickets</td></tr>
+          <tr><td><code>/admin/tickets/bulk-assign</code></td><td>POST</td><td>Assign analyst to multiple tickets</td></tr>
+          <tr><td><code>/admin/users/bulk-role</code></td><td>POST</td><td>Change role for multiple users</td></tr>
+          <tr><td><code>/admin/users/bulk-deactivate</code></td><td>POST</td><td>Deactivate multiple users</td></tr>
+          <tr><td><code>/admin/ngos/bulk-verify</code></td><td>POST</td><td>Verify multiple NGOs</td></tr>
+          <tr><td><code>/admin/ngos/bulk-delete</code></td><td>POST</td><td>Delete multiple NGOs</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h5-1" data-priority="high"> All 6 bulk endpoints return correct responses</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h5-2" data-priority="high"> Validation rejects invalid payloads</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h5-3" data-priority="high"> Audit logs created for each bulk operation</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h5-4" data-priority="high"> Admin portal bulk actions bar wired to correct endpoints</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h5-5" data-priority="high"> Selection hook handles select/deselect all</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">H6</span>
+        <span class="task-title">Admin Audit Log Review</span>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">1.5h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">Review and polish the audit log page. Ensure all admin actions are captured and the log is filterable.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/audit-logs/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/AdminAuditLogController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h6-1" data-priority="high"> Audit log page loads with paginated results</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h6-2" data-priority="high"> Filters work correctly</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h6-3" data-priority="high"> Detail view shows full context (old/new values, IP, user agent)</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="h6-4" data-priority="high"> Recent bulk operations appear in log</label>
+      </div>
+    </div>
+
+  </div>
 </div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 3</span>Saturday, June 7</div>
-<div class="task-card"><div class="task-title"><span class="task-id">3.1</span>Admin Portal Polish</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">5 Admin Controllers with full CRUD:</p>
-<table>
-<tr><th>Controller</th><th>Operations</th></tr>
-<tr><td><code>AdminUserController</code> (170 lines)</td><td>index (search, filter by role, paginated, Supabase sync), show, update, updateRole (with audit logging), destroy (soft delete)</td></tr>
-<tr><td><code>AdminRewardController</code> (99 lines)</td><td>index (filter active, paginated), show, store (full validation), update, destroy</td></tr>
-<tr><td><code>AdminNgoController</code> (97 lines)</td><td>index (filter by region/active, paginated), show (with assignments), store, update, destroy</td></tr>
-<tr><td><code>AdminLawController</code> (105 lines)</td><td>index (search, filter active, eager load penalties/violationTypes), show, store, update, destroy</td></tr>
-<tr><td><code>AdminAuditLogController</code> (50 lines)</td><td>index (filter by action/entity_type/actor, paginated), show (read-only)</td></tr>
-</table>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-21" checked> All admin endpoints return correct data</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-22" checked> CRUD operations work for NGOs, Laws, Users, Rewards</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-23" checked> Audit logs capture RBAC denials and role changes</label>
+
+<!-- MEDIUM Priority -->
+<div class="collapsible" data-priority="medium">
+  <div class="collapsible-header" onclick="toggleSection(this)">
+    <span><span class="badge badge-medium">MEDIUM</span> &nbsp; Priority Tasks (5)</span>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="collapsible-body">
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">M1</span>
+        <span class="task-title">Contact Message Management</span>
+        <span class="badge badge-medium">MEDIUM</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">2h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">Admin portal inquiries page should allow viewing and marking contact messages as read.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/inquiries/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/ContactMessageController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m1-1" data-priority="medium"> Inquiries page loads with messages</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m1-2" data-priority="medium"> Mark-as-read action works</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m1-3" data-priority="medium"> Unread messages visually distinct</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m1-4" data-priority="medium"> Pagination works</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">M2</span>
+        <span class="task-title">Admin NGO Management Polish</span>
+        <span class="badge badge-medium">MEDIUM</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">2h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">Ensure NGO CRUD is fully functional in admin portal with region filtering and verification status.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/ngos/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/AdminNgoController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m2-1" data-priority="medium"> NGO list loads with filters</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m2-2" data-priority="medium"> Create/edit forms validate correctly</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m2-3" data-priority="medium"> Delete confirmation works</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m2-4" data-priority="medium"> Detail view shows assignments</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">M3</span>
+        <span class="task-title">Admin Law Management Polish</span>
+        <span class="badge badge-medium">MEDIUM</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">2h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">Ensure law CRUD is fully functional with search, active filter, and penalty/violation type relationships.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/laws/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/AdminLawController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m3-1" data-priority="medium"> Law list loads with search and filters</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m3-2" data-priority="medium"> Create/edit forms work</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m3-3" data-priority="medium"> Penalties and violation types display</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m3-4" data-priority="medium"> Public endpoints unaffected</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">M4</span>
+        <span class="task-title">Admin Reward Management Polish</span>
+        <span class="badge badge-medium">MEDIUM</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">1.5h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">Ensure reward catalog CRUD works in admin portal.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/rewards/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/AdminRewardController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m4-1" data-priority="medium"> Reward list loads</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m4-2" data-priority="medium"> CRUD operations work</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m4-3" data-priority="medium"> Validation rejects invalid data</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m4-4" data-priority="medium"> Citizen endpoints unaffected</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">M5</span>
+        <span class="task-title">Currency Settings Management</span>
+        <span class="badge badge-medium">MEDIUM</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">1h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">Ensure currency settings CRUD works for eco-credit rate configuration.</p>
+      <div class="task-files">
+        <code>apps/admin-portal/src/app/[locale]/(dashboard)/settings/page.tsx</code><br>
+        <code>apps/backend/app/Http/Controllers/CurrencySettingController.php</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m5-1" data-priority="medium"> Settings page shows current rate</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m5-2" data-priority="medium"> Update works</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m5-3" data-priority="medium"> Public endpoint reflects changes</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="m5-4" data-priority="medium"> Validation prevents invalid values</label>
+      </div>
+    </div>
+
+  </div>
 </div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">3.2</span>Optimize Dashboard Queries</div>
-<p><span class="tag tag-pending">⚠️ Partial</span></p>
-<p><strong>File:</strong> <code>app/Http/Controllers/DashboardController.php</code> (96 lines)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Current state:</p>
-<p style="padding-left:1rem">• `stats()`: Runs 7 separate count queries, no caching</p>
-<p style="padding-left:1rem">• `feed()`: Eager-loads `reporter`, limits to 20</p>
-<p style="padding-left:1rem">• PostgreSQL syntax fix applied (EXTRACT/EPOCH instead of JULIANDAY)</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Still needed:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-24"> Aggregate queries instead of separate counts</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-25"> Add caching for leaderboard (5 min TTL)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-26"> Add indexes on `tickets.status`, `tickets.created_at`</label>
+
+<!-- LOW Priority -->
+<div class="collapsible" data-priority="low">
+  <div class="collapsible-header" onclick="toggleSection(this)">
+    <span><span class="badge badge-low">LOW</span> &nbsp; Priority Tasks (4)</span>
+    <span class="chevron">&#9654;</span>
+  </div>
+  <div class="collapsible-body">
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">L1</span>
+        <span class="task-title">RBAC Testing &mdash; All Admin Roles</span>
+        <span class="badge badge-low">LOW</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">3h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">Systematic RBAC testing across all admin endpoints for <code>analyst</code> and <code>super_admin</code> roles. Verify 403 for unauthorized access.</p>
+      <div class="task-files">
+        <code>EnsureRole.php</code>, <code>routes/api.php</code>
+      </div>
+      <p style="margin-top:0.75rem;font-weight:600;font-size:0.85rem">Test Matrix:</p>
+      <table>
+        <thead><tr><th>Endpoint Group</th><th><code>analyst</code></th><th><code>super_admin</code></th></tr></thead>
+        <tbody>
+          <tr><td><code>/admin/users</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/ngos</code> (read)</td><td style="color:var(--green);font-weight:700">200</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/ngos</code> (write)</td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/laws</code> (read)</td><td style="color:var(--green);font-weight:700">200</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/laws</code> (write)</td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/rewards</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/audit-logs</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/triage</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/predictions</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/bulk/*</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/tenants</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/contact-messages</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/lgu-performance</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/currency-settings</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/admin/pattern-escalation</code></td><td style="color:var(--red);font-weight:700">403</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/tickets/{id}/status</code> (patch)</td><td style="color:var(--green);font-weight:700">200</td><td style="color:var(--green);font-weight:700">200</td></tr>
+          <tr><td><code>/reports/verify</code></td><td style="color:var(--green);font-weight:700">200</td><td style="color:var(--green);font-weight:700">200</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l1-1" data-priority="low"> All <code>super_admin</code> endpoints return 200</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l1-2" data-priority="low"> All restricted endpoints return 403 for <code>analyst</code></label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l1-3" data-priority="low"> Analyst-accessible endpoints return 200</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l1-4" data-priority="low"> All 403s logged in audit table</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">L2</span>
+        <span class="task-title">Admin Portal Loading States Audit</span>
+        <span class="badge badge-low">LOW</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">1.5h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">Verify all 15+ admin portal routes have proper <code>loading.tsx</code> and <code>error.tsx</code> files.</p>
+      <p style="margin-top:0.75rem;font-weight:600;font-size:0.85rem">Routes to audit:</p>
+      <table>
+        <thead><tr><th>Route</th><th>Loading</th><th>Error</th></tr></thead>
+        <tbody>
+          <tr><td><code>/dashboard</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/users</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/tickets</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/triage</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/laws</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/ngos</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/audit-logs</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/analytics</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/predictions</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/lgu-performance</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/rewards</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/settings</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/inquiries</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+          <tr><td><code>/changelog</code></td><td style="color:var(--green)">&#10003;</td><td style="color:var(--green)">&#10003;</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l2-1" data-priority="low"> All routes show loading skeleton on initial load</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l2-2" data-priority="low"> All routes show error boundary on API failure</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l2-3" data-priority="low"> Error pages have retry functionality</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l2-4" data-priority="low"> No blank white screens during loading</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">L3</span>
+        <span class="task-title">Dashboard Query Optimization</span>
+        <span class="badge badge-low">LOW</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">2h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">PARTIAL</span>
+      </div>
+      <p class="task-desc">Optimize dashboard stats and leaderboard queries for sub-200ms response times.</p>
+      <div class="task-files"><code>apps/backend/app/Http/Controllers/DashboardController.php</code></div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l3-1" data-priority="low"> <code>/api/dashboard/stats</code> responds in &lt; 200ms</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l3-2" data-priority="low"> <code>/api/leaderboard</code> responds in &lt; 100ms</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l3-3" data-priority="low"> No N+1 queries</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l3-4" data-priority="low"> Cache invalidation works on new ticket creation</label>
+      </div>
+    </div>
+
+    <div class="task-card">
+      <div class="task-card-header">
+        <span class="task-id">L4</span>
+        <span class="task-title">Sanctum Token Expiry Configuration</span>
+        <span class="badge badge-low">LOW</span>
+      </div>
+      <div class="task-meta">
+        <span class="meta-item">0.5h</span>
+        <span class="meta-item">&bull;</span>
+        <span class="meta-item">NOT STARTED</span>
+      </div>
+      <p class="task-desc">Verify Sanctum token expiry settings. Currently <code>expiration</code> is <code>null</code> (no expiry).</p>
+      <div class="task-files">
+        <code>apps/backend/config/sanctum.php</code><br>
+        <code>apps/admin-portal/src/lib/auth-init.ts</code>
+      </div>
+      <div style="margin-top:0.75rem">
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l4-1" data-priority="low"> Token expiry configured appropriately</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l4-2" data-priority="low"> Admin portal <code>auth-init.ts</code> refresh flow works</label>
+        <label class="check-label"><input type="checkbox" class="task-check" data-id="l4-3" data-priority="low"> Expired tokens return 401 (not 500)</label>
+      </div>
+    </div>
+
+  </div>
 </div>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Completed:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-27" checked> Replace SQLite-specific SQL with portable PostgreSQL syntax</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-28" checked> N+1 in feed method — not present (display_id computed inline)</label>
+
+<hr class="divider">
+
+<!-- Risk Register -->
+<h2 class="section-header">Risk Register</h2>
+<div class="card">
+  <table>
+    <thead><tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Tenant middleware breaks existing routes</td>
+        <td><span class="badge badge-critical">HIGH</span></td>
+        <td>Test with <code>default</code> tenant fallback first</td>
+      </tr>
+      <tr>
+        <td>AI service returns null confidence scores</td>
+        <td><span class="badge badge-medium">MEDIUM</span></td>
+        <td>Add null checks in triage queue</td>
+      </tr>
+      <tr>
+        <td>Bulk operations timeout on large payloads</td>
+        <td><span class="badge badge-medium">MEDIUM</span></td>
+        <td>Cap at 100 items, add progress indicator</td>
+      </tr>
+      <tr>
+        <td>RBAC gaps expose admin endpoints</td>
+        <td><span class="badge badge-critical">HIGH</span></td>
+        <td>Systematic testing with test matrix</td>
+      </tr>
+      <tr>
+        <td>Audit log table grows too large</td>
+        <td><span class="badge badge-low">LOW</span></td>
+        <td>Add index on <code>created_at</code>, consider archiving</td>
+      </tr>
+    </tbody>
+  </table>
 </div>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-29"> `/api/dashboard/stats` responds in < 200ms</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-30"> `/api/leaderboard` responds in < 100ms</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-31" checked> No N+1 queries on dashboard feed</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="day-section"><div class="day-header"><span class="day-num">Day 4</span>Sunday, June 8</div>
-<div class="task-card"><div class="task-title"><span class="task-id">4.1</span>Backend Hardening</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>CORS:</strong> ✅ Production-ready</p>
-<p style="padding-left:1rem">• `config/cors.php` allows localhost:3000/3001/3002, production domains, Vercel/Azure regex patterns</p>
-<p style="padding-left:1rem">• `HandleCors` middleware prepended in `bootstrap/app.php`</p>
-<p><strong>Rate Limiting:</strong> ✅ Done (v0.7.1)</p>
-<p style="padding-left:1rem">• `throttle:5,1` on `/auth/register`</p>
-<p style="padding-left:1rem">• `throttle:10,1` on `/auth/login`</p>
-<p style="padding-left:1rem">• `throttle:20,1` on `/auth/sync`</p>
-<p style="padding-left:1rem">• `throttle:10,1` on `/reports`</p>
-<p style="padding-left:1rem">• `throttle:20,1` on `/reports/triage`</p>
-<p><strong>JSON Error Responses:</strong> ✅ Done</p>
-<p style="padding-left:1rem">• All controllers return `JsonResponse`</p>
-<p style="padding-left:1rem">• `EnsureRole` middleware returns JSON for 401/403</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Still needed:</p>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-7-32"> Verify Sanctum token expiry settings (`sanctum.php` line 53: `'expiration' => null`)</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<div class="task-card"><div class="task-title"><span class="task-id">4.2</span>Production Verification</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Health Check:</strong> EXISTS</p>
-<p style="padding-left:1rem">• `/api/health` — custom endpoint returning service status + timestamp</p>
-<p style="padding-left:1rem">• `/up` — Laravel's built-in health check</p>
-<p><strong>Feature Tests:</strong> 3 test suites</p>
-<p style="padding-left:1rem">• `ReportSubmissionTest.php` (65 lines) — report submission, ghost mode, validation</p>
-<p style="padding-left:1rem">• `EnsureRoleMiddlewareTest.php` (95 lines) — 7 test cases for RBAC</p>
-<p style="padding-left:1rem">• `LeaderboardTest.php` (35 lines) — leaderboard ordering</p>
-<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-33" checked> Health check endpoint exists</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-34" checked> Core flow tests pass</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-35" checked> RBAC middleware tested</label>
-</div>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Post-Sprint Work (Not in Original Sprint)</h2>
-<h3 style="font-size:1.1rem;margin:1.5rem 0 0.75rem">Security Fixes (v0.7.0)</h3>
-<p style="padding-left:1rem">• ✅ Removed `role` parameter from `/auth/sync` — prevents privilege escalation</p>
-<p style="padding-left:1rem">• ✅ Moved `/admin/users` index behind `auth:sanctum` + `role:super_admin` middleware</p>
-<p style="padding-left:1rem">• ✅ Added `role:analyst,super_admin` middleware to `/reports/verify`</p>
-<p style="padding-left:1rem">• ✅ Added `HasApiTokens` trait to User model — fixes all auth flows</p>
-<h3 style="font-size:1.1rem;margin:1.5rem 0 0.75rem">Stability Fixes (v0.7.1-v0.7.2)</h3>
-<p style="padding-left:1rem">• ✅ Removed reporter email from public `GET /tickets/{id}` response (PII leak)</p>
-<p style="padding-left:1rem">• ✅ Fixed N+1 query in `UserImpactController` — batch-fetches tickets</p>
-<p style="padding-left:1rem">• ✅ Added pagination to `TicketAssignment::index()` (20 per page)</p>
-<p style="padding-left:1rem">• ✅ Added pagination to `AchievementController::catalog()` (50 per page)</p>
-<p style="padding-left:1rem">• ✅ Contact message controller + admin endpoints</p>
-<h3 style="font-size:1.1rem;margin:1.5rem 0 0.75rem">Infrastructure (v0.6.1)</h3>
-<p style="padding-left:1rem">• ✅ Vercel `outputDirectory` corrected from `.next` to `apps/frontend/.next`</p>
-<p style="padding-left:1rem">• ✅ Re-added `ignoreCommand` to vercel.json</p>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">Risk Items</h2>
-<table>
-<tr><th>Risk</th><th>Status</th><th>Mitigation</th></tr>
-<tr><td>Supabase project permanently lost</td><td>⚠️ OPEN</td><td>Create new Supabase project, re-run all migrations</td></tr>
-<tr><td>Azure Container App won't start</td><td>⚠️ OPEN</td><td>Check logs with <code>az containerapp logs tail</code>; fix env vars</td></tr>
-<tr><td>~~ACR deleted — ImagePullBackOff~~</td><td>❌ NOT RESOLVED</td><td>CI/CD still uses ACR; needs migration to ghcr.io</td></tr>
-<tr><td>ghcr.io push fails</td><td>⚠️ OPEN</td><td>Verify <code>packages: write</code> permission in workflow; check <code>GITHUB_TOKEN</code> scope</td></tr>
-<tr><td>Vercel 404 on all pages</td><td>✅ RESOLVED</td><td><code>outputDirectory</code> was <code>.next</code> instead of <code>apps/frontend/.next</code> in vercel.json</td></tr>
-<tr><td>Seeder fails on foreign keys</td><td>✅ Resolved</td><td>Law seeder runs before violation type seeder</td></tr>
-<tr><td>CORS blocks APK</td><td>✅ Resolved</td><td>CORS config includes Vercel/Azure origins</td></tr>
-<tr><td>Role escalation via /auth/sync</td><td>✅ RESOLVED</td><td>Removed role param from client input (v0.7.0)</td></tr>
-<tr><td>Public admin endpoint</td><td>✅ RESOLVED</td><td>/admin/users moved behind auth middleware (v0.7.0)</td></tr>
-<tr><td>JULIANDAY on PostgreSQL</td><td>✅ RESOLVED</td><td>Replaced with EXTRACT/EPOCH (v0.7.0)</td></tr>
-</table>
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+
+<!-- Definition of Done -->
 <h2 class="section-header">Definition of Done</h2>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-36"> Supabase connection working (local and production)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-37"> CI/CD pipelines pushing to ghcr.io (backend + AI service)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-38"> Azure backend deployed and healthy (no ImagePullBackOff)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-39"> Azure AI service deployed and healthy</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-40"> Backend Container App env vars set (Supabase, APP_KEY, AI_SERVICE_URL)</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-41"> AI service Container App env vars set (Cosmos Gremlin, Google API key)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-42" checked> All 16 PH laws seeded with violation types</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-43" checked> Demo data seeded (users, tickets, achievements, NGOs)</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-44" checked> All admin CRUD endpoints functional</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-45" checked> Health check + feature tests working</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-46" checked> Rate limiting on auth + report endpoints</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-47" checked> P0 security fixes applied</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-48" checked> HasApiTokens trait added to User model</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-49"> All 40+ endpoints verified on production</label>
-<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-50"> No 500 errors on any endpoint</label>
+<div class="card">
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-1" data-priority="dod"> <code>ResolveTenant</code> middleware wired into all admin route groups</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-2" data-priority="dod"> <code>TenantController</code> routes registered and tested</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-3" data-priority="dod"> #171 admin-side actions verified working</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-4" data-priority="dod"> All 15+ admin portal routes polished and functional</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-5" data-priority="dod"> All 6 bulk operations tested end-to-end</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-6" data-priority="dod"> RBAC tested for <code>analyst</code> and <code>super_admin</code> on all endpoints</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-7" data-priority="dod"> Audit logs capture all admin actions</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-8" data-priority="dod"> Loading states and error boundaries on all pages</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-9" data-priority="dod"> No 500 errors on any admin endpoint</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-10" data-priority="dod"> Dashboard queries &lt; 200ms</label>
+</div>
+
+<!-- Notes -->
+<h2 class="section-header">Notes</h2>
+<div class="card" style="font-size:0.88rem">
+  <ul style="padding-left:1.25rem">
+    <li>All admin routes are behind <code>auth:sanctum</code> + <code>role:super_admin</code> middleware</li>
+    <li>Public read endpoints (<code>GET /admin/ngos</code>, <code>GET /admin/laws</code>) are accessible without auth</li>
+    <li>Bulk operations are capped at 100 items per request</li>
+    <li>Audit logs are immutable (no update/delete endpoints)</li>
+    <li>Admin portal runs on port 3002, backend on port 8000</li>
+  </ul>
 </div>
 
 <div class="footer">
-  <p>LikasLens Sprint Roadmap — Generated 2026-06-09</p>
-  <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a> · <a href="/">Home</a></p>
+  <p>LikasLens Sprint Roadmap &mdash; Dev 3: Backend & Admin Portal &mdash; Generated 2026-06-21</p>
+  <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a></p>
 </div>
 </main>
 
 <script>
 (function() {
-  var STORAGE_KEY = 'likaslens-sprint-progress';
+  var STORAGE_KEY = 'likaslens-dev3-progress';
 
   function loadState() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-    } catch(e) {
-      return {};
-    }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch(e) { return {}; }
   }
 
   function saveState(state) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch(e) {
-      console.warn('Could not save progress to localStorage');
-    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e) { console.warn('Could not save progress'); }
   }
 
   function updateProgress() {
@@ -622,14 +1012,43 @@ pre code {
     document.getElementById('progress-total').textContent = total;
 
     var fill = document.getElementById('progress-fill');
-    if (pct >= 100) {
-      fill.style.background = '#4caf50';
-    } else if (pct >= 50) {
-      fill.style.background = 'var(--dev-accent)';
-    } else {
-      fill.style.background = 'var(--accent)';
+    if (pct >= 100) fill.style.background = 'linear-gradient(90deg, #22c55e, #16a34a)';
+    else if (pct >= 50) fill.style.background = 'linear-gradient(90deg, var(--purple-700), var(--green))';
+    else fill.style.background = 'linear-gradient(90deg, var(--purple-700), var(--purple-500))';
+
+    // Update metrics
+    var priorities = ['critical', 'high', 'medium', 'low'];
+    priorities.forEach(function(p) {
+      var pChecks = document.querySelectorAll('.task-check[data-priority="' + p + '"]');
+      var pDone = document.querySelectorAll('.task-check[data-priority="' + p + '"]:checked');
+      var el = document.getElementById('metric-' + p);
+      if (el) el.textContent = pDone.length + '/' + pChecks.length;
+    });
+
+    // Bulk ops metric (H5 specific)
+    var bulkChecks = document.querySelectorAll('[data-id^="h5-"]');
+    var bulkDone = document.querySelectorAll('[data-id^="h5-"]:checked');
+    var bulkEl = document.getElementById('metric-bulk');
+    if (bulkEl) bulkEl.textContent = bulkDone.length + '/' + bulkChecks.length;
+
+    // RBAC metric (L1 specific)
+    var rbacChecks = document.querySelectorAll('[data-id^="l1-"]');
+    var rbacDone = document.querySelectorAll('[data-id^="l1-"]:checked');
+    var rbacEl = document.getElementById('metric-rbac');
+    if (rbacEl) {
+      var rbacPct = rbacChecks.length > 0 ? Math.round((rbacDone.length / rbacChecks.length) * 100) : 0;
+      rbacEl.textContent = rbacPct + '%';
     }
   }
+
+  function toggleSection(header) {
+    var body = header.nextElementSibling;
+    var isOpen = header.classList.contains('open');
+    header.classList.toggle('open');
+    body.classList.toggle('open');
+  }
+
+  window.toggleSection = toggleSection;
 
   function init() {
     var state = loadState();
@@ -637,10 +1056,7 @@ pre code {
 
     checks.forEach(function(cb) {
       var id = cb.getAttribute('data-id');
-
-      if (state[id]) {
-        cb.checked = true;
-      }
+      if (state[id]) cb.checked = true;
 
       cb.addEventListener('change', function() {
         var currentState = loadState();
@@ -655,10 +1071,7 @@ pre code {
         updateProgress();
       });
 
-      // Set initial done class
-      if (cb.checked) {
-        cb.parentElement.classList.add('done');
-      }
+      if (cb.checked) cb.parentElement.classList.add('done');
     });
 
     updateProgress();
@@ -667,22 +1080,22 @@ pre code {
   window.toggleTheme = function() {
     var html = document.documentElement;
     var label = document.getElementById('theme-label');
-    if (html.getAttribute('data-theme') === 'ghost') {
+    if (html.getAttribute('data-theme') === 'dark') {
       html.setAttribute('data-theme', 'civic');
-      label.textContent = 'CIVIC';
-      localStorage.setItem('likaslens-theme', 'civic');
+      label.textContent = 'LIGHT';
+      localStorage.setItem('likaslens-theme-dev3', 'civic');
     } else {
-      html.setAttribute('data-theme', 'ghost');
-      label.textContent = 'GHOST';
-      localStorage.setItem('likaslens-theme', 'ghost');
+      html.setAttribute('data-theme', 'dark');
+      label.textContent = 'DARK';
+      localStorage.setItem('likaslens-theme-dev3', 'dark');
     }
   };
 
-  var savedTheme = localStorage.getItem('likaslens-theme');
+  var savedTheme = localStorage.getItem('likaslens-theme-dev3');
   if (savedTheme) {
     document.documentElement.setAttribute('data-theme', savedTheme);
     var label = document.getElementById('theme-label');
-    if (label) label.textContent = savedTheme.toUpperCase();
+    if (label) label.textContent = savedTheme === 'dark' ? 'DARK' : 'LIGHT';
   }
 
   if (document.readyState === 'loading') {
