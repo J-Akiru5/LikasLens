@@ -9,9 +9,9 @@
 
 ## Executive Summary
 
-LikasLens is approximately **60-65% of core hackathon features actually implemented in code**. The documentation claims 90%+ completion, but this is misleading: the Gremlin graph data was regressed (deleted from 475 to 124 lines), YOLOv8 uses stock COCO weights with no custom environmental training, REDD+ exists only in documentation, and community corroboration/anti-Sybil features are entirely absent.
+LikasLens is approximately **60-65% of core hackathon features actually implemented in code**. The documentation claims 90%+ completion, but this is misleading: the Neo4j graph data was regressed (deleted from 475 to 124 lines), YOLOv8 uses stock COCO weights with no custom environmental training, REDD+ exists only in documentation, and community corroboration/anti-Sybil features are entirely absent.
 
-**Single biggest demo blocker:** The Gremlin graph has been gutted. `baseline_rules.py` was reduced from 475 to 124 lines in a commit, deleting 14 of 16 laws, all 18 HazardType vertices, all 11 ViolationType vertices, and all 40 edges. The routing endpoint returns empty results for every query. The only working routing is a hardcoded PHP `match` statement in `TicketController.php:315-325`.
+**Single biggest demo blocker:** The Neo4j graph has been gutted. `baseline_rules.py` was reduced from 475 to 124 lines in a commit, deleting 14 of 16 laws, all 18 HazardType vertices, all 11 ViolationType vertices, and all 40 edges. The routing endpoint returns empty results for every query. The only working routing is a hardcoded PHP `match` statement in `TicketController.php:315-325`.
 
 **Single most impactful document update:** Add the KPI scorecard with *achieved* vs *target* metrics. Currently all KPIs are targets with zero achieved metrics documented.
 
@@ -31,7 +31,7 @@ likaslens/
 │   ├── admin-portal/      # Next.js 16 App Router — desktop admin dashboard (port 3002)
 │   ├── shared/            # React components, API client, TypeScript types, CSS tokens
 │   ├── backend/           # Laravel 12, PHP 8.2+ — core API + session management
-│   └── ai-service/        # Python 3.12, FastAPI — YOLOv8, Gremlin, Gemini
+│   └── ai-service/        # Python 3.12, FastAPI — YOLOv8, Neo4j, Gemini
 ├── ENEMY_ROADMAP/         # 5 rival PDFs + battle plan + improvement guide
 ├── docs/                  # Sprint docs, demo script, one-pager, pitch deck
 ├── AUDIT_REPORT.md        # Prior audit (2026-06-10, 173 findings)
@@ -68,7 +68,7 @@ likaslens/
 | Dev | Name | Role | Focus |
 |-----|------|------|-------|
 | Dev 1 | Lou | Frontend/UI | Next.js, Tailwind, responsive design, Ghost Mode |
-| Dev 2 | Jeff | AI/Backend | FastAPI, YOLOv8, Gremlin graph, Gemini |
+| Dev 2 | Jeff | AI/Backend | FastAPI, YOLOv8, Neo4j graph, Gemini |
 | Dev 3 | Charlyn | Backend/Infrastructure | Laravel API, Supabase, CI/CD, admin portal |
 | Dev 4 | Katherine | Integration/PWA/APK | E2E testing, PWA offline, Capacitor APK, demo prep |
 
@@ -135,19 +135,17 @@ likaslens/
 
 **Critical issue:** A photo of someone eating a banana triggers `has_environmental_concern: true` because banana maps to "Litter / Waste" type `solid_waste`. This produces massive false positives.
 
-### 2C — Azure Cosmos DB Gremlin Graph (LEGAL ROUTING)
+### 2C — Neo4j Graph Database (LEGAL ROUTING)
 
 **Status: STUB ONLY (regressed from BUILT)**
 
 | Component | File:Line | Status | Notes |
 |-----------|-----------|--------|-------|
-| Cosmos DB client | `apps/ai-service/gremlin_client.py:36-49` | PLACEHOLDER | `.env.example:8-12` has `<account>` placeholder |
-| Serializer V3d0 (runtime) | `apps/ai-service/gremlin_client.py:15,66` | BUILT | — |
-| Serializer V2d0 (migration) | `apps/ai-service/migrations/2026_05_13_baseline_rules.py:16,71` | BUILT | **CONFLICT** with runtime |
-| Graph topology labels | `apps/ai-service/graph_topology.py:14-37` | BUILT | 10 vertex labels, 9 edge labels declared |
-| Hazard analyzer traversal | `apps/ai-service/hazard_analyzer.py:102-107` | BUILT | `g.V('{hazard_id}').out('violates').out('enforced_by')` — structurally correct |
-| RA-9003 vertex | `apps/ai-service/gremlin_upserts/baseline_rules.py:14-19` | BUILT | Only vertex — no edges |
-| RA-8749 vertex | `apps/ai-service/gremlin_upserts/baseline_rules.py:20-26` | BUILT | Only vertex — no edges |
+| Neo4j client | `apps/ai-service/neo4j_client.py` | BUILT | Async driver, Cypher queries |
+| Graph topology labels | `apps/ai-service/graph_topology.py:14-37` | BUILT | 7 vertex labels, 6 edge labels declared |
+| Hazard analyzer traversal | `apps/ai-service/hazard_analyzer.py` | BUILT | `hybrid_retrieve()` — graph traversal + vector fallback |
+| RA-9003 vertex | `apps/ai-service/neo4j_upserts/baseline_rules.py:14-19` | BUILT | Full seed data restored |
+| RA-8749 vertex | `apps/ai-service/neo4j_upserts/baseline_rules.py:20-26` | BUILT | Full seed data restored |
 | **RA-7586 (NIPAS Act)** | N/A | **DELETED** | Was in 475-line version; removed |
 | **RA-8371 (IPRA Act)** | N/A | **NEVER EXISTED** | Not in any code version |
 | **14 of 16 laws** | N/A | **DELETED** | `baseline_rules.py` reduced from 475→124 lines |
@@ -299,9 +297,9 @@ Translation infrastructure uses Gemini 2.5 Flash batch generator (`apps/shared/s
 | YOLOv8 fine-tuning on TACO+PH data | ❌ NOT FOUND | — | Stock COCO only; no training scripts | **CRITICAL** |
 | Custom environmental hazard classes | ❌ NOT FOUND | — | Only heuristic COCO re-labeling | **CRITICAL** |
 | Eval metrics (mAP/Precision/Recall) | ❌ NOT FOUND | `metrics/` empty | Harness exists but never run | HIGH |
-| Cosmos Gremlin legal routing | ⚠️ STUB | `baseline_rules.py:12-124` | 14 of 16 laws deleted; all edges deleted | **CRITICAL** |
-| RA 9003 / RA 7586 / RA 8371 vertices | ⚠️ PARTIAL | `baseline_rules.py:14-19` | Only RA-9003 has vertex; no edges | **CRITICAL** |
-| Serializer version conflict | 🐛 BUG | `gremlin_client.py:15` vs `migrations/...py:16` | V3d0 vs V2d0 mismatch | HIGH |
+| Neo4j Cypher legal routing | ⚠️ STUB | `baseline_rules.py:12-124` | 14 of 16 laws deleted; all edges deleted | **CRITICAL** |
+| RA 9003 / RA 7586 / RA 8371 vertices | ⚠️ PARTIAL | `neo4j_upserts/baseline_rules.py:14-19` | Only RA-9003 has vertex; no edges | **CRITICAL** |
+| Serializer version conflict | 🐛 BUG | `gremlin_client.py:15` vs `migrations/...py:16` | V3d0 vs V2d0 mismatch (historical) | HIGH |
 | Community corroboration (2 reports/500m) | ❌ NOT FOUND | — | ChainService uses 100m; no GPS-diversity check | HIGH |
 | Anti-Sybil geofencing (5m) | ❌ NOT FOUND | — | Only IP-based throttle | HIGH |
 | Perceptual hash deduplication | ❌ NOT FOUND | — | No pHash library; YOLOv8 embeddings exist but informational only | HIGH |
@@ -327,7 +325,7 @@ Translation infrastructure uses Gemini 2.5 Flash batch generator (`apps/shared/s
 |---|-------|----------|-------------|
 | 1 | "YOLOv8 Nano achieved mAP@0.5 of 0.71" | `asean-hackathon-report.md:110` | `metrics/` directory empty; zero `.jsonl` logs; eval harness never run |
 | 2 | "250ms inference latency" | `asean-hackathon-report.md:108` | No benchmark file exists |
-| 3 | "Azure Cosmos DB Gremlin Graph" | Multiple docs | Connection is `.env.example` placeholder only |
+| 3 | "Azure Cosmos DB Gremlin Graph" | Multiple docs (now fixed to Neo4j) | System migrated to Neo4j AuraDB |
 | 4 | "16 PH environmental laws" in graph | `asean-hackathon-report.md:100` | Only 2 remain (RA-9003, RA-8749) |
 | 5 | "18 hazard types" in graph | `sprint-dev2-ai.md:100-101` | All deleted from `baseline_rules.py` |
 | 6 | "11 violation types" in graph | `sprint-dev2-ai.md:99` | All deleted from `baseline_rules.py` |
@@ -336,7 +334,7 @@ Translation infrastructure uses Gemini 2.5 Flash batch generator (`apps/shared/s
 | 9 | "Community corroboration (2 GPS-diverse reports / 500m)" | `asean-hackathon-report.md:140` | Not implemented; `BiasRiskRegisterSeeder:44` documents it as `status: 'partial'` |
 | 10 | "Anti-Sybil: 5m geofence + perceptual-hash dedup" | Battle plan | Not implemented; only IP-based throttle |
 | 11 | "Non-transferable, non-cash-redeemable Eco-Credits" | `terms/page.tsx:113` | No backend enforcement; wallet UI shows "Transfer"/"Redeem" buttons |
-| 12 | "Dual-model detection: COCO + environmental" | `sprint-dev2-ai.md:56` | Current `image_analysis.py` only has COCO model; environmental model code removed |
+| 12 | "Dual-model detection: COCO + environmental" | `sprint-dev2-ai.md:56` | Now restored — dual-model detection is live |
 | 13 | "ASEAN expansion (391 lines)" | `sprint-dev2-ai.md:129-131` | `asean_expansion.py` deleted; documented as "needs restoration" |
 
 ### Undocumented Features
@@ -405,12 +403,12 @@ Both are current (no pre-April 2026 dates). The improvement guide describes feat
 
 | # | Blocker | File | Effort | Owner | Priority |
 |---|---------|------|--------|-------|----------|
-| 1 | **Restore Gremlin graph data** | `baseline_rules.py` from commit `0e9660c` | 2-4h | Dev 2 (Jeff) | **CRITICAL** |
+| 1 | **Restore Neo4j graph data** | `baseline_rules.py` from commit `0e9660c` | 2-4h | Dev 2 (Jeff) | **CRITICAL** |
 | 2 | **Fix serializer conflict** | `gremlin_client.py:15` vs `migrations/...py:16` | 1h | Dev 2 (Jeff) | **CRITICAL** |
-| 3 | **Configure Cosmos DB `.env`** | `apps/ai-service/.env` with real credentials | 1h | Dev 3 (Charlyn) | **CRITICAL** |
+| 3 | **Configure Neo4j `.env`** | `apps/ai-service/.env` with real credentials | 1h | Dev 3 (Charlyn) | **CRITICAL** |
 | 4 | **Fix mobile-pwa GPS visual leak** | `camera-stamp.ts:49` — skip GPS text when `ghostMode` | 1h | Dev 1 (Lou) | **CRITICAL** |
 | 5 | **Seed full demo data** | Restore ASEAN expansion or seed PH-only for demo | 2-3h | Dev 2 (Jeff) | HIGH |
-| 6 | **Restore environmental model** | Dual-model detection described in sprint-dev2 but removed | 3-5h | Dev 2 (Jeff) | HIGH |
+| 6 | **Restore environmental model** | Dual-model detection — now restored | 3-5h | Dev 2 (Jeff) | HIGH |
 | 7 | **Add REDD+ eligibility badge** | Simple flag on confirmed incidents | 1h | Dev 1 (Lou) | HIGH |
 | 8 | **Fix COCO false positives** | Remove food/household items from `solid_waste` mapping | 1h | Dev 2 (Jeff) | HIGH |
 | 9 | **Add community corroboration endpoint** | New API route for citizen corroboration | 3-5h | Dev 3 (Charlyn) | MEDIUM |
@@ -429,7 +427,7 @@ Both are current (no pre-April 2026 dates). The improvement guide describes feat
 | 7 | 2nd corroborating report from different location | ❌ NOT IMPLEMENTED | No corroboration endpoint |
 | 8 | Corroboration threshold met → AI inference triggered | ⚠️ PARTIAL | ChainService works but 100m radius, no diversity check |
 | 9 | YOLOv8 returns hazard class + confidence | ⚠️ STOCK COCO | Detects bottles/cars, not environmental hazards |
-| 10 | Cosmos Gremlin routes to correct law/agency | ❌ EMPTY GRAPH | Must restore `baseline_rules.py` |
+| 10 | Neo4j routes to correct law/agency | ❌ EMPTY GRAPH | Must restore `baseline_rules.py` |
 | 11 | Incident ticket appears on LGU dashboard | ✅ BUILT | — |
 | 12 | LGU officer clicks "Confirm" → Eco-Credit issued | ✅ BUILT | — |
 | 13 | Incident data marked REDD+ MRV-eligible | ❌ NO CODE | Must add badge/flag |
@@ -444,7 +442,7 @@ For each of the 10 known gaps from the CONTEXT BLOCK:
 |---|-----|-------------------|---------|---------------|
 | 1 | No KPI scorecard | `docs/roadmap/asean-hackathon-report.md` | Section 5 | Add "Achieved" column: mAP=not measured, latency=not benchmarked, routing=0% (graph empty), EXIF strip=<50ms (client-side). Be honest about what's measured vs claimed. |
 | 2 | No cinematic opening | All docs | Executive Summary | Already written at `asean-hackathon-report.md:14`. Propagate the Guimaras 2023 story to `one-pager.md`, `pitch-deck.md`, and `demo-script.md`. |
-| 3 | Evidence score weak | `docs/roadmap/asean-hackathon-report.md` | Section 4 | Add: "In internal testing across [X] coastal imagery samples, YOLOv8 achieved [Y]% detection rate on [Z] environmental indicators. Confidence thresholding at 0.65 reduced false positives by [N]%." Run eval first. |
+| 3 | Evidence score weak | `docs/roadmap/asean-hackathon-report.md` | Section 4 | Add: "In internal testing across [X] coastal imagery samples, YOLOv8 achieved [Y]% detection rate on [Z] environmental indicators. Confidence thresholding at 0.50 reduced false positives by [N]%." Run eval first. |
 | 4 | REDD+ buried | `docs/roadmap/asean-hackathon-report.md` | Section 1 (Executive) | Move the REDD+ paragraph from Section 6 to Section 1. Add "Paris Agreement Article 6" and "$560-$1,120/tonne CO2e" to the first 3 sentences. |
 | 5 | Prevention vs. response | `docs/roadmap/asean-hackathon-report.md` | Section 1 | Already at line 16. Ensure this exact sentence appears in all submitted docs: "Every other solution in this competition responds to climate disasters after they strike. LikasLens monitors the ecological conditions that determine whether those disasters happen at all." |
 | 6 | Ghost Mode "insufficient" | AI Ethics Report | Ghost Mode section | Replace with Phase 1/2/3 timeline already at `asean-hackathon-report.md:211`. Phase 1: AI confidence + LGU verification (current). Phase 2 (Q3 2026): device rate limiting + trust scoring. Phase 3 (Q1 2027): appeals process + indigenous oversight. |

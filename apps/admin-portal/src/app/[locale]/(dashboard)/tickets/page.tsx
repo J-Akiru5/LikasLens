@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { getTickets, bulkTicketStatus, bulkTicketAssign, getAdminNgos } from "@likaslens/shared";
+import { getTickets, bulkTicketStatus, bulkTicketAssign, getAdminNgos, Button } from "@likaslens/shared";
 import type { Ticket, NgoGroup } from "@likaslens/shared";
 import { showToast, Dropdown, AdminTableSkeleton, ConfidenceTierBadge, ReddEligibilityBadge } from "@likaslens/shared";
 import {
@@ -148,7 +148,7 @@ export default function TicketsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+        <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
           Tickets
         </h1>
         <p className="font-mono text-base text-muted mt-1">
@@ -203,7 +203,7 @@ export default function TicketsPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {tickets.length === 0 && (
               <div className="col-span-full p-16 bg-panel rounded-3xl border border-ink/5 text-center flex flex-col items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-ink/5 flex items-center justify-center">
@@ -218,7 +218,7 @@ export default function TicketsPage() {
             {tickets.map((ticket, i) => (
               <div
                 key={ticket.id}
-                className={`bg-panel rounded-3xl p-6 shadow-sm border transition-all cursor-pointer flex flex-col h-full relative ${
+                className={`bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border transition-all cursor-pointer flex flex-col h-full relative ${
                   bulk.isSelected(ticket.id)
                     ? "border-green/40 ring-2 ring-green/10"
                     : "border-ink/5 hover:scale-[1.02]"
@@ -333,20 +333,24 @@ export default function TicketsPage() {
         <div className="flex items-center justify-between gap-4">
           <p className="font-mono text-sm text-muted">Page {page} of {lastPage}</p>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
             >
               <ChevronLeft className="w-4 h-4" /> Prev
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              type="button"
               onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
               disabled={page >= lastPage}
-              className="flex items-center gap-1 px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink hover:bg-ink/[0.02] transition-colors disabled:opacity-30"
             >
               Next <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -381,4 +385,3 @@ export default function TicketsPage() {
     </div>
   );
 }
-

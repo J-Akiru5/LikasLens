@@ -72,9 +72,9 @@ export default function LawsPage() {
         </div>
 
         {loading && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-panel rounded-[1.5rem] p-6 border border-ink/5 space-y-4">
+              <div key={i} className="bg-panel rounded-[1.5rem] p-4 sm:p-6 border border-ink/5 space-y-4">
                 <div className="flex items-start gap-4">
                   <Skeleton className="w-12 h-12 rounded-2xl shrink-0" />
                   <div className="flex-1 space-y-3 pt-1">
@@ -122,9 +122,9 @@ export default function LawsPage() {
                 <p className="font-mono text-xs text-ink/40 uppercase tracking-widest font-bold">
                   Showing {filtered.length} active law{filtered.length !== 1 ? "s" : ""}
                 </p>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((law) => (
-                    <div key={law.id} className="bg-panel rounded-[1.5rem] p-6 shadow-sm border border-ink/5 hover:border-green/30 transition-all flex flex-col h-full group">
+                    <div key={law.id} className="bg-panel rounded-[1.5rem] p-4 sm:p-6 shadow-sm border border-ink/5 hover:border-green/30 transition-all flex flex-col h-full group">
                       <div className="flex items-start gap-4 mb-4">
                         <div className="w-12 h-12 rounded-2xl bg-ink/5 flex items-center justify-center shrink-0 group-hover:bg-green/10 transition-colors">
                            <Scale className="w-5 h-5 text-ink/60 group-hover:text-green transition-colors" />

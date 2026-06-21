@@ -1,7 +1,7 @@
 const sharp = require('sharp');
 const path = require('path');
 
-const logoPath = 'Likasy Logo.png';
+const logoPath = 'apps/frontend/public/images/likas-lens-logo.png';
 
 const targets = [
   // frontend
@@ -14,11 +14,13 @@ const targets = [
   { dest: 'apps/mobile-pwa/public/icons/icon-192x192.png', size: 192 },
   { dest: 'apps/mobile-pwa/public/icons/icon-512x512.png', size: 512 },
   { dest: 'apps/mobile-pwa/public/icons/apple-touch-icon.png', size: 180 },
+  { dest: 'apps/mobile-pwa/src/app/icon.png', size: 32 },
   
   // admin-portal
   { dest: 'apps/admin-portal/public/icons/icon-192x192.png', size: 192 },
   { dest: 'apps/admin-portal/public/icons/icon-512x512.png', size: 512 },
   { dest: 'apps/admin-portal/public/icons/apple-touch-icon.png', size: 180 },
+  { dest: 'apps/admin-portal/src/app/icon.png', size: 32 },
 ];
 
 async function run() {

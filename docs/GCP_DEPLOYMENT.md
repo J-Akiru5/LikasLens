@@ -137,7 +137,7 @@ Neo4j stores your environmental law knowledge graph (hazards → laws → agenci
 | `APP_KEY` | `base64:...` (from your existing Azure config) |
 | `APP_URL` | *(leave blank — will fill after deploy)* |
 | `DB_CONNECTION` | `pgsql` |
-| `DB_HOST` | `db.sfklmmtimelotqvrldni.supabase.co` |
+| `DB_HOST` | `aws-1-ap-northeast-2.pooler.supabase.com` (Session Pooler — IPv4 compatible) |
 | `DB_PORT` | `5432` |
 | `DB_DATABASE` | `postgres` |
 | `DB_USERNAME` | `postgres.sfklmmtimelotqvrldni` |
@@ -149,7 +149,7 @@ Neo4j stores your environmental law knowledge graph (hazards → laws → agenci
 | `SUPABASE_S3_ENDPOINT` | `https://sfklmmtimelotqvrldni.storage.supabase.co/storage/v1/s3` |
 | `SUPABASE_S3_ACCESS_KEY` | *(from Supabase → Settings → Storage → S3 Access Keys)* |
 | `SUPABASE_S3_SECRET_KEY` | *(from Supabase → Settings → Storage → S3 Access Keys)* |
-| `SUPABASE_S3_REGION` | `ap-southeast-1` |
+| `SUPABASE_S3_REGION` | `ap-northeast-2` |
 | `SUPABASE_STORAGE_BUCKET` | `likaslens-evidence` |
 | `AI_SERVICE_URL` | *(leave blank — will fill after AI service deploys)* |
 
@@ -175,7 +175,7 @@ Neo4j stores your environmental law knowledge graph (hazards → laws → agenci
 | `NEO4J_URI` | `neo4j+s://<your-instance>.databases.neo4j.io` (from Neo4j AuraDB) |
 | `NEO4J_USER` | `neo4j` |
 | `NEO4J_PASSWORD` | *(from Neo4j AuraDB console)* |
-| `CORS_ORIGINS` | `https://likaslens.vercel.app,https://likaslens-admin.vercel.app,https://likaslens-api-xyz.a.run.app` |
+| `CORS_ORIGINS` | `https://likaslens.syntaxure.dev,https://likasadmin.syntaxure.dev,https://likaslens-api-1096292232709.asia-southeast1.run.app` |
 | `ENVIRONMENT` | `production` |
 | `APP_DEBUG` | `false` |
 
@@ -273,8 +273,8 @@ Go to **Vercel Dashboard** → Project → **Settings** → **Environment Variab
 
 | Variable | New Value |
 |----------|-----------|
-| `NEXT_PUBLIC_API_URL` | `https://likaslens-api-xyz.a.run.app/api` |
-| `NEXT_PUBLIC_AI_SERVICE_URL` | `https://likaslens-ai-xyz.a.run.app` |
+| `NEXT_PUBLIC_API_URL` | `https://likaslens-api-1096292232709.asia-southeast1.run.app/api` |
+| `NEXT_PUBLIC_AI_SERVICE_URL` | `https://likaslens-ai-1096292232709.asia-southeast1.run.app` |
 
 Then **Redeploy** the latest deployment.
 
@@ -284,11 +284,11 @@ Then **Redeploy** the latest deployment.
 
 ```bash
 # Backend health check
-curl https://likaslens-api-xyz.a.run.app/api/health
+curl https://likaslens-api-1096292232709.asia-southeast1.run.app/api/health
 # Expected: {"status":"ok","service":"likaslens-backend","timestamp":"..."}
 
 # AI service health check
-curl https://likaslens-ai-xyz.a.run.app/health
+curl https://likaslens-ai-1096292232709.asia-southeast1.run.app/health
 # Expected: {"status":"ok"}
 
 # Frontend

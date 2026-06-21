@@ -6,6 +6,7 @@ import { getTickets } from "../api/admin";
 import { cn } from "../utils";
 import type { Ticket } from "../types/ticket";
 import type { PaginatedResponse } from "../types/api";
+import { EmptyLeaderboard } from "./empty-state";
 
 interface PublicReportRow {
   rank: number;
@@ -86,42 +87,20 @@ export function PublicScoreboard() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="rounded-xl border border-dashed border-border p-12 flex flex-col items-center justify-center text-center">
-        <div className="w-12 h-12 rounded-full bg-ink/[0.03] flex items-center justify-center mb-4">
-           <CloudOff className="w-6 h-6 text-muted" />
-        </div>
-        <p className="text-sm font-medium text-ink mb-1">Data Unavailable</p>
-        <p className="text-xs text-muted mb-4 max-w-[250px]">We couldn't connect to the public records database. The systems might be syncing.</p>
-        <button
-          onClick={fetchReports}
-          className="flex items-center gap-2 text-xs font-medium text-ink bg-ink/[0.04] hover:bg-ink/[0.08] px-4 py-2 rounded-lg transition-colors"
-        >
-           <RefreshCw className="w-3.5 h-3.5" />
-          Try again
-        </button>
-      </div>
-    );
-  }
-
   const displayRows = rows;
 
-  if (displayRows.length === 0) {
+  if (error || displayRows.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-ink/10 p-12 text-center bg-ink/[0.015]">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-ink/[0.02] to-ink/[0.06] flex items-center justify-center mx-auto mb-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.08] ring-8 ring-ink/[0.015]">
-          <Trophy className="w-7 h-7 text-ink/30" />
-        </div>
-        <h3 className="font-medium text-ink mb-1.5">No reports yet</h3>
-        <p className="text-sm text-ink/50 leading-relaxed">Top contributors will be highlighted here once reports are submitted.</p>
-      </div>
+      <EmptyLeaderboard 
+        title="No activity yet"
+        description="Top contributors will be highlighted here once reports are submitted."
+      />
     );
   }
 
   return (
     <div className="space-y-1">
-      <div className="grid grid-cols-[2fr_2fr_1fr_1fr] gap-4 px-4 pb-3 border-b border-border font-mono text-[10px] text-muted uppercase tracking-wider">
+      <div className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr] sm:grid-cols-[2fr_2fr_1fr_1fr] gap-2 sm:gap-4 px-3 sm:px-4 pb-3 border-b border-border font-mono text-[9px] sm:text-[10px] text-muted uppercase tracking-wider">
         <div>Reporter / Location</div>
         <div>Issue</div>
         <div>Status</div>
@@ -132,7 +111,7 @@ export function PublicScoreboard() {
         return (
           <div
             key={idx}
-            className="grid grid-cols-[2fr_2fr_1fr_1fr] gap-4 px-4 py-3.5 rounded-lg hover:bg-ink/3 transition-colors border border-transparent hover:border-border"
+            className="grid grid-cols-[1.5fr_1.5fr_1fr_1fr] sm:grid-cols-[2fr_2fr_1fr_1fr] gap-2 sm:gap-4 px-3 sm:px-4 py-3 rounded-lg hover:bg-ink/3 transition-colors border border-transparent hover:border-border"
           >
             <div className="font-medium text-sm text-ink truncate">{row.agency}</div>
             <div className="text-sm text-muted truncate">{row.title}</div>

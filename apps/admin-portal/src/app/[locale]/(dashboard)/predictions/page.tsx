@@ -6,7 +6,7 @@ import {
 } from "@likaslens/shared";
 import type { HotspotPrediction, PredictionMeta } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { AdminKPIsSkeleton, EmptyState } from "@likaslens/shared";
+import { AdminKPIsSkeleton, EmptyState, Button } from "@likaslens/shared";
 import {
   MapPin,
   TrendingUp,
@@ -90,7 +90,7 @@ export default function PredictionsPage() {
         </div>
         <AdminKPIsSkeleton count={3} />
         <div className="grid gap-6 lg:grid-cols-5">
-          <div className="lg:col-span-3 bg-panel rounded-3xl p-6 border border-ink/5">
+          <div className="lg:col-span-3 bg-panel rounded-3xl p-4 sm:p-6 border border-ink/5">
             <div className="h-96 rounded-xl bg-ink/5 animate-shimmer" />
           </div>
           <div className="lg:col-span-2 space-y-4">
@@ -117,7 +117,7 @@ export default function PredictionsPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+        <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
           Predictions
         </h1>
         <p className="font-mono text-base text-muted mt-1">
@@ -126,47 +126,59 @@ export default function PredictionsPage() {
       </div>
 
       {/* KPIs */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
-          <div className="flex items-center gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="kpi-card kpi-accent-amber rounded-2xl border border-border bg-amber-500/[0.02] hover:bg-amber-500/[0.04] transition-colors duration-300 p-5 relative overflow-hidden group">
+          <div 
+            className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-amber-500"
+            style={{ opacity: 0.05 }}
+          >
+            <AlertTriangle className="w-24 h-24" />
+          </div>
+          <div className="flex items-center gap-4 relative z-10">
             <div className="w-12 h-12 rounded-2xl bg-red/10 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-red" />
             </div>
             <div>
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
-                High Risk Zones
-              </p>
-              <p className="font-semibold tracking-tight text-3xl text-ink">
+              <span className="label-pill label-pill-light">High Risk Zones</span>
+              <p className="font-semibold tracking-tight text-3xl text-amber-600">
                 {highRiskCount}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
-          <div className="flex items-center gap-4">
+        <div className="kpi-card kpi-accent-muted rounded-2xl border border-border bg-ink/[0.02] hover:bg-ink/[0.04] transition-colors duration-300 p-5 relative overflow-hidden group">
+          <div 
+            className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-ink"
+            style={{ opacity: 0.05 }}
+          >
+            <MapPin className="w-24 h-24" />
+          </div>
+          <div className="flex items-center gap-4 relative z-10">
             <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] flex items-center justify-center">
               <MapPin className="w-6 h-6 text-ink/60" />
             </div>
             <div>
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
-                Predicted Zones
-              </p>
+              <span className="label-pill label-pill-light">Predicted Zones</span>
               <p className="font-semibold tracking-tight text-3xl text-ink">
                 {predictions.length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
-          <div className="flex items-center gap-4">
+        <div className="kpi-card kpi-accent-green rounded-2xl border border-border bg-green/[0.02] hover:bg-green/[0.04] transition-colors duration-300 p-5 relative overflow-hidden group">
+          <div 
+            className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-green"
+            style={{ opacity: 0.05 }}
+          >
+            <BarChart3 className="w-24 h-24" />
+          </div>
+          <div className="flex items-center gap-4 relative z-10">
             <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] flex items-center justify-center">
               <BarChart3 className="w-6 h-6 text-ink/60" />
             </div>
             <div>
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
-                Avg Confidence
-              </p>
-              <p className="font-semibold tracking-tight text-3xl text-ink">
+              <span className="label-pill label-pill-light">Avg Confidence</span>
+              <p className="font-semibold tracking-tight text-3xl text-green">
                 {avgConfidence}%
               </p>
             </div>
@@ -194,7 +206,7 @@ export default function PredictionsPage() {
       {/* Main content: Map + Predictions list */}
       <div className="grid gap-6 lg:grid-cols-5">
         {/* Map area */}
-        <div className="lg:col-span-3 bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+        <div className="lg:col-span-3 bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-4">
             Hotspot Map
           </h3>

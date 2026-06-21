@@ -1,8 +1,11 @@
+// apps/admin-portal/src/app/[locale]/(dashboard)/lgu-performance/page.tsx
+// Phase 6 sub-page sweep: KPI tiles + eyebrows + CTA swaps
 "use client";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { getLguPerformance } from "@likaslens/shared";
 import type { LguPerformanceRow, LguPlatformAverages } from "@likaslens/shared";
 import { AdminKPIsSkeleton, AdminTableSkeleton, showToast } from "@likaslens/shared";
+import { Button } from "@likaslens/shared";
 import {
   Gauge,
   Download,
@@ -161,6 +164,7 @@ export default function LguPerformancePage() {
           icon: Building2,
           iconBg: "bg-ink/[0.04]",
           iconColor: "text-ink/60",
+          accent: "muted" as const,
         },
         {
           label: "Platform Avg Resolution Rate",
@@ -168,6 +172,7 @@ export default function LguPerformancePage() {
           icon: CheckCircle2,
           iconBg: "bg-green/10",
           iconColor: "text-green",
+          accent: "green" as const,
         },
         {
           label: "Platform Avg Response Time",
@@ -175,50 +180,71 @@ export default function LguPerformancePage() {
           icon: Clock,
           iconBg: "bg-amber/10",
           iconColor: "text-amber",
+          accent: "amber" as const,
         },
       ]
     : [];
+
+  const bgTintClass: Record<string, string> = {
+    green: "bg-green/[0.02] hover:bg-green/[0.04]",
+    amber: "bg-amber-500/[0.02] hover:bg-amber-500/[0.04]",
+    accent: "bg-accent/[0.02] hover:bg-accent/[0.04]",
+    muted: "bg-ink/[0.02] hover:bg-ink/[0.04]",
+  };
+
+  const valueColorClass: Record<string, string> = {
+    green: "text-green",
+    amber: "text-amber-600",
+    accent: "text-accent",
+    muted: "text-ink",
+  };
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
+          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
             LGU Performance
           </h1>
           <p className="font-mono text-base text-muted mt-1">
             Monitor Local Government Unit response and resolution metrics
           </p>
         </div>
-        <button
+        <Button
+          variant="secondary"
           onClick={handleExportCsv}
           disabled={lgus.length === 0}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-ink text-page rounded-xl font-mono text-xs uppercase tracking-widest font-bold hover:bg-ink/90 transition-colors disabled:opacity-50"
         >
           <Download className="w-4 h-4" /> Export CSV
-        </button>
+        </Button>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {kpis.map((kpi) => {
           const Icon = kpi.icon;
           return (
             <div
               key={kpi.label}
-              className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5"
+              className={`kpi-card rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5 kpi-accent-${kpi.accent} ${bgTintClass[kpi.accent]} group transition-colors duration-300 relative overflow-hidden`}
             >
-              <div className="flex items-center gap-4">
+              <div 
+                className={`absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 ${kpi.iconColor.split('/')[0]}`}
+                style={{ opacity: 0.05 }}
+              >
+                <Icon className="w-24 h-24 sm:w-28 sm:h-28" />
+              </div>
+              <div className="flex items-center gap-4 relative z-10">
                 <div
                   className={`w-12 h-12 rounded-2xl ${kpi.iconBg} flex items-center justify-center`}
                 >
                   <Icon className={`w-6 h-6 ${kpi.iconColor}`} />
                 </div>
                 <div>
-                  <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
+                  <span className="label-pill label-pill-light">
                     {kpi.label}
-                  </p>
-                  <p className="font-semibold tracking-tight text-3xl text-ink">
+                  </span>
+                  <p className={`font-semibold tracking-tight text-3xl mt-1 ${valueColorClass[kpi.accent]}`}>
                     {kpi.value}
                   </p>
                 </div>
@@ -230,15 +256,15 @@ export default function LguPerformancePage() {
 
       {/* Platform Average Benchmark Bar */}
       {platformAvg && (
-        <div className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+        <div className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-4">
-            Platform Benchmarks
+            <span className="label-pill label-pill-light">Platform Benchmarks</span>
           </h3>
           <div className="grid gap-4 sm:grid-cols-4">
             <div className="space-y-1">
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
+              <span className="label-pill label-pill-light">
                 Resolution Rate
-              </p>
+              </span>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-2 bg-ink/5 rounded-full overflow-hidden">
                   <div
@@ -252,25 +278,25 @@ export default function LguPerformancePage() {
               </div>
             </div>
             <div className="space-y-1">
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
+              <span className="label-pill label-pill-light">
                 Avg Response
-              </p>
+              </span>
               <p className="font-semibold text-lg text-ink">
                 {platformAvg.avg_response_hours}h
               </p>
             </div>
             <div className="space-y-1">
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
+              <span className="label-pill label-pill-light">
                 Avg Resolution
-              </p>
+              </span>
               <p className="font-semibold text-lg text-ink">
                 {platformAvg.avg_resolution_hours}h
               </p>
             </div>
             <div className="space-y-1">
-              <p className="font-mono text-xs text-ink/50 uppercase tracking-widest">
+              <span className="label-pill label-pill-light">
                 SLA Compliance
-              </p>
+              </span>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-2 bg-ink/5 rounded-full overflow-hidden">
                   <div
@@ -452,25 +478,25 @@ function LguTableRow({
           <td colSpan={7} className="px-6 py-4 bg-ink/[0.01]">
             <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
               <div className="bg-panel rounded-xl p-4 border border-ink/5">
-                <p className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mb-1">
+                <span className="label-pill label-pill-light">
                   Avg Resolution Time
-                </p>
-                <p className="font-semibold text-lg text-ink">
+                </span>
+                <p className="font-semibold text-lg text-ink mt-1">
                   {lgu.avg_resolution_hours}h
                 </p>
               </div>
               <div className="bg-panel rounded-xl p-4 border border-ink/5">
-                <p className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mb-1">
+                <span className="label-pill label-pill-light">
                   Pending Tickets
-                </p>
-                <p className="font-semibold text-lg text-ink">
+                </span>
+                <p className="font-semibold text-lg text-ink mt-1">
                   {lgu.pending_count}
                 </p>
               </div>
               <div className="bg-panel rounded-xl p-4 border border-ink/5">
-                <p className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mb-1">
+                <span className="label-pill label-pill-light">
                   SLA Breaches
-                </p>
+                </span>
                 <p
                   className={`font-semibold text-lg ${
                     lgu.breached_count > 0 ? "text-red" : "text-green"
@@ -480,18 +506,18 @@ function LguTableRow({
                 </p>
               </div>
               <div className="bg-panel rounded-xl p-4 border border-ink/5">
-                <p className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mb-1">
+                <span className="label-pill label-pill-light">
                   Status
-                </p>
-                <p className="font-semibold text-lg text-ink">
+                </span>
+                <p className="font-semibold text-lg text-ink mt-1">
                   {lgu.is_active ? "Active" : "Inactive"}
                 </p>
               </div>
               <div className="bg-panel rounded-xl p-4 border border-ink/5">
-                <p className="font-mono text-[10px] text-ink/40 uppercase tracking-widest mb-1">
+                <span className="label-pill label-pill-light">
                   SLA Compliance
-                </p>
-                <p className="font-semibold text-lg text-ink">
+                </span>
+                <p className="font-semibold text-lg text-ink mt-1">
                   {lgu.sla_compliance_rate}%
                 </p>
               </div>

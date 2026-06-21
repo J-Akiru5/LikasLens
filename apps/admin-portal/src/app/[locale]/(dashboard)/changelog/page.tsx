@@ -1,3 +1,5 @@
+// apps/admin-portal/src/app/[locale]/(dashboard)/changelog/page.tsx
+// Phase 6 sub-page sweep: section labels already styled; no CTAs/KPIs
 import { getChangelog } from "@/lib/changelog";
 import { ScrollText } from "lucide-react";
 
@@ -22,7 +24,7 @@ export default function AdminChangelogPage() {
       <div>
         <div className="flex items-center gap-3">
           <ScrollText className="w-6 h-6 text-ink/40" />
-          <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">Changelog</h1>
+          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">Changelog</h1>
         </div>
         <p className="font-mono text-base text-muted mt-1">
           Track all changes, fixes, and improvements to LikasLens.
@@ -31,7 +33,7 @@ export default function AdminChangelogPage() {
 
       <div className="space-y-10">
         {versions.map((version) => (
-          <section key={version.version} className="bg-panel rounded-3xl p-6 shadow-sm border border-ink/5">
+          <section key={version.version} className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
             <div className="flex items-baseline gap-4 mb-6">
               <h2 className="font-semibold tracking-tight text-2xl text-ink">
                 v{version.version}
@@ -45,10 +47,12 @@ export default function AdminChangelogPage() {
               {Object.entries(version.entries).map(([section, entries]) => (
                 <div key={section}>
                   <div className="flex items-center gap-3 mb-3">
-                    <span className={`inline-block px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest rounded-full ${
-                      SECTION_COLORS[section] || "bg-ink/[0.04] text-ink/60"
-                    }`}>
-                      {section}
+                    <span className="label-pill label-pill-light inline-block">
+                      <span className={`inline-block px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest rounded-full ${
+                        SECTION_COLORS[section] || "bg-ink/[0.04] text-ink/60"
+                      }`}>
+                        {section}
+                      </span>
                     </span>
                     <div className="flex-1 h-px bg-ink/5" />
                   </div>

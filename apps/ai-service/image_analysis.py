@@ -299,7 +299,31 @@ def classify_environmental_risk(detections: list[dict[str, Any]]) -> dict[str, A
     }
 
 
-def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.25) -> dict[str, Any]:
+def compute_composite_score(
+    coco_conf: float,
+    env_conf: float,
+    has_model_agreement: bool,
+) -> float:
+    """Unified confidence: max(coco_conf, env_conf) * 0.7 + agreement_bonus * 0.3.
+
+    agreement_bonus = 1.0 if both COCO and env model agree on a hazard, else 0.0.
+    Returns a score between 0.0 and 1.0.
+    """
+    base = max(coco_conf, env_conf) * 0.7
+    agreement_bonus = 1.0 if has_model_agreement else 0.0
+    return round(base + agreement_bonus * 0.3, 4)
+
+
+def triage_disposition(composite_score: float) -> str:
+    """Three-tier gate: >= 0.70 auto_route, 0.40-0.69 pending_review, < 0.40 auto_dismiss."""
+    if composite_score >= 0.70:
+        return "auto_routed"
+    if composite_score >= 0.40:
+        return "pending_review"
+    return "auto_dismissed"
+
+
+def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.50) -> dict[str, Any]:
     """Run YOLOv8 inference on image bytes and return structured results."""
     if len(image_bytes) > MAX_IMAGE_BYTES:
         raise ValueError(
@@ -383,11 +407,20 @@ def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.25) -> dic
     if _ENV_MODEL_NAME:
         model_info = f"{_COCO_MODEL_NAME}+{_ENV_MODEL_NAME}"
 
+    # Compute composite confidence score
+    coco_max = max((d["confidence"] for d in detections), default=0.0)
+    env_max = max((d["confidence"] for d in env_detections), default=0.0)
+    has_agreement = bool(env_detections) and env_assessment.get("has_environmental_concern", False)
+    composite = compute_composite_score(coco_max, env_max, has_agreement)
+    disposition = triage_disposition(composite)
+
     return {
         "model": model_info,
         "detections": merged_detections[:50],
         "detection_count": len(merged_detections),
         "environmental_assessment": env_assessment,
+        "composite_confidence": composite,
+        "triage_disposition": disposition,
         "latency_ms": latency_ms,
         "models_used": {
             "coco": _COCO_MODEL_NAME,
@@ -396,7 +429,7 @@ def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.25) -> dic
     }
 
 
-def analyze_base64(base64_string: str, confidence_threshold: float = 0.25) -> dict[str, Any]:
+def analyze_base64(base64_string: str, confidence_threshold: float = 0.50) -> dict[str, Any]:
     """Analyze a base64-encoded image."""
     if len(base64_string) > MAX_IMAGE_BYTES * 2:
         raise ValueError("Base64 payload too large")

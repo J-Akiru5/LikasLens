@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 function GitHubCatIcon({ className }: { className?: string }) {
   return (
@@ -17,216 +18,333 @@ function GitHubCatIcon({ className }: { className?: string }) {
 }
 
 export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
-  const textColor = ghostMode ? "text-white" : "text-ink";
-  const mutedColor = ghostMode ? "text-white/60" : "text-ink/80";
-  const subHeadingColor = ghostMode ? "text-white/40" : "text-ink/60";
-  const borderColor = ghostMode ? "border-white/10" : "border-ink/20";
-  
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <footer 
-      className={`w-full overflow-hidden relative mt-20 transition-colors duration-1000 ${ghostMode ? "bg-[#060a0f]" : "bg-[#f0f9f4]"}`}
-    >
-      {/* Background Images Layer (Optimized with Next.js Image) */}
-      <div 
-        className="absolute inset-0 transition-opacity duration-1000 z-0"
-        style={{ opacity: ghostMode ? 0 : 0.8 }}
-      >
-        <Image 
-          src="/images/footer-mountain-light.png" 
-          alt="Civic Mode Background" 
-          fill 
-          sizes="100vw"
-          className="object-cover" 
-          priority={false}
-          quality={70}
-        />
-      </div>
-      <div 
-        className="absolute inset-0 transition-opacity duration-1000 z-0"
-        style={{ opacity: ghostMode ? 0.8 : 0 }}
-      >
-        <Image 
-          src="/images/footer-sea.png" 
-          alt="Ghost Mode Background" 
-          fill 
-          sizes="100vw"
-          className="object-cover" 
-          priority={false}
-          quality={70}
-        />
-      </div>
+    <footer className="w-full overflow-hidden relative mt-20">
+      {/* ═══════════════════════════════════════════════════════════════════
+          BACKGROUND LAYER: Cinematic photo backgrounds with crossfade
+          ═══════════════════════════════════════════════════════════════════ */}
       
-      {/* Gradient Overlay for Readability */}
+      {/* Civic Mode: Golden mountain ridges */}
       <div 
-        className={`absolute inset-0 transition-opacity duration-1000 z-0 pointer-events-none ${ghostMode ? "bg-gradient-to-t from-[#020b14] via-[#020b14]/80 to-[#020b14]/20" : "bg-white/50 bg-gradient-to-t from-[#f0f9f4] via-[#f0f9f4]/80 to-transparent"}`} 
+        className="absolute inset-0 z-0 transition-opacity duration-1000"
+        style={{ opacity: ghostMode ? 0 : 1 }}
+      >
+        <Image 
+          src="/images/footer-civic-mountain.png" 
+          alt="" 
+          fill 
+          sizes="100vw"
+          className="object-cover object-center" 
+          priority={false}
+          quality={75}
+        />
+        {/* Warm overlay for text readability */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(180deg, rgba(247,245,242,0.92) 0%, rgba(235,231,224,0.75) 40%, rgba(220,214,205,0.6) 100%)",
+          }}
+        />
+      </div>
+
+      {/* Ghost Mode: Deep sea abyss */}
+      <div 
+        className="absolute inset-0 z-0 transition-opacity duration-1000"
+        style={{ opacity: ghostMode ? 1 : 0 }}
+      >
+        <Image 
+          src="/images/footer-ghost-deepsea.png" 
+          alt="" 
+          fill 
+          sizes="100vw"
+          className="object-cover object-center" 
+          priority={false}
+          quality={75}
+        />
+        {/* Dark overlay for text readability */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: "linear-gradient(180deg, rgba(3,11,6,0.92) 0%, rgba(3,11,6,0.7) 40%, rgba(3,11,6,0.5) 100%)",
+          }}
+        />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          GRID PATTERN: Subtle engineering grid for tech premium feel
+          ═══════════════════════════════════════════════════════════════════ */}
+      <div 
+        className="absolute inset-0 pointer-events-none z-[1] transition-opacity duration-700"
+        style={{
+          opacity: ghostMode ? 0.06 : 0.04,
+          backgroundImage: ghostMode
+            ? "linear-gradient(rgba(46,230,200,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(46,230,200,0.4) 1px, transparent 1px)"
+            : "linear-gradient(rgba(27,67,50,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(27,67,50,0.3) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
       />
 
-      {/* Top Cutout Layer (matches page background to carve shapes into the footer) */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          TOP DIVIDER: Mountain silhouette (Civic) / Animated waves (Ghost)
+          ═══════════════════════════════════════════════════════════════════ */}
       <div className="absolute top-[-1px] left-0 right-0 pointer-events-none z-10 overflow-hidden" style={{ color: "var(--page)" }}>
         {ghostMode ? (
-          // Moving Wave for Deep Sea
-          <svg viewBox="0 0 1440 100" className="w-[200%] h-[40px] md:h-[80px] block" preserveAspectRatio="none" style={{ animation: 'slideWave 15s linear infinite' }}>
-            <path d="M0,0 L2880,0 L2880,50 C2520,100 2520,0 2160,50 C1800,100 1800,0 1440,50 C1080,100 1080,0 720,50 C360,100 360,0 0,50 Z" fill="currentColor" />
-          </svg>
+          <div className="relative w-full h-[40px] md:h-[80px]">
+            <svg viewBox="0 0 1440 100" className="absolute top-0 left-0 w-[200%] h-full opacity-60" preserveAspectRatio="none" style={{ animation: 'footerSlideWave 18s linear infinite' }}>
+              <path d="M0,0 L2880,0 L2880,50 C2520,100 2520,0 2160,50 C1800,100 1800,0 1440,50 C1080,100 1080,0 720,50 C360,100 360,0 0,50 Z" fill="currentColor" />
+            </svg>
+            <svg viewBox="0 0 1440 100" className="absolute top-0 left-0 w-[200%] h-full opacity-30" preserveAspectRatio="none" style={{ animation: 'footerSlideWave 25s linear infinite reverse' }}>
+              <path d="M0,0 L2880,0 L2880,50 C2520,80 2520,20 2160,50 C1800,80 1800,20 1440,50 C1080,80 1080,20 720,50 C360,80 360,20 0,50 Z" fill="currentColor" />
+            </svg>
+          </div>
         ) : (
-          // Static Mountain Hills for Civic
           <svg viewBox="0 0 1440 100" className="w-full h-[40px] md:h-[80px] block" preserveAspectRatio="none">
             <path d="M0,0 L1440,0 L1440,50 L1300,20 L1150,70 L950,30 L750,80 L550,20 L350,70 L150,30 L0,50 Z" fill="currentColor" />
           </svg>
         )}
       </div>
 
-      {/* Inline styles for particles */}
+      {/* ═══════════════════════════════════════════════════════════════════
+          ANIMATIONS
+          ═══════════════════════════════════════════════════════════════════ */}
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes floatUp {
-          0% { transform: translateY(0px) scale(1); opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { transform: translateY(-400px) scale(1.5); opacity: 0; }
-        }
-        @keyframes flicker {
-          0%, 100% { opacity: 0.2; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.2); }
-        }
-        @keyframes drift {
-          0% { transform: translateX(0px) translateY(0px); }
-          33% { transform: translateX(30px) translateY(-20px); }
-          66% { transform: translateX(-20px) translateY(20px); }
-          100% { transform: translateX(0px) translateY(0px); }
-        }
-        @keyframes slideWave {
+        @keyframes footerSlideWave {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
+        @keyframes footerFloatUp {
+          0% { transform: translateY(0px) scale(1); opacity: 0; }
+          10% { opacity: 0.6; }
+          90% { opacity: 0.6; }
+          100% { transform: translateY(-350px) scale(1.3); opacity: 0; }
+        }
       `}} />
 
-      {/* Animated Particles Layer */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
-        {ghostMode ? (
-          // Undersea Bubbles
-          <>
-            {[...Array(15)].map((_, i) => (
-              <div 
-                key={`bubble-${i}`}
-                className="absolute rounded-full border border-white/20 bg-white/10"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  bottom: `-20px`,
-                  width: `${Math.random() * 20 + 10}px`,
-                  height: `${Math.random() * 20 + 10}px`,
-                  animation: `floatUp ${Math.random() * 8 + 8}s linear infinite`,
-                  animationDelay: `${Math.random() * 5}s`,
-                }}
-              />
-            ))}
-          </>
-        ) : (
-          // Forest Dust/Leaves
-          <>
-            {[...Array(12)].map((_, i) => (
-              <div 
-                key={`dust-${i}`}
-                className="absolute rounded-full bg-green/30"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  width: `${Math.random() * 6 + 3}px`,
-                  height: `${Math.random() * 6 + 3}px`,
-                  animation: `flicker ${Math.random() * 4 + 3}s ease-in-out infinite alternate, drift ${Math.random() * 20 + 15}s linear infinite`,
-                  animationDelay: `${Math.random() * 5}s`,
-                }}
-              />
-            ))}
-          </>
-        )}
-      </div>
+      {/* ═══════════════════════════════════════════════════════════════════
+          PARTICLES: Subtle floating elements (Ghost mode only — bubbles)
+          ═══════════════════════════════════════════════════════════════════ */}
+      {mounted && ghostMode && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-[2]">
+          {[...Array(10)].map((_, i) => (
+            <div 
+              key={`bubble-${i}`}
+              className="absolute rounded-full"
+              style={{
+                left: `${10 + (i * 9) % 80}%`,
+                bottom: `-10px`,
+                width: `${4 + (i % 4) * 3}px`,
+                height: `${4 + (i % 4) * 3}px`,
+                border: "1px solid rgba(46,230,200,0.2)",
+                background: "rgba(46,230,200,0.06)",
+                animation: `footerFloatUp ${10 + (i % 5) * 3}s linear infinite`,
+                animationDelay: `${(i * 1.7) % 8}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Main Footer Content */}
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative z-20 pt-16 md:pt-20">
+      {/* ═══════════════════════════════════════════════════════════════════
+          MAIN CONTENT
+          ═══════════════════════════════════════════════════════════════════ */}
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-12 relative z-20 pt-16 md:pt-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           
-          {/* Brand Column */}
-          <div className="flex flex-col gap-6 lg:col-span-2">
+          {/* ─── Brand Column ─── */}
+          <div className="flex flex-col gap-5 lg:col-span-2">
             <div className="flex items-center gap-3 group w-fit">
-              <img src="/icons/icon-192x192.png" alt="LikasLens Logo" className="w-10 h-10 object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" />
-              <span className={`font-heading tracking-[0.2em] text-2xl flex items-center ${textColor}`}>
+              <img 
+                src="/images/likas-lens-logo.png" 
+                alt="LikasLens Logo" 
+                className="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-500" 
+              />
+              <span 
+                className="font-heading tracking-[0.2em] text-2xl flex items-center transition-colors duration-700"
+                style={{ color: ghostMode ? "#ffffff" : "#1a1a1a" }}
+              >
                 <span className="font-medium">LIK</span>
                 <span className="font-semibold text-accent mx-[1px]">Λ</span>
                 <span className="font-medium mr-1">S</span>
                 <span className="font-bold uppercase">LENS</span>
               </span>
             </div>
-            <p className={`text-sm ${mutedColor} max-w-md leading-relaxed transition-colors duration-1000`}>
-              Environmental monitoring platform. Protecting communities through collective intelligence and decentralized action.
-            </p>
-            <div className="flex gap-4 mt-2">
-              <a href="https://github.com/J-Akiru5/LikasLens" target="_blank" rel="noreferrer" className={`w-10 h-10 rounded-full border ${borderColor} flex items-center justify-center ${mutedColor} hover:text-accent hover:border-accent hover:bg-accent/10 transition-all group`}>
-                <GitHubCatIcon className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+
+            {/* Mode Lore Card */}
+            <div 
+              className="p-4 rounded-xl border backdrop-blur-md transition-all duration-700 max-w-md"
+              style={{
+                background: ghostMode ? "rgba(3,20,14,0.6)" : "rgba(255,255,255,0.55)",
+                borderColor: ghostMode ? "rgba(46,230,200,0.15)" : "rgba(27,67,50,0.12)",
+              }}
+            >
+              <p 
+                className="font-semibold text-[13px] transition-colors duration-700"
+                style={{ color: ghostMode ? "#2EE6C8" : "#14532d" }}
+              >
+                {ghostMode ? "Ghost Mode (Deep Sea)" : "Civic Mode (Mountain)"}
+              </p>
+              <p 
+                className="mt-1.5 leading-relaxed text-xs transition-colors duration-700"
+                style={{ color: ghostMode ? "rgba(255,255,255,0.75)" : "rgba(27,67,50,0.85)" }}
+              >
+                {ghostMode 
+                  ? "Submerged deep-data surveillance, operating beneath the surface to uncover hidden anomalies securely."
+                  : "Surface-level visibility, representing transparent civic participation and community awareness."}
+              </p>
+            </div>
+
+            {/* Social */}
+            <div className="flex gap-3">
+              <a 
+                href="https://github.com/J-Akiru5/LikasLens" 
+                target="_blank" 
+                rel="noreferrer" 
+                aria-label="LikasLens on GitHub" 
+                className="w-9 h-9 rounded-full border flex items-center justify-center hover:text-accent hover:border-accent hover:bg-accent/10 transition-all group"
+                style={{
+                  borderColor: ghostMode ? "rgba(255,255,255,0.15)" : "rgba(27,67,50,0.2)",
+                  color: ghostMode ? "rgba(255,255,255,0.6)" : "rgba(27,67,50,0.6)",
+                }}
+              >
+                <GitHubCatIcon className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" aria-hidden="true" />
               </a>
             </div>
           </div>
 
-          {/* Links Column 1: Platform */}
-          <div className="flex flex-col gap-4">
-            <h3 className={`font-mono text-xs uppercase tracking-widest ${subHeadingColor} font-bold mb-2`}>Platform</h3>
-            <Link href="/#features" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Features</Link>
-            <Link href="/#scoreboard" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Public Records</Link>
-            <Link href="/changelog" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Changelog</Link>
-            <Link href="/dashboard" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit flex items-center gap-2`}>
-              Citizen Portal <span className="px-1.5 py-0.5 rounded bg-accent/20 text-accent-bright text-[9px] font-bold uppercase tracking-wider">Beta</span>
-            </Link>
-          </div>
+          {/* ─── Links ─── */}
+          <div className="grid grid-cols-2 gap-8 lg:col-span-2">
+            <div className="flex flex-col gap-3.5">
+              <h3 
+                className="font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-1 transition-colors duration-700"
+                style={{ color: ghostMode ? "rgba(46,230,200,0.6)" : "rgba(27,67,50,0.5)" }}
+              >
+                Platform
+              </h3>
+              {[
+                { href: "/#features", label: "Features" },
+                { href: "/#scoreboard", label: "Public Records" },
+                { href: "/changelog", label: "Changelog" },
+              ].map(link => (
+                <Link 
+                  key={link.href}
+                  href={link.href} 
+                  className="text-sm font-medium hover:text-accent hover:translate-x-1 transition-all w-fit"
+                  style={{ color: ghostMode ? "#ffffff" : "#1B4332" }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <Link 
+                href="/dashboard" 
+                className="text-sm font-medium hover:text-accent hover:translate-x-1 transition-all w-fit flex flex-wrap items-center gap-2"
+                style={{ color: ghostMode ? "#ffffff" : "#1B4332" }}
+              >
+                Citizen Portal 
+                <span className="px-1.5 py-0.5 rounded bg-accent/20 text-accent-bright text-[9px] font-bold uppercase tracking-wider">Beta</span>
+              </Link>
+            </div>
 
-          {/* Links Column 2: Legal */}
-          <div className="flex flex-col gap-4">
-            <h3 className={`font-mono text-xs uppercase tracking-widest ${subHeadingColor} font-bold mb-2`}>Legal</h3>
-            <Link href="/privacy" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Privacy Policy</Link>
-            <Link href="/terms" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Terms of Service</Link>
-            <Link href="/contact" className={`text-sm font-medium ${textColor} hover:text-accent hover:translate-x-1 transition-all w-fit`}>Contact Us</Link>
+            <div className="flex flex-col gap-3.5">
+              <h3 
+                className="font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-1 transition-colors duration-700"
+                style={{ color: ghostMode ? "rgba(46,230,200,0.6)" : "rgba(27,67,50,0.5)" }}
+              >
+                Legal
+              </h3>
+              {[
+                { href: "/privacy", label: "Privacy Policy" },
+                { href: "/terms", label: "Terms of Service" },
+                { href: "/contact", label: "Contact Us" },
+              ].map(link => (
+                <Link 
+                  key={link.href}
+                  href={link.href} 
+                  className="text-sm font-medium hover:text-accent hover:translate-x-1 transition-all w-fit"
+                  style={{ color: ghostMode ? "#ffffff" : "#1B4332" }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Bottom Banner */}
-        <div className={`flex flex-col md:flex-row items-center justify-between pt-6 pb-2 border-t ${borderColor} gap-4 z-20 relative`}>
-          <p className={`font-mono text-[10px] sm:text-xs ${subHeadingColor} tracking-wider`}>
+        {/* ─── Glowing Divider ─── */}
+        <div className="relative">
+          <div 
+            className="h-px w-full transition-all duration-700"
+            style={{
+              background: ghostMode 
+                ? "linear-gradient(90deg, transparent, rgba(46,230,200,0.4) 30%, rgba(46,230,200,0.4) 70%, transparent)"
+                : "linear-gradient(90deg, transparent, rgba(27,67,50,0.2) 30%, rgba(27,67,50,0.2) 70%, transparent)",
+            }}
+          />
+          {ghostMode && (
+            <div 
+              className="absolute top-0 left-0 right-0 h-px blur-sm"
+              style={{
+                background: "linear-gradient(90deg, transparent, rgba(46,230,200,0.6) 40%, rgba(46,230,200,0.6) 60%, transparent)",
+              }}
+            />
+          )}
+        </div>
+
+        {/* ─── Bottom Bar ─── */}
+        <div className="flex flex-col md:flex-row items-center justify-between py-6 gap-4 relative">
+          <p 
+            className="font-mono text-[10px] sm:text-xs tracking-wider transition-colors duration-700"
+            style={{ color: ghostMode ? "rgba(255,255,255,0.5)" : "rgba(27,67,50,0.5)" }}
+          >
             &copy; {new Date().getFullYear()} LIKASLENS. ALL RIGHTS RESERVED.
           </p>
-          <div className={`flex items-center gap-2.5 px-3 py-1.5 rounded-full border ${borderColor} ${ghostMode ? "bg-white/5" : "bg-ink/5"}`}>
+          <div 
+            className="flex items-center gap-2.5 px-3 py-1.5 rounded-full border backdrop-blur-sm transition-all duration-700"
+            style={{
+              borderColor: ghostMode ? "rgba(46,230,200,0.2)" : "rgba(27,67,50,0.15)",
+              background: ghostMode ? "rgba(3,20,14,0.5)" : "rgba(255,255,255,0.4)",
+            }}
+          >
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green"></span>
             </span>
-            <span className={`font-mono text-[10px] ${textColor} tracking-widest uppercase font-semibold`}>Systems Operational</span>
+            <span 
+              className="font-mono text-[10px] tracking-widest uppercase font-semibold transition-colors duration-700"
+              style={{ color: ghostMode ? "rgba(255,255,255,0.85)" : "rgba(27,67,50,0.7)" }}
+            >
+              Systems Operational
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Giant Typography Background */}
-      <div className="w-full px-4 md:px-8 flex justify-center select-none overflow-hidden relative z-0 pb-6 md:pb-8 mt-4 md:mt-8">
-        <div className="relative group cursor-default">
-          <h1
-            className="font-heading font-black text-center transition-all duration-1000 group-hover:scale-[1.02]"
-            style={{
-              fontSize: "clamp(3.5rem, 15vw, 20rem)",
-              lineHeight: 0.95,
-              letterSpacing: "-0.06em",
-              margin: 0,
-              paddingBottom: "1rem",
-              paddingRight: "0.05em",
-              color: "transparent",
-              backgroundImage: ghostMode 
-                ? "linear-gradient(135deg, #0f3e5c 0%, #00d4ff 100%)" // Deep Sea Cyan
-                : "linear-gradient(135deg, #1b4332 0%, #2ee6c8 100%)", // Forest Green
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              whiteSpace: "nowrap",
-            }}
-          >
-            LIKΛS LENS
-          </h1>
-          {/* Subtle glow behind the text on hover */}
-          <div className="absolute inset-0 bg-accent/20 blur-[100px] -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-        </div>
+      {/* ═══════════════════════════════════════════════════════════════════
+          GIANT WORDMARK WATERMARK
+          ═══════════════════════════════════════════════════════════════════ */}
+      <div className="w-full px-4 md:px-8 flex justify-center select-none overflow-hidden relative z-[1] pb-8 md:pb-12">
+        <h1
+          className="ec-wordmark-solid text-center"
+          style={{
+            fontSize: "clamp(3rem, 14vw, 18rem)",
+            lineHeight: 0.9,
+            margin: 0,
+            whiteSpace: "nowrap",
+            color: "transparent",
+            WebkitTextStroke: ghostMode
+              ? "2px rgba(46,230,200,0.2)"
+              : "2px rgba(27,67,50,0.15)",
+            transition: "all 0.7s ease",
+            letterSpacing: "0.05em",
+          }}
+          aria-hidden="true"
+        >
+          LIKΛS LENS
+        </h1>
       </div>
     </footer>
   );

@@ -11,7 +11,7 @@ LikasLens uses a **dual-database architecture**:
 | Database | Type | Purpose |
 |----------|------|---------|
 | **Supabase** | PostgreSQL (Relational) | Users, reports, incidents, sessions, laws, queue, cache, file storage |
-| **Cosmos DB Gremlin** | Graph Database (Azure) | Citizen → Incident → Violation → Law → Agency relationship graph |
+| **Neo4j AuraDB** | Graph Database | Citizen → Incident → Violation → Law → Agency relationship graph |
 
 ---
 
@@ -36,11 +36,11 @@ LikasLens uses a **dual-database architecture**:
 
 ---
 
-## 2. Azure Cosmos DB (Gremlin API) — Graph Database
+## 2. Neo4j AuraDB — Graph Database
 
 | Service | Usage |
 |---------|-------|
-| AI Service (Python/FastAPI) | Connected via `gremlin_client.py` to `wss://<account>.gremlin.cosmos.azure.com:443/` |
+| AI Service (Python/FastAPI) | Connected via `neo4j_client.py` using async Neo4j driver with Cypher queries |
 
 ### Graph Relationships
 
@@ -54,7 +54,7 @@ LikasLens uses a **dual-database architecture**:
 
 ### Purpose
 
-The Gremlin graph is the **"symbolic layer"** of the neuro-symbolic AI pipeline. It maps hazard types to Philippine environmental laws and enforcing agencies. This data is queried during hazard analysis and then passed to **Google Gemini** (the "neural layer") to generate formal incident summaries.
+The Neo4j graph is the **"symbolic layer"** of the neuro-symbolic AI pipeline. It maps hazard types to Philippine environmental laws and enforcing agencies. This data is queried during hazard analysis via Cypher traversal and then passed to **Google Gemini** (the "neural layer") to generate formal incident summaries.
 
 ---
 
@@ -66,9 +66,9 @@ The Gremlin graph is the **"symbolic layer"** of the neuro-symbolic AI pipeline.
 | `NEXT_PUBLIC_LARAVEL_API_URL` | `frontend/.env.local` | `http://127.0.0.1:8000` |
 | `NEXT_PUBLIC_AI_SERVICE_URL` | `frontend/.env.local`, `frontend/.env.example` | `http://localhost:8001` |
 | `AI_SERVICE_URL` | `backend/.env.example`, `backend/.env.production` | `http://127.0.0.1:8001` / `http://likaslens-ai-service:8001` |
-| `COSMOS_GREMLIN_ENDPOINT` | `ai-service/.env.example` | `wss://<account>.gremlin.cosmos.azure.com:443/` |
-| `COSMOS_GREMLIN_DATABASE` | `ai-service/.env.example` | `likaslens` |
-| `COSMOS_GREMLIN_GRAPH` | `ai-service/.env.example` | `routing_graph` |
+| `NEO4J_URI` | `ai-service/.env.example` | `neo4j+s://<account>.databases.neo4j.io` |
+| `NEO4J_USER` | `ai-service/.env.example` | `neo4j` |
+| `NEO4J_PASSWORD` | `ai-service/.env.example` | `<password>` |
 | `DB_CONNECTION` | `backend/.env.example` | `pgsql` (Supabase PostgreSQL) |
 | `DB_HOST` | `backend/.env.example` | `db.your-project-ref.supabase.co` |
 
@@ -85,13 +85,13 @@ The Gremlin graph is the **"symbolic layer"** of the neuro-symbolic AI pipeline.
        │                             │                          └──────────────┘
        │         AI Service          │
        └────────────────────────────→├────────────────────────→ ┌──────────────┐
-                                     │   Gremlin traversal      │ Cosmos DB    │
-                                     │   (Graph relationships)  │ (Graph:      │
-                                     │                          │  Citizen,    │
-                                     │                          │  Incident,   │
-                                     │                          │  Violation,  │
-                                     │                          │  Law, Agency)│
-                                     └─────────────────────────→└──────────────┘
+                                      │   Cypher traversal       │ Neo4j        │
+                                      │   (Graph relationships)  │ (Graph:      │
+                                      │                          │  Citizen,    │
+                                      │                          │  Incident,   │
+                                      │                          │  Violation,  │
+                                      │                          │  Law, Agency)│
+                                      └─────────────────────────→└──────────────┘
                                                   │
                                                   ▼
                                           ┌──────────────┐
@@ -107,4 +107,4 @@ The Gremlin graph is the **"symbolic layer"** of the neuro-symbolic AI pipeline.
 **Both databases are actively used**, but for different purposes:
 
 - **Supabase** = relational data (users, reports, CRUD operations)
-- **Cosmos DB Gremlin** = graph relationships (hazard → law → agency mapping for the AI pipeline)
+- **Neo4j AuraDB** = graph relationships (hazard → law → agency mapping for the AI pipeline)

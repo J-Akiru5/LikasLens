@@ -595,6 +595,43 @@
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-header">
+      <h2>Set Up Billing Budget & Alerts</h2>
+      <span class="badge badge-critical">Important</span>
+    </div>
+    <p>This is your safety net. If containers stay awake too long or traffic spikes, you'll know immediately — not when the bill arrives.</p>
+
+    <div class="step">
+      <span class="step-number">1</span>
+      Go to <strong>Billing</strong> → <strong>Budgets & alerts</strong> (left sidebar).
+    </div>
+    <div class="step">
+      <span class="step-number">2</span>
+      Click <strong>+ Create Budget</strong>.
+    </div>
+    <div class="step">
+      <span class="step-number">3</span>
+      Name: <code>likaslens-budget</code>
+    </div>
+    <div class="step">
+      <span class="step-number">4</span>
+      Set amount: <strong>$10</strong> (or $5 if you want tighter control).
+    </div>
+    <div class="step">
+      <span class="step-number">5</span>
+      Under <strong>Alerts</strong>, check all three thresholds: <strong>50%</strong>, <strong>90%</strong>, <strong>100%</strong>.
+    </div>
+    <div class="step">
+      <span class="step-number">6</span>
+      Enter your email under <strong>Notification recipients</strong> → Click <strong>Finish</strong>.
+    </div>
+
+    <div class="warning">
+      <strong>Why this matters:</strong> Cloud Run charges per request + compute time. If a container stays awake or gets hammered with traffic, costs can spike. These alerts give you time to react before your credits run out.
+    </div>
+  </div>
+
   <!-- ============================================ -->
   <!-- PHASE 2: ENABLE APIs -->
   <!-- ============================================ -->
@@ -864,7 +901,7 @@
       <tr><td><code>APP_KEY</code></td><td><code>base64:...</code> (from your existing Azure config)</td></tr>
       <tr><td><code>APP_URL</code></td><td><em>Leave blank — fill after deploy</em></td></tr>
       <tr><td><code>DB_CONNECTION</code></td><td><code>pgsql</code></td></tr>
-      <tr><td><code>DB_HOST</code></td><td><code>db.sfklmmtimelotqvrldni.supabase.co</code></td></tr>
+      <tr><td><code>DB_HOST</code></td><td><code>aws-1-ap-northeast-2.pooler.supabase.com</code> (Session Pooler — IPv4 compatible)</td></tr>
       <tr><td><code>DB_PORT</code></td><td><code>5432</code></td></tr>
       <tr><td><code>DB_DATABASE</code></td><td><code>postgres</code></td></tr>
       <tr><td><code>DB_USERNAME</code></td><td><code>postgres.sfklmmtimelotqvrldni</code></td></tr>
@@ -876,7 +913,7 @@
       <tr><td><code>SUPABASE_S3_ENDPOINT</code></td><td><code>https://sfklmmtimelotqvrldni.storage.supabase.co/storage/v1/s3</code></td></tr>
       <tr><td><code>SUPABASE_S3_ACCESS_KEY</code></td><td><em>From Supabase → Settings → Storage → S3 Access Keys</em></td></tr>
       <tr><td><code>SUPABASE_S3_SECRET_KEY</code></td><td><em>From Supabase → Settings → Storage → S3 Access Keys</em></td></tr>
-      <tr><td><code>SUPABASE_S3_REGION</code></td><td><code>ap-southeast-1</code></td></tr>
+      <tr><td><code>SUPABASE_S3_REGION</code></td><td><code>ap-northeast-2</code></td></tr>
       <tr><td><code>SUPABASE_STORAGE_BUCKET</code></td><td><code>likaslens-evidence</code></td></tr>
       <tr><td><code>AI_SERVICE_URL</code></td><td><em>Leave blank — fill after AI service deploys</em></td></tr>
     </table>
@@ -934,7 +971,7 @@
       <tr><td><code>NEO4J_URI</code></td><td><code>neo4j+s://&lt;your-instance&gt;.databases.neo4j.io</code> (from Neo4j AuraDB)</td></tr>
       <tr><td><code>NEO4J_USER</code></td><td><code>neo4j</code></td></tr>
       <tr><td><code>NEO4J_PASSWORD</code></td><td><em>From Neo4j AuraDB console</em></td></tr>
-      <tr><td><code>CORS_ORIGINS</code></td><td><code>https://likaslens.vercel.app,https://likaslens-admin.vercel.app,https://likaslens-api-xyz.a.run.app</code></td></tr>
+      <tr><td><code>CORS_ORIGINS</code></td><td><code>https://likaslens.syntaxure.dev,https://likasadmin.syntaxure.dev,https://likaslens-api-1096292232709.asia-southeast1.run.app</code></td></tr>
       <tr><td><code>ENVIRONMENT</code></td><td><code>production</code></td></tr>
       <tr><td><code>APP_DEBUG</code></td><td><code>false</code></td></tr>
     </table>
@@ -1116,8 +1153,8 @@ gcloud run jobs execute seed-job --region asia-southeast1</code></pre>
 
     <table>
       <tr><th>Variable</th><th>New Value</th></tr>
-      <tr><td><code>NEXT_PUBLIC_API_URL</code></td><td><code>https://likaslens-api-xyz.a.run.app/api</code></td></tr>
-      <tr><td><code>NEXT_PUBLIC_AI_SERVICE_URL</code></td><td><code>https://likaslens-ai-xyz.a.run.app</code></td></tr>
+      <tr><td><code>NEXT_PUBLIC_API_URL</code></td><td><code>https://likaslens-api-1096292232709.asia-southeast1.run.app/api</code></td></tr>
+      <tr><td><code>NEXT_PUBLIC_AI_SERVICE_URL</code></td><td><code>https://likaslens-ai-1096292232709.asia-southeast1.run.app</code></td></tr>
     </table>
 
     <div class="step">
@@ -1140,11 +1177,11 @@ gcloud run jobs execute seed-job --region asia-southeast1</code></pre>
     </div>
 
     <h3>Backend Health Check</h3>
-    <pre><code>curl https://likaslens-api-xyz.a.run.app/api/health
+    <pre><code>curl https://likaslens-api-1096292232709.asia-southeast1.run.app/api/health
 # Expected: {"status":"ok","service":"likaslens-backend","timestamp":"..."}</code></pre>
 
     <h3>AI Service Health Check</h3>
-    <pre><code>curl https://likaslens-ai-xyz.a.run.app/health
+    <pre><code>curl https://likaslens-ai-1096292232709.asia-southeast1.run.app/health
 # Expected: {"status":"ok"}</code></pre>
 
     <h3>Frontend</h3>
