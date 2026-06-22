@@ -971,8 +971,9 @@ td code { font-size: 0.8em; }
 <h2 class="section-header">Notes</h2>
 <div class="card" style="font-size:0.88rem">
   <ul style="padding-left:1.25rem">
-    <li>All admin routes are behind <code>auth:sanctum</code> + <code>role:super_admin</code> middleware</li>
+    <li>Admin write routes are behind <code>auth:sanctum</code> + <code>role:super_admin</code> middleware</li>
     <li>Public read endpoints (<code>GET /admin/ngos</code>, <code>GET /admin/laws</code>) are accessible without auth</li>
+    <li>Ticket status transitions are behind <code>role:analyst,super_admin</code></li>
     <li>Bulk operations are capped at 100 items per request</li>
     <li>Audit logs are immutable (no update/delete endpoints)</li>
     <li>Admin portal runs on port 3002, backend on port 8000</li>

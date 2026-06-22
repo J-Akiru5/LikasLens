@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { getTickets, bulkTicketStatus, bulkTicketAssign, getAdminNgos, updateTicketStatus, deleteTicket, Button } from "@likaslens/shared";
+import { getTickets, bulkTicketStatus, bulkTicketAssign, bulkTicketDelete, getAdminNgos, updateTicketStatus, deleteTicket, Button } from "@likaslens/shared";
 import type { Ticket, NgoGroup } from "@likaslens/shared";
 import { showToast, Dropdown, AdminTableSkeleton, ConfidenceTierBadge, ReddEligibilityBadge } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase";
@@ -150,9 +150,24 @@ export default function TicketsPage() {
     }
   }
 
-  function handleBulkDelete() {
-    if (!confirm(`Delete ${bulk.selectedCount} ticket(s)? This cannot be undone.`)) return;
-    showToast("Bulk delete is not yet implemented", "info");
+  async function handleBulkDelete() {
+    const ids = bulk.selectedItems.map((t) => t.id);
+    if (ids.length === 0) return;
+    if (!confirm(`Delete ${ids.length} ticket(s)? This cannot be undone.`)) return;
+    setBulkLoading(true);
+    try {
+      const res = await bulkTicketDelete(ids);
+      if (res.success) {
+        showToast(res.message || `Deleted ${ids.length} ticket(s)`, "success");
+        bulk.clear();
+        await fetchTickets();
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to delete tickets", "error");
+    } finally {
+      setBulkLoading(false);
+    }
   }
 
   async function handleStatusChange(ticketId: string, newStatus: string) {
