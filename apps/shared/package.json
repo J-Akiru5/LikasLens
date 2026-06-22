@@ -43,7 +43,7 @@
     "@types/react-dom": "^19",
     "react": "^19",
     "react-dom": "^19",
-    "typescript": "^5"
+    "typescript": "^6"
   },
   "peerDependencies": {
     "next": "^16.2.2",
