@@ -130,8 +130,17 @@ export function onInferenceStatusChange(
 
 async function loadOrt(): Promise<typeof import("onnxruntime-web")> {
   if (_ortModule) return _ortModule;
-  // Dynamic import to avoid bundling ONNX Runtime when not needed
-  const ort = await import("onnxruntime-web");
+  // Dynamic import to avoid bundling ONNX Runtime when not needed.
+  // If the optional dependency is missing, surface a clear error so callers
+  // can degrade gracefully instead of crashing the build/runtime.
+  let ort: typeof import("onnxruntime-web");
+  try {
+    ort = await import("onnxruntime-web");
+  } catch (err) {
+    throw new Error(
+      "onnxruntime-web is not installed. It is an optional dependency — install it in the consuming app to enable on-device inference."
+    );
+  }
   // Use WASM backend for broad browser compatibility
   ort.env.wasm.numThreads = navigator.hardwareConcurrency || 4;
   ort.env.wasm.simd = true;

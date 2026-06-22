@@ -41,18 +41,14 @@ const nextConfig: NextConfig = {
     },
   ],
   webpack: (config, { isServer }) => {
-    // Handle WASM files for ONNX Runtime Web
+    // Handle WASM files for ONNX Runtime Web (client-only)
     if (!isServer) {
       config.experiments = {
         ...config.experiments,
         asyncWebAssembly: true,
       };
-      config.module.rules.push({
-        test: /\.wasm$/,
-        type: "asset/resource",
-      });
     }
-    // Don't bundle ONNX Runtime in SSR
+    // Don't bundle Node-only modules in the browser bundle
     config.resolve = config.resolve || {};
     config.resolve.fallback = {
       ...config.resolve.fallback,

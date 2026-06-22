@@ -2,8 +2,8 @@
   "git": {
     "lfs": false
   },
+  "framework": "nextjs",
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter frontend build",
-  "outputDirectory": ".next",
-  "ignoreCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]; then exit 0; else exit 1; fi"
+  "outputDirectory": ".next"
 }
