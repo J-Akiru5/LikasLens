@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LikasLens Backend Fix & Configuration Guide</title>
+<title>LikasLens Backend Fix — Progress Tracker</title>
 <style>
   :root {
     --bg: #0d1a12;
     --panel: #1a2e22;
+    --panel-hover: #1f3528;
     --accent: #2ee6c8;
+    --accent-dim: #1a9b86;
     --text: #e8f5e9;
     --muted: #8a9b8e;
     --border: #2a4033;
@@ -16,6 +18,9 @@
     --warn: #fbbf24;
     --err: #f87171;
     --ok: #4ade80;
+    --ok-bg: rgba(74,222,128,0.08);
+    --err-bg: rgba(248,113,113,0.08);
+    --warn-bg: rgba(251,191,36,0.08);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -23,9 +28,79 @@
     background: var(--bg);
     color: var(--text);
     line-height: 1.7;
-    padding: 0;
   }
   .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .progress-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+  .progress-pct {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent);
+    transition: color 0.3s;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 14px;
+    background: var(--code-bg);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-stats {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .progress-stats span strong { color: var(--text); }
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.35rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover {
+    border-color: var(--err);
+    color: var(--err);
+  }
+
+  /* Headings */
   h1 {
     font-size: 2rem;
     font-weight: 800;
@@ -35,7 +110,7 @@
     padding-bottom: 0.5rem;
   }
   h2 {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: var(--accent);
     margin-top: 2.5rem;
     margin-bottom: 1rem;
@@ -43,19 +118,21 @@
     border-bottom: 1px solid var(--border);
   }
   h3 {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     color: var(--text);
     margin-top: 1.5rem;
     margin-bottom: 0.5rem;
   }
   p { margin-bottom: 1rem; }
+
+  /* Code */
   code {
     font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
     background: var(--code-bg);
     color: var(--accent);
     padding: 0.15rem 0.4rem;
     border-radius: 4px;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
   }
   pre {
     background: var(--code-bg);
@@ -69,67 +146,123 @@
     background: none;
     color: #c8e6c9;
     padding: 0;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     line-height: 1.6;
   }
+
+  /* Alerts */
   .alert {
     border-left: 4px solid;
     padding: 1rem 1.2rem;
     border-radius: 0 8px 8px 0;
     margin-bottom: 1.5rem;
   }
-  .alert-warn { border-color: var(--warn); background: rgba(251,191,36,0.08); }
-  .alert-err { border-color: var(--err); background: rgba(248,113,113,0.08); }
-  .alert-ok { border-color: var(--ok); background: rgba(74,222,128,0.08); }
+  .alert-warn { border-color: var(--warn); background: var(--warn-bg); }
+  .alert-err { border-color: var(--err); background: var(--err-bg); }
+  .alert-ok { border-color: var(--ok); background: var(--ok-bg); }
   .alert strong { display: block; margin-bottom: 0.3rem; }
   .alert-warn strong { color: var(--warn); }
   .alert-err strong { color: var(--err); }
   .alert-ok strong { color: var(--ok); }
-  .step {
+
+  /* Task card */
+  .task-card {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    transition: border-color 0.3s, background 0.3s;
   }
-  .step-num {
-    display: inline-flex;
+  .task-card.completed {
+    border-color: var(--ok);
+    background: var(--ok-bg);
+  }
+  .task-card.completed .task-title {
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+
+  /* Toggle checkbox */
+  .task-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .task-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px; height: 28px;
-    background: var(--accent);
-    color: var(--bg);
-    border-radius: 50%;
-    font-weight: 800;
-    font-size: 0.85rem;
-    margin-right: 0.5rem;
+    transition: all 0.2s;
+    background: var(--code-bg);
   }
-  .badge {
+  .task-toggle:hover .task-checkbox {
+    border-color: var(--accent);
+  }
+  .task-checkbox.checked {
+    background: var(--ok);
+    border-color: var(--ok);
+  }
+  .task-checkbox svg {
+    width: 16px;
+    height: 16px;
+    color: var(--bg);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .task-checkbox.checked svg {
+    opacity: 1;
+  }
+  .task-content { flex: 1; }
+  .task-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+    transition: text-decoration 0.2s, opacity 0.2s;
+  }
+  .task-badge {
     display: inline-block;
-    padding: 0.2rem 0.6rem;
+    padding: 0.15rem 0.5rem;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
+    margin-left: 0.5rem;
+    vertical-align: middle;
   }
   .badge-err { background: rgba(248,113,113,0.15); color: var(--err); }
   .badge-warn { background: rgba(251,191,36,0.15); color: var(--warn); }
   .badge-ok { background: rgba(74,222,128,0.15); color: var(--ok); }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1.5rem;
+  .badge-done { background: rgba(74,222,128,0.15); color: var(--ok); }
+
+  .task-detail {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
   }
-  th, td {
-    padding: 0.6rem 0.8rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.9rem;
+  .task-detail h3 {
+    font-size: 0.95rem;
+    margin-top: 1rem;
+    margin-bottom: 0.4rem;
+    color: var(--accent);
   }
-  th { color: var(--accent); font-weight: 700; }
-  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
-  li { margin-bottom: 0.4rem; }
+  .task-detail ul, .task-detail ol {
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .task-detail li { margin-bottom: 0.3rem; font-size: 0.9rem; color: var(--muted); }
+
+  /* TOC */
   .toc {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -141,64 +274,98 @@
   .toc a { color: var(--accent); text-decoration: none; }
   .toc a:hover { text-decoration: underline; }
   .toc li { padding: 0.2rem 0; }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+  }
+  th, td {
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+  th { color: var(--accent); font-weight: 700; }
+
+  /* Syntax highlighting */
+  .cmt { color: var(--muted); font-style: italic; }
   .key { color: #82d4ec; }
   .str { color: #c8e6c9; }
-  .cmt { color: var(--muted); font-style: italic; }
-  .flag { color: var(--warn); }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .container { padding: 1rem; }
+    .progress-wrap { padding: 1rem; position: relative; }
+    h1 { font-size: 1.5rem; }
+    .progress-stats { flex-wrap: wrap; gap: 0.5rem; }
+  }
 </style>
 </head>
 <body>
 <div class="container">
 
-<h1>LikasLens Backend Fix &amp; Configuration Guide</h1>
-<p>This guide resolves the <strong>401 Unauthorized</strong> (notifications) and <strong>500 Internal Server Error</strong> (report submission) errors by walking you through the required backend configuration steps.</p>
+<h1>LikasLens Backend Fix — Progress Tracker</h1>
+<p>Track your progress fixing the <strong>401 Unauthorized</strong> and <strong>500 Internal Server Error</strong> errors. Click each checkbox to mark it complete — your progress is saved automatically in the browser.</p>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap">
+  <div class="progress-header">
+    <h2>Overall Progress</h2>
+    <button class="reset-btn" onclick="resetProgress()">Reset</button>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-header">
+    <div class="progress-stats">
+      <span><strong id="doneCount">0</strong> done</span>
+      <span><strong id="totalCount">12</strong> total</span>
+      <span><strong id="remainingCount">12</strong> remaining</span>
+    </div>
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+</div>
 
 <div class="alert alert-err">
   <strong>ERROR 1: 401 Unauthorized on /api/notifications</strong>
-  The notifications endpoint requires authentication via Sanctum. The Supabase access token must be sent as a <code>Bearer</code> token in the <code>Authorization</code> header.
+  The notifications endpoint requires authentication via Sanctum. The Supabase access token must be sent as a <code>Bearer</code> token in the <code>Authorization</code> header. <span class="task-badge badge-done">Frontend Fix Applied</span>
 </div>
 
 <div class="alert alert-err">
   <strong>ERROR 2: 500 Internal Server Error on POST /api/reports</strong>
-  The report submission fails on the backend. The most likely causes are: missing <code>APP_KEY</code>, database not migrated, GD PHP extension missing, or Supabase S3 storage misconfigured.
+  The report submission fails on the backend. Causes: missing <code>APP_KEY</code>, database not migrated, GD PHP extension missing, or Supabase S3 storage misconfigured. <span class="task-badge badge-done">Controller Bug Fixed</span>
 </div>
 
 <div class="toc">
-  <strong>Table of Contents</strong>
+  <strong>Tasks</strong>
   <ul>
-    <li><a href="#prerequisites">Prerequisites</a></li>
-    <li><a href="#step1">Step 1: Generate APP_KEY</a></li>
-    <li><a href="#step2">Step 2: Configure Database Connection</a></li>
-    <li><a href="#step3">Step 3: Run Migrations &amp; Seeders</a></li>
-    <li><a href="#step4">Step 4: Install GD PHP Extension</a></li>
-    <li><a href="#step5">Step 5: Configure Supabase S3 Storage</a></li>
-    <li><a href="#step6">Step 6: Configure Sanctum (Auth)</a></li>
-    <li><a href="#step7">Step 7: Configure Frontend Environment</a></li>
-    <li><a href="#step8">Step 8: Verify &amp; Test</a></li>
-    <li><a href="#docker">Docker Deployment Quick Reference</a></li>
-    <li><a href="#checklist">Final Checklist</a></li>
+    <li><a href="#task1">1. Generate APP_KEY</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task2">2. Configure Database Connection</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task3">3. Run Migrations &amp; Seeders</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task4">4. Install GD PHP Extension</a> <span class="task-badge badge-done">Code Fixed</span></li>
+    <li><a href="#task5">5. Configure Supabase S3 Storage</a> <span class="task-badge badge-warn">Required</span></li>
+    <li><a href="#task6">6. Configure Sanctum (Auth)</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task7">7. Configure CORS</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task8">8. Configure Frontend Environment</a> <span class="task-badge badge-done">Done</span></li>
+    <li><a href="#task9">9. Redeploy Backend Docker Image</a> <span class="task-badge badge-warn">Action Needed</span></li>
+    <li><a href="#task10">10. Test Report Submission</a> <span class="task-badge badge-warn">Verify</span></li>
+    <li><a href="#task11">11. Test Notifications Auth</a> <span class="task-badge badge-warn">Verify</span></li>
+    <li><a href="#task12">12. Check Laravel Logs</a> <span class="task-badge badge-ok">Optional</span></li>
   </ul>
 </div>
 
-<h2 id="prerequisites">Prerequisites</h2>
-<div class="step">
-  <p>Before starting, ensure you have:</p>
-  <ul>
-    <li>PHP 8.2+ with Composer</li>
-    <li>Access to your Supabase project dashboard</li>
-    <li>The backend deployed (locally or on Google Cloud Run)</li>
-    <li>Your frontend <code>.env</code> file configured with <code>NEXT_PUBLIC_API_URL</code>, <code>NEXT_PUBLIC_SUPABASE_URL</code>, and <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></li>
-  </ul>
-</div>
-
-<h2 id="step1"><span class="step-num">1</span>Generate APP_KEY</h2>
-<div class="alert alert-err">
-  <strong>REQUIRED — Most common cause of 500 errors</strong>
-  If <code>APP_KEY</code> is empty, Laravel cannot encrypt cookies, sessions, or tokens. This causes cryptic 500 errors on any authenticated request.
-</div>
-<div class="step">
-  <h3>Local Development</h3>
-  <pre><code><span class="cmt"># Navigate to the backend directory</span>
+<!-- TASK 1 -->
+<div class="task-card" id="task1">
+  <label class="task-toggle" onclick="toggleTask('task1')">
+    <div class="task-checkbox" id="cb-task1">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Generate APP_KEY <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <p>If <code>APP_KEY</code> is empty, Laravel cannot encrypt cookies, sessions, or tokens. This causes cryptic 500 errors on any authenticated request.</p>
+        <h3>Local Development</h3>
+        <pre><code><span class="cmt"># Navigate to the backend directory</span>
 cd apps/backend
 
 <span class="cmt"># Generate a new APP_KEY</span>
@@ -206,56 +373,63 @@ php artisan key:generate
 
 <span class="cmt"># This will update your .env file automatically:</span>
 <span class="cmt"># APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span></code></pre>
-
-  <h3>Google Cloud Run (Production)</h3>
-  <p>Set the <code>APP_KEY</code> as an environment variable in your Cloud Run service:</p>
-  <pre><code><span class="cmt"># Generate a key locally first</span>
-php artisan key:generate
-
-<span class="cmt"># Copy the generated key and set it in Cloud Run</span>
+        <h3>Google Cloud Run (Production)</h3>
+        <pre><code><span class="cmt"># Generate a key locally first, then set it in Cloud Run</span>
 gcloud run services update likaslens-api \
   --region=asia-southeast1 \
   --set-env-vars="APP_KEY=base64:your_generated_key_here"</code></pre>
-
-  <div class="alert alert-warn">
-    <strong>Important:</strong> Never commit the real <code>APP_KEY</code> to Git. Always set it via environment variables in production.
-  </div>
+        <div class="alert alert-warn">
+          <strong>Important:</strong> Never commit the real <code>APP_KEY</code> to Git. Always set it via environment variables in production.
+        </div>
+      </div>
+    </div>
+  </label>
 </div>
 
-<h2 id="step2"><span class="step-num">2</span>Configure Database Connection</h2>
-<div class="step">
-  <h3>Using Supabase PostgreSQL (Recommended)</h3>
-  <p>Get your database credentials from the Supabase dashboard → <em>Project Settings</em> → <em>Database</em>:</p>
-  <pre><code><span class="cmt"># apps/backend/.env</span>
+<!-- TASK 2 -->
+<div class="task-card" id="task2">
+  <label class="task-toggle" onclick="toggleTask('task2')">
+    <div class="task-checkbox" id="cb-task2">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure Database Connection <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <h3>Using Supabase PostgreSQL (Recommended)</h3>
+        <p>Get credentials from Supabase dashboard &rarr; <em>Project Settings</em> &rarr; <em>Database</em>:</p>
+        <pre><code><span class="cmt"># apps/backend/.env</span>
 DB_CONNECTION=pgsql
 DB_HOST=db.your-project-ref.supabase.co
 DB_PORT=5432
 DB_DATABASE=postgres
 DB_USERNAME=postgres
 DB_PASSWORD=your_supabase_database_password</code></pre>
-
-  <h3>Using SQLite (Local Fallback)</h3>
-  <p>For quick local testing without Supabase, uncomment the SQLite config:</p>
-  <pre><code><span class="cmt"># apps/backend/.env</span>
+        <h3>Using SQLite (Local Fallback)</h3>
+        <pre><code><span class="cmt"># apps/backend/.env</span>
 <span class="cmt"># DB_CONNECTION=pgsql</span>
-<span class="cmt"># DB_HOST=db.your-project-ref.supabase.co</span>
-<span class="cmt"># ...</span>
-
 DB_CONNECTION=sqlite
 <span class="cmt"># This creates database/database.sqlite automatically</span></code></pre>
-
-  <div class="alert alert-warn">
-    <strong>Supabase Connection Pool:</strong> If you're using Supabase's connection pooler (pgBouncer), use port <code>6543</code> instead of <code>5432</code>, and add <code>DB_POOL_MODE=transaction</code> if configured.
-  </div>
+        <div class="alert alert-warn">
+          <strong>Supabase Connection Pool:</strong> If using pgBouncer, use port <code>6543</code> instead of <code>5432</code>.
+        </div>
+      </div>
+    </div>
+  </label>
 </div>
 
-<h2 id="step3"><span class="step-num">3</span>Run Migrations &amp; Seeders</h2>
-<div class="alert alert-err">
-  <strong>REQUIRED — The ResolveTenant middleware runs on EVERY API request</strong>
-  If the <code>tenants</code> table doesn't exist, ALL API requests (including <code>POST /api/reports</code>) will fail with 500 before reaching the controller.
-</div>
-<div class="step">
-  <pre><code>cd apps/backend
+<!-- TASK 3 -->
+<div class="task-card" id="task3">
+  <label class="task-toggle" onclick="toggleTask('task3')">
+    <div class="task-checkbox" id="cb-task3">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Run Migrations &amp; Seeders <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <div class="alert alert-err">
+          <strong>REQUIRED:</strong> The <code>ResolveTenant</code> middleware runs on EVERY API request. If the <code>tenants</code> table doesn't exist, ALL API requests fail with 500 before reaching the controller.
+        </div>
+        <pre><code>cd apps/backend
 
 <span class="cmt"># Run all migrations</span>
 php artisan migrate
@@ -266,97 +440,119 @@ php artisan migrate:status
 <span class="cmt"># Seed the default tenant (REQUIRED for multi-tenancy)</span>
 php artisan db:seed --class=TenantSeeder
 
-<span class="cmt"># Seed demo data (optional, for testing)</span>
+<span class="cmt"># Seed demo data (optional)</span>
 php artisan db:seed --class=DemoDataSeeder</code></pre>
-
-  <h3>What the TenantSeeder creates:</h3>
-  <ul>
-    <li>A <code>default</code> tenant with slug <code>default</code> — this is what <code>ResolveTenant</code> middleware looks up on every request</li>
-    <li>Without this, <code>Tenant::current()</code> returns null and scoped queries may fail</li>
-  </ul>
+        <p>The <code>TenantSeeder</code> creates a <code>default</code> tenant with slug <code>default</code>. Without this, <code>Tenant::current()</code> returns null and scoped queries fail.</p>
+      </div>
+    </div>
+  </label>
 </div>
 
-<h2 id="step4"><span class="step-num">4</span>Install GD PHP Extension</h2>
-<div class="alert alert-err">
-  <strong>BUG IN CONTROLLER — Lines 107-127 of ReportController.php</strong>
-  The report controller calls <code>imagecreatefromstring()</code>, <code>imagejpeg()</code>, and <code>imagepng()</code> <strong>without checking</strong> if the GD extension is loaded. If GD is missing, this throws a fatal <code>Error: Call to undefined function</code> which is caught by the outer try/catch and returned as a 500.
-</div>
-<div class="step">
-  <h3>Check if GD is installed</h3>
-  <pre><code>php -m | findstr gd    <span class="cmt"># Windows</span>
+<!-- TASK 4 -->
+<div class="task-card" id="task4">
+  <label class="task-toggle" onclick="toggleTask('task4')">
+    <div class="task-checkbox" id="cb-task4">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Install GD PHP Extension <span class="task-badge badge-done">Controller Bug Fixed</span></div>
+      <div class="task-detail">
+        <div class="alert alert-ok">
+          <strong>CODE FIX APPLIED:</strong> The <code>ReportController.php</code> now checks <code>extension_loaded('gd')</code> before calling GD functions. If GD is missing, it logs a warning and skips re-encoding instead of crashing with a 500. The Dockerfile has also been updated to install GD in all 3 build stages.
+        </div>
+        <h3>Check if GD is installed</h3>
+        <pre><code>php -m | findstr gd    <span class="cmt"># Windows</span>
 php -m | grep gd       <span class="cmt"># Linux/Mac</span></code></pre>
-
-  <h3>Install GD</h3>
-  <pre><code><span class="cmt"># Ubuntu/Debian</span>
+        <h3>Install GD (if not present)</h3>
+        <pre><code><span class="cmt"># Ubuntu/Debian</span>
 sudo apt-get install php8.2-gd
 sudo systemctl restart php8.2-fpm
 
-<span class="cmt"># Windows (php.ini)</span>
-<span class="cmt"># Uncomment: extension=gd</span>
+<span class="cmt"># Windows (php.ini) — uncomment:</span>
+<span class="cmt"># extension=gd</span>
 
-<span class="cmt"># Docker — add to your Dockerfile</span>
-RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev \
-    && docker-php-ext-install gd
-
-<span class="cmt"># Verify installation</span>
+<span class="cmt"># Verify</span>
 php -r "var_dump(extension_loaded('gd'));"</code></pre>
-
-  <div class="alert alert-ok">
-    <strong>Also recommended:</strong> Install Imagick for better EXIF stripping:
-    <code>sudo apt-get install php8.2-imagick</code>
-  </div>
+        <div class="alert alert-ok">
+          <strong>Dockerfile already updated:</strong> All 3 stages now install <code>libpng-dev</code>, <code>libjpeg-dev</code>, <code>libfreetype6-dev</code> and <code>docker-php-ext-install gd</code> with FreeType + JPEG support.
+        </div>
+        <div class="alert alert-warn">
+          <strong>Also recommended:</strong> Install Imagick for better EXIF stripping: <code>sudo apt-get install php8.2-imagick</code>
+        </div>
+      </div>
+    </div>
+  </label>
 </div>
 
-<h2 id="step5"><span class="step-num">5</span>Configure Supabase S3 Storage</h2>
-<div class="step">
-  <p>The backend stores evidence images in Supabase S3-compatible storage. If credentials are wrong, the <code>$disk-&gt;put()</code> call throws and causes a 500.</p>
-
-  <h3>Get credentials from Supabase Dashboard</h3>
-  <ol>
-    <li>Go to <strong>Supabase Dashboard</strong> → <strong>Project Settings</strong> → <strong>Storage</strong></li>
-    <li>Click <strong>"New access key"</strong> under S3 Connection</li>
-    <li>Copy the Access Key ID and Secret Access Key</li>
-  </ol>
-
-  <h3>Set in .env</h3>
-  <pre><code><span class="cmt"># apps/backend/.env</span>
+<!-- TASK 5 -->
+<div class="task-card" id="task5">
+  <label class="task-toggle" onclick="toggleTask('task5')">
+    <div class="task-checkbox" id="cb-task5">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure Supabase S3 Storage <span class="task-badge badge-warn">Required</span></div>
+      <div class="task-detail">
+        <p>The backend stores evidence images in Supabase S3-compatible storage. If credentials are wrong, <code>$disk-&gt;put()</code> throws and causes a 500.</p>
+        <h3>Get credentials from Supabase Dashboard</h3>
+        <ol>
+          <li>Go to <strong>Supabase Dashboard</strong> &rarr; <strong>Project Settings</strong> &rarr; <strong>Storage</strong></li>
+          <li>Click <strong>"New access key"</strong> under S3 Connection</li>
+          <li>Copy the Access Key ID and Secret Access Key</li>
+        </ol>
+        <h3>Set in .env</h3>
+        <pre><code><span class="cmt"># apps/backend/.env</span>
 SUPABASE_S3_ENDPOINT=https://your-project-ref.storage.supabase.co/storage/v1/s3
 SUPABASE_S3_ACCESS_KEY=your_actual_access_key
 SUPABASE_S3_SECRET_KEY=your_actual_secret_key
 SUPABASE_S3_REGION=ap-southeast1
 SUPABASE_STORAGE_BUCKET=likaslens-evidence</code></pre>
-
-  <h3>Create the storage bucket</h3>
-  <p>In Supabase Dashboard → <strong>Storage</strong>, create a bucket named <code>likaslens-evidence</code> and set it to <strong>Private</strong> (evidence images should not be public).</p>
-
-  <div class="alert alert-warn">
-    <strong>Fallback for local dev:</strong> If you don't want to configure S3, just set <code>FILESYSTEM_DISK=local</code> and leave the <code>SUPABASE_S3_*</code> vars blank. The controller will use local disk storage.
-  </div>
+        <p>Create a bucket named <code>likaslens-evidence</code> in Supabase Storage and set it to <strong>Private</strong>.</p>
+        <div class="alert alert-warn">
+          <strong>Fallback for local dev:</strong> Set <code>FILESYSTEM_DISK=local</code> and leave <code>SUPABASE_S3_*</code> vars blank to use local disk storage.
+        </div>
+      </div>
+    </div>
+  </label>
 </div>
 
-<h2 id="step6"><span class="step-num">6</span>Configure Sanctum (Authentication)</h2>
-<div class="alert alert-err">
-  <strong>REQUIRED for 401 fix</strong>
-  The notifications endpoints (<code>/api/notifications</code>, <code>/api/notifications/unread-count</code>) are protected by the <code>auth:sanctum</code> middleware. The frontend must send a Bearer token.
-</div>
-<div class="step">
-  <h3>How auth works in LikasLens</h3>
-  <ol>
-    <li>User logs in via <strong>Supabase Auth</strong> on the frontend</li>
-    <li>Frontend gets a Supabase <code>access_token</code> (JWT)</li>
-    <li>Frontend sends this token as <code>Authorization: Bearer &lt;token&gt;</code> to the Laravel API</li>
-    <li>Laravel's custom middleware validates the Supabase JWT and resolves the user</li>
-  </ol>
-
-  <h3>Backend .env — Sanctum stateful domains</h3>
-  <pre><code><span class="cmt"># apps/backend/.env</span>
+<!-- TASK 6 -->
+<div class="task-card" id="task6">
+  <label class="task-toggle" onclick="toggleTask('task6')">
+    <div class="task-checkbox" id="cb-task6">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure Sanctum (Authentication) <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <p>The notifications endpoints are protected by <code>auth:sanctum</code>. The frontend must send a Bearer token.</p>
+        <h3>How auth works</h3>
+        <ol>
+          <li>User logs in via <strong>Supabase Auth</strong> on the frontend</li>
+          <li>Frontend gets a Supabase <code>access_token</code> (JWT)</li>
+          <li>Frontend sends token as <code>Authorization: Bearer &lt;token&gt;</code> to Laravel API</li>
+          <li>Laravel validates the Supabase JWT and resolves the user</li>
+        </ol>
+        <h3>Backend .env</h3>
+        <pre><code><span class="cmt"># apps/backend/.env</span>
 SANCTUM_STATEFUL_DOMAINS=localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,likaslens.syntaxure.dev</code></pre>
+        <p>Add your deployed frontend domain to this list (comma-separated).</p>
+      </div>
+    </div>
+  </label>
+</div>
 
-  <p>Add your deployed frontend domain to this list (comma-separated).</p>
-
-  <h3>CORS Configuration</h3>
-  <p>Ensure your Laravel CORS config allows the frontend origin:</p>
-  <pre><code><span class="cmt"># apps/backend/config/cors.php</span>
+<!-- TASK 7 -->
+<div class="task-card" id="task7">
+  <label class="task-toggle" onclick="toggleTask('task7')">
+    <div class="task-checkbox" id="cb-task7">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure CORS <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <p>Ensure your Laravel CORS config allows the frontend origin:</p>
+        <pre><code><span class="cmt"># apps/backend/config/cors.php</span>
 'paths' =&gt; ['api/*'],
 'allowed_methods' =&gt; ['*'],
 'allowed_origins' =&gt; [
@@ -368,40 +564,90 @@ SANCTUM_STATEFUL_DOMAINS=localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,l
 'exposed_headers' =&gt; [],
 'max_age' =&gt; 0,
 'supports_credentials' =&gt; true,</code></pre>
+      </div>
+    </div>
+  </label>
 </div>
 
-<h2 id="step7"><span class="step-num">7</span>Configure Frontend Environment</h2>
-<div class="step">
-  <h3>apps/frontend/.env</h3>
-  <pre><code><span class="cmt"># Laravel API URL (must end with /api)</span>
-NEXT_PUBLIC_API_URL=https://likaslens-api-1096292232709.asia-southeast1.run.app/api
-
-<span class="cmt"># Supabase</span>
+<!-- TASK 8 -->
+<div class="task-card completed" id="task8">
+  <label class="task-toggle" onclick="toggleTask('task8')">
+    <div class="task-checkbox checked" id="cb-task8">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure Frontend Environment <span class="task-badge badge-done">Done</span></div>
+      <div class="task-detail">
+        <div class="alert alert-ok">
+          <strong>Frontend fixes already applied in code:</strong>
+          <ul>
+            <li><strong>Report page</strong>: Now uses <code>laravelPost()</code> with Supabase <code>access_token</code> as Bearer header (was raw <code>fetch()</code> with no auth)</li>
+            <li><strong>Notifications hook</strong>: Accepts <code>token</code> option, passes to all API calls</li>
+            <li><strong>Dashboard layout</strong>: Retrieves Supabase session token, passes to <code>useNotifications()</code></li>
+            <li><strong>API client wrappers</strong>: All functions accept optional <code>token</code> parameter</li>
+            <li><strong>next-intl pinned</strong>: All packages use <code>next-intl@4.13.0</code> via pnpm overrides (fixed context error)</li>
+          </ul>
+        </div>
+        <h3>apps/frontend/.env (verify these are set)</h3>
+        <pre><code>NEXT_PUBLIC_API_URL=https://likaslens-api-1096292232709.asia-southeast1.run.app/api
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-<span class="cmt"># AI Service</span>
 NEXT_PUBLIC_AI_SERVICE_URL=https://likaslens-ai-1096292232709.asia-southeast1.run.app
-
-<span class="cmt"># Site URL (your deployed frontend URL)</span>
 NEXT_PUBLIC_SITE_URL=https://likaslens.syntaxure.dev</code></pre>
-
-  <h3>What changed in the frontend code</h3>
-  <p>The following fixes have been applied to the frontend codebase:</p>
-  <ul>
-    <li><strong>Report page</strong> (<code>apps/frontend/src/app/[locale]/report/page.tsx</code>): Now uses <code>laravelPost()</code> instead of raw <code>fetch()</code>. This automatically adds the <code>Authorization: Bearer</code> header, <code>credentials: "include"</code> for cookies, multi-tenant <code>X-Tenant-Slug</code> header, and 401 auto-refresh logic.</li>
-    <li><strong>Notifications hook</strong> (<code>apps/shared/src/hooks/useNotifications.ts</code>): Now accepts a <code>token</code> option and passes it to all API calls.</li>
-    <li><strong>Dashboard layout</strong> (<code>apps/frontend/src/components/layout/dashboard-layout-wrapper.tsx</code>): Now retrieves the Supabase session token and passes it to <code>useNotifications()</code>.</li>
-    <li><strong>API client wrappers</strong> (<code>apps/shared/src/api/client.ts</code>): All convenience functions (<code>fetchNotifications</code>, <code>fetchUnreadCount</code>, etc.) now accept an optional <code>token</code> parameter.</li>
-  </ul>
+      </div>
+    </div>
+  </label>
 </div>
 
-<h2 id="step8"><span class="step-num">8</span>Verify &amp; Test</h2>
-<div class="step">
-  <h3>Test the backend</h3>
-  <pre><code>cd apps/backend
+<!-- TASK 9 -->
+<div class="task-card" id="task9">
+  <label class="task-toggle" onclick="toggleTask('task9')">
+    <div class="task-checkbox" id="cb-task9">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Redeploy Backend Docker Image <span class="task-badge badge-warn">Action Needed</span></div>
+      <div class="task-detail">
+        <div class="alert alert-warn">
+          <strong>Required:</strong> The Dockerfile has been updated to include GD, but the running Cloud Run instance still uses the old image without GD. You must trigger a new deployment.
+        </div>
+        <pre><code><span class="cmt"># Push to main to trigger the GCP deploy workflow</span>
+git push origin main
 
-<span class="cmt"># Check if the API is responding</span>
+<span class="cmt"># Or manually trigger via gcloud</span>
+gcloud run deploy likaslens-api \
+  --source apps/backend \
+  --region=asia-southeast1 \
+  --set-env-vars="APP_KEY=base64:your_key,APP_DEBUG=false"</code></pre>
+        <h3>Cloud Run environment variables checklist</h3>
+        <table>
+          <tr><th>Variable</th><th>Example</th><th>Required</th></tr>
+          <tr><td><code>APP_KEY</code></td><td><code>base64:xxxx...</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>DB_CONNECTION</code></td><td><code>pgsql</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>DB_HOST</code></td><td><code>db.xxx.supabase.co</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>DB_PASSWORD</code></td><td><code>your_db_password</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>SUPABASE_S3_ENDPOINT</code></td><td><code>https://xxx.storage.supabase.co/storage/v1/s3</code></td><td><span class="task-badge badge-warn">For S3</span></td></tr>
+          <tr><td><code>SUPABASE_S3_ACCESS_KEY</code></td><td><code>your_s3_key</code></td><td><span class="task-badge badge-warn">For S3</span></td></tr>
+          <tr><td><code>SUPABASE_S3_SECRET_KEY</code></td><td><code>your_s3_secret</code></td><td><span class="task-badge badge-warn">For S3</span></td></tr>
+          <tr><td><code>SESSION_DRIVER</code></td><td><code>database</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>QUEUE_CONNECTION</code></td><td><code>database</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>CACHE_STORE</code></td><td><code>database</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 10 -->
+<div class="task-card" id="task10">
+  <label class="task-toggle" onclick="toggleTask('task10')">
+    <div class="task-checkbox" id="cb-task10">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Test Report Submission <span class="task-badge badge-warn">Verify</span></div>
+      <div class="task-detail">
+        <pre><code>cd apps/backend
 php artisan serve
 
 <span class="cmt"># In another terminal, test the reports endpoint</span>
@@ -411,84 +657,133 @@ curl -X POST http://localhost:8000/api/reports \
   -d '{"base64Image":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}'
 
 <span class="cmt"># Expected: {"success":true,"message":"Report submitted...","data":{...}}</span>
-<span class="cmt"># If you get 500, check storage/logs/laravel.log for the actual error</span></code></pre>
+<span class="cmt"># If you get 500, check storage/logs/laravel.log</span></code></pre>
+      </div>
+    </div>
+  </label>
+</div>
 
-  <h3>Check Laravel logs</h3>
-  <pre><code><span class="cmt"># View the last 50 lines of the Laravel log</span>
-tail -n 50 storage/logs/laravel.log
-
-<span class="cmt"># On Windows</span>
-Get-Content storage\logs\laravel.log -Tail 50</code></pre>
-
-  <h3>Test with authentication</h3>
-  <pre><code><span class="cmt"># Get a Supabase token first (from your frontend or Supabase CLI)</span>
-<span class="cmt"># Then test the notifications endpoint</span>
-
+<!-- TASK 11 -->
+<div class="task-card" id="task11">
+  <label class="task-toggle" onclick="toggleTask('task11')">
+    <div class="task-checkbox" id="cb-task11">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Test Notifications Auth <span class="task-badge badge-warn">Verify</span></div>
+      <div class="task-detail">
+        <pre><code><span class="cmt"># Get a Supabase token first, then test:</span>
 curl http://localhost:8000/api/notifications/unread-count \
   -H "Authorization: Bearer YOUR_SUPABASE_ACCESS_TOKEN" \
   -H "Accept: application/json"
 
 <span class="cmt"># Expected: {"success":true,"data":{"unread_count":0}}</span></code></pre>
+      </div>
+    </div>
+  </label>
 </div>
 
-<h2 id="docker">Docker Deployment Quick Reference</h2>
-<div class="step">
-  <p>If deploying the backend via Docker (Google Cloud Run), ensure your Dockerfile installs GD:</p>
-  <pre><code><span class="cmt"># In apps/backend/Dockerfile, ensure GD is installed</span>
-RUN apt-get update && apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_pgsql
+<!-- TASK 12 -->
+<div class="task-card" id="task12">
+  <label class="task-toggle" onclick="toggleTask('task12')">
+    <div class="task-checkbox" id="cb-task12">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Check Laravel Logs <span class="task-badge badge-ok">Optional</span></div>
+      <div class="task-detail">
+        <pre><code><span class="cmt"># View the last 50 lines of the Laravel log</span>
+tail -n 50 storage/logs/laravel.log
 
-<span class="cmt"># Set APP_KEY via Cloud Run env vars (NOT in Dockerfile)</span>
-ENV APP_KEY=""
-<span class="cmt"># The actual key is injected at runtime via:</span>
-<span class="cmt"># gcloud run services update ... --set-env-vars="APP_KEY=base64:..."</span></code></pre>
-
-  <h3>Cloud Run environment variables checklist</h3>
-  <table>
-    <tr><th>Variable</th><th>Example</th><th>Required</th></tr>
-    <tr><td><code>APP_KEY</code></td><td><code>base64:xxxx...</code></td><td><span class="badge badge-err">Yes</span></td></tr>
-    <tr><td><code>APP_DEBUG</code></td><td><code>false</code></td><td><span class="badge badge-warn">Prod</span></td></tr>
-    <tr><td><code>DB_CONNECTION</code></td><td><code>pgsql</code></td><td><span class="badge badge-err">Yes</span></td></tr>
-    <tr><td><code>DB_HOST</code></td><td><code>db.xxx.supabase.co</code></td><td><span class="badge badge-err">Yes</span></td></tr>
-    <tr><td><code>DB_PASSWORD</code></td><td><code>your_db_password</code></td><td><span class="badge badge-err">Yes</span></td></tr>
-    <tr><td><code>SUPABASE_S3_ENDPOINT</code></td><td><code>https://xxx.storage.supabase.co/storage/v1/s3</code></td><td><span class="badge badge-warn">For S3</span></td></tr>
-    <tr><td><code>SUPABASE_S3_ACCESS_KEY</code></td><td><code>your_s3_key</code></td><td><span class="badge badge-warn">For S3</span></td></tr>
-    <tr><td><code>SUPABASE_S3_SECRET_KEY</code></td><td><code>your_s3_secret</code></td><td><span class="badge badge-warn">For S3</span></td></tr>
-    <tr><td><code>AI_SERVICE_API_KEY</code></td><td><code>your_ai_key</code></td><td><span class="badge badge-ok">Optional</span></td></tr>
-    <tr><td><code>SESSION_DRIVER</code></td><td><code>database</code></td><td><span class="badge badge-err">Yes</span></td></tr>
-    <tr><td><code>QUEUE_CONNECTION</code></td><td><code>database</code></td><td><span class="badge badge-err">Yes</span></td></tr>
-    <tr><td><code>CACHE_STORE</code></td><td><code>database</code></td><td><span class="badge badge-err">Yes</span></td></tr>
-  </table>
+<span class="cmt"># On Windows</span>
+Get-Content storage\logs\laravel.log -Tail 50</code></pre>
+        <p>If you still get 500 errors, the log will show the exact exception, file, and line number causing the failure.</p>
+      </div>
+    </div>
+  </label>
 </div>
 
-<h2 id="checklist">Final Checklist</h2>
-<div class="step">
-  <table>
-    <tr><th>#</th><th>Task</th><th>Status</th></tr>
-    <tr><td>1</td><td><code>APP_KEY</code> generated and set</td><td><span class="badge badge-err">Required</span></td></tr>
-    <tr><td>2</td><td>Database connection working (<code>php artisan migrate:status</code>)</td><td><span class="badge badge-err">Required</span></td></tr>
-    <tr><td>3</td><td>All migrations run (<code>php artisan migrate</code>)</td><td><span class="badge badge-err">Required</span></td></tr>
-    <tr><td>4</td><td><code>TenantSeeder</code> executed (default tenant exists)</td><td><span class="badge badge-err">Required</span></td></tr>
-    <tr><td>5</td><td>GD PHP extension installed (<code>php -m | grep gd</code>)</td><td><span class="badge badge-err">Required</span></td></tr>
-    <tr><td>6</td><td>Supabase S3 storage configured (or <code>FILESYSTEM_DISK=local</code>)</td><td><span class="badge badge-warn">Required</span></td></tr>
-    <tr><td>7</td><td><code>SANCTUM_STATEFUL_DOMAINS</code> includes frontend domain</td><td><span class="badge badge-err">Required</span></td></tr>
-    <tr><td>8</td><td>CORS allows frontend origin with <code>supports_credentials: true</code></td><td><span class="badge badge-err">Required</span></td></tr>
-    <tr><td>9</td><td>Frontend <code>NEXT_PUBLIC_API_URL</code> points to correct API URL</td><td><span class="badge badge-err">Required</span></td></tr>
-    <tr><td>10</td><td>Frontend passes Supabase token to API calls (code fix applied)</td><td><span class="badge badge-ok">Done</span></td></tr>
-    <tr><td>11</td><td><code>POST /api/reports</code> returns 200 (test with curl)</td><td><span class="badge badge-warn">Verify</span></td></tr>
-    <tr><td>12</td><td><code>GET /api/notifications/unread-count</code> returns 200 with Bearer token</td><td><span class="badge badge-warn">Verify</span></td></tr>
-  </table>
-
-  <div class="alert alert-ok">
-    <strong>Frontend fixes already applied:</strong>
-    The report page and notifications hook have been updated to send the Supabase access token as a Bearer header. Once the backend is properly configured, these errors will resolve.
-  </div>
+<div class="alert alert-ok">
+  <strong>Frontend fixes already applied (no action needed):</strong>
+  The report page and notifications hook now send the Supabase access token as a Bearer header. The <code>ReportController</code> has a GD extension guard. The Dockerfile installs GD. Once the backend is configured and redeployed, these errors will resolve.
 </div>
 
 </div>
+
+<script>
+  const STORAGE_KEY = 'likaslens-backend-fix-progress';
+  const TOTAL_TASKS = 12;
+
+  function loadProgress() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function saveProgress(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+  }
+
+  function toggleTask(taskId) {
+    const state = loadProgress();
+    state[taskId] = !state[taskId];
+    saveProgress(state);
+    renderTask(taskId, state[taskId]);
+    updateProgress(state);
+  }
+
+  function renderTask(taskId, isDone) {
+    const card = document.getElementById(taskId);
+    const cb = document.getElementById('cb-' + taskId);
+    if (!card || !cb) return;
+
+    if (isDone) {
+      card.classList.add('completed');
+      cb.classList.add('checked');
+    } else {
+      card.classList.remove('completed');
+      cb.classList.remove('checked');
+    }
+  }
+
+  function updateProgress(state) {
+    let done = 0;
+    for (let i = 1; i <= TOTAL_TASKS; i++) {
+      if (state['task' + i]) done++;
+    }
+    const pct = Math.round((done / TOTAL_TASKS) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+    document.getElementById('doneCount').textContent = done;
+    document.getElementById('remainingCount').textContent = TOTAL_TASKS - done;
+    document.getElementById('totalCount').textContent = TOTAL_TASKS;
+  }
+
+  function resetProgress() {
+    if (!confirm('Reset all progress? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    for (let i = 1; i <= TOTAL_TASKS; i++) {
+      renderTask('task' + i, false);
+    }
+    updateProgress({});
+  }
+
+  // Init — restore saved state
+  (function init() {
+    const state = loadProgress();
+    // Task 8 is always done (frontend fix applied)
+    state['task8'] = true;
+    for (let i = 1; i <= TOTAL_TASKS; i++) {
+      renderTask('task' + i, state['task' + i]);
+    }
+    updateProgress(state);
+    saveProgress(state);
+  })();
+</script>
 </body>
 </html>
