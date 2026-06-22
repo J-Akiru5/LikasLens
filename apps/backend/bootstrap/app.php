@@ -39,6 +39,18 @@ return Application::configure(basePath: dirname(__DIR__))
             ]);
         });
 
+        // Catch AuthenticationException early for API routes — before
+        // Laravel's default handler tries to redirect to a non-existent
+        // 'login' route, which would throw an unrelated RouteNotFoundException.
+        $exceptions->render(function (AuthenticationException $e, $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthenticated.',
+                ], 401);
+            }
+        });
+
         $exceptions->render(function (Throwable $e, $request) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 if ($e instanceof ValidationException) {

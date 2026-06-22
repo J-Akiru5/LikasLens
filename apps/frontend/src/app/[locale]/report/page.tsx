@@ -4,11 +4,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import NextImage from "next/image";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
-import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText } from "lucide-react";
+import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
-import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor, useOnnxInference, laravelPost } from "@likaslens/shared";
-import { stripExif } from "@/utils/exif-stripper";
+import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor, laravelPost, queueReport } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
@@ -53,13 +52,6 @@ export default function ReportPage() {
   const [reportType, setReportType] = useState("");
   const [useMapPinning, setUseMapPinning] = useState(false);
 
-  const offlineQueueKey = "likaslens_offline_reports";
-  const offlineDbName = "likaslens-offline";
-  const offlineStoreName = "report-queue";
-
-  // On-device inference for offline triage (lazy init)
-  const onnx = useOnnxInference({ autoInit: false });
-
   const camera = useCamera("environment");
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -99,101 +91,33 @@ export default function ReportPage() {
     notifyThemeColor();
   };
 
-  const openOfflineDb = useCallback(
-    () =>
-      new Promise<IDBDatabase>((resolve, reject) => {
-        const request = indexedDB.open(offlineDbName, 1);
-        request.onupgradeneeded = () => {
-          const db = request.result;
-          if (!db.objectStoreNames.contains(offlineStoreName)) {
-            db.createObjectStore(offlineStoreName, { keyPath: "id" });
-          }
-        };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      }),
-    [offlineDbName, offlineStoreName]
-  );
-
-  const queueOfflineReport = async (payload: Record<string, unknown>) => {
-    const queuedPayload = { ...payload, queuedAt: new Date().toISOString() };
-    try {
-      const db = await openOfflineDb();
-      const tx = db.transaction(offlineStoreName, "readwrite");
-      const store = tx.objectStore(offlineStoreName);
-      store.put({ id: crypto.randomUUID(), payload: queuedPayload });
-      await new Promise<void>((resolve, reject) => {
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-      });
-      return;
-    } catch {
-      const existing = localStorage.getItem(offlineQueueKey);
-      const queue = existing ? JSON.parse(existing) : [];
-      queue.push(queuedPayload);
-      localStorage.setItem(offlineQueueKey, JSON.stringify(queue));
-    }
+  const stripExif = async (base64: string) => {
+    if (!base64) return base64;
+    return await new Promise<string>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(base64);
+          ctx.drawImage(img, 0, 0);
+          const cleaned = canvas.toDataURL();
+          resolve(cleaned);
+        } catch {
+          resolve(base64);
+        }
+      };
+      img.onerror = () => resolve(base64);
+      img.src = base64;
+    });
   };
 
-  const flushOfflineQueue = useCallback(async () => {
-    const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
-
-    try {
-      const db = await openOfflineDb();
-      const tx = db.transaction(offlineStoreName, "readonly");
-      const store = tx.objectStore(offlineStoreName);
-      const request = store.getAll();
-      const items = await new Promise<Array<{ id: string; payload: Record<string, unknown> }>>(
-        (resolve, reject) => {
-          request.onsuccess = () => resolve(request.result as Array<{ id: string; payload: Record<string, unknown> }>);
-          request.onerror = () => reject(request.error);
-        }
-      );
-      queued.push(...items);
-    } catch {
-      const existing = localStorage.getItem(offlineQueueKey);
-      const items = existing ? JSON.parse(existing) : [];
-      queued.push(...items.map((payload: Record<string, unknown>, idx: number) => ({ id: String(idx), payload })));
-    }
-
-    if (!queued.length) return;
-
-    let authToken: string | undefined = undefined;
-    try {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      authToken = session?.access_token;
-    } catch { /* anonymous */ }
-
-    const successfulIds: string[] = [];
-    for (const item of queued) {
-      try {
-        await laravelPost("/reports", item.payload, 30000);
-        successfulIds.push(item.id);
-      } catch {
-        // keep queued
-      }
-    }
-
-    try {
-      const db = await openOfflineDb();
-      const tx = db.transaction(offlineStoreName, "readwrite");
-      const store = tx.objectStore(offlineStoreName);
-      successfulIds.forEach((id) => store.delete(id));
-      await new Promise<void>((resolve, reject) => {
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-      });
-    } catch {
-      const existing = localStorage.getItem(offlineQueueKey);
-      const items = existing ? JSON.parse(existing) : [];
-      const remaining = items.filter((_: unknown, idx: number) => !successfulIds.includes(String(idx)));
-      localStorage.setItem(offlineQueueKey, JSON.stringify(remaining));
-    }
-  }, [openOfflineDb, offlineQueueKey, offlineStoreName]);
-
+  // Online / offline detection only — no auto-flush. Sync is manual via /offline-queue.
   useEffect(() => {
-    const handleOnline = () => { setIsOnline(true); void flushOfflineQueue(); showToast("Connection restored. Syncing queued reports.", "success"); };
+    const handleOnline = () => { setIsOnline(true); showToast("Connection restored.", "success"); };
     const handleOffline = () => { setIsOnline(false); showToast("Connection lost. Reports will queue until you are back online.", "error"); };
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
@@ -202,7 +126,7 @@ export default function ReportPage() {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [flushOfflineQueue]);
+  }, []);
 
   const capturePhoto = useCallback(() => {
     const video = videoRef.current;
@@ -277,38 +201,27 @@ export default function ReportPage() {
 
   const finalizeSubmission = async (cleanedImage: string) => {
     let userId: string | undefined = undefined;
-    let authToken: string | undefined = undefined;
     if (!isGhostMode) {
       try {
         const supabase = createClient();
-        const { data: { user }, data: { session } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         userId = user?.id;
-        authToken = session?.access_token;
       } catch { /* continue anonymously */ }
     }
 
-    const payload: Record<string, unknown> = { base64Image: cleanedImage };
-    if (!isGhostMode) {
-      payload.latitude = latitude;
-      payload.longitude = longitude;
-    }
+    const payload: Record<string, unknown> = { base64Image: cleanedImage, latitude, longitude };
     if (description.trim()) payload.description = description.trim();
     if (reportType) payload.report_type = reportType;
     if (!isGhostMode && userId) payload.user_id = userId;
 
     if (!navigator.onLine) {
-      await queueOfflineReport(payload);
+      await queueReport(payload);
       showToast("You are offline. Report queued securely.", "info");
       setIsSubmitting(false);
       return;
     }
 
-    const responseData = await laravelPost<{ message?: string }>(
-      "/reports",
-      payload,
-      30000
-    );
-
+    const responseData = await laravelPost<{ message: string }>("/reports", payload);
     showToast(responseData.message || "Report submitted successfully!", "success");
     clearForm();
   };
@@ -317,41 +230,20 @@ export default function ReportPage() {
     e.preventDefault();
     if (!base64Image) { showToast("Please capture a photo first.", "error"); return; }
     setIsSubmitting(true);
-
     try {
       const cleanedImage = await stripExif(base64Image);
 
-      // Triage: online uses server-side AI, offline uses on-device ONNX
-      if (!isGhostMode) {
+      if (!isGhostMode && navigator.onLine) {
         setIsTriaging(true);
         try {
-          if (navigator.onLine) {
-            // Server-side triage (full pipeline)
-            const triageData = await laravelPost<{
-              has_concern?: boolean;
-              indicators?: Array<{ label?: string; type?: string }>;
-            }>("/reports/triage", { base64Image: cleanedImage }, 15000);
-
-            if (triageData.has_concern) {
-              setTriageIndicators(triageData.indicators?.map((i) => i.label || i.type || "") || []);
-              setIsModalOpen(true);
-              setIsSubmitting(false);
-              setIsTriaging(false);
-              return;
-            }
-          } else if (onnx.isReady) {
-            // On-device triage (offline inference)
-            const onnxResult = await onnx.infer(cleanedImage);
-            if (onnxResult.has_environmental_concern) {
-              setTriageIndicators(onnxResult.environmental_indicators);
-              setIsModalOpen(true);
-              setIsSubmitting(false);
-              setIsTriaging(false);
-              return;
-            }
+          const triageData = await laravelPost<{ has_concern: boolean; indicators: Array<{ label?: string; type?: string }> }>("/reports/triage", { base64Image: cleanedImage });
+          if (triageData.has_concern) {
+            setTriageIndicators(triageData.indicators.map((i: { label?: string; type?: string }) => i.label || i.type).filter(Boolean) as string[]);
+            setIsModalOpen(true);
+            setIsSubmitting(false);
+            setIsTriaging(false);
+            return;
           }
-          }
-          // If ONNX is not ready and offline, skip triage gracefully
         } catch (err) { console.error("Triage pre-check failed:", err); }
         finally { setIsTriaging(false); }
       }
@@ -394,7 +286,6 @@ export default function ReportPage() {
             <div className="flex items-center gap-2 p-3 border border-ink/10 font-mono text-xs text-ink/50">
               <span className="h-2 w-2 rounded-full bg-ink/30" />
               Offline &mdash; reports will queue until connection returns.
-              {onnx.isReady && <span className="text-accent">On-device AI active.</span>}
             </div>
           )}
 
@@ -412,6 +303,16 @@ export default function ReportPage() {
               ) : camera.isActive ? (
                 <div className="relative bg-black/90 border border-ink/10 overflow-hidden rounded-xl">
                   <video ref={videoRef} autoPlay playsInline muted className="w-full aspect-video object-cover" />
+                  {/* Flip camera button */}
+                  <button
+                    type="button"
+                    onClick={() => camera.switchCamera()}
+                    disabled={camera.isLoading}
+                    className="absolute top-3 right-3 p-2.5 rounded-full bg-black/40 text-white hover:bg-black/60 transition-all disabled:opacity-40 z-10"
+                    aria-label={`Switch to ${camera.facingMode === "environment" ? "front" : "back"} camera`}
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                  </button>
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
                     <button type="button" onClick={capturePhoto} aria-label="Capture photo" className="px-5 py-2.5 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
                       <Camera className="w-4 h-4" aria-hidden="true" /> Capture

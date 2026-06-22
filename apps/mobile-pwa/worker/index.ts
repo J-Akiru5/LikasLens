@@ -74,8 +74,8 @@ sw.addEventListener('sync', (event: any) => {
 sw.addEventListener('fetch', (event: any) => {
   const url = new URL(event.request.url);
 
-  // --- Offline queue for POST /api/reports ---
-  if (event.request.method === 'POST' && url.pathname === '/api/reports') {
+  // --- Offline queue for POST /reports (matching laravelPost endpoint) ---
+  if (event.request.method === 'POST' && (url.pathname === '/reports' || url.pathname === '/api/reports')) {
     event.respondWith(
       fetch(event.request.clone()).catch(async () => {
         // Network failed — store the request body for later retry

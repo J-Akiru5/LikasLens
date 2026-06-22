@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { DashboardLayout, useNotifications } from "@likaslens/shared";
+import { DashboardLayout, getQueueCount } from "@likaslens/shared";
 import type { NavItem } from "@likaslens/shared";
 import {
   LayoutGrid,
@@ -13,9 +13,9 @@ import {
   User,
   BarChart3,
   Network,
+  WifiOff,
 } from "lucide-react";
 import { UserNav } from "./user-nav";
-import { createClient } from "@/utils/supabase/client";
 
 const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true },
@@ -29,6 +29,7 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
   
   { divider: true, dividerLabel: "Quick Access" },
   { href: "/report", label: "Submit Report", icon: Camera },
+  { href: "/offline-queue", label: "Offline Queue", icon: WifiOff },
   { href: "/laws", label: "Laws Database", icon: Scale },
   { href: "/profile", label: "Citizen Profile", icon: User },
 ];
@@ -53,20 +54,36 @@ export function DashboardLayoutWrapper({
   headerChildren,
 }: DashboardLayoutWrapperProps) {
   const [isGhostMode, setIsGhostMode] = useState(false);
+  const [queueCount, setQueueCount] = useState(0);
   const [mounted, setMounted] = useState(false);
-  const [authToken, setAuthToken] = useState<string | undefined>(undefined);
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications({ pollInterval: 30000, token: authToken });
+
+  // Fetch queue count on mount and on visibility change
+  useEffect(() => {
+    getQueueCount().then(setQueueCount).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        getQueueCount().then(setQueueCount).catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  // Build nav items with dynamic badge
+  const navItemsWithBadge: NavItem[] = SIDEBAR_NAV_ITEMS.map((item) => {
+    if (item.href === "/offline-queue" && queueCount > 0) {
+      return { ...item, badge: queueCount };
+    }
+    return item;
+  });
 
   useEffect(() => {
     setMounted(true);
     const currentTheme = document.documentElement.getAttribute("data-theme");
     setIsGhostMode(currentTheme === "ghost");
-
-    // Get Supabase session token for API calls
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data }: { data: { session: { access_token?: string } | null } }) => {
-      setAuthToken(data.session?.access_token);
-    });
 
     const observer = new MutationObserver(() => {
       const current = document.documentElement.getAttribute("data-theme");
@@ -89,7 +106,7 @@ export function DashboardLayoutWrapper({
 
   return (
     <DashboardLayout
-      navItems={SIDEBAR_NAV_ITEMS}
+      navItems={navItemsWithBadge}
       userRole={userRole ?? null}
       isGhostMode={isGhostMode}
       onThemeToggle={toggleGhostMode}
@@ -99,10 +116,6 @@ export function DashboardLayoutWrapper({
       showBranding={showBranding}
       extraSidebarBottom={<UserNav variant="sidebar" />}
       headerChildren={headerChildren}
-      notifications={notifications}
-      unreadCount={unreadCount}
-      onMarkAsRead={markAsRead}
-      onMarkAllAsRead={markAllAsRead}
     >
       {children}
     </DashboardLayout>

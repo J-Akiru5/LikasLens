@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_4jQ0hIAr3WqoVbGHBFphh8TpD0je",
+  "orgId": "team_W87qE6Rj3dNY9M64ZSkjHhPB",
+  "projectName": "likas-lens-frontend",
+  "settings": {
+    "createdAt": 1778909894543,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": "apps/frontend",
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}
