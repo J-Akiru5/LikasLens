@@ -35,6 +35,7 @@
     "cobe": "^2.0.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.14.0",
+    "onnxruntime-web": "^1.21.0",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {

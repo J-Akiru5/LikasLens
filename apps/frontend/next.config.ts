@@ -7,6 +7,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  transpilePackages: ["@likaslens/shared"],
   turbopack: {},
   images: {
     qualities: [70, 75, 85],
@@ -30,8 +31,35 @@ const nextConfig: NextConfig = {
         },
       ],
     },
+    {
+      // Cache ONNX models aggressively (immutable, content-addressed)
+      source: "/models/(.*)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        { key: "Content-Type", value: "application/octet-stream" },
+      ],
+    },
   ],
   webpack: (config, { isServer }) => {
+    // Handle WASM files for ONNX Runtime Web
+    if (!isServer) {
+      config.experiments = {
+        ...config.experiments,
+        asyncWebAssembly: true,
+      };
+      config.module.rules.push({
+        test: /\.wasm$/,
+        type: "asset/resource",
+      });
+    }
+    // Don't bundle ONNX Runtime in SSR
+    config.resolve = config.resolve || {};
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      crypto: false,
+    };
     return config;
   },
 };
