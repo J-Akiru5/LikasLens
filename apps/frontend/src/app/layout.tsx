@@ -4,9 +4,9 @@ import {
   Public_Sans,
   JetBrains_Mono,
 } from "next/font/google";
-import Script from "next/script";
 import { getLocale } from "next-intl/server";
 import "./globals.css";
+import { ThemeInitializer } from "@/components/theme-initializer";
 
 // Distinctive display face — characterful grotesque, not a 2026 reflex font.
 const displayFont = Bricolage_Grotesque({
@@ -126,20 +126,7 @@ export default async function RootLayout({
     >
       <head />
       <body className="min-h-full flex flex-col">
-        <Script
-          id="theme-initializer"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                var savedTheme = localStorage.getItem('likaslens-theme');
-                if (savedTheme === 'ghost') {
-                  document.documentElement.setAttribute('data-theme', 'ghost');
-                }
-              } catch (e) {}
-            `,
-          }}
-        />
+        <ThemeInitializer />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none"
