@@ -1,6 +1,5 @@
 {
-  "installCommand": "pnpm install",
+  "framework": "nextjs",
   "buildCommand": "pnpm --filter admin-portal build",
-  "outputDirectory": ".next",
-  "framework": "nextjs"
+  "outputDirectory": ".next"
 }

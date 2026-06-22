@@ -111,7 +111,6 @@ export default function SettingsPage() {
       await supabase.auth.signOut();
       try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
       try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
-      document.cookie = "laravel_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
       showToast("Logged out successfully", "success");
       setTimeout(() => { window.location.href = "/login"; }, 500);
     } catch {

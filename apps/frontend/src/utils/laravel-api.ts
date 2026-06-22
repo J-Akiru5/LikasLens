@@ -1,4 +1,4 @@
-import { cookies } from "next/headers"
+import { createClient } from "@/utils/supabase/server"
 
 const LARAVEL_API = process.env.NEXT_PUBLIC_API_URL || ""
 
@@ -17,8 +17,13 @@ function safeUrl(base: string, path: string): string {
 }
 
 async function getToken(): Promise<string | null> {
-  const cookieStore = await cookies()
-  return cookieStore.get("laravel_token")?.value ?? null
+  try {
+    const supabase = await createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    return session?.access_token ?? null
+  } catch {
+    return null
+  }
 }
 
 interface FetchOptions extends RequestInit {

@@ -340,7 +340,7 @@
     "sendMessage": "Kirim Pesan",
     "sending": "Mengirim...",
     "successMessage": "Pesan terkirim! Kami akan segera menghubungi Anda.",
-    "officeAddress": "Manila, Filipina",
+    "officeAddress": "Iloilo, Filipina",
     "getInTouch": "Hubungi"
   },
   "privacy": {
@@ -360,7 +360,11 @@
     "send": "Kirim pesan",
     "closeChat": "Tutup obrolan",
     "openChat": "Buka obrolan Liksi",
-    "errorFallback": "Ups! Saya tidak bisa berpikir sekarang. Silakan periksa koneksi Anda atau coba lagi nanti."
+    "errorFallback": "Ups! Saya tidak bisa berpikir sekarang. Silakan periksa koneksi Anda atau coba lagi nanti.",
+    "welcomeCitizen": "Halo! Saya Liksi, pemandu AI Anda di LikasLens. Tanyakan apa saja tentang melaporkan masalah lingkungan, menggunakan platform, atau hukum lingkungan Filipina!",
+    "welcomeAdmin": "Selamat datang di LikasLens Admin Portal! Saya Liksi, asisten operasi AI Anda. Saya dapat membantu Anda melakukan triase laporan, menganalisis tren, memeriksa hukum, dan mengelola platform.",
+    "signInPrompt": "Silakan masuk untuk mengobrol dengan Liksi",
+    "errorProcess": "Maaf, saya tidak dapat memprosesnya. Silakan coba lagi!"
   },
   "offline": {
     "banner": "Anda sedang offline. Laporan akan diantrekan hingga koneksi pulih.",

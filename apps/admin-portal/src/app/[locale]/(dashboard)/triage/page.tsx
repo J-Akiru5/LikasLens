@@ -9,9 +9,11 @@ import {
   getTriageViolationTypes,
   showToast,
   Button,
+  Skeleton,
+  EmptyState,
+  Modal,
 } from "@likaslens/shared";
 import type { TriageTicket } from "@likaslens/shared";
-import { AdminTableSkeleton, EmptyState } from "@likaslens/shared";
 import {
   ShieldAlert,
   Search,
@@ -25,6 +27,8 @@ import {
   Trash2,
   ArrowUpRight,
   ImageOff,
+  Gauge,
+  MessageSquareText,
 } from "lucide-react";
 
 const PAGE_SIZE = 20;
@@ -42,11 +46,72 @@ const SEVERITY_LABELS: Record<number, string> = {
   10: "10 - Emergency",
 };
 
+const URGENCY_COLORS: Record<string, string> = {
+  low: "bg-green/10 text-green border-green/20",
+  medium: "bg-amber/10 text-amber border-amber/20",
+  high: "bg-red/10 text-red border-red/20",
+  critical: "bg-red/20 text-red border-red/30",
+};
+
+function urgencyBadge(score: number | null) {
+  if (score === null)
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest bg-ink/[0.04] text-ink/40 border border-ink/5">
+        <Gauge className="w-3 h-3" />&mdash;
+      </span>
+    );
+
+  const tier =
+    score >= 8 ? "critical"
+    : score >= 6 ? "high"
+    : score >= 4 ? "medium"
+    : "low";
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold border ${URGENCY_COLORS[tier]}`}
+      title={`Urgency score: ${score}/10`}
+    >
+      <Gauge className="w-3 h-3" />
+      {score}
+    </span>
+  );
+}
+
 interface ViolationTypeOption {
   id: string;
   code: string;
   name: string;
   description: string | null;
+}
+
+function TriageCardSkeleton() {
+  return (
+    <div className="bg-panel rounded-2xl border border-ink/5 p-4">
+      <div className="flex gap-4">
+        <Skeleton className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl flex-shrink-0" />
+        <div className="flex-1 min-w-0 space-y-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-5 w-14 rounded-full" />
+            <Skeleton className="h-5 w-12 rounded-full" />
+          </div>
+          <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="h-3 w-full" />
+          <div className="flex items-center gap-4">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <Skeleton className="h-9 w-24 rounded-lg" />
+          <Skeleton className="h-9 w-24 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function TriagePage() {
@@ -70,6 +135,11 @@ export default function TriagePage() {
     notes: "",
   });
   const [classifyLoading, setClassifyLoading] = useState(false);
+
+  // Dismiss modal state
+  const [dismissTarget, setDismissTarget] = useState<TriageTicket | null>(null);
+  const [dismissReason, setDismissReason] = useState("");
+  const [dismissLoading, setDismissLoading] = useState(false);
 
   // Action loading states
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
@@ -136,17 +206,31 @@ export default function TriagePage() {
     }
   };
 
-  const handleDismiss = async (ticket: TriageTicket) => {
-    if (!confirm(`Dismiss ${ticket.display_id} as spam?`)) return;
-    setActionLoadingId(ticket.id);
+  const openDismissModal = (ticket: TriageTicket) => {
+    setDismissTarget(ticket);
+    setDismissReason("");
+  };
+
+  const handleDismissConfirm = async () => {
+    if (!dismissTarget) return;
+    setDismissLoading(true);
+    setActionLoadingId(dismissTarget.id);
     try {
-      await dismissTriageTicket(ticket.id);
-      showToast(`${ticket.display_id} dismissed as spam`, "success");
+      await dismissTriageTicket(dismissTarget.id, {
+        reason: dismissReason.trim() || undefined,
+      });
+      showToast(
+        `${dismissTarget.display_id} dismissed as spam`,
+        "success"
+      );
+      setDismissTarget(null);
+      setDismissReason("");
       fetchQueue();
     } catch (err) {
       console.error(err);
       showToast("Failed to dismiss ticket", "error");
     } finally {
+      setDismissLoading(false);
       setActionLoadingId(null);
     }
   };
@@ -155,7 +239,10 @@ export default function TriagePage() {
     setActionLoadingId(ticket.id);
     try {
       await escalateTriageTicket(ticket.id);
-      showToast(`${ticket.display_id} escalated to senior analyst`, "success");
+      showToast(
+        `${ticket.display_id} escalated to senior analyst`,
+        "success"
+      );
       fetchQueue();
     } catch (err) {
       console.error(err);
@@ -199,7 +286,7 @@ export default function TriagePage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
             Triage
@@ -212,13 +299,23 @@ export default function TriagePage() {
                 : "No reports in triage queue"}
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-amber/5 border border-amber/20 rounded-xl">
+        <div className="flex items-center gap-2 px-4 py-2 bg-amber/5 border border-amber/20 rounded-xl self-start">
           <ShieldAlert className="w-5 h-5 text-amber" />
           <span className="font-mono text-sm font-medium text-amber">
             Low Confidence Queue
           </span>
         </div>
       </div>
+
+      {/* Sort info */}
+      {!loading && total > 0 && (
+        <div className="flex items-center gap-1.5 font-mono text-xs text-ink/40">
+          <span>Sorted by urgency</span>
+          <span className="text-ink/20">&darr;</span>
+          <span className="text-ink/20">&bull;</span>
+          <span>oldest first</span>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative max-w-md">
@@ -236,18 +333,25 @@ export default function TriagePage() {
       </div>
 
       {/* Loading skeleton */}
-      {loading && <AdminTableSkeleton rows={8} columns={5} showSearch={false} />}
+      {loading && (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <TriageCardSkeleton key={i} />
+          ))}
+        </div>
+      )}
 
       {/* Empty state */}
       {!loading && tickets.length === 0 && (
         <EmptyState
-          icon={CheckCircle2}
+          icon={ShieldAlert}
           title="No reports in triage queue"
           description={
             search
               ? "No matching reports found. Try adjusting your search."
               : "All reports have sufficient AI confidence or have been reviewed."
           }
+          colorTheme="amber"
         />
       )}
 
@@ -284,6 +388,7 @@ export default function TriagePage() {
                             {ticket.display_id}
                           </span>
                           {confidenceBadge(ticket.ai_confidence)}
+                          {urgencyBadge(ticket.urgency_score)}
                           {ticket.urgency_score !== null &&
                             ticket.urgency_score >= 7 && (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-red/10 text-red">
@@ -324,7 +429,7 @@ export default function TriagePage() {
                           variant="ghost"
                           size="sm"
                           type="button"
-                          onClick={() => handleDismiss(ticket)}
+                          onClick={() => openDismissModal(ticket)}
                           disabled={isBusy}
                           title="Dismiss as spam"
                         >
@@ -557,6 +662,80 @@ export default function TriagePage() {
           </div>
         </div>
       )}
+
+      {/* Dismiss modal */}
+      <Modal
+        isOpen={dismissTarget !== null}
+        onClose={() => {
+          if (!dismissLoading) {
+            setDismissTarget(null);
+            setDismissReason("");
+          }
+        }}
+        title="Dismiss as Spam"
+        size="sm"
+      >
+        {dismissTarget && (
+          <div className="space-y-4">
+            <div className="p-3 bg-ink/[0.02] rounded-xl">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-mono text-xs font-bold text-ink/50">
+                  {dismissTarget.display_id}
+                </span>
+                {confidenceBadge(dismissTarget.ai_confidence)}
+              </div>
+              <p className="font-medium text-sm text-ink">
+                {dismissTarget.title || dismissTarget.display_id}
+              </p>
+              <p className="font-mono text-xs text-ink/40 mt-1">
+                {dismissTarget.location} &mdash; by {dismissTarget.reporter}
+              </p>
+            </div>
+
+            <div>
+              <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1.5 block">
+                Dismissal Reason
+              </label>
+              <div className="relative">
+                <MessageSquareText className="absolute left-3 top-3 w-4 h-4 text-ink/30" />
+                <textarea
+                  value={dismissReason}
+                  onChange={(e) => setDismissReason(e.target.value)}
+                  rows={3}
+                  className="w-full pl-9 pr-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-red/20 focus:border-red/30 transition-all resize-none"
+                  placeholder="e.g., duplicate report, test submission, no violation..."
+                />
+              </div>
+              <p className="font-mono text-[11px] text-ink/30 mt-1">
+                This will close the ticket and log the reason in the audit trail.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => {
+                  setDismissTarget(null);
+                  setDismissReason("");
+                }}
+                disabled={dismissLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                type="button"
+                onClick={handleDismissConfirm}
+                loading={dismissLoading}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Dismiss as Spam
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

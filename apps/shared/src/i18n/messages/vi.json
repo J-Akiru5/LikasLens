@@ -340,7 +340,7 @@
     "sendMessage": "Gửi Tin nhắn",
     "sending": "Đang gửi...",
     "successMessage": "Đã gửi tin nhắn! Chúng tôi sẽ phản hồi sớm.",
-    "officeAddress": "Manila, Philippines",
+    "officeAddress": "Iloilo, Philippines",
     "getInTouch": "Liên lạc"
   },
   "privacy": {
@@ -360,7 +360,11 @@
     "send": "Gửi tin nhắn",
     "closeChat": "Đóng trò chuyện",
     "openChat": "Mở trò chuyện Liksi",
-    "errorFallback": "Rất tiếc! Tôi không thể kết nối ngay bây giờ. Vui lòng kiểm tra kết nối hoặc thử lại sau."
+    "errorFallback": "Rất tiếc! Tôi không thể kết nối ngay bây giờ. Vui lòng kiểm tra kết nối hoặc thử lại sau.",
+    "welcomeCitizen": "Xin chào! Tôi là Liksi, hướng dẫn viên AI của bạn tại LikasLens. Hãy hỏi tôi bất cứ điều gì về báo cáo vấn đề môi trường, sử dụng nền tảng, hoặc luật môi trường Philippines!",
+    "welcomeAdmin": "Chào mừng đến với LikasLens Admin Portal! Tôi là Liksi, trợ lý AI vận hành của bạn. Tôi có thể giúp bạn phân loại báo cáo, phân tích xu hướng, kiểm tra luật và quản lý nền tảng.",
+    "signInPrompt": "Vui lòng đăng nhập để trò chuyện với Liksi",
+    "errorProcess": "Xin lỗi, tôi không thể xử lý điều đó. Vui lòng thử lại!"
   },
   "offline": {
     "banner": "Bạn đang ngoại tuyến. Báo cáo sẽ được xếp hàng cho đến khi kết nối được khôi phục.",

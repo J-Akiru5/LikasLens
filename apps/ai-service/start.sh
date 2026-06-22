@@ -10,7 +10,7 @@ echo ""
 echo "[startup] Checking Roboflow integration..."
 python -c "
 from roboflow_client import is_configured, health_check
-import json, sys
+import sys
 
 if not is_configured():
     print('[startup] Roboflow: DISABLED (ROBOFLOW_API_KEY or ROBOFLOW_MODEL_ID not set)')

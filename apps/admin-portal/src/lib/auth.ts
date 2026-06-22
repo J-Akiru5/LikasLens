@@ -1,11 +1,4 @@
 import { createClient } from "@/lib/supabase";
-import { laravelPost } from "@likaslens/shared";
-
-function setCookie(name: string, value: string, days: number) {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  const isSecure = window.location.protocol === "https:";
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict${isSecure ? "; Secure" : ""}`;
-}
 
 export async function signIn(email: string, password: string) {
   const supabase = createClient();
@@ -24,27 +17,10 @@ export async function signIn(email: string, password: string) {
     throw new Error("ACCESS_DENIED");
   }
 
-  try {
-    const res = await laravelPost<{
-      success: boolean;
-      data: { token: string };
-    }>("/auth/sync", {
-      supabase_auth_user_id: data.user.id,
-      email: data.user.email,
-      name: data.user.user_metadata?.full_name || data.user.email?.split("@")[0],
-    });
-    if (res?.data?.token) {
-      setCookie("laravel_token", res.data.token, 30);
-    }
-  } catch {
-    // Sync failure is non-blocking
-  }
-
   return data.user;
 }
 
 export async function signOut() {
   const supabase = createClient();
   await supabase.auth.signOut();
-  document.cookie = "laravel_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 }

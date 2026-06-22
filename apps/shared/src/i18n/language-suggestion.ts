@@ -51,6 +51,13 @@ const translations: Record<Locale, LangSuggestionText> = {
     no: "வேண்டாம்",
     neverShow: "மீண்டும் காட்டாதே",
   },
+  th: {
+    title: "คำแนะนำภาษา",
+    message: "เราตรวจพบว่าเบราว์เซอร์ของคุณตั้งค่าเป็น {lang} คุณต้องการสลับหรือไม่?",
+    setDefault: "ตั้งเป็นค่าเริ่มต้น",
+    no: "ไม่",
+    neverShow: "ไม่แสดงอีก",
+  },
 };
 
 const localeNames: Record<Locale, string> = {
@@ -60,6 +67,7 @@ const localeNames: Record<Locale, string> = {
   id: "Bahasa Indonesia",
   ms: "Bahasa Melayu",
   ta: "தமிழ்",
+  th: "ภาษาไทย",
 };
 
 const NEVER_SHOW_KEY = "likaslens-lang-suggestion-dismissed";
@@ -69,7 +77,7 @@ function getSupportedLocaleFromNavigator(): Locale | null {
   const langs = navigator.languages || [navigator.language];
   for (const lang of langs) {
     const code = lang.split("-")[0].toLowerCase();
-    const supported: Locale[] = ["fil", "vi", "id", "ms", "ta"];
+    const supported: Locale[] = ["fil", "vi", "id", "ms", "ta", "th"];
     if (code === "tl") return "fil";
     if (supported.includes(code as Locale)) return code as Locale;
   }

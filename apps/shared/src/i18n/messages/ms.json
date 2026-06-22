@@ -340,7 +340,7 @@
     "sendMessage": "Hantar Mesej",
     "sending": "Menghantar...",
     "successMessage": "Mesej dihantar! Kami akan menghubungi anda kembali tidak lama lagi.",
-    "officeAddress": "Manila, Filipina",
+    "officeAddress": "Iloilo, Filipina",
     "getInTouch": "Hubungi"
   },
   "privacy": {
@@ -360,7 +360,11 @@
     "send": "Hantar mesej",
     "closeChat": "Tutup sembang",
     "openChat": "Buka sembang Liksi",
-    "errorFallback": "Alamak! Saya tidak dapat berfikir sekarang. Sila periksa sambungan anda atau cuba lagi nanti."
+    "errorFallback": "Alamak! Saya tidak dapat berfikir sekarang. Sila periksa sambungan anda atau cuba lagi nanti.",
+    "welcomeCitizen": "Hai! Saya Liksi, panduan AI anda di LikasLens. Tanya saya apa-apa tentang melaporkan isu alam sekitar, menggunakan platform, atau undang-undang alam sekitar Filipina!",
+    "welcomeAdmin": "Selamat datang ke LikasLens Admin Portal! Saya Liksi, pembantu operasi AI anda. Saya boleh membantu anda melakukan triage laporan, menganalisis tren, memeriksa undang-undang, dan menguruskan platform.",
+    "signInPrompt": "Sila log masuk untuk berbual dengan Liksi",
+    "errorProcess": "Maaf, saya tidak dapat memprosesnya. Sila cuba lagi!"
   },
   "offline": {
     "banner": "Anda luar talian. Laporan akan diatur sehingga sambungan dipulihkan.",

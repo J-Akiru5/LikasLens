@@ -4,10 +4,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, X, Send, Bot, User } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useGeminiChat, type ChatMessage } from "../../hooks/useGeminiChat";
 import { cn } from "../../utils";
 
 export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated = true, className }: { persona?: "citizen" | "admin"; locale?: string; isAuthenticated?: boolean; className?: string }) {
+  const t = useTranslations("chat");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { messages, loading, sendMessage } = useGeminiChat(persona, locale);
@@ -58,7 +60,7 @@ export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated 
             "group fixed bottom-6 right-6 z-50 flex items-center justify-center w-16 h-16",
             className
           )}
-          aria-label="Open Liksi chat"
+          aria-label={t("openChat")}
         >
           {/* Outer glowing ripple */}
           <div className="absolute inset-0 rounded-full bg-accent/30 animate-ping [animation-duration:3s]" />
@@ -92,10 +94,10 @@ export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated 
                  <img src="/images/liksi-logo.png" alt="Liksi" className="w-full h-full object-contain" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold">Liksi</div>
-                <div className="text-xs font-mono opacity-80">AI Assistant &bull; Online</div>
+                <div className="text-sm font-semibold">{t("title")}</div>
+                <div className="text-xs font-mono opacity-80">{t("subtitle")} &bull; {t("online")}</div>
               </div>
-              <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-black/10 transition-colors" aria-label="Close chat">
+              <button onClick={() => setOpen(false)} className="p-1 rounded hover:bg-black/10 transition-colors" aria-label={t("closeChat")}>
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -103,7 +105,7 @@ export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated 
             <div ref={listRef} className="flex-1 overflow-y-auto p-3 space-y-3 bg-page relative">
               {messages.length === 0 && !loading && (
                 <div className="flex flex-col items-center justify-center h-full gap-2">
-                  <p className="text-xs text-muted">Start a conversation with Liksi</p>
+                  <p className="text-xs text-muted">{t("subtitle")}</p>
                 </div>
               )}
               {messages.map((msg) => (
@@ -124,25 +126,38 @@ export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated 
             </div>
 
             <div className="p-3 shrink-0 border-t border-border bg-panel">
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask Liksi..."
-                  disabled={loading}
-                  className="flex-1 px-3 py-2 rounded-lg text-sm theme-input"
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={loading || !input.trim()}
-                  className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent text-white shrink-0 transition-all disabled:opacity-40"
-                  aria-label="Send message"
-                >
-                    <Send className="w-4 h-4" />
-                </button>
-              </div>
+              {isAuthenticated ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={t("placeholder")}
+                    disabled={loading}
+                    className="flex-1 px-3 py-2 rounded-lg text-sm theme-input"
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={loading || !input.trim()}
+                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent text-white shrink-0 transition-all disabled:opacity-40"
+                    aria-label={t("send")}
+                  >
+                      <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-1 gap-2">
+                  <p className="text-xs text-muted text-center">{t("signInPrompt")}</p>
+                  <a
+                    href="/login"
+                    className="w-full py-2 rounded-lg text-sm font-bold text-center transition-colors"
+                    style={{ background: "#2ee6c8", color: "#0d1a12", textDecoration: "none" }}
+                  >
+                    Log In
+                  </a>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

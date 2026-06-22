@@ -1,253 +1,199 @@
-# Developer 2 — AI Services
+# Sprint Roadmap — dev2 (Jeff)
 
-> **Sprint:** ASEAN AI Hackathon Prep
-> **Timeline:** June 5-8, 2026 (Thu-Sun)
-> **Total Hours:** 26h
-> **Assigned To:** Jeff
-> **Focus:** Environmental YOLOv8 model, Gremlin graph seeding, Gemini prompts
-> **Status:** ✅ **COMPLETE** — All tasks delivered
+> **Role:** Backend + Roboflow + AI Workflow
+> **Sprint:** v0.9.3 → v0.9.4 (ASEAN Hackathon Final Push)
+> **Period:** Jun 21 – Jun 28, 2026
+> **Monorepo:** `LikasLens` — `apps/backend` (Laravel 12) + `apps/ai-service` (Python 3.12 / FastAPI)
 
 ---
 
-## Team Roster (Updated)
+## Responsibilities Summary
 
-| Dev | Name | Role | Focus |
-|-----|------|------|-------|
-| Dev 1 | Lou | Frontend/UI | Next.js UI, Tailwind, responsive design, Ghost Mode theme |
-| Dev 2 | Jeff | AI/Backend | FastAPI AI service, YOLOv8, Gremlin graph, Gemini |
-| Dev 3 | Charlyn | Backend/Infrastructure | Laravel API, Supabase, CI/CD, admin portal |
-| Dev 4 | Katherine | Integration/PWA/APK | E2E testing, PWA offline, Capacitor APK, demo prep |
-
-> **Note:** Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.
-
----
-
-## Dependencies on Other Developers
-
-| Dependency | From | Needed By | Status | Notes |
-|------------|------|-----------|--------|-------|
-| Supabase connection | Dev 3 (Charlyn) | Thu evening | ✅ Resolved | DB accessible, seeders running |
-| Test images | Dev 4 (Katherine) | Sat | ✅ Resolved | Demo images tested |
-| Azure AI Service deployment | Dev 3 (Charlyn) | Sun | ⚠️ Blocked | CI/CD still points to deleted ACR; needs ghcr.io migration |
+| Domain | Stack | Location |
+|---|---|---|
+| Backend Core Logic | Laravel 12, PHP 8.2 | `apps/backend/` |
+| AI Service | FastAPI, YOLOv8, Neo4j | `apps/ai-service/` |
+| Roboflow Integration | Roboflow Inference API | `apps/ai-service/roboflow_client.py` |
+| Composite Scoring & Triage | Python + Laravel bridge | `apps/ai-service/`, `apps/backend/app/Services/` |
+| OpenAPI Contract Alignment | YAML/JSON specs | `docs/openapi/` |
 
 ---
 
-## Day 1 — Thursday, June 5
+## Priority Legend
 
-### Task 1.1: Research Community Environmental YOLOv8 Models
-**Time:** 3h | **Priority:** HIGH | **Status:** ✅ COMPLETE
-
-**Result:** Selected `HrutikAdsare/waste-detection-yolov8` from HuggingFace. Model downloaded at Docker build time via `huggingface-hub`. Custom-trained YOLOv8 for waste/trash detection with good inference speed (nano variant).
-
-**Acceptance Criteria:**
-- [x] At least 1 environmental model identified and downloaded
-- [x] Model tested on sample images
-- [x] Performance metrics documented (mAP, inference speed)
-- [x] Decision: use model as-is (no fine-tuning needed)
+| Priority | Meaning | Deadline |
+|---|---|---|
+| 🔴 CRITICAL | Blocks hackathon demo | Jun 23 |
+| 🟠 HIGH | Degraded UX or security gap | Jun 24 |
+| 🟡 MEDIUM | Polish / edge-case fixes | Jun 26 |
+| 🔵 LOW | Nice-to-have for demo | Jun 28 |
+| ⚪ POST | Post-hackathon backlog | Jul+ |
 
 ---
 
-### Task 1.2: Integrate Environmental Model into `image_analysis.py`
-**Time:** 5h | **Priority:** HIGH | **Status:** ✅ COMPLETE
+## 🔴 CRITICAL — Must Ship Before Demo
 
-**File modified:** `apps/ai-service/image_analysis.py` (+382 lines rewritten)
+### Backend Fixes
 
-**What was built:**
-- Dual-model detection: COCO (`yolov8n.pt`) + environmental (`waste-detection-yolov8`)
-- `ENV_MODEL_CLASS_MAP` updated with actual model classes
-- Results merged with deduplication logic
-- Environmental detections include severity levels
-- Fallback to COCO-only if environmental model fails
-- `/analyze/model` endpoint reports both models
+- [ ] **Fix Google OAuth login/signup flow** `~3h`
+  **Issue:** #162 — Users cannot authenticate via Google.
+  **File:** `apps/backend/app/Http/Controllers/Auth/SocialiteController.php`
+  **Action:** Verify `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, callback URL in `config/services.php`. Test full OAuth round-trip. Ensure `Socialite::driver('google')->redirect()` and callback both resolve.
+  **Depends on:** dev1 (frontend callback route must match)
 
-**Acceptance Criteria:**
-- [x] Environmental model loads at startup
-- [x] Dual inference runs on each image (COCO + environmental)
-- [x] Results merged with deduplication
-- [x] Environmental detections include severity levels
-- [x] Fallback to COCO-only if environmental model fails
-- [x] `/analyze/base64` endpoint returns enhanced results
+- [ ] **Fix session retention on "Back to Home"** `~2h`
+  **Issue:** #177 — Session lost when navigating back to landing.
+  **File:** `apps/backend/app/Http/Middleware/`, `apps/backend/config/session.php`
+  **Action:** Check `SESSION_DOMAIN`, `SESSION_SECURE_COOKIE`, SameSite policy. Verify Sanctum stateful domains include the frontend origin. Test with browser back-button flow.
+  **Depends on:** dev1 (frontend must send `X-XSRF-TOKEN` cookie)
 
----
+### AI Pipeline — End-to-End Validation
 
-## Day 2 — Friday, June 6
-
-### Task 2.1: Seed All 16 PH Laws into Neo4j Graph
-**Time:** 5h | **Priority:** CRITICAL | **Status:** ✅ COMPLETE
-
-**File modified:** `apps/ai-service/neo4j_upserts/baseline_rules.py` (+478 lines)
-
-**What was built:**
-- All 16 PH environmental law vertices with full properties
-- 5 baseline jurisdictions (Region VI focus)
-- Enforcement agency vertices (DENR, MGB, EMB, etc.)
-- `governed_by` and `enforced_by` edges connecting laws → jurisdictions → agencies
-- Idempotent upserts (safe to re-run)
-
-**Acceptance Criteria:**
-- [x] All 16 laws exist as vertices in Neo4j graph
-- [x] Each law has correct properties (code, title, agency, jurisdiction)
-- [x] `/graph/topology` returns all 16 laws
-- [x] No duplicate vertices on re-run (idempotent upserts)
+- [ ] **Run full pipeline smoke test** `~2h`
+  **Scenario:** `image upload → EXIF strip → YOLOv8 detect → hazard_id → hybrid_retrieve → Gemini classify → triage_disposition`
+  **Files:**
+  - `apps/ai-service/main.py`
+  - `apps/ai-service/roboflow_client.py`
+  - `apps/ai-service/hybrid_retrieve.py`
+  - `apps/ai-service/gemini_client.py`
+  - `apps/backend/app/Services/TriageService.php`
+  **Action:** Upload a known test image (illegal dumping sample). Verify each stage returns expected shape. Confirm circuit breaker in `TriageService` does NOT trip on healthy calls.
+  **Depends on:** None (self-contained)
 
 ---
 
-### Task 2.2: Add Violation Types + Hazard-Law Edges
-**Time:** 3h | **Priority:** CRITICAL | **Status:** ✅ COMPLETE
+## 🟠 HIGH — Ship Within 24h of Demo
 
-**What was built:**
-- 11 ViolationType vertices (4 existing + 7 new)
-- 18 HazardType vertices
-- 40 edges total: `violates`, `enforced_by`, `classified_from`
-- Each violation linked to correct PH law
+### Backend Infrastructure
 
-**New Violation Types Seeded:**
+- [ ] **Wire `ResolveTenant` middleware into `routes/api.php`** `~1.5h`
+  **File:** `apps/backend/routes/api.php`
+  **Action:** Register `ResolveTenant` on all tenant-scoped route groups. Verify it extracts `tenant_id` from subdomain or header and binds to request context.
+  **Depends on:** None
 
-| Code | Name | Linked Law |
-|------|------|------------|
-| `ILLEGAL-LOGGING` | Illegal Logging / Deforestation | PD-705 |
-| `WILDLIFE-TRAFFICKING` | Wildlife Trafficking | RA-9147 |
-| `MARINE-POLLUTION` | Marine Pollution | PD-979 |
-| `OPEN-BURNING` | Open Burning | RA-8749 |
-| `MANGROVE-DESTRUCTION` | Mangrove Clearing | RA-7611 |
-| `CORAL-REEF-DAMAGE` | Coral Reef Destruction | RA-9147 |
-| `PROTECTED-AREA-INTRUSION` | Protected Area Violation | RA-7586 |
+- [ ] **Register `TenantController` routes** `~1h`
+  **File:** `apps/backend/routes/api.php`, `apps/backend/app/Http/Controllers/TenantController.php`
+  **Action:** Add CRUD routes (`GET /tenants`, `POST /tenants`, `GET /tenants/{id}`, `PUT /tenants/{id}`, `DELETE /tenants/{id}`). Apply `auth:sanctum` + `ResolveTenant` middleware.
+  **Depends on:** `ResolveTenant` wiring above
 
-**Acceptance Criteria:**
-- [x] 7+ new ViolationType vertices in Gremlin
-- [x] 9+ HazardType vertices in Gremlin
-- [x] `violates` edges connect violations to correct laws
-- [x] `/routing/traversal` shows full hazard→law→agency chains
+- [ ] **Fix `AI_SERVICE_API_KEY` missing from `.env.example`** `~15m`
+  **File:** `apps/backend/.env.example`
+  **Action:** Add `AI_SERVICE_API_KEY=your-ai-service-key` with a comment explaining it's required for backend → ai-service auth.
+  **Depends on:** None
 
----
+### AI Pipeline — Scoring & Triage
 
-## Day 3 — Saturday, June 7
+- [ ] **Run FPR validation via `eval_metrics.py`** `~2h`
+  **File:** `apps/ai-service/eval_metrics.py`
+  **Action:** Run evaluation on held-out test set. Confirm false positive rate ≤ 15%. If FPR > 15%, tune confidence threshold in `roboflow_client.py` (currently defaulting to model confidence). Document results in `docs/eval/fpr-report.md`.
+  **Depends on:** Test dataset availability
 
-### Task 3.1: Seed ASEAN-Relevant Hazard Types
-**Time:** 3h | **Priority:** MEDIUM | **Status:** ⚠️ FILE REMOVED
+- [ ] **Implement SLA notification dispatch** `~2.5h`
+  **File:** `apps/backend/app/Services/SlaService.php:117`
+  **Action:** Complete the TODO at line 117. Dispatch `SlaViolationNotification` via Laravel notification system (mail + database channel). Trigger when `sla_breached_at` is set on a report.
+  **Depends on:** dev1 (frontend notification bell component)
 
-**File created:** `apps/ai-service/gremlin_upserts/asean_expansion.py` (391 lines)
+### Roboflow
 
-> **⚠️ WARNING:** This file was removed during codebase cleanup (commit `34d71c0`). The ASEAN hazard seeding code no longer exists in the repo. If ASEAN hazards need to be re-seeded, this file must be restored from git history.
-
-**What was built (before removal):**
-- 5 new ASEAN jurisdiction vertices (ID, TH, VN, MY, SG)
-- 1 anchor environmental law per country
-- 1 enforcement agency/NGO per country
-- `governed_by`, `enforced_by`, `violates` edges connecting ASEAN hazards → ASEAN laws
-- Supports `--dry-run` and `--gremlin` output modes
-
-**Acceptance Criteria:**
-- [x] 6+ ASEAN-specific HazardType vertices (before file removal)
-- [x] Each linked to closest PH law equivalent
-- [x] Graph traversal returns ASEAN hazards
+- [ ] **Validate `roboflow_client.py` error handling** `~1h`
+  **File:** `apps/ai-service/roboflow_client.py` (202 lines)
+  **Action:** Test with: invalid API key, model not found, network timeout, malformed image. Ensure each returns a structured error dict (not raw exception). Confirm circuit breaker state transitions.
+  **Depends on:** None
 
 ---
 
-### Task 3.2: Update Gemini System Prompt for Environmental Education
-**Time:** 3h | **Priority:** MEDIUM | **Status:** ✅ COMPLETE
+## 🟡 MEDIUM — Polish & Edge Cases
 
-**File modified:** `apps/ai-service/chat_proxy.py` (+30 lines)
+### Backend
 
-**What was built:**
-- "Likasy" persona with environmental education focus
-- Ghost Mode safety guidance for dangerous situations
-- Eco-credit system explanation capability
-- Philippine law references (RA-9003, RA-8749, RA-9275, PD-705, etc.)
-- Grade 8 reading level, non-legal-advisor disclaimer
+- [ ] **Add overdue counts to public leaderboard query** `~1.5h`
+  **File:** `apps/backend/app/Http/Controllers/LeaderboardController.php`, `apps/backend/app/Models/Report.php`
+  **Action:** Add `where('status', 'overdue')->count()` aggregate to leaderboard response. Include `overdue_count` field per tenant in JSON response.
+  **Depends on:** None
 
-**Acceptance Criteria:**
-- [x] `/api/v1/chat` uses new environmental persona
-- [x] Likasy explains laws correctly (references actual law codes)
-- [x] Likasy recommends Ghost Mode for dangerous situations
-- [x] Likasy explains eco-credit system
-- [x] Response quality tested with 5 sample queries
+### AI Pipeline — Regional Scenario Tests
 
----
+- [ ] **PH scenario: illegal_dumping in Iloilo** `~1.5h`
+  **Input:** Test image of illegal dumping site
+  **Expected:** `hazard_id = illegal_dumping` → `hybrid_retrieve` returns RA-9003 (Philippine Ecological Solid Waste Management Act) → Gemini labels `Green Dingle Initiative` as relevant local action
+  **Files:**
+  - `apps/ai-service/hybrid_retrieve.py`
+  - `apps/ai-service/data/` (legal corpus)
+  **Action:** Run end-to-end. Verify Neo4j returns PH-specific legal node. Verify Gemini prompt includes PH context.
+  **Depends on:** Neo4j populated with PH legal data
 
-## Day 4 — Sunday, June 8
-
-### Task 4.1: End-to-End AI Pipeline Testing
-**Time:** 3h | **Priority:** CRITICAL | **Status:** ✅ COMPLETE
-
-**Test Results:**
-1. **YOLOv8 Detection** — Dual-model detection working (COCO + environmental)
-2. **Gremlin Routing** — 16 laws + 11 violation types + 18 hazard types all traversable
-3. **Gemini Summary** — Hazard analysis endpoint returns correct law references
-4. **Chatbot** — Likasy persona active with Ghost Mode + eco-credit guidance
-
-**Acceptance Criteria:**
-- [x] All 4 test categories pass
-- [x] No hallucinated laws in Gemini output
-- [x] Gremlin traversal returns correct agency for each hazard
-- [x] Environmental model detections are accurate
+- [ ] **ID scenario: illegal_dumping in Jakarta** `~1.5h`
+  **Input:** Test image of illegal dumping site (Indonesian context)
+  **Expected:** `hazard_id = illegal_dumping` → `hybrid_retrieve` returns UU-18-2008 (Indonesian Waste Management Law) → Gemini returns Indonesian agency reference
+  **Files:**
+  - `apps/ai-service/hybrid_retrieve.py`
+  - `apps/ai-service/data/` (legal corpus)
+  **Action:** Run end-to-end. Verify Neo4j returns ID-specific legal node. Verify locale detection drives correct retrieval.
+  **Depends on:** Neo4j populated with ID legal data
 
 ---
 
-### Task 4.2: Fix Integration Issues
-**Time:** 1h | **Priority:** HIGH | **Status:** ✅ COMPLETE
+## 🔵 LOW — Demo Nice-to-Have
 
-**Commit:** `fa080d4` — "fix(ai): make service deployment-ready"
+- [ ] **Add health check endpoint for AI service** `~30m`
+  **File:** `apps/ai-service/main.py`
+  **Action:** Add `GET /health` returning `{"status": "ok", "model_loaded": true, "neo4j_connected": true}`. Useful for demo dashboard.
+  **Depends on:** None
 
-**Fixes applied:**
-- Dockerfile: replaced broken `load_model()` with proper COCO + ENV model preload
-- Added HuggingFace model download step in Docker build
-- Added `.gitignore` for `models/` directory
-- CORS origins configurable via `CORS_ORIGINS` env var
-- Preload both models at startup in lifespan handler
-- Switched from deprecated `google-generativeai` to `google-genai`
-- Added `huggingface-hub` to requirements.txt
-
-**Acceptance Criteria:**
-- [x] AI service starts cleanly with new model
-- [x] `/health` endpoint works
-- [x] `/analyze/model` reports environmental model info
-- [x] Dockerfile builds successfully
+- [ ] **Add request logging to AI service** `~1h`
+  **File:** `apps/ai-service/main.py`
+  **Action:** Log request method, path, response status, latency to stdout (structured JSON). Helps demo-time debugging.
+  **Depends on:** None
 
 ---
 
-## Post-Sprint Work (Not in Original Sprint)
+## ⚪ POST — Post-Hackathon Backlog
 
-### AI Service Stability Hardening (v0.6.2-v0.6.3)
-- ✅ Comprehensive P0/P1 stability fixes (commit `1b56f32`)
-  - `analyze_image()`: try/except with proper error handling
-  - Image size validation: 20MB max, 16MP cap with auto-resize
-  - Gremlin injection protection: all IDs validated against safe pattern
-  - Gremlin timeouts: 30s via `asyncio.wait_for()`
-  - Gremlin reconnection: 2 retries on stale connection
-  - `analyze_image` moved to `asyncio.to_thread` (no longer blocks event loop)
-  - Global FastAPI exception handler with consistent JSON errors
-  - Gemini API timeouts (30s) in both `chat_proxy.py` and `hazard_analyzer.py`
-  - `genai.configure()` called once at startup
-  - Error messages no longer leak internal details
-  - CORS reads from `CORS_ORIGINS` env var
-  - Dependencies pinned with upper bounds
-  - Dockerfile: non-root user + `HEALTHCHECK`
-- ✅ Request logging middleware (commit `694cdef`)
-- ✅ Rate limiting middleware (60 req/min general, 10 req/min for expensive endpoints)
-- ✅ Synced `pyproject.toml` with `requirements.txt`
+- [ ] **Train custom Roboflow model** `~2-3 days`
+  **Issue:** #179
+  **Action:** Curate dataset from collected evidentiary images. Annotate with Roboflow annotation tool. Train YOLOv8 custom model targeting LikasLens-specific hazard classes (illegal_dumping, flood_debris, oil_spill, etc.). Evaluate mAP@50. Replace generic model endpoint in `roboflow_client.py`.
+  **Depends on:** #181 (dataset annotation pipeline)
+
+- [ ] **Dataset annotation pipeline** `~1-2 days`
+  **Issue:** #181
+  **Action:** Build semi-automated annotation workflow: pre-label with current model → human review → export to Roboflow format. Include active learning loop: flag low-confidence predictions for human review.
+  **Depends on:** Sufficient collected images (>500 per class)
 
 ---
 
-## Risk Items
+## Dependency Map
 
-| Risk | Status | Mitigation |
-|------|--------|-----------|
-| No community environmental model found | ✅ Resolved | `HrutikAdsare/waste-detection-yolov8` from HuggingFace |
-| Model inference too slow | ✅ Resolved | Using `yolov8n` (nano) variant for speed |
-| Neo4j connection fails | ✅ Resolved | Fallback handling in `neo4j_client.py`; Neo4j AuraDB online |
-| Gemini hallucinates laws | ✅ Resolved | System prompt explicitly forbids invented laws; tested |
-| `asean_expansion.py` removed | ⚠️ Open | File removed in cleanup commit; needs restoration if ASEAN seeding required |
+```
+dev1 (Frontend)                    dev2 (Jeff — Backend + AI)
+─────────────────                  ──────────────────────────
+Google OAuth callback route  ←──── #162 Google login fix
+X-XSRF-TOKEN cookie handling ←──── #177 Session retention
+Notification bell component  ←──── SLA notification dispatch
+EXIF strip in upload UI      ────→ AI pipeline smoke test
+Public leaderboard UI        ←──── Overdue counts query
+```
 
 ---
 
-## Definition of Done
+## Daily Standup Focus
 
-- [x] Environmental YOLOv8 model integrated and detecting hazards
-- [x] All 16 PH laws seeded in Gremlin graph
-- [x] 7+ violation types with hazard→law→agency edges
-- [x] 6+ ASEAN-specific hazard types seeded (file removed, needs restoration)
-- [x] Gemini chatbot has environmental persona (Likasy)
-- [x] Full AI pipeline tested end-to-end
-- [x] No hallucinated laws in any output
-- [x] Service deployment-ready (Dockerfile, CORS, model preload)
+| Day | Focus Area |
+|---|---|
+| Jun 21 (Sat) | 🔴 CRITICAL — #162 Google OAuth, session fix, end-to-end pipeline test |
+| Jun 22 (Sun) | 🟠 HIGH — ResolveTenant wiring, TenantController routes, FPR validation |
+| Jun 23 (Mon) | 🟠 HIGH — SLA dispatch, roboflow error handling, .env.example fix |
+| Jun 24 (Tue) | 🟡 MEDIUM — PH + ID scenario tests, overdue counts |
+| Jun 25 (Wed) | 🟡 MEDIUM — Bug fixes from integration testing with dev1 |
+| Jun 26 (Thu) | 🔵 LOW — Health check, logging, demo rehearsal |
+| Jun 27 (Fri) | 🎯 DEMO PREP — Full dry run, smoke tests, rollback plan |
+| Jun 28 (Sat) | 🏆 HACKATHON SUBMISSION |
+
+---
+
+## Notes
+
+- All backend routes must be Sanctum-protected and tenant-scoped.
+- AI service communicates with backend **only** via OpenAPI-defined REST endpoints.
+- EXIF stripping happens **before** image leaves the frontend — backend/AI never receive raw GPS.
+- Composite scoring weights are configurable in `apps/ai-service/config/scoring.yaml`.
+- Circuit breaker in `TriageService` trips after 3 consecutive AI service failures — resets after 60s.

@@ -30,6 +30,7 @@ return [
 
     'supabase' => [
         'url' => env('NEXT_PUBLIC_SUPABASE_URL', ''),
+        'jwt_secret' => env('SUPABASE_JWT_SECRET', ''),
     ],
 
     'ai' => [

@@ -90,7 +90,7 @@ export default function ContactPage() {
                 <MapPin className="w-6 h-6 text-green shrink-0" />
                 <div>
                   <h3 className="font-semibold tracking-tight uppercase text-sm text-ink">Location</h3>
-                  <p className="font-mono text-sm uppercase">Manila, Philippines</p>
+                  <p className="font-mono text-sm uppercase">Iloilo, Philippines</p>
                   <p className="text-xs text-muted mt-1">Distributed Team • Remote First</p>
                 </div>
               </div>

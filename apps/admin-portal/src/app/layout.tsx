@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Geist, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { getLocale } from "next-intl/server";
-import { LiksiChat } from "@likaslens/shared";
 import "./globals.css";
 
 const bodyFont = Geist({
@@ -17,6 +16,9 @@ const dataFont = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://admin.likaslens.syntaxure.dev"
+  ),
   title: "LikasLens Admin",
   description: "Admin portal for LikasLens civic reporting platform",
   openGraph: {
@@ -79,7 +81,6 @@ export default async function RootLayout({
         <div id="main-content" className="flex-1">
           {children}
         </div>
-        <LiksiChat persona="admin" locale={locale} isAuthenticated={true} />
       </body>
     </html>
   );

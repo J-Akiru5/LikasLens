@@ -1,6 +1,5 @@
 import { DashboardContent } from "@/components/layout/dashboard-content";
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { laravelGet } from "@likaslens/shared";
 import { CitizenDashboardClient } from "./citizen-dashboard-client";
 import { LiksiBanner } from "@/components/dashboard/liksi-banner";
@@ -30,8 +29,8 @@ export default async function DashboardPage() {
     userGreeting = authUser?.email ? authUser.email.split('@')[0] : "Citizen";
     userRole = authUser?.user_metadata?.role as string | undefined;
 
-    const cookieStore = await cookies();
-    token = cookieStore.get("laravel_token")?.value;
+    const { data: { session } } = await supabase.auth.getSession();
+    token = session?.access_token;
   } catch {
     // Auth unavailable — render page without user-specific data
   }

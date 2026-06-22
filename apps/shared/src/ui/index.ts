@@ -13,7 +13,7 @@ export type { TrackStatus } from "./card";
 export { Button } from "./button";
 export type { ButtonProps } from "./button";
 export * from "./chat/liksi-chat";
-export { ToastContainer, showToast } from "./toast";
+export { ToastContainer, ToastProvider, useToast, showToast } from "./toast";
 export { OfflineBanner } from "./offline-banner";
 export { ThemeToggle } from "./theme-toggle";
 export { OnlineStatusBar } from "./online-status";

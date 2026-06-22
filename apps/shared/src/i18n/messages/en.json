@@ -261,10 +261,10 @@
       "noAchievementsLockedDesc": "You have unlocked everything!",
       "unlockedCount": "{unlocked} of {total} unlocked",
       "xpEarned": "{xp} Impact Score",
-      "tierBasic": "Basic",
-      "tierVerified": "Verified",
-      "tierAdvanced": "Advanced",
-      "tierAuthority": "Authority",
+      "tierCommon": "Common",
+      "tierRare": "Rare",
+      "tierEpic": "Epic",
+      "tierLegendary": "Legendary",
       "detailTitle": "Achievement Details",
       "detailCriteria": "How to unlock",
       "detailProgress": "Progress",
@@ -340,7 +340,7 @@
     "sendMessage": "Send Message",
     "sending": "Sending...",
     "successMessage": "Message sent! We'll get back to you soon.",
-    "officeAddress": "Manila, Philippines",
+    "officeAddress": "Iloilo, Philippines",
     "getInTouch": "Get in Touch"
   },
   "privacy": {
@@ -360,7 +360,11 @@
     "send": "Send message",
     "closeChat": "Close chat",
     "openChat": "Open Liksi chat",
-    "errorFallback": "Oops! I couldn't reach my brain right now. Please check your connection or try again later."
+    "errorFallback": "Oops! I couldn't reach my brain right now. Please check your connection or try again later.",
+    "welcomeCitizen": "Hey! I'm Liksi, your AI guide to LikasLens. Ask me anything about reporting environmental issues, using the platform, or Philippine environmental laws!",
+    "welcomeAdmin": "Welcome to the LikasLens Admin Portal! I'm Liksi, your AI operations assistant. I can help you triage reports, analyze trends, check laws, and manage the platform.",
+    "signInPrompt": "Please sign in to chat with Liksi",
+    "errorProcess": "Sorry, I couldn't process that. Try again!"
   },
   "offline": {
     "banner": "You are offline. Reports will be queued until connection is restored.",

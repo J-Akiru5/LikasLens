@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { DashboardLayout, getQueueCount } from "@likaslens/shared";
+import { DashboardLayout, getQueueCount, useNotifications } from "@likaslens/shared";
 import type { NavItem } from "@likaslens/shared";
 import {
   LayoutGrid,
@@ -56,6 +56,7 @@ export function DashboardLayoutWrapper({
   const [isGhostMode, setIsGhostMode] = useState(false);
   const [queueCount, setQueueCount] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications({ pollInterval: 30000 });
 
   // Fetch queue count on mount and on visibility change
   useEffect(() => {
@@ -116,6 +117,10 @@ export function DashboardLayoutWrapper({
       showBranding={showBranding}
       extraSidebarBottom={<UserNav variant="sidebar" />}
       headerChildren={headerChildren}
+      notifications={notifications}
+      unreadCount={unreadCount}
+      onMarkAsRead={markAsRead}
+      onMarkAllAsRead={markAllAsRead}
     >
       {children}
     </DashboardLayout>

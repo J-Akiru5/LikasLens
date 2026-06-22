@@ -631,12 +631,12 @@ function ProfilePageContent() {
                     </span>
                     <span className="relative z-10 font-mono text-[9px] text-ink/40 uppercase tracking-widest mt-2 block font-bold">
                       {tier === "basic"
-                        ? t("tierBasic")
+                        ? t("tierCommon")
                         : tier === "verified"
-                          ? t("tierVerified")
+                          ? t("tierRare")
                           : tier === "advanced"
-                            ? t("tierAdvanced")
-                            : t("tierAuthority")}
+                            ? t("tierEpic")
+                            : t("tierLegendary")}
                     </span>
                   </div>
                 );
@@ -695,12 +695,12 @@ function ProfilePageContent() {
                         {tf === "all"
                           ? t("all")
                           : tf === "basic"
-                            ? t("tierBasic")
+                            ? t("tierCommon")
                             : tf === "verified"
-                              ? t("tierVerified")
+                              ? t("tierRare")
                               : tf === "advanced"
-                                ? t("tierAdvanced")
-                                : t("tierAuthority")}
+                                ? t("tierEpic")
+                                : t("tierLegendary")}
                       </button>
                     ))}
                   </div>
@@ -776,12 +776,12 @@ function ProfilePageContent() {
                     </h2>
                     <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">
                       {selectedAchievement.tier === "basic"
-                        ? t("tierBasic")
+                        ? t("tierCommon")
                         : selectedAchievement.tier === "verified"
-                          ? t("tierVerified")
+                          ? t("tierRare")
                           : selectedAchievement.tier === "advanced"
-                            ? t("tierAdvanced")
-                            : t("tierAuthority")}
+                            ? t("tierEpic")
+                            : t("tierLegendary")}
                     </span>
                   </div>
 

@@ -16,20 +16,28 @@ function dedupKey(endpoint: string, token?: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 
 type TokenRefreshHandler = () => Promise<string | null>;
+type TokenProvider = () => Promise<string | null>;
 
 let _refreshHandler: TokenRefreshHandler | null = null;
+let _tokenProvider: TokenProvider | null = null;
 let _refreshPromise: Promise<string | null> | null = null;
 let _isRetrying = false;
 
 /**
  * Register a function that will be called when the API returns 401.
- * The handler should refresh the Supabase session, sync with Laravel, and
- * return the new `laravel_token` (or `null` if refresh failed).
- *
- * Call this once at app startup (e.g. in root layout or auth init).
+ * The handler should refresh the Supabase session and return the new
+ * access_token (or `null` if refresh failed).
  */
 export function setTokenRefreshHandler(handler: TokenRefreshHandler) {
   _refreshHandler = handler;
+}
+
+/**
+ * Register a function that returns the current auth token (Supabase JWT).
+ * Called automatically on client-side requests when no explicit token is given.
+ */
+export function setTokenProvider(provider: TokenProvider) {
+  _tokenProvider = provider;
 }
 
 /**
@@ -44,16 +52,6 @@ async function getRefreshedToken(): Promise<string | null> {
     _refreshPromise = null;
   });
   return _refreshPromise;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Cookie helper
-// ─────────────────────────────────────────────────────────────────────────────
-
-function getCookie(name: string): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  return match ? decodeURIComponent(match[2]) : null;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -86,7 +84,15 @@ export async function laravelFetch<T>(
   timeoutMs: number = 10000,
   token?: string
 ): Promise<T> {
-  const baseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL || "");
+  // Resolve the backend base URL.
+  // - If NEXT_PUBLIC_API_URL is set to an absolute URL (e.g. the deployed
+  //   Laravel backend), use it directly in BOTH server and client contexts.
+  //   This is the most reliable path for production (Vercel → external API)
+  //   and avoids depending on a Next.js rewrite to an absolute URL.
+  // - Otherwise fall back to the relative "/api" path, which relies on the
+  //   rewrite defined in each app's next.config.ts (dev + self-hosted).
+  const configured = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL || "");
+  const baseUrl = configured || "/api";
 
   const isFormData = options.body instanceof FormData;
 
@@ -97,12 +103,14 @@ export async function laravelFetch<T>(
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
   };
 
-  // On the server (Node/React Server Components), cookies() from next/headers
-  // can read httpOnly cookies. Pass the token explicitly via the `token` param.
-  // On the client, document.cookie cannot read httpOnly cookies — use a
-  // Next.js API route proxy instead of trying to read the cookie here.
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  // Resolve auth token: explicit param > client-side provider > server-side param
+  let resolvedToken: string | null | undefined = token ?? null;
+  if (!resolvedToken && typeof window !== "undefined" && _tokenProvider) {
+    resolvedToken = await _tokenProvider();
+  }
+
+  if (resolvedToken) {
+    headers["Authorization"] = `Bearer ${resolvedToken}`;
   }
 
   // Multi-tenant: extract subdomain and pass to backend
@@ -272,4 +280,21 @@ export function fetchEcoCreditRate<T>(countryCode: string) {
   return laravelGet<T>(
     `/settings/eco-credit-rate?country_code=${countryCode}`
   );
+}
+
+// Notification API
+export function fetchNotifications<T>(page = 1, perPage = 20) {
+  return laravelGet<T>(`/notifications?page=${page}&per_page=${perPage}`);
+}
+
+export function fetchUnreadCount<T>() {
+  return laravelGet<T>("/notifications/unread-count");
+}
+
+export function markNotificationAsRead<T>(id: string) {
+  return laravelPatch<T>(`/notifications/${id}/mark-as-read`);
+}
+
+export function markAllNotificationsAsRead<T>() {
+  return laravelPost<T>("/notifications/mark-all-as-read", {});
 }

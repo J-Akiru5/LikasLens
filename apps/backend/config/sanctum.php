@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\PersonalAccessToken;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Laravel\Sanctum\Http\Middleware\AuthenticateSession;
@@ -18,7 +19,7 @@ return [
     |
     */
 
-    'personal_access_token_model' => App\Models\PersonalAccessToken::class,
+    'personal_access_token_model' => PersonalAccessToken::class,
 
     /*
     |--------------------------------------------------------------------------

@@ -4,7 +4,6 @@ import {
   Public_Sans,
   JetBrains_Mono,
 } from "next/font/google";
-import Script from "next/script";
 import { getLocale } from "next-intl/server";
 import "./globals.css";
 
@@ -33,6 +32,9 @@ const dataFont = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://likaslensapp.syntaxure.dev"
+  ),
   title: "LikasLens",
   description: "Report environmental issues. AI-powered civic reporting.",
   manifest: "/manifest.json",
@@ -82,6 +84,7 @@ export const viewport: Viewport = {
 
 import { AppleSplashScreens } from "@/components/apple-splash-screens";
 import { SplashScreen } from "@/components/splash-screen";
+import { HeadScripts } from "@/components/head-scripts";
 
 export default async function RootLayout({
   children,
@@ -99,23 +102,9 @@ export default async function RootLayout({
     >
       <head>
         <AppleSplashScreens />
-        <Script id="theme-initializer" strategy="beforeInteractive">
-          {`try {
-            var savedTheme = localStorage.getItem('likaslens-theme');
-            if (savedTheme === 'ghost') {
-              document.documentElement.setAttribute('data-theme', 'ghost');
-            }
-          } catch (e) {}`}
-        </Script>
-        <Script id="sw-register" strategy="afterInteractive">
-          {`if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-              navigator.serviceWorker.register('/sw.js');
-            });
-          }`}
-        </Script>
       </head>
       <body className="min-h-full flex flex-col bg-page">
+        <HeadScripts />
         <SplashScreen />
         <a
           href="#main-content"

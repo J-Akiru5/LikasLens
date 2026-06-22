@@ -807,7 +807,7 @@
         <div class="section-title">Phase 1 — Roboflow Hosted API Integration</div>
         <div class="section-subtitle">Today, ~3.5 hrs. Call pre-trained garbage detection model via Roboflow Serverless API. Zero training.</div>
       </div>
-      <span class="section-badge badge-today">Today</span>
+      <span class="section-badge" style="background: var(--green-100); color: var(--green-800);">Completed</span>
       <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
     </div>
     <div class="section-body">
@@ -847,9 +847,9 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p1a-3" data-group="phase1 phase1a" onchange="saveState()">
+            <input type="checkbox" id="p1a-3" data-group="phase1 phase1a" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1a-3">Add <code>ROBOFLOW_API_KEY</code> and <code>ROBOFLOW_MODEL_ID</code> to <code>.env</code></label>
+              <label class="check-label done" for="p1a-3">Add <code>ROBOFLOW_API_KEY</code> and <code>ROBOFLOW_MODEL_ID</code> to <code>.env</code></label>
               <div class="check-meta">
                 <code>apps/ai-service/.env</code>
                 <span class="who-badge who-you">You</span>
@@ -863,9 +863,9 @@
         <h4>1B. Implement <code>roboflow_client.py</code> <span class="sub-count" data-group="phase1b"></span></h4>
         <ul class="checklist">
           <li>
-            <input type="checkbox" id="p1b-1" data-group="phase1 phase1b" onchange="saveState()">
+            <input type="checkbox" id="p1b-1" data-group="phase1 phase1b" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1b-1">Create <code>roboflow_client.py</code> module using <code>inference-sdk</code> to call Roboflow Serverless API</label>
+              <label class="check-label done" for="p1b-1">Create <code>roboflow_client.py</code> module using raw HTTP (serverless API, Python 3.13+ compat)</label>
               <div class="check-meta">
                 <code>apps/ai-service/roboflow_client.py</code> (new file)
                 <span class="who-badge who-you">You</span>
@@ -873,9 +873,9 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p1b-2" data-group="phase1 phase1b" onchange="saveState()">
+            <input type="checkbox" id="p1b-2" data-group="phase1 phase1b" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1b-2">Return bounding boxes + labels + confidence in same format as COCO detections</label>
+              <label class="check-label done" for="p1b-2">Return bounding boxes + labels + confidence in same format as COCO detections</label>
               <div class="check-meta">
                 Output: <code>[{"bbox": [x,y,w,h], "class": "...", "confidence": 0.85}, ...]</code>
                 <span class="who-badge who-you">You</span>
@@ -883,9 +883,9 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p1b-3" data-group="phase1 phase1b" onchange="saveState()">
+            <input type="checkbox" id="p1b-3" data-group="phase1 phase1b" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1b-3">Add <code>/roboflow/health</code> endpoint to <code>main.py</code> for connectivity check</label>
+              <label class="check-label done" for="p1b-3">Add <code>/roboflow/health</code> endpoint to <code>main.py</code> for connectivity check</label>
               <div class="check-meta">
                 <code>apps/ai-service/main.py</code>
                 <span class="who-badge who-you">You</span>
@@ -899,9 +899,9 @@
         <h4>1C. Wire into <code>image_analysis.py</code> Merge Pipeline <span class="sub-count" data-group="phase1c"></span></h4>
         <ul class="checklist">
           <li>
-            <input type="checkbox" id="p1c-1" data-group="phase1 phase1c" onchange="saveState()">
+            <input type="checkbox" id="p1c-1" data-group="phase1 phase1c" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1c-1">Add Roboflow as third detection source (alongside COCO + ENV model)</label>
+              <label class="check-label done" for="p1c-1">Add Roboflow as third detection source (alongside COCO + ENV model)</label>
               <div class="check-meta">
                 <code>apps/ai-service/image_analysis.py</code> — import roboflow_client, call in analyze flow
                 <span class="who-badge who-you">You</span>
@@ -909,9 +909,9 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p1c-2" data-group="phase1 phase1c" onchange="saveState()">
+            <input type="checkbox" id="p1c-2" data-group="phase1 phase1c" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1c-2">Update <code>_merge_detections()</code> to handle Roboflow results (IoU dedup with COCO/ENV)</label>
+              <label class="check-label done" for="p1c-2">Update <code>_merge_detections()</code> to handle Roboflow results (IoU dedup with COCO/ENV)</label>
               <div class="check-meta">
                 <code>apps/ai-service/image_analysis.py</code>
                 <span class="who-badge who-you">You</span>
@@ -919,9 +919,9 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p1c-3" data-group="phase1 phase1c" onchange="saveState()">
+            <input type="checkbox" id="p1c-3" data-group="phase1 phase1c" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1c-3">Update <code>compute_composite_score()</code> for three-source scoring</label>
+              <label class="check-label done" for="p1c-3">Update <code>compute_composite_score()</code> for three-source scoring</label>
               <div class="check-meta">
                 <code>apps/ai-service/image_analysis.py</code>
                 <span class="who-badge who-you">You</span>
@@ -929,9 +929,9 @@
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p1c-4" data-group="phase1 phase1c" onchange="saveState()">
+            <input type="checkbox" id="p1c-4" data-group="phase1 phase1c" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1c-4">Graceful fallback: if Roboflow unreachable, silently use COCO-only (already works today)</label>
+              <label class="check-label done" for="p1c-4">Graceful fallback: if Roboflow unreachable, silently use COCO-only (already works today)</label>
               <div class="check-meta">
                 try/except around roboflow call, log warning, continue with COCO
                 <span class="who-badge who-you">You</span>
@@ -945,27 +945,27 @@
         <h4>1D. End-to-End Test <span class="sub-count" data-group="phase1d"></span></h4>
         <ul class="checklist">
           <li>
-            <input type="checkbox" id="p1d-1" data-group="phase1 phase1d" onchange="saveState()">
+            <input type="checkbox" id="p1d-1" data-group="phase1 phase1d" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1d-1">Submit garbage photo through <code>/analyze</code> endpoint, verify Roboflow detections appear</label>
+              <label class="check-label done" for="p1d-1">Submit garbage photo through <code>/analyze</code> endpoint, verify Roboflow detections appear</label>
               <div class="check-meta">
                 <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p1d-2" data-group="phase1 phase1d" onchange="saveState()">
+            <input type="checkbox" id="p1d-2" data-group="phase1 phase1d" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1d-2">Verify Roboflow detections merge correctly with COCO results (no duplicate bboxes)</label>
+              <label class="check-label done" for="p1d-2">Verify Roboflow detections merge correctly with COCO results (no duplicate bboxes)</label>
               <div class="check-meta">
                 <span class="who-badge who-you">You</span>
               </div>
             </div>
           </li>
           <li>
-            <input type="checkbox" id="p1d-3" data-group="phase1 phase1d" onchange="saveState()">
+            <input type="checkbox" id="p1d-3" data-group="phase1 phase1d" onchange="saveState()" checked>
             <div class="check-content">
-              <label class="check-label" for="p1d-3">Check triage scoring with three detection sources</label>
+              <label class="check-label done" for="p1d-3">Check triage scoring with three detection sources</label>
               <div class="check-meta">
                 Verify composite_confidence >= 0.70 → auto_routed for clear garbage photos
                 <span class="who-badge who-you">You</span>
@@ -1584,15 +1584,15 @@
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-4" data-group="verify" onchange="saveState()">
+          <input type="checkbox" id="v-4" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
-            <label class="check-label" for="v-4">Roboflow API key is set and <code>/roboflow/health</code> returns OK</label>
+            <label class="check-label done" for="v-4">Roboflow API key is set and <code>/roboflow/health</code> returns OK</label>
           </div>
         </li>
         <li>
-          <input type="checkbox" id="v-5" data-group="verify" onchange="saveState()">
+          <input type="checkbox" id="v-5" data-group="verify" onchange="saveState()" checked>
           <div class="check-content">
-            <label class="check-label" for="v-5">Garbage photo submitted through <code>/analyze</code> shows Roboflow detections merged with COCO</label>
+            <label class="check-label done" for="v-5">Garbage photo submitted through <code>/analyze</code> shows Roboflow detections merged with COCO</label>
           </div>
         </li>
         <li>

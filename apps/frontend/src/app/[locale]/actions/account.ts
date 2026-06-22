@@ -1,6 +1,5 @@
 "use server"
 
-import { cookies } from "next/headers"
 import { createClient } from "@/utils/supabase/server"
 
 const LARAVEL_API = process.env.NEXT_PUBLIC_API_URL || ""
@@ -17,14 +16,14 @@ export async function deleteAccount(): Promise<{ success: boolean; error?: strin
 
   const userId = user.id
 
-  // 1. Notify Laravel backend to clean up user data
+  // 1. Notify Laravel backend to clean up user data using Supabase JWT
   try {
-    const token = (await cookies()).get("laravel_token")?.value
-    if (token) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.access_token) {
       await fetch(`${LARAVEL_API}/user/delete`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${session.access_token}`,
           Accept: "application/json",
         },
       })

@@ -7,6 +7,7 @@ import { MobileHeader } from "./mobile-header";
 import { BottomNav, type BottomNavItem } from "./bottom-nav";
 import { RouteProgress } from "./route-progress";
 import { cn } from "../utils";
+import type { AppNotification } from "../types/notification";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -24,6 +25,10 @@ interface DashboardLayoutProps {
   extraSidebarBottom?: React.ReactNode;
   headerChildren?: React.ReactNode;
   className?: string;
+  notifications?: AppNotification[];
+  unreadCount?: number;
+  onMarkAsRead?: (id: string) => void;
+  onMarkAllAsRead?: () => void;
 }
 
 export function DashboardLayout({
@@ -42,6 +47,10 @@ export function DashboardLayout({
   extraSidebarBottom,
   headerChildren,
   className,
+  notifications,
+  unreadCount,
+  onMarkAsRead,
+  onMarkAllAsRead,
 }: DashboardLayoutProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -75,6 +84,10 @@ export function DashboardLayout({
           showBranding={false}
           isGhostMode={isGhostMode}
           onThemeToggle={onThemeToggle}
+          notifications={notifications}
+          unreadCount={unreadCount}
+          onMarkAsRead={onMarkAsRead}
+          onMarkAllAsRead={onMarkAllAsRead}
           children={headerChildren}
         />
 

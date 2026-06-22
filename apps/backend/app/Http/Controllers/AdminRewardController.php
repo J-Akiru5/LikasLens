@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\PartnerStore;
 use App\Models\RewardsCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -107,6 +108,16 @@ class AdminRewardController extends Controller
             'success' => true,
             'message' => 'Reward updated.',
             'data' => $reward->fresh()->load('partnerStore'),
+        ]);
+    }
+
+    public function partnerStores(): JsonResponse
+    {
+        $stores = PartnerStore::select('id', 'name')->orderBy('name')->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $stores,
         ]);
     }
 

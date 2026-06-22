@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import {
   getDashboardStats,
   getDashboardFeed,
@@ -9,6 +10,7 @@ import {
   EmptyState,
   cn,
   RevealSection,
+  formatDate,
 } from "@likaslens/shared";
 import type {
   DashboardStats,
@@ -35,6 +37,8 @@ const ADMIN_PULSE_BADGE =
   "items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest shadow-[0_0_0_4px_color-mix(in_oklab,var(--green)_25%,transparent)]";
 
 export default function DashboardPage() {
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale || "en";
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [feed, setFeed] = useState<ActivityFeedItem[]>([]);
   const [recentTickets, setRecentTickets] = useState<Ticket[]>([]);
@@ -77,7 +81,7 @@ export default function DashboardPage() {
 
   const now = new Date();
   const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening";
-  const dateStr = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const dateStr = formatDate(now, "long", locale);
 
   // Phase 5: asymmetric KPI tiles (1 hero + 2 primary + 2 secondary)
   // Active Incidents is the hero (largest, green halo for "operational awareness")

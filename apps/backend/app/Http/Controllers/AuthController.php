@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\UserCreated;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Scopes\TenantScope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -90,7 +91,9 @@ class AuthController extends Controller
             'name' => 'nullable|string|max:255',
         ]);
 
-        $user = User::where('supabase_auth_user_id', $validated['supabase_auth_user_id'])->first();
+        $user = User::withoutGlobalScope(TenantScope::class)
+            ->where('supabase_auth_user_id', $validated['supabase_auth_user_id'])
+            ->first();
 
         if (! $user) {
             $user = User::create([

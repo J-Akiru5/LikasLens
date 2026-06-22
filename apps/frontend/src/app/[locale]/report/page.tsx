@@ -7,7 +7,8 @@ import { createClient } from "@/utils/supabase/client";
 import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
-import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor, laravelPost, queueReport } from "@likaslens/shared";
+import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor, laravelPost, queueReport, useOnnxInference } from "@likaslens/shared";
+import { stripExif } from "@/utils/exif-stripper";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
@@ -52,6 +53,9 @@ export default function ReportPage() {
   const [reportType, setReportType] = useState("");
   const [useMapPinning, setUseMapPinning] = useState(false);
 
+  // On-device inference for offline triage (lazy init)
+  const onnx = useOnnxInference({ autoInit: false });
+
   const camera = useCamera("environment");
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -91,31 +95,7 @@ export default function ReportPage() {
     notifyThemeColor();
   };
 
-  const stripExif = async (base64: string) => {
-    if (!base64) return base64;
-    return await new Promise<string>((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth || img.width;
-          canvas.height = img.naturalHeight || img.height;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return resolve(base64);
-          ctx.drawImage(img, 0, 0);
-          const cleaned = canvas.toDataURL();
-          resolve(cleaned);
-        } catch {
-          resolve(base64);
-        }
-      };
-      img.onerror = () => resolve(base64);
-      img.src = base64;
-    });
-  };
 
-  // Online / offline detection only — no auto-flush. Sync is manual via /offline-queue.
   useEffect(() => {
     const handleOnline = () => { setIsOnline(true); showToast("Connection restored.", "success"); };
     const handleOffline = () => { setIsOnline(false); showToast("Connection lost. Reports will queue until you are back online.", "error"); };
@@ -209,7 +189,11 @@ export default function ReportPage() {
       } catch { /* continue anonymously */ }
     }
 
-    const payload: Record<string, unknown> = { base64Image: cleanedImage, latitude, longitude };
+    const payload: Record<string, unknown> = { base64Image: cleanedImage };
+    if (!isGhostMode) {
+      payload.latitude = latitude;
+      payload.longitude = longitude;
+    }
     if (description.trim()) payload.description = description.trim();
     if (reportType) payload.report_type = reportType;
     if (!isGhostMode && userId) payload.user_id = userId;
@@ -233,17 +217,32 @@ export default function ReportPage() {
     try {
       const cleanedImage = await stripExif(base64Image);
 
-      if (!isGhostMode && navigator.onLine) {
+      // Triage: online uses server-side AI, offline uses on-device ONNX
+      if (!isGhostMode) {
         setIsTriaging(true);
         try {
-          const triageData = await laravelPost<{ has_concern: boolean; indicators: Array<{ label?: string; type?: string }> }>("/reports/triage", { base64Image: cleanedImage });
-          if (triageData.has_concern) {
-            setTriageIndicators(triageData.indicators.map((i: { label?: string; type?: string }) => i.label || i.type).filter(Boolean) as string[]);
-            setIsModalOpen(true);
-            setIsSubmitting(false);
-            setIsTriaging(false);
-            return;
+          if (navigator.onLine) {
+            // Server-side triage (full pipeline)
+            const triageData = await laravelPost<{ has_concern: boolean; indicators: Array<{ label?: string; type?: string }> }>("/reports/triage", { base64Image: cleanedImage });
+            if (triageData.has_concern) {
+              setTriageIndicators(triageData.indicators.map((i: { label?: string; type?: string }) => i.label || i.type).filter(Boolean) as string[]);
+              setIsModalOpen(true);
+              setIsSubmitting(false);
+              setIsTriaging(false);
+              return;
+            }
+          } else if (onnx.isReady) {
+            // On-device triage (offline inference)
+            const onnxResult = await onnx.infer(cleanedImage);
+            if (onnxResult.has_environmental_concern) {
+              setTriageIndicators(onnxResult.environmental_indicators);
+              setIsModalOpen(true);
+              setIsSubmitting(false);
+              setIsTriaging(false);
+              return;
+            }
           }
+          // If ONNX is not ready and offline, skip triage gracefully
         } catch (err) { console.error("Triage pre-check failed:", err); }
         finally { setIsTriaging(false); }
       }
@@ -286,6 +285,7 @@ export default function ReportPage() {
             <div className="flex items-center gap-2 p-3 border border-ink/10 font-mono text-xs text-ink/50">
               <span className="h-2 w-2 rounded-full bg-ink/30" />
               Offline &mdash; reports will queue until connection returns.
+              {onnx.isReady && <span className="text-accent">On-device AI active.</span>}
             </div>
           )}
 

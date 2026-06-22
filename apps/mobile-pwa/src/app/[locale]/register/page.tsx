@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Leaf, Eye, EyeOff, Check, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { laravelPost } from "@likaslens/shared";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -51,25 +50,7 @@ export default function RegisterPage() {
       return;
     }
 
-    // Sync with Laravel to get Sanctum token
-    try {
-      const laravelData = await laravelPost<any>("/auth/sync", {
-        supabase_auth_user_id: data.user?.id,
-        email: data.user?.email,
-        name: name || data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0],
-      });
-      
-      if (laravelData?.data?.token) {
-        const token = laravelData.data.token;
-        const isSecure = window.location.protocol === "https:";
-        document.cookie = `laravel_token=${token}; path=/; max-age=2592000; SameSite=Strict${isSecure ? "; Secure" : ""}`;
-      } else {
-        console.error("No token returned from backend:", laravelData);
-      }
-    } catch (syncErr) {
-      console.error("Failed to sync with backend", syncErr);
-    }
-
+    // Laravel validates Supabase JWTs directly — no token sync needed
     router.push(`/${locale}/dashboard`);
   }
 

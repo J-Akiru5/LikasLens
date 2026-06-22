@@ -10,9 +10,11 @@ use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\BlockchainService;
 use App\Services\ChainService;
+use App\Services\LocationFuzzService;
 use App\Services\RankService;
 use App\Services\TriageService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -54,8 +56,8 @@ class ReportController extends Controller
     {
         $validated = $request->validate([
             'base64Image' => 'required|string',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'user_id' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:5000',
             'report_type' => 'nullable|string|max:100',
@@ -87,7 +89,20 @@ class ReportController extends Controller
             $filename = sprintf('%s_%s.%s', now()->format('Ymd_His'), Str::uuid7(), $extension);
             $storagePath = sprintf('evidence/%s/%s', now()->format('Y/m/d'), $filename);
 
-            $userId = $this->resolveUserId($validated['user_id'] ?? null);
+            $submittedUserId = $validated['user_id'] ?? null;
+            $isGhostMode = ! $submittedUserId || $submittedUserId === 'ANONYMOUS_GHOST';
+            $userId = $this->resolveUserId($submittedUserId);
+
+            // Ghost Mode: fuzz GPS to nearest barangay centroid for privacy
+            $latitude = $validated['latitude'] ?? null;
+            $longitude = $validated['longitude'] ?? null;
+            $locationFuzzed = false;
+
+            if ($isGhostMode && $latitude !== null && $longitude !== null) {
+                $fuzzService = app(LocationFuzzService::class);
+                [$latitude, $longitude] = $fuzzService->toCentroid($latitude, $longitude);
+                $locationFuzzed = true;
+            }
 
             // Server-side EXIF stripping: re-encode image via GD to ensure metadata is removed
             $exifStrippedAt = now();
@@ -125,16 +140,18 @@ class ReportController extends Controller
 
             // Step 1 — Persist core data in a transaction
             [$ticket, $evidence] = DB::transaction(function () use (
-                $userId, $title, $description, $validated,
-                $storagePath, $checksum, $mimeType, $imageData
+                $userId, $title, $description,
+                $storagePath, $checksum, $mimeType, $imageData,
+                $latitude, $longitude, $locationFuzzed
             ) {
                 $ticket = Ticket::create([
                     'reporter_user_id' => $userId,
                     'status' => 'open',
                     'title' => $title,
                     'description' => $description,
-                    'latitude' => $validated['latitude'],
-                    'longitude' => $validated['longitude'],
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
+                    'location_fuzzed' => $locationFuzzed,
                 ]);
 
                 $evidence = TicketEvidence::create([
@@ -153,8 +170,8 @@ class ReportController extends Controller
 
                 Report::create([
                     'user_id' => $userId,
-                    'latitude' => $validated['latitude'],
-                    'longitude' => $validated['longitude'],
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
                     'image_path' => $storagePath,
                     'image_size' => strlen($imageData),
                     'storage_disk' => $this->getBucketName(),
@@ -163,13 +180,15 @@ class ReportController extends Controller
                 return [$ticket, $evidence];
             });
 
+            Cache::forget('dashboard:stats');
+
             // Step 2 — Fire initial timeline entry for new ticket
             TicketStatusChanged::dispatch(
                 ticket: $ticket,
                 fromStatus: null,
                 toStatus: 'open',
-                actorId: $userId !== self::GHOST_USER_ID ? $userId : null,
-                actorType: $userId !== self::GHOST_USER_ID ? 'user' : 'system',
+                actorId: $isGhostMode ? null : $userId,
+                actorType: $isGhostMode ? 'system' : 'user',
                 note: 'Ticket created from mobile report',
             );
 
@@ -219,7 +238,7 @@ class ReportController extends Controller
             }
 
             // Step 4 — Achievement & rank evaluation (non-critical, best-effort)
-            if ($userId !== self::GHOST_USER_ID) {
+            if (! $isGhostMode) {
                 try {
                     $reporter = User::find($userId);
                     if ($reporter) {
@@ -300,8 +319,8 @@ class ReportController extends Controller
                 'data' => [
                     'ticket_id' => $ticket->id,
                     'evidence_id' => $evidence->id,
-                    'latitude' => $validated['latitude'],
-                    'longitude' => $validated['longitude'],
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
                     'imageSize' => strlen($validated['base64Image']),
                     'checksum' => $checksum,
                     'triage' => $triage,
@@ -699,8 +718,10 @@ class ReportController extends Controller
         }
 
         if ($syncedCount > 0) {
-            $userId = $this->resolveUserId($validated['reports'][0]['user_id'] ?? null);
-            if ($userId !== self::GHOST_USER_ID) {
+            $submittedUserId = $validated['reports'][0]['user_id'] ?? null;
+            $isGhostMode = ! $submittedUserId || $submittedUserId === 'ANONYMOUS_GHOST';
+            $userId = $this->resolveUserId($submittedUserId);
+            if (! $isGhostMode) {
                 $user = User::find($userId);
                 if ($user) {
                     app(AchievementService::class)->evaluate($user, 'offline_sync', [

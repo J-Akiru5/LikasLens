@@ -12,7 +12,7 @@ const intlMiddleware = createMiddleware({
   localeDetection: true,
 });
 
-export default async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if this is a public route (uses exact path matching to avoid false positives)
@@ -46,6 +46,9 @@ export default async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
+  // Store original cookies so we can restore them if Supabase token refresh fails
+  const originalCookies = request.cookies.getAll();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -71,7 +74,10 @@ export default async function middleware(request: NextRequest) {
     const { data } = await supabase.auth.getUser();
     user = data.user;
   } catch {
-    // Supabase unreachable — treat as unauthenticated
+    // Supabase unreachable or token refresh failed — restore original cookies
+    originalCookies.forEach(({ name, value }) => {
+      supabaseResponse.cookies.set(name, value);
+    });
     return supabaseResponse;
   }
 
@@ -110,5 +116,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/(en|fil|vi|id|ms|ta)/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/(en|fil|vi|id|ms|ta|th)/:path*", "/((?!api|auth|_next|_vercel|.*\\..*).*)"],
 };

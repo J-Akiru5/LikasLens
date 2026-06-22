@@ -7,127 +7,90 @@ const LARAVEL_API = process.env.NEXT_PUBLIC_API_URL || "";
 /**
  * Authenticated proxy to the Laravel API.
  *
- * Reads the `laravel_token` httpOnly cookie server-side and forwards it as a
- * Bearer token.  If Laravel rejects the token (expired / tenant mismatch /
- * missing), the proxy re-syncs the user via Supabase → POST /auth/sync,
- * sets a fresh cookie, and retries — the client never touches the cookie.
+ * Reads the Supabase session server-side and forwards the `access_token`
+ * (a standard HS256 JWT) as a Bearer token. Laravel validates it directly
+ * using the SUPABASE_JWT_SECRET — no token sync, no cookie juggling.
+ *
+ * If the token is expired, we refresh the Supabase session and retry once.
  */
 export async function laravelAuthProxy(path: string): Promise<Response> {
   const cookieStore = await cookies();
-  const existingToken = cookieStore.get("laravel_token")?.value;
-
-  console.log(`[laravelAuthProxy] Request for ${path}. Existing token length: ${existingToken?.length || 0}`);
-
-  // ── Fast path: forward the existing token ──────────────────────────
-  if (existingToken) {
-    const res = await fetch(`${LARAVEL_API}${path}`, {
-      headers: {
-        Authorization: `Bearer ${existingToken}`,
-        Accept: "application/json",
-      },
-      cache: "no-store",
-    });
-
-    console.log(`[laravelAuthProxy] Fast path response status for ${path}: ${res.status}`);
-
-    if (res.ok) {
-      return Response.json(await res.json());
-    }
-
-    // Non-401 errors: pass through as-is
-    if (res.status !== 401) {
-      const body = await res.json().catch(() => null);
-      console.log(`[laravelAuthProxy] Fast path non-401 error: ${res.status}`, body);
-      return Response.json(
-        body ?? { success: false, message: "Upstream error" },
-        { status: res.status },
-      );
-    }
-
-    // 401 → token expired or invalid — fall through to re-sync
-    console.log(`[laravelAuthProxy] Fast path 401 encountered, falling through to re-sync`);
-  }
-
-  // ── Re-sync: Supabase session → Laravel token ─────────────────────
   const { url, anonKey } = getSupabaseEnv();
+
   const supabase = createServerClient(url, anonKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
       },
-      setAll() {
-        // Read-only; we set laravel_token ourselves below.
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) =>
+          cookieStore.set(name, value, options),
+        );
       },
     },
   });
 
+  // Get the current session (access_token is the Supabase JWT)
   const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
 
-  if (userError || !user) {
-    console.log(`[laravelAuthProxy] Supabase user check failed:`, userError);
+  if (sessionError || !session?.access_token) {
+    console.log(`[laravelAuthProxy] No Supabase session for ${path}:`, sessionError?.message);
     return Response.json(
       { success: false, message: "Unauthenticated." },
       { status: 401 },
     );
   }
 
-  console.log(`[laravelAuthProxy] Supabase user found: ${user.id} (${user.email}). Syncing with Laravel backend...`);
+  const accessToken = session.access_token;
 
-  const syncRes = await fetch(`${LARAVEL_API}/auth/sync`, {
-    method: "POST",
+  console.log(`[laravelAuthProxy] Request for ${path}. Token length: ${accessToken.length}`);
+
+  // ── Fast path: forward the Supabase JWT ──────────────────────────
+  const res = await fetch(`${LARAVEL_API}${path}`, {
     headers: {
-      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
       Accept: "application/json",
     },
-    body: JSON.stringify({
-      supabase_auth_user_id: user.id,
-      email: user.email,
-      name:
-        user.user_metadata?.full_name ||
-        user.user_metadata?.display_name ||
-        user.email?.split("@")[0],
-    }),
+    cache: "no-store",
   });
 
-  console.log(`[laravelAuthProxy] Sync request response status: ${syncRes.status}`);
+  console.log(`[laravelAuthProxy] Response status for ${path}: ${res.status}`);
 
-  if (!syncRes.ok) {
-    const errorBody = await syncRes.text().catch(() => "");
-    console.error(`[laravelAuthProxy] Sync request failed status: ${syncRes.status}, body: ${errorBody}`);
+  if (res.ok) {
+    return Response.json(await res.json());
+  }
+
+  // Non-401 errors: pass through
+  if (res.status !== 401) {
+    const body = await res.json().catch(() => null);
     return Response.json(
-      { success: false, message: "Backend sync failed." },
+      body ?? { success: false, message: "Upstream error" },
+      { status: res.status },
+    );
+  }
+
+  // ── 401 → try refreshing the Supabase session and retry once ─────
+  console.log(`[laravelAuthProxy] 401 for ${path}, attempting Supabase session refresh...`);
+
+  const { data: { session: refreshedSession }, error: refreshError } =
+    await supabase.auth.refreshSession();
+
+  if (refreshError || !refreshedSession?.access_token) {
+    console.log(`[laravelAuthProxy] Session refresh failed:`, refreshError?.message);
+    return Response.json(
+      { success: false, message: "Session expired. Please sign in again." },
       { status: 401 },
     );
   }
 
-  const syncBody = await syncRes.json();
-  const newToken: string | undefined = syncBody?.data?.token;
-  if (!newToken) {
-    console.error(`[laravelAuthProxy] Sync succeeded but did not return a token:`, syncBody);
-    return Response.json(
-      { success: false, message: "Backend sync failed." },
-      { status: 401 },
-    );
-  }
+  console.log(`[laravelAuthProxy] Session refreshed. Retrying ${path}...`);
 
-  console.log(`[laravelAuthProxy] Sync succeeded. New token acquired.`);
-
-  // Persist the fresh token
-  cookieStore.set("laravel_token", newToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-  });
-
-  // ── Retry with the fresh token ────────────────────────────────────
   const retryRes = await fetch(`${LARAVEL_API}${path}`, {
     headers: {
-      Authorization: `Bearer ${newToken}`,
+      Authorization: `Bearer ${refreshedSession.access_token}`,
       Accept: "application/json",
     },
     cache: "no-store",
@@ -138,7 +101,6 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
   const body = await retryRes.json().catch(() => null);
 
   if (!retryRes.ok) {
-    console.error(`[laravelAuthProxy] Retry request failed status: ${retryRes.status}`, body);
     return Response.json(
       body ?? { success: false, message: "Upstream error" },
       { status: retryRes.status },
