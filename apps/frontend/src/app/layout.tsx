@@ -4,7 +4,6 @@ import {
   Public_Sans,
   JetBrains_Mono,
 } from "next/font/google";
-import Script from "next/script";
 import { getLocale } from "next-intl/server";
 import "./globals.css";
 
@@ -125,9 +124,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script
-          id="theme-initializer"
-          strategy="beforeInteractive"
+        <script
           dangerouslySetInnerHTML={{
             __html: `
               try {
