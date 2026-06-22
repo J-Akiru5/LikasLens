@@ -8,10 +8,14 @@ FROM php:8.2-cli AS vendor
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libpq-dev \
         libzip-dev \
+        libpng-dev \
+        libjpeg-dev \
+        libfreetype6-dev \
         unzip \
         git \
         curl \
-    && docker-php-ext-install pdo_pgsql pdo_mysql zip bcmath \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_pgsql pdo_mysql zip bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -27,10 +31,14 @@ FROM php:8.2-cli AS build
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libpq-dev \
         libzip-dev \
+        libpng-dev \
+        libjpeg-dev \
+        libfreetype6-dev \
         unzip \
         git \
         curl \
-    && docker-php-ext-install pdo_pgsql pdo_mysql zip bcmath \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_pgsql pdo_mysql zip bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -53,8 +61,12 @@ FROM php:8.2-cli AS production
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libpq-dev \
         libzip-dev \
+        libpng-dev \
+        libjpeg-dev \
+        libfreetype6-dev \
         curl \
-    && docker-php-ext-install pdo_pgsql pdo_mysql zip bcmath \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_pgsql pdo_mysql zip bcmath gd \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /usr/share/doc/* /usr/share/man/* /tmp/* /var/tmp/*
 
