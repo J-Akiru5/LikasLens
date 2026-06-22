@@ -11,7 +11,7 @@
     "syncpack:fix": "syncpack fix-mismatches"
   },
   "devDependencies": {
-    "syncpack": "^14.3.0"
+    "syncpack": "^15.3.2"
   },
   "engines": {
     "node": ">=18.0.0",
