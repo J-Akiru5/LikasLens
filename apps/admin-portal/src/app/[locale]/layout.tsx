@@ -1,7 +1,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { ToastContainer } from "@likaslens/shared";
 import { locales } from "@likaslens/shared";
+import { LocaleLayoutClient } from "@/components/layout/locale-layout-client";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -19,8 +19,9 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
-      {children}
-      <ToastContainer />
+      <LocaleLayoutClient locale={locale}>
+        {children}
+      </LocaleLayoutClient>
     </NextIntlClientProvider>
   );
 }
