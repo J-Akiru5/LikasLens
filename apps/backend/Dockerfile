@@ -3,7 +3,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Stage 1: Dependencies ────────────────────────────────────────────
-FROM php:8.2-cli AS vendor
+FROM php:8.5-cli AS vendor
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libpq-dev \
@@ -26,7 +26,7 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # ── Stage 2: Build artifacts ─────────────────────────────────────────
-FROM php:8.2-cli AS build
+FROM php:8.5-cli AS build
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libpq-dev \
@@ -56,7 +56,7 @@ RUN mkdir -p bootstrap/cache \
     && php artisan optimize || true
 
 # ── Stage 3: Production runtime (slim) ───────────────────────────────
-FROM php:8.2-cli AS production
+FROM php:8.5-cli AS production
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libpq-dev \
