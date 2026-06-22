@@ -8,6 +8,7 @@ import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText } from "luc
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
 import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor } from "@likaslens/shared";
+import { stripExif } from "@/utils/exif-stripper";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
@@ -93,30 +94,6 @@ export default function ReportPage() {
     document.documentElement.setAttribute("data-theme", newTheme);
     try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
     notifyThemeColor();
-  };
-
-  const stripExif = async (base64: string) => {
-    if (!base64) return base64;
-    return await new Promise<string>((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth || img.width;
-          canvas.height = img.naturalHeight || img.height;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return resolve(base64);
-          ctx.drawImage(img, 0, 0);
-          const cleaned = canvas.toDataURL();
-          resolve(cleaned);
-        } catch {
-          resolve(base64);
-        }
-      };
-      img.onerror = () => resolve(base64);
-      img.src = base64;
-    });
   };
 
   const openOfflineDb = useCallback(
@@ -304,7 +281,11 @@ export default function ReportPage() {
       } catch { /* continue anonymously */ }
     }
 
-    const payload: Record<string, unknown> = { base64Image: cleanedImage, latitude, longitude };
+    const payload: Record<string, unknown> = { base64Image: cleanedImage };
+    if (!isGhostMode) {
+      payload.latitude = latitude;
+      payload.longitude = longitude;
+    }
     if (description.trim()) payload.description = description.trim();
     if (reportType) payload.report_type = reportType;
     if (!isGhostMode && userId) payload.user_id = userId;

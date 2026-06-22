@@ -19,13 +19,19 @@ info:
 
 servers:
   - url: http://localhost:8000/api
-    description: Local development
+    description: Local development (Backend)
   - url: https://api.likaslens.com/api
-    description: Production
+    description: Production (Backend)
+  - url: http://localhost:8001
+    description: Local development (AI Service)
+  - url: https://ai.likaslens.com
+    description: Production (AI Service)
 
 tags:
   - name: Health
     description: Service health checks
+  - name: AI Service
+    description: AI inference and detection service
   - name: Auth
     description: Authentication and user sync
   - name: Reports
@@ -1402,6 +1408,71 @@ paths:
                   timestamp:
                     type: string
                     format: date-time
+
+  # -------------------------------------------------------------------------
+  # AI Service — Roboflow
+  # -------------------------------------------------------------------------
+  /roboflow/health:
+    get:
+      tags: [AI Service]
+      summary: Roboflow pipeline health check
+      description: |
+        Verifies connectivity to the Roboflow Serverless API.
+        Requires API key authentication via `X-API-Key` header.
+        Returns connection status and model information.
+      operationId: getRoboflowHealth
+      security:
+        - apiKey: []
+      responses:
+        "200":
+          description: Roboflow connectivity status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok, error]
+                    example: "ok"
+                  model:
+                    type: string
+                    example: "garbage-detection-sht1u/4"
+                  roboflow_connected:
+                    type: boolean
+                    example: true
+                  http_status:
+                    type: integer
+                    example: 200
+                required: [status, model, roboflow_connected]
+              examples:
+                success:
+                  summary: Roboflow is reachable
+                  value:
+                    status: "ok"
+                    model: "garbage-detection-sht1u/4"
+                    roboflow_connected: true
+                    http_status: 200
+                auth_error:
+                  summary: Invalid API key
+                  value:
+                    status: "error"
+                    model: "garbage-detection-sht1u/4"
+                    roboflow_connected: false
+                    error: "Invalid API key (401 Unauthorized)"
+                connection_error:
+                  summary: Cannot reach Roboflow
+                  value:
+                    status: "error"
+                    model: "garbage-detection-sht1u/4"
+                    roboflow_connected: false
+                    error: "Cannot reach Roboflow API (connection refused or DNS failure)"
+        "401":
+          description: Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   # -------------------------------------------------------------------------
   # Auth

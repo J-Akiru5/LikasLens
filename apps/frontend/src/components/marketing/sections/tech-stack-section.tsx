@@ -38,7 +38,7 @@ const TECH_NODES: TechNode[] = [
     Icon: Eye,
     label: "Citizen Input",
     sublabel: "Mobile PWA",
-    detail: "Next.js 16 PWA with offline-first camera capture. EXIF metadata is stripped client-side before transmission for privacy, then re-attached server-side for evidence integrity.",
+    detail: "Next.js 16 PWA with offline-first camera capture. EXIF metadata is stripped client-side before transmission for privacy. A SHA-256 checksum and timestamp are stored server-side for evidence integrity.",
     color: "var(--accent)",
     row: 0,
     col: 0,

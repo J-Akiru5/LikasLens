@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Mode Fix Action Plan — LikasLens Roadmap</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface-2: #1a2236;
+    --border: #1e293b;
+    --ink: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #2ee6c8;
+    --gold: #facc15;
+    --red: #f87171;
+    --green: #34d399;
+    --orange: #fb923c;
+    --blue: #60a5fa;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    padding: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 2rem; margin-bottom: 0.5rem; color: var(--accent); }
+  h2 { font-size: 1.4rem; margin: 2rem 0 1rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--border); }
+  h3 { font-size: 1.1rem; margin: 1.2rem 0 0.5rem; color: var(--gold); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: var(--font-mono); font-size: 0.85em;
+    background: var(--surface-2); padding: 0.15em 0.4em; border-radius: 4px; color: var(--gold);
+  }
+  .file-ref {
+    font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted);
+    background: var(--surface-2); padding: 0.15em 0.5em; border-radius: 4px; white-space: nowrap;
+  }
+
+  .header {
+    text-align: center; padding: 2.5rem 2rem;
+    background: linear-gradient(135deg, #0c1628, #111e35, #1a0a0a);
+    border: 1px solid var(--border); border-radius: 16px; margin-bottom: 2rem;
+  }
+  .header h1 { font-size: 2.2rem; }
+  .header .subtitle { color: var(--muted); margin-top: 0.5rem; }
+  .header .meta {
+    display: flex; justify-content: center; gap: 2rem;
+    margin-top: 1rem; font-size: 0.85rem; color: var(--muted);
+  }
+
+  /* Progress */
+  .progress-bar {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1.5rem 0;
+  }
+  .progress-bar .label {
+    display: flex; justify-content: space-between;
+    font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem;
+  }
+  .progress-bar .track {
+    height: 12px; background: var(--border); border-radius: 6px; overflow: hidden;
+  }
+  .progress-bar .fill {
+    height: 100%; border-radius: 6px;
+    background: linear-gradient(90deg, var(--red), var(--orange), var(--green));
+    transition: width 0.4s;
+  }
+
+  /* Task cards */
+  .task {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem; margin: 1rem 0;
+    position: relative;
+  }
+  .task.p0 { border-left: 5px solid var(--red); }
+  .task.p1 { border-left: 5px solid var(--orange); }
+  .task.p2 { border-left: 5px solid var(--gold); }
+  .task.p3 { border-left: 5px solid var(--blue); }
+
+  .task-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .task-title { font-weight: 700; font-size: 1.05rem; }
+  .task.p0 .task-title { color: var(--red); }
+  .task.p1 .task-title { color: var(--orange); }
+  .task.p2 .task-title { color: var(--gold); }
+  .task.p3 .task-title { color: var(--blue); }
+
+  .task-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.2rem 0.6rem; border-radius: 999px;
+    font-size: 0.75rem; font-weight: 600; font-family: var(--font-mono);
+  }
+  .tag.critical { background: rgba(248,113,113,0.15); color: var(--red); }
+  .tag.high { background: rgba(251,146,60,0.15); color: var(--orange); }
+  .tag.medium { background: rgba(250,204,21,0.15); color: var(--gold); }
+  .tag.low { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .tag.effort { background: rgba(46,230,200,0.1); color: var(--accent); }
+  .tag.owner { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .tag.done { background: rgba(52,211,153,0.15); color: var(--green); }
+  .tag.pending { background: rgba(148,163,184,0.15); color: var(--muted); }
+
+  .task-body { font-size: 0.9rem; color: var(--muted); }
+  .task-body p { margin-bottom: 0.5rem; }
+  .task-body ul { padding-left: 1.25rem; margin: 0.5rem 0; }
+  .task-body li { margin: 0.25rem 0; }
+  .task-body code { font-size: 0.85em; }
+
+  .task-files {
+    margin-top: 0.75rem; padding-top: 0.75rem;
+    border-top: 1px solid var(--border); font-size: 0.8rem;
+  }
+  .task-files summary {
+    cursor: pointer; color: var(--accent); font-weight: 600; font-size: 0.85rem;
+  }
+  .task-files ul { padding-left: 1.25rem; margin-top: 0.5rem; }
+  .task-files li { margin: 0.2rem 0; color: var(--muted); }
+
+  .checklist { list-style: none; padding: 0; margin: 0.5rem 0; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 0.5rem;
+    padding: 0.3rem 0; font-size: 0.9rem;
+  }
+  .checklist .box {
+    flex-shrink: 0; width: 18px; height: 18px; margin-top: 2px;
+    border: 2px solid var(--border); border-radius: 4px;
+  }
+  .checklist .box.done {
+    background: var(--green); border-color: var(--green);
+    position: relative;
+  }
+  .checklist .box.done::after {
+    content: ''; position: absolute; top: 2px; left: 5px;
+    width: 4px; height: 8px; border: solid var(--bg);
+    border-width: 0 2px 2px 0; transform: rotate(45deg);
+  }
+
+  /* Summary table */
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+  th {
+    background: var(--surface-2); color: var(--accent); font-weight: 600;
+    font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  tr:hover { background: rgba(46,230,200,0.03); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .header .meta { flex-direction: column; gap: 0.5rem; }
+    .task-header { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>&#x1F6A8; Ghost Mode Fix Action Plan</h1>
+  <p class="subtitle">Prioritized tasks to close anonymity gaps identified in the Ghost Mode &amp; EXIF audit</p>
+  <div class="meta">
+    <span>Created: June 22, 2026</span>
+    <span>5 Tasks</span>
+    <span>Owner: Dev 1 (Lou) + Dev 3 (Charlyn)</span>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar">
+  <div class="label">
+    <span>Overall Progress</span>
+    <span>4 / 5 tasks complete</span>
+  </div>
+  <div class="track">
+    <div class="fill" style="width: 80%"></div>
+  </div>
+</div>
+
+<!-- SUMMARY TABLE -->
+<h2>Task Summary</h2>
+<table>
+  <tr>
+    <th>#</th>
+    <th>Task</th>
+    <th>Priority</th>
+    <th>Effort</th>
+    <th>Owner</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td><a href="#task-1">Fix frontend GPS leak in Ghost Mode</a></td>
+    <td><span class="tag critical">CRITICAL</span></td>
+    <td><span class="tag effort">30 min</span></td>
+    <td><span class="tag owner">Dev 1</span></td>
+    <td><span class="tag done">Done</span></td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><a href="#task-2">Add barangay-centroid GPS fuzzing</a></td>
+    <td><span class="tag high">HIGH</span></td>
+    <td><span class="tag effort">4-6h</span></td>
+    <td><span class="tag owner">Dev 3</span></td>
+    <td><span class="tag done">Done</span></td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><a href="#task-3">Consolidate client-side EXIF stripping (DRY)</a></td>
+    <td><span class="tag medium">MEDIUM</span></td>
+    <td><span class="tag effort">1-2h</span></td>
+    <td><span class="tag owner">Dev 1</span></td>
+    <td><span class="tag done">Done</span></td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><a href="#task-4">Add EXIF strip verification test</a></td>
+    <td><span class="tag medium">MEDIUM</span></td>
+    <td><span class="tag effort">2-3h</span></td>
+    <td><span class="tag owner">Dev 3</span></td>
+    <td><span class="tag done">Done</span></td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><a href="#task-5">Strip EXIF in offline queue before storage</a></td>
+    <td><span class="tag low">LOW</span></td>
+    <td><span class="tag effort">2-3h</span></td>
+    <td><span class="tag owner">Dev 1</span></td>
+    <td><span class="tag done">Mitigated</span></td>
+  </tr>
+</table>
+
+<hr>
+
+<!-- TASK 1 -->
+<div class="task p0" id="task-1">
+  <div class="task-header">
+    <div class="task-title">Task 1: Fix Frontend GPS Leak in Ghost Mode</div>
+    <div class="task-meta">
+      <span class="tag critical">CRITICAL</span>
+      <span class="tag effort">30 min</span>
+      <span class="tag owner">Dev 1 (Lou)</span>
+    </div>
+  </div>
+  <div class="task-body">
+    <p><strong>Problem:</strong> The frontend report page (<code>report/page.tsx:307</code>) always includes <code>latitude</code> and <code>longitude</code> in the API payload, even when Ghost Mode is active. The mobile-pwa correctly omits them.</p>
+
+    <p><strong>Fix:</strong> Add conditional GPS omission in the frontend payload construction.</p>
+
+    <p><strong>File to edit:</strong> <span class="file-ref">apps/frontend/src/app/[locale]/report/page.tsx</span></p>
+
+    <h3>Changes Required</h3>
+    <ul class="checklist">
+      <li><span class="box"></span> Line 307: Change from <code>{ base64Image: cleanedImage, latitude, longitude }</code> to conditional inclusion</li>
+      <li><span class="box"></span> Add: <code>if (!isGhostMode) { payload.latitude = latitude; payload.longitude = longitude; }</code></li>
+      <li><span class="box"></span> Verify offline queue also omits GPS when ghost mode is active (line 312-314)</li>
+      <li><span class="box"></span> Test: submit report in Ghost Mode, inspect network request, confirm no GPS in payload</li>
+    </ul>
+
+    <div class="task-files">
+      <summary>Files Involved</summary>
+      <ul>
+        <li><span class="file-ref">apps/frontend/src/app/[locale]/report/page.tsx</span> — lines 296-317 (payload construction)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 2 -->
+<div class="task p1" id="task-2">
+  <div class="task-header">
+    <div class="task-title">Task 2: Add Barangay-Centroid GPS Fuzzing</div>
+    <div class="task-meta">
+      <span class="tag high">HIGH</span>
+      <span class="tag effort">4-6h</span>
+      <span class="tag owner">Dev 3 (Charlyn)</span>
+    </div>
+  </div>
+  <div class="task-body">
+    <p><strong>Problem:</strong> Ghost Mode either sends exact GPS or omits GPS entirely. There is no "fuzzy location" for privacy-preserving spatial analytics. Reports without GPS cannot appear on heatmaps or be clustered.</p>
+
+    <p><strong>Solution:</strong> When Ghost Mode is active, snap GPS coordinates to the nearest barangay centroid before storage. This gives a ~1-5km accuracy area that is still useful for analytics but does not pinpoint the reporter.</p>
+
+    <h3>Implementation Steps</h3>
+    <ul class="checklist">
+      <li><span class="box"></span> Create a <code>barangay_centroids</code> table with columns: <code>id</code>, <code>name</code>, <code>province</code>, <code>latitude</code>, <code>longitude</code></li>
+      <li><span class="box"></span> Seed table with PH barangay centroid data (PSGC dataset — ~42,000 barangays)</li>
+      <li><span class="box"></span> Create <code>LocationFuzzService</code> with method <code>toCentroid(lat, lng): {lat, lng}</code></li>
+      <li><span class="box"></span> Use Haversine formula to find nearest centroid within 10km radius</li>
+      <li><span class="box"></span> In <code>ReportController::store()</code>, after user resolution, if ghost mode: call <code>LocationFuzzService</code></li>
+      <li><span class="box"></span> Store fuzzed coordinates on the <code>tickets</code> and <code>reports</code> tables</li>
+      <li><span class="box"></span> Add <code>location_fuzzed: true</code> field to <code>tickets</code> table for audit trail</li>
+      <li><span class="box"></span> Update OpenAPI schema with <code>location_fuzzed</code> boolean on Ticket response</li>
+      <li><span class="box"></span> Test: submit ghost report with known GPS, verify stored coordinates match nearest barangay centroid</li>
+    </ul>
+
+    <div class="task-files">
+      <summary>Files Involved</summary>
+      <ul>
+        <li><span class="file-ref">apps/backend/app/Services/LocationFuzzService.php</span> — NEW</li>
+        <li><span class="file-ref">apps/backend/database/migrations/..._create_barangay_centroids_table.php</span> — NEW</li>
+        <li><span class="file-ref">apps/backend/database/seeders/BarangayCentroidSeeder.php</span> — NEW</li>
+        <li><span class="file-ref">apps/backend/app/Http/ReportController.php</span> — modify <code>store()</code></li>
+        <li><span class="file-ref">apps/backend/database/migrations/..._add_location_fuzzed_to_tickets.php</span> — NEW</li>
+        <li><span class="file-ref">openapi.yaml</span> — add <code>location_fuzzed</code> field</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 3 -->
+<div class="task p2" id="task-3">
+  <div class="task-header">
+    <div class="task-title">Task 3: Consolidate Client-Side EXIF Stripping (DRY)</div>
+    <div class="task-meta">
+      <span class="tag medium">MEDIUM</span>
+      <span class="tag effort">1-2h</span>
+      <span class="tag owner">Dev 1 (Lou)</span>
+    </div>
+  </div>
+  <div class="task-body">
+    <p><strong>Problem:</strong> The same Canvas re-encode EXIF stripping logic is implemented 3 separate times. If the technique needs updating, all 3 must be patched independently.</p>
+
+    <p><strong>Solution:</strong> Consolidate to a single shared utility. The standalone <code>exif-stripper.ts</code> already exists &mdash; make the other two import from it.</p>
+
+    <h3>Implementation Steps</h3>
+    <ul class="checklist">
+      <li><span class="box"></span> Verify <code>apps/frontend/src/utils/exif-stripper.ts</code> handles both data-URL strings and File objects</li>
+      <li><span class="box"></span> Add a <code>stripExifFromFile(file: File): Promise&lt;Blob&gt;</code> overload to <code>exif-stripper.ts</code></li>
+      <li><span class="box"></span> Update <code>apps/frontend/src/utils/supabase/storage.ts</code> to import from <code>exif-stripper.ts</code> instead of inline implementation</li>
+      <li><span class="box"></span> Update <code>apps/frontend/src/app/[locale]/report/page.tsx</code> to import <code>stripExif</code> from <code>exif-stripper.ts</code> instead of inline function</li>
+      <li><span class="box"></span> Remove the inline <code>stripExif</code> function from <code>report/page.tsx</code> (lines 98-120)</li>
+      <li><span class="box"></span> Remove the inline <code>stripExifFromFile</code> function from <code>storage.ts</code> (lines 23-45)</li>
+      <li><span class="box"></span> Run <code>pnpm --filter frontend lint</code> to verify no regressions</li>
+      <li><span class="box"></span> Test: submit report + upload profile photo, verify both still strip EXIF correctly</li>
+    </ul>
+
+    <div class="task-files">
+      <summary>Files Involved</summary>
+      <ul>
+        <li><span class="file-ref">apps/frontend/src/utils/exif-stripper.ts</span> — extend with File overload</li>
+        <li><span class="file-ref">apps/frontend/src/utils/supabase/storage.ts</span> — remove inline, import shared</li>
+        <li><span class="file-ref">apps/frontend/src/app/[locale]/report/page.tsx</span> — remove inline, import shared</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 4 -->
+<div class="task p2" id="task-4">
+  <div class="task-header">
+    <div class="task-title">Task 4: Add EXIF Strip Verification Test</div>
+    <div class="task-meta">
+      <span class="tag medium">MEDIUM</span>
+      <span class="tag effort">2-3h</span>
+      <span class="tag owner">Dev 3 (Charlyn)</span>
+    </div>
+  </div>
+  <div class="task-body">
+    <p><strong>Problem:</strong> The existing test (<code>ReportSubmissionTest.php:45-56</code>) only verifies ghost user creation. There is no test that verifies EXIF metadata is actually removed from stored images.</p>
+
+    <p><strong>Solution:</strong> Add a feature test that submits an image with known EXIF data and asserts the stored image has no metadata.</p>
+
+    <h3>Implementation Steps</h3>
+    <ul class="checklist">
+      <li><span class="box"></span> Create a test JPEG fixture with known EXIF data (GPS, device make, timestamp) at <code>tests/Fixtures/exif-sample.jpg</code></li>
+      <li><span class="box"></span> Write test: <code>test_exif_metadata_is_stripped_on_submission()</code></li>
+      <li><span class="box"></span> Submit the fixture via <code>POST /api/reports</code>, retrieve stored image</li>
+      <li><span class="box"></span> Assert: <code>exif_read_data()</code> returns no GPS, no device info, no timestamp</li>
+      <li><span class="box"></span> Assert: <code>exif_removed_at</code> is set on the <code>ticket_evidence</code> record</li>
+      <li><span class="box"></span> Write test: <code>test_ghost_mode_omits_user_id()</code> — verify ghost user resolution</li>
+      <li><span class="box"></span> Write test: <code>test_ghost_mode_timeline_actor_is_null()</code> — verify timeline anonymization</li>
+      <li><span class="box"></span> Run <code>cd apps/backend && php artisan test --filter=ReportSubmission</code></li>
+    </ul>
+
+    <div class="task-files">
+      <summary>Files Involved</summary>
+      <ul>
+        <li><span class="file-ref">apps/backend/tests/Feature/ReportSubmissionTest.php</span> — extend with new tests</li>
+        <li><span class="file-ref">apps/backend/tests/Fixtures/exif-sample.jpg</span> — NEW test fixture</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- TASK 5 -->
+<div class="task p3" id="task-5">
+  <div class="task-header">
+    <div class="task-title">Task 5: Strip EXIF in Offline Queue Before Storage</div>
+    <div class="task-meta">
+      <span class="tag low">LOW</span>
+      <span class="tag effort">2-3h</span>
+      <span class="tag owner">Dev 1 (Lou)</span>
+    </div>
+  </div>
+  <div class="task-body">
+    <p><strong>Problem:</strong> The service worker offline queue (<code>sw.js:23-79</code>) stores the full request body in IndexedDB. If a user uploads a pre-existing photo with EXIF while offline, the metadata persists in IndexedDB until the queued report is eventually submitted.</p>
+
+    <p><strong>Mitigation:</strong> The image is already EXIF-stripped at capture time (canvas re-encode), so most queued data should not contain EXIF. However, for defense-in-depth, strip EXIF before queuing.</p>
+
+    <h3>Implementation Steps</h3>
+    <ul class="checklist">
+      <li><span class="box"></span> In the service worker <code>fetch</code> interceptor for <code>POST /api/reports</code>, clone the request body</li>
+      <li><span class="box"></span> Parse the JSON body, extract <code>base64Image</code></li>
+      <li><span class="box"></span> Use <code>OffscreenCanvas</code> to re-encode the image (strips EXIF) before queuing</li>
+      <li><span class="box"></span> Store the cleaned body in IndexedDB instead of the raw body</li>
+      <li><span class="box"></span> Note: <code>OffscreenCanvas</code> is available in service workers in Chrome 105+ and Safari 16.4+</li>
+      <li><span class="box"></span> For browsers without <code>OffscreenCanvas</code>, fall back to storing as-is (server-side strip will catch it)</li>
+      <li><span class="box"></span> Test: queue a report offline with a photo containing EXIF, go online, verify stored image has no EXIF</li>
+    </ul>
+
+    <div class="task-files">
+      <summary>Files Involved</summary>
+      <ul>
+        <li><span class="file-ref">apps/mobile-pwa/public/sw.js</span> — modify fetch interceptor (lines 111-128)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<p style="text-align:center; color:var(--muted); font-size:0.85rem; margin-top:2rem;">
+  Ghost Mode Fix Action Plan &mdash; Generated June 22, 2026<br>
+  Based on <a href="ghost-mode-audit-report.html">Ghost Mode &amp; EXIF Stripping Audit Report</a>
+</p>
+
+</body>
+</html>

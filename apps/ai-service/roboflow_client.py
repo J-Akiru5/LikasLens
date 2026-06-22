@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from typing import Any
 
 import requests
@@ -16,6 +17,10 @@ import requests
 logger = logging.getLogger(__name__)
 
 ROBOFLOW_API_URL = "https://serverless.roboflow.com"
+
+# Retry configuration for transient failures
+_MAX_RETRIES = 3
+_BACKOFF_BASE = 1.0  # seconds
 
 
 def _get_config() -> tuple[str, str]:
@@ -104,52 +109,91 @@ def detect_from_bytes(
       - latency_ms: request time in milliseconds
       - model: the model_id used
 
-    Raises RuntimeError on connection/auth errors so callers can fall back gracefully.
+    Retries up to 3 times with exponential backoff on transient errors
+    (ConnectionError, Timeout, 5xx). Raises RuntimeError on persistent
+    failures so callers can fall back gracefully.
     """
     api_key, model_id = _get_config()
     url = f"{ROBOFLOW_API_URL}/{model_id}"
+    last_exc: Exception | None = None
 
-    try:
-        resp = requests.post(
-            url,
-            params={"api_key": api_key, "confidence": confidence},
-            files={"image": ("image.jpg", image_bytes, "image/jpeg")},
-            timeout=30,
-        )
-    except requests.ConnectionError as exc:
-        raise RuntimeError(
-            f"Roboflow API unreachable — falling back to COCO-only: {exc}"
-        ) from exc
-    except requests.Timeout as exc:
-        raise RuntimeError(
-            f"Roboflow API timed out — falling back to COCO-only: {exc}"
-        ) from exc
+    for attempt in range(_MAX_RETRIES):
+        try:
+            resp = requests.post(
+                url,
+                params={"api_key": api_key, "confidence": confidence},
+                files={"image": ("image.jpg", image_bytes, "image/jpeg")},
+                timeout=30,
+            )
+        except requests.ConnectionError as exc:
+            last_exc = exc
+            if attempt < _MAX_RETRIES - 1:
+                wait = _BACKOFF_BASE * (2 ** attempt)
+                logger.warning("Roboflow connection error (attempt %d/%d), retrying in %.1fs: %s",
+                               attempt + 1, _MAX_RETRIES, wait, exc)
+                time.sleep(wait)
+                continue
+            raise RuntimeError(
+                f"Roboflow API unreachable after {_MAX_RETRIES} attempts — falling back to COCO-only: {exc}"
+            ) from exc
+        except requests.Timeout as exc:
+            last_exc = exc
+            if attempt < _MAX_RETRIES - 1:
+                wait = _BACKOFF_BASE * (2 ** attempt)
+                logger.warning("Roboflow timeout (attempt %d/%d), retrying in %.1fs: %s",
+                               attempt + 1, _MAX_RETRIES, wait, exc)
+                time.sleep(wait)
+                continue
+            raise RuntimeError(
+                f"Roboflow API timed out after {_MAX_RETRIES} attempts — falling back to COCO-only: {exc}"
+            ) from exc
 
-    if resp.status_code == 401:
-        raise RuntimeError(
-            "Roboflow API rejected the request (401 Unauthorized). "
-            "Check ROBOFLOW_API_KEY in .env."
-        )
+        # Non-retryable auth/not-found errors
+        if resp.status_code == 401:
+            raise RuntimeError(
+                "Roboflow API rejected the request (401 Unauthorized). "
+                "Check ROBOFLOW_API_KEY in .env."
+            )
 
-    if resp.status_code == 404:
-        raise RuntimeError(
-            f"Roboflow model not found (404): {model_id}. "
-            "Check ROBOFLOW_MODEL_ID in .env."
-        )
+        if resp.status_code == 404:
+            raise RuntimeError(
+                f"Roboflow model not found (404): {model_id}. "
+                "Check ROBOFLOW_MODEL_ID in .env."
+            )
 
-    if resp.status_code >= 400:
-        raise RuntimeError(
-            f"Roboflow API error: HTTP {resp.status_code} — {resp.text[:300]}"
-        )
+        # Retry on 5xx server errors
+        if resp.status_code >= 500:
+            last_exc = RuntimeError(f"Roboflow server error: HTTP {resp.status_code}")
+            if attempt < _MAX_RETRIES - 1:
+                wait = _BACKOFF_BASE * (2 ** attempt)
+                logger.warning("Roboflow server error %d (attempt %d/%d), retrying in %.1fs",
+                               resp.status_code, attempt + 1, _MAX_RETRIES, wait)
+                time.sleep(wait)
+                continue
+            raise RuntimeError(
+                f"Roboflow API error after {_MAX_RETRIES} attempts: HTTP {resp.status_code}"
+            )
 
-    data = resp.json()
-    return {
-        "predictions": data.get("predictions", []),
-        "latency_ms": data.get("inference_ms", 0),
-        "model": model_id,
-        "image_width": data.get("image", {}).get("width", 0),
-        "image_height": data.get("image", {}).get("height", 0),
-    }
+        # Other 4xx errors are not retryable
+        if resp.status_code >= 400:
+            raise RuntimeError(
+                f"Roboflow API error: HTTP {resp.status_code} — {resp.text[:300]}"
+            )
+
+        # Success
+        data = resp.json()
+        return {
+            "predictions": data.get("predictions", []),
+            "latency_ms": data.get("inference_ms", 0),
+            "model": model_id,
+            "image_width": data.get("image", {}).get("width", 0),
+            "image_height": data.get("image", {}).get("height", 0),
+        }
+
+    # Should not reach here, but just in case
+    raise RuntimeError(
+        f"Roboflow API failed after {_MAX_RETRIES} attempts: {last_exc}"
+    ) from last_exc
 
 
 def normalize_predictions(raw: dict[str, Any]) -> list[dict[str, Any]]:

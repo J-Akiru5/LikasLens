@@ -19,6 +19,7 @@ import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { cn, laravelPost, showToast, Button } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
 import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
+import { stripExif } from "@/lib/exif-stripper";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useVoiceInput } from "@/hooks/use-voice-input";
 import { useHaptics } from "@/hooks/use-haptics";
@@ -163,14 +164,19 @@ export default function ReportPage() {
     setStream(null);
   }, []);
 
-  const handleFileCaptureMobile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileCaptureMobile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       const dataUrl = reader.result as string;
-      setPhoto(dataUrl);
+      try {
+        const cleaned = await stripExif(dataUrl);
+        setPhoto(cleaned);
+      } catch {
+        setPhoto(dataUrl);
+      }
       setStep("preview");
       stopCamera();
     };
