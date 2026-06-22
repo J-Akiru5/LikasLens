@@ -31,7 +31,6 @@ use App\Http\Controllers\TicketAssignmentController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserImpactController;
 use App\Http\Controllers\UserWalletController;
-use App\Http\Controllers\Admin\TenantController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
