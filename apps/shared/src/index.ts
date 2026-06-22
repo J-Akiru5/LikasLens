@@ -18,3 +18,4 @@ export {
 } from "./i18n/language-suggestion";
 export { LanguageSuggestionPopup } from "./ui/language-suggestion-popup";
 export { laravelFetch, laravelGet, laravelPost, laravelPut, laravelDelete, laravelPatch } from "./api/client";
+export * from "./lib/offline-queue";

@@ -12,10 +12,11 @@ import {
   EmptyFeed,
 } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/shared";
-import { Camera, ChevronRight, Gift, Award, Activity, Zap, Scale } from "lucide-react";
+import { Camera, ChevronRight, Gift, Award, Activity, Zap, Scale, WifiOff, RefreshCw } from "lucide-react";
 import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
+import { getQueueCount } from "@likaslens/shared";
 
 interface RewardOffer {
   id: string;
@@ -33,6 +34,7 @@ export default function DashboardPage() {
   const [walletPoints, setWalletPoints] = useState(0);
   const [loading, setLoading] = useState(true);
   const [rewardsLoading, setRewardsLoading] = useState(true);
+  const [queueCount, setQueueCount] = useState(0);
   const haptic = useHaptics();
 
   const chatMessages = [
@@ -78,6 +80,12 @@ export default function DashboardPage() {
         setWalletPoints(walletRes.data.available_credits ?? 0);
       }
 
+      // Offline queue count
+      try {
+        const count = await getQueueCount();
+        setQueueCount(count);
+      } catch {}
+
       const user = userRes?.data || userRes;
       if (user?.name) {
         setUserName(user.name.split(" ")[0]);
@@ -95,6 +103,17 @@ export default function DashboardPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Refresh queue count when user returns to this tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        getQueueCount().then(setQueueCount).catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
 
   usePullToRefresh(load);
 
@@ -115,7 +134,7 @@ export default function DashboardPage() {
 
   return (
     <div className="pb-28">
-      <div className="px-5 pb-2 pt-1 flex justify-between items-end">
+      <div className="px-5 pb-2 pt-1 flex justify-between items-end"  >
         <div>
           <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1 min-h-[15px]">
             {timeState.dateStr}
@@ -236,6 +255,66 @@ export default function DashboardPage() {
             ))}
           </div>
         </section>
+
+        {/* ── Offline queue card (only when items queued) ──────────────── */}
+        {queueCount > 0 && (
+          <section style={{ marginBottom: 24 }}>
+            <Link
+              href={`/${locale}/offline-queue`}
+              onClick={() => haptic("light")}
+              className="ios-grouped-list flex items-center gap-3 p-4"
+              style={{
+                textDecoration: "none",
+                border: "1px solid color-mix(in oklab, var(--amber) 25%, transparent)",
+                background: "color-mix(in oklab, var(--amber) 6%, var(--panel))",
+              }}
+            >
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: "color-mix(in oklab, var(--amber) 14%, transparent)",
+                }}
+              >
+                <WifiOff
+                  style={{ width: 20, height: 20, color: "var(--amber)" }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: "var(--ink)",
+                    margin: 0,
+                  }}
+                >
+                  {queueCount} offline report{queueCount > 1 ? "s" : ""} pending
+                </p>
+                <p
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: 12,
+                    color: "var(--muted)",
+                    margin: "2px 0 0",
+                  }}
+                >
+                  Tap to review and sync now
+                </p>
+              </div>
+              <div
+                className="p-2 rounded-full"
+                style={{
+                  background: "color-mix(in oklab, var(--ink) 5%, transparent)",
+                }}
+              >
+                <RefreshCw
+                  style={{ width: 16, height: 16, color: "var(--muted)" }}
+                />
+              </div>
+            </Link>
+          </section>
+        )}
 
         {/* ── Quick actions rail ───────────────────────────────────────────── */}
         <section style={{ marginBottom: 24 }}>

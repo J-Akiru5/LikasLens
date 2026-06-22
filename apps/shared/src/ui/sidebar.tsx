@@ -23,6 +23,7 @@ export interface NavItem {
   divider?: boolean;
   dividerLabel?: string;
   colorDot?: string; // Hex color for the tiny dot indicator
+  badge?: string | number; // Badge/count shown next to the label
 }
 
 interface SidebarProps {
@@ -191,7 +192,14 @@ export function Sidebar({
               ) : Icon ? (
                 <Icon className={cn("w-[18px] h-[18px] shrink-0", isActive ? "text-page" : "text-ink/50")} strokeWidth={isActive ? 2.5 : 2} />
               ) : null}
-              {!isDesktopCollapsed && <span className="truncate">{item.label}</span>}
+              {!isDesktopCollapsed && (
+                <span className="flex-1 truncate">{item.label}</span>
+              )}
+              {!isDesktopCollapsed && item.badge != null && (
+                <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold bg-amber/15 text-amber leading-none">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}

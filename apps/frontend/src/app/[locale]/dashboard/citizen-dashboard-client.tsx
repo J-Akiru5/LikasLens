@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { StatsCards, ActivityFeed, PublicScoreboard, EmptyState, cn, Dropdown, Button, RevealSection, SpotlightCard, PulseBadge } from "@likaslens/shared";
+import { getQueueCount } from "@likaslens/shared";
 import type { DashboardStats, ActivityFeedItem } from "@likaslens/shared";
-import { AlertTriangle, Activity, Clock, CheckCircle, TriangleAlert, TrendingUp, Loader2 } from "lucide-react";
+import { AlertTriangle, Activity, Clock, CheckCircle, TriangleAlert, TrendingUp, Loader2, WifiOff, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 const HeatmapWidget = dynamic(
@@ -44,6 +45,22 @@ const CITIZEN_TAB_INACTIVE =
 export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeActive }: CitizenDashboardProps) {
   const points = (impact as any)?.reward_points_balance ?? 0;
   const [activeTab, setActiveTab] = useState<"overview" | "installed" | "uninstalled">("overview");
+  const [queueCount, setQueueCount] = useState(0);
+
+  useEffect(() => {
+    getQueueCount().then(setQueueCount).catch(() => {});
+  }, []);
+
+  // Refresh queue count when user returns to this tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        getQueueCount().then(setQueueCount).catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("latest");
 
@@ -185,6 +202,27 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
       {/* Content Areas */}
       {activeTab === 'overview' && (
         <div className="space-y-10">
+
+          {/* Offline queue card */}
+          {queueCount > 0 && (
+            <Link
+              href={`/${locale}/offline-queue`}
+              className="flex items-center gap-3 p-4 rounded-xl border border-amber/25 bg-amber/5 hover:bg-amber/10 transition-colors no-underline"
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-amber/15">
+                <WifiOff className="w-5 h-5 text-amber" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-ink m-0">
+                  {queueCount} offline report{queueCount > 1 ? "s" : ""} pending
+                </p>
+                <p className="text-xs text-ink/50 mt-0.5 m-0">
+                  Tap to review and sync now
+                </p>
+              </div>
+              <RefreshCw className="w-4 h-4 text-ink/30 shrink-0" />
+            </Link>
+          )}
 
           {/* Section 1: Insights — staggered entrance */}
           <RevealSection>

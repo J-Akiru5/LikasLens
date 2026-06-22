@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { DashboardLayout } from "@likaslens/shared";
+import { DashboardLayout, getQueueCount } from "@likaslens/shared";
 import type { NavItem } from "@likaslens/shared";
 import {
   LayoutGrid,
@@ -13,6 +13,7 @@ import {
   User,
   BarChart3,
   Network,
+  WifiOff,
 } from "lucide-react";
 import { UserNav } from "./user-nav";
 
@@ -28,6 +29,7 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
   
   { divider: true, dividerLabel: "Quick Access" },
   { href: "/report", label: "Submit Report", icon: Camera },
+  { href: "/offline-queue", label: "Offline Queue", icon: WifiOff },
   { href: "/laws", label: "Laws Database", icon: Scale },
   { href: "/profile", label: "Citizen Profile", icon: User },
 ];
@@ -52,7 +54,31 @@ export function DashboardLayoutWrapper({
   headerChildren,
 }: DashboardLayoutWrapperProps) {
   const [isGhostMode, setIsGhostMode] = useState(false);
+  const [queueCount, setQueueCount] = useState(0);
   const [mounted, setMounted] = useState(false);
+
+  // Fetch queue count on mount and on visibility change
+  useEffect(() => {
+    getQueueCount().then(setQueueCount).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        getQueueCount().then(setQueueCount).catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  // Build nav items with dynamic badge
+  const navItemsWithBadge: NavItem[] = SIDEBAR_NAV_ITEMS.map((item) => {
+    if (item.href === "/offline-queue" && queueCount > 0) {
+      return { ...item, badge: queueCount };
+    }
+    return item;
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -80,7 +106,7 @@ export function DashboardLayoutWrapper({
 
   return (
     <DashboardLayout
-      navItems={SIDEBAR_NAV_ITEMS}
+      navItems={navItemsWithBadge}
       userRole={userRole ?? null}
       isGhostMode={isGhostMode}
       onThemeToggle={toggleGhostMode}
