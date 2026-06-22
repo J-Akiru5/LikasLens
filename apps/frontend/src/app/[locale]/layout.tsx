@@ -21,9 +21,14 @@ export default async function LocaleLayout({
   const { locale } = await params;
   const messages = await getMessages();
 
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const isAuthenticated = !!session;
+  let isAuthenticated = false;
+  try {
+    const supabase = await createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    isAuthenticated = !!session;
+  } catch {
+    // Supabase unavailable — continue as unauthenticated
+  }
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
