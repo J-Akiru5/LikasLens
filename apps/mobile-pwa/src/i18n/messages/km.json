@@ -1,0 +1,45 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "report": "Report",
+    "scoreboard": "Records",
+    "profile": "Profile"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "activeIncidents": "Active Incidents",
+    "resolvedToday": "Resolved Today",
+    "avgResponse": "Avg Response",
+    "totalReports": "Total Reports"
+  },
+  "report": {
+    "title": "Report Issue",
+    "capturePhoto": "Capture Photo",
+    "selectType": "Select Incident Type",
+    "addDescription": "Add Description",
+    "submit": "Submit Report",
+    "gpsAcquired": "GPS acquired",
+    "ghostMode": "Ghost Mode"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get Started",
+    "title1": "Snap & Send",
+    "desc1": "Take a photo of any environmental issue. GPS coordinates are attached automatically.",
+    "title2": "AI Routes It",
+    "desc2": "Our AI identifies the issue type and severity, then routes it to the right agency.",
+    "title3": "Track to Resolution",
+    "desc3": "Follow your report from submission to resolution. Get notified the moment it's fixed."
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign In",
+    "createAccount": "Create Account",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  }
+}
+

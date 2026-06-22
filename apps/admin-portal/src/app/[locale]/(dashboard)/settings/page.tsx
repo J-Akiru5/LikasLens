@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { getAdminCurrencySettings, updateAdminCurrencySetting } from "@likaslens/shared";
 import type { CurrencySetting } from "@likaslens/shared";
 import { showToast, Button } from "@likaslens/shared";
@@ -264,6 +265,10 @@ function PlatformSection({ settings, update }: { settings: SettingsState; update
               <option value="id">Indonesian</option>
               <option value="ms">Malay</option>
               <option value="ta">Tamil</option>
+              <option value="th">Thai</option>
+              <option value="km">Khmer</option>
+              <option value="my">Burmese</option>
+              <option value="lo">Lao</option>
             </select>
           </div>
           <div>
@@ -582,7 +587,10 @@ function DevelopersSection() {
 }
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<AdminSettingsTab>("platform");
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab") as AdminSettingsTab | null;
+  const initialTab: AdminSettingsTab = tabParam && ["platform", "notifications", "security", "developers", "currency"].includes(tabParam) ? tabParam : "platform";
+  const [activeTab, setActiveTab] = useState<AdminSettingsTab>(initialTab);
   const [settings, setSettings] = useState<SettingsState>(DEFAULT_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);

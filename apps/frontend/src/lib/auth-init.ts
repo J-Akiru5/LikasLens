@@ -19,7 +19,7 @@ export function AuthRefreshInit() {
 
         const user = data.session.user;
         const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
         const res = await fetch(`${apiUrl}/auth/sync`, {
           method: "POST",
