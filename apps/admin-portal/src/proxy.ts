@@ -93,5 +93,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/(en|fil|vi|id|ms|ta)/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/", "/(en|fil|vi|id|ms|ta|th|km|my|lo)/:path*", "/((?!api|_next|_vercel|.*\\..*).*)"],
 };
