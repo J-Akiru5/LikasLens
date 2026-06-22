@@ -273,3 +273,20 @@ export function fetchEcoCreditRate<T>(countryCode: string) {
     `/settings/eco-credit-rate?country_code=${countryCode}`
   );
 }
+
+// Notification API
+export function fetchNotifications<T>(page = 1, perPage = 20) {
+  return laravelGet<T>(`/notifications?page=${page}&per_page=${perPage}`);
+}
+
+export function fetchUnreadCount<T>() {
+  return laravelGet<T>("/notifications/unread-count");
+}
+
+export function markNotificationAsRead<T>(id: string) {
+  return laravelPatch<T>(`/notifications/${id}/mark-as-read`);
+}
+
+export function markAllNotificationsAsRead<T>() {
+  return laravelPost<T>("/notifications/mark-all-as-read", {});
+}
