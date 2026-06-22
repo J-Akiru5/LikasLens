@@ -11,6 +11,15 @@ const STATIC_ASSETS = [
   '/images/likas-lens-logo.png' // Splash screen logo
 ];
 
+// ONNX model files — cached on first access for offline inference
+const MODEL_ASSETS = [
+  '/models/yolov8s-coco.onnx',
+  '/models/yolov8s-waste.onnx',
+  '/models/coco-classes.json',
+  '/models/waste-classes.json',
+  '/models/model-meta.json',
+];
+
 // Read-only API endpoints that use stale-while-revalidate
 const SWR_PATHS = [
   '/api/laws',
@@ -179,7 +188,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // --- Cache-first for static assets (images, JS, CSS) ---
+  // --- Cache-first for static assets (images, JS, CSS) and ONNX models ---
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetched = fetch(request).then((response) => {
@@ -201,5 +210,36 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-reports') {
     event.waitUntil(drainQueue());
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Message: preload ONNX models into cache for offline inference
+// ---------------------------------------------------------------------------
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'CACHE_MODELS') {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const results = await Promise.allSettled(
+          MODEL_ASSETS.map(async (url) => {
+            const existing = await cache.match(url);
+            if (existing) return 'cached';
+            const resp = await fetch(url);
+            if (resp.ok) {
+              await cache.put(url, resp.clone());
+              return 'fetched';
+            }
+            return 'failed';
+          })
+        );
+        const clients = await self.clients.matchAll();
+        for (const client of clients) {
+          client.postMessage({
+            type: 'MODELS_CACHED',
+            results: results.map((r) => r.status),
+          });
+        }
+      })
+    );
   }
 });

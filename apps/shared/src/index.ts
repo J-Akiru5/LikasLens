@@ -19,3 +19,6 @@ export {
 } from "./i18n/language-suggestion";
 export { LanguageSuggestionPopup } from "./ui/language-suggestion-popup";
 export { laravelFetch, laravelGet, laravelPost, laravelPut, laravelDelete, laravelPatch } from "./api/client";
+export * from "./lib/onnx";
+export { useOnnxInference } from "./hooks/useOnnxInference";
+export type { UseOnnxInferenceOptions, UseOnnxInferenceReturn } from "./hooks/useOnnxInference";

@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "./client";
+import { stripExifFromFile } from "@/utils/exif-stripper";
 
 const PROFILE_BUCKET = "profile-images";
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
@@ -18,30 +19,6 @@ export function validateProfileImage(file: File): string | null {
     return "Only JPEG, PNG, and WebP images are allowed.";
   }
   return null;
-}
-
-function stripExifFromFile(file: File): Promise<Blob> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth || img.width;
-        canvas.height = img.naturalHeight || img.height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) { resolve(file); return; }
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob((blob) => {
-          URL.revokeObjectURL(url);
-          if (blob) resolve(blob);
-          else resolve(file);
-        }, file.type, 0.92);
-      } catch { URL.revokeObjectURL(url); resolve(file); }
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
-    img.src = url;
-  });
 }
 
 export async function uploadProfileImage(

@@ -33,9 +33,9 @@ class SlaEscalationNotification extends Notification implements ShouldQueue
             ->subject("LikasLens: SLA Escalation — Ticket {$displayId}")
             ->greeting("Hello {$notifiable->name},")
             ->line("Ticket **{$displayId}** has been escalated due to an SLA {$breachType} breach.")
-            ->line("**Violation:** ".($this->ticket->classifications->first()?->violationType?->name ?? 'Unknown'))
-            ->line("**Response breached:** ".($this->ticket->sla_response_breached ? 'Yes' : 'No'))
-            ->line("**Resolution breached:** ".($this->ticket->sla_resolution_breached ? 'Yes' : 'No'))
+            ->line('**Violation:** '.($this->ticket->classifications->first()?->violationType?->name ?? 'Unknown'))
+            ->line('**Response breached:** '.($this->ticket->sla_response_breached ? 'Yes' : 'No'))
+            ->line('**Resolution breached:** '.($this->ticket->sla_resolution_breached ? 'Yes' : 'No'))
             ->action('View Ticket', config('app.frontend_url', 'https://likaslens.com')."/tickets/{$this->ticket->id}")
             ->line('Please take immediate action to resolve this ticket.');
     }

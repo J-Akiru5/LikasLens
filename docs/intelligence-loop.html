@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="civic">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LikasLens — The Intelligence Loop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════════════════
+           LIKASLENS DESIGN SYSTEM — "The Vigilant Earth"
+           Eco-Brutalism + Civic Tech
+           ═══════════════════════════════════════════════════════════ */
+
+        :root {
+            --primary:       #1B4332;
+            --secondary:     #2DE1C2;
+            --accent:        #FFB703;
+            --background:    #F8F9FA;
+            --foreground:    #081C15;
+            --panel:         #FFFFFF;
+            --panel-border:  rgba(8, 28, 21, 0.15);
+            --muted-text:    rgba(8, 28, 21, 0.65);
+            --font-heading:  'Montserrat', Arial, sans-serif;
+            --font-body:     'Inter', Helvetica, Arial, sans-serif;
+            --font-data:     'Space Mono', 'Courier New', monospace;
+            --shadow-brutal: 8px 8px 0px #1B4332;
+            --shadow-brutal-sm: 4px 4px 0px #1B4332;
+            --shadow-brutal-xs: 2px 2px 0px #1B4332;
+
+            /* Phase colours */
+            --collect-hue:   #2563EB;
+            --analyze-hue:   #7C3AED;
+            --predict-hue:   #D97706;
+            --act-hue:       #059669;
+            
+            /* Gradient highlights */
+            --collect-bg:    rgba(37, 99, 235, 0.04);
+            --analyze-bg:    rgba(124, 58, 237, 0.04);
+            --predict-bg:    rgba(217, 119, 6, 0.04);
+            --act-bg:        rgba(5, 150, 105, 0.04);
+            
+            /* Custom sizes */
+            --icon-size: 80px;
+            --text-offset: 54px;
+        }
+
+        [data-theme="ghost"] {
+            --primary:      #2DE1C2;
+            --secondary:    #FFB703;
+            --background:   #081C15;
+            --foreground:   #F8F9FA;
+            --panel:        #0D281E;
+            --panel-border: rgba(45, 225, 194, 0.25);
+            --muted-text:   rgba(248, 249, 250, 0.65);
+            --shadow-brutal: 8px 8px 0px #2DE1C2;
+            --shadow-brutal-sm: 4px 4px 0px #2DE1C2;
+            --shadow-brutal-xs: 2px 2px 0px #2DE1C2;
+            
+            /* Gradient highlights in dark mode */
+            --collect-bg:    rgba(37, 99, 235, 0.1);
+            --analyze-bg:    rgba(124, 58, 237, 0.1);
+            --predict-bg:    rgba(217, 119, 6, 0.1);
+            --act-bg:        rgba(5, 150, 105, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        ::selection { background: rgba(255,183,3,.3); }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--background);
+            color: var(--foreground);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* ── GRID BG ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(45,225,194,.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45,225,194,.05) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── THEME TOGGLE ── */
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 200;
+            display: flex;
+            background: var(--panel);
+            border: 2px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 2px;
+            box-shadow: var(--shadow-brutal-xs);
+        }
+        .theme-btn {
+            font-family: var(--font-data);
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            padding: .4rem .8rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all .2s ease;
+            background: transparent;
+            color: var(--muted-text);
+        }
+        .theme-btn:hover {
+            color: var(--foreground);
+        }
+        [data-theme="civic"] #btn-civic {
+            background: var(--primary);
+            color: #F8F9FA;
+        }
+        [data-theme="ghost"] #btn-ghost {
+            background: var(--primary);
+            color: #081C15;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            position: relative;
+            padding: 6rem 2rem 4rem;
+            text-align: center;
+            background-image:
+                radial-gradient(ellipse at 15% 0%, rgba(45,225,194,.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 85% 0%, rgba(255,183,3,.12) 0%, transparent 60%);
+            z-index: 1;
+        }
+        .hero-eyebrow {
+            font-family: var(--font-data);
+            font-size: .75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .2em;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+        .hero h1 {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            text-transform: uppercase;
+            letter-spacing: -.03em;
+            line-height: 1;
+            margin-bottom: 1.5rem;
+        }
+        .hero h1 .accent { color: var(--secondary); }
+        .hero h1 .amber  { color: var(--accent); }
+        .hero-desc {
+            max-width: 680px;
+            margin: 0 auto 2.5rem;
+            font-size: 1.05rem;
+            color: var(--muted-text);
+            line-height: 1.7;
+        }
+        .hero-desc strong { color: var(--foreground); }
+        .loop-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .75rem;
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 100px;
+            padding: .65rem 1.5rem;
+            box-shadow: var(--shadow-brutal-xs);
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+        .loop-pill .dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        .dot-collect { background: var(--collect-hue); animation-delay: 0s; }
+        .dot-analyze { background: var(--analyze-hue); animation-delay: .5s; }
+        .dot-predict { background: var(--predict-hue); animation-delay: 1s; }
+        .dot-act     { background: var(--act-hue);     animation-delay: 1.5s; }
+        @keyframes pulse-dot {
+            0%,100% { transform: scale(1); opacity: 1; }
+            50%      { transform: scale(1.4); opacity: .7; }
+        }
+
+        /* ── WRAPPER ── */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; position: relative; z-index: 1; }
+
+        /* ══════════════════════════════════════
+           CIRCULAR LOOP DIAGRAM
+           ══════════════════════════════════════ */
+        .loop-section {
+            padding: 2rem 0 5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .loop-wrapper {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            max-width: 100%;
+            aspect-ratio: 1 / 1;
+            margin: 2rem auto;
+        }
+
+        /* SVG ring */
+        .loop-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        /* Centre badge */
+        .loop-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 4px solid var(--panel-border);
+            box-shadow: var(--shadow-brutal-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            z-index: 10;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        [data-theme="ghost"] .loop-center {
+            background: linear-gradient(135deg, rgba(13, 40, 30, 0.95), rgba(8, 28, 21, 0.98));
+            border-color: var(--secondary);
+            box-shadow: 0 0 20px rgba(45, 225, 194, 0.15), var(--shadow-brutal-sm);
+        }
+        .loop-center:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            box-shadow: var(--shadow-brutal);
+        }
+        .loop-center .lc-logo {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: -.02em;
+            color: #F8F9FA;
+        }
+        .loop-center .lc-logo span { color: var(--secondary); }
+        .loop-center .lc-tagline {
+            font-family: var(--font-data);
+            font-size: .52rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: rgba(248,249,250,.7);
+            margin-top: .35rem;
+        }
+
+        /* Anchors & nodes */
+        .phase-node {
+            position: absolute;
+            width: 0;
+            height: 0;
+            z-index: 5;
+        }
+
+        /* Position anchors (using percentages of 600px box) */
+        .phase-node.collect { left: 50%; top: 16.67%; }   /* (300, 100) */
+        .phase-node.analyze { left: 83.33%; top: 50%; }   /* (500, 300) */
+        .phase-node.predict { left: 50%; top: 83.33%; }   /* (300, 500) */
+        .phase-node.act     { left: 16.67%; top: 50%; }   /* (100, 300) */
+
+        .phase-icon {
+            position: absolute;
+            width: var(--icon-size);
+            height: var(--icon-size);
+            border-radius: 50%;
+            border: 4px solid;
+            background: var(--panel);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translate(-50%, -50%);
+            box-shadow: var(--shadow-brutal-xs);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            cursor: pointer;
+            z-index: 6;
+        }
+        .phase-icon svg {
+            width: 32px;
+            height: 32px;
+            transition: transform 0.3s ease;
+        }
+        .phase-icon:hover {
+            transform: translate(-50%, -50%) scale(1.12);
+            box-shadow: var(--shadow-brutal-sm);
+        }
+        .phase-icon:hover svg {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .phase-node.collect .phase-icon { border-color: var(--collect-hue); color: var(--collect-hue); }
+        .phase-node.analyze .phase-icon { border-color: var(--analyze-hue); color: var(--analyze-hue); }
+        .phase-node.predict .phase-icon { border-color: var(--predict-hue); color: var(--predict-hue); }
+        .phase-node.act     .phase-icon { border-color: var(--act-hue);     color: var(--act-hue); }
+
+        [data-theme="ghost"] .phase-icon {
+            background: #0D281E;
+        }
+
+        .phase-text {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            width: 140px;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .phase-name {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+        }
+        .phase-node.collect .phase-name { color: var(--collect-hue); }
+        .phase-node.analyze .phase-name { color: var(--analyze-hue); }
+        .phase-node.predict .phase-name { color: var(--predict-hue); }
+        .phase-node.act     .phase-name { color: var(--act-hue); }
+
+        .phase-sub {
+            font-family: var(--font-data);
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted-text);
+            margin-top: 0.15rem;
+        }
+
+        /* Collect: text above icon */
+        .phase-node.collect .phase-text {
+            bottom: var(--text-offset);
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            align-items: center;
+        }
+
+        /* Analyze: text to the right of icon */
+        .phase-node.analyze .phase-text {
+            left: var(--text-offset);
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: left;
+            align-items: flex-start;
+        }
+
+        /* Predict: text below icon */
+        .phase-node.predict .phase-text {
+            top: var(--text-offset);
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            align-items: center;
+        }
+
+        /* Act: text to the left of icon */
+        .phase-node.act .phase-text {
+            right: var(--text-offset);
+            top: 50%;
+            transform: translateY(-50%);
+            text-align: right;
+            align-items: flex-end;
+        }
+
+        /* rotating blueprint radar animation */
+        @keyframes spin-cw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+        
+        .ring-track-outer {
+            transform-origin: center;
+            animation: spin-cw 60s linear infinite;
+            opacity: 0.35;
+        }
+        .ring-track-inner {
+            transform-origin: center;
+            animation: spin-ccw 45s linear infinite;
+            opacity: 0.3;
+        }
+        .ring-track-core {
+            transform-origin: center;
+            animation: spin-cw 120s linear infinite;
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .ring-track-outer, .ring-track-inner, .ring-track-core { animation: none; }
+        }
+
+        /* glow pulse on SVG arcs */
+        @keyframes arc-glow {
+            0%, 100% { opacity: 0.8; stroke-width: 5; }
+            50% { opacity: 1; stroke-width: 6.5; filter: drop-shadow(0 0 4px currentColor); }
+        }
+        .arc-collect { stroke: var(--collect-hue); animation: arc-glow 4s ease-in-out infinite; }
+        .arc-analyze { stroke: var(--analyze-hue); animation: arc-glow 4s ease-in-out infinite 1s; }
+        .arc-predict { stroke: var(--predict-hue); animation: arc-glow 4s ease-in-out infinite 2s; }
+        .arc-act     { stroke: var(--act-hue);     animation: arc-glow 4s ease-in-out infinite 3s; }
+
+        /* ══════════════════════════════════════
+           PHASE DETAIL CARDS
+           ══════════════════════════════════════ */
+        .cards-section {
+            padding: 2rem 0 5rem;
+        }
+
+        .section-label {
+            font-family: var(--font-data);
+            font-size: .8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .2em;
+            color: var(--muted-text);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .section-label span { color: var(--secondary); }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px) { .cards-grid { grid-template-columns: 1fr; } }
+
+        .phase-card {
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-brutal-xs);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+        }
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .phase-card.card-collect::before { background: var(--collect-hue); }
+        .phase-card.card-analyze::before { background: var(--analyze-hue); }
+        .phase-card.card-predict::before { background: var(--predict-hue); }
+        .phase-card.card-act::before     { background: var(--act-hue); }
+
+        .phase-card.card-collect { background: linear-gradient(180deg, var(--panel) 60%, var(--collect-bg) 100%); }
+        .phase-card.card-analyze { background: linear-gradient(180deg, var(--panel) 60%, var(--analyze-bg) 100%); }
+        .phase-card.card-predict { background: linear-gradient(180deg, var(--panel) 60%, var(--predict-bg) 100%); }
+        .phase-card.card-act     { background: linear-gradient(180deg, var(--panel) 60%, var(--act-bg) 100%); }
+
+        .phase-card:hover {
+            transform: translateY(-8px);
+        }
+        .phase-card.card-collect:hover {
+            box-shadow: 0 12px 24px rgba(37, 99, 235, 0.1), var(--shadow-brutal-sm);
+            border-color: var(--collect-hue);
+        }
+        .phase-card.card-analyze:hover {
+            box-shadow: 0 12px 24px rgba(124, 58, 237, 0.1), var(--shadow-brutal-sm);
+            border-color: var(--analyze-hue);
+        }
+        .phase-card.card-predict:hover {
+            box-shadow: 0 12px 24px rgba(217, 119, 6, 0.1), var(--shadow-brutal-sm);
+            border-color: var(--predict-hue);
+        }
+        .phase-card.card-act:hover {
+            box-shadow: 0 12px 24px rgba(5, 150, 105, 0.1), var(--shadow-brutal-sm);
+            border-color: var(--act-hue);
+        }
+
+        .card-header {
+            padding: 1.5rem 1.5rem 1rem;
+            border-bottom: 1px solid rgba(8, 28, 21, 0.08);
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+        }
+        [data-theme="ghost"] .card-header { border-bottom-color: rgba(45, 225, 194, 0.15); }
+
+        .card-header-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(8, 28, 21, 0.03);
+        }
+        [data-theme="ghost"] .card-header-icon { background: rgba(255, 255, 255, 0.05); }
+
+        .card-header-icon svg { width: 24px; height: 24px; }
+
+        .card-phase-num {
+            font-family: var(--font-data);
+            font-size: .6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            opacity: .6;
+        }
+        .card-phase-name {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: -.01em;
+        }
+        .card-collect .card-phase-name { color: var(--collect-hue); }
+        .card-analyze .card-phase-name { color: var(--analyze-hue); }
+        .card-predict .card-phase-name { color: var(--predict-hue); }
+        .card-act     .card-phase-name { color: var(--act-hue); }
+
+        .card-body { padding: 1.25rem 1.5rem 1.5rem; flex: 1; }
+
+        .card-desc {
+            font-size: .88rem;
+            line-height: 1.6;
+            color: var(--muted-text);
+            margin-bottom: 1.2rem;
+        }
+        .card-desc strong { color: var(--foreground); }
+
+        .card-tech-list {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+        }
+        .tech-item {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            font-size: .8rem;
+            line-height: 1.4;
+            color: var(--foreground);
+            font-weight: 500;
+        }
+        .tech-bullet {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .card-collect .tech-bullet { background: var(--collect-hue); }
+        .card-analyze .tech-bullet { background: var(--analyze-hue); }
+        .card-predict .tech-bullet { background: var(--predict-hue); }
+        .card-act     .tech-bullet { background: var(--act-hue); }
+
+        .card-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(8, 28, 21, 0.08);
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+            background: rgba(8, 28, 21, 0.01);
+        }
+        [data-theme="ghost"] .card-footer {
+            border-top-color: rgba(45, 225, 194, 0.12);
+            background: rgba(255,255,255,.01);
+        }
+
+        .tag {
+            font-family: var(--font-data);
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            padding: .25rem .65rem;
+            border-radius: 6px;
+            border: 2px solid;
+            transition: all 0.2s ease;
+        }
+        .tag-collect { color: var(--collect-hue); border-color: var(--collect-hue); background: rgba(37,99,235,.06); }
+        .tag-analyze { color: var(--analyze-hue); border-color: var(--analyze-hue); background: rgba(124,58,237,.06); }
+        .tag-predict { color: var(--predict-hue); border-color: var(--predict-hue); background: rgba(217,119,6,.06); }
+        .tag-act     { color: var(--act-hue);     border-color: var(--act-hue);     background: rgba(5,150,105,.06); }
+        
+        .tag:hover {
+            transform: scale(1.05);
+            background: transparent;
+        }
+
+        /* ══════════════════════════════════════
+           FEEDBACK LOOP CALLOUT
+           ══════════════════════════════════════ */
+        .feedback-callout {
+            margin: 1rem 0 5rem;
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-left: 6px solid var(--secondary);
+            border-radius: 16px;
+            box-shadow: var(--shadow-brutal-sm);
+            padding: 1.75rem 2.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .feedback-callout::after {
+            content: '';
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, rgba(45,225,194,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .feedback-icon {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(45, 225, 194, 0.08);
+            border-radius: 12px;
+            padding: 0.75rem;
+            border: 2px solid rgba(45, 225, 194, 0.15);
+        }
+        .feedback-icon svg {
+            width: 32px;
+            height: 32px;
+            animation: spin-cw 20s linear infinite;
+        }
+        .feedback-title {
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: -.01em;
+            margin-bottom: .5rem;
+        }
+        .feedback-body {
+            font-size: .92rem;
+            line-height: 1.7;
+            color: var(--muted-text);
+        }
+        .feedback-body strong { color: var(--foreground); }
+
+        /* ══════════════════════════════════════
+           SIGNAL FLOW STRIP
+           ══════════════════════════════════════ */
+        .signal-strip {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            overflow-x: auto;
+            padding: 1rem 0.5rem 2.5rem;
+        }
+        
+        /* Webkit scrollbar for premium custom feel */
+        .signal-strip::-webkit-scrollbar {
+            height: 8px;
+        }
+        .signal-strip::-webkit-scrollbar-track {
+            background: var(--panel-border);
+            border-radius: 4px;
+        }
+        .signal-strip::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 4px;
+        }
+        [data-theme="ghost"] .signal-strip::-webkit-scrollbar-thumb {
+            background: var(--primary);
+        }
+
+        .signal-node {
+            flex-shrink: 0;
+            background: var(--panel);
+            border: 3px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            min-width: 130px;
+            text-align: center;
+            box-shadow: var(--shadow-brutal-xs);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+        }
+        .signal-node:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-brutal-sm);
+        }
+        
+        .sn-c { border-color: var(--collect-hue); background: var(--collect-bg); }
+        .sn-a { border-color: var(--analyze-hue); background: var(--analyze-bg); }
+        .sn-p { border-color: var(--predict-hue); background: var(--predict-bg); }
+        .sn-x { border-color: var(--act-hue);     background: var(--act-bg); }
+
+        .signal-node .sn-icon {
+            font-size: 1.6rem;
+            display: block;
+            margin-bottom: .35rem;
+            transition: transform 0.2s ease;
+        }
+        .signal-node:hover .sn-icon {
+            transform: scale(1.15) translateY(-2px);
+        }
+        
+        .signal-node .sn-label {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: -.01em;
+        }
+        .signal-node .sn-sub {
+            font-family: var(--font-data);
+            font-size: .55rem;
+            color: var(--muted-text);
+            margin-top: .15rem;
+        }
+        
+        .signal-arrow {
+            flex-shrink: 0;
+            padding: 0 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--panel-border);
+            position: relative;
+            min-width: 90px;
+        }
+        .signal-arrow svg {
+            stroke: var(--secondary);
+            animation: pulse-arrow 2s ease-in-out infinite;
+        }
+        @keyframes pulse-arrow {
+            0%, 100% { opacity: 0.6; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(4px); }
+        }
+        
+        .signal-arrow .sa-label {
+            font-family: var(--font-data);
+            font-size: .48rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: var(--muted-text);
+            white-space: nowrap;
+            margin-top: 0.35rem;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            margin-top: 4rem;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 4px solid var(--panel-border);
+            position: relative; z-index: 1;
+            background: rgba(8, 28, 21, 0.02);
+        }
+        [data-theme="ghost"] footer { background: rgba(0,0,0,0.15); }
+        footer p {
+            font-family: var(--font-data);
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--muted-text);
+        }
+
+        /* ── RESPONSIVE SCALING FOR CIRCULAR DIAGRAM ── */
+        @media (max-width: 640px) {
+            :root {
+                --icon-size: 56px;
+                --text-offset: 38px;
+            }
+            .loop-section {
+                padding: 1rem 0 3rem;
+            }
+            .loop-wrapper {
+                width: 320px;
+                height: 320px;
+                margin: 1.5rem auto;
+            }
+            .phase-icon svg {
+                width: 24px;
+                height: 24px;
+            }
+            .phase-text {
+                width: 90px;
+            }
+            .phase-name {
+                font-size: 0.72rem;
+            }
+            .phase-sub {
+                font-size: 0.48rem;
+            }
+            .loop-center {
+                width: 100px;
+                height: 100px;
+                border-width: 3px;
+            }
+            .loop-center .lc-logo {
+                font-size: 0.9rem;
+            }
+            .loop-center .lc-tagline {
+                font-size: 0.42rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Theme Toggle -->
+<div class="theme-toggle">
+    <button class="theme-btn" data-theme="civic" onclick="setTheme('civic')" id="btn-civic">Civic</button>
+    <button class="theme-btn" data-theme="ghost" onclick="setTheme('ghost')" id="btn-ghost">Ghost</button>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<header class="hero">
+    <p class="hero-eyebrow">LikasLens · AI Intelligence Architecture</p>
+    <h1>The <span class="accent">Intelligence</span> <span class="amber">Loop</span></h1>
+    <p class="hero-desc">
+        LikasLens doesn't just react — it follows the <strong>full intelligence loop</strong>.
+        From citizen-captured field imagery to automated agency routing,
+        every report completes a closed cycle of environmental accountability.
+    </p>
+    <div class="loop-pill">
+        <span class="dot dot-collect"></span> Collect
+        <span style="color:var(--muted-text)">·</span>
+        <span class="dot dot-analyze"></span> Analyze
+        <span style="color:var(--muted-text)">·</span>
+        <span class="dot dot-predict"></span> Predict
+        <span style="color:var(--muted-text)">·</span>
+        <span class="dot dot-act"></span> Act
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- ═══════════════════════════════════════════════
+         CIRCULAR LOOP DIAGRAM
+    ══════════════════════════════════════════════════ -->
+    <section class="loop-section">
+
+        <div class="loop-wrapper" role="img" aria-label="Intelligence Loop: Collect, Analyze, Predict, Act">
+
+            <!-- SVG arcs + animated arrow heads -->
+            <svg class="loop-svg" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <!-- Arrow markers per phase -->
+                    <marker id="arr-collect" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+                        <path d="M2,2 L8,5 L2,8 Z" fill="#2563EB"/>
+                    </marker>
+                    <marker id="arr-analyze" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+                        <path d="M2,2 L8,5 L2,8 Z" fill="#7C3AED"/>
+                    </marker>
+                    <marker id="arr-predict" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+                        <path d="M2,2 L8,5 L2,8 Z" fill="#D97706"/>
+                    </marker>
+                    <marker id="arr-act" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+                        <path d="M2,2 L8,5 L2,8 Z" fill="#059669"/>
+                    </marker>
+                </defs>
+
+                <!-- Blueprint background details (concentric radar circles) -->
+                <circle cx="300" cy="300" r="235" stroke="var(--panel-border)" stroke-width="1" stroke-dasharray="4 8" class="ring-track-outer"/>
+                <circle cx="300" cy="300" r="150" stroke="var(--panel-border)" stroke-width="1" stroke-dasharray="2 6" class="ring-track-inner"/>
+                <circle cx="300" cy="300" r="200" stroke="var(--panel-border)" stroke-width="1.5" stroke-dasharray="40 10 10 10" opacity="0.3" class="ring-track-core"/>
+
+                <!-- 4 arcs with 12 degree offset to clear the 80px icons -->
+                <path class="arc-collect" d="M 341.6 104.4 A 200 200 0 0 1 495.6 258.4" stroke-width="5" stroke-linecap="round" marker-end="url(#arr-collect)"/>
+                <path class="arc-analyze" d="M 495.6 341.6 A 200 200 0 0 1 341.6 495.6" stroke-width="5" stroke-linecap="round" marker-end="url(#arr-analyze)"/>
+                <path class="arc-predict" d="M 258.4 495.6 A 200 200 0 0 1 104.4 341.6" stroke-width="5" stroke-linecap="round" marker-end="url(#arr-predict)"/>
+                <path class="arc-act"     d="M 104.4 258.4 A 200 200 0 0 1 258.4 104.4" stroke-width="5" stroke-linecap="round" marker-end="url(#arr-act)"/>
+            </svg>
+
+            <!-- Centre badge -->
+            <div class="loop-center">
+                <div class="lc-logo">Likas<span>Lens</span></div>
+                <div class="lc-tagline">Full Intelligence Loop</div>
+            </div>
+
+            <!-- COLLECT — top -->
+            <div class="phase-node collect">
+                <div class="phase-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 11a9 9 0 0 1 9 9"></path>
+                        <path d="M4 4a16 16 0 0 1 16 16"></path>
+                        <circle cx="5" cy="19" r="1.5" fill="currentColor"></circle>
+                    </svg>
+                </div>
+                <div class="phase-text">
+                    <span class="phase-name">Collect</span>
+                    <span class="phase-sub">Field Imagery</span>
+                </div>
+            </div>
+
+            <!-- ANALYZE — right -->
+            <div class="phase-node analyze">
+                <div class="phase-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2z"/>
+                        <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2z"/>
+                    </svg>
+                </div>
+                <div class="phase-text">
+                    <span class="phase-name">Analyze</span>
+                    <span class="phase-sub">AI Detection</span>
+                </div>
+            </div>
+
+            <!-- PREDICT — bottom -->
+            <div class="phase-node predict">
+                <div class="phase-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="10" r="8"></circle>
+                        <path d="M12 18v4M9 22h6"></path>
+                        <path d="M8 8a4 4 0 0 1 4-4"></path>
+                    </svg>
+                </div>
+                <div class="phase-text">
+                    <span class="phase-name">Predict</span>
+                    <span class="phase-sub">Hotspot Risk</span>
+                </div>
+            </div>
+
+            <!-- ACT — left -->
+            <div class="phase-node act">
+                <div class="phase-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <div class="phase-text">
+                    <span class="phase-name">Act</span>
+                    <span class="phase-sub">Agency Routing</span>
+                </div>
+            </div>
+
+        </div><!-- /loop-wrapper -->
+
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         PHASE DETAIL CARDS
+    ══════════════════════════════════════════════════ -->
+    <section class="cards-section">
+        <p class="section-label">Phase Breakdown · <span>Four Pillars of Environmental Intelligence</span></p>
+        <div class="cards-grid">
+
+            <!-- COLLECT -->
+            <div class="phase-card card-collect">
+                <div class="card-header">
+                    <span class="card-header-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--collect-hue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 11a9 9 0 0 1 9 9"></path>
+                            <path d="M4 4a16 16 0 0 1 16 16"></path>
+                            <circle cx="5" cy="19" r="1.5" fill="currentColor"></circle>
+                        </svg>
+                    </span>
+                    <div class="card-header-text">
+                        <div class="card-phase-num">Phase 01</div>
+                        <div class="card-phase-name">Collect</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">
+                        Citizens capture real-time field imagery through the <strong>Mobile PWA</strong>. EXIF data is stripped client-side before upload, preserving Ghost Mode anonymity. Reports include GPS coordinates, timestamp, and optional notes.
+                    </p>
+                    <div class="card-tech-list">
+                        <div class="tech-item"><span class="tech-bullet"></span>Mobile PWA + camera capture</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Client-side EXIF stripping</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Offline queue via IndexedDB</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>GPS + timestamp tagging</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Multi-image burst capture</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="tag tag-collect">Mobile PWA</span>
+                    <span class="tag tag-collect">Next.js</span>
+                    <span class="tag tag-collect">Ghost Mode</span>
+                </div>
+            </div>
+
+            <!-- ANALYZE -->
+            <div class="phase-card card-analyze">
+                <div class="card-header">
+                    <span class="card-header-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--analyze-hue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44 2.5 2.5 0 0 1 0-3.12 3 3 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.12A2.5 2.5 0 0 1 9.5 2z"/>
+                            <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44 2.5 2.5 0 0 0 0-3.12 3 3 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.12A2.5 2.5 0 0 0 14.5 2z"/>
+                        </svg>
+                    </span>
+                    <div class="card-header-text">
+                        <div class="card-phase-num">Phase 02</div>
+                        <div class="card-phase-name">Analyze</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">
+                        Uploaded imagery is processed through the <strong>Neuro-Symbolic AI Pipeline</strong>. YOLOv8 Nano detects objects, a Gremlin graph traversal links violations to laws, and Gemini 2.5 Flash generates a human-readable triage summary.
+                    </p>
+                    <div class="card-tech-list">
+                        <div class="tech-item"><span class="tech-bullet"></span>YOLOv8 Nano computer vision</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Waste + COCO dual-model detection</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Gremlin graph (Neo4j) traversal</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Gemini 2.5 Flash narrative</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Severity score computation</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="tag tag-analyze">YOLOv8</span>
+                    <span class="tag tag-analyze">FastAPI</span>
+                    <span class="tag tag-analyze">Neo4j</span>
+                    <span class="tag tag-analyze">Gemini</span>
+                </div>
+            </div>
+
+            <!-- PREDICT -->
+            <div class="phase-card card-predict">
+                <div class="card-header">
+                    <span class="card-header-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--predict-hue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="10" r="8"></circle>
+                            <path d="M12 18v4M9 22h6"></path>
+                            <path d="M8 8a4 4 0 0 1 4-4"></path>
+                        </svg>
+                    </span>
+                    <div class="card-header-text">
+                        <div class="card-phase-num">Phase 03</div>
+                        <div class="card-phase-name">Predict</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">
+                        Historical report clusters and severity scores feed a <strong>geographic hotspot model</strong>. Risk surfaces are rendered as heatmaps on the Admin Portal, letting LGUs and DENR identify emerging crisis zones <em>before</em> they escalate.
+                    </p>
+                    <div class="card-tech-list">
+                        <div class="tech-item"><span class="tech-bullet"></span>Geographic hotspot clustering</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Historical trend analysis</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Risk heatmap generation</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Seasonal pattern detection</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Prediction confidence scoring</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="tag tag-predict">PredictionService</span>
+                    <span class="tag tag-predict">Laravel</span>
+                    <span class="tag tag-predict">Heatmap</span>
+                </div>
+            </div>
+
+            <!-- ACT -->
+            <div class="phase-card card-act">
+                <div class="card-header">
+                    <span class="card-header-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--act-hue)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </span>
+                    <div class="card-header-text">
+                        <div class="card-phase-num">Phase 04</div>
+                        <div class="card-phase-name">Act</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">
+                        Verified reports are routed to the correct <strong>LGU or national agency</strong> via the Admin Portal. SLA timers track resolution, blockchain records provide tamper-proof accountability, and resolved tickets feed back into the prediction model.
+                    </p>
+                    <div class="card-tech-list">
+                        <div class="tech-item"><span class="tech-bullet"></span>Automated LGU / agency routing</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>SLA timer enforcement</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Blockchain audit trail</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Resolution → feedback loop</div>
+                        <div class="tech-item"><span class="tech-bullet"></span>Citizen reward & eco-credits</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="tag tag-act">Admin Portal</span>
+                    <span class="tag tag-act">SLA Engine</span>
+                    <span class="tag tag-act">Blockchain</span>
+                </div>
+            </div>
+
+        </div><!-- /cards-grid -->
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         FEEDBACK CALLOUT
+    ══════════════════════════════════════════════════ -->
+    <div class="feedback-callout">
+        <div class="feedback-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6"></path>
+                <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+        </div>
+        <div class="feedback-text">
+            <div class="feedback-title">Why a loop and not a pipeline?</div>
+            <p class="feedback-body">
+                Most civic-tech platforms stop at <strong>Act</strong> — a report is filed, a ticket is closed, done.
+                LikasLens treats resolution data as <strong>a new signal</strong>. Every closed ticket refines hotspot predictions.
+                Every verified violation strengthens the YOLOv8 training feedback. Every LGU response time
+                updates the SLA pressure model. The loop never stops — it learns, tightens, and gets sharper
+                with every citizen who opens the camera.
+            </p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         SIGNAL FLOW STRIP
+    ══════════════════════════════════════════════════ -->
+    <section style="padding-bottom: 2rem;">
+        <p class="section-label">Signal Flow · <span>End-to-End Data Journey</span></p>
+        <div class="signal-strip">
+
+            <div class="signal-node sn-c">
+                <span class="sn-icon">📱</span>
+                <div class="sn-label">Citizen</div>
+                <div class="sn-sub">Mobile PWA</div>
+            </div>
+            <div class="signal-arrow">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span class="sa-label">HTTPS + EXIF strip</span>
+            </div>
+            
+            <div class="signal-node sn-c">
+                <span class="sn-icon">☁️</span>
+                <div class="sn-label">Laravel API</div>
+                <div class="sn-sub">:8000 · Receipt</div>
+            </div>
+            <div class="signal-arrow">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span class="sa-label">Queue dispatch</span>
+            </div>
+            
+            <div class="signal-node sn-a">
+                <span class="sn-icon">👁️</span>
+                <div class="sn-label">YOLOv8</div>
+                <div class="sn-sub">FastAPI :8001</div>
+            </div>
+            <div class="signal-arrow">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span class="sa-label">Detection boxes</span>
+            </div>
+            
+            <div class="signal-node sn-a">
+                <span class="sn-icon">🕸️</span>
+                <div class="sn-label">Neo4j Graph</div>
+                <div class="sn-sub">Gremlin · Laws</div>
+            </div>
+            <div class="signal-arrow">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span class="sa-label">Violation map</span>
+            </div>
+            
+            <div class="signal-node sn-a">
+                <span class="sn-icon">✨</span>
+                <div class="sn-label">Gemini</div>
+                <div class="sn-sub">2.5 Flash · Triage</div>
+            </div>
+            <div class="signal-arrow">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span class="sa-label">Severity score</span>
+            </div>
+            
+            <div class="signal-node sn-p">
+                <span class="sn-icon">📊</span>
+                <div class="sn-label">Hotspot ML</div>
+                <div class="sn-sub">Risk forecast</div>
+            </div>
+            <div class="signal-arrow">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span class="sa-label">Priority tier</span>
+            </div>
+            
+            <div class="signal-node sn-x">
+                <span class="sn-icon">🏛️</span>
+                <div class="sn-label">Admin Portal</div>
+                <div class="sn-sub">LGU routing</div>
+            </div>
+            <div class="signal-arrow">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span class="sa-label">SLA timer</span>
+            </div>
+            
+            <div class="signal-node sn-x">
+                <span class="sn-icon">⛓️</span>
+                <div class="sn-label">Blockchain</div>
+                <div class="sn-sub">Audit trail</div>
+            </div>
+            <div class="signal-arrow">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6"></path>
+                    <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                </svg>
+                <span class="sa-label">Feedback signal</span>
+            </div>
+            
+            <div class="signal-node sn-c" style="border-color: var(--secondary);">
+                <span class="sn-icon">🌿</span>
+                <div class="sn-label">Loop again</div>
+                <div class="sn-sub">Continuous learning</div>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    <p>LikasLens · The Intelligence Loop · Collect · Analyze · Predict · Act</p>
+    <p style="margin-top:.4rem; opacity:.6;">AI-powered environmental accountability for ASEAN communities</p>
+</footer>
+
+<script>
+    function setTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        try { localStorage.setItem('ll-theme', t); } catch(e) {}
+    }
+    try {
+        const saved = localStorage.getItem('ll-theme');
+        if (saved === 'ghost') setTheme('ghost');
+    } catch(e) {}
+</script>
+</body>
+</html>

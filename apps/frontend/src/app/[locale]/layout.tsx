@@ -1,15 +1,14 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { OfflineBanner, LiksiChat, ToastContainer } from "@likaslens/shared";
 import { locales } from "@likaslens/shared";
 import JsonLd from "@/components/seo/JsonLd";
+import { AuthRefreshInit } from "@/lib/auth-init";
+import { createClient } from "@/utils/supabase/server";
+import { LocaleLayoutClient } from "@/components/layout/locale-layout-client";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
-
-import { AuthRefreshInit } from "@/lib/auth-init";
-import { createClient } from "@/utils/supabase/server";
 
 export default async function LocaleLayout({
   children,
@@ -21,18 +20,22 @@ export default async function LocaleLayout({
   const { locale } = await params;
   const messages = await getMessages();
 
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const isAuthenticated = !!session;
+  let isAuthenticated = false;
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    isAuthenticated = !!user;
+  } catch {
+    // Supabase unavailable — continue as unauthenticated
+  }
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <JsonLd locale={locale} />
       <AuthRefreshInit />
-      <OfflineBanner />
-      <div className="flex-1">{children}</div>
-      <LiksiChat persona="citizen" locale={locale} isAuthenticated={isAuthenticated} />
-      <ToastContainer />
+      <LocaleLayoutClient locale={locale} isAuthenticated={isAuthenticated}>
+        {children}
+      </LocaleLayoutClient>
     </NextIntlClientProvider>
   );
 }

@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "models": {
+    "coco": {
+      "file": "yolov8s-coco.onnx",
+      "classes": "coco-classes.json",
+      "input_size": 640,
+      "description": "YOLOv8s COCO - General object detection (80 classes)"
+    },
+    "waste": {
+      "file": "yolov8s-waste.onnx",
+      "classes": "waste-classes.json",
+      "input_size": 640,
+      "description": "YOLOv8s Waste - Environmental waste detection"
+    }
+  },
+  "exported_at": "2026-06-22",
+  "framework": "onnxruntime-web"
+}

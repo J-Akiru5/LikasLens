@@ -153,7 +153,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 'reward_points_balance' => $user->reward_points_balance,
                 'display_name' => $user->name,
                 'username' => explode('@', $user->email)[0],
-                'bio' => 'Citizen reporter dedicated to environmental conservation and monitoring in ' . ($user->country_code ?: 'Southeast Asia') . '.',
+                'bio' => 'Citizen reporter dedicated to environmental conservation and monitoring in '.($user->country_code ?: 'Southeast Asia').'.',
                 'location' => $user->country_code === 'PH' ? 'Iloilo, Philippines' : ($user->country_code ?: 'Iloilo, Philippines'),
                 'website' => 'https://likaslens.syntaxure.dev',
                 'avatar_url' => null,
