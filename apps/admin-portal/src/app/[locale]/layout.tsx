@@ -1,6 +1,6 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { ToastContainer } from "@likaslens/shared";
+import { ToastContainer, LiksiChat } from "@likaslens/shared";
 import { locales } from "@likaslens/shared";
 
 export function generateStaticParams() {
@@ -20,6 +20,7 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       {children}
+      <LiksiChat persona="admin" locale={locale} isAuthenticated={true} />
       <ToastContainer />
     </NextIntlClientProvider>
   );
