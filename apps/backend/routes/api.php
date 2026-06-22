@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AchievementController;
+use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\AdminAuditLogController;
 use App\Http\Controllers\AdminBulkController;
 use App\Http\Controllers\AdminLawController;
@@ -60,7 +61,7 @@ Route::post('/contact-messages', [ContactMessageController::class, 'store'])->mi
 Route::get('/public/impact', [PublicImpactController::class, 'index'])->middleware('throttle:30,1');
 
 // Public read-only reference data — 60 req/min per IP
-Route::middleware('throttle:60,1')->group(function () {
+Route::middleware(['throttle:60,1', 'resolve-tenant'])->group(function () {
     Route::get('/laws', [AdminLawController::class, 'index']);
     Route::get('/laws/{id}', [AdminLawController::class, 'show']);
     Route::get('/leaderboard', [LeaderboardController::class, 'index']);
@@ -77,6 +78,7 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/tickets/{id}', [TicketController::class, 'show']);
     Route::get('/tickets/{id}/timeline', [TicketController::class, 'timeline']);
     Route::get('/admin/ngos', [AdminNgoController::class, 'index']);
+    Route::get('/admin/ngos/regions', [AdminNgoController::class, 'regions']);
     Route::get('/admin/ngos/{id}', [AdminNgoController::class, 'show']);
     Route::get('/admin/laws', [AdminLawController::class, 'index']);
     Route::get('/admin/laws/{id}', [AdminLawController::class, 'show']);
@@ -186,7 +188,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Super admin only routes
-    Route::middleware('role:super_admin')->group(function () {
+    Route::middleware(['role:super_admin', 'resolve-tenant'])->group(function () {
 
         // User sync
         Route::prefix('v1/likaslens-admin')->group(function () {
@@ -205,6 +207,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Rewards catalog
         Route::apiResource('/admin/rewards', AdminRewardController::class);
+        Route::get('/admin/partner-stores', [AdminRewardController::class, 'partnerStores']);
 
         // Currency settings
         Route::apiResource('/admin/currency-settings', CurrencySettingController::class);
@@ -216,8 +219,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/admin/users/{id}/role', [AdminUserController::class, 'updateRole']);
         Route::delete('/admin/users/{id}', [AdminUserController::class, 'destroy']);
 
+        // Tenant management
+        Route::get('/admin/tenants', [TenantController::class, 'index']);
+        Route::post('/admin/tenants', [TenantController::class, 'store']);
+        Route::get('/admin/tenants/{id}', [TenantController::class, 'show']);
+        Route::put('/admin/tenants/{id}', [TenantController::class, 'update']);
+        Route::delete('/admin/tenants/{id}', [TenantController::class, 'destroy']);
+
         // Audit logs
         Route::get('/admin/audit-logs', [AdminAuditLogController::class, 'index']);
+        Route::get('/admin/audit-logs/actions', [AdminAuditLogController::class, 'actions']);
         Route::get('/admin/audit-logs/{id}', [AdminAuditLogController::class, 'show']);
 
         // Predictive hotspot detection
@@ -229,6 +240,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // LGU Performance
         Route::get('/admin/lgu-performance', [AdminLguPerformanceController::class, 'index']);
+        Route::get('/admin/lgu-performance/regions', [AdminLguPerformanceController::class, 'regions']);
 
         // Triage queue
         Route::get('/admin/triage', [AdminTriageController::class, 'index']);
@@ -247,6 +259,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Bulk operations
         Route::post('/admin/tickets/bulk-status', [AdminBulkController::class, 'bulkTicketStatus']);
         Route::post('/admin/tickets/bulk-assign', [AdminBulkController::class, 'bulkTicketAssign']);
+        Route::post('/admin/tickets/bulk-delete', [AdminBulkController::class, 'bulkTicketDelete']);
         Route::post('/admin/users/bulk-role', [AdminBulkController::class, 'bulkUserRole']);
         Route::post('/admin/users/bulk-deactivate', [AdminBulkController::class, 'bulkUserDeactivate']);
         Route::post('/admin/ngos/bulk-verify', [AdminBulkController::class, 'bulkNgoVerify']);
@@ -257,6 +270,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:analyst,super_admin')->group(function () {
         Route::patch('/tickets/{id}/status', [TicketController::class, 'updateStatus']);
         Route::get('/tickets/{id}/explain', [TicketController::class, 'explain']);
+    });
+
+    // Ticket deletion (super_admin only)
+    Route::middleware('role:super_admin')->group(function () {
+        Route::delete('/tickets/{id}', [TicketController::class, 'destroy']);
     });
 });
 

@@ -1,84 +1,62 @@
 // apps/admin-portal/src/app/[locale]/(dashboard)/laws/page.tsx
-// Phase 6 sub-page sweep: Create Law CTAs -> Button
 "use client";
 import { useEffect, useState } from "react";
-import { laravelGet, laravelPost, showToast, Button } from "@likaslens/shared";
-import type { ApiResponse, PaginatedResponse } from "@likaslens/shared";
-import { AdminTableSkeleton, EmptyState } from "@likaslens/shared";
+import {
+  getAdminLaws,
+  getAdminLaw,
+  createAdminLaw,
+  updateAdminLaw,
+  deleteAdminLaw,
+  Button,
+} from "@likaslens/shared";
+import type { AdminLaw, AdminLawDetail } from "@likaslens/shared";
+import { showToast, AdminTableSkeleton, EmptyState, Modal, ConfirmModal } from "@likaslens/shared";
 import {
   Scale,
   Search,
-  X,
   Plus,
   ExternalLink,
   AlertTriangle,
   Gavel,
   ChevronLeft,
   ChevronRight,
+  Pencil,
+  Trash2,
+  X,
+  Loader2,
 } from "lucide-react";
 
-interface Law {
-  id: string;
-  law_code: string;
-  title: string;
-  summary: string;
-  issuing_agency: string;
-  jurisdiction_scope: string | null;
-  source_url: string | null;
-  is_active: boolean;
-}
-
-interface LawPenalty {
-  id: string;
-  law_id: string;
-  violation_name: string;
-  penalty_type: string;
-  min_fine_php: number | null;
-  max_fine_php: number | null;
-  min_imprisonment_yrs: number | null;
-  max_imprisonment_yrs: number | null;
-  notes: string | null;
-}
-
-interface ViolationType {
-  id: string;
-  law_id: string;
-  code: string;
-  name: string;
-  description: string;
-  default_penalty_id: string | null;
-}
-
-interface LawDetail extends Law {
-  penalties: LawPenalty[];
-  violationTypes: ViolationType[];
-}
-
 export default function LawsPage() {
-  const [laws, setLaws] = useState<Law[]>([]);
+  const [laws, setLaws] = useState<AdminLaw[]>([]);
   const [search, setSearch] = useState("");
+  const [activeOnly, setActiveOnly] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [selectedLaw, setSelectedLaw] = useState<LawDetail | null>(null);
+  const [selectedLaw, setSelectedLaw] = useState<AdminLawDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [showCreate, setShowCreate] = useState(false);
-  const [createLoading, setCreateLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editTarget, setEditTarget] = useState<AdminLaw | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
-  const [createForm, setCreateForm] = useState({
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [lawForm, setLawForm] = useState({
     title: "",
     summary: "",
     law_code: "",
+    country_code: "",
     issuing_agency: "",
     jurisdiction_scope: "",
     source_url: "",
   });
 
   const fetchLaws = () => {
+    setLoading(true);
     const params: Record<string, string> = { per_page: "50", page: String(page) };
     if (search) params.search = search;
-    laravelGet<PaginatedResponse<Law>>(
-      `/admin/laws?${new URLSearchParams(params)}`,
-    )
+    if (activeOnly) params.active_only = "1";
+    getAdminLaws(params)
       .then((res) => {
         if (res.success) {
           setLaws(res.data);
@@ -91,33 +69,102 @@ export default function LawsPage() {
 
   useEffect(() => {
     fetchLaws();
-  }, [search, page]);
+  }, [search, activeOnly, page]);
 
-  const handleCreateLaw = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setLawForm({ title: "", summary: "", law_code: "", country_code: "", issuing_agency: "", jurisdiction_scope: "", source_url: "" });
+    setFormErrors({});
+  };
+
+  const openCreateForm = () => {
+    setEditTarget(null);
+    resetForm();
+    setShowForm(true);
+  };
+
+  const handleEdit = (law: AdminLaw) => {
+    setEditTarget(law);
+    setFormErrors({});
+    setLawForm({
+      title: law.title,
+      summary: law.summary,
+      law_code: law.law_code,
+      country_code: law.country_code ?? "",
+      issuing_agency: law.issuing_agency,
+      jurisdiction_scope: law.jurisdiction_scope ?? "",
+      source_url: law.source_url ?? "",
+    });
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.title.trim() || !createForm.law_code.trim()) {
-      showToast("Title and law code are required", "error");
-      return;
+    if (saving) return;
+
+    const errors: Record<string, string> = {};
+    if (!lawForm.title.trim()) errors.title = "Title is required";
+    if (!lawForm.law_code.trim()) errors.law_code = "Law code is required";
+    if (!lawForm.summary.trim()) errors.summary = "Summary is required";
+    if (!lawForm.issuing_agency.trim()) errors.issuing_agency = "Issuing agency is required";
+    if (lawForm.country_code.trim() && lawForm.country_code.trim().length !== 2) {
+      errors.country_code = "Must be 2-letter code (e.g. PH)";
     }
-    setCreateLoading(true);
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setSaving(true);
     try {
-      await laravelPost("/admin/laws", createForm);
-      showToast("Law created successfully", "success");
-      setShowCreate(false);
-      setCreateForm({ title: "", summary: "", law_code: "", issuing_agency: "", jurisdiction_scope: "", source_url: "" });
+      const payload: Record<string, unknown> = {
+        title: lawForm.title.trim(),
+        law_code: lawForm.law_code.trim(),
+        summary: lawForm.summary.trim(),
+        issuing_agency: lawForm.issuing_agency.trim(),
+        country_code: lawForm.country_code.trim() || null,
+        jurisdiction_scope: lawForm.jurisdiction_scope.trim() || null,
+        source_url: lawForm.source_url.trim() || null,
+      };
+
+      if (editTarget) {
+        await updateAdminLaw(editTarget.id, payload);
+        showToast("Law updated successfully", "success");
+      } else {
+        await createAdminLaw(payload);
+        showToast("Law created successfully", "success");
+      }
+      setShowForm(false);
+      setEditTarget(null);
+      resetForm();
       fetchLaws();
     } catch (err) {
       console.error(err);
-      showToast("Failed to create law", "error");
+      showToast("Failed to save law", "error");
     } finally {
-      setCreateLoading(false);
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await deleteAdminLaw(deleteTarget);
+      showToast("Law deleted successfully", "success");
+      setDeleteTarget(null);
+      setSelectedLaw(null);
+      fetchLaws();
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to delete law", "error");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
   const openDetail = async (id: string) => {
     setDetailLoading(true);
+    setSelectedLaw(null);
     try {
-      const res = await laravelGet<ApiResponse<LawDetail>>(`/admin/laws/${id}`);
+      const res = await getAdminLaw(id);
       if (res.success) setSelectedLaw(res.data);
     } catch (err) {
       console.error(err);
@@ -137,8 +184,8 @@ export default function LawsPage() {
         </p>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="relative flex-1 max-w-md w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30" />
           <input
             type="text"
@@ -148,14 +195,21 @@ export default function LawsPage() {
             className="w-full pl-9 pr-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
           />
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setShowCreate(true)}
-          className="ml-4"
-        >
-          <Plus className="w-4 h-4" />
-          Create Law
-        </Button>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
+            <input
+              type="checkbox"
+              checked={activeOnly}
+              onChange={(e) => { setActiveOnly(e.target.checked); setPage(1); }}
+              className="w-4 h-4 rounded border-ink/20 text-green focus:ring-green/20"
+            />
+            <span className="font-mono text-xs text-ink/60">Active only</span>
+          </label>
+          <Button variant="primary" onClick={openCreateForm}>
+            <Plus className="w-4 h-4" />
+            Create Law
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -165,36 +219,54 @@ export default function LawsPage() {
           {laws.map((law) => (
             <div
               key={law.id}
-              onClick={() => openDetail(law.id)}
-              className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer"
+              className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer group"
             >
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center shrink-0">
-                  <Scale className="w-5 h-5 text-ink/40" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-medium text-sm text-ink truncate">
-                      {law.title}
-                    </h3>
-                    <span
-                      className={`shrink-0 px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${
-                        law.is_active
-                          ? "bg-green/10 text-green"
-                          : "bg-ink/[0.04] text-ink/40"
-                      }`}
-                    >
-                      {law.is_active ? "Active" : "Inactive"}
-                    </span>
+              <div onClick={() => openDetail(law.id)}>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center shrink-0">
+                    <Scale className="w-5 h-5 text-ink/40" />
                   </div>
-                  <p className="font-mono text-xs text-muted">{law.law_code}</p>
-                  <p className="font-mono text-sm text-ink/70 mt-2 line-clamp-2">
-                    {law.summary}
-                  </p>
-                  <p className="font-mono text-xs text-muted mt-2">
-                    {law.issuing_agency}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium text-sm text-ink truncate">
+                        {law.title}
+                      </h3>
+                      <span
+                        className={`shrink-0 px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${
+                          law.is_active
+                            ? "bg-green/10 text-green"
+                            : "bg-ink/[0.04] text-ink/40"
+                        }`}
+                      >
+                        {law.is_active ? "Active" : "Inactive"}
+                      </span>
+                    </div>
+                    <p className="font-mono text-xs text-muted">{law.law_code}</p>
+                    <p className="font-mono text-sm text-ink/70 mt-2 line-clamp-2">
+                      {law.summary}
+                    </p>
+                    <p className="font-mono text-xs text-muted mt-2">
+                      {law.issuing_agency}
+                    </p>
+                  </div>
                 </div>
+              </div>
+              <div className="flex gap-2 mt-3 pt-3 border-t border-ink/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); handleEdit(law); }}
+                >
+                  <Pencil className="w-3 h-3" /> Edit
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => { e.stopPropagation(); setDeleteTarget(law.id); }}
+                  className="text-red hover:bg-red/5"
+                >
+                  <Trash2 className="w-3 h-3" /> Delete
+                </Button>
               </div>
             </div>
           ))}
@@ -238,157 +310,18 @@ export default function LawsPage() {
         </div>
       )}
 
-      {detailLoading && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-10 h-10 rounded-full border-2 border-ink/10 border-t-accent animate-spin" />
-            <p className="font-mono text-xs text-white/60 uppercase tracking-widest">
-              Loading&hellip;
-            </p>
+      <Modal
+        isOpen={!!selectedLaw}
+        onClose={() => setSelectedLaw(null)}
+        title="Law Details"
+        size="xl"
+      >
+        {detailLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-ink/30" />
           </div>
-        </div>
-      )}
-
-      {showCreate && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 px-4 overflow-y-auto bg-black/50"
-          onClick={() => setShowCreate(false)}
-        >
-          <div
-            className="bg-panel p-4 sm:p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowCreate(false)}
-              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-ink/10 hover:bg-ink/[0.02] rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-ink/40" />
-            </button>
-
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-                <Scale className="w-5 h-5 text-ink/40" />
-              </div>
-              <div>
-                <h2 className="font-semibold tracking-tight text-xl text-ink">
-                  Create New Law
-                </h2>
-                <p className="font-mono text-xs text-muted">
-                  Add environmental legislation
-                </p>
-              </div>
-            </div>
-
-            <form onSubmit={handleCreateLaw} className="space-y-4">
-              <div>
-                <label className="label-pill label-pill-light block mb-1">
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  value={createForm.title}
-                  onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
-                  placeholder="Enter law title"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="label-pill label-pill-light block mb-1">
-                  Law Code *
-                </label>
-                <input
-                  type="text"
-                  value={createForm.law_code}
-                  onChange={(e) => setCreateForm({ ...createForm, law_code: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
-                  placeholder="e.g. RA 9003"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="label-pill label-pill-light block mb-1">
-                  Summary
-                </label>
-                <textarea
-                  value={createForm.summary}
-                  onChange={(e) => setCreateForm({ ...createForm, summary: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all min-h-[80px] resize-y"
-                  placeholder="Brief summary of the law"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="label-pill label-pill-light block mb-1">
-                    Issuing Agency
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.issuing_agency}
-                    onChange={(e) => setCreateForm({ ...createForm, issuing_agency: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
-                    placeholder="e.g. DENR"
-                  />
-                </div>
-                <div>
-                  <label className="label-pill label-pill-light block mb-1">
-                    Country Code
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.jurisdiction_scope}
-                    onChange={(e) => setCreateForm({ ...createForm, jurisdiction_scope: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
-                    placeholder="e.g. PH"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="label-pill label-pill-light block mb-1">
-                  Source URL
-                </label>
-                <input
-                  type="url"
-                  value={createForm.source_url}
-                  onChange={(e) => setCreateForm({ ...createForm, source_url: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
-                  placeholder="https://..."
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <Button variant="secondary" type="button" onClick={() => setShowCreate(false)}>
-                  Cancel
-                </Button>
-                <Button variant="primary" type="submit" loading={createLoading}>
-                  Create Law
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {selectedLaw && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 px-4 overflow-y-auto bg-black/50"
-          onClick={() => setSelectedLaw(null)}
-        >
-          <div
-            className="bg-panel p-4 sm:p-6 border border-ink/10 max-w-2xl w-full rounded-3xl shadow-xl relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedLaw(null)}
-              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-ink/10 hover:bg-ink/[0.02] rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-ink/40" />
-            </button>
-
+        ) : selectedLaw ? (
+          <div className="space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
                 <Scale className="w-6 h-6 text-ink/40" />
@@ -403,149 +336,258 @@ export default function LawsPage() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div>
+              <p className="label-pill label-pill-light mb-1">Summary</p>
+              <p className="font-mono text-sm text-ink/70">
+                {selectedLaw.summary}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-4">
               <div>
-                <p className="label-pill label-pill-light mb-1">
-                  Summary
-                </p>
-                <p className="font-mono text-sm text-ink/70">
-                  {selectedLaw.summary}
+                <p className="label-pill label-pill-light mb-1">Issuing Agency</p>
+                <p className="font-mono text-sm font-medium text-ink">
+                  {selectedLaw.issuing_agency}
                 </p>
               </div>
-
-              <div className="flex flex-wrap gap-4">
+              {selectedLaw.jurisdiction_scope && (
                 <div>
-                  <p className="label-pill label-pill-light mb-1">
-                    Issuing Agency
-                  </p>
-                  <p className="font-mono text-sm font-medium text-ink">
-                    {selectedLaw.issuing_agency}
-                  </p>
-                </div>
-                {selectedLaw.jurisdiction_scope && (
-                  <div>
-                    <p className="label-pill label-pill-light mb-1">
-                      Jurisdiction
-                    </p>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-ink/[0.04] text-ink/60">
-                      {selectedLaw.jurisdiction_scope}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <p className="label-pill label-pill-light mb-1">
-                    Status
-                  </p>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold ${
-                      selectedLaw.is_active
-                        ? "bg-green/10 text-green"
-                        : "bg-ink/[0.04] text-ink/40"
-                    }`}
-                  >
-                    {selectedLaw.is_active ? "Active" : "Inactive"}
+                  <p className="label-pill label-pill-light mb-1">Jurisdiction</p>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-ink/[0.04] text-ink/60">
+                    {selectedLaw.jurisdiction_scope}
                   </span>
                 </div>
-              </div>
-
-              {selectedLaw.source_url && (
-                <a
-                  href={selectedLaw.source_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 font-mono text-xs text-green hover:underline"
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  Official Source
-                </a>
               )}
+              <div>
+                <p className="label-pill label-pill-light mb-1">Status</p>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold ${
+                    selectedLaw.is_active
+                      ? "bg-green/10 text-green"
+                      : "bg-ink/[0.04] text-ink/40"
+                  }`}
+                >
+                  {selectedLaw.is_active ? "Active" : "Inactive"}
+                </span>
+              </div>
+            </div>
 
-              {selectedLaw.violationTypes &&
-                selectedLaw.violationTypes.length > 0 && (
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <AlertTriangle className="w-4 h-4 text-amber" />
-                      <p className="font-semibold tracking-tight text-lg text-ink">
-                        Violation Types
+            {selectedLaw.source_url && (
+              <a
+                href={selectedLaw.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 font-mono text-xs text-green hover:underline"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Official Source
+              </a>
+            )}
+
+            <div className="flex gap-2 pt-2">
+              <Button variant="secondary" onClick={() => { setSelectedLaw(null); handleEdit(selectedLaw as unknown as AdminLaw); }}>
+                <Pencil className="w-3.5 h-3.5" /> Edit
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => { if (selectedLaw) { setDeleteTarget(selectedLaw.id); setSelectedLaw(null); } }}
+                className="text-red hover:bg-red/5"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Delete
+              </Button>
+            </div>
+
+            {selectedLaw.violationTypes && selectedLaw.violationTypes.length > 0 && (
+              <div className="border-t border-ink/5 pt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="w-4 h-4 text-amber" />
+                  <p className="font-semibold tracking-tight text-lg text-ink">
+                    Violation Types
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {selectedLaw.violationTypes.map((vt) => (
+                    <div
+                      key={vt.id}
+                      className="border border-ink/5 rounded-xl p-3"
+                    >
+                      <div className="flex items-center gap-2">
+                        <p className="font-mono text-xs font-bold text-green">
+                          {vt.code}
+                        </p>
+                        <p className="font-medium text-sm text-ink">
+                          {vt.name}
+                        </p>
+                      </div>
+                      <p className="font-mono text-xs text-muted mt-1">
+                        {vt.description}
                       </p>
                     </div>
-                    <div className="space-y-2">
-                      {selectedLaw.violationTypes.map((vt) => (
-                        <div
-                          key={vt.id}
-                          className="border border-ink/5 rounded-xl p-3"
-                        >
-                          <div className="flex items-center gap-2">
-                            <p className="font-mono text-xs font-bold text-green">
-                              {vt.code}
-                            </p>
-                            <p className="font-medium text-sm text-ink">
-                              {vt.name}
-                            </p>
-                          </div>
-                          <p className="font-mono text-xs text-muted mt-1">
-                            {vt.description}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  ))}
+                </div>
+              </div>
+            )}
 
-              {selectedLaw.penalties && selectedLaw.penalties.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Gavel className="w-4 h-4 text-red" />
-                    <p className="font-semibold tracking-tight text-lg text-ink">
-                      Penalties
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    {selectedLaw.penalties.map((p) => (
-                      <div
-                        key={p.id}
-                        className="border border-ink/5 rounded-xl p-3"
-                      >
-                        <p className="font-medium text-sm text-ink">
-                          {p.violation_name}
-                        </p>
-                        <div className="flex flex-wrap gap-x-6 gap-y-1 mt-1 font-mono text-xs">
-                          <span className="text-muted">
-                            Type:{" "}
-                            <span className="font-bold text-ink">
-                              {p.penalty_type}
-                            </span>
+            {selectedLaw.penalties && selectedLaw.penalties.length > 0 && (
+              <div className="border-t border-ink/5 pt-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Gavel className="w-4 h-4 text-red" />
+                  <p className="font-semibold tracking-tight text-lg text-ink">
+                    Penalties
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {selectedLaw.penalties.map((p) => (
+                    <div
+                      key={p.id}
+                      className="border border-ink/5 rounded-xl p-3"
+                    >
+                      <p className="font-medium text-sm text-ink">
+                        {p.violation_name}
+                      </p>
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 mt-1 font-mono text-xs">
+                        <span className="text-muted">
+                          Type:{" "}
+                          <span className="font-bold text-ink">
+                            {p.penalty_type}
                           </span>
-                          {p.min_fine_php != null && (
-                            <span className="text-muted">
-                              Fine: PHP {p.min_fine_php.toLocaleString()}
-                              {p.max_fine_php != null &&
-                                ` - ${p.max_fine_php.toLocaleString()}`}
-                            </span>
-                          )}
-                          {p.min_imprisonment_yrs != null && (
-                            <span className="text-muted">
-                              Imprisonment: {p.min_imprisonment_yrs}
-                              {p.max_imprisonment_yrs != null &&
-                                ` - ${p.max_imprisonment_yrs}`}{" "}
-                              yrs
-                            </span>
-                          )}
-                        </div>
-                        {p.notes && (
-                          <p className="font-mono text-xs mt-1 text-muted">
-                            {p.notes}
-                          </p>
+                        </span>
+                        {p.min_fine_php != null && (
+                          <span className="text-muted">
+                            Fine: PHP {p.min_fine_php.toLocaleString()}
+                            {p.max_fine_php != null &&
+                              ` - ${p.max_fine_php.toLocaleString()}`}
+                          </span>
+                        )}
+                        {p.min_imprisonment_yrs != null && (
+                          <span className="text-muted">
+                            Imprisonment: {p.min_imprisonment_yrs}
+                            {p.max_imprisonment_yrs != null &&
+                              ` - ${p.max_imprisonment_yrs}`}{" "}
+                            yrs
+                          </span>
                         )}
                       </div>
-                    ))}
-                  </div>
+                      {p.notes && (
+                        <p className="font-mono text-xs mt-1 text-muted">
+                          {p.notes}
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </Modal>
+
+      <Modal
+        isOpen={showForm}
+        onClose={() => { setShowForm(false); resetForm(); }}
+        title={editTarget ? "Edit Law" : "Create New Law"}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="label-pill label-pill-light block mb-1">Title *</label>
+            <input
+              value={lawForm.title}
+              onChange={(e) => { setLawForm({ ...lawForm, title: e.target.value }); setFormErrors({ ...formErrors, title: "" }); }}
+              className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.title ? "border-red" : "border-ink/10"}`}
+              required
+            />
+            {formErrors.title && <p className="mt-1 font-mono text-xs text-red">{formErrors.title}</p>}
+          </div>
+
+          <div>
+            <label className="label-pill label-pill-light block mb-1">Law Code *</label>
+            <input
+              value={lawForm.law_code}
+              onChange={(e) => { setLawForm({ ...lawForm, law_code: e.target.value }); setFormErrors({ ...formErrors, law_code: "" }); }}
+              className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.law_code ? "border-red" : "border-ink/10"}`}
+              required
+            />
+            {formErrors.law_code && <p className="mt-1 font-mono text-xs text-red">{formErrors.law_code}</p>}
+          </div>
+
+          <div>
+            <label className="label-pill label-pill-light block mb-1">Summary *</label>
+            <textarea
+              value={lawForm.summary}
+              onChange={(e) => { setLawForm({ ...lawForm, summary: e.target.value }); setFormErrors({ ...formErrors, summary: "" }); }}
+              className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all min-h-[80px] resize-y ${formErrors.summary ? "border-red" : "border-ink/10"}`}
+              required
+            />
+            {formErrors.summary && <p className="mt-1 font-mono text-xs text-red">{formErrors.summary}</p>}
+          </div>
+
+          <div>
+            <label className="label-pill label-pill-light block mb-1">Issuing Agency *</label>
+            <input
+              value={lawForm.issuing_agency}
+              onChange={(e) => { setLawForm({ ...lawForm, issuing_agency: e.target.value }); setFormErrors({ ...formErrors, issuing_agency: "" }); }}
+              className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.issuing_agency ? "border-red" : "border-ink/10"}`}
+              required
+            />
+            {formErrors.issuing_agency && <p className="mt-1 font-mono text-xs text-red">{formErrors.issuing_agency}</p>}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label-pill label-pill-light block mb-1">Country Code</label>
+              <input
+                value={lawForm.country_code}
+                onChange={(e) => { setLawForm({ ...lawForm, country_code: e.target.value }); setFormErrors({ ...formErrors, country_code: "" }); }}
+                className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.country_code ? "border-red" : "border-ink/10"}`}
+                placeholder="e.g. PH"
+                maxLength={2}
+              />
+              {formErrors.country_code && <p className="mt-1 font-mono text-xs text-red">{formErrors.country_code}</p>}
+            </div>
+            <div>
+              <label className="label-pill label-pill-light block mb-1">Jurisdiction</label>
+              <input
+                value={lawForm.jurisdiction_scope}
+                onChange={(e) => setLawForm({ ...lawForm, jurisdiction_scope: e.target.value })}
+                className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                placeholder="e.g. national"
+              />
             </div>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="label-pill label-pill-light block mb-1">Source URL</label>
+            <input
+              type="url"
+              value={lawForm.source_url}
+              onChange={(e) => setLawForm({ ...lawForm, source_url: e.target.value })}
+              className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+              placeholder="https://..."
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="secondary" type="button" disabled={saving} onClick={() => { setShowForm(false); resetForm(); }}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" loading={saving}>
+              {editTarget ? "Update Law" : "Create Law"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Law"
+        message="Are you sure you want to delete this law? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deleteLoading}
+      />
     </div>
   );
 }

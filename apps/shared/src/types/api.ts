@@ -64,6 +64,7 @@ export interface LguPerformanceRow {
   sla_compliance_rate: number;
   pending_count: number;
   breached_count: number;
+  escalation_count: number;
   status: "green" | "amber" | "red";
 }
 
@@ -75,11 +76,13 @@ export interface LguPlatformAverages {
   sla_compliance_rate: number;
   total_assigned: number;
   total_resolved: number;
+  total_escalations: number;
 }
 
 export interface LguPerformanceData {
   lgus: LguPerformanceRow[];
   platform_averages: LguPlatformAverages;
+  available_regions: string[];
 }
 
 export interface VerifiedReport {
@@ -98,4 +101,17 @@ export interface PublicImpactData {
   resolution_rate: number;
   recent_verified: VerifiedReport[];
   reports_by_type: Record<string, number>;
+}
+
+export interface BiasRiskEntry {
+  id: number;
+  risk: string;
+  category: string;
+  likelihood: "low" | "medium" | "high";
+  impact: "low" | "medium" | "high";
+  mitigation: string;
+  status: "open" | "partial" | "mitigated" | "closed";
+  evidence_url: string | null;
+  created_at: string;
+  updated_at: string;
 }

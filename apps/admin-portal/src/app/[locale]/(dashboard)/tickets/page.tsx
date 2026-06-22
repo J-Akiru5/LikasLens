@@ -1,14 +1,13 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { getTickets, bulkTicketStatus, bulkTicketAssign, getAdminNgos, Button } from "@likaslens/shared";
+import { getTickets, bulkTicketStatus, bulkTicketAssign, getAdminNgos, updateTicketStatus, deleteTicket, Button } from "@likaslens/shared";
 import type { Ticket, NgoGroup } from "@likaslens/shared";
 import { showToast, Dropdown, AdminTableSkeleton, ConfidenceTierBadge, ReddEligibilityBadge } from "@likaslens/shared";
+import { createClient } from "@/lib/supabase";
 import {
   Search,
   MoreVertical,
   Eye,
-  CheckCheck,
-  XCircle,
   Clock,
   MapPin,
   ChevronLeft,
@@ -38,6 +37,8 @@ export default function TicketsPage() {
   const [lastPage, setLastPage] = useState(1);
   const [ngos, setNgos] = useState<NgoGroup[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [openStatusMenuId, setOpenStatusMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const bulk = useBulkSelect(tickets);
@@ -93,6 +94,15 @@ export default function TicketsPage() {
       .catch(console.error);
   }, []);
 
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.user_metadata?.role) {
+        setUserRole(user.user_metadata.role as string);
+      }
+    });
+  }, []);
+
   const statuses = [...new Set(tickets.map((t) => t.status))];
 
   const getStatusPill = (status: string) => {
@@ -143,6 +153,34 @@ export default function TicketsPage() {
   function handleBulkDelete() {
     if (!confirm(`Delete ${bulk.selectedCount} ticket(s)? This cannot be undone.`)) return;
     showToast("Bulk delete is not yet implemented", "info");
+  }
+
+  async function handleStatusChange(ticketId: string, newStatus: string) {
+    try {
+      const res = await updateTicketStatus(ticketId, newStatus);
+      if (res.success) {
+        showToast(res.message || `Status changed to ${newStatus}`, "success");
+        setOpenStatusMenuId(null);
+        closeMenu();
+        await fetchTickets();
+      }
+    } catch {
+      showToast("Failed to update status", "error");
+    }
+  }
+
+  async function handleDeleteTicket(ticketId: string) {
+    if (!confirm("Delete this ticket? This cannot be undone.")) return;
+    try {
+      const res = await deleteTicket(ticketId);
+      if (res.success) {
+        showToast(res.message || "Ticket deleted", "success");
+        closeMenu();
+        await fetchTickets();
+      }
+    } catch {
+      showToast("Failed to delete ticket", "error");
+    }
   }
 
   return (
@@ -250,7 +288,7 @@ export default function TicketsPage() {
                   {openMenuId === ticket.id && (
                     <div
                       ref={menuRef}
-                      className="absolute right-0 mt-1 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden z-50"
+                      className="absolute right-0 mt-1 w-48 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden z-50"
                     >
                       <button
                         type="button"
@@ -267,24 +305,41 @@ export default function TicketsPage() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          closeMenu();
-                          showToast("Ticket verified", "success");
+                          setOpenStatusMenuId(openStatusMenuId === ticket.id ? null : ticket.id);
                         }}
                         className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
                       >
-                        <CheckCheck className="w-4 h-4" /> Verify
+                        <RefreshCw className="w-4 h-4" /> Change Status
                       </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          closeMenu();
-                          showToast("Ticket rejected", "error");
-                        }}
-                        className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red/70 hover:text-red hover:bg-red/5 transition-colors"
-                      >
-                        <XCircle className="w-4 h-4" /> Reject
-                      </button>
+                      {openStatusMenuId === ticket.id && (
+                        <div className="border-b border-ink/10 bg-ink/[0.02]">
+                          {STATUS_OPTIONS.map((opt) => (
+                            <button
+                              key={opt.value}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusChange(ticket.id, opt.value);
+                              }}
+                              className="flex w-full items-center gap-2 pl-10 pr-4 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.04] transition-colors"
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {userRole === "super_admin" && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteTicket(ticket.id);
+                          }}
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red/70 hover:text-red hover:bg-red/5 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" /> Remove
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

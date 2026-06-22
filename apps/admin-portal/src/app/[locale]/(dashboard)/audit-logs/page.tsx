@@ -1,10 +1,17 @@
-// apps/admin-portal/src/app/[locale]/(dashboard)/audit-logs/page.tsx
-// Phase 6 sub-page sweep: Button swaps + label-pill eyebrows
 "use client";
+
 import { useEffect, useState, useCallback } from "react";
-import { getAuditLogs, getAuditLogDetail, Button } from "@likaslens/shared";
+import {
+  getAuditLogs,
+  getAuditLogDetail,
+  getAuditLogActions,
+  Button,
+  Skeleton,
+  EmptyState,
+  Modal,
+  showToast,
+} from "@likaslens/shared";
 import type { AuditLogEntry } from "@likaslens/shared";
-import { Dropdown, AdminTableSkeleton, Modal, EmptyState } from "@likaslens/shared";
 import {
   ChevronLeft,
   ChevronRight,
@@ -15,18 +22,17 @@ import {
   List,
   GitBranch,
   Eye,
+  Globe,
+  Monitor,
+  Shield,
+  RefreshCw,
 } from "lucide-react";
 
-// ─── Constants ──────────────────────────────────────────────────────────────
-
-const ENTITY_TYPES = [
+const ENTITY_TYPE_OPTIONS = [
   { value: "", label: "All entities" },
-  { value: "Ticket", label: "Tickets" },
-  { value: "User", label: "Users" },
-  { value: "Ngo", label: "NGOs" },
-  { value: "Report", label: "Reports" },
-  { value: "Law", label: "Laws" },
-  { value: "Reward", label: "Rewards" },
+  { value: "ticket", label: "Tickets" },
+  { value: "user", label: "Users" },
+  { value: "ngo_group", label: "NGOs" },
 ];
 
 const ACTION_COLORS: Record<string, string> = {
@@ -34,20 +40,50 @@ const ACTION_COLORS: Record<string, string> = {
   updated: "bg-accent/10 text-accent",
   deleted: "bg-red/10 text-red",
   role_change: "bg-amber/10 text-amber",
+  bulk_role_change: "bg-amber/10 text-amber",
+  bulk_user_deactivated: "bg-red/10 text-red",
+  bulk_ticket_status_changed: "bg-accent/10 text-accent",
+  bulk_ticket_assigned: "bg-green/10 text-green",
+  bulk_ngo_verified: "bg-green/10 text-green",
+  bulk_ngo_deleted: "bg-red/10 text-red",
+  triage_manual_classify: "bg-accent/10 text-accent",
+  triage_dismiss_spam: "bg-red/10 text-red",
+  triage_escalated: "bg-amber/10 text-amber",
   user_deleted: "bg-red/10 text-red",
   report_resolved: "bg-green/10 text-green",
 };
 
 const TIMELINE_DOT_COLORS: Record<string, string> = {
   created: "bg-green",
-  updated: "bg-accent",
-  deleted: "bg-red",
-  role_change: "bg-amber",
-  user_deleted: "bg-red",
+  bulk_ticket_assigned: "bg-green",
+  bulk_ngo_verified: "bg-green",
   report_resolved: "bg-green",
+  updated: "bg-accent",
+  bulk_ticket_status_changed: "bg-accent",
+  triage_manual_classify: "bg-accent",
+  deleted: "bg-red",
+  bulk_user_deactivated: "bg-red",
+  bulk_ngo_deleted: "bg-red",
+  triage_dismiss_spam: "bg-red",
+  user_deleted: "bg-red",
+  role_change: "bg-amber",
+  bulk_role_change: "bg-amber",
+  triage_escalated: "bg-amber",
 };
 
-// ─── CSV Export Helper ──────────────────────────────────────────────────────
+function getActionColor(action: string): string {
+  return ACTION_COLORS[action] ?? "bg-ink/[0.04] text-ink/60";
+}
+
+function getTimelineDotColor(action: string): string {
+  return TIMELINE_DOT_COLORS[action] ?? "bg-ink/30";
+}
+
+function formatActionLabel(action: string): string {
+  return action.replace(/_/g, " ");
+}
+
+// ─── CSV Export Helper ─────────────────────
 
 function exportToCsv(logs: AuditLogEntry[]) {
   const headers = [
@@ -77,7 +113,9 @@ function exportToCsv(logs: AuditLogEntry[]) {
   const csvContent = [
     headers.join(","),
     ...rows.map((row) =>
-      row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
+      row
+        .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+        .join(",")
     ),
   ].join("\n");
 
@@ -91,8 +129,6 @@ function exportToCsv(logs: AuditLogEntry[]) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
-
-// ─── Change Summary Helper ──────────────────────────────────────────────────
 
 function summarizeChanges(
   oldValues: Record<string, unknown>,
@@ -117,7 +153,33 @@ function summarizeChanges(
   return changes.join("; ");
 }
 
-// ─── Diff Modal ─────────────────────────────────────────────────────────────
+// ─── Audit Log Skeleton ────────────────────
+
+function AuditLogSkeleton() {
+  return (
+    <div className="bg-panel rounded-3xl border border-ink/5 overflow-hidden animate-fade-in">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-start gap-3 p-4 border-b border-ink/5 last:border-0"
+        >
+          <Skeleton className="w-5 h-5 rounded shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-28 rounded-full" />
+              <Skeleton className="h-3 w-16 rounded" />
+              <Skeleton className="h-3 w-20 rounded" />
+            </div>
+            <Skeleton className="h-3 w-48 rounded" />
+            <Skeleton className="h-3 w-32 rounded" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Diff Modal ────────────────────────────
 
 function DiffModal({
   isOpen,
@@ -158,17 +220,17 @@ function DiffModal({
         {/* Meta info */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <span className="label-pill label-pill-light mb-1 inline-block">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
               Action
             </span>
             <span
-              className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${ACTION_COLORS[log.action] ?? "bg-ink/[0.04] text-ink/60"}`}
+              className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${getActionColor(log.action)}`}
             >
-              {log.action}
+              {formatActionLabel(log.action)}
             </span>
           </div>
           <div>
-            <span className="label-pill label-pill-light mb-1 inline-block">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
               Entity
             </span>
             <p className="font-mono text-sm text-ink">
@@ -176,7 +238,7 @@ function DiffModal({
             </p>
           </div>
           <div>
-            <span className="label-pill label-pill-light mb-1 inline-block">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
               Actor
             </span>
             <p className="font-mono text-sm text-ink">
@@ -184,11 +246,31 @@ function DiffModal({
             </p>
           </div>
           <div>
-            <span className="label-pill label-pill-light mb-1 inline-block">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
               Timestamp
             </span>
             <p className="font-mono text-sm text-ink">
               {new Date(log.created_at).toLocaleString()}
+            </p>
+          </div>
+          {log.ip_address && (
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
+                IP Address
+              </span>
+              <p className="font-mono text-sm text-ink flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-ink/40" />
+                {log.ip_address}
+              </p>
+            </div>
+          )}
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
+              User Agent
+            </span>
+            <p className="font-mono text-xs text-ink/60 flex items-center gap-1.5 truncate">
+              <Monitor className="w-3.5 h-3.5 text-ink/40 shrink-0" />
+              {log.user_agent ?? "N/A"}
             </p>
           </div>
         </div>
@@ -204,7 +286,7 @@ function DiffModal({
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="label-pill label-pill-light">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-ink/40 font-bold">
               Changes ({changedFields.length} field
               {changedFields.length !== 1 ? "s" : ""})
             </p>
@@ -223,7 +305,6 @@ function DiffModal({
               </div>
             </div>
 
-            {/* Field rows */}
             {changedFields.map((field) => (
               <div key={field} className="space-y-1">
                 <p className="font-mono text-xs font-bold text-ink/60">
@@ -234,14 +315,14 @@ function DiffModal({
                     <p className="font-mono text-xs text-ink/70 break-all">
                       {log.old_values?.[field] !== undefined
                         ? JSON.stringify(log.old_values[field])
-                        : "—"}
+                        : "\u2014"}
                     </p>
                   </div>
                   <div className="px-3 py-2 rounded-b-xl bg-green/5 border border-green/10">
                     <p className="font-mono text-xs text-ink/70 break-all">
                       {log.new_values?.[field] !== undefined
                         ? JSON.stringify(log.new_values[field])
-                        : "—"}
+                        : "\u2014"}
                     </p>
                   </div>
                 </div>
@@ -254,7 +335,7 @@ function DiffModal({
   );
 }
 
-// ─── Timeline View ──────────────────────────────────────────────────────────
+// ─── Timeline View ─────────────────────────
 
 function TimelineView({
   logs,
@@ -265,25 +346,21 @@ function TimelineView({
 }) {
   if (logs.length === 0) {
     return (
-      <div className="py-8">
-        <EmptyState
-          icon={ScrollText}
-          title="No audit logs found"
-          description="Administrative actions and changes will be recorded here for compliance tracking."
-        />
-      </div>
+      <EmptyState
+        icon={ScrollText}
+        title="No audit logs found"
+        description="Administrative actions and changes will be recorded here for compliance tracking."
+      />
     );
   }
 
   return (
     <div className="relative pl-8">
-      {/* Vertical line */}
       <div className="absolute left-3 top-2 bottom-2 w-px bg-ink/10" />
 
       <div className="space-y-6">
         {logs.map((log) => {
-          const dotColor =
-            TIMELINE_DOT_COLORS[log.action] ?? "bg-ink/30";
+          const dotColor = getTimelineDotColor(log.action);
           const hasChanges =
             log.old_values &&
             log.new_values &&
@@ -291,12 +368,10 @@ function TimelineView({
 
           return (
             <div key={log.id} className="relative group">
-              {/* Dot */}
               <div
                 className={`absolute -left-5 top-1.5 w-3 h-3 rounded-full ${dotColor} ring-4 ring-page`}
               />
 
-              {/* Content */}
               <button
                 type="button"
                 onClick={() => onSelect(log)}
@@ -305,9 +380,9 @@ function TimelineView({
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${ACTION_COLORS[log.action] ?? "bg-ink/[0.04] text-ink/60"}`}
+                      className={`px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${getActionColor(log.action)}`}
                     >
-                      {log.action}
+                      {formatActionLabel(log.action)}
                     </span>
                     <span className="font-mono text-xs text-muted">
                       {log.entity_type}
@@ -328,7 +403,6 @@ function TimelineView({
                   </span>
                 </div>
 
-                {/* Change summary preview */}
                 {hasChanges && (
                   <div className="mt-3 flex items-center gap-2">
                     <div className="flex items-center gap-1.5 text-xs font-mono text-ink/40">
@@ -357,48 +431,89 @@ function TimelineView({
   );
 }
 
-// ─── Main Page ──────────────────────────────────────────────────────────────
+// ─── Main Page ─────────────────────────────
 
 export default function AuditLogsPage() {
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
+  const [total, setTotal] = useState(0);
   const [actionFilter, setActionFilter] = useState("");
   const [entityFilter, setEntityFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [viewMode, setViewMode] = useState<"table" | "timeline">("table");
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
   const [diffModalOpen, setDiffModalOpen] = useState(false);
 
-  useEffect(() => {
-    const params: Record<string, string> = {
-      per_page: "50",
-      page: String(page),
-    };
-    if (actionFilter) params.action = actionFilter;
-    if (entityFilter) params.entity_type = entityFilter;
+  // Dynamic action options from backend
+  const [actionOptions, setActionOptions] = useState<string[]>([]);
 
-    getAuditLogs(params)
+  const hasActiveFilters =
+    actionFilter !== "" ||
+    entityFilter !== "" ||
+    dateFrom !== "" ||
+    dateTo !== "";
+
+  // Load action types for filter dropdown on mount
+  useEffect(() => {
+    getAuditLogActions()
       .then((res) => {
-        if (res.success) {
-          setLogs(res.data);
-          setLastPage(res.meta?.last_page ?? 1);
-        }
+        if (res.success) setActionOptions(res.data);
       })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [actionFilter, entityFilter, page]);
+      .catch(() => {});
+  }, []);
+
+  const fetchLogs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params: Record<string, string> = {
+        per_page: "50",
+        page: String(page),
+      };
+      if (actionFilter) params.action = actionFilter;
+      if (entityFilter) params.entity_type = entityFilter;
+      if (dateFrom) params.date_from = dateFrom;
+      if (dateTo) params.date_to = dateTo;
+
+      const res = await getAuditLogs(params);
+      if (res.success) {
+        setLogs(res.data);
+        setLastPage(res.meta?.last_page ?? 1);
+        setTotal(res.meta?.total ?? 0);
+      }
+    } catch (err) {
+      console.error("Failed to load audit logs:", err);
+      setError("Failed to load audit log data");
+      showToast("Failed to load audit logs", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [actionFilter, entityFilter, dateFrom, dateTo, page]);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
+
+  const clearFilters = useCallback(() => {
+    setActionFilter("");
+    setEntityFilter("");
+    setDateFrom("");
+    setDateTo("");
+    setPage(1);
+  }, []);
 
   const handleSelectLog = useCallback(
     async (log: AuditLogEntry) => {
-      // If we already have the old/new values, just show the modal
       if (log.old_values || log.new_values) {
         setSelectedLog(log);
         setDiffModalOpen(true);
         return;
       }
 
-      // Otherwise fetch the full detail from the API
       try {
         const res = await getAuditLogDetail(log.id);
         if (res.success) {
@@ -407,7 +522,6 @@ export default function AuditLogsPage() {
         }
       } catch (err) {
         console.error("Failed to fetch audit log detail:", err);
-        // Fallback: show whatever we have
         setSelectedLog(log);
         setDiffModalOpen(true);
       }
@@ -416,18 +530,10 @@ export default function AuditLogsPage() {
   );
 
   const handleExportCsv = useCallback(() => {
+    if (logs.length === 0) return;
     exportToCsv(logs);
+    showToast("CSV exported successfully", "success");
   }, [logs]);
-
-  const handleActionFilterChange = useCallback((val: string) => {
-    setActionFilter(val);
-    setPage(1);
-  }, []);
-
-  const handleEntityFilterChange = useCallback((val: string) => {
-    setEntityFilter(val);
-    setPage(1);
-  }, []);
 
   return (
     <div className="space-y-8">
@@ -437,12 +543,16 @@ export default function AuditLogsPage() {
           Audit Logs
         </h1>
         <p className="font-mono text-base text-muted mt-1">
-          Track all administrative actions
+          {loading
+            ? "Loading..."
+            : total > 0
+              ? `${total} audit log${total === 1 ? "" : "s"} recorded`
+              : "No audit logs found"}
         </p>
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         {/* View toggle */}
         <div className="flex items-center gap-1 bg-ink/[0.03] rounded-xl p-1">
           <button
@@ -471,51 +581,125 @@ export default function AuditLogsPage() {
           </button>
         </div>
 
-        {/* Filters */}
-        <Dropdown
+        {/* Action filter */}
+        <select
           value={actionFilter}
-          onChange={handleActionFilterChange}
-          options={[
-            { value: "", label: "All actions" },
-            { value: "created", label: "Created" },
-            { value: "updated", label: "Updated" },
-            { value: "deleted", label: "Deleted" },
-            { value: "role_change", label: "Role changes" },
-            { value: "user_deleted", label: "User deletions" },
-            { value: "report_resolved", label: "Report resolved" },
-          ]}
-          size="md"
-          className="max-w-[200px]"
-        />
+          onChange={(e) => {
+            setActionFilter(e.target.value);
+            setPage(1);
+          }}
+          className="px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20 appearance-none cursor-pointer"
+        >
+          <option value="">All actions</option>
+          {actionOptions.map((action) => (
+            <option key={action} value={action}>
+              {formatActionLabel(action)}
+            </option>
+          ))}
+        </select>
 
-        <Dropdown
+        {/* Entity filter */}
+        <select
           value={entityFilter}
-          onChange={handleEntityFilterChange}
-          options={ENTITY_TYPES}
-          size="md"
-          className="max-w-[200px]"
-        />
+          onChange={(e) => {
+            setEntityFilter(e.target.value);
+            setPage(1);
+          }}
+          className="px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20 appearance-none cursor-pointer"
+        >
+          {ENTITY_TYPE_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
 
-        {/* Spacer */}
+        {/* Date from */}
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/30">
+            From
+          </span>
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => {
+              setDateFrom(e.target.value);
+              setPage(1);
+            }}
+            className="px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20"
+          />
+        </div>
+
+        {/* Date to */}
+        <div className="flex items-center gap-1.5">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/30">
+            To
+          </span>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => {
+              setDateTo(e.target.value);
+              setPage(1);
+            }}
+            className="px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20"
+          />
+        </div>
+
+        {/* Clear filters */}
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            type="button"
+            onClick={clearFilters}
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Clear
+          </Button>
+        )}
+
         <div className="flex-1" />
 
-        {/* Export button */}
         <Button
           variant="secondary"
+          size="sm"
+          type="button"
           onClick={handleExportCsv}
           disabled={logs.length === 0}
         >
-          <Download className="w-4 h-4" />
-          Export CSV
+          <Download className="w-4 h-4" /> Export CSV
         </Button>
       </div>
 
       {/* Content */}
       {loading ? (
-        <AdminTableSkeleton rows={8} columns={5} showSearch={false} />
+        <AuditLogSkeleton />
+      ) : error && logs.length === 0 ? (
+        <EmptyState
+          icon={Shield}
+          title="Failed to load audit logs"
+          description={error}
+          colorTheme="red"
+          action={{ label: "Retry", onClick: fetchLogs }}
+        />
+      ) : logs.length === 0 ? (
+        <EmptyState
+          icon={ScrollText}
+          title="No audit logs found"
+          description={
+            hasActiveFilters
+              ? "No results match your current filters. Try adjusting or clearing them."
+              : "Administrative actions and changes will be recorded here for compliance tracking."
+          }
+          action={
+            hasActiveFilters
+              ? { label: "Clear filters", onClick: clearFilters }
+              : undefined
+          }
+        />
       ) : viewMode === "table" ? (
         /* ─── Table View ─── */
-        <div className="bg-panel rounded-3xl shadow-sm border border-ink/5 overflow-hidden">
+        <div className="bg-panel rounded-3xl border border-ink/5 overflow-hidden">
           {logs.map((log) => (
             <div
               key={log.id}
@@ -525,9 +709,9 @@ export default function AuditLogsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${ACTION_COLORS[log.action] ?? "bg-ink/[0.04] text-ink/60"}`}
+                    className={`px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${getActionColor(log.action)}`}
                   >
-                    {log.action}
+                    {formatActionLabel(log.action)}
                   </span>
                   <span className="font-mono text-xs text-muted">
                     {log.entity_type}
@@ -547,10 +731,11 @@ export default function AuditLogsPage() {
                 )}
               </div>
 
-              {/* View detail button */}
               {(log.old_values || log.new_values) && (
                 <Button
                   variant="ghost"
+                  size="sm"
+                  type="button"
                   onClick={() => handleSelectLog(log)}
                 >
                   <Eye className="w-3.5 h-3.5" />
@@ -559,13 +744,6 @@ export default function AuditLogsPage() {
               )}
             </div>
           ))}
-          {logs.length === 0 && (
-            <EmptyState
-              icon={ScrollText}
-              title="No audit logs found"
-              description="Administrative actions and changes will be recorded here for compliance tracking."
-            />
-          )}
         </div>
       ) : (
         /* ─── Timeline View ─── */
@@ -573,7 +751,7 @@ export default function AuditLogsPage() {
       )}
 
       {/* Pagination */}
-      {lastPage > 1 && (
+      {!loading && lastPage > 1 && (
         <div className="flex items-center justify-between gap-4">
           <p className="font-mono text-sm text-muted">
             Page {page} of {lastPage}
@@ -581,6 +759,8 @@ export default function AuditLogsPage() {
           <div className="flex gap-2">
             <Button
               variant="secondary"
+              size="sm"
+              type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
             >
@@ -588,6 +768,8 @@ export default function AuditLogsPage() {
             </Button>
             <Button
               variant="secondary"
+              size="sm"
+              type="button"
               onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
               disabled={page >= lastPage}
             >

@@ -13,6 +13,7 @@ use App\Services\ChainService;
 use App\Services\RankService;
 use App\Services\TriageService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -162,6 +163,8 @@ class ReportController extends Controller
 
                 return [$ticket, $evidence];
             });
+
+            Cache::forget('dashboard:stats');
 
             // Step 2 — Fire initial timeline entry for new ticket
             TicketStatusChanged::dispatch(

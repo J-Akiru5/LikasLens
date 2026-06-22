@@ -24,6 +24,14 @@ class AdminAuditLogController extends Controller
             $query->where('actor_user_id', $actorId);
         }
 
+        if ($dateFrom = $request->input('date_from')) {
+            $query->where('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo = $request->input('date_to')) {
+            $query->where('created_at', '<=', $dateTo.' 23:59:59');
+        }
+
         $logs = $query->paginate(min((int) $request->input('per_page', 50), 100));
 
         return response()->json([
@@ -45,6 +53,23 @@ class AdminAuditLogController extends Controller
         return response()->json([
             'success' => true,
             'data' => $log,
+        ]);
+    }
+
+    /**
+     * GET /admin/audit-logs/actions
+     * Returns distinct action values for the filter dropdown.
+     */
+    public function actions(): JsonResponse
+    {
+        $actions = AuditLog::select('action')
+            ->distinct()
+            ->orderBy('action')
+            ->pluck('action');
+
+        return response()->json([
+            'success' => true,
+            'data' => $actions,
         ]);
     }
 }

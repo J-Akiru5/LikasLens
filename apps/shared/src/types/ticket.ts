@@ -143,3 +143,58 @@ export interface TicketExplainResponse {
   rule_chain: RuleChain;
   neighbours: NeighbourTicket[];
 }
+
+export interface AdminLaw {
+  id: string;
+  law_code: string;
+  title: string;
+  summary: string;
+  issuing_agency: string;
+  jurisdiction_scope: string | null;
+  source_url: string | null;
+  is_active: boolean;
+  country_code?: string;
+}
+
+export interface AdminLawPenalty {
+  id: string;
+  law_id: string;
+  violation_name: string;
+  penalty_type: string;
+  min_fine_php: number | null;
+  max_fine_php: number | null;
+  min_imprisonment_yrs: number | null;
+  max_imprisonment_yrs: number | null;
+  notes: string | null;
+}
+
+export interface AdminViolationType {
+  id: string;
+  law_id: string;
+  code: string;
+  name: string;
+  description: string;
+  default_penalty_id: string | null;
+}
+
+export interface AdminLawDetail extends AdminLaw {
+  penalties: AdminLawPenalty[];
+  violationTypes: AdminViolationType[];
+}
+
+export interface PartnerStore {
+  id: string;
+  name: string;
+}
+
+export interface AdminReward {
+  id: string;
+  reward_name: string;
+  reward_type: string;
+  points_cost: number;
+  stock_quantity: number;
+  is_active: boolean;
+  valid_from: string | null;
+  valid_until: string | null;
+  partner_store: PartnerStore | null;
+}

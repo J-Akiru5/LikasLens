@@ -108,6 +108,16 @@ class AdminNgoController extends Controller
         ]);
     }
 
+    public function regions(): JsonResponse
+    {
+        $regions = NgoGroup::distinct()->orderBy('region')->pluck('region');
+
+        return response()->json([
+            'success' => true,
+            'data' => $regions,
+        ]);
+    }
+
     public function destroy(Request $request, string $id): JsonResponse
     {
         $ngo = NgoGroup::findOrFail($id);
