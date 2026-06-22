@@ -158,17 +158,10 @@ export default function ReportPage() {
 
     if (!queued.length) return;
 
-    let authToken: string | undefined = undefined;
-    try {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      authToken = session?.access_token;
-    } catch { /* anonymous */ }
-
     const successfulIds: string[] = [];
     for (const item of queued) {
       try {
-        await laravelPost("/reports", item.payload, 30000, authToken);
+        await laravelPost("/reports", item.payload, 30000);
         successfulIds.push(item.id);
       } catch {
         // keep queued
@@ -277,13 +270,11 @@ export default function ReportPage() {
 
   const finalizeSubmission = async (cleanedImage: string) => {
     let userId: string | undefined = undefined;
-    let authToken: string | undefined = undefined;
     if (!isGhostMode) {
       try {
         const supabase = createClient();
-        const { data: { user }, data: { session } } = await supabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         userId = user?.id;
-        authToken = session?.access_token;
       } catch { /* continue anonymously */ }
     }
 
@@ -306,8 +297,7 @@ export default function ReportPage() {
     const responseData = await laravelPost<{ message?: string }>(
       "/reports",
       payload,
-      30000,
-      authToken
+      30000
     );
 
     showToast(responseData.message || "Report submitted successfully!", "success");

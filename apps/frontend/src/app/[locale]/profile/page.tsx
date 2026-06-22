@@ -61,6 +61,7 @@ function ProfilePageContent() {
   const initialTab = (searchParams.get("tab") as TabKey) || "overview";
 
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
+  const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userCreated, setUserCreated] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -105,6 +106,7 @@ function ProfilePageContent() {
         if (!mounted) return;
 
         if (user) {
+          setUserId(user.id);
           setUserEmail(user.email ?? null);
           setUserCreated(
             user.created_at
@@ -907,9 +909,9 @@ function ProfilePageContent() {
                 <h2 className="font-semibold tracking-tight text-xl text-ink mb-6 w-full text-left">
                   Profile Photo
                 </h2>
-                {userEmail && (
+                {userId && (
                   <AvatarUpload
-                    userId={userEmail}
+                    userId={userId}
                     currentUrl={avatarUrl}
                     onUploadComplete={(url) => setAvatarUrl(url)}
                   />

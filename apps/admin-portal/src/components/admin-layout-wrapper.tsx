@@ -60,18 +60,11 @@ export function AdminDashboardLayoutWrapper({
   const router = useRouter();
   const [role, setRole] = useState<string | null>(null);
   const [isGhostMode, setIsGhostMode] = useState(false);
-  const [authToken, setAuthToken] = useState<string | undefined>(undefined);
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications({ pollInterval: 30000, token: authToken });
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications({ pollInterval: 30000 });
 
   useEffect(() => {
     const theme = document.documentElement.getAttribute("data-theme");
     setIsGhostMode(theme === "ghost");
-
-    // Get Supabase session token for API calls
-    const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthToken(session?.access_token);
-    });
 
     const observer = new MutationObserver(() => {
       const current = document.documentElement.getAttribute("data-theme");

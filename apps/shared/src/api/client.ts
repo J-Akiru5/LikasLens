@@ -97,12 +97,11 @@ export async function laravelFetch<T>(
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
   };
 
-  // On the server (Node/React Server Components), cookies() from next/headers
-  // can read httpOnly cookies. Pass the token explicitly via the `token` param.
-  // On the client, document.cookie cannot read httpOnly cookies — use a
-  // Next.js API route proxy instead of trying to read the cookie here.
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  // Resolve auth token: explicit param wins, fall back to laravel_token cookie.
+  // The laravel_token cookie is set without HttpOnly so the client can read it.
+  const resolvedToken = token || getCookie("laravel_token");
+  if (resolvedToken) {
+    headers["Authorization"] = `Bearer ${resolvedToken}`;
   }
 
   // Multi-tenant: extract subdomain and pass to backend
