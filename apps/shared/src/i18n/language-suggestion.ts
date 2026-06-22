@@ -58,6 +58,27 @@ const translations: Record<Locale, LangSuggestionText> = {
     no: "ไม่",
     neverShow: "ไม่แสดงอีก",
   },
+  km: {
+    title: "ការណែនាំភាសា",
+    message: "យើងបានរកឃើញថា browser របស់អ្នកកំពុងតែងោង {lang}។ តើអ្នកចង់ប្ដូរទេ?",
+    setDefault: "កំណត់ជាលំនាំដើម",
+    no: "ទេ",
+    neverShow: "កុំបង្ហាញម្ដងទៀត",
+  },
+  my: {
+    title: "ဘာသာစကား အကြံပြုချက်",
+    message: "သင့် browser သည် {lang} တွင် သတ်မှတ်ထားကြောင်း တွေ့ရှိပါသည်။ ပြောင်းလဲလိုပါသလား?",
+    setDefault: "ပုံသေအဖြစ် သတ်မှတ်ရန်",
+    no: "မလိုပါ",
+    neverShow: "ထပ်မပြပါနှင့်",
+  },
+  lo: {
+    title: "ການແນະນຳພາສາ",
+    message: "ພວກເຮົາພົບວ່າ browser ຂອງເຈົ້າຕັ້ງຄ່າເປັນ {lang} ເຈົ້າຕ້ອງການປ່ຽນບໍ?",
+    setDefault: "ຕັ້ງເປັນຄ່າເລີ່ມຕົ້ນ",
+    no: "ບໍ່",
+    neverShow: "ຢ່າສະແດງອີກ",
+  },
 };
 
 const localeNames: Record<Locale, string> = {
@@ -68,6 +89,9 @@ const localeNames: Record<Locale, string> = {
   ms: "Bahasa Melayu",
   ta: "தமிழ்",
   th: "ภาษาไทย",
+  km: "ខ្មែរ",
+  my: "မြန်မာ",
+  lo: "ລາວ",
 };
 
 const NEVER_SHOW_KEY = "likaslens-lang-suggestion-dismissed";
@@ -77,7 +101,7 @@ function getSupportedLocaleFromNavigator(): Locale | null {
   const langs = navigator.languages || [navigator.language];
   for (const lang of langs) {
     const code = lang.split("-")[0].toLowerCase();
-    const supported: Locale[] = ["fil", "vi", "id", "ms", "ta", "th"];
+    const supported: Locale[] = ["fil", "vi", "id", "ms", "ta", "th", "km", "my", "lo"];
     if (code === "tl") return "fil";
     if (supported.includes(code as Locale)) return code as Locale;
   }
