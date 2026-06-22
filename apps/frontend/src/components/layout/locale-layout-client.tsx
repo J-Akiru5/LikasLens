@@ -1,12 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { OfflineBanner, ToastProvider } from "@likaslens/shared";
-
-const LiksiChat = dynamic(
-  () => import("@likaslens/shared").then((m) => m.LiksiChat),
-  { ssr: false }
-);
+import { useState, useEffect } from "react";
+import { OfflineBanner, ToastProvider, LiksiChat } from "@likaslens/shared";
 
 interface LocaleLayoutClientProps {
   children: React.ReactNode;
@@ -19,11 +14,16 @@ export function LocaleLayoutClient({
   locale,
   isAuthenticated,
 }: LocaleLayoutClientProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <>
       <OfflineBanner />
       <div className="flex-1">{children}</div>
-      <LiksiChat persona="citizen" locale={locale} isAuthenticated={isAuthenticated} />
+      {mounted && (
+        <LiksiChat persona="citizen" locale={locale} isAuthenticated={isAuthenticated} />
+      )}
       <ToastProvider />
     </>
   );

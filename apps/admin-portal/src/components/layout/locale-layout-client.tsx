@@ -1,12 +1,7 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { ToastProvider } from "@likaslens/shared";
-
-const LiksiChat = dynamic(
-  () => import("@likaslens/shared").then((m) => m.LiksiChat),
-  { ssr: false }
-);
+import { useState, useEffect } from "react";
+import { ToastProvider, LiksiChat } from "@likaslens/shared";
 
 interface LocaleLayoutClientProps {
   children: React.ReactNode;
@@ -19,10 +14,13 @@ export function LocaleLayoutClient({
   locale,
   isAuthenticated = false,
 }: LocaleLayoutClientProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <>
       <div className="flex-1">{children}</div>
-      {isAuthenticated && (
+      {mounted && isAuthenticated && (
         <LiksiChat persona="admin" locale={locale} isAuthenticated={true} />
       )}
       <ToastProvider />
