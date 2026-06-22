@@ -63,7 +63,7 @@ export function RegisterClient() {
       <div className="hidden lg:flex lg:w-1/2 p-3">
         <div className="relative w-full h-full rounded-[2rem] overflow-hidden bg-ink shadow-2xl flex flex-col justify-end">
           {/* Light Mode: Crystal Clear Beach */}
-          <div className="light-mode-only absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0 block [[data-theme=ghost]_&]:hidden">
             <Image
               src="/images/auth-nature-bg-v2.png"
               alt="Crystal clear tropical beach"
@@ -75,7 +75,7 @@ export function RegisterClient() {
           </div>
           
           {/* Ghost Mode: Coral Reef Undersea */}
-          <div className="ghost-mode-only absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0 hidden [[data-theme=ghost]_&]:block">
             <Image
               src="/images/auth-undersea-bg.png"
               alt="Beautiful colorful coral reef with fish"
