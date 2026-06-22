@@ -15,6 +15,7 @@ import {
   Network,
 } from "lucide-react";
 import { UserNav } from "./user-nav";
+import { createClient } from "@/utils/supabase/client";
 
 const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true },
@@ -53,12 +54,19 @@ export function DashboardLayoutWrapper({
 }: DashboardLayoutWrapperProps) {
   const [isGhostMode, setIsGhostMode] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications({ pollInterval: 30000 });
+  const [authToken, setAuthToken] = useState<string | undefined>(undefined);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications({ pollInterval: 30000, token: authToken });
 
   useEffect(() => {
     setMounted(true);
     const currentTheme = document.documentElement.getAttribute("data-theme");
     setIsGhostMode(currentTheme === "ghost");
+
+    // Get Supabase session token for API calls
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }: { data: { session: { access_token?: string } | null } }) => {
+      setAuthToken(data.session?.access_token);
+    });
 
     const observer = new MutationObserver(() => {
       const current = document.documentElement.getAttribute("data-theme");

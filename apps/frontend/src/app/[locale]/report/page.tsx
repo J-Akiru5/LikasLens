@@ -7,7 +7,7 @@ import { createClient } from "@/utils/supabase/client";
 import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
-import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor, useOnnxInference } from "@likaslens/shared";
+import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor, useOnnxInference, laravelPost } from "@likaslens/shared";
 import { stripExif } from "@/utils/exif-stripper";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
@@ -136,7 +136,6 @@ export default function ReportPage() {
   };
 
   const flushOfflineQueue = useCallback(async () => {
-    const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
     const queued: Array<{ id: string; payload: Record<string, unknown> }> = [];
 
     try {
@@ -159,15 +158,18 @@ export default function ReportPage() {
 
     if (!queued.length) return;
 
+    let authToken: string | undefined = undefined;
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      authToken = session?.access_token;
+    } catch { /* anonymous */ }
+
     const successfulIds: string[] = [];
     for (const item of queued) {
       try {
-        const response = await fetch(`${laravelUrl}/reports`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: JSON.stringify(item.payload),
-        });
-        if (response.ok) successfulIds.push(item.id);
+        await laravelPost("/reports", item.payload, 30000, authToken);
+        successfulIds.push(item.id);
       } catch {
         // keep queued
       }
@@ -274,13 +276,14 @@ export default function ReportPage() {
   };
 
   const finalizeSubmission = async (cleanedImage: string) => {
-    const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
     let userId: string | undefined = undefined;
+    let authToken: string | undefined = undefined;
     if (!isGhostMode) {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, data: { session } } = await supabase.auth.getUser();
         userId = user?.id;
+        authToken = session?.access_token;
       } catch { /* continue anonymously */ }
     }
 
@@ -300,18 +303,13 @@ export default function ReportPage() {
       return;
     }
 
-    const response = await fetch(`${laravelUrl}/reports`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const responseData = await laravelPost<{ message?: string }>(
+      "/reports",
+      payload,
+      30000,
+      authToken
+    );
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-    }
-
-    const responseData = await response.json();
     showToast(responseData.message || "Report submitted successfully!", "success");
     clearForm();
   };
@@ -320,7 +318,6 @@ export default function ReportPage() {
     e.preventDefault();
     if (!base64Image) { showToast("Please capture a photo first.", "error"); return; }
     setIsSubmitting(true);
-    const laravelUrl = process.env.NEXT_PUBLIC_API_URL || "";
 
     try {
       const cleanedImage = await stripExif(base64Image);
@@ -331,20 +328,17 @@ export default function ReportPage() {
         try {
           if (navigator.onLine) {
             // Server-side triage (full pipeline)
-            const triageRes = await fetch(`${laravelUrl}/reports/triage`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ base64Image: cleanedImage }),
-            });
-            if (triageRes.ok) {
-              const triageData = await triageRes.json();
-              if (triageData.has_concern) {
-                setTriageIndicators(triageData.indicators.map((i: { label?: string; type?: string }) => i.label || i.type));
-                setIsModalOpen(true);
-                setIsSubmitting(false);
-                setIsTriaging(false);
-                return;
-              }
+            const triageData = await laravelPost<{
+              has_concern?: boolean;
+              indicators?: Array<{ label?: string; type?: string }>;
+            }>("/reports/triage", { base64Image: cleanedImage }, 15000);
+
+            if (triageData.has_concern) {
+              setTriageIndicators(triageData.indicators?.map((i) => i.label || i.type || "") || []);
+              setIsModalOpen(true);
+              setIsSubmitting(false);
+              setIsTriaging(false);
+              return;
             }
           } else if (onnx.isReady) {
             // On-device triage (offline inference)

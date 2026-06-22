@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useNotifications } from "@likaslens/shared";
 import { cn } from "@likaslens/shared";
 import { formatDate } from "@likaslens/shared";
 import { Bell, AlertCircle, CheckCircle, Info, CheckCheck, Loader2 } from "lucide-react";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
+import { createClient } from "@/utils/supabase/client";
 
 function getNotifIcon(type: string) {
   if (type.includes("Escalation") || type.includes("breach"))
@@ -55,6 +57,15 @@ function EmptyState() {
 }
 
 export default function NotificationsPage() {
+  const [authToken, setAuthToken] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data }: { data: { session: { access_token?: string } | null } }) => {
+      setAuthToken(data.session?.access_token);
+    });
+  }, []);
+
   const {
     notifications,
     meta,
@@ -63,7 +74,7 @@ export default function NotificationsPage() {
     markAsRead,
     markAllAsRead,
     loadMore,
-  } = useNotifications();
+  } = useNotifications({ token: authToken });
 
   const hasMore = meta && meta.current_page < meta.last_page;
 

@@ -256,37 +256,39 @@ export function laravelPatch<T>(
 }
 
 // Achievement API
-export function fetchAchievementCatalog<T>() {
-  return laravelGet<T>("/achievements");
+export function fetchAchievementCatalog<T>(token?: string) {
+  return laravelGet<T>("/achievements", undefined, token);
 }
 
-export function fetchUserAchievements<T>() {
-  return laravelGet<T>("/user/achievements");
+export function fetchUserAchievements<T>(token?: string) {
+  return laravelGet<T>("/user/achievements", undefined, token);
 }
 
-export function fetchRankProgress<T>() {
-  return laravelGet<T>("/user/rank-progress");
+export function fetchRankProgress<T>(token?: string) {
+  return laravelGet<T>("/user/rank-progress", undefined, token);
 }
 
-export function fetchEcoCreditRate<T>(countryCode: string) {
+export function fetchEcoCreditRate<T>(countryCode: string, token?: string) {
   return laravelGet<T>(
-    `/settings/eco-credit-rate?country_code=${countryCode}`
+    `/settings/eco-credit-rate?country_code=${countryCode}`,
+    undefined,
+    token
   );
 }
 
 // Notification API
-export function fetchNotifications<T>(page = 1, perPage = 20) {
-  return laravelGet<T>(`/notifications?page=${page}&per_page=${perPage}`);
+export function fetchNotifications<T>(page = 1, perPage = 20, token?: string) {
+  return laravelGet<T>(`/notifications?page=${page}&per_page=${perPage}`, undefined, token);
 }
 
-export function fetchUnreadCount<T>() {
-  return laravelGet<T>("/notifications/unread-count");
+export function fetchUnreadCount<T>(token?: string) {
+  return laravelGet<T>("/notifications/unread-count", undefined, token);
 }
 
-export function markNotificationAsRead<T>(id: string) {
-  return laravelPatch<T>(`/notifications/${id}/mark-as-read`);
+export function markNotificationAsRead<T>(id: string, token?: string) {
+  return laravelPatch<T>(`/notifications/${id}/mark-as-read`, undefined, token);
 }
 
-export function markAllNotificationsAsRead<T>() {
-  return laravelPost<T>("/notifications/mark-all-as-read", {});
+export function markAllNotificationsAsRead<T>(token?: string) {
+  return laravelPost<T>("/notifications/mark-all-as-read", {}, undefined, token);
 }
