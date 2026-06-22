@@ -19,7 +19,7 @@
   },
   "pnpm": {
     "overrides": {
-      "next-intl": "4.13.0"
+      "next-intl": "^4"
     }
   }
 }
