@@ -28,6 +28,16 @@ class AdminBulkController extends Controller
         $updated = 0;
         $failed = [];
 
+        $allowedTransitions = [
+            'open' => ['investigating', 'closed'],
+            'investigating' => ['monitoring', 'resolved', 'closed'],
+            'monitoring' => ['resolved', 'investigating', 'closed'],
+            'resolved' => ['verified', 'closed'],
+            'pending_review' => ['open', 'investigating', 'closed'],
+            'verified' => ['closed'],
+            'closed' => [],
+        ];
+
         foreach ($validated['ids'] as $ticketId) {
             $ticket = Ticket::find($ticketId);
             if (! $ticket) {
@@ -37,15 +47,6 @@ class AdminBulkController extends Controller
             }
 
             $oldStatus = $ticket->status;
-            $allowedTransitions = [
-                'open' => ['investigating', 'closed'],
-                'investigating' => ['monitoring', 'resolved', 'closed'],
-                'monitoring' => ['resolved', 'investigating', 'closed'],
-                'resolved' => ['verified', 'closed'],
-                'pending_review' => ['open', 'investigating', 'closed'],
-                'verified' => ['closed'],
-                'closed' => [],
-            ];
 
             if (! in_array($newStatus, $allowedTransitions[$oldStatus] ?? [])) {
                 $failed[] = $ticketId;
@@ -54,7 +55,7 @@ class AdminBulkController extends Controller
             }
 
             $updates = ['status' => $newStatus];
-            if (in_array($newStatus, ['resolved', 'closed'])) {
+            if (in_array($newStatus, ['resolved', 'closed'], true)) {
                 $updates['resolved_at'] = now();
             }
 
@@ -73,9 +74,14 @@ class AdminBulkController extends Controller
             ]);
         }
 
+        $message = "{$updated} ticket(s) updated to '{$newStatus}'.";
+        if (count($failed) > 0) {
+            $message .= ' '.count($failed).' ticket(s) skipped (invalid transition or not found).';
+        }
+
         return response()->json([
             'success' => true,
-            'message' => "{$updated} ticket(s) updated to '{$newStatus}'.",
+            'message' => $message,
             'data' => [
                 'updated' => $updated,
                 'failed' => $failed,
@@ -97,6 +103,7 @@ class AdminBulkController extends Controller
 
         $ngo = NgoGroup::findOrFail($validated['lgu_id']);
         $created = 0;
+        $skipped = 0;
 
         foreach ($validated['ids'] as $ticketId) {
             $existing = TicketAssignment::where('ticket_id', $ticketId)
@@ -104,6 +111,8 @@ class AdminBulkController extends Controller
                 ->first();
 
             if ($existing) {
+                $skipped++;
+
                 continue;
             }
 
@@ -120,17 +129,78 @@ class AdminBulkController extends Controller
                 'action' => 'bulk_ticket_assigned',
                 'entity_type' => 'ticket',
                 'entity_id' => $ticketId,
-                'new_values' => ['assigned_group_id' => $validated['lgu_id'], 'ngo_name' => $ngo->name],
+                'new_values' => [
+                    'assigned_group_id' => $validated['lgu_id'],
+                    'ngo_name' => $ngo->name,
+                ],
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
         }
 
+        $message = "{$created} ticket(s) assigned to '{$ngo->name}'.";
+        if ($skipped > 0) {
+            $message .= " {$skipped} ticket(s) already assigned — skipped.";
+        }
+
         return response()->json([
             'success' => true,
-            'message' => "{$created} ticket(s) assigned to '{$ngo->name}'.",
+            'message' => $message,
             'data' => [
                 'created' => $created,
+                'skipped' => $skipped,
+            ],
+        ]);
+    }
+
+    /**
+     * Bulk delete tickets (soft-delete).
+     * POST /admin/tickets/bulk-delete
+     */
+    public function bulkTicketDelete(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1|max:100',
+            'ids.*' => 'required|string|exists:tickets,id',
+        ]);
+
+        $deleted = 0;
+        $skipped = 0;
+
+        foreach ($validated['ids'] as $ticketId) {
+            $ticket = Ticket::find($ticketId);
+            if (! $ticket) {
+                $skipped++;
+
+                continue;
+            }
+
+            AuditLog::create([
+                'actor_user_id' => $request->user()->id,
+                'action' => 'bulk_ticket_deleted',
+                'entity_type' => 'ticket',
+                'entity_id' => $ticket->id,
+                'old_values' => ['title' => $ticket->title, 'status' => $ticket->status],
+                'new_values' => ['deleted' => true],
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            $ticket->delete();
+            $deleted++;
+        }
+
+        $message = "{$deleted} ticket(s) deleted.";
+        if ($skipped > 0) {
+            $message .= " {$skipped} ticket(s) skipped (not found).";
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => [
+                'deleted' => $deleted,
+                'skipped' => $skipped,
             ],
         ]);
     }
@@ -149,10 +219,19 @@ class AdminBulkController extends Controller
 
         $newRole = $validated['role'];
         $updated = 0;
+        $skipped = 0;
 
         foreach ($validated['ids'] as $userId) {
             $user = User::find($userId);
             if (! $user) {
+                $skipped++;
+
+                continue;
+            }
+
+            if ($user->role === $newRole) {
+                $skipped++;
+
                 continue;
             }
 
@@ -172,17 +251,23 @@ class AdminBulkController extends Controller
             ]);
         }
 
+        $message = "{$updated} user(s) role changed to '{$newRole}'.";
+        if ($skipped > 0) {
+            $message .= " {$skipped} user(s) skipped (already had that role).";
+        }
+
         return response()->json([
             'success' => true,
-            'message' => "{$updated} user(s) role changed to '{$newRole}'.",
+            'message' => $message,
             'data' => [
                 'updated' => $updated,
+                'skipped' => $skipped,
             ],
         ]);
     }
 
     /**
-     * Bulk deactivate users.
+     * Bulk deactivate users (soft-delete).
      * POST /admin/users/bulk-deactivate
      */
     public function bulkUserDeactivate(Request $request): JsonResponse
@@ -193,10 +278,21 @@ class AdminBulkController extends Controller
         ]);
 
         $deactivated = 0;
+        $skipped = 0;
+        $actingUserId = $request->user()->id;
 
         foreach ($validated['ids'] as $userId) {
+            // Prevent self-deactivation
+            if ($userId === $actingUserId) {
+                $skipped++;
+
+                continue;
+            }
+
             $user = User::find($userId);
-            if (! $user || $user->deleted_at) {
+            if (! $user) {
+                $skipped++;
+
                 continue;
             }
 
@@ -204,7 +300,7 @@ class AdminBulkController extends Controller
             $deactivated++;
 
             AuditLog::create([
-                'actor_user_id' => $request->user()->id,
+                'actor_user_id' => $actingUserId,
                 'action' => 'bulk_user_deactivated',
                 'entity_type' => 'user',
                 'entity_id' => $user->id,
@@ -215,11 +311,17 @@ class AdminBulkController extends Controller
             ]);
         }
 
+        $message = "{$deactivated} user(s) deactivated.";
+        if ($skipped > 0) {
+            $message .= " {$skipped} user(s) skipped (self or already inactive).";
+        }
+
         return response()->json([
             'success' => true,
-            'message' => "{$deactivated} user(s) deactivated.",
+            'message' => $message,
             'data' => [
                 'deactivated' => $deactivated,
+                'skipped' => $skipped,
             ],
         ]);
     }
@@ -236,14 +338,22 @@ class AdminBulkController extends Controller
         ]);
 
         $verified = 0;
+        $skipped = 0;
 
         foreach ($validated['ids'] as $ngoId) {
             $ngo = NgoGroup::find($ngoId);
             if (! $ngo) {
+                $skipped++;
+
                 continue;
             }
 
-            $wasActive = $ngo->is_active;
+            if ($ngo->is_active) {
+                $skipped++;
+
+                continue;
+            }
+
             $ngo->update(['is_active' => true]);
             $verified++;
 
@@ -252,18 +362,24 @@ class AdminBulkController extends Controller
                 'action' => 'bulk_ngo_verified',
                 'entity_type' => 'ngo_group',
                 'entity_id' => $ngo->id,
-                'old_values' => ['is_active' => $wasActive],
+                'old_values' => ['is_active' => false],
                 'new_values' => ['is_active' => true],
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
         }
 
+        $message = "{$verified} NGO(s) verified.";
+        if ($skipped > 0) {
+            $message .= " {$skipped} NGO(s) skipped (already active or not found).";
+        }
+
         return response()->json([
             'success' => true,
-            'message' => "{$verified} NGO(s) verified.",
+            'message' => $message,
             'data' => [
                 'verified' => $verified,
+                'skipped' => $skipped,
             ],
         ]);
     }
@@ -280,10 +396,24 @@ class AdminBulkController extends Controller
         ]);
 
         $deleted = 0;
+        $skipped = 0;
 
         foreach ($validated['ids'] as $ngoId) {
             $ngo = NgoGroup::find($ngoId);
             if (! $ngo) {
+                $skipped++;
+
+                continue;
+            }
+
+            // Check for active assignments before deleting
+            $hasActiveAssignments = TicketAssignment::where('assigned_group_id', $ngoId)
+                ->where('status', 'assigned')
+                ->exists();
+
+            if ($hasActiveAssignments) {
+                $skipped++;
+
                 continue;
             }
 
@@ -302,11 +432,17 @@ class AdminBulkController extends Controller
             ]);
         }
 
+        $message = "{$deleted} NGO(s) deleted.";
+        if ($skipped > 0) {
+            $message .= " {$skipped} NGO(s) skipped (not found or has active assignments).";
+        }
+
         return response()->json([
             'success' => true,
-            'message' => "{$deleted} NGO(s) deleted.",
+            'message' => $message,
             'data' => [
                 'deleted' => $deleted,
+                'skipped' => $skipped,
             ],
         ]);
     }

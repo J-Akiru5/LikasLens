@@ -4,6 +4,8 @@
 import { useEffect, useState } from "react";
 import {
   getAdminNgos,
+  getAdminNgo,
+  getAdminNgoRegions,
   createAdminNgo,
   updateAdminNgo,
   deleteAdminNgo,
@@ -12,7 +14,7 @@ import {
   Button,
 } from "@likaslens/shared";
 import type { NgoGroup } from "@likaslens/shared";
-import { showToast, AdminCardGridSkeleton } from "@likaslens/shared";
+import { showToast, AdminCardGridSkeleton, Modal, ConfirmModal } from "@likaslens/shared";
 import {
   Building2,
   ChevronLeft,
@@ -21,6 +23,12 @@ import {
   CheckSquare,
   ShieldCheck,
   Trash2,
+  Filter,
+  Eye,
+  Loader2,
+  Mail,
+  Phone,
+  MapPin,
 } from "lucide-react";
 import { useBulkSelect } from "@/hooks/use-bulk-select";
 import { BulkActionsBar } from "@/components/bulk-actions-bar";
@@ -35,6 +43,14 @@ export default function NgosPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [regions, setRegions] = useState<string[]>([]);
+  const [regionFilter, setRegionFilter] = useState("");
+  const [activeOnly, setActiveOnly] = useState(false);
+  const [selectedNgo, setSelectedNgo] = useState<NgoGroup | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     name: "",
     region: "",
@@ -47,7 +63,10 @@ export default function NgosPage() {
   function loadNgos() {
     setLoading(true);
     setError(null);
-    getAdminNgos({ per_page: "50", page: String(page) })
+    const params: Record<string, string> = { per_page: "50", page: String(page) };
+    if (regionFilter) params.region = regionFilter;
+    if (activeOnly) params.active_only = "1";
+    getAdminNgos(params)
       .then((res) => {
         if (res.success) {
           setNgos(res.data);
@@ -65,15 +84,29 @@ export default function NgosPage() {
     loadNgos();
   }, [page]);
 
+  useEffect(() => {
+    getAdminNgoRegions()
+      .then((res) => { if (res.success) setRegions(res.data); })
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    setPage(1);
+    loadNgos();
+  }, [regionFilter, activeOnly]);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (saving) return;
 
-    if (!form.name.trim() || !form.region.trim()) {
-      setError("Name and Region are required");
-      showToast("Name and Region are required", "error");
-      return;
+    const errors: Record<string, string> = {};
+    if (!form.name.trim()) errors.name = "Name is required";
+    if (!form.region.trim()) errors.region = "Region is required";
+    if (form.contact_email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.contact_email.trim())) {
+      errors.contact_email = "Invalid email format";
     }
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     setSaving(true);
     setError(null);
@@ -96,6 +129,7 @@ export default function NgosPage() {
       setShowForm(false);
       setEditId(null);
       setForm({ name: "", region: "", contact_email: "", contact_phone: "" });
+      setFormErrors({});
       loadNgos();
     } catch (err: unknown) {
       const message =
@@ -110,6 +144,7 @@ export default function NgosPage() {
 
   function handleEdit(ngo: NgoGroup) {
     setError(null);
+    setFormErrors({});
     setForm({
       name: ngo.name,
       region: ngo.region,
@@ -120,16 +155,31 @@ export default function NgosPage() {
     setShowForm(true);
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this NGO?")) return;
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
     try {
-      await deleteAdminNgo(id);
+      await deleteAdminNgo(deleteTarget);
       showToast("NGO deleted successfully", "success");
+      setDeleteTarget(null);
       loadNgos();
     } catch (err) {
       console.error("Failed to delete NGO:", err);
       showToast("Failed to delete NGO", "error");
+    } finally {
+      setDeleteLoading(false);
     }
+  }
+
+  function viewDetail(id: string) {
+    setDetailLoading(true);
+    setSelectedNgo(null);
+    getAdminNgo(id)
+      .then((res) => {
+        if (res.success) setSelectedNgo(res.data as NgoGroup);
+      })
+      .catch(console.error)
+      .finally(() => setDetailLoading(false));
   }
 
   async function handleBulkVerify() {
@@ -188,6 +238,7 @@ export default function NgosPage() {
             setShowForm(true);
             setEditId(null);
             setError(null);
+            setFormErrors({});
             setForm({
               name: "",
               region: "",
@@ -207,6 +258,33 @@ export default function NgosPage() {
         </div>
       )}
 
+      {!showForm && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-panel rounded-2xl p-3 border border-ink/5">
+          <div className="flex items-center gap-2 text-ink/40 flex-1 min-w-0">
+            <Filter className="w-4 h-4 shrink-0" />
+            <select
+              value={regionFilter}
+              onChange={(e) => setRegionFilter(e.target.value)}
+              className="bg-transparent font-mono text-sm text-ink focus:outline-none min-w-0 max-w-[200px]"
+            >
+              <option value="">All Regions</option>
+              {regions.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
+            <input
+              type="checkbox"
+              checked={activeOnly}
+              onChange={(e) => setActiveOnly(e.target.checked)}
+              className="w-4 h-4 rounded border-ink/20 text-green focus:ring-green/20"
+            />
+            <span className="font-mono text-xs text-ink/60">Active only</span>
+          </label>
+        </div>
+      )}
+
       {showForm && (
         <div className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -223,9 +301,12 @@ export default function NgosPage() {
                 <input
                   required
                   value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                  onChange={(e) => { setForm({ ...form, name: e.target.value }); setFormErrors({ ...formErrors, name: "" }); }}
+                  className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.name ? "border-red" : "border-ink/10"}`}
                 />
+                {formErrors.name && (
+                  <p className="mt-1 font-mono text-xs text-red">{formErrors.name}</p>
+                )}
               </div>
               <div>
                 <label className="label-pill label-pill-light block mb-2">
@@ -234,9 +315,12 @@ export default function NgosPage() {
                 <input
                   required
                   value={form.region}
-                  onChange={(e) => setForm({ ...form, region: e.target.value })}
-                  className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                  onChange={(e) => { setForm({ ...form, region: e.target.value }); setFormErrors({ ...formErrors, region: "" }); }}
+                  className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.region ? "border-red" : "border-ink/10"}`}
                 />
+                {formErrors.region && (
+                  <p className="mt-1 font-mono text-xs text-red">{formErrors.region}</p>
+                )}
               </div>
               <div>
                 <label className="label-pill label-pill-light block mb-2">
@@ -245,11 +329,12 @@ export default function NgosPage() {
                 <input
                   type="email"
                   value={form.contact_email}
-                  onChange={(e) =>
-                    setForm({ ...form, contact_email: e.target.value })
-                  }
-                  className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                  onChange={(e) => { setForm({ ...form, contact_email: e.target.value }); setFormErrors({ ...formErrors, contact_email: "" }); }}
+                  className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.contact_email ? "border-red" : "border-ink/10"}`}
                 />
+                {formErrors.contact_email && (
+                  <p className="mt-1 font-mono text-xs text-red">{formErrors.contact_email}</p>
+                )}
               </div>
               <div>
                 <label className="label-pill label-pill-light block mb-2">
@@ -376,6 +461,15 @@ export default function NgosPage() {
                       variant="ghost"
                       onClick={(e) => {
                         e.stopPropagation();
+                        viewDetail(ngo.id);
+                      }}
+                    >
+                      <Eye className="w-3.5 h-3.5" /> View
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         handleEdit(ngo);
                       }}
                     >
@@ -385,7 +479,7 @@ export default function NgosPage() {
                       variant="ghost"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(ngo.id);
+                        setDeleteTarget(ngo.id);
                       }}
                       className="text-red hover:bg-red/5"
                     >
@@ -441,6 +535,102 @@ export default function NgosPage() {
             disabled: bulkLoading,
           },
         ]}
+      />
+
+      <Modal
+        isOpen={!!selectedNgo}
+        onClose={() => setSelectedNgo(null)}
+        title="NGO Details"
+        size="lg"
+      >
+        {detailLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 animate-spin text-ink/30" />
+          </div>
+        ) : selectedNgo ? (
+          <div className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Name</span>
+                <p className="font-medium text-ink">{selectedNgo.name}</p>
+              </div>
+              <div className="space-y-1">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Region</span>
+                <p className="flex items-center gap-1.5 text-ink/70">
+                  <MapPin className="w-3.5 h-3.5" /> {selectedNgo.region}
+                </p>
+              </div>
+              {selectedNgo.contact_email && (
+                <div className="space-y-1">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Email</span>
+                  <p className="flex items-center gap-1.5 text-ink/70">
+                    <Mail className="w-3.5 h-3.5" /> {selectedNgo.contact_email}
+                  </p>
+                </div>
+              )}
+              {selectedNgo.contact_phone && (
+                <div className="space-y-1">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Phone</span>
+                  <p className="flex items-center gap-1.5 text-ink/70">
+                    <Phone className="w-3.5 h-3.5" /> {selectedNgo.contact_phone}
+                  </p>
+                </div>
+              )}
+              <div className="space-y-1">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Status</span>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${selectedNgo.is_active ? "bg-green/10 text-green" : "bg-ink/[0.04] text-ink/40"}`}>
+                    {selectedNgo.is_active ? "Active" : "Inactive"}
+                  </span>
+                  {(selectedNgo as Record<string, unknown>).is_verified && (
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold bg-green/10 text-green">
+                      Verified
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {(selectedNgo as Record<string, unknown>).assignments && (
+              <div className="border-t border-ink/5 pt-4">
+                <h4 className="font-mono text-xs uppercase tracking-widest text-muted mb-3">
+                  Assignments ({((selectedNgo as Record<string, unknown>).assignments as unknown[]).length})
+                </h4>
+                {((selectedNgo as Record<string, unknown>).assignments as unknown[]).length > 0 ? (
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {((selectedNgo as Record<string, unknown>).assignments as Array<Record<string, unknown>>).map((a, i) => (
+                      <div key={i} className="flex items-center justify-between bg-page/50 rounded-lg p-3 border border-ink/5">
+                        <div className="min-w-0 flex-1">
+                          <p className="font-mono text-xs text-ink/70 truncate">
+                            Ticket {String(a.ticket_id ?? "—")}
+                          </p>
+                        </div>
+                        <span className="font-mono text-[10px] text-muted shrink-0 ml-2">
+                          {a.created_at
+                            ? new Date(String(a.created_at)).toLocaleDateString()
+                            : ""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="font-mono text-xs text-ink/30 py-4 text-center">No assignments yet</p>
+                )}
+              </div>
+            )}
+          </div>
+        ) : null}
+      </Modal>
+
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete NGO"
+        message="Are you sure you want to delete this NGO? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        loading={deleteLoading}
       />
     </div>
   );

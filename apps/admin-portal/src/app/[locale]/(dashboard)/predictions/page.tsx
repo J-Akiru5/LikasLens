@@ -1,12 +1,15 @@
 "use client";
+
 import { useEffect, useState, useCallback } from "react";
 import {
   getAdminPredictions,
   getTickets,
+  Skeleton,
+  EmptyState,
+  showToast,
 } from "@likaslens/shared";
 import type { HotspotPrediction, PredictionMeta } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
-import { AdminKPIsSkeleton, EmptyState, Button } from "@likaslens/shared";
 import {
   MapPin,
   TrendingUp,
@@ -15,6 +18,7 @@ import {
   AlertTriangle,
   Filter,
   BarChart3,
+  Crosshair,
 } from "lucide-react";
 
 const RISK_COLORS: Record<string, { bg: string; text: string; ring: string }> = {
@@ -30,9 +34,75 @@ function getRiskLevel(risk: number): "high" | "medium" | "low" {
 }
 
 function TrendIcon({ trend }: { trend: string }) {
-  if (trend === "increasing") return <TrendingUp className="w-4 h-4 text-red" />;
-  if (trend === "decreasing") return <TrendingDown className="w-4 h-4 text-green" />;
+  if (trend === "increasing")
+    return <TrendingUp className="w-4 h-4 text-red" />;
+  if (trend === "decreasing")
+    return <TrendingDown className="w-4 h-4 text-green" />;
   return <Minus className="w-4 h-4 text-ink/40" />;
+}
+
+function PredictionsSkeleton() {
+  return (
+    <div className="space-y-8 animate-fade-in">
+      {/* Header skeleton */}
+      <div className="space-y-2">
+        <Skeleton className="h-12 w-48 rounded-xl" variant="brand" />
+        <Skeleton className="h-5 w-72 rounded" />
+      </div>
+
+      {/* KPI cards skeleton — matching 3-card grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-ink/5 p-5 space-y-0"
+          >
+            <div className="flex items-center gap-4">
+              <Skeleton className="w-12 h-12 rounded-2xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-20 rounded" />
+                <Skeleton className="h-8 w-12 rounded-lg" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter skeleton */}
+      <Skeleton className="h-10 w-64 rounded-xl" />
+
+      {/* Map + list skeleton */}
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="lg:col-span-3 bg-panel rounded-3xl p-4 sm:p-6 border border-ink/5">
+          <Skeleton className="h-7 w-40 rounded-lg mb-4" />
+          <Skeleton className="h-96 w-full rounded-xl" />
+        </div>
+        <div className="lg:col-span-2 space-y-4">
+          <Skeleton className="h-7 w-40 rounded-lg" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-panel rounded-2xl p-5 border border-ink/5 space-y-3"
+            >
+              <div className="flex items-start justify-between">
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-12 rounded" />
+                  <Skeleton className="h-5 w-32 rounded" />
+                </div>
+                <Skeleton className="h-5 w-5 rounded" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Skeleton className="h-10 rounded" />
+                <Skeleton className="h-10 rounded" />
+                <Skeleton className="h-10 rounded" />
+                <Skeleton className="h-10 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function PredictionsPage() {
@@ -40,77 +110,80 @@ export default function PredictionsPage() {
   const [meta, setMeta] = useState<PredictionMeta | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [violationFilter, setViolationFilter] = useState<string>("");
 
-  const loadPredictions = useCallback(async (violationType?: string) => {
-    setLoading(true);
-    try {
-      const params: Record<string, string> = {
-        days_back: "90",
-        top_n: "10",
-      };
-      if (violationType) {
-        params.violation_type = violationType;
-      }
+  const loadPredictions = useCallback(
+    async (violationType?: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const params: Record<string, string> = {
+          days_back: "90",
+          top_n: "10",
+        };
+        if (violationType) {
+          params.violation_type = violationType;
+        }
 
-      const [predRes, ticketsRes] = await Promise.all([
-        getAdminPredictions(params),
-        getTickets({ per_page: "200" }),
-      ]);
+        const [predRes, ticketsRes] = await Promise.all([
+          getAdminPredictions(params),
+          getTickets({ per_page: "200" }),
+        ]);
 
-      if (predRes.success) {
-        setPredictions(predRes.data);
-        setMeta(predRes.meta);
+        if (predRes.success) {
+          setPredictions(predRes.data);
+          setMeta(predRes.meta);
+        }
+        if (ticketsRes.success) {
+          setTickets(ticketsRes.data);
+        }
+      } catch (err) {
+        console.error("Failed to load predictions:", err);
+        setError("Failed to load prediction data from the server");
+        showToast("Failed to load predictions", "error");
+      } finally {
+        setLoading(false);
       }
-      if (ticketsRes.success) {
-        setTickets(ticketsRes.data);
-      }
-    } catch (err) {
-      console.error("Failed to load predictions:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     loadPredictions(violationFilter || undefined);
   }, [loadPredictions, violationFilter]);
 
-  // Extract unique violation types from predictions for the filter
   const violationTypes = Array.from(
-    new Set(predictions.map((p) => p.dominant_type_code).filter((c) => c !== "MIXED"))
+    new Set(
+      predictions
+        .map((p) => p.dominant_type_code)
+        .filter((c) => c !== "MIXED")
+    )
   );
 
-  if (loading) {
+  if (loading) return <PredictionsSkeleton />;
+
+  if (error && predictions.length === 0) {
     return (
-      <div className="space-y-8 animate-fade-in">
-        <div className="space-y-2">
-          <div className="h-12 w-48 rounded-xl bg-ink/5 animate-shimmer" />
-          <div className="h-5 w-72 rounded bg-ink/5 animate-shimmer" />
-        </div>
-        <AdminKPIsSkeleton count={3} />
-        <div className="grid gap-6 lg:grid-cols-5">
-          <div className="lg:col-span-3 bg-panel rounded-3xl p-4 sm:p-6 border border-ink/5">
-            <div className="h-96 rounded-xl bg-ink/5 animate-shimmer" />
-          </div>
-          <div className="lg:col-span-2 space-y-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-panel rounded-2xl p-5 border border-ink/5 space-y-3">
-                <div className="h-4 w-32 rounded bg-ink/5 animate-shimmer" />
-                <div className="h-3 w-24 rounded bg-ink/5 animate-shimmer" />
-                <div className="h-3 w-full rounded bg-ink/5 animate-shimmer" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <EmptyState
+        icon={AlertTriangle}
+        title="Failed to load predictions"
+        description={error}
+        colorTheme="red"
+        action={{ label: "Retry", onClick: () => loadPredictions(violationFilter || undefined) }}
+      />
     );
   }
 
-  const highRiskCount = predictions.filter((p) => getRiskLevel(p.predicted_risk) === "high").length;
+  const highRiskCount = predictions.filter(
+    (p) => getRiskLevel(p.predicted_risk) === "high"
+  ).length;
   const avgConfidence =
     predictions.length > 0
-      ? Math.round(predictions.reduce((sum, p) => sum + p.confidence, 0) / predictions.length)
+      ? Math.round(
+          predictions.reduce((sum, p) => sum + p.confidence, 0) /
+            predictions.length
+        )
       : 0;
 
   return (
@@ -121,14 +194,16 @@ export default function PredictionsPage() {
           Predictions
         </h1>
         <p className="font-mono text-base text-muted mt-1">
-          Predictive hotspot detection based on {meta?.total_reports_analyzed ?? 0} reports from the last {meta?.days_back ?? 90} days
+          Predictive hotspot detection based on{" "}
+          {meta?.total_reports_analyzed ?? 0} reports from the last{" "}
+          {meta?.days_back ?? 90} days
         </p>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <div className="kpi-card kpi-accent-amber rounded-2xl border border-border bg-amber-500/[0.02] hover:bg-amber-500/[0.04] transition-colors duration-300 p-5 relative overflow-hidden group">
-          <div 
+        <div className="rounded-2xl border border-ink/5 bg-amber-500/[0.02] hover:bg-amber-500/[0.04] transition-colors duration-300 p-5 relative overflow-hidden group">
+          <div
             className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-amber-500"
             style={{ opacity: 0.05 }}
           >
@@ -139,15 +214,18 @@ export default function PredictionsPage() {
               <AlertTriangle className="w-6 h-6 text-red" />
             </div>
             <div>
-              <span className="label-pill label-pill-light">High Risk Zones</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+                High Risk Zones
+              </span>
               <p className="font-semibold tracking-tight text-3xl text-amber-600">
                 {highRiskCount}
               </p>
             </div>
           </div>
         </div>
-        <div className="kpi-card kpi-accent-muted rounded-2xl border border-border bg-ink/[0.02] hover:bg-ink/[0.04] transition-colors duration-300 p-5 relative overflow-hidden group">
-          <div 
+
+        <div className="rounded-2xl border border-ink/5 bg-ink/[0.02] hover:bg-ink/[0.04] transition-colors duration-300 p-5 relative overflow-hidden group">
+          <div
             className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-ink"
             style={{ opacity: 0.05 }}
           >
@@ -158,15 +236,18 @@ export default function PredictionsPage() {
               <MapPin className="w-6 h-6 text-ink/60" />
             </div>
             <div>
-              <span className="label-pill label-pill-light">Predicted Zones</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+                Predicted Zones
+              </span>
               <p className="font-semibold tracking-tight text-3xl text-ink">
                 {predictions.length}
               </p>
             </div>
           </div>
         </div>
-        <div className="kpi-card kpi-accent-green rounded-2xl border border-border bg-green/[0.02] hover:bg-green/[0.04] transition-colors duration-300 p-5 relative overflow-hidden group">
-          <div 
+
+        <div className="rounded-2xl border border-ink/5 bg-green/[0.02] hover:bg-green/[0.04] transition-colors duration-300 p-5 relative overflow-hidden group">
+          <div
             className="absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 text-green"
             style={{ opacity: 0.05 }}
           >
@@ -177,7 +258,9 @@ export default function PredictionsPage() {
               <BarChart3 className="w-6 h-6 text-ink/60" />
             </div>
             <div>
-              <span className="label-pill label-pill-light">Avg Confidence</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+                Avg Confidence
+              </span>
               <p className="font-semibold tracking-tight text-3xl text-green">
                 {avgConfidence}%
               </p>
@@ -187,26 +270,28 @@ export default function PredictionsPage() {
       </div>
 
       {/* Filter */}
-      <div className="flex items-center gap-3">
-        <Filter className="w-4 h-4 text-ink/40" />
-        <select
-          value={violationFilter}
-          onChange={(e) => setViolationFilter(e.target.value)}
-          className="bg-panel border border-ink/10 rounded-xl px-4 py-2 text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-green/20"
-        >
-          <option value="">All violation types</option>
-          {violationTypes.map((code) => (
-            <option key={code} value={code}>
-              {code.replace(/_/g, " ")}
-            </option>
-          ))}
-        </select>
-      </div>
+      {violationTypes.length > 0 && (
+        <div className="flex items-center gap-3">
+          <Filter className="w-4 h-4 text-ink/40" />
+          <select
+            value={violationFilter}
+            onChange={(e) => setViolationFilter(e.target.value)}
+            className="bg-panel border border-ink/10 rounded-xl px-4 py-2 text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-accent/20 appearance-none cursor-pointer"
+          >
+            <option value="">All violation types</option>
+            {violationTypes.map((code) => (
+              <option key={code} value={code}>
+                {code.replace(/_/g, " ")}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Main content: Map + Predictions list */}
       <div className="grid gap-6 lg:grid-cols-5">
         {/* Map area */}
-        <div className="lg:col-span-3 bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
+        <div className="lg:col-span-3 bg-panel rounded-3xl p-4 sm:p-6 border border-ink/5">
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-4">
             Hotspot Map
           </h3>
@@ -216,7 +301,12 @@ export default function PredictionsPage() {
                 <EmptyState
                   icon={AlertTriangle}
                   title="No predictions available"
-                  description="Not enough report data to generate hotspot predictions. At least 10 reports are needed for the predictive model."
+                  description={
+                    violationFilter
+                      ? "No hotspots match the selected violation type filter. Try removing the filter."
+                      : "Not enough report data to generate hotspot predictions. At least 10 reports are needed for the predictive model."
+                  }
+                  colorTheme="amber"
                 />
               </div>
             ) : (
@@ -231,12 +321,16 @@ export default function PredictionsPage() {
             Predicted Hotspots
           </h3>
           {predictions.length === 0 ? (
-            <div className="bg-panel rounded-2xl p-8 border border-ink/5 text-center">
-              <MapPin className="w-8 h-8 text-ink/20 mx-auto mb-3" />
-              <p className="font-mono text-sm text-muted">
-                Not enough data to generate predictions. More reports are needed.
-              </p>
-            </div>
+            <EmptyState
+              icon={MapPin}
+              title="No hotspot predictions"
+              description={
+                violationFilter
+                  ? "No results for the selected violation type."
+                  : "Not enough data to generate predictions. More reports are needed."
+              }
+              colorTheme="accent"
+            />
           ) : (
             <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
               {predictions.map((prediction, index) => {
@@ -245,7 +339,7 @@ export default function PredictionsPage() {
                 return (
                   <div
                     key={index}
-                    className={`bg-panel rounded-2xl p-5 shadow-sm border border-ink/5 ring-1 ${colors.ring} transition-colors hover:bg-ink/[0.01]`}
+                    className={`bg-panel rounded-2xl p-5 border border-ink/5 ring-1 ${colors.ring} transition-colors hover:bg-ink/[0.01]`}
                   >
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="min-w-0 flex-1">
@@ -261,6 +355,12 @@ export default function PredictionsPage() {
                         </div>
                         <p className="font-medium text-sm text-ink truncate">
                           {prediction.location_name}
+                        </p>
+                        {/* Coordinates */}
+                        <p className="font-mono text-[11px] text-ink/40 mt-0.5 flex items-center gap-1.5">
+                          <Crosshair className="w-3 h-3" />
+                          {prediction.lat.toFixed(4)},{" "}
+                          {prediction.lng.toFixed(4)}
                         </p>
                       </div>
                       <TrendIcon trend={prediction.trend} />
@@ -311,7 +411,7 @@ export default function PredictionsPage() {
   );
 }
 
-/* ---------- Simple Canvas-based Hotspot Map ---------- */
+/* ────────── Canvas-based Hotspot Map ────────── */
 
 function HotspotMap({
   predictions,
@@ -336,7 +436,6 @@ function HotspotMap({
       const width = rect.width;
       const height = rect.height;
 
-      // Gather all points (predictions + tickets) for bounds
       const allLats = [
         ...predictions.map((p) => p.lat),
         ...tickets.map((t) => Number(t.latitude)),
@@ -367,10 +466,9 @@ function HotspotMap({
         return padding + (1 - (lat - minLat) / latRange) * mapHeight;
       }
 
-      // Clear
       ctx.clearRect(0, 0, width, height);
 
-      // Draw grid lines
+      // Grid
       ctx.strokeStyle = "rgba(0,0,0,0.04)";
       ctx.lineWidth = 1;
       for (let i = 0; i <= 4; i++) {
@@ -387,7 +485,7 @@ function HotspotMap({
         ctx.stroke();
       }
 
-      // Draw ticket dots
+      // Ticket dots
       tickets.forEach((ticket) => {
         const lat = Number(ticket.latitude);
         const lng = Number(ticket.longitude);
@@ -399,7 +497,7 @@ function HotspotMap({
         ctx.fill();
       });
 
-      // Draw hotspot circles
+      // Hotspot circles
       predictions.forEach((prediction, index) => {
         const x = toX(prediction.lng);
         const y = toY(prediction.lat);
@@ -407,7 +505,14 @@ function HotspotMap({
         const baseRadius = 20 + (prediction.predicted_risk / 100) * 30;
 
         // Glow
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, baseRadius * 1.5);
+        const gradient = ctx.createRadialGradient(
+          x,
+          y,
+          0,
+          x,
+          y,
+          baseRadius * 1.5
+        );
         if (level === "high") {
           gradient.addColorStop(0, "rgba(220,38,38,0.35)");
           gradient.addColorStop(1, "rgba(220,38,38,0)");

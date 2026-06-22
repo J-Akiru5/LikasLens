@@ -1,4 +1,4 @@
-import { laravelGet, laravelPost, laravelPut, laravelDelete } from "./client";
+import { laravelGet, laravelPost, laravelPut, laravelDelete, laravelPatch } from "./client";
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -11,6 +11,12 @@ import type {
   NgoGroup,
   TriageTicket,
   LguPerformanceData,
+  BiasRiskEntry,
+  AdminLaw,
+  AdminLawDetail,
+  AdminReward,
+  PartnerStore,
+  CurrencySetting,
 } from "../types";
 
 // Auth
@@ -49,6 +55,17 @@ export function getTicket(id: string) {
   return laravelGet<ApiResponse<TicketDetail>>(`/tickets/${id}`);
 }
 
+export function updateTicketStatus(id: string, status: string) {
+  return laravelPatch<ApiResponse<{ id: string; old_status: string; new_status: string; resolved_at: string | null }>>(
+    `/tickets/${id}/status`,
+    { status }
+  );
+}
+
+export function deleteTicket(id: string) {
+  return laravelDelete<ApiResponse<{ id: string; old_status: string }>>(`/tickets/${id}`);
+}
+
 // Admin: Users
 export function getAdminUsers(params?: Record<string, string>) {
   const qs = params ? "?" + new URLSearchParams(params).toString() : "";
@@ -81,6 +98,10 @@ export function getAdminNgo(id: string) {
   return laravelGet<ApiResponse<NgoGroup>>(`/admin/ngos/${id}`);
 }
 
+export function getAdminNgoRegions() {
+  return laravelGet<ApiResponse<string[]>>("/admin/ngos/regions");
+}
+
 export function createAdminNgo(data: Record<string, unknown>) {
   return laravelPost<ApiResponse<NgoGroup>>("/admin/ngos", data);
 }
@@ -93,29 +114,90 @@ export function deleteAdminNgo(id: string) {
   return laravelDelete<ApiResponse<null>>(`/admin/ngos/${id}`);
 }
 
+// Admin: Laws
+export function getAdminLaws(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<PaginatedResponse<AdminLaw>>(`/admin/laws${qs}`);
+}
+
+export function getAdminLaw(id: string) {
+  return laravelGet<ApiResponse<AdminLawDetail>>(`/admin/laws/${id}`);
+}
+
+export function createAdminLaw(data: Record<string, unknown>) {
+  return laravelPost<ApiResponse<AdminLawDetail>>("/admin/laws", data);
+}
+
+export function updateAdminLaw(id: string, data: Record<string, unknown>) {
+  return laravelPut<ApiResponse<AdminLawDetail>>(`/admin/laws/${id}`, data);
+}
+
+export function deleteAdminLaw(id: string) {
+  return laravelDelete<ApiResponse<null>>(`/admin/laws/${id}`);
+}
+
+// Admin: Rewards
+export function getAdminRewards(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<PaginatedResponse<AdminReward>>(`/admin/rewards${qs}`);
+}
+
+export function getAdminReward(id: string) {
+  return laravelGet<ApiResponse<AdminReward>>(`/admin/rewards/${id}`);
+}
+
+export function createAdminReward(data: Record<string, unknown>) {
+  return laravelPost<ApiResponse<AdminReward>>("/admin/rewards", data);
+}
+
+export function updateAdminReward(id: string, data: Record<string, unknown>) {
+  return laravelPut<ApiResponse<AdminReward>>(`/admin/rewards/${id}`, data);
+}
+
+export function deleteAdminReward(id: string) {
+  return laravelDelete<ApiResponse<null>>(`/admin/rewards/${id}`);
+}
+
+export function getAdminPartnerStores() {
+  return laravelGet<ApiResponse<PartnerStore[]>>("/admin/partner-stores");
+}
+
+// Admin: Currency Settings
+export function getAdminCurrencySettings() {
+  return laravelGet<ApiResponse<CurrencySetting[]>>("/admin/currency-settings");
+}
+
+export function updateAdminCurrencySetting(id: string, data: Record<string, unknown>) {
+  return laravelPut<ApiResponse<CurrencySetting>>(`/admin/currency-settings/${id}`, data);
+}
+
 // Admin: Bulk Operations
 export function bulkTicketStatus(ids: string[], status: string) {
   return laravelPost<ApiResponse<{ updated: number; failed: string[] }>>("/admin/tickets/bulk-status", { ids, status });
 }
 
 export function bulkTicketAssign(ids: string[], lgu_id: string) {
-  return laravelPost<ApiResponse<{ created: number }>>("/admin/tickets/bulk-assign", { ids, lgu_id });
+  return laravelPost<ApiResponse<{ created: number; skipped: number }>>("/admin/tickets/bulk-assign", { ids, lgu_id });
+}
+
+export function bulkTicketDelete(ids: string[]) {
+  return laravelPost<ApiResponse<{ deleted: number; skipped: number }>>("/admin/tickets/bulk-delete", { ids });
 }
 
 export function bulkUserRole(ids: string[], role: string) {
-  return laravelPost<ApiResponse<{ updated: number }>>("/admin/users/bulk-role", { ids, role });
+  return laravelPost<ApiResponse<{ updated: number; skipped: number }>>("/admin/users/bulk-role", { ids, role });
 }
 
 export function bulkUserDeactivate(ids: string[]) {
-  return laravelPost<ApiResponse<{ deactivated: number }>>("/admin/users/bulk-deactivate", { ids });
+  return laravelPost<ApiResponse<{ deactivated: number; skipped: number }>>("/admin/users/bulk-deactivate", { ids });
 }
 
 export function bulkNgoVerify(ids: string[]) {
-  return laravelPost<ApiResponse<{ verified: number }>>("/admin/ngos/bulk-verify", { ids });
+  return laravelPost<ApiResponse<{ verified: number; skipped: number }>>("/admin/ngos/bulk-verify", { ids });
 }
 
 export function bulkNgoDelete(ids: string[]) {
-  return laravelPost<ApiResponse<{ deleted: number }>>("/admin/ngos/bulk-delete", { ids });
+  return laravelPost<ApiResponse<{ deleted: number; skipped: number }>>("/admin/ngos/bulk-delete", { ids });
 }
 
 // Admin: Audit Logs
@@ -127,6 +209,7 @@ export interface AuditLogEntry {
   old_values: Record<string, unknown> | null;
   new_values: Record<string, unknown> | null;
   ip_address: string | null;
+  user_agent: string | null;
   created_at: string;
   actor: { id: string; name: string } | null;
 }
@@ -138,6 +221,10 @@ export function getAuditLogs(params?: Record<string, string>) {
 
 export function getAuditLogDetail(id: string) {
   return laravelGet<ApiResponse<AuditLogEntry>>(`/admin/audit-logs/${id}`);
+}
+
+export function getAuditLogActions() {
+  return laravelGet<ApiResponse<string[]>>("/admin/audit-logs/actions");
 }
 
 // Admin: Predictions (Hotspot Detection)
@@ -184,9 +271,10 @@ export function classifyTriageTicket(
   );
 }
 
-export function dismissTriageTicket(id: string) {
+export function dismissTriageTicket(id: string, data?: { reason?: string }) {
   return laravelPost<ApiResponse<{ id: string; old_status: string; new_status: string }>>(
-    `/admin/triage/${id}/dismiss`
+    `/admin/triage/${id}/dismiss`,
+    data
   );
 }
 
@@ -203,6 +291,16 @@ export function getTriageViolationTypes() {
 }
 
 // Admin: LGU Performance
-export function getLguPerformance() {
-  return laravelGet<ApiResponse<LguPerformanceData>>("/admin/lgu-performance");
+export function getLguPerformance(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<LguPerformanceData>>(`/admin/lgu-performance${qs}`);
+}
+
+export function getLguRegions() {
+  return laravelGet<ApiResponse<string[]>>("/admin/lgu-performance/regions");
+}
+
+// Admin: Bias / Risk Register
+export function getBiasRegister() {
+  return laravelGet<ApiResponse<BiasRiskEntry[]>>("/admin/bias-register");
 }

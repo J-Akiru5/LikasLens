@@ -12,8 +12,8 @@ return new class extends Migration
             $table->timestamp('reassigned_at')->nullable()->after('escalated_to');
             $table->string('reassigned_to')->nullable()->after('reassigned_at');
             $table->enum('escalation_level', ['none', 'lgu', 'admin', 'regional', 'national'])
-                  ->default('none')
-                  ->after('reassigned_to');
+                ->default('none')
+                ->after('reassigned_to');
 
             $table->index('reassigned_at');
             $table->index('reassigned_to');

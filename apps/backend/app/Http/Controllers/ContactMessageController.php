@@ -33,7 +33,8 @@ class ContactMessageController extends Controller
      */
     public function index(Request $request)
     {
-        $messages = ContactMessage::orderBy('created_at', 'desc')->paginate(20);
+        $perPage = $request->query('per_page', 20);
+        $messages = ContactMessage::orderBy('created_at', 'desc')->paginate(max(1, min(100, (int) $perPage)));
 
         return response()->json([
             'success' => true,

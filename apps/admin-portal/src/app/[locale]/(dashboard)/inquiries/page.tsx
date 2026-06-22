@@ -23,6 +23,7 @@ export default function InquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [markingReadId, setMarkingReadId] = useState<number | null>(null);
 
   useEffect(() => {
     fetchMessages();
@@ -41,6 +42,7 @@ export default function InquiriesPage() {
   };
 
   const markAsRead = async (id: number) => {
+    setMarkingReadId(id);
     try {
       const res = await laravelPatch<ApiResponse<ContactMessage>>(
         `/admin/contact-messages/${id}/read`,
@@ -55,6 +57,8 @@ export default function InquiriesPage() {
     } catch (error) {
       console.error("Failed to mark as read", error);
       showToast("Failed to mark message as read", "error");
+    } finally {
+      setMarkingReadId(null);
     }
   };
 
@@ -121,9 +125,13 @@ export default function InquiriesPage() {
 
                 <div className="shrink-0 flex items-center justify-end">
                   {msg.status === "unread" ? (
-                    <Button variant="secondary" onClick={() => markAsRead(msg.id)}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => markAsRead(msg.id)}
+                      disabled={markingReadId === msg.id}
+                    >
                       <CheckCircle2 className="w-4 h-4" />
-                      Mark Read
+                      {markingReadId === msg.id ? "Marking..." : "Mark Read"}
                     </Button>
                   ) : (
                     <span className="inline-flex items-center gap-2 font-mono text-xs text-ink/40">

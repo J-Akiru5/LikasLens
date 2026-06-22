@@ -8,6 +8,7 @@ use App\Models\Ticket;
 use App\Models\TicketTimeline;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -178,6 +179,8 @@ class TicketController extends Controller
 
         $ticket->update($updates);
 
+        Cache::forget('dashboard:stats');
+
         AuditLog::create([
             'actor_user_id' => $request->user()->id,
             'action' => 'ticket_status_changed',
@@ -212,6 +215,40 @@ class TicketController extends Controller
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
                 'resolved_at' => $ticket->resolved_at,
+            ],
+        ]);
+    }
+
+    /**
+     * DELETE /tickets/{id}
+     * Soft-delete a ticket (super_admin only).
+     */
+    public function destroy(Request $request, string $id): JsonResponse
+    {
+        $ticket = Ticket::findOrFail($id);
+        $oldStatus = $ticket->status;
+
+        AuditLog::create([
+            'actor_user_id' => $request->user()->id,
+            'action' => 'ticket_deleted',
+            'entity_type' => 'ticket',
+            'entity_id' => $ticket->id,
+            'old_values' => ['title' => $ticket->title, 'status' => $oldStatus],
+            'new_values' => ['deleted' => true],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        $ticket->delete();
+
+        Cache::forget('dashboard:stats');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Ticket deleted successfully.',
+            'data' => [
+                'id' => $ticket->id,
+                'old_status' => $oldStatus,
             ],
         ]);
     }

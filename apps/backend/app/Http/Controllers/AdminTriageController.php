@@ -174,8 +174,14 @@ class AdminTriageController extends Controller
      */
     public function dismiss(Request $request, string $id): JsonResponse
     {
+        $validated = $request->validate([
+            'reason' => 'nullable|string|max:500',
+        ]);
+
         $ticket = Ticket::findOrFail($id);
         $oldStatus = $ticket->status;
+
+        $dismissReason = $validated['reason'] ?? 'dismissed_as_spam';
 
         $ticket->update(['status' => 'closed']);
 
@@ -185,7 +191,7 @@ class AdminTriageController extends Controller
             'entity_type' => 'ticket',
             'entity_id' => $ticket->id,
             'old_values' => ['status' => $oldStatus],
-            'new_values' => ['status' => 'closed', 'reason' => 'dismissed_as_spam'],
+            'new_values' => ['status' => 'closed', 'reason' => $dismissReason],
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
