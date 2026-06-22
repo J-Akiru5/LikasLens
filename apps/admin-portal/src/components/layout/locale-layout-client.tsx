@@ -11,16 +11,20 @@ const LiksiChat = dynamic(
 interface LocaleLayoutClientProps {
   children: React.ReactNode;
   locale: string;
+  isAuthenticated?: boolean;
 }
 
 export function LocaleLayoutClient({
   children,
   locale,
+  isAuthenticated = false,
 }: LocaleLayoutClientProps) {
   return (
     <>
       <div className="flex-1">{children}</div>
-      <LiksiChat persona="admin" locale={locale} isAuthenticated={true} />
+      {isAuthenticated && (
+        <LiksiChat persona="admin" locale={locale} isAuthenticated={true} />
+      )}
       <ToastProvider />
     </>
   );
