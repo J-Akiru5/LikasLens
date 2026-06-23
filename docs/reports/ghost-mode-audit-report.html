@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Mode &amp; EXIF Stripping Audit Report — LikasLens</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface-2: #1a2236;
+    --border: #1e293b;
+    --ink: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #2ee6c8;
+    --accent-dim: rgba(46,230,200,0.12);
+    --gold: #facc15;
+    --red: #f87171;
+    --green: #34d399;
+    --orange: #fb923c;
+    --blue: #60a5fa;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.7;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  h1, h2, h3, h4 { font-weight: 700; line-height: 1.3; }
+  h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.6rem; margin: 2.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--border); }
+  h3 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; color: var(--accent); }
+  h4 { font-size: 1rem; margin: 1rem 0 0.5rem; color: var(--gold); }
+  p { margin-bottom: 1rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--surface-2);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    color: var(--gold);
+  }
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  pre code { background: none; padding: 0; color: var(--ink); }
+
+  .report-header {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, #0c1628 0%, #111e35 50%, #0a1711 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .report-header::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle at 30% 40%, rgba(46,230,200,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 60%, rgba(250,204,21,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .report-header h1 { color: var(--accent); font-size: 2.4rem; position: relative; }
+  .report-header .subtitle { color: var(--muted); font-size: 1.1rem; margin-top: 0.5rem; position: relative; }
+  .report-header .meta {
+    display: flex; justify-content: center; gap: 2rem;
+    margin-top: 1.5rem; font-size: 0.85rem; color: var(--muted); position: relative;
+  }
+  .report-header .meta span { display: flex; align-items: center; gap: 0.4rem; }
+
+  .verdict-banner {
+    background: linear-gradient(135deg, rgba(46,230,200,0.08), rgba(250,204,21,0.06));
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+  }
+  .verdict-banner .verdict-label {
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem;
+  }
+  .verdict-banner .verdict-text { font-size: 1.4rem; font-weight: 700; color: var(--ink); }
+  .verdict-banner .verdict-detail {
+    color: var(--muted); margin-top: 0.75rem; font-size: 0.95rem;
+    max-width: 700px; margin-left: auto; margin-right: auto;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+  }
+  .card.pass { border-left: 4px solid var(--green); }
+  .card.warn { border-left: 4px solid var(--orange); }
+  .card.fail { border-left: 4px solid var(--red); }
+  .card.info { border-left: 4px solid var(--blue); }
+  .card-title {
+    font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .card.pass .card-title { color: var(--green); }
+  .card.warn .card-title { color: var(--orange); }
+  .card.fail .card-title { color: var(--red); }
+  .card.info .card-title { color: var(--blue); }
+
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+  th {
+    background: var(--surface-2); color: var(--accent); font-weight: 600;
+    font-size: 0.8rem; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  tr:hover { background: rgba(46,230,200,0.03); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.2rem 0.6rem; border-radius: 999px;
+    font-size: 0.75rem; font-weight: 600; font-family: var(--font-mono);
+  }
+  .badge.green { background: rgba(52,211,153,0.15); color: var(--green); }
+  .badge.red { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge.orange { background: rgba(251,146,60,0.15); color: var(--orange); }
+  .badge.blue { background: rgba(96,165,250,0.15); color: var(--blue); }
+  .badge.gold { background: rgba(250,204,21,0.15); color: var(--gold); }
+
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 1.5rem 0; }
+  .flow-step { display: flex; align-items: flex-start; gap: 1rem; position: relative; }
+  .flow-node {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700; font-family: var(--font-mono);
+    position: relative; z-index: 1;
+  }
+  .flow-node.client { background: var(--accent); color: var(--bg); }
+  .flow-node.server { background: var(--gold); color: var(--bg); }
+  .flow-node.db { background: var(--blue); color: var(--bg); }
+  .flow-line {
+    position: absolute; left: 17px; top: 36px;
+    width: 2px; height: calc(100% - 36px); background: var(--border);
+  }
+  .flow-step:last-child .flow-line { display: none; }
+  .flow-content { flex: 1; padding-bottom: 1.5rem; }
+  .flow-content .flow-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+  .flow-content .flow-desc { font-size: 0.85rem; color: var(--muted); }
+
+  .score-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem; margin: 1.5rem 0;
+  }
+  .score-item {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.25rem; text-align: center;
+  }
+  .score-item .score-value { font-size: 2rem; font-weight: 800; font-family: var(--font-mono); }
+  .score-item .score-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem; }
+  .score-item.green .score-value { color: var(--green); }
+  .score-item.orange .score-value { color: var(--orange); }
+  .score-item.red .score-value { color: var(--red); }
+
+  .file-ref {
+    font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted);
+    background: var(--surface-2); padding: 0.15em 0.5em; border-radius: 4px; white-space: nowrap;
+  }
+
+  .toc {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem 2rem; margin: 2rem 0;
+  }
+  .toc h3 { margin-top: 0; }
+  .toc ol { padding-left: 1.5rem; }
+  .toc li { margin: 0.4rem 0; }
+  .toc a { color: var(--ink); }
+  .toc a:hover { color: var(--accent); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  ul, ol { padding-left: 1.5rem; margin: 0.5rem 0 1rem; }
+  li { margin: 0.3rem 0; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.3rem; }
+    .report-header .meta { flex-direction: column; gap: 0.5rem; }
+    .score-grid { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- HEADER                                                      -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="report-header">
+  <h1>&#x1F575;&#xFE0F; Ghost Mode &amp; EXIF Stripping Audit</h1>
+  <p class="subtitle">Comprehensive security analysis of LikasLens anonymity and metadata protection systems</p>
+  <div class="meta">
+    <span>&#x1F4C5; Generated: June 22, 2026</span>
+    <span>&#x1F4C1; Scope: Full Monorepo (6 apps)</span>
+    <span>&#x1F512; Classification: Internal Security Audit</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- VERDICT                                                     -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="verdict-banner">
+  <div class="verdict-label">Overall Verdict</div>
+  <div class="verdict-text">Ghost Mode Provides Strong Anonymity &mdash; With Caveats</div>
+  <div class="verdict-detail">
+    EXIF data is reliably stripped via defense-in-depth (client-side Canvas re-encode + server-side Imagick/GD).
+    Reporter identity is fully decoupled from submissions. However, the frontend report page
+    <strong>still transmits GPS coordinates</strong> even in Ghost Mode, and there is no
+    barangay-centroid replacement for location fuzzing. One known bug (GPS visual leak in camera-stamp.ts)
+    has been fixed.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SCORECARD                                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2>Scorecard</h2>
+<div class="score-grid">
+  <div class="score-item green">
+    <div class="score-value">9/10</div>
+    <div class="score-label">EXIF Stripping</div>
+  </div>
+  <div class="score-item green">
+    <div class="score-value">9/10</div>
+    <div class="score-label">Identity Anonymization</div>
+  </div>
+  <div class="score-item orange">
+    <div class="score-value">6/10</div>
+    <div class="score-label">Location Privacy</div>
+  </div>
+  <div class="score-item green">
+    <div class="score-value">8/10</div>
+    <div class="score-label">Notification Isolation</div>
+  </div>
+  <div class="score-item orange">
+    <div class="score-value">5/10</div>
+    <div class="score-label">Code Quality (DRY)</div>
+  </div>
+  <div class="score-item green">
+    <div class="score-value">8/10</div>
+    <div class="score-label">Server-Side Defense</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- TABLE OF CONTENTS                                           -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#exec-summary">Executive Summary</a></li>
+    <li><a href="#architecture">Ghost Mode Architecture &mdash; The Dual System</a></li>
+    <li><a href="#exif">EXIF Stripping Analysis</a></li>
+    <li><a href="#gps">GPS &amp; Location Privacy</a></li>
+    <li><a href="#identity">Identity Anonymization</a></li>
+    <li><a href="#data-flow">End-to-End Data Flow</a></li>
+    <li><a href="#vulnerabilities">Known Vulnerabilities &amp; Gaps</a></li>
+    <li><a href="#file-map">Complete File Reference Map</a></li>
+    <li><a href="#recommendations">Recommendations</a></li>
+    <li><a href="#verdict-detail">Detailed Verdict</a></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 1. EXECUTIVE SUMMARY                                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="exec-summary">1. Executive Summary</h2>
+
+<p>Ghost Mode in LikasLens is a <strong>privacy-preserving reporting mode</strong> designed to protect the identity of citizens reporting environmental violations in dangerous contexts (illegal logging, polluting industries, etc.). This audit evaluates whether Ghost Mode truly strips EXIF data and anonymizes the reporter.</p>
+
+<div class="card pass">
+  <div class="card-title">&#x2705; What Ghost Mode Does Well</div>
+  <ul>
+    <li><strong>EXIF stripping is defense-in-depth:</strong> Client-side Canvas re-encode removes all metadata before transmission. Server-side Imagick/GD strips again as a safety net. Both layers are functional.</li>
+    <li><strong>Identity is fully decoupled:</strong> Ghost submissions are linked to a placeholder user (<code>00000000-0000-0000-0000-000000000000</code>) with role <code>ghost</code>. No real user ID, name, or email is stored.</li>
+    <li><strong>No notifications leak:</strong> Ghost users never receive emails or push notifications. Timeline entries show <code>actor: null</code>.</li>
+    <li><strong>No achievements/rewards:</strong> Ghost submissions skip gamification entirely, preventing identity correlation via reward patterns.</li>
+    <li><strong>Blockchain hashing excludes identity:</strong> The evidence hash submitted to Sepolia contains only non-identifying metadata (location, type, severity).</li>
+  </ul>
+</div>
+
+<div class="card warn">
+  <div class="card-title">&#x26A0;&#xFE0F; Where Ghost Mode Falls Short</div>
+  <ul>
+    <li><strong>Frontend sends GPS even in Ghost Mode:</strong> The frontend report page (<code>report/page.tsx:307</code>) includes <code>latitude</code> and <code>longitude</code> in the payload regardless of ghost mode. Only the mobile-pwa omits them.</li>
+    <li><strong>No location fuzzing:</strong> There is no barangay-centroid replacement. GPS is either exact or absent &mdash; no intermediate fuzzy location exists.</li>
+    <li><strong>Triple EXIF stripping (not DRY):</strong> The same Canvas re-encode logic is implemented 3 separate times across the frontend codebase.</li>
+    <li><strong>Service worker queues raw data:</strong> The offline queue stores image data as-is; EXIF stripping only happens when the queued report is eventually submitted.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 2. ARCHITECTURE                                             -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="architecture">2. Ghost Mode Architecture &mdash; The Dual System</h2>
+
+<p>Ghost Mode is <strong>two independent systems sharing a name</strong>:</p>
+
+<table>
+  <tr>
+    <th>System</th>
+    <th>Mechanism</th>
+    <th>Effect</th>
+    <th>Scope</th>
+  </tr>
+  <tr>
+    <td><strong>Visual Theme</strong></td>
+    <td><code>data-theme="ghost"</code> on <code>&lt;html&gt;</code></td>
+    <td>Deep navy UI, yellow-gold accents, teal indicators</td>
+    <td>CSS only &mdash; no data effect</td>
+  </tr>
+  <tr>
+    <td><strong>Privacy Mode</strong></td>
+    <td><code>isGhostMode</code> boolean in submission logic</td>
+    <td>Strips identity, omits GPS, removes EXIF</td>
+    <td>Data layer &mdash; affects API payload</td>
+  </tr>
+</table>
+
+<div class="card info">
+  <div class="card-title">&#x2139;&#xFE0F; Important Distinction</div>
+  <p>Toggling the visual theme does NOT activate privacy mode. The privacy boolean is controlled independently via the report page's Ghost Mode checkbox/toggle. The theme toggle in the header only changes colors.</p>
+  <p style="margin-bottom:0">Source: <span class="file-ref">docs/audits/HACKATHON_AUDIT_REPORT.md:104</span></p>
+</div>
+
+<h3>Visual Theme Implementation</h3>
+<p>The ghost theme is defined in CSS custom properties and toggled via <code>document.documentElement.setAttribute("data-theme", "ghost"|"civic")</code>. It affects:</p>
+<ul>
+  <li>Page/panel/ink/accent colors</li>
+  <li>Chart color palettes (via <code>useChartColors()</code> hook)</li>
+  <li>AQI gauge tick/pointer colors</li>
+  <li>Auth page backgrounds (coral reef image)</li>
+  <li>Notification badge colors (red &rarr; teal/gold)</li>
+</ul>
+<p>Source: <span class="file-ref">apps/shared/src/styles/design-tokens.css:110-169</span></p>
+
+<h3>Privacy Mode Activation</h3>
+<p>Privacy mode is activated by toggling the Ghost Mode checkbox on the report page. When active:</p>
+<ul>
+  <li><strong>Frontend:</strong> Omits <code>user_id</code> from the API payload</li>
+  <li><strong>Mobile PWA:</strong> Omits <code>user_id</code>, <code>latitude</code>, and <code>longitude</code> from the payload</li>
+  <li><strong>Backend:</strong> Resolves to ghost user when <code>user_id</code> is missing or <code>"ANONYMOUS_GHOST"</code></li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 3. EXIF STRIPPING                                           -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="exif">3. EXIF Stripping Analysis</h2>
+
+<h3>3.1 Client-Side Stripping (Browser)</h3>
+<p>The client-side approach uses the <strong>Canvas re-encode technique</strong>: load the image into an <code>&lt;img&gt;</code> element, draw it onto a <code>&lt;canvas&gt;</code>, then call <code>canvas.toDataURL()</code>. The Canvas API only stores raw pixel data &mdash; all EXIF metadata (GPS, device info, timestamps, orientation) is discarded.</p>
+
+<div class="card pass">
+  <div class="card-title">Technique: Canvas Re-encode</div>
+<pre><code>// apps/frontend/src/utils/exif-stripper.ts
+export async function stripExif(base64Image: string): Promise&lt;string&gt; {
+  const image = new Image();
+  image.src = base64Image;
+  await new Promise&lt;void&gt;((resolve) =&gt; { image.onload = () =&gt; resolve(); });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
+  canvas.getContext("2d").drawImage(image, 0, 0);
+
+  return canvas.toDataURL(mimeType, quality);  // Raw pixels only &mdash; no EXIF
+}</code></pre>
+  <p style="margin-bottom:0">This technique removes <strong>all</strong> EXIF tags including GPS, device make/model, software version, thumbnail, and orientation.</p>
+</div>
+
+<h4>Where Client-Side Stripping Occurs</h4>
+<table>
+  <tr>
+    <th>#</th>
+    <th>File</th>
+    <th>Context</th>
+    <th>Implementation</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td><span class="file-ref">apps/frontend/src/utils/exif-stripper.ts</span></td>
+    <td>Standalone utility</td>
+    <td>Canvas re-encode (shared)</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><span class="file-ref">apps/frontend/src/utils/supabase/storage.ts:23-45</span></td>
+    <td>Profile image uploads</td>
+    <td>Canvas re-encode (File &rarr; Blob)</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><span class="file-ref">apps/frontend/src/app/[locale]/report/page.tsx:98-120</span></td>
+    <td>Main report submission</td>
+    <td>Inline duplicate of #1</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><span class="file-ref">apps/frontend/src/app/[locale]/camera-test/page.tsx:199</span></td>
+    <td>Camera test page</td>
+    <td>Imports utility #1</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><span class="file-ref">apps/mobile-pwa/src/lib/camera-stamp.ts:72</span></td>
+    <td>Camera capture with AR stamp</td>
+    <td>Canvas re-encode (implicit via <code>toDataURL</code>)</td>
+  </tr>
+</table>
+
+<div class="card warn">
+  <div class="card-title">&#x26A0;&#xFE0F; Code Duplication Issue</div>
+  <p>The same Canvas re-encode logic is implemented <strong>3 separate times</strong> (items 1, 2, 3 above). The standalone utility exists but the report page and storage module define their own inline copies.</p>
+</div>
+
+<h3>3.2 Server-Side Stripping (Laravel)</h3>
+<p>The backend applies EXIF stripping to <strong>every</strong> submission (not just Ghost Mode) as a defense-in-depth measure.</p>
+
+<div class="card pass">
+  <div class="card-title">Two-Phase Server-Side Strip</div>
+<pre><code>// apps/backend/app/Http/ReportController.php:512-582
+private function stripExifMetadata(string $imageData): string
+{
+    // Phase 1: Imagick (lossless &mdash; preferred)
+    if (extension_loaded('imagick')) {
+        $imagick = new \Imagick;
+        $imagick-&gt;readImageBlob($imageData);
+        $imagick-&gt;stripImage();  // Removes all metadata without re-compressing
+        return $imagick-&gt;getImageBlob();
+    }
+
+    // Phase 2: GD fallback (re-encode &mdash; lossy)
+    if (extension_loaded('gd')) {
+        $gdImage = imagecreatefromstring($imageData);
+        ob_start();
+        imagejpeg($gdImage, null, 90);  // Re-encode drops all metadata
+        return ob_get_clean();
+    }
+
+    // Neither available &mdash; log warning, return unchanged
+    Log::warning('Neither Imagick nor GD available &mdash; EXIF NOT stripped');
+    return $imageData;
+}</code></pre>
+</div>
+
+<h4>Server-Side Pipeline (in order)</h4>
+<ol>
+  <li><strong>Strip EXIF via Imagick</strong> (lossless) &mdash; preferred method, removes metadata without pixel re-compression</li>
+  <li><strong>Fallback: GD re-encode</strong> &mdash; if Imagick is unavailable, re-encodes as JPEG/PNG/WebP which drops all metadata</li>
+  <li><strong>Additional GD re-encode</strong> &mdash; a second GD pass for JPEG/PNG after the initial strip (belt-and-suspenders)</li>
+  <li><strong>SHA256 checksum</strong> &mdash; computed after stripping to verify integrity</li>
+  <li><strong>Timestamp recorded</strong> &mdash; <code>exif_removed_at</code> set on the <code>ticket_evidence</code> record</li>
+</ol>
+
+<p>Source: <span class="file-ref">apps/backend/app/Http/ReportController.php:82-113, 507-582</span></p>
+
+<h3>3.3 What Gets Stripped</h3>
+<table>
+  <tr>
+    <th>EXIF Tag</th>
+    <th>Client-Side (Canvas)</th>
+    <th>Server-Side (Imagick/GD)</th>
+  </tr>
+  <tr>
+    <td>GPS Coordinates</td>
+    <td><span class="badge green">Stripped</span></td>
+    <td><span class="badge green">Stripped</span></td>
+  </tr>
+  <tr>
+    <td>Device Make/Model</td>
+    <td><span class="badge green">Stripped</span></td>
+    <td><span class="badge green">Stripped</span></td>
+  </tr>
+  <tr>
+    <td>Software Version</td>
+    <td><span class="badge green">Stripped</span></td>
+    <td><span class="badge green">Stripped</span></td>
+  </tr>
+  <tr>
+    <td>Timestamp (Original/Digitized)</td>
+    <td><span class="badge green">Stripped</span></td>
+    <td><span class="badge green">Stripped</span></td>
+  </tr>
+  <tr>
+    <td>Orientation</td>
+    <td><span class="badge green">Stripped</span></td>
+    <td><span class="badge green">Stripped</span></td>
+  </tr>
+  <tr>
+    <td>Thumbnail</td>
+    <td><span class="badge green">Stripped</span></td>
+    <td><span class="badge green">Stripped</span></td>
+  </tr>
+  <tr>
+    <td>Camera Lens Info</td>
+    <td><span class="badge green">Stripped</span></td>
+    <td><span class="badge green">Stripped</span></td>
+  </tr>
+  <tr>
+    <td>IPTC/XMP Metadata</td>
+    <td><span class="badge green">Stripped</span></td>
+    <td><span class="badge green">Stripped</span></td>
+  </tr>
+</table>
+
+<h3>3.4 Database Tracking</h3>
+<p>Every evidence record tracks when EXIF was removed:</p>
+<pre><code>// Database: ticket_evidence table
+$table-&gt;timestamp('exif_removed_at')-&gt;nullable();
+
+// Set during submission:
+'exif_removed_at' =&gt; now(),  // ReportController.php:151</code></pre>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 4. GPS & LOCATION PRIVACY                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="gps">4. GPS &amp; Location Privacy</h2>
+
+<div class="card fail">
+  <div class="card-title">&#x1F6A8; Critical Finding: Frontend Sends GPS in Ghost Mode</div>
+  <p>The mobile-pwa correctly omits GPS coordinates from the payload when Ghost Mode is active:</p>
+<pre><code>// apps/mobile-pwa/src/app/[locale]/(app)/report/page.tsx:259-260
+latitude: ghostMode ? undefined : gps?.lat,
+longitude: ghostMode ? undefined : gps?.lng,</code></pre>
+  <p>However, the <strong>frontend report page always includes GPS</strong> in the payload:</p>
+<pre><code>// apps/frontend/src/app/[locale]/report/page.tsx:307
+const payload = { base64Image: cleanedImage, latitude, longitude };
+// latitude/longitude are always included &mdash; no ghostMode check</code></pre>
+  <p style="margin-bottom:0"><strong>Impact:</strong> A Ghost Mode report submitted via the web frontend still contains exact GPS coordinates in the API request body, even though the user's identity is hidden.</p>
+</div>
+
+<h3>4.1 GPS Visual Stamp (Camera Overlay)</h3>
+<p>The mobile-pwa burns metadata into the image pixels as a visual overlay. Ghost Mode now correctly hides coordinates:</p>
+
+<div class="card pass">
+  <div class="card-title">&#x2705; Fixed: GPS Visual Leak Patched</div>
+<pre><code>// apps/mobile-pwa/src/lib/camera-stamp.ts:49-54
+if (!metadata.ghostMode) {
+  ctx.fillText(`&#x1F4CD; ${metadata.latitude.toFixed(6)}, ${metadata.longitude.toFixed(6)}`, ...);
+} else {
+  ctx.fillText(`&#x1F4CD; [COORDINATES HIDDEN]`, ...);
+}</code></pre>
+  <p style="margin-bottom:0">Previously, GPS coordinates were burned into image pixels even in Ghost Mode. This was flagged as CRITICAL in the hackathon audit and has been fixed.</p>
+</div>
+
+<h3>4.2 GPS in the API Payload</h3>
+<table>
+  <tr>
+    <th>App</th>
+    <th>Ghost Mode: GPS in Payload?</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td>Mobile PWA</td>
+    <td>GPS omitted (<code>undefined</code>)</td>
+    <td><span class="badge green">Correct</span></td>
+  </tr>
+  <tr>
+    <td>Frontend (Web)</td>
+    <td>GPS always included</td>
+    <td><span class="badge red">Bug</span></td>
+  </tr>
+</table>
+
+<h3>4.3 No Location Fuzzing</h3>
+<p>There is <strong>no barangay-centroid replacement</strong> in the codebase. When Ghost Mode omits GPS, the report has no location at all. When GPS is included (frontend bug), it's exact coordinates. There is no intermediate "fuzzy location" (e.g., snap to nearest barangay centroid) for privacy-preserving analytics.</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 5. IDENTITY ANONYMIZATION                                   -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="identity">5. Identity Anonymization</h2>
+
+<h3>5.1 Ghost User Resolution</h3>
+<p>When a report is submitted without a valid user ID, the backend creates or retrieves a dedicated ghost user:</p>
+
+<pre><code>// apps/backend/app/Http/ReportController.php:458-485
+private const GHOST_USER_ID = '00000000-0000-0000-0000-000000000000';
+
+private function resolveUserId(?string $submittedUserId): string
+{
+    if ($submittedUserId &amp;&amp; $submittedUserId !== 'ANONYMOUS_GHOST') {
+        $user = User::where('supabase_auth_user_id', $submittedUserId)-&gt;first();
+        if ($user) return $user-&gt;id;
+    }
+    return $this-&gt;ensureGhostUser();
+}
+
+private function ensureGhostUser(): string
+{
+    return User::firstOrCreate(
+        ['supabase_auth_user_id' =&gt; self::GHOST_USER_ID],
+        [
+            'name' =&gt; 'Anonymous Ghost',
+            'email' =&gt; 'ghost@likaslens.local',
+            'role' =&gt; 'ghost',
+            'trust_score' =&gt; 0,
+            'reward_points_balance' =&gt; 0,
+            'password' =&gt; bcrypt(Str::random(32)),
+        ]
+    )-&gt;id;
+}</code></pre>
+
+<h3>5.2 What Is Hidden for Ghost Reports</h3>
+<table>
+  <tr>
+    <th>Data Point</th>
+    <th>Normal Report</th>
+    <th>Ghost Report</th>
+    <th>Source</th>
+  </tr>
+  <tr>
+    <td>Reporter name</td>
+    <td>Real name from Supabase</td>
+    <td>"Anonymous Ghost"</td>
+    <td><span class="file-ref">ReportController.php:478</span></td>
+  </tr>
+  <tr>
+    <td>Reporter email</td>
+    <td>Real email</td>
+    <td><code>ghost@likaslens.local</code></td>
+    <td><span class="file-ref">ReportController.php:479</span></td>
+  </tr>
+  <tr>
+    <td>User role</td>
+    <td><code>citizen</code></td>
+    <td><code>ghost</code></td>
+    <td><span class="file-ref">ReportController.php:480</span></td>
+  </tr>
+  <tr>
+    <td>Trust score</td>
+    <td>Accumulated per report</td>
+    <td>Always 0</td>
+    <td><span class="file-ref">ReportController.php:481</span></td>
+  </tr>
+  <tr>
+    <td>Eco-credits</td>
+    <td>Accumulated</td>
+    <td>Never awarded</td>
+    <td><span class="file-ref">ReportController.php:225-249</span></td>
+  </tr>
+  <tr>
+    <td>Achievements</td>
+    <td>Evaluated on each report</td>
+    <td>Skipped entirely</td>
+    <td><span class="file-ref">ReportController.php:225</span></td>
+  </tr>
+  <tr>
+    <td>Notifications</td>
+    <td>Sent on status changes</td>
+    <td>Never sent</td>
+    <td><span class="file-ref">RecordStatusChange.php:38</span></td>
+  </tr>
+  <tr>
+    <td>Timeline actor</td>
+    <td>User ID recorded</td>
+    <td><code>null</code> / <code>system</code></td>
+    <td><span class="file-ref">ReportController.php:174-175</span></td>
+  </tr>
+  <tr>
+    <td>Dashboard stats</td>
+    <td>Counted in <code>total_reports</code></td>
+    <td>Counted in <code>ghost_reports</code></td>
+    <td><span class="file-ref">openapi.yaml:764</span></td>
+  </tr>
+  <tr>
+    <td>Blockchain hash</td>
+    <td>Non-identifying metadata</td>
+    <td>Same &mdash; no reporter info</td>
+    <td><span class="file-ref">BlockchainService.php:27-45</span></td>
+  </tr>
+</table>
+
+<h3>5.3 Edge Interceptor &mdash; AI-Triggered Ghost Recommendation</h3>
+<p>When the AI triage detects a high-risk incident (e.g., illegal logging by armed groups), it recommends Ghost Mode before submission:</p>
+
+<pre><code>// apps/frontend/src/components/modals/edge-interceptor-modal.tsx:84-86
+"Recommendation: Use Ghost Mode &mdash; This removes your identity,
+ location, and device info from the report."</code></pre>
+
+<p>The user can then proceed anonymously or switch to Ghost Mode.</p>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 6. DATA FLOW                                                -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="data-flow">6. End-to-End Data Flow</h2>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="flow-node client">1</div>
+    <div class="flow-content">
+      <div class="flow-title">Photo Capture</div>
+      <div class="flow-desc">User captures photo via camera or file upload. On mobile-pwa, <code>captureWithStamp()</code> draws video frame + AR metadata overlay onto canvas.</div>
+    </div>
+    <div class="flow-line"></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-node client">2</div>
+    <div class="flow-content">
+      <div class="flow-title">Client-Side EXIF Strip</div>
+      <div class="flow-desc"><code>canvas.toDataURL("image/jpeg", 0.9)</code> produces raw pixel raster &mdash; all EXIF metadata removed. On frontend, explicit <code>stripExif()</code> utility is called.</div>
+    </div>
+    <div class="flow-line"></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-node client">3</div>
+    <div class="flow-content">
+      <div class="flow-title">Ghost Mode Toggle</div>
+      <div class="flow-desc">If Ghost Mode is ON: frontend omits <code>user_id</code>; mobile-pwa omits <code>user_id</code>, <code>latitude</code>, <code>longitude</code>.</div>
+    </div>
+    <div class="flow-line"></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-node client">4</div>
+    <div class="flow-content">
+      <div class="flow-title">API Transmission</div>
+      <div class="flow-desc"><code>POST /api/reports</code> with base64 image + metadata. Public endpoint &mdash; no auth required. Rate limited at 10/min.</div>
+    </div>
+    <div class="flow-line"></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-node server">5</div>
+    <div class="flow-content">
+      <div class="flow-title">Server-Side EXIF Strip (Defense-in-Depth)</div>
+      <div class="flow-desc"><code>stripExifMetadata()</code> via Imagick (preferred) or GD fallback. Runs on EVERY submission, not just Ghost Mode. Additional GD re-encode for JPEG/PNG.</div>
+    </div>
+    <div class="flow-line"></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-node server">6</div>
+    <div class="flow-content">
+      <div class="flow-title">User Resolution</div>
+      <div class="flow-desc"><code>resolveUserId()</code> maps <code>"ANONYMOUS_GHOST"</code> or missing ID to ghost user (<code>00000000-0000-0000-0000-000000000000</code>). Ghost user has <code>role: 'ghost'</code>.</div>
+    </div>
+    <div class="flow-line"></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-node db">7</div>
+    <div class="flow-content">
+      <div class="flow-title">Database Transaction</div>
+      <div class="flow-desc">Creates <code>Ticket</code> (reporter = ghost user), <code>TicketEvidence</code> (with <code>exif_removed_at</code>), <code>Report</code> (user_id = ghost).</div>
+    </div>
+    <div class="flow-line"></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-node server">8</div>
+    <div class="flow-content">
+      <div class="flow-title">Post-Submission Pipeline</div>
+      <div class="flow-desc">Timeline event fired (actor = null for ghost). Notifications skipped. Achievements skipped. Blockchain hash excludes reporter identity. Chain service links to nearby reports.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 7. VULNERABILITIES                                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="vulnerabilities">7. Known Vulnerabilities &amp; Gaps</h2>
+
+<h3>7.1 Frontend GPS Leak (HIGH)</h3>
+<div class="card fail">
+  <div class="card-title">VULN-01: Frontend sends GPS in Ghost Mode</div>
+  <p><strong>Severity:</strong> <span class="badge red">HIGH</span></p>
+  <p><strong>Location:</strong> <span class="file-ref">apps/frontend/src/app/[locale]/report/page.tsx:307</span></p>
+  <p><strong>Description:</strong> The frontend report page constructs the payload with <code>latitude</code> and <code>longitude</code> always included, regardless of Ghost Mode. Only the mobile-pwa correctly omits them.</p>
+  <p><strong>Impact:</strong> A Ghost Mode report submitted via the web frontend still contains exact GPS coordinates in the API request body, linking the report to a specific location.</p>
+  <p><strong>Fix:</strong> Add conditional logic: <code>latitude: isGhostMode ? undefined : latitude</code></p>
+</div>
+
+<h3>7.2 No Location Fuzzing (MEDIUM)</h3>
+<div class="card warn">
+  <div class="card-title">VULN-02: No barangay-centroid replacement</div>
+  <p><strong>Severity:</strong> <span class="badge orange">MEDIUM</span></p>
+  <p><strong>Description:</strong> Ghost Mode either sends exact GPS or omits GPS entirely. There is no intermediate "fuzzy location" that snaps to the nearest barangay centroid for privacy-preserving analytics.</p>
+  <p><strong>Impact:</strong> Reports without GPS cannot be included in spatial analytics (heatmaps, clustering). This limits the utility of Ghost Mode reports for environmental monitoring.</p>
+</div>
+
+<h3>7.3 Service Worker Offline Queue (LOW)</h3>
+<div class="card info">
+  <div class="card-title">VULN-03: Offline queue stores raw image data</div>
+  <p><strong>Severity:</strong> <span class="badge blue">LOW</span></p>
+  <p><strong>Location:</strong> <span class="file-ref">apps/mobile-pwa/public/sw.js:23-79</span></p>
+  <p><strong>Description:</strong> The service worker queues the full request body (including base64 image) in IndexedDB when offline. EXIF stripping only happens when the queued report is eventually submitted.</p>
+  <p><strong>Mitigation:</strong> The image is already EXIF-stripped at capture time (canvas re-encode), so the queued data should not contain EXIF. However, if a user uploads a pre-existing photo with EXIF while offline, the metadata persists in IndexedDB until submission.</p>
+</div>
+
+<h3>7.4 Triple EXIF Implementation (LOW)</h3>
+<div class="card info">
+  <div class="card-title">VULN-04: Code duplication &mdash; not DRY</div>
+  <p><strong>Severity:</strong> <span class="badge blue">LOW</span> (code quality, not security)</p>
+  <p><strong>Files:</strong></p>
+  <ul>
+    <li><span class="file-ref">apps/frontend/src/utils/exif-stripper.ts</span> &mdash; standalone utility</li>
+    <li><span class="file-ref">apps/frontend/src/utils/supabase/storage.ts:23-45</span> &mdash; profile uploads</li>
+    <li><span class="file-ref">apps/frontend/src/app/[locale]/report/page.tsx:98-120</span> &mdash; inline duplicate</li>
+  </ul>
+  <p><strong>Impact:</strong> If the stripping technique needs updating, all 3 locations must be patched independently. Risk of inconsistency.</p>
+</div>
+
+<h3>7.5 Server-Side Fallback Warning (INFO)</h3>
+<div class="card info">
+  <div class="card-title">VULN-05: EXIF not stripped if Imagick AND GD are unavailable</div>
+  <p><strong>Severity:</strong> <span class="badge blue">INFO</span></p>
+  <p><strong>Location:</strong> <span class="file-ref">ReportController.php:577</span></p>
+  <p><strong>Description:</strong> If neither Imagick nor GD PHP extensions are installed, the server returns the image unchanged with a warning log. This is a degraded state, not a bug &mdash; but operators must ensure at least one extension is available.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 8. FILE MAP                                                 -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="file-map">8. Complete File Reference Map</h2>
+
+<h3>EXIF Stripping</h3>
+<table>
+  <tr><th>File</th><th>Lines</th><th>Purpose</th></tr>
+  <tr><td><span class="file-ref">apps/frontend/src/utils/exif-stripper.ts</span></td><td>1-34</td><td>Standalone client-side EXIF strip utility</td></tr>
+  <tr><td><span class="file-ref">apps/frontend/src/utils/supabase/storage.ts</span></td><td>23-54</td><td>Profile image EXIF strip</td></tr>
+  <tr><td><span class="file-ref">apps/frontend/src/app/[locale]/report/page.tsx</span></td><td>98-120, 342, 383</td><td>Report page inline EXIF strip</td></tr>
+  <tr><td><span class="file-ref">apps/frontend/src/app/[locale]/camera-test/page.tsx</span></td><td>6, 199</td><td>Camera test page EXIF strip</td></tr>
+  <tr><td><span class="file-ref">apps/mobile-pwa/src/lib/camera-stamp.ts</span></td><td>72</td><td>Camera capture &mdash; implicit EXIF strip via canvas</td></tr>
+  <tr><td><span class="file-ref">apps/backend/app/Http/ReportController.php</span></td><td>82-113, 507-582</td><td>Server-side EXIF strip (Imagick + GD)</td></tr>
+</table>
+
+<h3>Ghost Mode &mdash; Identity &amp; Privacy</h3>
+<table>
+  <tr><th>File</th><th>Lines</th><th>Purpose</th></tr>
+  <tr><td><span class="file-ref">apps/backend/app/Http/ReportController.php</span></td><td>24, 458-485</td><td>Ghost user ID constant + resolution</td></tr>
+  <tr><td><span class="file-ref">apps/backend/app/Listeners/RecordStatusChange.php</span></td><td>38-53</td><td>Skip notifications for ghost users</td></tr>
+  <tr><td><span class="file-ref">apps/backend/app/Services/BlockchainService.php</span></td><td>27-45</td><td>Hash excludes reporter identity</td></tr>
+  <tr><td><span class="file-ref">apps/frontend/src/app/[locale]/report/page.tsx</span></td><td>296-310</td><td>Frontend ghost mode payload logic</td></tr>
+  <tr><td><span class="file-ref">apps/mobile-pwa/src/app/[locale]/(app)/report/page.tsx</span></td><td>244-264</td><td>Mobile PWA ghost mode payload logic</td></tr>
+  <tr><td><span class="file-ref">apps/mobile-pwa/src/lib/camera-stamp.ts</span></td><td>49-70</td><td>Ghost mode visual stamp + watermark</td></tr>
+  <tr><td><span class="file-ref">apps/frontend/src/components/modals/edge-interceptor-modal.tsx</span></td><td>71-99</td><td>AI-triggered ghost mode recommendation</td></tr>
+</table>
+
+<h3>Ghost Mode &mdash; Visual Theme</h3>
+<table>
+  <tr><th>File</th><th>Lines</th><th>Purpose</th></tr>
+  <tr><td><span class="file-ref">apps/shared/src/styles/design-tokens.css</span></td><td>110-169</td><td>Ghost theme CSS variables</td></tr>
+  <tr><td><span class="file-ref">apps/shared/src/styles/civic-brutalism.css</span></td><td>19-51</td><td>Ghost mode overrides + visibility helpers</td></tr>
+  <tr><td><span class="file-ref">apps/shared/src/ui/theme-toggle.tsx</span></td><td>12-33</td><td>Theme toggle component</td></tr>
+  <tr><td><span class="file-ref">apps/shared/src/ui/app-header.tsx</span></td><td>130-165</td><td>Desktop header ghost toggle</td></tr>
+  <tr><td><span class="file-ref">apps/shared/src/ui/mobile-header.tsx</span></td><td>75-91</td><td>Mobile header ghost toggle</td></tr>
+</table>
+
+<h3>Ghost Mode &mdash; UI Components</h3>
+<table>
+  <tr><th>File</th><th>Lines</th><th>Purpose</th></tr>
+  <tr><td><span class="file-ref">apps/shared/src/ui/incident-drawer.tsx</span></td><td>74, 130-148</td><td>Ghost mode badge + location scrubbed display</td></tr>
+  <tr><td><span class="file-ref">apps/frontend/src/components/dashboard/contributor-profile.tsx</span></td><td>19-20, 62-88</td><td>Blurred avatar, anonymous name</td></tr>
+  <tr><td><span class="file-ref">apps/frontend/src/components/marketing/sections/ghost-mode-section.tsx</span></td><td>1-120</td><td>Marketing section with protection checklist</td></tr>
+  <tr><td><span class="file-ref">apps/shared/src/styles/design-tokens.css</span></td><td>1017-1055</td><td>Ghost mode badge CSS component</td></tr>
+</table>
+
+<h3>Database &amp; API</h3>
+<table>
+  <tr><th>File</th><th>Lines</th><th>Purpose</th></tr>
+  <tr><td><span class="file-ref">apps/backend/database/migrations/...domain_tables.php</span></td><td>45</td><td><code>exif_removed_at</code> column</td></tr>
+  <tr><td><span class="file-ref">apps/backend/app/Models/TicketEvidence.php</span></td><td>26, 33</td><td><code>exif_removed_at</code> in fillable + casts</td></tr>
+  <tr><td><span class="file-ref">openapi.yaml</span></td><td>304-307</td><td><code>exif_removed_at</code> schema</td></tr>
+  <tr><td><span class="file-ref">openapi.yaml</span></td><td>183-191</td><td><code>ghost</code> role enum</td></tr>
+  <tr><td><span class="file-ref">openapi.yaml</span></td><td>1642-1644</td><td><code>user_id</code> ghost mode docs</td></tr>
+</table>
+
+<h3>Tests</h3>
+<table>
+  <tr><th>File</th><th>Lines</th><th>Purpose</th></tr>
+  <tr><td><span class="file-ref">apps/backend/tests/Feature/ReportSubmissionTest.php</span></td><td>45-56</td><td>Ghost mode submission test (user creation only)</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 9. RECOMMENDATIONS                                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="recommendations">9. Recommendations</h2>
+
+<h3>Priority 1 &mdash; Fix Frontend GPS Leak</h3>
+<div class="card fail">
+  <div class="card-title">CRITICAL: Omit GPS from frontend Ghost Mode payload</div>
+<pre><code>// apps/frontend/src/app/[locale]/report/page.tsx:307
+// BEFORE:
+const payload = { base64Image: cleanedImage, latitude, longitude };
+
+// AFTER:
+const payload: Record&lt;string, unknown&gt; = { base64Image: cleanedImage };
+if (!isGhostMode) {
+  payload.latitude = latitude;
+  payload.longitude = longitude;
+}</code></pre>
+</div>
+
+<h3>Priority 2 &mdash; Add Location Fuzzing</h3>
+<div class="card warn">
+  <div class="card-title">HIGH: Implement barangay-centroid replacement</div>
+  <p>When Ghost Mode is active, replace exact GPS with the nearest barangay centroid before storage. This enables spatial analytics while protecting reporter location.</p>
+  <p>Approach: Use a server-side lookup table of barangay centroids. Snap coordinates to nearest centroid within 5km radius.</p>
+</div>
+
+<h3>Priority 3 &mdash; Consolidate EXIF Stripping</h3>
+<div class="card warn">
+  <div class="card-title">MEDIUM: DRY up client-side EXIF stripping</div>
+  <p>Replace the 3 inline implementations with a single shared utility. Import <code>stripExif</code> from <code>@/utils/exif-stripper</code> everywhere.</p>
+</div>
+
+<h3>Priority 4 &mdash; Add EXIF Strip Verification Test</h3>
+<div class="card info">
+  <div class="card-title">LOW: Add test that verifies EXIF is actually removed</div>
+  <p>The existing test (<code>ReportSubmissionTest.php:45-56</code>) only verifies ghost user creation. Add a test that submits an image with known EXIF data and asserts the stored image has no metadata.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 10. DETAILED VERDICT                                        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<h2 id="verdict-detail">10. Detailed Verdict</h2>
+
+<h3>Does Ghost Mode Truly Strip EXIF Data?</h3>
+<div class="card pass">
+  <div class="card-title">&#x2705; YES &mdash; EXIF is reliably stripped</div>
+  <p>EXIF metadata is removed at two independent layers:</p>
+  <ol>
+    <li><strong>Client-side:</strong> Canvas re-encode produces raw pixel raster with no metadata. This happens before transmission.</li>
+    <li><strong>Server-side:</strong> Imagick <code>stripImage()</code> (lossless) or GD re-encode (fallback) removes any residual metadata. Runs on every submission.</li>
+  </ol>
+  <p style="margin-bottom:0">Both layers are functional. The defense-in-depth approach means even if one layer fails, the other provides protection. The <code>exif_removed_at</code> timestamp provides an audit trail.</p>
+</div>
+
+<h3>Is the Reporter Truly Anonymous?</h3>
+<div class="card warn">
+  <div class="card-title">&#x26A0;&#xFE0F; MOSTLY &mdash; with one significant gap</div>
+  <p><strong>What's protected:</strong></p>
+  <ul>
+    <li>Real name, email, and auth ID are never stored on ghost reports</li>
+    <li>No notifications are sent to the ghost user</li>
+    <li>No achievements or rewards accumulate (prevents correlation)</li>
+    <li>Timeline entries show <code>actor: null</code></li>
+    <li>Blockchain hash excludes reporter identity</li>
+    <li>EXIF (including device info) is stripped</li>
+  </ul>
+  <p><strong>What's NOT protected (on web frontend):</strong></p>
+  <ul>
+    <li>GPS coordinates are still transmitted in the API payload when using the web frontend in Ghost Mode</li>
+    <li>No location fuzzing exists &mdash; GPS is either exact or absent</li>
+  </ul>
+  <p style="margin-bottom:0"><strong>Verdict:</strong> The mobile-pwa Ghost Mode provides strong anonymity. The web frontend Ghost Mode has a GPS leak that must be fixed.</p>
+</div>
+
+<hr>
+
+<p style="text-align:center; color:var(--muted); font-size:0.85rem; margin-top:2rem;">
+  LikasLens Ghost Mode Audit Report &mdash; Generated June 22, 2026<br>
+  Based on codebase analysis of 30+ files across 6 apps in the LikasLens monorepo.
+</p>
+
+</body>
+</html>

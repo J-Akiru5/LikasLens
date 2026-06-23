@@ -360,7 +360,11 @@
     "send": "Magpadala ng mensahe",
     "closeChat": "Isara ang chat",
     "openChat": "Buksan ang Liksi chat",
-    "errorFallback": "Oops! Hindi ko maabot ang aking utak ngayon. Pakitingnan ang iyong koneksyon o subukang muli mamaya."
+    "errorFallback": "Oops! Hindi ko maabot ang aking utak ngayon. Pakitingnan ang iyong koneksyon o subukang muli mamaya.",
+    "welcomeCitizen": "Hoy! Ako si Liksi, ang iyong AI gabay sa LikasLens. Magtanong tungkol sa pag-uulat ng mga isyu sa kapaligiran, paggamit ng platform, o mga batas sa kapaligiran ng Pilipinas!",
+    "welcomeAdmin": "Maligayang pagdating sa LikasLens Admin Portal! Ako si Liksi, ang iyong AI operations assistant. Matutulungan kita sa pag-triage ng mga ulat, pagsusuri ng trends, pagsusuri ng mga batas, at pamamahagi ng platform.",
+    "signInPrompt": "Mangyaring mag-sign in upang makipag-chat kay Liksi",
+    "errorProcess": "Pasensya na, hindi ko maproseso iyon. Subukan muli!"
   },
   "offline": {
     "banner": "Ikaw ay offline. Ang mga ulat ay ilalagay sa pila hanggang maibalik ang koneksyon.",

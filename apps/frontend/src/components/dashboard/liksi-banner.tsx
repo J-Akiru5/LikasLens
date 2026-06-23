@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
 import Image from "next/image";
+import { formatDate } from "@likaslens/shared";
 
 interface LiksiBannerProps {
   userName: string;
 }
 
 export function LiksiBanner({ userName }: LiksiBannerProps) {
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale || "en";
   const chatMessages = [
     "Welcome back! I'm Liksi, your AI assistant. 🌿",
     "Ready to make an impact today? Every report counts! 🌍",
@@ -23,9 +27,9 @@ export function LiksiBanner({ userName }: LiksiBannerProps) {
     const hour = date.getHours();
     setTimeState({
       greeting: hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,",
-      dateStr: date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).toUpperCase()
+      dateStr: formatDate(date, "long", locale).toUpperCase()
     });
-  }, []);
+  }, [locale]);
 
   return (
     <div className="mb-14 mt-24 sm:mt-36 px-4 sm:px-0 w-full">

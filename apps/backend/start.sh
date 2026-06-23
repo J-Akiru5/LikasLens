@@ -30,6 +30,10 @@ php artisan view:cache 2>&1 || echo "==> [start.sh] WARNING: view:cache failed (
 echo "==> [start.sh] Running migrations..."
 php artisan migrate --force 2>&1 || echo "==> [start.sh] WARNING: migrate failed (non-fatal)"
 
+# Start queue worker in background
+echo "==> [start.sh] Starting queue worker..."
+php artisan queue:work --sleep=3 --tries=3 --max-time=3600 &
+
 # Start the server
 echo "==> [start.sh] Starting Laravel server on port 8000..."
 exec php artisan serve --host=0.0.0.0 --port=8000

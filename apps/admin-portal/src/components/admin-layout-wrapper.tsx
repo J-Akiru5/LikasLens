@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardLayout, type NavItem, GlobalSearch } from "@likaslens/shared";
+import { DashboardLayout, type NavItem, GlobalSearch, useNotifications } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase";
 import { initAuthRefresh } from "@/lib/auth-init";
 
@@ -62,6 +62,7 @@ export function AdminDashboardLayoutWrapper({
   const router = useRouter();
   const [role, setRole] = useState<string | null>(null);
   const [isGhostMode, setIsGhostMode] = useState(false);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications({ pollInterval: 30000 });
 
   useEffect(() => {
     const theme = document.documentElement.getAttribute("data-theme");
@@ -106,6 +107,10 @@ export function AdminDashboardLayoutWrapper({
       isGhostMode={isGhostMode}
       onThemeToggle={toggleGhostMode}
       showBranding={false}
+      notifications={notifications}
+      unreadCount={unreadCount}
+      onMarkAsRead={markAsRead}
+      onMarkAllAsRead={markAllAsRead}
       extraSidebarBottom={
         <button
           onClick={handleSignOut}

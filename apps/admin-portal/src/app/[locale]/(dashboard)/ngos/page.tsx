@@ -582,7 +582,7 @@ export default function NgosPage() {
                   <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${selectedNgo.is_active ? "bg-green/10 text-green" : "bg-ink/[0.04] text-ink/40"}`}>
                     {selectedNgo.is_active ? "Active" : "Inactive"}
                   </span>
-                  {(selectedNgo as Record<string, unknown>).is_verified && (
+                  {Boolean((selectedNgo as unknown as Record<string, unknown>).is_verified) && (
                     <span className="px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold bg-green/10 text-green">
                       Verified
                     </span>
@@ -591,14 +591,14 @@ export default function NgosPage() {
               </div>
             </div>
 
-            {(selectedNgo as Record<string, unknown>).assignments && (
+            {Boolean((selectedNgo as unknown as Record<string, unknown>).assignments) && (
               <div className="border-t border-ink/5 pt-4">
                 <h4 className="font-mono text-xs uppercase tracking-widest text-muted mb-3">
-                  Assignments ({((selectedNgo as Record<string, unknown>).assignments as unknown[]).length})
+                  Assignments ({((selectedNgo as unknown as Record<string, unknown>).assignments as unknown[]).length})
                 </h4>
-                {((selectedNgo as Record<string, unknown>).assignments as unknown[]).length > 0 ? (
+                {((selectedNgo as unknown as Record<string, unknown>).assignments as unknown[]).length > 0 ? (
                   <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {((selectedNgo as Record<string, unknown>).assignments as Array<Record<string, unknown>>).map((a, i) => (
+                    {((selectedNgo as unknown as Record<string, unknown>).assignments as Array<Record<string, unknown>>).map((a, i) => (
                       <div key={i} className="flex items-center justify-between bg-page/50 rounded-lg p-3 border border-ink/5">
                         <div className="min-w-0 flex-1">
                           <p className="font-mono text-xs text-ink/70 truncate">

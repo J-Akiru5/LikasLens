@@ -261,10 +261,17 @@
       "noAchievementsLockedDesc": "You have unlocked everything!",
       "unlockedCount": "{unlocked} of {total} unlocked",
       "xpEarned": "{xp} Impact Score",
+<<<<<<< HEAD
       "tierBasic": "Basic",
       "tierVerified": "Verified",
       "tierAdvanced": "Advanced",
       "tierAuthority": "Authority",
+=======
+      "tierCommon": "Common",
+      "tierRare": "Rare",
+      "tierEpic": "Epic",
+      "tierLegendary": "Legendary",
+>>>>>>> origin/main
       "detailTitle": "Achievement Details",
       "detailCriteria": "How to unlock",
       "detailProgress": "Progress",
@@ -354,6 +361,7 @@
   },
   "chat": {
     "title": "Liksi",
+<<<<<<< HEAD
     "subtitle": "AI Assistant",
     "online": "Online",
     "placeholder": "Ask Liksi...",
@@ -361,6 +369,19 @@
     "closeChat": "Close chat",
     "openChat": "Open Liksi chat",
     "errorFallback": "Oops! I couldn't reach my brain right now. Please check your connection or try again later."
+=======
+    "subtitle": "ผู้ช่วย AI",
+    "online": "ออนไลน์",
+    "placeholder": "ถาม Liksi...",
+    "send": "Send message",
+    "closeChat": "Close chat",
+    "openChat": "Open Liksi chat",
+    "errorFallback": "อ๊ะ! ผมไม่สามารถเข้าถึงสมองของผมได้ในตอนนี้ กรุณาตรวจสอบการเชื่อมต่อหรือลองอีกครั้งในภายหลังครับ",
+    "welcomeCitizen": "สวัสดีครับ! ผมคือ Liksi ผู้ช่วย AI ของคุณใน LikasLens ถามผมเกี่ยวกับการรายงานปัญหาสิ่งแวดล้อม การใช้งานแพลตฟอร์ม หรือกฎหมายสิ่งแวดล้อมของฟิลิปปินส์ได้เลยครับ!",
+    "welcomeAdmin": "ยินดีต้อนรับสู่ LikasLens Admin Portal! ผมคือ Liksi ผู้ช่วย AI ด้านการปฏิบัติงานของคุณ ผมสามารถช่วยคุณจัดลำดับความสำคัญของรายงาน วิเคราะห์แนวโน้ม ตรวจสอบกฎหมาย และจัดการแพลตฟอร์มได้ครับ",
+    "signInPrompt": "กรุณาเข้าสู่ระบบเพื่อแชทกับ Liksi",
+    "errorProcess": "ขออภัย ผมไม่สามารถประมวลผลได้ กรุณาลองอีกครั้ง!"
+>>>>>>> origin/main
   },
   "offline": {
     "banner": "You are offline. Reports will be queued until connection is restored.",
@@ -397,4 +418,7 @@
     "termsDescription": "LikasLens terms of service."
   }
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main

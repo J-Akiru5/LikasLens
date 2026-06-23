@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { DashboardLayout } from "@likaslens/shared";
+import { DashboardLayout, useNotifications } from "@likaslens/shared";
 import type { NavItem } from "@likaslens/shared";
 import {
   LayoutGrid,
@@ -53,6 +53,7 @@ export function DashboardLayoutWrapper({
 }: DashboardLayoutWrapperProps) {
   const [isGhostMode, setIsGhostMode] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications({ pollInterval: 30000 });
 
   useEffect(() => {
     setMounted(true);
@@ -90,6 +91,10 @@ export function DashboardLayoutWrapper({
       showBranding={showBranding}
       extraSidebarBottom={<UserNav variant="sidebar" />}
       headerChildren={headerChildren}
+      notifications={notifications}
+      unreadCount={unreadCount}
+      onMarkAsRead={markAsRead}
+      onMarkAllAsRead={markAllAsRead}
     >
       {children}
     </DashboardLayout>

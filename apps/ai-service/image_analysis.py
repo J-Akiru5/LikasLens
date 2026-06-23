@@ -303,15 +303,24 @@ def compute_composite_score(
     coco_conf: float,
     env_conf: float,
     has_model_agreement: bool,
+    roboflow_conf: float = 0.0,
 ) -> float:
-    """Unified confidence: max(coco_conf, env_conf) * 0.7 + agreement_bonus * 0.3.
+    """Unified confidence across all detection sources.
 
-    agreement_bonus = 1.0 if both COCO and env model agree on a hazard, else 0.0.
+    Formula: max(coco_conf, env_conf, roboflow_conf) * 0.6 + agreement_bonus * 0.3 + source_bonus * 0.1
+
+    - agreement_bonus = 1.0 if COCO and env model agree on a hazard
+    - source_bonus = min(detection_sources / 3, 1.0) rewarding multi-source confirmation
     Returns a score between 0.0 and 1.0.
     """
-    base = max(coco_conf, env_conf) * 0.7
+    base = max(coco_conf, env_conf, roboflow_conf) * 0.6
     agreement_bonus = 1.0 if has_model_agreement else 0.0
-    return round(base + agreement_bonus * 0.3, 4)
+
+    # Reward multi-source detection: more sources = higher confidence
+    active_sources = sum(1 for c in (coco_conf, env_conf, roboflow_conf) if c > 0)
+    source_bonus = min(active_sources / 3.0, 1.0)
+
+    return round(base + agreement_bonus * 0.3 + source_bonus * 0.1, 4)
 
 
 def triage_disposition(composite_score: float) -> str:
@@ -429,8 +438,9 @@ def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.50) -> dic
     # Compute composite confidence score
     coco_max = max((d["confidence"] for d in detections), default=0.0)
     env_max = max((d["confidence"] for d in env_detections), default=0.0)
+    roboflow_max = max((d["confidence"] for d in roboflow_detections), default=0.0)
     has_agreement = bool(env_detections) and env_assessment.get("has_environmental_concern", False)
-    composite = compute_composite_score(coco_max, env_max, has_agreement)
+    composite = compute_composite_score(coco_max, env_max, has_agreement, roboflow_max)
     disposition = triage_disposition(composite)
 
     return {
@@ -444,6 +454,7 @@ def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.50) -> dic
         "models_used": {
             "coco": _COCO_MODEL_NAME,
             "environmental": _ENV_MODEL_NAME or "none",
+            "roboflow": "active" if roboflow_detections else "inactive",
         },
     }
 

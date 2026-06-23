@@ -16,9 +16,10 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { cn, laravelPost, showToast, Button } from "@likaslens/shared";
+import { cn, laravelPost, showToast, Button, useOnnxInference } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
 import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
+import { stripExif } from "@/lib/exif-stripper";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useVoiceInput } from "@/hooks/use-voice-input";
 import { useHaptics } from "@/hooks/use-haptics";
@@ -67,6 +68,9 @@ export default function ReportPage() {
   const [submitting, setSubmitting] = useState(false);
   const [typeSheetOpen, setTypeSheetOpen] = useState(false);
   const haptic = useHaptics();
+
+  // On-device inference for offline triage (lazy init)
+  const onnx = useOnnxInference({ autoInit: false });
 
   const {
     isListening,
@@ -163,6 +167,7 @@ export default function ReportPage() {
     setStream(null);
   }, []);
 
+<<<<<<< HEAD
   const stripExif = useCallback(async (base64: string) => {
     if (!base64) return base64;
     return await new Promise<string>((resolve) => {
@@ -188,14 +193,26 @@ export default function ReportPage() {
   }, []);
 
   const handleFileCaptureMobile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+=======
+  const handleFileCaptureMobile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+>>>>>>> origin/main
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = async () => {
       const dataUrl = reader.result as string;
+<<<<<<< HEAD
       const cleaned = await stripExif(dataUrl);
       setPhoto(cleaned);
+=======
+      try {
+        const cleaned = await stripExif(dataUrl);
+        setPhoto(cleaned);
+      } catch {
+        setPhoto(dataUrl);
+      }
+>>>>>>> origin/main
       setStep("preview");
       stopCamera();
     };
@@ -264,11 +281,26 @@ export default function ReportPage() {
 
     setSubmitting(true);
     try {
-      showToast("Submitting report...", "info");
-
       // canvas.toDataURL() returns a raw pixel raster, so EXIF metadata is
       // already stripped at capture. Ghost Mode additionally omits GPS.
       const base64Image = dataUrlToBase64(photo);
+
+      // On-device triage when offline (skip if Ghost Mode)
+      if (!ghostMode && !navigator.onLine && onnx.isReady) {
+        try {
+          const onnxResult = await onnx.infer(base64Image);
+          if (onnxResult.has_environmental_concern) {
+            showToast(
+              `On-device AI detected: ${onnxResult.environmental_indicators.join(", ")}. Submitting offline.`,
+              "info"
+            );
+          }
+        } catch {
+          // Triage failure shouldn't block submission
+        }
+      }
+
+      showToast("Submitting report...", "info");
 
       let userId: string | undefined;
       try {

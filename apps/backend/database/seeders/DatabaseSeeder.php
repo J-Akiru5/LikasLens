@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             EcoCreditPoolSeeder::class,
             SlaConfigSeeder::class,
             CountryCodeSeeder::class,
+            BarangayCentroidSeeder::class,
         ]);
 
     }

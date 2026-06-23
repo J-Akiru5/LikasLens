@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LikasLens — System Status Report</title>
+  <style>
+    :root {
+      --green-900: #1B4332; --green-800: #2D6A4F; --green-700: #40916C;
+      --green-600: #52B788; --green-500: #74C69D; --green-100: #D8F3DC;
+      --amber-600: #d97706; --amber-500: #f59e0b; --amber-100: #fef3c7;
+      --red-600: #dc2626; --red-500: #ef4444; --red-100: #fee2e2;
+      --blue-600: #2563eb; --blue-500: #3b82f6; --blue-100: #dbeafe;
+      --purple-600: #7c3aed; --purple-500: #8b5cf6; --purple-100: #ede9fe;
+      --slate-50: #f8fafc; --slate-100: #f1f5f9; --slate-200: #e2e8f0;
+      --slate-300: #cbd5e1; --slate-400: #94a3b8; --slate-500: #64748b;
+      --slate-600: #475569; --slate-700: #334155; --slate-800: #1e293b;
+      --slate-900: #0f172a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      background: var(--slate-50); color: var(--slate-800); line-height: 1.6;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, var(--green-900) 0%, var(--green-800) 40%, var(--green-700) 100%);
+      color: #fff; padding: 3rem 2.5rem; border-radius: 20px; margin-bottom: 2rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::after {
+      content: ''; position: absolute; top: -50%; right: -20%;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; position: relative; z-index: 1; }
+    .hero .subtitle { font-size: 1rem; opacity: 0.85; margin-bottom: 1.5rem; position: relative; z-index: 1; max-width: 700px; }
+    .hero .meta { display: flex; gap: 1.5rem; flex-wrap: wrap; position: relative; z-index: 1; }
+    .hero .meta-item {
+      background: rgba(255,255,255,0.12); padding: 0.5rem 1.2rem;
+      border-radius: 10px; font-size: 0.85rem; backdrop-filter: blur(4px);
+    }
+    .hero .meta-item strong { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; display: block; opacity: 0.7; }
+
+    /* Health Grid */
+    .health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .health-card {
+      background: #fff; border: 1px solid var(--slate-200); border-radius: 14px;
+      padding: 1.25rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .health-card .app-name { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate-500); margin-bottom: 0.5rem; }
+    .health-card .health-status { font-size: 1.5rem; font-weight: 800; }
+    .health-card .health-label { font-size: 0.82rem; font-weight: 600; margin-top: 0.25rem; }
+    .health-green { color: var(--green-700); }
+    .health-amber { color: var(--amber-600); }
+    .health-red { color: var(--red-500); }
+
+    /* Section */
+    .section {
+      background: #fff; border: 1px solid var(--slate-200); border-radius: 16px;
+      margin-bottom: 1.5rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .section-header {
+      padding: 1.25rem 1.75rem; display: flex; align-items: center; gap: 1rem;
+      border-bottom: 1px solid var(--slate-200); cursor: pointer; user-select: none;
+    }
+    .section-header:hover { background: var(--slate-50); }
+    .section-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .icon-green { background: var(--green-100); }
+    .icon-blue { background: var(--blue-100); }
+    .icon-amber { background: var(--amber-100); }
+    .icon-red { background: var(--red-100); }
+    .icon-purple { background: var(--purple-100); }
+    .icon-slate { background: var(--slate-100); }
+    .section-info { flex: 1; }
+    .section-title { font-size: 1.1rem; font-weight: 700; color: var(--green-900); }
+    .section-subtitle { font-size: 0.78rem; color: var(--slate-500); }
+    .section-badge {
+      font-size: 0.75rem; font-weight: 700; padding: 0.3rem 0.7rem;
+      border-radius: 8px; white-space: nowrap;
+    }
+    .badge-green { background: var(--green-100); color: var(--green-800); }
+    .badge-amber { background: var(--amber-100); color: #92400e; }
+    .badge-red { background: var(--red-100); color: var(--red-600); }
+    .badge-blue { background: var(--blue-100); color: var(--blue-600); }
+    .badge-purple { background: var(--purple-100); color: var(--purple-600); }
+    .badge-slate { background: var(--slate-100); color: var(--slate-600); }
+    .chevron { width: 20px; height: 20px; transition: transform 0.2s; color: var(--slate-400); }
+    .section.collapsed .chevron { transform: rotate(-90deg); }
+    .section.collapsed .section-body { display: none; }
+    .section-body { padding: 1.5rem 1.75rem; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.82rem; }
+    thead { background: var(--slate-100); }
+    th { padding: 0.6rem 0.8rem; text-align: left; font-weight: 700; color: var(--slate-700); border-bottom: 2px solid var(--slate-200); }
+    td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--slate-100); color: var(--slate-600); }
+    tr:hover td { background: var(--slate-50); }
+
+    /* Alerts */
+    .alert { padding: 1rem 1.25rem; border-radius: 10px; font-size: 0.85rem; margin: 1rem 0; }
+    .alert-critical { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .alert-info { background: var(--blue-100); border: 1px solid #93c5fd; color: #1e40af; }
+    .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+    /* Sub-groups */
+    .sub-group {
+      background: var(--slate-50); border: 1px solid var(--slate-200);
+      border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1rem;
+    }
+    .sub-group:last-child { margin-bottom: 0; }
+    .sub-group h4 { font-size: 0.85rem; font-weight: 700; color: var(--slate-700); margin-bottom: 0.5rem; }
+
+    /* Tags */
+    .tag {
+      display: inline-block; font-size: 0.68rem; font-weight: 600;
+      padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;
+      letter-spacing: 0.03em; margin-right: 0.25rem;
+    }
+    .tag-critical { background: var(--red-100); color: var(--red-600); }
+    .tag-high { background: #fef3c7; color: #92400e; }
+    .tag-medium { background: var(--blue-100); color: var(--blue-600); }
+    .tag-low { background: var(--slate-100); color: var(--slate-600); }
+    .tag-resolved { background: var(--green-100); color: var(--green-800); }
+
+    /* App badges */
+    .app-badge {
+      display: inline-block; font-size: 0.68rem; font-weight: 600;
+      padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .app-frontend { background: var(--blue-100); color: var(--blue-600); }
+    .app-mobile { background: var(--green-100); color: var(--green-800); }
+    .app-admin { background: var(--purple-100); color: var(--purple-600); }
+    .app-backend { background: var(--red-100); color: var(--red-600); }
+    .app-ai { background: var(--amber-100); color: #92400e; }
+    .app-shared { background: var(--slate-100); color: var(--slate-600); }
+
+    /* Progress bar */
+    .progress-wrap {
+      background: #fff; border: 1px solid var(--slate-200); border-radius: 16px;
+      padding: 1.5rem 2rem; margin-bottom: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .progress-header h2 { font-size: 1.1rem; font-weight: 700; color: var(--slate-900); }
+    .progress-pct { font-size: 1.8rem; font-weight: 800; color: var(--green-800); }
+    .progress-bar { width: 100%; height: 14px; background: var(--slate-100); border-radius: 99px; overflow: hidden; margin-bottom: 1rem; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--green-700), var(--green-500)); border-radius: 99px; }
+
+    /* Checklist */
+    .checklist { list-style: none; padding: 0; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      padding: 0.65rem 0; border-bottom: 1px solid var(--slate-100);
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .check-icon { width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; }
+    .check-done { color: var(--green-600); }
+    .check-pending { color: var(--slate-300); }
+
+    /* Footer */
+    .footer {
+      text-align: center; padding: 2rem 0 1rem; color: var(--slate-500); font-size: 0.78rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      .hero { padding: 2rem 1.5rem; }
+      .hero h1 { font-size: 1.5rem; }
+      .section-body { padding: 1.25rem; }
+      .health-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>LikasLens — System Status Report</h1>
+    <p class="subtitle">Comprehensive audit of the LikasLens monorepo. Cross-references execution tracker claims against actual codebase state and GitHub issue status.</p>
+    <div class="meta">
+      <div class="meta-item"><strong>Scan Date</strong>June 21, 2026</div>
+      <div class="meta-item"><strong>Version</strong>0.9.3</div>
+      <div class="meta-item"><strong>Open Issues</strong>20</div>
+      <div class="meta-item"><strong>Apps</strong>6</div>
+      <div class="meta-item"><strong>Tracker Progress</strong>~85%</div>
+    </div>
+  </div>
+
+  <!-- HEALTH GRID -->
+  <div class="health-grid">
+    <div class="health-card">
+      <div class="app-name">Frontend</div>
+      <div class="health-status health-amber">&#9679;</div>
+      <div class="health-label" style="color: var(--amber-600);">Good</div>
+    </div>
+    <div class="health-card">
+      <div class="app-name">Mobile PWA</div>
+      <div class="health-status health-amber">&#9679;</div>
+      <div class="health-label" style="color: var(--amber-600);">Fair</div>
+    </div>
+    <div class="health-card">
+      <div class="app-name">Admin Portal</div>
+      <div class="health-status health-green">&#9679;</div>
+      <div class="health-label" style="color: var(--green-700);">Strong</div>
+    </div>
+    <div class="health-card">
+      <div class="app-name">Backend</div>
+      <div class="health-status health-green">&#9679;</div>
+      <div class="health-label" style="color: var(--green-700);">Strong</div>
+    </div>
+    <div class="health-card">
+      <div class="app-name">AI Service</div>
+      <div class="health-status health-green">&#9679;</div>
+      <div class="health-label" style="color: var(--green-700);">Strong</div>
+    </div>
+    <div class="health-card">
+      <div class="app-name">Shared</div>
+      <div class="health-status health-green">&#9679;</div>
+      <div class="health-label" style="color: var(--green-700);">Strong</div>
+    </div>
+  </div>
+
+  <!-- EXECUTION TRACKER PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-header">
+      <h2>Execution Tracker Progress</h2>
+      <div class="progress-pct">~85%</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width: 85%;"></div></div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">
+      <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 10px; padding: 0.6rem 0.9rem; text-align: center;">
+        <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate-500); margin-bottom: 0.25rem;">Phase 0</div>
+        <div style="font-size: 1.1rem; font-weight: 700;"><span style="color: var(--green-600);">27</span>/27</div>
+      </div>
+      <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 10px; padding: 0.6rem 0.9rem; text-align: center;">
+        <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate-500); margin-bottom: 0.25rem;">Phase 1</div>
+        <div style="font-size: 1.1rem; font-weight: 700;"><span style="color: var(--green-600);">13</span>/13</div>
+      </div>
+      <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 10px; padding: 0.6rem 0.9rem; text-align: center;">
+        <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate-500); margin-bottom: 0.25rem;">Phase 2</div>
+        <div style="font-size: 1.1rem; font-weight: 700;"><span style="color: var(--green-600);">18</span>/18</div>
+      </div>
+      <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 10px; padding: 0.6rem 0.9rem; text-align: center;">
+        <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate-500); margin-bottom: 0.25rem;">Phase 3</div>
+        <div style="font-size: 1.1rem; font-weight: 700;"><span style="color: var(--amber-500);">4</span>/7</div>
+      </div>
+      <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 10px; padding: 0.6rem 0.9rem; text-align: center;">
+        <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate-500); margin-bottom: 0.25rem;">Phase 4</div>
+        <div style="font-size: 1.1rem; font-weight: 700;"><span style="color: var(--amber-500);">4</span>/7</div>
+      </div>
+      <div style="background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 10px; padding: 0.6rem 0.9rem; text-align: center;">
+        <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate-500); margin-bottom: 0.25rem;">Verify</div>
+        <div style="font-size: 1.1rem; font-weight: 700;"><span style="color: var(--green-600);">12</span>/13</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISCREPANCIES -->
+  <div class="section" id="discrepancies">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-red">&#9888;</div>
+      <div class="section-info">
+        <div class="section-title">Discrepancies Found</div>
+        <div class="section-subtitle">Execution tracker claims vs actual codebase state</div>
+      </div>
+      <span class="section-badge badge-red">10 Found</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+      <div class="alert alert-critical">
+        <strong>Critical:</strong> 1 remaining Gremlin reference in judge-facing marketing component. Execution tracker claims all Gremlin refs are fixed.
+      </div>
+      <table>
+        <thead><tr><th>#</th><th>Severity</th><th>Discrepancy</th><th>Location</th><th>Impact</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><span class="tag tag-critical">Critical</span></td>
+            <td>Gremlin reference still exists in marketing component</td>
+            <td><code>tech-stack-section.tsx:71</code></td>
+            <td>Judge-facing page says "Gremlin-powered"</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><span class="tag tag-critical">Critical</span></td>
+            <td>Phase 3 items unchecked but code is implemented</td>
+            <td><code>execution-tracker.html</code></td>
+            <td>Misleading progress view</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><span class="tag tag-high">High</span></td>
+            <td>GitHub issues #178, #180 still OPEN but code is complete</td>
+            <td>GitHub</td>
+            <td>Issues need closure</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><span class="tag tag-high">High</span></td>
+            <td>ResolveTenant middleware not wired into routes</td>
+            <td><code>routes/api.php</code></td>
+            <td>Multi-tenancy non-functional</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><span class="tag tag-high">High</span></td>
+            <td>TenantController has no route registration</td>
+            <td><code>Admin/TenantController.php</code></td>
+            <td>CRUD operations inaccessible</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td><span class="tag tag-high">High</span></td>
+            <td><code>AI_SERVICE_API_KEY</code> missing from backend .env.example</td>
+            <td><code>apps/backend/.env.example</code></td>
+            <td>Undocumented required env var</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td><span class="tag tag-medium">Medium</span></td>
+            <td>OG image format mismatch (.png files vs .jpg metadata)</td>
+            <td><code>apps/frontend/src/app/</code></td>
+            <td>Minor (Next.js handles automatically)</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td><span class="tag tag-medium">Medium</span></td>
+            <td><code>requests</code> in requirements.txt but not pyproject.toml</td>
+            <td><code>apps/ai-service/</code></td>
+            <td>Dependency inconsistency</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td><span class="tag tag-low">Low</span></td>
+            <td>Root package.json version is 0.0.1 (CHANGELOG says 0.9.3)</td>
+            <td><code>package.json</code></td>
+            <td>Version not synced</td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td><span class="tag tag-low">Low</span></td>
+            <td>SlaService TODO for notification dispatch</td>
+            <td><code>SlaService.php:117</code></td>
+            <td>Notification stubbed out</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GITHUB ISSUES -->
+  <div class="section" id="issues">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-blue">&#128196;</div>
+      <div class="section-info">
+        <div class="section-title">GitHub Issues Status</div>
+        <div class="section-subtitle">20 open issues categorized by app, severity, and type</div>
+      </div>
+      <span class="section-badge badge-amber">20 Open</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-mobile">Mobile PWA</span> Bugs (10 issues)</h4>
+        <table>
+          <thead><tr><th>#</th><th>Severity</th><th>Title</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>#175</td><td><span class="tag tag-critical">Critical</span></td><td>Broken Android App Logo</td><td>OPEN</td></tr>
+            <tr><td>#176</td><td><span class="tag tag-critical">Critical</span></td><td>Android Ownership Not Working</td><td>OPEN</td></tr>
+            <tr><td>#164</td><td><span class="tag tag-high">High</span></td><td>Install Feature / APK Download Link Broken</td><td>OPEN</td></tr>
+            <tr><td>#171</td><td><span class="tag tag-high">High</span></td><td>Citizens see admin-only actions (Change Status/Remove)</td><td>OPEN</td></tr>
+            <tr><td>#173</td><td><span class="tag tag-high">High</span></td><td>Laws Database: Broken Card Layout</td><td>OPEN</td></tr>
+            <tr><td>#170</td><td><span class="tag tag-medium">Medium</span></td><td>Incidents: Broken Card Layout (Status overlaps options)</td><td>OPEN</td></tr>
+            <tr><td>#172</td><td><span class="tag tag-medium">Medium</span></td><td>Leaderboard: 1st-3rd placement crowded/overlapping</td><td>OPEN</td></tr>
+            <tr><td>#165</td><td><span class="tag tag-medium">Medium</span></td><td>Display Name squeezed to side</td><td>OPEN</td></tr>
+            <tr><td>#166</td><td><span class="tag tag-medium">Medium</span></td><td>Impact Insights: Broken Card Layout</td><td>OPEN</td></tr>
+            <tr><td>#168</td><td><span class="tag tag-medium">Medium</span></td><td>Dashboard Report Search Bar not working</td><td>OPEN</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-mobile">Mobile PWA</span> Enhancements (2 issues)</h4>
+        <table>
+          <thead><tr><th>#</th><th>Severity</th><th>Title</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>#169</td><td><span class="tag tag-medium">Medium</span></td><td>No Edit Profile Feature</td><td>OPEN</td></tr>
+            <tr><td>#167</td><td><span class="tag tag-low">Low</span></td><td>Dashboard Column Separation / Text Truncation</td><td>OPEN</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-frontend">Frontend</span> Bugs (2 issues)</h4>
+        <table>
+          <thead><tr><th>#</th><th>Severity</th><th>Title</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>#174</td><td><span class="tag tag-high">High</span></td><td>Broken OG Image</td><td>OPEN</td></tr>
+            <tr><td>#163</td><td><span class="tag tag-high">High</span></td><td>Chatbot blocks input with "Log In" button</td><td>OPEN</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-backend">Backend</span> Bugs (2 issues)</h4>
+        <table>
+          <thead><tr><th>#</th><th>Severity</th><th>Title</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>#162</td><td><span class="tag tag-high">High</span></td><td>Google login/signup not working</td><td>OPEN</td></tr>
+            <tr><td>#177</td><td><span class="tag tag-medium">Medium</span></td><td>Session not retained on "Back to Home"</td><td>OPEN</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-ai">AI Service</span> Post-Hackathon (4 issues)</h4>
+        <div class="alert alert-success">
+          <strong>Issues #178 and #180 are RESOLVED in code</strong> — <code>roboflow_client.py</code> exists (202 lines), <code>.env.example</code> has Roboflow vars. These need GitHub closure.
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>Severity</th><th>Title</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>#178</td><td><span class="tag tag-resolved">Resolved</span></td><td>Roboflow project setup</td><td>OPEN (needs closure)</td></tr>
+            <tr><td>#180</td><td><span class="tag tag-resolved">Resolved</span></td><td>Roboflow inference client</td><td>OPEN (needs closure)</td></tr>
+            <tr><td>#179</td><td><span class="tag tag-low">Low</span></td><td>Train custom model</td><td>OPEN (post-hackathon)</td></tr>
+            <tr><td>#181</td><td><span class="tag tag-low">Low</span></td><td>Dataset annotation pipeline</td><td>OPEN (post-hackathon)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- APPLICATION STATUS -->
+  <div class="section" id="apps">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-green">&#128230;</div>
+      <div class="section-info">
+        <div class="section-title">Application Status</div>
+        <div class="section-subtitle">Detailed status of all 6 applications in the monorepo</div>
+      </div>
+      <span class="section-badge badge-green">6 Apps</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-frontend">Frontend</span> Next.js 16 Marketing + Web App</h4>
+        <table>
+          <tbody>
+            <tr><td><strong>Stack</strong></td><td>Next.js 16.2.2, React 19, TypeScript 5, Tailwind v4</td></tr>
+            <tr><td><strong>Port</strong></td><td>3000</td></tr>
+            <tr><td><strong>Deployment</strong></td><td>Vercel</td></tr>
+            <tr><td><strong>PWA</strong></td><td>Legacy next-pwa v5.6.0</td></tr>
+            <tr><td><strong>i18n</strong></td><td>6 locales (en, fil, vi, id, ms, ta)</td></tr>
+            <tr><td><strong>Pages</strong></td><td>20+ routes</td></tr>
+            <tr><td><strong>Gremlin Refs</strong></td><td><span style="color: var(--red-500); font-weight: 700;">1 remaining</span> in tech-stack-section.tsx:71</td></tr>
+            <tr><td><strong>CI Status</strong></td><td><code>continue-on-error: true</code> (known lint issues)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-mobile">Mobile PWA</span> Next.js 16 Installable PWA</h4>
+        <table>
+          <tbody>
+            <tr><td><strong>Stack</strong></td><td>Next.js 16.2.2, React 19, @ducanh2912/next-pwa v10.2.9</td></tr>
+            <tr><td><strong>Port</strong></td><td>3003</td></tr>
+            <tr><td><strong>Manifest</strong></td><td>Complete: standalone, portrait, 192/512 icons + maskable</td></tr>
+            <tr><td><strong>Service Worker</strong></td><td>Manual registration in layout.tsx</td></tr>
+            <tr><td><strong>Share Target</strong></td><td>Accepts JPEG/PNG/WebP via POST</td></tr>
+            <tr><td><strong>Pages</strong></td><td>25+ routes</td></tr>
+            <tr><td><strong>Open Bugs</strong></td><td><span style="color: var(--red-500); font-weight: 700;">10</span> (mostly UI/layout)</td></tr>
+            <tr><td><strong>CI Status</strong></td><td><code>continue-on-error: true</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-admin">Admin Portal</span> Next.js 16 Admin Dashboard</h4>
+        <table>
+          <tbody>
+            <tr><td><strong>Stack</strong></td><td>Next.js 16.2.2, React 19</td></tr>
+            <tr><td><strong>Port</strong></td><td>3002</td></tr>
+            <tr><td><strong>Dashboard</strong></td><td>5 KPI tiles + activity feed + tickets + hotspots</td></tr>
+            <tr><td><strong>Pages</strong></td><td>15+ routes</td></tr>
+            <tr><td><strong>Open Issues</strong></td><td><span style="color: var(--green-700); font-weight: 700;">0</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-backend">Backend</span> Laravel 12 API</h4>
+        <table>
+          <tbody>
+            <tr><td><strong>Stack</strong></td><td>Laravel 12.62, PHP 8.2+, PostgreSQL (Supabase)</td></tr>
+            <tr><td><strong>Port</strong></td><td>8000</td></tr>
+            <tr><td><strong>Deployment</strong></td><td>GCP Cloud Run (Dockerfile + CI/CD)</td></tr>
+            <tr><td><strong>Controllers</strong></td><td>30</td></tr>
+            <tr><td><strong>Models</strong></td><td>22 (with TenantScope multi-tenancy)</td></tr>
+            <tr><td><strong>Services</strong></td><td>7 (Triage, SLA, Blockchain, Achievement, Rank, Chain, Prediction)</td></tr>
+            <tr><td><strong>Migrations</strong></td><td>27</td></tr>
+            <tr><td><strong>Tests</strong></td><td><span style="color: var(--amber-500); font-weight: 700;">5</span> (minimal coverage)</td></tr>
+            <tr><td><strong>Circuit Breaker</strong></td><td><span style="color: var(--green-700);">&#10003;</span> 3 failures &rarr; 60s cooldown</td></tr>
+            <tr><td><strong>Composite Scoring</strong></td><td><span style="color: var(--green-700);">&#10003;</span> Extracts from AI response</td></tr>
+            <tr><td><strong>Escalation</strong></td><td><span style="color: var(--green-700);">&#10003;</span> Migration + model helpers</td></tr>
+            <tr><td><strong>TODOs</strong></td><td>1 (SlaService notification)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-ai">AI Service</span> Python FastAPI + YOLOv8 + Neo4j</h4>
+        <table>
+          <tbody>
+            <tr><td><strong>Stack</strong></td><td>Python 3.12, FastAPI, YOLOv8, Neo4j, Gemini</td></tr>
+            <tr><td><strong>Port</strong></td><td>8001</td></tr>
+            <tr><td><strong>Deployment</strong></td><td>GCP Cloud Run (Dockerfile + CI/CD)</td></tr>
+            <tr><td><strong>Endpoints</strong></td><td>17 REST endpoints</td></tr>
+            <tr><td><strong>Roboflow</strong></td><td><span style="color: var(--green-700);">&#10003;</span> Fully integrated with graceful fallback</td></tr>
+            <tr><td><strong>Composite Score</strong></td><td><span style="color: var(--green-700);">&#10003;</span> max(coco,env)*0.7 + agreement*0.3</td></tr>
+            <tr><td><strong>Triage Disposition</strong></td><td><span style="color: var(--green-700);">&#10003;</span> auto_routed / pending_review / auto_dismissed</td></tr>
+            <tr><td><strong>Gemini Retry</strong></td><td><span style="color: var(--green-700);">&#10003;</span> 3 attempts, exponential backoff (1s/2s)</td></tr>
+            <tr><td><strong>Gremlin Code</strong></td><td><span style="color: var(--green-700); font-weight: 700;">ZERO</span> (7 historical docstring comments only)</td></tr>
+            <tr><td><strong>PH Laws</strong></td><td>16 laws, 18 hazards, 5 NGOs, Indonesia layer</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="app-badge app-shared">Shared</span> TypeScript Components + API Client</h4>
+        <table>
+          <tbody>
+            <tr><td><strong>Package</strong></td><td>@likaslens/shared</td></tr>
+            <tr><td><strong>UI Components</strong></td><td>39</td></tr>
+            <tr><td><strong>API Client</strong></td><td>Full REST with timeout, auth, multi-tenant</td></tr>
+            <tr><td><strong>Admin API</strong></td><td>208 lines, comprehensive operations</td></tr>
+            <tr><td><strong>Locales</strong></td><td>6 (en, fil, vi, id, ms, ta)</td></tr>
+            <tr><td><strong>Design System</strong></td><td>civic-brutalism.css + design-tokens.css</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SLA TABLE -->
+  <div class="section" id="sla">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-amber">&#9200;</div>
+      <div class="section-info">
+        <div class="section-title">SLA Configuration</div>
+        <div class="section-subtitle">Violation-specific response and resolution deadlines</div>
+      </div>
+      <span class="section-badge badge-amber">7 Types</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+      <table>
+        <thead><tr><th>Violation Type</th><th>Response</th><th>Resolution</th><th>Escalation</th></tr></thead>
+        <tbody>
+          <tr><td><code>chemical_spill</code></td><td><strong>4h</strong></td><td><strong>24h</strong></td><td>Enabled</td></tr>
+          <tr><td><code>water_pollution</code></td><td><strong>24h</strong></td><td><strong>72h</strong></td><td>Enabled</td></tr>
+          <tr><td><code>air_pollution</code></td><td><strong>24h</strong></td><td><strong>72h</strong></td><td>Enabled</td></tr>
+          <tr><td><code>illegal_dumping</code></td><td><strong>48h</strong></td><td><strong>168h</strong></td><td>Enabled</td></tr>
+          <tr><td><code>wildlife_threat</code></td><td><strong>48h</strong></td><td><strong>168h</strong></td><td>Enabled</td></tr>
+          <tr><td><code>noise_pollution</code></td><td><strong>72h</strong></td><td><strong>168h</strong></td><td>Enabled</td></tr>
+          <tr><td><code>deforestation</code></td><td><strong>72h</strong></td><td><strong>336h</strong></td><td>Enabled</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- INFRASTRUCTURE -->
+  <div class="section" id="infra">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-purple">&#9881;</div>
+      <div class="section-info">
+        <div class="section-title">Infrastructure & DevOps</div>
+        <div class="section-subtitle">CI/CD, Docker, Dependabot, OpenAPI</div>
+      </div>
+      <span class="section-badge badge-purple">4 Workflows</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+
+      <div class="sub-group">
+        <h4>CI/CD Workflows</h4>
+        <table>
+          <thead><tr><th>Workflow</th><th>Trigger</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>ci.yml</code></td><td>push/PR to main/development</td><td>Full CI: lint, typecheck, build, test, security audit</td></tr>
+            <tr><td><code>security-scan.yml</code></td><td>Weekly + manual</td><td>Trivy scans, npm/Composer/pip audits, SBOM</td></tr>
+            <tr><td><code>gcp-backend-deploy.yml</code></td><td>push to main (backend/**)</td><td>Docker build &rarr; Artifact Registry &rarr; Cloud Run</td></tr>
+            <tr><td><code>gcp-ai-service-deploy.yml</code></td><td>push to main (ai-service/**)</td><td>Docker build &rarr; Artifact Registry &rarr; Cloud Run</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="sub-group">
+        <h4>Docker</h4>
+        <table>
+          <thead><tr><th>Service</th><th>Dockerfile</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Backend</td><td>81 lines, 3-stage build</td><td><span style="color: var(--green-700);">&#10003;</span> Production-ready</td></tr>
+            <tr><td>AI Service</td><td>31 lines, single-stage</td><td><span style="color: var(--green-700);">&#10003;</span> Production-ready</td></tr>
+            <tr><td>Frontend</td><td>None</td><td>Deployed via Vercel</td></tr>
+            <tr><td>Mobile PWA</td><td>None</td><td>Deployed via Vercel</td></tr>
+            <tr><td>Admin Portal</td><td>None</td><td>Deployed via Vercel</td></tr>
+          </tbody>
+        </table>
+        <div class="alert alert-warning">
+          <strong>Missing:</strong> No <code>docker-compose.yml</code> for local orchestration.
+        </div>
+      </div>
+
+      <div class="sub-group">
+        <h4>OpenAPI Specification</h4>
+        <table>
+          <tbody>
+            <tr><td><strong>Version</strong></td><td>OpenAPI 3.0.3</td></tr>
+            <tr><td><strong>Size</strong></td><td>3700+ lines</td></tr>
+            <tr><td><strong>Schemas</strong></td><td>40+ defined</td></tr>
+            <tr><td><strong>Security</strong></td><td>BearerAuth (Sanctum JWT) + ApiKeyAuth (PAT)</td></tr>
+            <tr><td><strong>Coverage</strong></td><td>Health, Auth, Reports, Map, Tickets, Laws, Leaderboard, Achievements, NGOs, Dashboard, Impact, Profile, User, Chat, Admin (12 groups), Public API</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RISK REGISTER -->
+  <div class="section" id="risks">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-amber">&#9888;</div>
+      <div class="section-info">
+        <div class="section-title">Risk Register</div>
+        <div class="section-subtitle">Known risks and mitigation status</div>
+      </div>
+      <span class="section-badge badge-amber">8 Risks</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+      <table>
+        <thead><tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Roboflow API unavailable during demo</td><td>Low</td><td>High</td><td>Graceful fallback to COCO-only</td><td><span style="color: var(--green-700);">&#10003; Mitigated</span></td></tr>
+          <tr><td>Gremlin refs visible to judges</td><td>Medium</td><td>High</td><td>Phase 0B/0F/0G cover docs/frontend</td><td><span style="color: var(--amber-500);">&#9888; 1 ref remains</span></td></tr>
+          <tr><td>Knowledge graph pages are demos</td><td>Medium</td><td>Medium</td><td>Static demos acceptable for hackathon</td><td><span style="color: var(--green-700);">&#10003; Accepted</span></td></tr>
+          <tr><td>Confidence thresholds unvalidated</td><td>Medium</td><td>Medium</td><td>eval_metrics.py exists, no FPR run</td><td><span style="color: var(--amber-500);">&#9888; Unverified</span></td></tr>
+          <tr><td>Google login not working</td><td>High</td><td>High</td><td>Issue #162 OPEN</td><td><span style="color: var(--red-500);">&#10007; Open</span></td></tr>
+          <tr><td>Session loss on navigation</td><td>Medium</td><td>Medium</td><td>Issue #177 OPEN</td><td><span style="color: var(--amber-500);">&#9888; Open</span></td></tr>
+          <tr><td>Mobile PWA broken layouts</td><td>Medium</td><td>Medium</td><td>10 UI bugs open</td><td><span style="color: var(--amber-500);">&#9888; Open</span></td></tr>
+          <tr><td>Multi-tenancy not wired</td><td>Low</td><td>Low</td><td>Not needed for hackathon demo</td><td><span style="color: var(--green-700);">&#10003; Deferred</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RECOMMENDATIONS -->
+  <div class="section" id="recommendations">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-green">&#9989;</div>
+      <div class="section-info">
+        <div class="section-title">Recommendations</div>
+        <div class="section-subtitle">Prioritized action items</div>
+      </div>
+      <span class="section-badge badge-green">19 Items</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+
+      <div class="sub-group">
+        <h4><span class="tag tag-critical">Priority 1</span> Before Demo</h4>
+        <ul class="checklist">
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Fix Gremlin reference in marketing — <code>tech-stack-section.tsx:71</code> (5 min)</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Fix Android logo (#175) — critical for mobile demo</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Fix broken card layouts (#170, #173, #166)</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Fix install/APK link (#164)</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Update execution tracker — check Phase 3 &amp; 4 items already implemented</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="tag tag-high">Priority 2</span> After Demo</h4>
+        <ul class="checklist">
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Close GitHub issues #178, #180 (resolved in code)</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Wire ResolveTenant middleware into <code>routes/api.php</code></div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Register TenantController routes for admin CRUD</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Add <code>AI_SERVICE_API_KEY</code> to backend .env.example</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Add AGENTS.md for backend, ai-service, mobile-pwa, admin-portal</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Resolve CI <code>continue-on-error</code> — fix underlying lint/type errors</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sub-group">
+        <h4><span class="tag tag-low">Priority 3</span> Post-Hackathon</h4>
+        <ul class="checklist">
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Add docker-compose.yml for local development</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Increase test coverage (backend has 5 tests for 30 controllers)</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Fix <code>requests</code> dependency — add to pyproject.toml</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Sync root package.json version from 0.0.1 to 0.9.3</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Run FPR validation through eval_metrics.py</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Implement notification events (TicketReassigned, TicketEscalated, TicketOverdue)</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Add overdue counts to public leaderboard query</div>
+          </li>
+          <li>
+            <svg class="check-icon check-pending" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            <div>Train custom Roboflow model (#179, #181)</div>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>LikasLens System Status Report — June 21, 2026</div>
+    <div style="margin-top: 0.25rem;">Cross-references execution-tracker.html, GitHub issues, and actual codebase state</div>
+  </div>
+
+</div>
+
+<script>
+  function toggleSection(header) {
+    header.closest('.section').classList.toggle('collapsed');
+  }
+</script>
+</body>
+</html>

@@ -13,16 +13,8 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils";
-
-type NotificationType = "critical" | "resolved" | "info";
-
-interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  desc: string;
-  time: string;
-}
+import type { AppNotification } from "../types/notification";
+import { formatDistanceToNow } from "../lib/format";
 
 interface AppHeaderProps {
   greeting?: string;
@@ -31,14 +23,17 @@ interface AppHeaderProps {
   showBranding?: boolean;
   isGhostMode?: boolean;
   onThemeToggle?: () => void;
-  notifications?: Notification[];
+  notifications?: AppNotification[];
+  unreadCount?: number;
+  onMarkAsRead?: (id: string) => void;
+  onMarkAllAsRead?: () => void;
   children?: React.ReactNode;
   className?: string;
   /** When provided, a hamburger button is rendered on mobile (lg:hidden) */
   onMobileMenuToggle?: () => void;
 }
 
-const DEFAULT_NOTIFICATIONS: Notification[] = [];
+const DEFAULT_NOTIFICATIONS: AppNotification[] = [];
 
 export function AppHeader({
   greeting,
@@ -48,6 +43,9 @@ export function AppHeader({
   isGhostMode = false,
   onThemeToggle,
   notifications = DEFAULT_NOTIFICATIONS,
+  unreadCount = 0,
+  onMarkAsRead,
+  onMarkAllAsRead,
   children,
   className,
   onMobileMenuToggle,
@@ -65,11 +63,32 @@ export function AppHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [notifOpen]);
 
-  const iconMap: Record<NotificationType, React.ReactNode> = {
-    critical: <AlertCircle className="w-4 h-4 text-red" />,
-    resolved: <CheckCircle className="w-4 h-4 text-green" />,
-    info: <Info className="w-4 h-4 text-green" />,
-  };
+  function getNotifIcon(type: string) {
+    if (type.includes("Escalation") || type.includes("breach")) return <AlertCircle className="w-4 h-4 text-red" />;
+    if (type.includes("StatusUpdated")) return <CheckCircle className="w-4 h-4 text-green" />;
+    return <Info className="w-4 h-4 text-green" />;
+  }
+
+  function getNotifTitle(n: AppNotification): string {
+    if (n.type.includes("SlaEscalation")) return "SLA Escalation";
+    if (n.type.includes("TicketStatus")) {
+      const to = n.data.to_status;
+      return to ? `Ticket ${to.charAt(0).toUpperCase() + to.slice(1)}` : "Ticket Update";
+    }
+    return "Notification";
+  }
+
+  function getNotifDesc(n: AppNotification): string {
+    return n.data.message || "You have a new notification";
+  }
+
+  function getNotifTime(n: AppNotification): string {
+    try {
+      return formatDistanceToNow(new Date(n.created_at), { locale: "en" });
+    } catch {
+      return "";
+    }
+  }
 
   const hasMobileContent = Boolean(pageTitle || greeting || showBranding || children);
 
@@ -173,7 +192,7 @@ export function AppHeader({
                 className="relative p-2 rounded-xl text-ink/50 hover:text-ink hover:bg-ink/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
               >
                 <Bell className="w-5 h-5" aria-hidden="true" />
-                {notifications.length > 0 && (
+                {unreadCount > 0 && (
                   <span
                     className={cn(
                       "absolute top-1 right-1.5 min-w-[16px] h-[16px] px-1 rounded-full border-2 border-page flex items-center justify-center text-[9px] font-bold",
@@ -181,7 +200,7 @@ export function AppHeader({
                     )}
                     aria-hidden="true"
                   >
-                    {notifications.length > 9 ? "9+" : notifications.length}
+                    {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </button>
@@ -192,13 +211,14 @@ export function AppHeader({
                   <span className="font-mono text-xs text-ink uppercase tracking-wider">
                     Notifications
                   </span>
-                  <button
-                    onClick={() => setNotifOpen(false)}
-                    aria-label="Close notifications"
-                    className="p-1 text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-                  >
-                    <X className="w-4 h-4" aria-hidden="true" />
-                  </button>
+                  {unreadCount > 0 && onMarkAllAsRead && (
+                    <button
+                      onClick={onMarkAllAsRead}
+                      className="font-mono text-xs text-ink/50 hover:text-ink transition-colors"
+                    >
+                      Mark all read
+                    </button>
+                  )}
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {notifications.length === 0 ? (
@@ -213,19 +233,28 @@ export function AppHeader({
                     notifications.map((n) => (
                       <div
                         key={n.id}
-                        className="p-3 border-b border-ink/10 last:border-0"
+                        className={cn(
+                          "p-3 border-b border-ink/10 last:border-0 cursor-pointer hover:bg-ink/5 transition-colors",
+                          !n.read_at && "bg-ink/[0.02]"
+                        )}
+                        onClick={() => onMarkAsRead?.(n.id)}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="mt-0.5 shrink-0">{iconMap[n.type]}</div>
+                          <div className="mt-0.5 shrink-0">{getNotifIcon(n.type)}</div>
                           <div className="min-w-0">
-                            <div className="text-sm text-ink">{n.title}</div>
+                            <div className={cn("text-sm", !n.read_at ? "font-semibold text-ink" : "text-ink/70")}>
+                              {getNotifTitle(n)}
+                            </div>
                             <div className="text-xs text-ink/50 mt-0.5">
-                              {n.desc}
+                              {getNotifDesc(n)}
                             </div>
                             <div className="text-xs text-ink/30 mt-1 font-mono">
-                              {n.time}
+                              {getNotifTime(n)}
                             </div>
                           </div>
+                          {!n.read_at && (
+                            <div className="w-2 h-2 rounded-full bg-accent shrink-0 mt-2" />
+                          )}
                         </div>
                       </div>
                     ))
@@ -233,11 +262,11 @@ export function AppHeader({
                 </div>
                 <div className="p-2 border-t border-ink/10 text-center">
                   <Link
-                    href="/dashboard/settings"
+                    href="/dashboard/notifications"
                     className="font-mono text-xs text-ink/50 hover:text-ink transition-colors"
                     onClick={() => setNotifOpen(false)}
                   >
-                    Notification Settings
+                    View All Notifications
                   </Link>
                 </div>
               </div>

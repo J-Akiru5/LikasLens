@@ -10,6 +10,8 @@ import {
   getDashboardFeed,
   showToast,
   EmptyFeed,
+  formatDate,
+  formatNumber,
 } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/shared";
 import { Camera, ChevronRight, Gift, Award, Activity, Zap, Scale } from "lucide-react";
@@ -44,15 +46,18 @@ export default function DashboardPage() {
   const [chatIndex, setChatIndex] = useState(0);
   const [userName, setUserName] = useState("Citizen");
 
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale || "en";
+
   const [timeState, setTimeState] = useState({ greeting: "Welcome,", dateStr: "" });
   useEffect(() => {
     const date = new Date();
     const hour = date.getHours();
     setTimeState({
       greeting: hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,",
-      dateStr: date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).toUpperCase()
+      dateStr: formatDate(date, "long", locale).toUpperCase()
     });
-  }, []);
+  }, [locale]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -98,9 +103,6 @@ export default function DashboardPage() {
 
   usePullToRefresh(load);
 
-  const params = useParams<{ locale: string }>();
-  const locale = params?.locale || "en";
-
   if (loading) {
     return (
       <div className="p-4">
@@ -137,7 +139,7 @@ export default function DashboardPage() {
         >
           <Award style={{ width: 14, height: 14, color: "var(--accent)" }} />
           <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>
-            {walletPoints.toLocaleString()}
+            {formatNumber(walletPoints, {}, locale)}
           </span>
         </div>
       </div>
@@ -227,7 +229,7 @@ export default function DashboardPage() {
                 }}
               >
                 <p style={{ fontFamily: "var(--font-data)", fontSize: 26, fontWeight: 700, color: item.color, margin: 0, lineHeight: 1, letterSpacing: "-0.02em" }}>
-                  {item.value.toLocaleString()}
+                  {formatNumber(item.value, {}, locale)}
                 </p>
                 <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "6px 0 0" }}>
                   {item.label}
