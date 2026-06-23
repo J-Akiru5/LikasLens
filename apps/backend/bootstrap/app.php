@@ -22,8 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             HandleCors::class,
             ResolveTenant::class,
-        ])->exclude([
-            'api/health',
         ]);
 
         $middleware->alias([
