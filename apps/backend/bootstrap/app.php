@@ -25,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->api(prepend: [
             ResolveTenant::class,
+        ])->exclude([
+            'api/health',
         ]);
 
         $middleware->alias([
