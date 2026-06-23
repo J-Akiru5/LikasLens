@@ -73,7 +73,7 @@ export const metadata: Metadata = {
       "AI-powered civic reporting platform protecting Philippine nature. Report environmental issues, track community impact, and hold agencies accountable.",
     images: [
       {
-        url: "/opengraph-image.jpg",
+        url: "/twitter-image.jpg",
         width: 1200,
         height: 630,
         alt: "LikasLens — From snapshot to solution",

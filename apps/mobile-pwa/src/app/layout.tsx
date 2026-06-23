@@ -43,6 +43,28 @@ export const metadata: Metadata = {
     ],
     apple: "/icons/apple-touch-icon.png",
   },
+  openGraph: {
+    type: "website",
+    siteName: "LikasLens",
+    title: "LikasLens — Protecting Nature Philippines",
+    description:
+      "AI-powered civic reporting platform protecting Philippine nature. Report environmental issues, track community impact, and hold agencies accountable.",
+    images: [
+      {
+        url: "/twitter-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "LikasLens — From snapshot to solution",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "LikasLens — Protecting Nature Philippines",
+    description:
+      "AI-powered civic reporting platform protecting Philippine nature. Report environmental issues, track community impact.",
+    images: ["/twitter-image.jpg"],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

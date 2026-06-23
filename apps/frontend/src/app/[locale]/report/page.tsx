@@ -158,6 +158,13 @@ export default function ReportPage() {
 
     if (!queued.length) return;
 
+    let authToken: string | undefined = undefined;
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      authToken = session?.access_token;
+    } catch { /* anonymous */ }
+
     const successfulIds: string[] = [];
     for (const item of queued) {
       try {
@@ -270,11 +277,13 @@ export default function ReportPage() {
 
   const finalizeSubmission = async (cleanedImage: string) => {
     let userId: string | undefined = undefined;
+    let authToken: string | undefined = undefined;
     if (!isGhostMode) {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, data: { session } } = await supabase.auth.getUser();
         userId = user?.id;
+        authToken = session?.access_token;
       } catch { /* continue anonymously */ }
     }
 
@@ -340,6 +349,7 @@ export default function ReportPage() {
               setIsTriaging(false);
               return;
             }
+          }
           }
           // If ONNX is not ready and offline, skip triage gracefully
         } catch (err) { console.error("Triage pre-check failed:", err); }

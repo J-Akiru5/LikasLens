@@ -184,7 +184,7 @@ export default function ReportPage() {
       stopCamera();
     };
     reader.readAsDataURL(file);
-  }, [stopCamera]);
+  }, [stopCamera, stripExif]);
 
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -551,7 +551,7 @@ export default function ReportPage() {
         </div>
 
         <GhostToggle />
-        <SubmitButton label="Submit report" />
+        <SubmitButton label="Submit report" disabled={!incidentType || !photo} />
       </div>
     );
   }

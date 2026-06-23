@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ResolveTenant;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\AdminAuditLogController;
@@ -41,7 +42,7 @@ Route::get('/health', function () {
         'service' => 'likaslens-backend',
         'timestamp' => now()->toISOString(),
     ]);
-});
+})->withoutMiddleware([ResolveTenant::class]);
 
 // Report submission endpoints (public, rate limited)
 Route::post('/reports', [ReportController::class, 'store'])->middleware('throttle:10,1');
