@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Demo Video Production Guide</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --border: #2a2a3a;
+    --text: #e8e8f0;
+    --text-muted: #8888a0;
+    --accent: #22d3ee;
+    --accent-glow: rgba(34, 211, 238, 0.15);
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --orange: #fb923c;
+    --pink: #f472b6;
+    --purple: #a78bfa;
+    --red: #f87171;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Header ─────────────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(34, 211, 238, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(164, 139, 250, 0.06) 0%, transparent 50%);
+    animation: pulse 8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+  .hero h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .hero .tagline { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1.5rem; }
+  .meta-pills {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .pill .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* ── Layout ─────────────────────────────── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 768px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.8rem; }
+  }
+
+  /* ── Progress Bar ───────────────────────── */
+  .progress-bar-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .progress-header h3 { font-size: 0.9rem; color: var(--text-muted); }
+  .progress-count { font-size: 0.9rem; color: var(--accent); font-weight: 600; }
+  .progress-track {
+    height: 6px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    border-radius: 999px;
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* ── Section Cards ──────────────────────── */
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .section-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+  }
+  .section-header:hover { background: var(--surface-2); }
+  .section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  .section-title h2 { font-size: 1.1rem; font-weight: 700; }
+  .section-title span { font-size: 0.8rem; color: var(--text-muted); }
+  .section-body { padding: 0 1.5rem 1.5rem; }
+
+  /* ── Timeline Row ───────────────────────── */
+  .timeline-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .timeline-row:last-child { border-bottom: none; }
+  .timeline-time {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.8rem;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 90px;
+    text-align: center;
+  }
+  .timeline-content { flex: 1; }
+  .timeline-content h4 { font-size: 0.95rem; margin-bottom: 0.3rem; }
+  .timeline-content p { font-size: 0.85rem; color: var(--text-muted); }
+  .timeline-content .vo {
+    background: rgba(164, 139, 250, 0.1);
+    border-left: 3px solid var(--purple);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0 6px 6px 0;
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--text);
+    font-style: italic;
+  }
+  .timeline-content .text-overlay {
+    background: rgba(34, 211, 238, 0.08);
+    border-left: 3px solid var(--accent);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0 6px 6px 0;
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--accent);
+  }
+
+  /* ── Tracker Checkbox ───────────────────── */
+  .tracker-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    padding-top: 0.2rem;
+  }
+  .tracker-check input[type="checkbox"] {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    background: var(--surface-2);
+  }
+  .tracker-check input[type="checkbox"]:checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .tracker-check input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    color: #000;
+    font-weight: 700;
+  }
+
+  /* ── Recording Cards ────────────────────── */
+  .rec-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .rec-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .rec-card .badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 0.75rem;
+  }
+  .rec-card h4 { font-size: 1rem; margin-bottom: 0.25rem; }
+  .rec-card .route {
+    font-family: 'Consolas', monospace;
+    font-size: 0.8rem;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 0.75rem;
+  }
+  .rec-card .desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+  .rec-card .what-to-show {
+    background: rgba(34, 211, 238, 0.06);
+    border: 1px solid rgba(34, 211, 238, 0.15);
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.82rem;
+  }
+  .rec-card .what-to-show strong {
+    display: block;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .rec-card .what-to-show ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: var(--text-muted);
+  }
+  .rec-card .what-to-show ul li { margin-bottom: 0.2rem; }
+  .rec-card .tracker-check { position: absolute; top: 1.25rem; right: 1.25rem; }
+
+  /* ── Color Themes for Cards ─────────────── */
+  .theme-cyan .section-icon { background: rgba(34, 211, 238, 0.15); color: var(--accent); }
+  .theme-green .section-icon { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+  .theme-purple .section-icon { background: rgba(164, 139, 250, 0.15); color: var(--purple); }
+  .theme-orange .section-icon { background: rgba(251, 146, 60, 0.15); color: var(--orange); }
+  .theme-pink .section-icon { background: rgba(244, 114, 182, 0.15); color: var(--pink); }
+  .theme-yellow .section-icon { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+
+  .badge-mobile { background: rgba(34, 211, 238, 0.15); color: var(--accent); }
+  .badge-frontend { background: rgba(164, 139, 250, 0.15); color: var(--purple); }
+  .badge-admin { background: rgba(251, 146, 60, 0.15); color: var(--orange); }
+  .badge-ai { background: rgba(244, 114, 182, 0.15); color: var(--pink); }
+
+  /* ── Visual Timeline Bar ────────────────── */
+  .timeline-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .timeline-bar h3 { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .bar-track {
+    display: flex;
+    height: 32px;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #000;
+    position: relative;
+    cursor: pointer;
+    transition: filter 0.2s;
+  }
+  .bar-segment:hover { filter: brightness(1.15); }
+  .bar-segment .bar-label {
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .bar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 2.5rem;
+  }
+  .bar-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .bar-legend-item .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  /* ── Production Notes ───────────────────── */
+  .note-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .note-card h4 { font-size: 0.9rem; margin-bottom: 0.4rem; }
+  .note-card p { font-size: 0.82rem; color: var(--text-muted); }
+  .note-card code {
+    background: var(--surface);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: var(--accent);
+  }
+
+  /* ── Settings Table ─────────────────────── */
+  .settings-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .settings-table th {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .settings-table td {
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .settings-table tr:last-child td { border-bottom: none; }
+
+  /* ── Reset Button ───────────────────────── */
+  .btn-reset {
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    color: var(--red);
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-reset:hover { background: rgba(248, 113, 113, 0.2); }
+
+  /* ── Footer ─────────────────────────────── */
+  .footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HERO ═══════════════════════ -->
+<header class="hero">
+  <div class="hero-content">
+    <h1>LikasLens Demo Video</h1>
+    <p class="tagline">Production Guide &amp; Shot Tracker</p>
+    <div class="meta-pills">
+      <span class="pill"><span class="dot" style="background:var(--accent)"></span> 3:00 Total Runtime</span>
+      <span class="pill"><span class="dot" style="background:var(--green)"></span> 11 Screen Recordings</span>
+      <span class="pill"><span class="dot" style="background:var(--purple)"></span> Hackathon + Public</span>
+      <span class="pill"><span class="dot" style="background:var(--orange)"></span> English VO</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ═══════════════════════ PROGRESS BAR ═══════════════════════ -->
+  <div class="progress-bar-container">
+    <div class="progress-header">
+      <h3>Production Progress</h3>
+      <span class="progress-count"><span id="doneCount">0</span> / <span id="totalCount">0</span> tasks complete</span>
+      <button class="btn-reset" onclick="resetProgress()">Reset All</button>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ TIMELINE BAR ═══════════════════════ -->
+  <div class="timeline-bar">
+    <h3>Visual Timeline</h3>
+    <div class="bar-track">
+      <div class="bar-segment" style="flex:75;background:linear-gradient(90deg,#22d3ee,#6366f1);">Live Action<div class="bar-label">0:00 – 1:15</div></div>
+      <div class="bar-segment" style="flex:30;background:linear-gradient(90deg,#34d399,#22d3ee);">Citizen<div class="bar-label">1:15 – 1:45</div></div>
+      <div class="bar-segment" style="flex:30;background:linear-gradient(90deg,#a78bfa,#f472b6);">AI Brain<div class="bar-label">1:45 – 2:15</div></div>
+      <div class="bar-segment" style="flex:35;background:linear-gradient(90deg,#fbbf24,#fb923c);">Impact<div class="bar-label">2:15 – 2:50</div></div>
+      <div class="bar-segment" style="flex:10;background:linear-gradient(90deg,#f87171,#f472b6);">CTA<div class="bar-label">2:50 – 3:00</div></div>
+    </div>
+    <div class="bar-legend">
+      <div class="bar-legend-item"><span class="swatch" style="background:#22d3ee"></span> Live Action (1:15)</div>
+      <div class="bar-legend-item"><span class="swatch" style="background:#34d399"></span> Citizen Experience (0:30)</div>
+      <div class="bar-legend-item"><span class="swatch" style="background:#a78bfa"></span> AI Brain (0:30)</div>
+      <div class="bar-legend-item"><span class="swatch" style="background:#fbbf24"></span> Accountability (0:35)</div>
+      <div class="bar-legend-item"><span class="swatch" style="background:#f87171"></span> Close (0:10)</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ PART 1: THE HOOK ═══════════════════════ -->
+  <div class="section-card theme-cyan" data-section="part1">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon">🎬</div>
+      <div class="section-title">
+        <h2>Part 1: The Hook</h2>
+        <span>0:00 – 1:15 &middot; Live-Action Footage (already filmed)</span>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="timeline-row" data-task="p1-01">
+        <div class="timeline-time">0:00 – 0:05</div>
+        <div class="timeline-content">
+          <h4>Opening — The Walk</h4>
+          <p>Girl walking through her community — trees, quiet streets, ambient morning light. Establish normalcy.</p>
+          <div class="text-overlay">TEXT: "She walks this path every day."</div>
+          <p><strong>Audio:</strong> Ambient nature sounds, soft piano begins</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p1-02">
+        <div class="timeline-time">0:05 – 0:15</div>
+        <div class="timeline-content">
+          <h4>The Discovery</h4>
+          <p>She stops. Camera reveals a pile of illegal waste dumped along the roadside. Let the visual speak — linger on the trash for 2-3 seconds.</p>
+          <div class="text-overlay">TEXT: "Until one day, she noticed something wrong."</div>
+          <p><strong>Audio:</strong> Music shifts — subtle tension, low synth hum</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p1-03">
+        <div class="timeline-time">0:15 – 0:25</div>
+        <div class="timeline-content">
+          <h4>The Decision</h4>
+          <p>Close-up of her face — concern, then determination. She reaches for her phone.</p>
+          <div class="text-overlay">TEXT: "She opened LikasLens."</div>
+          <p><strong>Audio:</strong> Music builds — purposeful, hopeful tone</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p1-04">
+        <div class="timeline-time">0:25 – 0:40</div>
+        <div class="timeline-content">
+          <h4>App Launch + Hero Screen</h4>
+          <p>She opens the app. Camera shows phone screen: LikasLens landing page with "AI-Powered Environmental Protection" and the "Report an issue" button.</p>
+          <div class="vo">VO: "LikasLens is an AI-powered civic reporting platform that turns every smartphone into an environmental sensor."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p1-05">
+        <div class="timeline-time">0:40 – 0:50</div>
+        <div class="timeline-content">
+          <h4>Capture Evidence</h4>
+          <p>She taps "Report an issue." Camera capture screen opens. She takes a photo of the waste pile. Show the GPS coordinates auto-populating.</p>
+          <div class="vo">VO: "She captures evidence with her phone camera — GPS coordinates are automatically tagged."</div>
+          <p><strong>SFX:</strong> Camera shutter sound effect</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p1-06">
+        <div class="timeline-time">0:50 – 1:00</div>
+        <div class="timeline-content">
+          <h4>Ghost Mode Toggle</h4>
+          <p>She toggles "Ghost Mode" ON — UI shifts to dark theme. Add a subtle glow effect on the toggle in post.</p>
+          <div class="text-overlay">TEXT: "Ghost Mode activated."</div>
+          <div class="vo">VO: "For those facing real danger, Ghost Mode strips all EXIF data, fuzzes GPS to the barangay level, and submits anonymously. Even our servers never see who submitted this."</div>
+          <p><strong>Audio:</strong> Music drops to low, serious tone — then resolves upward</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p1-07">
+        <div class="timeline-time">1:00 – 1:10</div>
+        <div class="timeline-content">
+          <h4>Report Submitted</h4>
+          <p>She taps Submit. Success animation plays — report confirmed. She pockets her phone and walks away with confidence.</p>
+          <div class="vo">VO: "Report submitted. The AI takes it from here."</div>
+          <p><strong>Audio:</strong> Music resolves — confident, forward momentum</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p1-08">
+        <div class="timeline-time">1:10 – 1:15</div>
+        <div class="timeline-content">
+          <h4>Brand Card</h4>
+          <p>Fade to black. LikasLens logo pulses in center.</p>
+          <div class="text-overlay">TEXT: "LikasLens — Vigilant. Accountable. Precise."</div>
+          <p><strong>Audio:</strong> Music hits a beat — transition to Part 2</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ PART 2A: CITIZEN ═══════════════════════ -->
+  <div class="section-card theme-green" data-section="part2a">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon">👤</div>
+      <div class="section-title">
+        <h2>Part 2A: The Citizen Experience</h2>
+        <span>1:15 – 1:45 &middot; Screen Recordings</span>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="timeline-row" data-task="p2a-01">
+        <div class="timeline-time">1:15 – 1:25</div>
+        <div class="timeline-content">
+          <h4>Mobile Dashboard</h4>
+          <p>Show the mobile PWA dashboard — stat cards (total reports, eco-credits, rank), quick action buttons, and recent activity feed. Let it load naturally.</p>
+          <div class="vo">VO: "Citizens get a real-time dashboard — tracking their reports, eco-credits earned, and environmental impact."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2a-02">
+        <div class="timeline-time">1:25 – 1:32</div>
+        <div class="timeline-content">
+          <h4>Report Submission Flow</h4>
+          <p>Show the full report form: incident type dropdown (show the 9 categories), GPS auto-tag, photo upload, optional description field. Speed up form filling to 1.2x in post.</p>
+          <div class="vo">VO: "Every report is classified into one of nine environmental violation categories — from illegal logging to air pollution."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2a-03">
+        <div class="timeline-time">1:32 – 1:38</div>
+        <div class="timeline-content">
+          <h4>Eco-Credits Wallet</h4>
+          <p>Show wallet balance, transaction ledger with credit history, and the partner rewards list with redemption options. Hover over a reward to show details.</p>
+          <div class="vo">VO: "Verified reports earn eco-credits — redeemable at local partner stores. A gamified incentive for civic action."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2a-04">
+        <div class="timeline-time">1:38 – 1:45</div>
+        <div class="timeline-content">
+          <h4>Leaderboard</h4>
+          <p>Show citizen rankings with eco-credit scores. Switch between weekly/monthly tabs. Show barangay-level leaderboard view. Scroll through top reporters.</p>
+          <div class="vo">VO: "Citizens are ranked. Communities compete. Accountability becomes visible."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ PART 2B: AI BRAIN ═══════════════════════ -->
+  <div class="section-card theme-purple" data-section="part2b">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon">🧠</div>
+      <div class="section-title">
+        <h2>Part 2B: The AI Brain</h2>
+        <span>1:45 – 2:15 &middot; Screen Recordings</span>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="timeline-row" data-task="p2b-01">
+        <div class="timeline-time">1:45 – 1:55</div>
+        <div class="timeline-content">
+          <h4>Knowledge Graph Visualization</h4>
+          <p>Show the interactive knowledge graph — nodes representing hazards, laws, agencies, jurisdictions connected by edges. Zoom into a specific node (e.g., "Illegal Logging") to show its connections to the Philippine Forestry Code, DENR, and regional offices. Pan across the graph to show scale.</p>
+          <div class="vo">VO: "LikasLens uses a neuro-symbolic AI pipeline. A knowledge graph maps every hazard type to the specific environmental law, enforcement agency, and jurisdiction — ensuring every report reaches the right hands."</div>
+          <p style="color:var(--yellow);font-size:0.8rem;">KEY DIFFERENTIATOR — spend the most time here</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2b-02">
+        <div class="timeline-time">1:55 – 2:05</div>
+        <div class="timeline-content">
+          <h4>AI Triage Queue (Admin Portal)</h4>
+          <p>Show the admin triage queue with incoming tickets. Each ticket displays: AI classification, confidence score percentage, suggested routing, urgency level. Click on a ticket to show the detail view with classify / dismiss / escalate action buttons.</p>
+          <div class="vo">VO: "The AI triage pipeline classifies incidents using dual YOLOv8 models — one general, one environmental — then routes through our knowledge graph. Admins can review, reclassify, or escalate with one click."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2b-03">
+        <div class="timeline-time">2:05 – 2:12</div>
+        <div class="timeline-content">
+          <h4>Blockchain Evidence Hash</h4>
+          <p>Show the evidence verification modal or API response. Display the SHA-256 hash string, the Polygon blockchain transaction link, and verification status. Hover over the hash to show it's tamper-proof.</p>
+          <div class="vo">VO: "Every evidence photo is SHA-256 hashed and committed to the Polygon blockchain — creating tamper-proof, court-verifiable receipts."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2b-04">
+        <div class="timeline-time">2:12 – 2:15</div>
+        <div class="timeline-content">
+          <h4>Transition</h4>
+          <p>Quick wipe or zoom transition to Part 2C. Can use a simple cross-dissolve.</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ PART 2C: ACCOUNTABILITY ═══════════════════════ -->
+  <div class="section-card theme-yellow" data-section="part2c">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon">📊</div>
+      <div class="section-title">
+        <h2>Part 2C: Accountability &amp; Impact</h2>
+        <span>2:15 – 2:50 &middot; Screen Recordings</span>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="timeline-row" data-task="p2c-01">
+        <div class="timeline-time">2:15 – 2:25</div>
+        <div class="timeline-content">
+          <h4>Public Scoreboard — LGU Performance</h4>
+          <p>Show the public-facing scoreboard with LGU (Local Government Unit) rankings. Display resolution rates as percentage bars, SLA compliance badges, average response times. Scroll through different LGUs to show comparison.</p>
+          <div class="vo">VO: "The Public Scoreboard holds governments accountable — tracking resolution times, SLA compliance, and performance across every Local Government Unit."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2c-02">
+        <div class="timeline-time">2:25 – 2:32</div>
+        <div class="timeline-content">
+          <h4>Heatmap — Violation Hotspots</h4>
+          <p>Show the MapLibre + deck.gl interactive heatmap. Start zoomed out to show the Philippines, then zoom into a dense cluster of violations. Pan across different regions to show geographic spread. Show the color intensity gradient.</p>
+          <div class="vo">VO: "Violation hotspots are mapped in real-time — enabling data-driven enforcement and predictive resource allocation."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2c-03">
+        <div class="timeline-time">2:32 – 2:40</div>
+        <div class="timeline-content">
+          <h4>Impact Dashboard — Analytics</h4>
+          <p>Show multiple chart types in sequence: (1) AQI gauge with current reading, (2) Violation donut chart showing category breakdown, (3) Time series chart showing trends, (4) Sankey flow diagram showing report routing. Each chart gets ~2 seconds.</p>
+          <div class="vo">VO: "Impact analytics transform raw reports into actionable intelligence — AQI monitoring, violation breakdowns, and cross-border environmental trends across ASEAN."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2c-04">
+        <div class="timeline-time">2:40 – 2:47</div>
+        <div class="timeline-content">
+          <h4>Laws Reference Database</h4>
+          <p>Show the searchable environmental laws page. Type a search query (e.g., "logging" or "water pollution"). Show the filtered results with law name, jurisdiction, and description. Click on a law to show its detail view.</p>
+          <div class="vo">VO: "A searchable database of environmental laws — making legal context accessible to every citizen and enforcement agency."</div>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p2c-05">
+        <div class="timeline-time">2:47 – 2:50</div>
+        <div class="timeline-content">
+          <h4>Transition to Close</h4>
+          <p>Fade to white with LikasLens logo. Brief pause before montage.</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ PART 3: CLOSE ═══════════════════════ -->
+  <div class="section-card theme-pink" data-section="part3">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon">🚀</div>
+      <div class="section-title">
+        <h2>Part 3: The Close</h2>
+        <span>2:50 – 3:00 &middot; Montage + CTA</span>
+      </div>
+    </div>
+    <div class="section-body">
+
+      <div class="timeline-row" data-task="p3-01">
+        <div class="timeline-time">2:50 – 2:55</div>
+        <div class="timeline-content">
+          <h4>Rapid Montage</h4>
+          <p>Quick-cut sequence cycling through key visuals: phone camera → knowledge graph → blockchain hash → heatmap → eco-credits → 3D globe. Each shot ~0.8 seconds.</p>
+          <div class="text-overlay">TEXT (sequential, rapid): "Detect. Classify. Route. Verify. Reward. Scale."</div>
+          <p><strong>Audio:</strong> Music crescendo — powerful, cinematic peak</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+      <div class="timeline-row" data-task="p3-02">
+        <div class="timeline-time">2:55 – 3:00</div>
+        <div class="timeline-content">
+          <h4>Final Card — Logo + CTA</h4>
+          <p>LikasLens logo centered on screen. Tagline fades in below. Website URL appears after 1 second. Hold for 3 seconds.</p>
+          <div class="text-overlay">TEXT: "LikasLens — Vigilant. Accountable. Precise." / SUBTEXT: "LikasLens.org | Contact for Partnership"</div>
+          <p><strong>Audio:</strong> Music resolves to silence. Logo holds.</p>
+        </div>
+        <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ RECORDING GUIDE ═══════════════════════ -->
+  <h2 style="font-size:1.4rem;margin:2rem 0 1rem;display:flex;align-items:center;gap:0.5rem;">
+    <span style="color:var(--accent);">🎥</span> Screen Recording Guide
+  </h2>
+  <p style="color:var(--text-muted);margin-bottom:1.5rem;font-size:0.9rem;">
+    Record each page below. Use browser DevTools mobile emulation (375×812) for PWA pages. Hide your cursor during recording. Speed up form interactions to 1.2x in post.
+  </p>
+
+  <div class="grid-2">
+
+    <!-- Recording: Mobile Dashboard -->
+    <div class="rec-card" data-rec="rec-dashboard">
+      <span class="badge badge-mobile">Mobile PWA</span>
+      <h4>Dashboard</h4>
+      <div class="route">/dashboard</div>
+      <p class="desc">The citizen's home screen showing their environmental reporting activity at a glance.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>Stat cards: total reports submitted, eco-credits balance, current rank</li>
+          <li>Quick action buttons (New Report, View Map, Leaderboard)</li>
+          <li>Recent activity feed with timestamped entries</li>
+          <li>Partner offers carousel at the bottom</li>
+          <li>Let the page fully load and scroll slowly through all sections</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Report Form -->
+    <div class="rec-card" data-rec="rec-report">
+      <span class="badge badge-mobile">Mobile PWA</span>
+      <h4>Report Form</h4>
+      <div class="route">/report</div>
+      <p class="desc">The core submission flow where citizens capture and submit environmental violations.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>Camera capture screen opening (or photo upload)</li>
+          <li>Incident type dropdown — scroll through all 9 categories</li>
+          <li>GPS coordinates auto-populating (show the location pin)</li>
+          <li>Optional description text field</li>
+          <li>Ghost Mode toggle — show the dark UI transition</li>
+          <li>Submit button and success confirmation animation</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Wallet -->
+    <div class="rec-card" data-rec="rec-wallet">
+      <span class="badge badge-mobile">Mobile PWA</span>
+      <h4>Eco-Credits Wallet</h4>
+      <div class="route">/wallet</div>
+      <p class="desc">The gamification reward system showing earned credits and redemption options.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>Total eco-credits balance (prominent display)</li>
+          <li>Transaction ledger — scroll through credit history entries</li>
+          <li>Partner rewards list with images and credit costs</li>
+          <li>Tapping on a reward to show redemption details</li>
+          <li>Rank badge and level progress indicator</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Scoreboard -->
+    <div class="rec-card" data-rec="rec-scoreboard">
+      <span class="badge badge-mobile">Mobile PWA</span>
+      <h4>Scoreboard</h4>
+      <div class="route">/scoreboard</div>
+      <p class="desc">Citizen and barangay leaderboard rankings with competitive gamification.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>Top 3 citizens with avatar and eco-credit count</li>
+          <li>Full ranked list with scroll</li>
+          <li>Switch between Weekly / Monthly / All-Time tabs</li>
+          <li>Barangay-level leaderboard tab</li>
+          <li>Your current rank highlighted in the list</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Knowledge Graph -->
+    <div class="rec-card" data-rec="rec-knowledge-graph">
+      <span class="badge badge-mobile">Mobile PWA</span>
+      <h4>Knowledge Graph</h4>
+      <div class="route">/knowledge-graph</div>
+      <p class="desc">Interactive visualization of the neuro-symbolic knowledge graph — the AI brain of LikasLens.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>Full graph overview with all nodes and edges visible</li>
+          <li>Zoom into a specific hazard node (e.g., "Illegal Logging")</li>
+          <li>Show connected nodes: law, agency, jurisdiction</li>
+          <li>Pan across the graph to show scale and complexity</li>
+          <li>Click a node to show its detail panel</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Public Scoreboard -->
+    <div class="rec-card" data-rec="rec-public-scoreboard">
+      <span class="badge badge-frontend">Frontend</span>
+      <h4>Public Scoreboard</h4>
+      <div class="route">/scoreboard</div>
+      <p class="desc">Public-facing LGU performance dashboard showing government accountability metrics.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>LGU ranking table with resolution rate percentages</li>
+          <li>SLA compliance badges (green = compliant, red = overdue)</li>
+          <li>Average response time per LGU</li>
+          <li>Scroll through multiple LGU entries</li>
+          <li>Activity feed showing recent ticket status changes</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Heatmap -->
+    <div class="rec-card" data-rec="rec-heatmap">
+      <span class="badge badge-frontend">Frontend</span>
+      <h4>Heatmap</h4>
+      <div class="route">/dashboard/map</div>
+      <p class="desc">MapLibre + deck.gl interactive heatmap showing violation hotspots across the Philippines.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>Full map view showing the Philippines overview</li>
+          <li>Color intensity gradient — red zones for dense violations</li>
+          <li>Zoom into a dense cluster (e.g., Metro Manila or Cebu)</li>
+          <li>Pan across regions to show geographic spread</li>
+          <li>Click on a hotspot to show violation count tooltip</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Analytics -->
+    <div class="rec-card" data-rec="rec-analytics">
+      <span class="badge badge-frontend">Frontend</span>
+      <h4>Analytics Dashboard</h4>
+      <div class="route">/dashboard/analytics</div>
+      <p class="desc">Rich analytics with multiple chart types for environmental data visualization.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>AQI (Air Quality Index) gauge with current reading</li>
+          <li>Violation donut chart — category breakdown</li>
+          <li>Time series chart — report volume over time</li>
+          <li>Sankey flow diagram — report routing paths</li>
+          <li>Hotspot list with severity indicators</li>
+          <li>Spend ~2 seconds on each chart type</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Impact -->
+    <div class="rec-card" data-rec="rec-impact">
+      <span class="badge badge-frontend">Frontend</span>
+      <h4>Impact Dashboard</h4>
+      <div class="route">/dashboard/impact</div>
+      <p class="desc">3D globe visualization and KPI cards showing real environmental impact metrics.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>3D globe rotating — show violation points plotted globally</li>
+          <li>KPI cards: total reports, resolution rate, active incidents</li>
+          <li>Regional breakdown with comparative metrics</li>
+          <li>Zoom into ASEAN region to show cross-border coverage</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Laws -->
+    <div class="rec-card" data-rec="rec-laws">
+      <span class="badge badge-frontend">Frontend</span>
+      <h4>Laws Reference</h4>
+      <div class="route">/laws</div>
+      <p class="desc">Searchable database of environmental laws across ASEAN countries.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>Full laws list with search bar at top</li>
+          <li>Type a search query (e.g., "logging" or "water pollution")</li>
+          <li>Filter results updating in real-time</li>
+          <li>Click on a law to show detail view with full text</li>
+          <li>Show jurisdiction tags and category badges</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+    <!-- Recording: Triage -->
+    <div class="rec-card" data-rec="rec-triage">
+      <span class="badge badge-admin">Admin Portal</span>
+      <h4>AI Triage Queue</h4>
+      <div class="route">/triage</div>
+      <p class="desc">Admin-facing AI triage dashboard showing classified incidents with routing decisions.</p>
+      <div class="what-to-show">
+        <strong>What to Record</strong>
+        <ul>
+          <li>Triage queue with ticket cards in grid layout</li>
+          <li>Each card: AI classification label, confidence score %, urgency badge</li>
+          <li>Click on a ticket to open detail modal</li>
+          <li>Show the knowledge graph routing path for that incident</li>
+          <li>Action buttons: Classify / Dismiss / Escalate</li>
+          <li>Show a brief "explain" view with AI reasoning</li>
+        </ul>
+      </div>
+      <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════ PRODUCTION NOTES ═══════════════════════ -->
+  <h2 style="font-size:1.4rem;margin:2.5rem 0 1rem;display:flex;align-items:center;gap:0.5rem;">
+    <span style="color:var(--orange);">⚙️</span> Production Notes
+  </h2>
+
+  <div class="grid-2">
+    <div>
+      <div class="note-card">
+        <h4>Audio</h4>
+        <p>Your track "FULL FORCE MINSET DOPAMINE" works well for energy. Layer ambient nature sounds during Part 1 for immersion. Add camera shutter SFX at 0:40 and notification ping at 1:00. VO should be confident, measured — journalistic tone, not salesy.</p>
+      </div>
+      <div class="note-card">
+        <h4>Text Overlay Style</h4>
+        <p>Use a clean sans-serif font (Inter, SF Pro, or similar). White text with subtle drop shadow. Center or lower-third positioning. Fade in/out animation — minimal movement.</p>
+      </div>
+      <div class="note-card">
+        <h4>Transitions</h4>
+        <p>Use simple cross-dissolves between sections. Avoid flashy transitions. The 1:10 → 1:15 brand card should fade to black. 2:47 → 2:50 should fade to white before the montage.</p>
+      </div>
+    </div>
+    <div>
+      <table class="settings-table">
+        <thead>
+          <tr><th colspan="2">Recording Settings</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Resolution</td><td>1920×1080 (desktop) or 1080×1920 (mobile)</td></tr>
+          <tr><td>FPS</td><td>30fps</td></tr>
+          <tr><td>Mobile Emulation</td><td>iPhone 14 Pro (375×812) in DevTools</td></tr>
+          <tr><td>Cursor</td><td>Hide during recording</td></tr>
+          <tr><td>Form Speed</td><td>1.2x in post for form filling</td></tr>
+          <tr><td>Viz Speed</td><td>Real-time for charts and maps</td></tr>
+          <tr><td>Browser</td><td>Chrome (best DevTools emulation)</td></tr>
+          <tr><td>Zoom Level</td><td>100% browser zoom</td></tr>
+        </tbody>
+      </table>
+      <div class="note-card" style="margin-top:0.75rem;">
+        <h4>Runtime Breakdown</h4>
+        <p>
+          Part 1 (Live Action): <code>75s</code><br>
+          Part 2A (Citizen): <code>30s</code><br>
+          Part 2B (AI Brain): <code>30s</code><br>
+          Part 2C (Accountability): <code>35s</code><br>
+          Part 3 (Close): <code>10s</code><br>
+          <strong>Total: <code>3:00</code></strong>
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════ FOOTER ═══════════════════════ -->
+<footer class="footer">
+  LikasLens Demo Video Production Guide &middot; Generated for hackathon submission
+</footer>
+
+<script>
+  // ── Progress Tracking ──────────────────────────────
+  const STORAGE_KEY = 'likaslens-demo-tracker';
+
+  function getAllTasks() {
+    return document.querySelectorAll('.tracker-check input[type="checkbox"]');
+  }
+
+  function loadProgress() {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    getAllTasks().forEach(cb => {
+      const row = cb.closest('[data-task], [data-rec]');
+      if (row && saved[row.dataset.task || row.dataset.rec]) {
+        cb.checked = true;
+      }
+    });
+    updateProgress();
+  }
+
+  function saveProgress() {
+    const state = {};
+    getAllTasks().forEach(cb => {
+      const row = cb.closest('[data-task], [data-rec]');
+      if (row && cb.checked) {
+        state[row.dataset.task || row.dataset.rec] = true;
+      }
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function updateProgress() {
+    const all = getAllTasks();
+    const checked = Array.from(all).filter(cb => cb.checked).length;
+    const total = all.length;
+    document.getElementById('doneCount').textContent = checked;
+    document.getElementById('totalCount').textContent = total;
+    document.getElementById('progressFill').style.width = total ? (checked / total * 100) + '%' : '0%';
+    saveProgress();
+  }
+
+  function resetProgress() {
+    if (!confirm('Reset all progress? This cannot be undone.')) return;
+    getAllTasks().forEach(cb => cb.checked = false);
+    localStorage.removeItem(STORAGE_KEY);
+    updateProgress();
+  }
+
+  // ── Section Toggle ─────────────────────────────────
+  function toggleSection(header) {
+    const body = header.nextElementSibling;
+    const card = header.parentElement;
+    if (body.style.display === 'none') {
+      body.style.display = '';
+      card.style.opacity = '1';
+    } else {
+      body.style.display = 'none';
+      card.style.opacity = '0.6';
+    }
+  }
+
+  // ── Init ───────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', loadProgress);
+</script>
+</body>
+</html>
