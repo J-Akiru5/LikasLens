@@ -5,6 +5,7 @@ import { Award, Trophy, BarChart3, Shield, List, Leaf, BookOpen, HelpCircle, Zap
 import { cn, laravelGet, laravelPost, showToast } from "@likaslens/shared";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
 import { useSwipeDownToClose } from "@/hooks/use-swipe-down-to-close";
@@ -37,6 +38,8 @@ interface RewardItem {
 
 export default function WalletPage() {
   const haptic = useHaptics();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale || "en";
   const [activeModal, setActiveModal] = useState<"redeem" | "earned" | null>(null);
 
   const [wallet, setWallet] = useState<WalletData | null>(null);
@@ -187,14 +190,14 @@ export default function WalletPage() {
             <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-2">Quick Actions</h3>
             <div className="grid grid-cols-4 gap-y-6 gap-x-2">
               {[
-                { label: "Badges", Icon: Award, href: "/achievements" },
-                { label: "Rankings", Icon: Trophy, href: "/scoreboard" },
-                { label: "Impact", Icon: BarChart3, href: "/impact" },
-                { label: "Privacy", Icon: Shield, href: "/settings" },
-                { label: "History", Icon: List, href: "/history" },
-                { label: "REDD+", Icon: Leaf, href: "/laws" },
-                { label: "Laws", Icon: BookOpen, href: "/laws" },
-                { label: "Settings", Icon: HelpCircle, href: "/settings" },
+                { label: "Badges", Icon: Award, href: `/${locale}/achievements` },
+                { label: "Rankings", Icon: Trophy, href: `/${locale}/scoreboard` },
+                { label: "Impact", Icon: BarChart3, href: `/${locale}/impact` },
+                { label: "Privacy", Icon: Shield, href: `/${locale}/settings` },
+                { label: "History", Icon: List, href: `/${locale}/history` },
+                { label: "REDD+", Icon: Leaf, href: `/${locale}/laws` },
+                { label: "Laws", Icon: BookOpen, href: `/${locale}/laws` },
+                { label: "Settings", Icon: HelpCircle, href: `/${locale}/settings` },
               ].map(({ label, Icon, href }) => (
                 <Link
                   key={label}
