@@ -14,6 +14,8 @@ interface UseNotificationsOptions {
   pollInterval?: number;
   /** Whether to fetch on mount. Default: true */
   autoFetch?: boolean;
+  /** Auth token (Supabase access_token). When provided, sent as Bearer header. */
+  token?: string;
 }
 
 interface UseNotificationsReturn {
@@ -29,7 +31,7 @@ interface UseNotificationsReturn {
 }
 
 export function useNotifications(options: UseNotificationsOptions = {}): UseNotificationsReturn {
-  const { pollInterval = 30000, autoFetch = true } = options;
+  const { pollInterval = 30000, autoFetch = true, token } = options;
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [meta, setMeta] = useState<NotificationMeta | null>(null);
@@ -38,10 +40,16 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
+  const tokenRef = useRef<string | undefined>(token);
+
+  // Keep tokenRef in sync without retriggering effects
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
 
   const refreshUnreadCount = useCallback(async () => {
     try {
-      const res = await fetchUnreadCount<{ success: boolean; data: UnreadCountResponse }>();
+      const res = await fetchUnreadCount<{ success: boolean; data: UnreadCountResponse }>(tokenRef.current);
       if (mountedRef.current && res?.data?.unread_count !== undefined) {
         setUnreadCount(res.data.unread_count);
       }
@@ -55,7 +63,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     setError(null);
     try {
       const [notifRes] = await Promise.all([
-        fetchNotifications<{ success: boolean; data: AppNotification[]; meta: NotificationMeta }>(1, 20),
+        fetchNotifications<{ success: boolean; data: AppNotification[]; meta: NotificationMeta }>(1, 20, tokenRef.current),
         refreshUnreadCount(),
       ]);
       if (mountedRef.current) {
@@ -77,7 +85,8 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     try {
       const res = await fetchNotifications<{ success: boolean; data: AppNotification[]; meta: NotificationMeta }>(
         meta.current_page + 1,
-        meta.per_page
+        meta.per_page,
+        tokenRef.current
       );
       if (mountedRef.current) {
         setNotifications((prev) => [...prev, ...(res?.data || [])]);
@@ -93,7 +102,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   const markAsRead = useCallback(
     async (id: string) => {
       try {
-        await markNotificationAsRead(id);
+        await markNotificationAsRead(id, tokenRef.current);
         if (mountedRef.current) {
           setNotifications((prev) =>
             prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
@@ -109,7 +118,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   const markAllAsRead = useCallback(async () => {
     try {
-      await markAllNotificationsAsRead();
+      await markAllNotificationsAsRead(tokenRef.current);
       if (mountedRef.current) {
         setNotifications((prev) => prev.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() })));
         setUnreadCount(0);

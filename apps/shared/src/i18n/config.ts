@@ -11,7 +11,7 @@ export const localeNames: Record<Locale, { native: string; english: string }> = 
   ta: { native: "தமிழ்", english: "Tamil" },
   th: { native: "ไทย", english: "Thai" },
   km: { native: "ខ្មែរ", english: "Khmer" },
-  my: { native: "မြန်မာ", english: "Burmese" },
+  my: { native: "မြန်မា", english: "Burmese" },
   lo: { native: "ລາວ", english: "Lao" },
 };
 

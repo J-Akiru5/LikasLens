@@ -97,12 +97,11 @@ export async function laravelFetch<T>(
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
   };
 
-  // On the server (Node/React Server Components), cookies() from next/headers
-  // can read httpOnly cookies. Pass the token explicitly via the `token` param.
-  // On the client, document.cookie cannot read httpOnly cookies — use a
-  // Next.js API route proxy instead of trying to read the cookie here.
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  // Resolve auth token: explicit param wins, fall back to laravel_token cookie.
+  // The laravel_token cookie is set without HttpOnly so the client can read it.
+  const resolvedToken = token || getCookie("laravel_token");
+  if (resolvedToken) {
+    headers["Authorization"] = `Bearer ${resolvedToken}`;
   }
 
   // Multi-tenant: extract subdomain and pass to backend
@@ -256,37 +255,39 @@ export function laravelPatch<T>(
 }
 
 // Achievement API
-export function fetchAchievementCatalog<T>() {
-  return laravelGet<T>("/achievements");
+export function fetchAchievementCatalog<T>(token?: string) {
+  return laravelGet<T>("/achievements", undefined, token);
 }
 
-export function fetchUserAchievements<T>() {
-  return laravelGet<T>("/user/achievements");
+export function fetchUserAchievements<T>(token?: string) {
+  return laravelGet<T>("/user/achievements", undefined, token);
 }
 
-export function fetchRankProgress<T>() {
-  return laravelGet<T>("/user/rank-progress");
+export function fetchRankProgress<T>(token?: string) {
+  return laravelGet<T>("/user/rank-progress", undefined, token);
 }
 
-export function fetchEcoCreditRate<T>(countryCode: string) {
+export function fetchEcoCreditRate<T>(countryCode: string, token?: string) {
   return laravelGet<T>(
-    `/settings/eco-credit-rate?country_code=${countryCode}`
+    `/settings/eco-credit-rate?country_code=${countryCode}`,
+    undefined,
+    token
   );
 }
 
 // Notification API
-export function fetchNotifications<T>(page = 1, perPage = 20) {
-  return laravelGet<T>(`/notifications?page=${page}&per_page=${perPage}`);
+export function fetchNotifications<T>(page = 1, perPage = 20, token?: string) {
+  return laravelGet<T>(`/notifications?page=${page}&per_page=${perPage}`, undefined, token);
 }
 
-export function fetchUnreadCount<T>() {
-  return laravelGet<T>("/notifications/unread-count");
+export function fetchUnreadCount<T>(token?: string) {
+  return laravelGet<T>("/notifications/unread-count", undefined, token);
 }
 
-export function markNotificationAsRead<T>(id: string) {
-  return laravelPatch<T>(`/notifications/${id}/mark-as-read`);
+export function markNotificationAsRead<T>(id: string, token?: string) {
+  return laravelPatch<T>(`/notifications/${id}/mark-as-read`, undefined, token);
 }
 
-export function markAllNotificationsAsRead<T>() {
-  return laravelPost<T>("/notifications/mark-all-as-read", {});
+export function markAllNotificationsAsRead<T>(token?: string) {
+  return laravelPost<T>("/notifications/mark-all-as-read", {}, undefined, token);
 }

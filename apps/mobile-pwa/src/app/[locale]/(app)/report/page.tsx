@@ -167,57 +167,24 @@ export default function ReportPage() {
     setStream(null);
   }, []);
 
-<<<<<<< HEAD
-  const stripExif = useCallback(async (base64: string) => {
-    if (!base64) return base64;
-    return await new Promise<string>((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.naturalWidth || img.width;
-          canvas.height = img.naturalHeight || img.height;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) return resolve(base64);
-          ctx.drawImage(img, 0, 0);
-          const cleaned = canvas.toDataURL();
-          resolve(cleaned);
-        } catch {
-          resolve(base64);
-        }
-      };
-      img.onerror = () => resolve(base64);
-      img.src = base64;
-    });
-  }, []);
-
-  const handleFileCaptureMobile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-=======
   const handleFileCaptureMobile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
->>>>>>> origin/main
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = async () => {
       const dataUrl = reader.result as string;
-<<<<<<< HEAD
-      const cleaned = await stripExif(dataUrl);
-      setPhoto(cleaned);
-=======
       try {
         const cleaned = await stripExif(dataUrl);
         setPhoto(cleaned);
       } catch {
         setPhoto(dataUrl);
       }
->>>>>>> origin/main
       setStep("preview");
       stopCamera();
     };
     reader.readAsDataURL(file);
-  }, [stopCamera, stripExif]);
+  }, [stopCamera]);
 
   useEffect(() => {
     if (videoRef.current && stream) {

@@ -39,16 +39,6 @@
     --color-accent: #facc15; /* Bright yellow-gold glowing data */
     --color-surface: #0a1711;
   }
-  
-  /* Ghost Mode Visibility Helpers */
-  html.ghost-mode .light-mode-only,
-  body.ghost-mode .light-mode-only { display: none !important; }
-  
-  html.ghost-mode .ghost-mode-only,
-  body.ghost-mode .ghost-mode-only { display: block !important; }
-  
-  html:not(.ghost-mode) .ghost-mode-only,
-  body:not(.ghost-mode) .ghost-mode-only { display: none !important; }
 }
 
 .brutal-panel {

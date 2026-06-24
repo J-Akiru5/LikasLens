@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens Backend Fix ΓÇö Progress Tracker</title>
+<style>
+  :root {
+    --bg: #0d1a12;
+    --panel: #1a2e22;
+    --panel-hover: #1f3528;
+    --accent: #2ee6c8;
+    --accent-dim: #1a9b86;
+    --text: #e8f5e9;
+    --muted: #8a9b8e;
+    --border: #2a4033;
+    --code-bg: #0f1f16;
+    --warn: #fbbf24;
+    --err: #f87171;
+    --ok: #4ade80;
+    --ok-bg: rgba(74,222,128,0.08);
+    --err-bg: rgba(248,113,113,0.08);
+    --warn-bg: rgba(251,191,36,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .progress-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+  .progress-pct {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent);
+    transition: color 0.3s;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 14px;
+    background: var(--code-bg);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-stats {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .progress-stats span strong { color: var(--text); }
+  .reset-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.35rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover {
+    border-color: var(--err);
+    color: var(--err);
+  }
+
+  /* Headings */
+  h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+  h2 {
+    font-size: 1.3rem;
+    color: var(--accent);
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 1.1rem;
+    color: var(--text);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  p { margin-bottom: 1rem; }
+
+  /* Code */
+  code {
+    font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace;
+    background: var(--code-bg);
+    color: var(--accent);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.88rem;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+  pre code {
+    background: none;
+    color: #c8e6c9;
+    padding: 0;
+    font-size: 0.84rem;
+    line-height: 1.6;
+  }
+
+  /* Alerts */
+  .alert {
+    border-left: 4px solid;
+    padding: 1rem 1.2rem;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1.5rem;
+  }
+  .alert-warn { border-color: var(--warn); background: var(--warn-bg); }
+  .alert-err { border-color: var(--err); background: var(--err-bg); }
+  .alert-ok { border-color: var(--ok); background: var(--ok-bg); }
+  .alert strong { display: block; margin-bottom: 0.3rem; }
+  .alert-warn strong { color: var(--warn); }
+  .alert-err strong { color: var(--err); }
+  .alert-ok strong { color: var(--ok); }
+
+  /* Task card */
+  .task-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .task-card.completed {
+    border-color: var(--ok);
+    background: var(--ok-bg);
+  }
+  .task-card.completed .task-title {
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+
+  /* Toggle checkbox */
+  .task-toggle {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .task-checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background: var(--code-bg);
+  }
+  .task-toggle:hover .task-checkbox {
+    border-color: var(--accent);
+  }
+  .task-checkbox.checked {
+    background: var(--ok);
+    border-color: var(--ok);
+  }
+  .task-checkbox svg {
+    width: 16px;
+    height: 16px;
+    color: var(--bg);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .task-checkbox.checked svg {
+    opacity: 1;
+  }
+  .task-content { flex: 1; }
+  .task-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+    transition: text-decoration 0.2s, opacity 0.2s;
+  }
+  .task-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+  .badge-err { background: rgba(248,113,113,0.15); color: var(--err); }
+  .badge-warn { background: rgba(251,191,36,0.15); color: var(--warn); }
+  .badge-ok { background: rgba(74,222,128,0.15); color: var(--ok); }
+  .badge-done { background: rgba(74,222,128,0.15); color: var(--ok); }
+
+  .task-detail {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .task-detail h3 {
+    font-size: 0.95rem;
+    margin-top: 1rem;
+    margin-bottom: 0.4rem;
+    color: var(--accent);
+  }
+  .task-detail ul, .task-detail ol {
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  .task-detail li { margin-bottom: 0.3rem; font-size: 0.9rem; color: var(--muted); }
+
+  /* TOC */
+  .toc {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .toc li { padding: 0.2rem 0; }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+  }
+  th, td {
+    padding: 0.5rem 0.8rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+  th { color: var(--accent); font-weight: 700; }
+
+  /* Syntax highlighting */
+  .cmt { color: var(--muted); font-style: italic; }
+  .key { color: #82d4ec; }
+  .str { color: #c8e6c9; }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .container { padding: 1rem; }
+    .progress-wrap { padding: 1rem; position: relative; }
+    h1 { font-size: 1.5rem; }
+    .progress-stats { flex-wrap: wrap; gap: 0.5rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>LikasLens Backend Fix ΓÇö Progress Tracker</h1>
+<p>Track your progress fixing the <strong>401 Unauthorized</strong> and <strong>500 Internal Server Error</strong> errors. Click each checkbox to mark it complete ΓÇö your progress is saved automatically in the browser.</p>
+
+<!-- PROGRESS BAR -->
+<div class="progress-wrap">
+  <div class="progress-header">
+    <h2>Overall Progress</h2>
+    <button class="reset-btn" onclick="resetProgress()">Reset</button>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-header">
+    <div class="progress-stats">
+      <span><strong id="doneCount">0</strong> done</span>
+      <span><strong id="totalCount">12</strong> total</span>
+      <span><strong id="remainingCount">12</strong> remaining</span>
+    </div>
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+</div>
+
+<div class="alert alert-err">
+  <strong>ERROR 1: 401 Unauthorized on /api/notifications</strong>
+  The notifications endpoint requires authentication via Sanctum. The Supabase access token must be sent as a <code>Bearer</code> token in the <code>Authorization</code> header. <span class="task-badge badge-done">Frontend Fix Applied</span>
+</div>
+
+<div class="alert alert-err">
+  <strong>ERROR 2: 500 Internal Server Error on POST /api/reports</strong>
+  The report submission fails on the backend. Causes: missing <code>APP_KEY</code>, database not migrated, GD PHP extension missing, or Supabase S3 storage misconfigured. <span class="task-badge badge-done">Controller Bug Fixed</span>
+</div>
+
+<div class="toc">
+  <strong>Tasks</strong>
+  <ul>
+    <li><a href="#task1">1. Generate APP_KEY</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task2">2. Configure Database Connection</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task3">3. Run Migrations &amp; Seeders</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task4">4. Install GD PHP Extension</a> <span class="task-badge badge-done">Code Fixed</span></li>
+    <li><a href="#task5">5. Configure Supabase S3 Storage</a> <span class="task-badge badge-warn">Required</span></li>
+    <li><a href="#task6">6. Configure Sanctum (Auth)</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task7">7. Configure CORS</a> <span class="task-badge badge-err">Required</span></li>
+    <li><a href="#task8">8. Configure Frontend Environment</a> <span class="task-badge badge-done">Done</span></li>
+    <li><a href="#task9">9. Redeploy Backend Docker Image</a> <span class="task-badge badge-warn">Action Needed</span></li>
+    <li><a href="#task10">10. Test Report Submission</a> <span class="task-badge badge-warn">Verify</span></li>
+    <li><a href="#task11">11. Test Notifications Auth</a> <span class="task-badge badge-warn">Verify</span></li>
+    <li><a href="#task12">12. Check Laravel Logs</a> <span class="task-badge badge-ok">Optional</span></li>
+  </ul>
+</div>
+
+<!-- TASK 1 -->
+<div class="task-card" id="task1">
+  <label class="task-toggle" onclick="toggleTask('task1')">
+    <div class="task-checkbox" id="cb-task1">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Generate APP_KEY <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <p>If <code>APP_KEY</code> is empty, Laravel cannot encrypt cookies, sessions, or tokens. This causes cryptic 500 errors on any authenticated request.</p>
+        <h3>Local Development</h3>
+        <pre><code><span class="cmt"># Navigate to the backend directory</span>
+cd apps/backend
+
+<span class="cmt"># Generate a new APP_KEY</span>
+php artisan key:generate
+
+<span class="cmt"># This will update your .env file automatically:</span>
+<span class="cmt"># APP_KEY=base64:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</span></code></pre>
+        <h3>Google Cloud Run (Production)</h3>
+        <pre><code><span class="cmt"># Generate a key locally first, then set it in Cloud Run</span>
+gcloud run services update likaslens-api \
+  --region=asia-southeast1 \
+  --set-env-vars="APP_KEY=base64:your_generated_key_here"</code></pre>
+        <div class="alert alert-warn">
+          <strong>Important:</strong> Never commit the real <code>APP_KEY</code> to Git. Always set it via environment variables in production.
+        </div>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 2 -->
+<div class="task-card" id="task2">
+  <label class="task-toggle" onclick="toggleTask('task2')">
+    <div class="task-checkbox" id="cb-task2">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure Database Connection <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <h3>Using Supabase PostgreSQL (Recommended)</h3>
+        <p>Get credentials from Supabase dashboard &rarr; <em>Project Settings</em> &rarr; <em>Database</em>:</p>
+        <pre><code><span class="cmt"># apps/backend/.env</span>
+DB_CONNECTION=pgsql
+DB_HOST=db.your-project-ref.supabase.co
+DB_PORT=5432
+DB_DATABASE=postgres
+DB_USERNAME=postgres
+DB_PASSWORD=your_supabase_database_password</code></pre>
+        <h3>Using SQLite (Local Fallback)</h3>
+        <pre><code><span class="cmt"># apps/backend/.env</span>
+<span class="cmt"># DB_CONNECTION=pgsql</span>
+DB_CONNECTION=sqlite
+<span class="cmt"># This creates database/database.sqlite automatically</span></code></pre>
+        <div class="alert alert-warn">
+          <strong>Supabase Connection Pool:</strong> If using pgBouncer, use port <code>6543</code> instead of <code>5432</code>.
+        </div>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 3 -->
+<div class="task-card" id="task3">
+  <label class="task-toggle" onclick="toggleTask('task3')">
+    <div class="task-checkbox" id="cb-task3">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Run Migrations &amp; Seeders <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <div class="alert alert-err">
+          <strong>REQUIRED:</strong> The <code>ResolveTenant</code> middleware runs on EVERY API request. If the <code>tenants</code> table doesn't exist, ALL API requests fail with 500 before reaching the controller.
+        </div>
+        <pre><code>cd apps/backend
+
+<span class="cmt"># Run all migrations</span>
+php artisan migrate
+
+<span class="cmt"># Check migration status</span>
+php artisan migrate:status
+
+<span class="cmt"># Seed the default tenant (REQUIRED for multi-tenancy)</span>
+php artisan db:seed --class=TenantSeeder
+
+<span class="cmt"># Seed demo data (optional)</span>
+php artisan db:seed --class=DemoDataSeeder</code></pre>
+        <p>The <code>TenantSeeder</code> creates a <code>default</code> tenant with slug <code>default</code>. Without this, <code>Tenant::current()</code> returns null and scoped queries fail.</p>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 4 -->
+<div class="task-card" id="task4">
+  <label class="task-toggle" onclick="toggleTask('task4')">
+    <div class="task-checkbox" id="cb-task4">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Install GD PHP Extension <span class="task-badge badge-done">Controller Bug Fixed</span></div>
+      <div class="task-detail">
+        <div class="alert alert-ok">
+          <strong>CODE FIX APPLIED:</strong> The <code>ReportController.php</code> now checks <code>extension_loaded('gd')</code> before calling GD functions. If GD is missing, it logs a warning and skips re-encoding instead of crashing with a 500. The Dockerfile has also been updated to install GD in all 3 build stages.
+        </div>
+        <h3>Check if GD is installed</h3>
+        <pre><code>php -m | findstr gd    <span class="cmt"># Windows</span>
+php -m | grep gd       <span class="cmt"># Linux/Mac</span></code></pre>
+        <h3>Install GD (if not present)</h3>
+        <pre><code><span class="cmt"># Ubuntu/Debian</span>
+sudo apt-get install php8.2-gd
+sudo systemctl restart php8.2-fpm
+
+<span class="cmt"># Windows (php.ini) ΓÇö uncomment:</span>
+<span class="cmt"># extension=gd</span>
+
+<span class="cmt"># Verify</span>
+php -r "var_dump(extension_loaded('gd'));"</code></pre>
+        <div class="alert alert-ok">
+          <strong>Dockerfile already updated:</strong> All 3 stages now install <code>libpng-dev</code>, <code>libjpeg-dev</code>, <code>libfreetype6-dev</code> and <code>docker-php-ext-install gd</code> with FreeType + JPEG support.
+        </div>
+        <div class="alert alert-warn">
+          <strong>Also recommended:</strong> Install Imagick for better EXIF stripping: <code>sudo apt-get install php8.2-imagick</code>
+        </div>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 5 -->
+<div class="task-card" id="task5">
+  <label class="task-toggle" onclick="toggleTask('task5')">
+    <div class="task-checkbox" id="cb-task5">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure Supabase S3 Storage <span class="task-badge badge-warn">Required</span></div>
+      <div class="task-detail">
+        <p>The backend stores evidence images in Supabase S3-compatible storage. If credentials are wrong, <code>$disk-&gt;put()</code> throws and causes a 500.</p>
+        <h3>Get credentials from Supabase Dashboard</h3>
+        <ol>
+          <li>Go to <strong>Supabase Dashboard</strong> &rarr; <strong>Project Settings</strong> &rarr; <strong>Storage</strong></li>
+          <li>Click <strong>"New access key"</strong> under S3 Connection</li>
+          <li>Copy the Access Key ID and Secret Access Key</li>
+        </ol>
+        <h3>Set in .env</h3>
+        <pre><code><span class="cmt"># apps/backend/.env</span>
+SUPABASE_S3_ENDPOINT=https://your-project-ref.storage.supabase.co/storage/v1/s3
+SUPABASE_S3_ACCESS_KEY=your_actual_access_key
+SUPABASE_S3_SECRET_KEY=your_actual_secret_key
+SUPABASE_S3_REGION=ap-southeast1
+SUPABASE_STORAGE_BUCKET=likaslens-evidence</code></pre>
+        <p>Create a bucket named <code>likaslens-evidence</code> in Supabase Storage and set it to <strong>Private</strong>.</p>
+        <div class="alert alert-warn">
+          <strong>Fallback for local dev:</strong> Set <code>FILESYSTEM_DISK=local</code> and leave <code>SUPABASE_S3_*</code> vars blank to use local disk storage.
+        </div>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 6 -->
+<div class="task-card" id="task6">
+  <label class="task-toggle" onclick="toggleTask('task6')">
+    <div class="task-checkbox" id="cb-task6">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure Sanctum (Authentication) <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <p>The notifications endpoints are protected by <code>auth:sanctum</code>. The frontend must send a Bearer token.</p>
+        <h3>How auth works</h3>
+        <ol>
+          <li>User logs in via <strong>Supabase Auth</strong> on the frontend</li>
+          <li>Frontend gets a Supabase <code>access_token</code> (JWT)</li>
+          <li>Frontend sends token as <code>Authorization: Bearer &lt;token&gt;</code> to Laravel API</li>
+          <li>Laravel validates the Supabase JWT and resolves the user</li>
+        </ol>
+        <h3>Backend .env</h3>
+        <pre><code><span class="cmt"># apps/backend/.env</span>
+SANCTUM_STATEFUL_DOMAINS=localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,likaslens.syntaxure.dev</code></pre>
+        <p>Add your deployed frontend domain to this list (comma-separated).</p>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 7 -->
+<div class="task-card" id="task7">
+  <label class="task-toggle" onclick="toggleTask('task7')">
+    <div class="task-checkbox" id="cb-task7">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure CORS <span class="task-badge badge-err">Required</span></div>
+      <div class="task-detail">
+        <p>Ensure your Laravel CORS config allows the frontend origin:</p>
+        <pre><code><span class="cmt"># apps/backend/config/cors.php</span>
+'paths' =&gt; ['api/*'],
+'allowed_methods' =&gt; ['*'],
+'allowed_origins' =&gt; [
+    'http://localhost:3000',
+    'https://likaslens.syntaxure.dev',
+    'https://your-frontend-domain.vercel.app',
+],
+'allowed_headers' =&gt; ['*'],
+'exposed_headers' =&gt; [],
+'max_age' =&gt; 0,
+'supports_credentials' =&gt; true,</code></pre>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 8 -->
+<div class="task-card completed" id="task8">
+  <label class="task-toggle" onclick="toggleTask('task8')">
+    <div class="task-checkbox checked" id="cb-task8">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Configure Frontend Environment <span class="task-badge badge-done">Done</span></div>
+      <div class="task-detail">
+        <div class="alert alert-ok">
+          <strong>Frontend fixes already applied in code:</strong>
+          <ul>
+            <li><strong>Report page</strong>: Now uses <code>laravelPost()</code> with Supabase <code>access_token</code> as Bearer header (was raw <code>fetch()</code> with no auth)</li>
+            <li><strong>Notifications hook</strong>: Accepts <code>token</code> option, passes to all API calls</li>
+            <li><strong>Dashboard layout</strong>: Retrieves Supabase session token, passes to <code>useNotifications()</code></li>
+            <li><strong>API client wrappers</strong>: All functions accept optional <code>token</code> parameter</li>
+            <li><strong>next-intl pinned</strong>: All packages use <code>next-intl@4.13.0</code> via pnpm overrides (fixed context error)</li>
+          </ul>
+        </div>
+        <h3>apps/frontend/.env (verify these are set)</h3>
+        <pre><code>NEXT_PUBLIC_API_URL=https://likaslens-api-1096292232709.asia-southeast1.run.app/api
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_AI_SERVICE_URL=https://likaslens-ai-1096292232709.asia-southeast1.run.app
+NEXT_PUBLIC_SITE_URL=https://likaslens.syntaxure.dev</code></pre>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 9 -->
+<div class="task-card" id="task9">
+  <label class="task-toggle" onclick="toggleTask('task9')">
+    <div class="task-checkbox" id="cb-task9">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Redeploy Backend Docker Image <span class="task-badge badge-warn">Action Needed</span></div>
+      <div class="task-detail">
+        <div class="alert alert-warn">
+          <strong>Required:</strong> The Dockerfile has been updated to include GD, but the running Cloud Run instance still uses the old image without GD. You must trigger a new deployment.
+        </div>
+        <pre><code><span class="cmt"># Push to main to trigger the GCP deploy workflow</span>
+git push origin main
+
+<span class="cmt"># Or manually trigger via gcloud</span>
+gcloud run deploy likaslens-api \
+  --source apps/backend \
+  --region=asia-southeast1 \
+  --set-env-vars="APP_KEY=base64:your_key,APP_DEBUG=false"</code></pre>
+        <h3>Cloud Run environment variables checklist</h3>
+        <table>
+          <tr><th>Variable</th><th>Example</th><th>Required</th></tr>
+          <tr><td><code>APP_KEY</code></td><td><code>base64:xxxx...</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>DB_CONNECTION</code></td><td><code>pgsql</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>DB_HOST</code></td><td><code>db.xxx.supabase.co</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>DB_PASSWORD</code></td><td><code>your_db_password</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>SUPABASE_S3_ENDPOINT</code></td><td><code>https://xxx.storage.supabase.co/storage/v1/s3</code></td><td><span class="task-badge badge-warn">For S3</span></td></tr>
+          <tr><td><code>SUPABASE_S3_ACCESS_KEY</code></td><td><code>your_s3_key</code></td><td><span class="task-badge badge-warn">For S3</span></td></tr>
+          <tr><td><code>SUPABASE_S3_SECRET_KEY</code></td><td><code>your_s3_secret</code></td><td><span class="task-badge badge-warn">For S3</span></td></tr>
+          <tr><td><code>SESSION_DRIVER</code></td><td><code>database</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>QUEUE_CONNECTION</code></td><td><code>database</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+          <tr><td><code>CACHE_STORE</code></td><td><code>database</code></td><td><span class="task-badge badge-err">Yes</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 10 -->
+<div class="task-card" id="task10">
+  <label class="task-toggle" onclick="toggleTask('task10')">
+    <div class="task-checkbox" id="cb-task10">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Test Report Submission <span class="task-badge badge-warn">Verify</span></div>
+      <div class="task-detail">
+        <pre><code>cd apps/backend
+php artisan serve
+
+<span class="cmt"># In another terminal, test the reports endpoint</span>
+curl -X POST http://localhost:8000/api/reports \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{"base64Image":"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="}'
+
+<span class="cmt"># Expected: {"success":true,"message":"Report submitted...","data":{...}}</span>
+<span class="cmt"># If you get 500, check storage/logs/laravel.log</span></code></pre>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 11 -->
+<div class="task-card" id="task11">
+  <label class="task-toggle" onclick="toggleTask('task11')">
+    <div class="task-checkbox" id="cb-task11">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Test Notifications Auth <span class="task-badge badge-warn">Verify</span></div>
+      <div class="task-detail">
+        <pre><code><span class="cmt"># Get a Supabase token first, then test:</span>
+curl http://localhost:8000/api/notifications/unread-count \
+  -H "Authorization: Bearer YOUR_SUPABASE_ACCESS_TOKEN" \
+  -H "Accept: application/json"
+
+<span class="cmt"># Expected: {"success":true,"data":{"unread_count":0}}</span></code></pre>
+      </div>
+    </div>
+  </label>
+</div>
+
+<!-- TASK 12 -->
+<div class="task-card" id="task12">
+  <label class="task-toggle" onclick="toggleTask('task12')">
+    <div class="task-checkbox" id="cb-task12">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title">Check Laravel Logs <span class="task-badge badge-ok">Optional</span></div>
+      <div class="task-detail">
+        <pre><code><span class="cmt"># View the last 50 lines of the Laravel log</span>
+tail -n 50 storage/logs/laravel.log
+
+<span class="cmt"># On Windows</span>
+Get-Content storage\logs\laravel.log -Tail 50</code></pre>
+        <p>If you still get 500 errors, the log will show the exact exception, file, and line number causing the failure.</p>
+      </div>
+    </div>
+  </label>
+</div>
+
+<div class="alert alert-ok">
+  <strong>Frontend fixes already applied (no action needed):</strong>
+  The report page and notifications hook now send the Supabase access token as a Bearer header. The <code>ReportController</code> has a GD extension guard. The Dockerfile installs GD. Once the backend is configured and redeployed, these errors will resolve.
+</div>
+
+</div>
+
+<script>
+  const STORAGE_KEY = 'likaslens-backend-fix-progress';
+  const TOTAL_TASKS = 12;
+
+  function loadProgress() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function saveProgress(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+  }
+
+  function toggleTask(taskId) {
+    const state = loadProgress();
+    state[taskId] = !state[taskId];
+    saveProgress(state);
+    renderTask(taskId, state[taskId]);
+    updateProgress(state);
+  }
+
+  function renderTask(taskId, isDone) {
+    const card = document.getElementById(taskId);
+    const cb = document.getElementById('cb-' + taskId);
+    if (!card || !cb) return;
+
+    if (isDone) {
+      card.classList.add('completed');
+      cb.classList.add('checked');
+    } else {
+      card.classList.remove('completed');
+      cb.classList.remove('checked');
+    }
+  }
+
+  function updateProgress(state) {
+    let done = 0;
+    for (let i = 1; i <= TOTAL_TASKS; i++) {
+      if (state['task' + i]) done++;
+    }
+    const pct = Math.round((done / TOTAL_TASKS) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+    document.getElementById('doneCount').textContent = done;
+    document.getElementById('remainingCount').textContent = TOTAL_TASKS - done;
+    document.getElementById('totalCount').textContent = TOTAL_TASKS;
+  }
+
+  function resetProgress() {
+    if (!confirm('Reset all progress? This cannot be undone.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    for (let i = 1; i <= TOTAL_TASKS; i++) {
+      renderTask('task' + i, false);
+    }
+    updateProgress({});
+  }
+
+  // Init ΓÇö restore saved state
+  (function init() {
+    const state = loadProgress();
+    // Task 8 is always done (frontend fix applied)
+    state['task8'] = true;
+    for (let i = 1; i <= TOTAL_TASKS; i++) {
+      renderTask('task' + i, state['task' + i]);
+    }
+    updateProgress(state);
+    saveProgress(state);
+  })();
+</script>
+</body>
+</html>

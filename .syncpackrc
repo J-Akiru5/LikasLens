@@ -15,5 +15,5 @@
     }
   ],
   "sortFirst": ["name", "version", "description", "private", "scripts"],
-  "source": ["package.json", "apps/*/package.json"]
+  "source": ["package.json", "apps/frontend/package.json", "apps/mobile-pwa/package.json", "apps/admin-portal/package.json", "apps/shared/package.json", "apps/ai-service/package.json"]
 }
