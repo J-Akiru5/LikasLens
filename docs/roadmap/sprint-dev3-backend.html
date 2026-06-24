@@ -586,6 +586,30 @@ pre code {
 </table>
 <hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
 <h2 class="section-header">Definition of Done</h2>
+<div class="card">
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-1" data-priority="dod"> <code>ResolveTenant</code> middleware wired into all admin route groups</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-2" data-priority="dod"> <code>TenantController</code> routes registered and tested</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-3" data-priority="dod"> #171 admin-side actions verified working</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-4" data-priority="dod"> All 15+ admin portal routes polished and functional</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-5" data-priority="dod"> All 6 bulk operations tested end-to-end</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-6" data-priority="dod"> RBAC tested for <code>analyst</code> and <code>super_admin</code> on all endpoints</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-7" data-priority="dod"> Audit logs capture all admin actions</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-8" data-priority="dod"> Loading states and error boundaries on all pages</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-9" data-priority="dod"> No 500 errors on any admin endpoint</label>
+  <label class="check-label"><input type="checkbox" class="task-check" data-id="dod-10" data-priority="dod"> Dashboard queries &lt; 200ms</label>
+</div>
+
+<!-- Notes -->
+<h2 class="section-header">Notes</h2>
+<div class="card" style="font-size:0.88rem">
+  <ul style="padding-left:1.25rem">
+    <li>Admin write routes are behind <code>auth:sanctum</code> + <code>role:super_admin</code> middleware</li>
+    <li>Public read endpoints (<code>GET /admin/ngos</code>, <code>GET /admin/laws</code>) are accessible without auth</li>
+    <li>Ticket status transitions are behind <code>role:analyst,super_admin</code></li>
+    <li>Bulk operations are capped at 100 items per request</li>
+    <li>Audit logs are immutable (no update/delete endpoints)</li>
+    <li>Admin portal runs on port 3002, backend on port 8000</li>
+  </ul>
 <label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-36"> Supabase connection working (local and production)</label>
 <label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-37"> CI/CD pipelines pushing to ghcr.io (backend + AI service)</label>
 <label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-38"> Azure backend deployed and healthy (no ImagePullBackOff)</label>

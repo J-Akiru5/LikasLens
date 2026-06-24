@@ -104,7 +104,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="#" className="flex items-center gap-2.5 group no-underline">
+          <Link href="/" className="flex items-center gap-2.5 group no-underline">
             <img
               src="/images/likas-lens-logo.png"
               alt="LikasLens"

@@ -90,44 +90,58 @@ class AuthController extends Controller
             'name' => 'nullable|string|max:255',
         ]);
 
-        $user = User::where('supabase_auth_user_id', $validated['supabase_auth_user_id'])->first();
+        try {
+            $user = User::where('supabase_auth_user_id', $validated['supabase_auth_user_id'])->first();
 
-        if (! $user) {
-            $user = User::create([
-                'supabase_auth_user_id' => $validated['supabase_auth_user_id'],
-                'name' => $validated['name'] ?? 'Citizen',
-                'email' => $validated['email'],
-                'password' => Hash::make(Str::random(32)),
-                'role' => 'citizen',
-                'trust_score' => 0,
-                'reward_points_balance' => 0,
-            ]);
+            if (! $user) {
+                $user = User::create([
+                    'supabase_auth_user_id' => $validated['supabase_auth_user_id'],
+                    'name' => $validated['name'] ?? 'Citizen',
+                    'email' => $validated['email'],
+                    'password' => Hash::make(Str::random(32)),
+                    'role' => 'citizen',
+                    'trust_score' => 0,
+                    'reward_points_balance' => 0,
+                ]);
 
-            UserCreated::dispatch($user);
-        } else {
-            $user->update([
-                'email' => $validated['email'],
-                'name' => $validated['name'] ?? $user->name,
-            ]);
-        }
+                UserCreated::dispatch($user);
+            } else {
+                $user->update([
+                    'email' => $validated['email'],
+                    'name' => $validated['name'] ?? $user->name,
+                ]);
+            }
 
-        $token = $user->createToken('api-token', ['*'], now()->addHours(24))->plainTextToken;
+            $token = $user->createToken('api-token', ['*'], now()->addHours(24))->plainTextToken;
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User synced successfully.',
-            'data' => [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                    'trust_score' => $user->trust_score,
-                    'reward_points_balance' => $user->reward_points_balance,
+            return response()->json([
+                'success' => true,
+                'message' => 'User synced successfully.',
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'role' => $user->role,
+                        'trust_score' => $user->trust_score,
+                        'reward_points_balance' => $user->reward_points_balance,
+                    ],
+                    'token' => $token,
                 ],
-                'token' => $token,
-            ],
-        ]);
+            ]);
+        } catch (\Illuminate\Database\ConnectionException $e) {
+            report($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Database connection unavailable. Please try again later.',
+            ], 503);
+        } catch (\Exception $e) {
+            report($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Authentication service temporarily unavailable.',
+            ], 500);
+        }
     }
 
     public function refresh(Request $request): JsonResponse

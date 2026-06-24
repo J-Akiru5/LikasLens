@@ -10,6 +10,9 @@ import { getSupabaseClient } from "@/utils/supabase/client";
  */
 export function AuthRefreshInit() {
   useEffect(() => {
+    let retryCount = 0;
+    const MAX_RETRIES = 2;
+
     setTokenRefreshHandler(async () => {
       try {
         const supabase = getSupabaseClient();
@@ -37,8 +40,18 @@ export function AuthRefreshInit() {
           }),
         });
 
-        if (!res.ok) return null;
+        if (!res.ok) {
+          // If server returns 500, it's likely a DB issue — don't retry infinitely
+          if (res.status >= 500 && retryCount < MAX_RETRIES) {
+            retryCount++;
+            // Exponential backoff: 1s, 2s
+            await new Promise((r) => setTimeout(r, 1000 * retryCount));
+            return null; // Return null to trigger retry via the 401 handler
+          }
+          return null;
+        }
 
+        retryCount = 0; // Reset on success
         const json = await res.json();
         const newToken: string | undefined = json?.data?.token;
         if (!newToken) return null;

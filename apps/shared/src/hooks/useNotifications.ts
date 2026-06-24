@@ -48,6 +48,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   }, [token]);
 
   const refreshUnreadCount = useCallback(async () => {
+    if (!tokenRef.current) return;
     try {
       const res = await fetchUnreadCount<{ success: boolean; data: UnreadCountResponse }>(tokenRef.current);
       if (mountedRef.current && res?.data?.unread_count !== undefined) {
@@ -59,6 +60,12 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   }, []);
 
   const refresh = useCallback(async () => {
+    if (!tokenRef.current) {
+      setNotifications([]);
+      setMeta(null);
+      setUnreadCount(0);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -80,7 +87,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   }, [refreshUnreadCount]);
 
   const loadMore = useCallback(async () => {
-    if (!meta || meta.current_page >= meta.last_page) return;
+    if (!tokenRef.current || !meta || meta.current_page >= meta.last_page) return;
     setLoading(true);
     try {
       const res = await fetchNotifications<{ success: boolean; data: AppNotification[]; meta: NotificationMeta }>(
@@ -141,7 +148,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   // Polling
   useEffect(() => {
-    if (pollInterval <= 0) return;
+    if (pollInterval <= 0 || !token) return;
 
     pollRef.current = setInterval(() => {
       refreshUnreadCount();
@@ -150,7 +157,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
-  }, [pollInterval, refreshUnreadCount]);
+  }, [pollInterval, refreshUnreadCount, token]);
 
   return {
     notifications,

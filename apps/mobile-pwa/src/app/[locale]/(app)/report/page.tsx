@@ -184,7 +184,7 @@ export default function ReportPage() {
       stopCamera();
     };
     reader.readAsDataURL(file);
-  }, [stopCamera, stripExif]);
+  }, [stopCamera]);
 
   useEffect(() => {
     if (videoRef.current && stream) {
