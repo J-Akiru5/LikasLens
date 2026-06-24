@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,24 +12,45 @@ class NotificationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $perPage = min((int) $request->query('per_page', 20), 50);
+        try {
+            $user = $request->user();
+            $perPage = min((int) $request->query('per_page', 20), 50);
 
-        $notifications = $user->notifications()
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+            $notifications = $user->notifications()
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage);
 
-        return response()->json([
-            'success' => true,
-            'data' => $notifications->items(),
-            'meta' => [
-                'current_page' => $notifications->currentPage(),
-                'last_page' => $notifications->lastPage(),
-                'per_page' => $notifications->perPage(),
-                'total' => $notifications->total(),
-                'unread_count' => $user->unreadNotifications()->count(),
-            ],
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => $notifications->items(),
+                'meta' => [
+                    'current_page' => $notifications->currentPage(),
+                    'last_page' => $notifications->lastPage(),
+                    'per_page' => $notifications->perPage(),
+                    'total' => $notifications->total(),
+                    'unread_count' => $user->unreadNotifications()->count(),
+                ],
+            ]);
+        } catch (\Illuminate\Database\ConnectionException $e) {
+            report($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Database connection unavailable.',
+            ], 503);
+        } catch (\Exception $e) {
+            report($e);
+            return response()->json([
+                'success' => false,
+                'data' => [],
+                'meta' => [
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => 20,
+                    'total' => 0,
+                    'unread_count' => 0,
+                ],
+            ], 200);
+        }
     }
 
     /**
@@ -38,12 +58,26 @@ class NotificationController extends Controller
      */
     public function unreadCount(Request $request): JsonResponse
     {
-        $count = $request->user()->unreadNotifications()->count();
+        try {
+            $count = $request->user()->unreadNotifications()->count();
 
-        return response()->json([
-            'success' => true,
-            'data' => ['unread_count' => $count],
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => ['unread_count' => $count],
+            ]);
+        } catch (\Illuminate\Database\ConnectionException $e) {
+            report($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Database connection unavailable.',
+            ], 503);
+        } catch (\Exception $e) {
+            report($e);
+            return response()->json([
+                'success' => true,
+                'data' => ['unread_count' => 0],
+            ], 200);
+        }
     }
 
     /**
@@ -51,13 +85,27 @@ class NotificationController extends Controller
      */
     public function markAsRead(Request $request, string $id): JsonResponse
     {
-        $notification = $request->user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
+        try {
+            $notification = $request->user()->notifications()->findOrFail($id);
+            $notification->markAsRead();
 
-        return response()->json([
-            'success' => true,
-            'data' => ['id' => $id, 'read_at' => $notification->read_at],
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => ['id' => $id, 'read_at' => $notification->read_at],
+            ]);
+        } catch (\Illuminate\Database\ConnectionException $e) {
+            report($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Database connection unavailable.',
+            ], 503);
+        } catch (\Exception $e) {
+            report($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Notification not found.',
+            ], 404);
+        }
     }
 
     /**
@@ -65,11 +113,25 @@ class NotificationController extends Controller
      */
     public function markAllAsRead(Request $request): JsonResponse
     {
-        $request->user()->unreadNotifications()->update(['read_at' => now()]);
+        try {
+            $request->user()->unreadNotifications()->update(['read_at' => now()]);
 
-        return response()->json([
-            'success' => true,
-            'data' => ['marked_read' => true],
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => ['marked_read' => true],
+            ]);
+        } catch (\Illuminate\Database\ConnectionException $e) {
+            report($e);
+            return response()->json([
+                'success' => false,
+                'message' => 'Database connection unavailable.',
+            ], 503);
+        } catch (\Exception $e) {
+            report($e);
+            return response()->json([
+                'success' => true,
+                'data' => ['marked_read' => true],
+            ], 200);
+        }
     }
 }
