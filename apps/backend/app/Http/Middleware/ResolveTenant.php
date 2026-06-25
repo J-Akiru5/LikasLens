@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\Tenant;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResolveTenant
@@ -18,48 +19,55 @@ class ResolveTenant
      *   3. Subdomain                   — e.g. cebu.likaslens.org
      *   4. Default tenant (slug="default") — fallback for single-tenant mode
      *
-     * Continues without a tenant if no match is found (single-tenant mode).
+     * Gracefully degrades to single-tenant mode if the tenants table
+     * does not exist or no tenant is configured.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $tenant = null;
 
-        // 1. Explicit tenant UUID in header
-        if ($tenantId = $request->header('X-Tenant-ID')) {
-            $tenant = Tenant::where('id', $tenantId)
-                ->where('is_active', true)
-                ->first();
-        }
+        try {
+            // 1. Explicit tenant UUID in header
+            if ($tenantId = $request->header('X-Tenant-ID')) {
+                $tenant = Tenant::where('id', $tenantId)
+                    ->where('is_active', true)
+                    ->first();
+            }
 
-        // 2. Tenant slug in header
-        if (! $tenant && ($slug = $request->header('X-Tenant-Slug'))) {
-            $tenant = Tenant::resolveBySlug($slug);
-        }
-
-        // 3. Subdomain extraction
-        if (! $tenant) {
-            $host = $request->getHost();
-            $slug = $this->extractSubdomain($host);
-
-            if ($slug && $slug !== 'www' && $slug !== 'api') {
+            // 2. Tenant slug in header
+            if (! $tenant && ($slug = $request->header('X-Tenant-Slug'))) {
                 $tenant = Tenant::resolveBySlug($slug);
             }
+
+            // 3. Subdomain extraction
+            if (! $tenant) {
+                $host = $request->getHost();
+                $slug = $this->extractSubdomain($host);
+
+                if ($slug && $slug !== 'www' && $slug !== 'api') {
+                    $tenant = Tenant::resolveBySlug($slug);
+                }
+            }
+
+            // 4. Fallback to default tenant (single-tenant backward compat)
+            if (! $tenant) {
+                $tenant = Tenant::where('slug', 'default')
+                    ->where('is_active', true)
+                    ->first();
+            }
+
+            if ($tenant) {
+                $request->attributes->set('tenant', $tenant);
+                $request->attributes->set('tenant_id', $tenant->id);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('ResolveTenant: could not resolve tenant, continuing in single-tenant mode', [
+                'error' => $e->getMessage(),
+                'host' => $request->getHost(),
+            ]);
         }
 
-        // 4. Fallback to default tenant (single-tenant backward compat)
-        if (! $tenant) {
-            $tenant = Tenant::where('slug', 'default')
-                ->where('is_active', true)
-                ->first();
-        }
-
-        // Set the resolved tenant on the request and globally
         Tenant::setCurrent($tenant);
-
-        if ($tenant) {
-            $request->attributes->set('tenant', $tenant);
-            $request->attributes->set('tenant_id', $tenant->id);
-        }
 
         return $next($request);
     }

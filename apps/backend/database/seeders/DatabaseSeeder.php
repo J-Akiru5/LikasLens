@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             SlaConfigSeeder::class,
             CountryCodeSeeder::class,
             BarangayCentroidSeeder::class,
+            LikasLensSeeder::class,
         ]);
 
     }

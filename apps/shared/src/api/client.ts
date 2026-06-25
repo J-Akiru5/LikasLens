@@ -107,7 +107,12 @@ export async function laravelFetch<T>(
   // Multi-tenant: extract subdomain and pass to backend
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
-    if (!host.includes("localhost") && !/^(\d+\.){3}\d+$/.test(host)) {
+    if (
+      !host.includes("localhost") &&
+      !/^(\d+\.){3}\d+$/.test(host) &&
+      !host.includes(".run.app") &&
+      !host.includes(".vercel.app")
+    ) {
       const parts = host.split(".");
       if (parts.length >= 3 && parts[0] !== "www" && parts[0] !== "api") {
         headers["X-Tenant-Slug"] = parts[0];

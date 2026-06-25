@@ -350,10 +350,12 @@ export default function ReportPage() {
               return;
             }
           }
-          }
           // If ONNX is not ready and offline, skip triage gracefully
-        } catch (err) { console.error("Triage pre-check failed:", err); }
-        finally { setIsTriaging(false); }
+        } catch (err) {
+          console.error("Triage pre-check failed:", err);
+        } finally {
+          setIsTriaging(false);
+        }
       }
 
       await finalizeSubmission(cleanedImage);

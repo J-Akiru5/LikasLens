@@ -63,7 +63,7 @@ Route::post('/contact-messages', [ContactMessageController::class, 'store'])->mi
 Route::get('/public/impact', [PublicImpactController::class, 'index'])->middleware('throttle:30,1');
 
 // Public read-only reference data — 60 req/min per IP
-Route::middleware(['throttle:60,1', 'resolve-tenant'])->group(function () {
+Route::middleware('throttle:60,1')->group(function () {
     Route::get('/laws', [AdminLawController::class, 'index']);
     Route::get('/laws/{id}', [AdminLawController::class, 'show']);
     Route::get('/leaderboard', [LeaderboardController::class, 'index']);

@@ -811,10 +811,185 @@
     </div>
   </div>
 
+  <!-- Q&A CHEAT SHEET: LAYMAN vs TECHNICAL -->
+  <div class="section" id="qa-cheatsheet">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-icon icon-purple">&#128161;</div>
+      <div class="section-info">
+        <div class="section-title">Q&A Cheat Sheet — Layman vs Technical Terms</div>
+        <div class="section-subtitle">Translate jargon to plain English for tomorrow's virtual presentation. Click each item to practice your answer.</div>
+      </div>
+      <span class="section-badge badge-purple">15 Cards</span>
+      <svg class="chevron" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+    </div>
+    <div class="section-body">
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem;">
+
+        <!-- Card 1 -->
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--green-100); color: var(--green-800); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Say this</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: var(--green-900);">Monorepo</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> All our apps live in one shared project folder, like a neighborhood where houses share a common garage and mail room.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> pnpm workspace monorepo with 6 packages under <code>apps/</code>. Single <code>pnpm install</code> installs all dependencies. Shared TypeScript types, API client, and UI components via <code>@likaslens/shared</code>.</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--green-100); color: var(--green-800); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Say this</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: var(--green-900);">The 5-App Architecture</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> We built five separate tools — a public website, a phone app, an admin dashboard, a brain (AI), and a backbone (data API). They talk to each other like a team using walkie-talkies.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Frontend (Next.js, Vercel), Mobile PWA (Next.js + service worker), Admin Portal (Next.js, desktop-first), Backend (Laravel 12, PostgreSQL, Cloud Run), AI Service (FastAPI, YOLOv8, Neo4j, Cloud Run). Communication via REST JSON only.</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--green-100); color: var(--green-800); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Say this</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: var(--green-900);">What LikasLens Does</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> Citizens take a photo of an environmental issue (like illegal dumping or flooding). The app automatically identifies the problem, checks which laws apply, and routes it to the right government office — all in seconds.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Upload &rarr; EXIF stripping &rarr; YOLOv8 + Roboflow inference &rarr; neuro-symbolic reasoning (16 PH laws, 18 hazard classes) &rarr; triage disposition (auto_routed / pending_review / auto_dismissed) &rarr; notification dispatch.</p>
+        </div>
+
+        <!-- Card 4 -->
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fde68a; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Likely Q</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #78350f;">YOLOv8 / AI Detection</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> We trained a computer to recognize environmental hazards the way you'd teach a child to spot different animals — by showing it thousands of examples until it learns the patterns.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Ultralytics YOLOv8 fine-tuned on custom + Roboflow datasets. Composite scoring: <code>max(coco_score, env_score) * 0.7 + agreement * 0.3</code>. 3-retry Gemini fallback with exponential backoff (1s/2s).</p>
+        </div>
+
+        <!-- Card 5 -->
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fde68a; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Likely Q</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #78350f;">PWA vs Native App</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> Our mobile app isn't in the app store — it's a website that behaves like an app once you save it to your home screen. Like a bookmark that can send you notifications and work offline.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Progressive Web App using <code>@ducanh2912/next-pwa v10.2.9</code>. Service worker for offline caching, manifest for install prompt. No App Store/Play Store submission required. Known issue: Android logo (#175) and ownership (#176) still broken.</p>
+        </div>
+
+        <!-- Card 6 -->
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fde68a; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Likely Q</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #78350f;">Multi-Tenancy</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> Each city government sees only their own citizens' reports — like separate filing cabinets for different offices. No one accidentally sees someone else's data.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Laravel TenantScope pattern. <code>ResolveTenant</code> middleware extracts tenant from subdomain/JWT. All 22 models scoped globally. PostgreSQL Row-Level Security as backup.</p>
+        </div>
+
+        <!-- Card 7 -->
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fde68a; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Likely Q</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #78350f;">Neuro-Symbolic AI</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> The AI doesn't just guess — it combines visual recognition (seeing a problem) with a rulebook (laws, jurisdiction) to make a logical decision, not just a statistical one.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Hybrid pipeline: YOLOv8 neural detection &rarr; symbol grounding &rarr; Neo4j graph query (16 PH laws, hazard-Law edges). Decision logic uses graph traversal for jurisdiction routing, not pure ML classification.</p>
+        </div>
+
+        <!-- Card 8 -->
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fde68a; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Likely Q</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #78350f;">Neo4j Graph Database</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> Instead of storing data in spreadsheets (tables), we store it like a mind map — laws connect to hazards, hazards connect to government agencies, agencies connect to locations. Makes "which office handles this?" instant.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Neo4j AuraDB. Nodes: Law (16), Hazard (18), NGO (5), Region. Edges: HAZARD_VIOLATES_LAW, AGENCY_ENFORCES, LOCATED_IN. Graph traversal with Cypher queries for jurisdiction routing.</p>
+        </div>
+
+        <!-- Card 9 -->
+        <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #93c5fd; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--blue-100); color: var(--blue-600); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Context</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #1e3a5f;">EXIF Stripping &amp; Privacy</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> When you take a photo, your phone secretly embeds your GPS location and device info into the image file. We strip that data before sending it to the server — like shredding the envelope before passing the letter.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Client-side EXIF stripping via JavaScript <code>canvas.toBlob()</code> re-encoding. Strips GPS, device model, timestamp before upload. Raw originals preserved on device only — only stripped copies transmitted.</p>
+        </div>
+
+        <!-- Card 10 -->
+        <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #93c5fd; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--blue-100); color: var(--blue-600); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Context</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #1e3a5f;">Ghost Mode (Zero-Knowledge)</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> Whistleblowers can submit evidence without revealing their identity — even we can't see who they are. Like a confidential tip hotline that genuinely can't trace the caller.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Ghost mode bypasses auth for report submission. No user ID attached to ghost reports. Background image caching fixed (Lou branch merged). Server never receives device fingerprint, IP is not logged.</p>
+        </div>
+
+        <!-- Card 11 -->
+        <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #93c5fd; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--blue-100); color: var(--blue-600); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Context</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #1e3a5f;">i18n — 10 Languages</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> The app speaks 10 Southeast Asian languages — English, Filipino, Vietnamese, Indonesian, Malay, Tamil, Thai, Khmer, Burmese, and Lao. Users can switch anytime, like flipping a toggle.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> <code>next-intl@4.13.0</code> pinned via pnpm overrides (fixes dual-version context bug). Shared message files under <code>apps/shared/locales</code>. Locale type union: <code>'en'|'fil'|'vi'|'id'|'ms'|'ta'|'th'|'km'|'my'|'lo'</code>.</p>
+        </div>
+
+        <!-- Card 12 -->
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--green-100); color: var(--green-800); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Say this</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: var(--green-900);">Deployment (Vercel + Cloud Run)</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> The websites auto-deploy when we push code — like a self-service vending machine. Our backend and AI run on Google's servers and scale automatically when traffic spikes.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Frontend/Mobile/Admin on Vercel (git push &rarr; deploy). Backend &amp; AI Service on GCP Cloud Run (Docker build &rarr; Artifact Registry &rarr; Cloud Run via CI/CD). 2 GCP workflows (backend + ai-service). Vercel <code>outputDirectory</code> bug was FIXED.</p>
+        </div>
+
+        <!-- Card 13 -->
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--green-100); color: var(--green-800); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Say this</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: var(--green-900);">The GD Extension Fix</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> Our backend needed a special image-processing library that wasn't installed on the server. Like buying a new printer and realizing the driver software isn't installed — now it's fixed.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> PHP GD extension was missing from the Docker image. Fixed by adding <code>libpng-dev libjpeg-dev libfreetype6-dev</code> + <code>docker-php-ext-configure gd</code> in all 3 build stages. Also added <code>extension_loaded('gd')</code> guard in ReportController.</p>
+        </div>
+
+        <!-- Card 14 -->
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 1px solid #fde68a; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: #fef3c7; color: #92400e; font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Likely Q</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #78350f;">Current Weaknesses</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> We have 19 known issues — mostly visual glitches on the mobile app, and Google login doesn't work yet. The backend needs one more deployment with our latest fixes. None are data-loss risks.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> 10 mobile UI bugs (layout/overlap), 2 auth bugs (#162 Google login, #177 session persistence), 1 OG image. Backend Docker needs redeployment with GD + APP_KEY. 1 Gremlin ref remains. AI service evaluation (FPR) not yet validated.</p>
+        </div>
+
+        <!-- Card 15 -->
+        <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #93c5fd; border-radius: 12px; padding: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+            <span style="background: var(--blue-100); color: var(--blue-600); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 4px; text-transform: uppercase;">Context</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #1e3a5f;">Triage Disposition System</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--slate-700); margin-bottom: 0.5rem;"><strong>Layman:</strong> Not every report needs a human to look at it. The AI sorts incoming photos into three buckets: good evidence gets routed to the right office automatically, unclear ones wait for a human reviewer, and spam/pranks get discarded.</p>
+          <p style="font-size: 0.82rem; color: var(--slate-500);"><strong>Technical:</strong> Three-way classifier output: <code>auto_routed</code> (high confidence + clear law match &rarr; direct dispatch), <code>pending_review</code> (ambiguous &rarr; human-in-loop), <code>auto_dismissed</code> (low confidence / no violation &rarr; silent discard). Configurable thresholds.</p>
+        </div>
+
+      </div>
+
+      <div class="alert alert-info" style="margin-top: 1rem;">
+        <strong>Pro tip for tomorrow:</strong> When a technical question comes up, start with the <strong>Layman</strong> answer first (30 seconds), then follow with <strong>Technical</strong> detail (30 seconds). This shows both accessibility and depth. The 15 cards above cover &gt;90% of expected questions.
+      </div>
+
+    </div>
+  </div>
+
   <!-- FOOTER -->
   <div class="footer">
     <div>LikasLens System Status Report — June 22, 2026</div>
     <div style="margin-top: 0.25rem;">Updated with deployment, auth, i18n, and backend fixes from June 22 session</div>
+    <div style="margin-top: 0.25rem;">Q&A Cheat Sheet added for virtual presentation on June 24, 2026</div>
   </div>
 
 </div>
