@@ -575,7 +575,7 @@ async def analyze_hazard(payload: dict):
 
 @app.post("/api/v1/chat", dependencies=[Depends(verify_api_key)])
 async def chat_proxy(payload: dict):
-    """Secure chat proxy for the Likasy chatbot."""
+    """Secure chat proxy for the Liksi chatbot."""
     from chat_proxy import ChatRequest, ChatResponse, generate_chat_reply
 
     try:

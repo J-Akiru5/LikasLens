@@ -1,5 +1,5 @@
 """
-Secure chat proxy for the Likasy chatbot.
+Secure chat proxy for the Liksi chatbot.
 Accepts chat messages from the frontend, calls Gemini 2.5 Flash server-side,
 and returns the response. The API key never leaves the server.
 """

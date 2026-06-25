@@ -141,7 +141,7 @@ async def generate_grounded_report(
     agencies_str = ", ".join(agencies) if agencies else "no enforcing agencies mapped"
     location_str = f"Location: {location}" if location else "Location: not specified"
 
-    prompt = f"""You are Likasy, a strict legal synthesis AI for an environmental compliance system in the Philippines.
+    prompt = f"""You are Liksi, a strict legal synthesis AI for an environmental compliance system in the Philippines.
 
 A vision model has detected the following hazard: {hazard_id.replace('_', ' ')}
 {location_str}

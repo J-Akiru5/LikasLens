@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\ResolveTenant;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\AdminAuditLogController;
@@ -9,14 +8,17 @@ use App\Http\Controllers\AdminLawController;
 use App\Http\Controllers\AdminLguPerformanceController;
 use App\Http\Controllers\AdminNgoController;
 use App\Http\Controllers\AdminRewardController;
+use App\Http\Controllers\AdminSlaConfigController;
 use App\Http\Controllers\AdminTriageController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ApiTokenController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BarangayCentroidController;
 use App\Http\Controllers\BiasRiskRegisterController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ContactMessageController;
+use App\Http\Controllers\CountryCodeController;
 use App\Http\Controllers\CurrencySettingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EcoCreditController;
@@ -33,8 +35,19 @@ use App\Http\Controllers\TicketAssignmentController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserImpactController;
 use App\Http\Controllers\UserWalletController;
+use App\Http\Middleware\ResolveTenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Reference data endpoints (public, rate limited)
+Route::get('/barangay-centroids', [BarangayCentroidController::class, 'index'])->middleware('throttle:60,1');
+Route::get('/barangay-centroids/{id}', [BarangayCentroidController::class, 'show'])->middleware('throttle:60,1');
+Route::get('/barangay-centroids/regions', [BarangayCentroidController::class, 'regions'])->middleware('throttle:60,1');
+Route::get('/barangay-centroids/provinces', [BarangayCentroidController::class, 'provinces'])->middleware('throttle:60,1');
+Route::get('/barangay-centroids/cities', [BarangayCentroidController::class, 'cities'])->middleware('throttle:60,1');
+
+Route::get('/country-codes', [CountryCodeController::class, 'index'])->middleware('throttle:60,1');
+Route::get('/country-codes/{code}', [CountryCodeController::class, 'show'])->middleware('throttle:60,1');
 
 Route::get('/health', function () {
     return response()->json([
@@ -271,6 +284,23 @@ Route::middleware('auth:sanctum')->group(function () {
         // Pattern escalation (LUWAS-inspired)
         Route::get('/admin/pattern-escalation/detect', [PatternEscalationController::class, 'detect']);
         Route::post('/admin/pattern-escalation/escalate', [PatternEscalationController::class, 'escalate']);
+
+        // SLA configurations
+        Route::get('/admin/sla-configs', [AdminSlaConfigController::class, 'index']);
+        Route::post('/admin/sla-configs', [AdminSlaConfigController::class, 'store']);
+        Route::get('/admin/sla-configs/{id}', [AdminSlaConfigController::class, 'show']);
+        Route::put('/admin/sla-configs/{id}', [AdminSlaConfigController::class, 'update']);
+        Route::delete('/admin/sla-configs/{id}', [AdminSlaConfigController::class, 'destroy']);
+
+        // Barangay centroid management
+        Route::post('/admin/barangay-centroids', [BarangayCentroidController::class, 'store']);
+        Route::put('/admin/barangay-centroids/{id}', [BarangayCentroidController::class, 'update']);
+        Route::delete('/admin/barangay-centroids/{id}', [BarangayCentroidController::class, 'destroy']);
+
+        // Country code management
+        Route::post('/admin/country-codes', [CountryCodeController::class, 'store']);
+        Route::put('/admin/country-codes/{id}', [CountryCodeController::class, 'update']);
+        Route::delete('/admin/country-codes/{id}', [CountryCodeController::class, 'destroy']);
 
         // Bias / risk register
         Route::get('/admin/bias-register', [BiasRiskRegisterController::class, 'index']);

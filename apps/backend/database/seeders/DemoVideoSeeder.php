@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\NgoGroup;
 use App\Models\PartnerStore;
 use App\Models\Report;
 use App\Models\RewardPointLedger;
@@ -10,7 +9,6 @@ use App\Models\RewardsCatalog;
 use App\Models\Ticket;
 use App\Models\TicketEvidence;
 use App\Models\User;
-use App\Models\UserAchievement;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -118,8 +116,8 @@ class DemoVideoSeeder extends Seeder
                     'uploaded_by_user_id' => $ticket->reporter_user_id,
                     'storage_provider' => 'local',
                     'storage_bucket' => 'evidence',
-                    'storage_path' => 'evidence/' . $ticket->created_at->format('Y/m/d') . '/' . Str::uuid() . '.jpg',
-                    'checksum_sha256' => hash('sha256', Str::uuid() . $ticket->id),
+                    'storage_path' => 'evidence/'.$ticket->created_at->format('Y/m/d').'/'.Str::uuid().'.jpg',
+                    'checksum_sha256' => hash('sha256', Str::uuid().$ticket->id),
                     'mime_type' => 'image/jpeg',
                     'file_size_bytes' => mt_rand(200000, 5000000),
                     'captured_at' => $ticket->created_at,
@@ -141,7 +139,7 @@ class DemoVideoSeeder extends Seeder
                 'user_id' => $user->id,
                 'latitude' => $ticket->latitude + (mt_rand(-50, 50) / 10000),
                 'longitude' => $ticket->longitude + (mt_rand(-50, 50) / 10000),
-                'image_path' => 'evidence/' . $ticket->created_at->format('Y/m/d') . '/' . Str::uuid() . '.jpg',
+                'image_path' => 'evidence/'.$ticket->created_at->format('Y/m/d').'/'.Str::uuid().'.jpg',
                 'image_size' => mt_rand(500000, 4000000),
                 'storage_disk' => 'local',
                 'status' => 'submitted',
@@ -151,11 +149,11 @@ class DemoVideoSeeder extends Seeder
         }
 
         $this->command->info('Demo video seeder completed successfully.');
-        $this->command->info('Partner Stores: ' . PartnerStore::count());
-        $this->command->info('Rewards: ' . RewardsCatalog::count());
-        $this->command->info('Ledger Entries: ' . RewardPointLedger::count());
-        $this->command->info('Ticket Evidence: ' . TicketEvidence::count());
-        $this->command->info('Reports: ' . Report::count());
+        $this->command->info('Partner Stores: '.PartnerStore::count());
+        $this->command->info('Rewards: '.RewardsCatalog::count());
+        $this->command->info('Ledger Entries: '.RewardPointLedger::count());
+        $this->command->info('Ticket Evidence: '.TicketEvidence::count());
+        $this->command->info('Reports: '.Report::count());
     }
 
     private function createLedgerEntries(User $user, int $totalPoints): void
@@ -176,7 +174,7 @@ class DemoVideoSeeder extends Seeder
         for ($i = 0; $i < $numEntries; $i++) {
             $pts = $i === $numEntries - 1
                 ? $totalPoints - $balance  // last entry gets remainder
-                : mt_rand((int)($pointsPerEntry * 0.5), (int)($pointsPerEntry * 1.5));
+                : mt_rand((int) ($pointsPerEntry * 0.5), (int) ($pointsPerEntry * 1.5));
 
             $pts = max(10, $pts);
             $balance += $pts;
@@ -209,7 +207,7 @@ class DemoVideoSeeder extends Seeder
                 'direction' => 'debit',
                 'points' => $pts,
                 'balance_after' => $balance,
-                'notes' => 'Redeemed: ' . ['Free Cold Brew', 'Reusable Tote Bag', 'Bamboo Utensil Set'][$i % 3],
+                'notes' => 'Redeemed: '.['Free Cold Brew', 'Reusable Tote Bag', 'Bamboo Utensil Set'][$i % 3],
                 'created_at' => $now->copy()->subDays(mt_rand(1, 14)),
             ];
         }

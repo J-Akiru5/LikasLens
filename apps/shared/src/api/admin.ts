@@ -17,6 +17,20 @@ import type {
   AdminReward,
   PartnerStore,
   CurrencySetting,
+  BarangayCentroid,
+  CountryCodeEntry,
+  SlaConfig,
+  HeatmapData,
+  ViolationTypeEntry,
+  WalletData,
+  LedgerEntry,
+  RewardItem,
+  RedemptionEntry,
+  AnalyticsDashboardData,
+  PublicImpactData,
+  LeaderboardEntry,
+  LeaderboardSpotlight,
+  LeaderboardStats,
 } from "../types";
 
 // Auth
@@ -200,6 +214,75 @@ export function bulkNgoDelete(ids: string[]) {
   return laravelPost<ApiResponse<{ deleted: number; skipped: number }>>("/admin/ngos/bulk-delete", { ids });
 }
 
+// Admin: Ticket Assignments
+export function getTicketAssignments(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<PaginatedResponse<{ id: string; ticket_id: string; assigned_group_id: string; status: string }>>(`/ticket-assignments${qs}`);
+}
+
+export function createTicketAssignment(data: { ticket_id: string; assigned_group_id: string; assignment_reason?: string }) {
+  return laravelPost<ApiResponse<{ id: string }>>("/ticket-assignments", data);
+}
+
+export function updateTicketAssignment(id: string, data: Record<string, unknown>) {
+  return laravelPut<ApiResponse<unknown>>(`/ticket-assignments/${id}`, data);
+}
+
+export function deleteTicketAssignment(id: string) {
+  return laravelDelete<ApiResponse<null>>(`/ticket-assignments/${id}`);
+}
+
+// Admin: Tenants
+export function getTenants(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<PaginatedResponse<{ id: string; name: string; slug: string; domain: string | null; is_active: boolean }>>(`/admin/tenants${qs}`);
+}
+
+export function getTenant(id: string) {
+  return laravelGet<ApiResponse<{ id: string; name: string; slug: string; domain: string | null; branding: unknown; config: unknown; country_code: string; timezone: string; is_active: boolean }>>(`/admin/tenants/${id}`);
+}
+
+export function createTenant(data: Record<string, unknown>) {
+  return laravelPost<ApiResponse<{ id: string }>>("/admin/tenants", data);
+}
+
+export function updateTenant(id: string, data: Record<string, unknown>) {
+  return laravelPut<ApiResponse<unknown>>(`/admin/tenants/${id}`, data);
+}
+
+export function deleteTenant(id: string) {
+  return laravelDelete<ApiResponse<null>>(`/admin/tenants/${id}`);
+}
+
+// Admin: Contact Messages (Inquiries)
+export function getAdminContactMessages(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<PaginatedResponse<{ id: number; name: string; email: string; message: string; status: string; read_at: string | null; created_at: string }>>(`/admin/contact-messages${qs}`);
+}
+
+export function markContactMessageRead(id: number) {
+  return laravelPatch<ApiResponse<{ id: number; status: string; read_at: string }>>(`/admin/contact-messages/${id}/read`);
+}
+
+// Admin: Pattern Escalation
+export function detectPatternEscalation(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<unknown[]>>(`/admin/pattern-escalation/detect${qs}`);
+}
+
+export function escalatePattern(data: { ticket_ids: string[]; reason: string }) {
+  return laravelPost<ApiResponse<{ escalated: number }>>("/admin/pattern-escalation/escalate", data);
+}
+
+// Admin: Report Verification
+export function verifyReport(reportId: string, data: { status: string; notes?: string }) {
+  return laravelPost<ApiResponse<{ id: string; new_status: string }>>(`/reports/verify`, { report_id: reportId, ...data });
+}
+
+export function batchSyncReports(data: { reports: unknown[] }) {
+  return laravelPost<ApiResponse<{ synced: number }>>("/reports/batch-sync", data);
+}
+
 // Admin: Audit Logs
 export interface AuditLogEntry {
   id: string;
@@ -303,4 +386,216 @@ export function getLguRegions() {
 // Admin: Bias / Risk Register
 export function getBiasRegister() {
   return laravelGet<ApiResponse<BiasRiskEntry[]>>("/admin/bias-register");
+}
+
+// ===========================================================================
+// NEW: Reference Data API Methods
+// ===========================================================================
+
+// Barangay Centroids
+export function getBarangayCentroids(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<BarangayCentroid[]>>(`/barangay-centroids${qs}`);
+}
+
+export function getBarangayCentroid(id: string) {
+  return laravelGet<ApiResponse<BarangayCentroid>>(`/barangay-centroids/${id}`);
+}
+
+export function getBarangayCentroidRegions() {
+  return laravelGet<ApiResponse<string[]>>("/barangay-centroids/regions");
+}
+
+export function getBarangayCentroidProvinces(region?: string) {
+  const qs = region ? `?region=${encodeURIComponent(region)}` : "";
+  return laravelGet<ApiResponse<string[]>>(`/barangay-centroids/provinces${qs}`);
+}
+
+export function getBarangayCentroidCities(region?: string, province?: string) {
+  const params = new URLSearchParams();
+  if (region) params.set("region", region);
+  if (province) params.set("province", province);
+  const qs = params.toString() ? `?${params.toString()}` : "";
+  return laravelGet<ApiResponse<string[]>>(`/barangay-centroids/cities${qs}`);
+}
+
+export function createBarangayCentroid(data: Record<string, unknown>) {
+  return laravelPost<ApiResponse<BarangayCentroid>>("/admin/barangay-centroids", data);
+}
+
+export function updateBarangayCentroid(id: string, data: Record<string, unknown>) {
+  return laravelPut<ApiResponse<BarangayCentroid>>(`/admin/barangay-centroids/${id}`, data);
+}
+
+export function deleteBarangayCentroid(id: string) {
+  return laravelDelete<ApiResponse<null>>(`/admin/barangay-centroids/${id}`);
+}
+
+// Country Codes
+export function getCountryCodes(activeOnly = true) {
+  return laravelGet<ApiResponse<CountryCodeEntry[]>>(`/country-codes?active=${activeOnly}`);
+}
+
+export function getCountryCode(code: string) {
+  return laravelGet<ApiResponse<CountryCodeEntry>>(`/country-codes/${code}`);
+}
+
+export function createCountryCode(data: Record<string, unknown>) {
+  return laravelPost<ApiResponse<CountryCodeEntry>>("/admin/country-codes", data);
+}
+
+export function updateCountryCode(id: string, data: Record<string, unknown>) {
+  return laravelPut<ApiResponse<CountryCodeEntry>>(`/admin/country-codes/${id}`, data);
+}
+
+export function deleteCountryCode(id: string) {
+  return laravelDelete<ApiResponse<null>>(`/admin/country-codes/${id}`);
+}
+
+// SLA Configs
+export function getSlaConfigs() {
+  return laravelGet<ApiResponse<SlaConfig[]>>("/admin/sla-configs");
+}
+
+export function getSlaConfig(id: string) {
+  return laravelGet<ApiResponse<SlaConfig>>(`/admin/sla-configs/${id}`);
+}
+
+export function createSlaConfig(data: Record<string, unknown>) {
+  return laravelPost<ApiResponse<SlaConfig>>("/admin/sla-configs", data);
+}
+
+export function updateSlaConfig(id: string, data: Record<string, unknown>) {
+  return laravelPut<ApiResponse<SlaConfig>>(`/admin/sla-configs/${id}`, data);
+}
+
+export function deleteSlaConfig(id: string) {
+  return laravelDelete<ApiResponse<null>>(`/admin/sla-configs/${id}`);
+}
+
+// ===========================================================================
+// NEW: Previously Unexposed Public API Methods
+// ===========================================================================
+
+// Heatmap
+export function getHeatmap(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<HeatmapData>>(`/reports/heatmap${qs}`);
+}
+
+export function getHeatmapViolationTypes() {
+  return laravelGet<ApiResponse<ViolationTypeEntry[]>>("/reports/heatmap/violation-types");
+}
+
+// Public Laws
+export function getPublicLaws(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<AdminLaw[]>>(`/laws${qs}`);
+}
+
+export function getPublicLaw(id: string) {
+  return laravelGet<ApiResponse<AdminLawDetail>>(`/laws/${id}`);
+}
+
+// Leaderboard
+export function getLeaderboard(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<LeaderboardEntry[]>>(`/leaderboard${qs}`);
+}
+
+export function getLeaderboardWeekly(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<LeaderboardEntry[]>>(`/leaderboard/weekly${qs}`);
+}
+
+export function getLeaderboardMonthly(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<LeaderboardEntry[]>>(`/leaderboard/monthly${qs}`);
+}
+
+export function getLeaderboardBarangay(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<LeaderboardEntry[]>>(`/leaderboard/barangay${qs}`);
+}
+
+export function getLeaderboardSpotlight() {
+  return laravelGet<ApiResponse<LeaderboardSpotlight[]>>("/leaderboard/spotlight");
+}
+
+export function getLeaderboardStats() {
+  return laravelGet<ApiResponse<LeaderboardStats>>("/leaderboard/stats");
+}
+
+// Wallet & Rewards
+export function getUserWallet() {
+  return laravelGet<ApiResponse<WalletData>>("/user/wallet");
+}
+
+export function getUserLedger() {
+  return laravelGet<ApiResponse<LedgerEntry[]>>("/user/ledger");
+}
+
+export function getUserRewards() {
+  return laravelGet<ApiResponse<RewardItem[]>>("/user/rewards");
+}
+
+export function redeemReward(rewardId: string) {
+  return laravelPost<ApiResponse<RedemptionEntry>>("/user/redeem", { reward_id: rewardId });
+}
+
+export function getUserRedemptions() {
+  return laravelGet<ApiResponse<RedemptionEntry[]>>("/user/redemptions");
+}
+
+// Analytics
+export function getAnalyticsDashboard() {
+  return laravelGet<ApiResponse<AnalyticsDashboardData>>("/analytics/dashboard");
+}
+
+// Public Impact
+export function getPublicImpact() {
+  return laravelGet<ApiResponse<PublicImpactData>>("/public/impact");
+}
+
+// Report submission
+export function submitReport(formData: FormData) {
+  return laravelPost<ApiResponse<{ id: string; status: string }>>("/reports", formData, 30000);
+}
+
+export function triageReport(data: Record<string, unknown>) {
+  return laravelPost<ApiResponse<unknown>>("/reports/triage", data);
+}
+
+export function corroborateReport(data: Record<string, unknown>) {
+  return laravelPost<ApiResponse<unknown>>("/reports/corroborate", data);
+}
+
+export function checkGeofence(lat: number, lng: number) {
+  return laravelPost<ApiResponse<{ nearby: boolean; chain_id?: string }>>("/reports/check-geofence", { latitude: lat, longitude: lng });
+}
+
+export function getReportChain(chainId: string) {
+  return laravelGet<ApiResponse<unknown>>(`/reports/chain/${chainId}`);
+}
+
+export function verifyReportEvidence(reportId: string) {
+  return laravelGet<ApiResponse<{ verified: boolean; hash: string }>>(`/reports/${reportId}/verify-evidence`);
+}
+
+// Ticket timeline
+export function getTicketTimeline(id: string) {
+  return laravelGet<ApiResponse<unknown[]>>(`/tickets/${id}/timeline`);
+}
+
+// Contact messages
+export function sendContactMessage(data: { name: string; email: string; message: string }) {
+  return laravelPost<ApiResponse<{ id: string }>>("/contact-messages", data);
+}
+
+// Chat
+export function sendChatMessage(messages: { role: string; content: string }[], systemPrompt?: string) {
+  return laravelPost<ApiResponse<{ reply: string }>>("/v1/chat", {
+    messages,
+    system_prompt: systemPrompt || "You are Liksi, an AI assistant for LikasLens environmental monitoring platform.",
+  }, 60000);
 }

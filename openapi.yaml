@@ -2915,7 +2915,7 @@ paths:
   /v1/chat:
     post:
       tags: [Chat]
-      summary: Likasy chatbot proxy
+      summary: Liksi chatbot proxy
       description: |
         Proxies a chat request to the internal AI service. The AI service
         is not directly accessible from the browser; this backend bridges the gap.
