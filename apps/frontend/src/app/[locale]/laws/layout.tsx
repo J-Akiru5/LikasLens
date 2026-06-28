@@ -26,10 +26,20 @@ export async function generateMetadata({
       } as Record<string, string>,
     },
     openGraph: {
+      type: "website",
+      siteName: "LikasLens",
       title: t("lawsTitle"),
       description: t("lawsDescription"),
       locale,
       url: `${baseUrl}/${locale}/laws`,
+      images: [
+        {
+          url: `${baseUrl}/twitter-image.jpg`,
+          width: 1200,
+          height: 630,
+          alt: "LikasLens — From snapshot to solution",
+        },
+      ],
     },
   };
 }

@@ -196,7 +196,7 @@ export default function AdminLandingPage() {
             Access Dashboard <ArrowRight className="w-5 h-5" />
           </Link>
           <Link
-            href="https://likaslens.ph"
+            href="https://likaslens.syntaxure.dev"
             style={{
               display: "inline-flex", alignItems: "center", gap: 8,
               padding: "16px 32px", borderRadius: 12,

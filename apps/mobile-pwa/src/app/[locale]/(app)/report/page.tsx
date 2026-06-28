@@ -14,26 +14,44 @@ import {
   Zap,
   RefreshCw,
   ShieldCheck,
+  Loader2,
+  AlertTriangle,
+  RotateCcw,
 } from "lucide-react";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { cn, laravelPost, showToast, Button, useOnnxInference } from "@likaslens/shared";
+import { cn, laravelPost, showToast, Button } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
 import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
-import { stripExif } from "@/lib/exif-stripper";
+import { queueReport } from "@likaslens/shared";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useVoiceInput } from "@/hooks/use-voice-input";
 import { useHaptics } from "@/hooks/use-haptics";
 import { BottomSheet } from "@/components/native/bottom-sheet";
 
-const INCIDENT_TYPES = [
-  "Illegal Dumping",
-  "Water Pollution",
-  "Air Pollution",
-  "Deforestation",
-  "Noise Pollution",
-  "Wildlife Threat",
-  "Chemical Spill",
-  "Other",
+interface FailedPayload {
+  base64Image: string;
+  latitude: number | undefined;
+  longitude: number | undefined;
+  user_id: string | undefined;
+  description: string | undefined;
+  report_type: string;
+}
+
+interface FailedSubmission {
+  error: string;
+  payload: FailedPayload;
+  retriesExhausted?: boolean;
+}
+
+const INCIDENT_TYPES: { value: string; label: string }[] = [
+  { value: "waste_dumping", label: "Illegal Dumping" },
+  { value: "water_pollution", label: "Water Pollution" },
+  { value: "air_pollution", label: "Air Pollution" },
+  { value: "illegal_logging", label: "Deforestation" },
+  { value: "other", label: "Noise Pollution" },
+  { value: "wildlife_poaching", label: "Wildlife Threat" },
+  { value: "other", label: "Chemical Spill" },
+  { value: "other", label: "Other" },
 ];
 
 type Step = "camera" | "preview" | "form";
@@ -61,16 +79,24 @@ export default function ReportPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [step, setStep] = useState<Step>("camera");
-  const [incidentType, setIncidentType] = useState(isQuickMode ? "Illegal Dumping" : "");
+  const [incidentType, setIncidentType] = useState(isQuickMode ? "waste_dumping" : "");
   const [description, setDescription] = useState("");
   const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
   const [ghostMode, setGhostMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [typeSheetOpen, setTypeSheetOpen] = useState(false);
-  const haptic = useHaptics();
+  const [showManualCoords, setShowManualCoords] = useState(false);
+  const [manualLat, setManualLat] = useState("");
+  const [manualLng, setManualLng] = useState("");
+  const [cameraInitialising, setCameraInitialising] = useState(false);
+  const MAX_RETRIES = 3;
 
-  // On-device inference for offline triage (lazy init)
-  const onnx = useOnnxInference({ autoInit: false });
+  const [failedSubmission, setFailedSubmission] = useState<FailedSubmission | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isOnline, setIsOnline] = useState(true);
+  const [autoRetrying, setAutoRetrying] = useState(false);
+
+  const haptic = useHaptics();
 
   const {
     isListening,
@@ -81,13 +107,38 @@ export default function ReportPage() {
     setTranscript,
   } = useVoiceInput();
 
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
   const [cameraError, setCameraError] = useState<"NOT_ALLOWED" | "NOT_FOUND" | "UNKNOWN" | null>(null);
 
-  const startCamera = useCallback(async () => {
+  // Online / offline detection only — no auto-flush or auto-retry.
+  // Sync is manual via the /offline-queue tab.
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      showToast("Connection restored.", "success");
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      showToast("Connection lost. Reports will queue until you are back online.", "error");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    setIsOnline(navigator.onLine);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  const startCamera = useCallback(async (facing?: "user" | "environment") => {
+    const targetFacing = facing ?? facingMode;
     setCameraError(null);
+    setCameraInitialising(true);
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: { facingMode: { ideal: targetFacing } },
         audio: false,
       });
       streamRef.current = mediaStream;
@@ -95,7 +146,7 @@ export default function ReportPage() {
     } catch (err) {
       try {
         const fallbackStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: { facingMode: { ideal: targetFacing } },
           audio: false,
         });
         streamRef.current = fallbackStream;
@@ -112,8 +163,10 @@ export default function ReportPage() {
         }
         showToast("Camera access denied or unavailable", "error");
       }
+    } finally {
+      setCameraInitialising(false);
     }
-  }, []);
+  }, [facingMode]);
 
   // Proactively check camera permission state on mount
   useEffect(() => {
@@ -159,6 +212,18 @@ export default function ReportPage() {
     };
   }, []);
 
+  const switchCamera = useCallback(async () => {
+    const nextFacing = facingMode === "environment" ? "user" : "environment";
+    // Stop current stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    setStream(null);
+    setFacingMode(nextFacing);
+    await startCamera(nextFacing);
+  }, [facingMode, startCamera]);
+
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
@@ -167,24 +232,19 @@ export default function ReportPage() {
     setStream(null);
   }, []);
 
-  const handleFileCaptureMobile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileCaptureMobile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onloadend = async () => {
+    reader.onloadend = () => {
       const dataUrl = reader.result as string;
-      try {
-        const cleaned = await stripExif(dataUrl);
-        setPhoto(cleaned);
-      } catch {
-        setPhoto(dataUrl);
-      }
+      setPhoto(dataUrl);
       setStep("preview");
       stopCamera();
     };
     reader.readAsDataURL(file);
-  }, [stopCamera, stripExif]);
+  }, [stopCamera]);
 
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -212,8 +272,14 @@ export default function ReportPage() {
       navigator.geolocation.getCurrentPosition(
         (pos) =>
           setGps({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => setGps(null),
+        () => {
+          setGps(null);
+          setShowManualCoords(true);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
       );
+    } else {
+      setShowManualCoords(true);
     }
   }, []);
 
@@ -245,47 +311,54 @@ export default function ReportPage() {
       haptic("error");
       return;
     }
+    if (!gps) {
+      showToast("Location not available. Enter coordinates or enable GPS.", "error");
+      haptic("error");
+      return;
+    }
 
     setSubmitting(true);
+    setFailedSubmission(null);
+    setRetryCount(0);
+
+    // Resolve userId before try so it's available in both success and error paths
+    let userId: string | undefined;
     try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      userId = session?.user?.id;
+    } catch {
+      // User not logged in — submit anonymously.
+    }
+
+    try {
+      showToast("Submitting report...", "info");
+
       // canvas.toDataURL() returns a raw pixel raster, so EXIF metadata is
       // already stripped at capture. Ghost Mode additionally omits GPS.
       const base64Image = dataUrlToBase64(photo);
 
-      // On-device triage when offline (skip if Ghost Mode)
-      if (!ghostMode && !navigator.onLine && onnx.isReady) {
-        try {
-          const onnxResult = await onnx.infer(base64Image);
-          if (onnxResult.has_environmental_concern) {
-            showToast(
-              `On-device AI detected: ${onnxResult.environmental_indicators.join(", ")}. Submitting offline.`,
-              "info"
-            );
-          }
-        } catch {
-          // Triage failure shouldn't block submission
-        }
-      }
-
-      showToast("Submitting report...", "info");
-
-      let userId: string | undefined;
-      try {
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        userId = session?.user?.id;
-      } catch {
-        // User not logged in — submit anonymously.
-      }
-
-      await laravelPost("/reports", {
+      const payload: FailedPayload = {
         base64Image,
-        latitude: ghostMode ? undefined : gps?.lat,
-        longitude: ghostMode ? undefined : gps?.lng,
+        latitude: gps?.lat,
+        longitude: gps?.lng,
         user_id: userId,
         description: description || undefined,
         report_type: incidentType,
-      });
+      };
+
+      if (!navigator.onLine) {
+        await queueReport(payload as unknown as Record<string, unknown>);
+        haptic("success");
+        showToast("You are offline. Report queued securely.", "info");
+        setPhoto(null);
+        setIncidentType("");
+        setDescription("");
+        setStep("camera");
+        return;
+      }
+
+      await laravelPost("/reports", payload);
 
       haptic("success");
 
@@ -304,6 +377,17 @@ export default function ReportPage() {
       haptic("error");
       const message = err instanceof Error ? err.message : "Failed to submit report";
       showToast(message, "error");
+      setFailedSubmission({
+        error: message,
+        payload: {
+          base64Image: dataUrlToBase64(photo!),
+          latitude: gps?.lat,
+          longitude: gps?.lng,
+          user_id: userId,
+          description: description || undefined,
+          report_type: incidentType,
+        },
+      });
     } finally {
       setSubmitting(false);
     }
@@ -321,6 +405,7 @@ export default function ReportPage() {
           <button
             onClick={() => {
               stopCamera();
+              setShowManualCoords(false);
               router.push(`/${locale}/dashboard`);
             }}
             aria-label="Close camera"
@@ -336,6 +421,17 @@ export default function ReportPage() {
                 <Zap className="w-3 h-3" /> Quick
               </span>
             )}
+            {/* Flip camera button */}
+            <button
+              onClick={() => { switchCamera(); haptic("light"); }}
+              disabled={cameraInitialising}
+              className="touch-target flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all bg-black/40 text-white/85 border border-white/20 disabled:opacity-40"
+              style={{ backdropFilter: "blur(10px)" }}
+              aria-label={`Switch to ${facingMode === "environment" ? "front" : "back"} camera`}
+            >
+              <RotateCcw className="w-4 h-4" />
+              {facingMode === "environment" ? "Back" : "Front"}
+            </button>
             <button
               onClick={() => { setGhostMode(!ghostMode); haptic("light"); }}
               aria-pressed={ghostMode}
@@ -379,6 +475,11 @@ export default function ReportPage() {
                 />
               </label>
             </div>
+          ) : cameraInitialising ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 text-white gap-4">
+              <Loader2 className="w-10 h-10 animate-spin text-zinc-400" />
+              <p className="text-sm text-zinc-500 font-medium">Initializing camera...</p>
+            </div>
           ) : (
             <>
               <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
@@ -409,7 +510,7 @@ export default function ReportPage() {
           ) : (
             <div className="flex w-full px-12 justify-between items-center">
               <button
-                onClick={() => { setPhoto(null); setStep("camera"); haptic("light"); }}
+                onClick={() => { setPhoto(null); setStep("camera"); setShowManualCoords(false); haptic("light"); }}
                 className="flex flex-col items-center gap-2"
               >
                 <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white active:scale-95 transition-transform border border-white/10" style={{ backdropFilter: "blur(10px)" }}>
@@ -433,6 +534,161 @@ export default function ReportPage() {
       </div>
     );
   }
+
+  const retrySubmission = useCallback(async () => {
+    if (!failedSubmission) return;
+    if (retryCount >= MAX_RETRIES) return;
+
+    const attempt = retryCount + 1;
+    setSubmitting(true);
+    setRetryCount(attempt);
+    try {
+      await laravelPost("/reports", failedSubmission.payload);
+      haptic("success");
+      showToast("Report submitted successfully!", "success");
+      setFailedSubmission(null);
+      setRetryCount(0);
+      setPhoto(null);
+      setIncidentType("");
+      setDescription("");
+      setStep("camera");
+      router.push(`/${locale}/dashboard`);
+    } catch (err) {
+      haptic("error");
+      const msg = err instanceof Error ? err.message : "Request failed";
+      const remaining = MAX_RETRIES - attempt;
+      if (remaining > 0) {
+        showToast(`Attempt ${attempt} of ${MAX_RETRIES} failed. ${remaining} retr${remaining > 1 ? "ies" : "y"} left.`, "error");
+      } else {
+        showToast(`Attempt ${attempt} of ${MAX_RETRIES} — max retries reached. Please try again later.`, "error");
+      }
+      setFailedSubmission((prev) =>
+        prev
+          ? {
+              ...prev,
+              error: `${msg} (attempt ${attempt}/${MAX_RETRIES})`,
+              retriesExhausted: attempt >= MAX_RETRIES,
+            }
+          : null,
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }, [failedSubmission, retryCount, locale, router]);
+
+  const RetryBanner = () =>
+    failedSubmission ? (
+      <div
+        className="ios-grouped-list"
+        style={{
+          padding: "14px",
+          borderRadius: 16,
+          border: "1px solid color-mix(in oklab, var(--red) 35%, transparent)",
+          background: "color-mix(in oklab, var(--red) 6%, var(--panel))",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+          <AlertTriangle
+            style={{ width: 18, height: 18, color: "var(--red)", flexShrink: 0, marginTop: 2 }}
+          />
+          <div style={{ flex: 1 }}>
+            <p
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: 13,
+                fontWeight: 600,
+                color: "var(--ink)",
+                margin: 0,
+              }}
+            >
+              Report failed to send
+            </p>
+            <p
+              style={{
+                fontFamily: "var(--font-body)",
+                fontSize: 12,
+                color: "var(--muted)",
+                margin: "4px 0 0",
+                lineHeight: 1.4,
+              }}
+            >
+              {failedSubmission.error}
+            </p>
+          </div>
+          <button
+            onClick={() => { setFailedSubmission(null); setRetryCount(0); }}
+            aria-label="Dismiss retry"
+            className="touch-target rounded-full"
+            style={{
+              background: "color-mix(in oklab, var(--ink) 8%, transparent)",
+              width: 28,
+              height: 28,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <X style={{ width: 14, height: 14, color: "var(--muted)" }} />
+          </button>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => { setFailedSubmission(null); setRetryCount(0); }}
+            className="touch-target"
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              borderRadius: 12,
+              border: "1px solid var(--border)",
+              background: "transparent",
+              fontFamily: "var(--font-body)",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "var(--muted)",
+            }}
+          >
+            Dismiss
+          </button>            <button
+            onClick={retrySubmission}
+            disabled={submitting || autoRetrying || failedSubmission.retriesExhausted}
+            className="touch-target"
+            style={{
+              flex: 1,
+              padding: "10px 0",
+              borderRadius: 12,
+              border: "none",
+              background: failedSubmission.retriesExhausted ? "color-mix(in oklab, var(--ink) 20%, transparent)" : "var(--red)",
+              fontFamily: "var(--font-body)",
+              fontSize: 13,
+              fontWeight: 700,
+              color: failedSubmission.retriesExhausted ? "var(--muted-subtle)" : "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              opacity: submitting ? 0.5 : 1,
+              cursor: failedSubmission.retriesExhausted ? "not-allowed" : "pointer",
+            }}
+          >
+            {submitting ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : failedSubmission.retriesExhausted ? (
+              <X style={{ width: 14, height: 14 }} />
+            ) : (
+              <RefreshCw style={{ width: 14, height: 14 }} />
+            )}
+            {autoRetrying ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : null}
+            {failedSubmission.retriesExhausted ? "Max retries" : autoRetrying ? "Auto-retrying..." : `Retry ${retryCount > 0 ? `(${retryCount}/${MAX_RETRIES})` : ""}`}
+          </button>
+        </div>
+      </div>
+    ) : null;
 
   /* ───────────────────────────────────────────────────────────────────────
      Shared form pieces — Ghost Mode readout + submit button.
@@ -510,7 +766,7 @@ export default function ReportPage() {
           <div className="flex-1">
             <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>Quick report</h1>
             <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: "3px 0 0" }}>
-              GPS {gps ? "detected" : "pending"}
+              GPS {gps ? "detected" : showManualCoords ? "enter manual" : "pending"}
             </p>
           </div>
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-[#facc15]/20 text-[#b8860b] border border-[#facc15]/30">
@@ -544,14 +800,28 @@ export default function ReportPage() {
             style={{ borderRadius: 16, border: "1px solid var(--border)", background: "var(--panel)", minHeight: 56 }}
           >
             <span style={{ flex: 1, textAlign: "left", fontFamily: "var(--font-body)", fontSize: 15, color: incidentType ? "var(--ink)" : "var(--muted-subtle)" }}>
-              {incidentType || "Select classification"}
+              {INCIDENT_TYPES.find(t => t.value === incidentType)?.label || "Select classification"}
             </span>
+            {!gps && (
+              <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--red)", marginLeft: 8 }}>
+                GPS pending
+              </span>
+            )}
             <Camera style={{ width: 18, height: 18, color: "var(--muted)" }} />
           </button>
         </div>
 
+        {!isOnline && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: "color-mix(in oklab, var(--ink) 6%, transparent)", border: "1px solid color-mix(in oklab, var(--ink) 12%, transparent)" }}>
+            <div className="w-2 h-2 rounded-full bg-ink/30" />
+            <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: 0 }}>
+              Offline — reports will queue until connection returns.
+            </p>
+          </div>
+        )}
+        <RetryBanner />
         <GhostToggle />
-        <SubmitButton label="Submit report" disabled={!incidentType || !photo} />
+        <SubmitButton label="Submit report" disabled={!incidentType || !gps} />
       </div>
     );
   }
@@ -601,7 +871,7 @@ export default function ReportPage() {
           style={{ borderRadius: 16, border: "1px solid var(--border)", background: "var(--panel)", minHeight: 56 }}
         >
           <span style={{ flex: 1, textAlign: "left", fontFamily: "var(--font-body)", fontSize: 15, color: incidentType ? "var(--ink)" : "var(--muted-subtle)" }}>
-            {incidentType || "Select classification"}
+            {INCIDENT_TYPES.find(t => t.value === incidentType)?.label || "Select classification"}
           </span>
           <Camera style={{ width: 18, height: 18, color: "var(--muted)" }} />
         </button>
@@ -609,19 +879,48 @@ export default function ReportPage() {
 
       <BottomSheet open={typeSheetOpen} onClose={() => setTypeSheetOpen(false)} title="Select incident type">
         <div className="ios-grouped-list">
-          {INCIDENT_TYPES.map((type) => (
+          {INCIDENT_TYPES.map(({ value, label }) => (
             <button
-              key={type}
-              onClick={() => { setIncidentType(type); setTypeSheetOpen(false); haptic("light"); }}
+              key={value}
+              onClick={() => { setIncidentType(value); setTypeSheetOpen(false); haptic("light"); }}
               className="ios-list-row"
-              style={{ width: "100%", justifyContent: "space-between", background: incidentType === type ? "color-mix(in oklab, var(--accent) 6%, transparent)" : undefined }}
+              style={{ width: "100%", justifyContent: "space-between", background: incidentType === value ? "color-mix(in oklab, var(--accent) 6%, transparent)" : undefined }}
             >
-              <span style={{ fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>{type}</span>
-              {incidentType === type && <Check style={{ width: 18, height: 18, color: "var(--accent)" }} />}
+              <span style={{ fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>{label}</span>
+              {incidentType === value && <Check style={{ width: 18, height: 18, color: "var(--accent)" }} />}
             </button>
           ))}
         </div>
       </BottomSheet>
+
+      {/* Manual GPS coordinates fallback */}
+      {showManualCoords && (
+        <div>
+          <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>GPS unavailable — enter coordinates</label>
+          <div style={{ display: "flex", gap: 12 }}>
+            <input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              placeholder="Latitude (e.g. 14.5833)"
+              value={manualLat}
+              onChange={(e) => { setManualLat(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -90 && val <= 90) setGps(prev => ({ lat: val, lng: prev?.lng ?? 0 })); }}
+              aria-label="Latitude coordinate"
+              style={{ flex: 1, padding: "12px 14px", borderRadius: 14, background: "var(--panel)", border: "1px solid var(--border)", fontFamily: "var(--font-data)", fontSize: 14, color: "var(--ink)", outline: "none" }}
+            />
+            <input
+              type="number"
+              inputMode="decimal"
+              step="any"
+              placeholder="Longitude (e.g. 120.9833)"
+              value={manualLng}
+              onChange={(e) => { setManualLng(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -180 && val <= 180) setGps(prev => ({ lat: prev?.lat ?? 0, lng: val })); }}
+              aria-label="Longitude coordinate"
+              style={{ flex: 1, padding: "12px 14px", borderRadius: 14, background: "var(--panel)", border: "1px solid var(--border)", fontFamily: "var(--font-data)", fontSize: 14, color: "var(--ink)", outline: "none" }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Description + voice */}
       <div>
@@ -629,9 +928,10 @@ export default function ReportPage() {
         <div className="relative">
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => { if (e.target.value.length <= 5000) setDescription(e.target.value); }}
             placeholder="Add any extra details about the location or situation..."
             rows={4}
+            maxLength={5000}
             style={{
               width: "100%", padding: "14px 52px 14px 16px", borderRadius: 16,
               background: "var(--panel)", border: "1px solid var(--border)",
@@ -669,10 +969,21 @@ export default function ReportPage() {
           </p>
         )}
         {voiceError && <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--red)", margin: "8px 0 0 2px" }}>{voiceError}</p>}
+        <p style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--muted-subtle)", margin: "6px 0 0 2px", textAlign: "right" }}>
+          {description.length}/5000
+        </p>
       </div>
-
-      <GhostToggle />
-      <SubmitButton label="Submit evidence" disabled={!incidentType} />
-    </div>
+        {!isOnline && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: "color-mix(in oklab, var(--ink) 6%, transparent)", border: "1px solid color-mix(in oklab, var(--ink) 12%, transparent)" }}>
+            <div className="w-2 h-2 rounded-full bg-ink/30" />
+            <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: 0 }}>
+              Offline — reports will queue until connection returns.
+            </p>
+          </div>
+        )}
+        <RetryBanner />
+        <GhostToggle />
+        <SubmitButton label="Submit evidence" disabled={!incidentType || !gps} />
+      </div>
   );
 }

@@ -20,13 +20,21 @@ interface ImpactData {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const userGreeting = user?.email ? user.email.split('@')[0] : "Citizen";
-  const userRole = user?.user_metadata?.role as string | undefined;
+  let userGreeting = "Citizen";
+  let userRole: string | undefined;
+  let token: string | undefined;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get("laravel_token")?.value;
+  try {
+    const supabase = await createClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    userGreeting = authUser?.email ? authUser.email.split('@')[0] : "Citizen";
+    userRole = authUser?.user_metadata?.role as string | undefined;
+
+    const cookieStore = await cookies();
+    token = cookieStore.get("laravel_token")?.value;
+  } catch {
+    // Auth unavailable — render page without user-specific data
+  }
 
   let impactData: ImpactData | null = null;
   let statsData: DashboardStats | null = null;
