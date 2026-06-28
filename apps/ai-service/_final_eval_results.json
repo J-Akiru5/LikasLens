@@ -1,0 +1,397 @@
+{
+  "timestamp": "2026-06-23 01:29:13",
+  "coco128_official_val": {
+    "dataset": "COCO128 (128 images, 929 instances, CC BY 4.0)",
+    "mAP50": 0.6054,
+    "mAP50_95": 0.4454,
+    "precision": 0.6385,
+    "recall": 0.5361,
+    "speed": {
+      "preprocess_ms": 0.97,
+      "inference_ms": 65.25,
+      "postprocess_ms": 1.85
+    },
+    "per_class_ap50": {
+      "0": {
+        "name": "person",
+        "ap50": 0.5323
+      },
+      "1": {
+        "name": "bicycle",
+        "ap50": 0.2613
+      },
+      "2": {
+        "name": "car",
+        "ap50": 0.1622
+      },
+      "3": {
+        "name": "motorcycle",
+        "ap50": 0.7172
+      },
+      "4": {
+        "name": "airplane",
+        "ap50": 0.6723
+      },
+      "5": {
+        "name": "bus",
+        "ap50": 0.6887
+      },
+      "6": {
+        "name": "train",
+        "ap50": 0.6013
+      },
+      "7": {
+        "name": "truck",
+        "ap50": 0.2932
+      },
+      "8": {
+        "name": "boat",
+        "ap50": 0.1337
+      },
+      "9": {
+        "name": "traffic light",
+        "ap50": 0.1358
+      },
+      "10": {
+        "name": "fire hydrant",
+        "ap50": 0.4454
+      },
+      "11": {
+        "name": "stop sign",
+        "ap50": 0.7
+      },
+      "12": {
+        "name": "parking meter",
+        "ap50": 0.4454
+      },
+      "13": {
+        "name": "bench",
+        "ap50": 0.3636
+      },
+      "14": {
+        "name": "bird",
+        "ap50": 0.5085
+      },
+      "15": {
+        "name": "cat",
+        "ap50": 0.7894
+      },
+      "16": {
+        "name": "dog",
+        "ap50": 0.5838
+      },
+      "17": {
+        "name": "horse",
+        "ap50": 0.5178
+      },
+      "18": {
+        "name": "sheep",
+        "ap50": 0.4454
+      },
+      "19": {
+        "name": "cow",
+        "ap50": 0.4454
+      },
+      "20": {
+        "name": "elephant",
+        "ap50": 0.6748
+      },
+      "21": {
+        "name": "bear",
+        "ap50": 0.995
+      },
+      "22": {
+        "name": "zebra",
+        "ap50": 0.9637
+      },
+      "23": {
+        "name": "giraffe",
+        "ap50": 0.7174
+      },
+      "24": {
+        "name": "backpack",
+        "ap50": 0.2315
+      },
+      "25": {
+        "name": "umbrella",
+        "ap50": 0.4156
+      },
+      "26": {
+        "name": "handbag",
+        "ap50": 0.0858
+      },
+      "27": {
+        "name": "tie",
+        "ap50": 0.473
+      },
+      "28": {
+        "name": "suitcase",
+        "ap50": 0.52
+      },
+      "29": {
+        "name": "frisbee",
+        "ap50": 0.675
+      },
+      "30": {
+        "name": "skis",
+        "ap50": 0.4975
+      },
+      "31": {
+        "name": "snowboard",
+        "ap50": 0.4986
+      },
+      "32": {
+        "name": "sports ball",
+        "ap50": 0.311
+      },
+      "33": {
+        "name": "kite",
+        "ap50": 0.1774
+      },
+      "34": {
+        "name": "baseball bat",
+        "ap50": 0.1979
+      },
+      "35": {
+        "name": "baseball glove",
+        "ap50": 0.2702
+      },
+      "36": {
+        "name": "skateboard",
+        "ap50": 0.4062
+      },
+      "37": {
+        "name": "surfboard",
+        "ap50": 0.4454
+      },
+      "38": {
+        "name": "tennis racket",
+        "ap50": 0.3127
+      },
+      "39": {
+        "name": "bottle",
+        "ap50": 0.2031
+      },
+      "40": {
+        "name": "wine glass",
+        "ap50": 0.3276
+      },
+      "41": {
+        "name": "cup",
+        "ap50": 0.2776
+      },
+      "42": {
+        "name": "fork",
+        "ap50": 0.1818
+      },
+      "43": {
+        "name": "knife",
+        "ap50": 0.3677
+      },
+      "44": {
+        "name": "spoon",
+        "ap50": 0.1859
+      },
+      "45": {
+        "name": "bowl",
+        "ap50": 0.4921
+      },
+      "46": {
+        "name": "banana",
+        "ap50": 0.0438
+      },
+      "47": {
+        "name": "apple",
+        "ap50": 0.4454
+      },
+      "48": {
+        "name": "sandwich",
+        "ap50": 0.3317
+      },
+      "49": {
+        "name": "orange",
+        "ap50": 0.6215
+      },
+      "50": {
+        "name": "broccoli",
+        "ap50": 0.2005
+      },
+      "51": {
+        "name": "carrot",
+        "ap50": 0.3583
+      },
+      "52": {
+        "name": "hot dog",
+        "ap50": 0.72
+      },
+      "53": {
+        "name": "pizza",
+        "ap50": 0.8413
+      },
+      "54": {
+        "name": "donut",
+        "ap50": 0.8626
+      },
+      "55": {
+        "name": "cake",
+        "ap50": 0.8785
+      },
+      "56": {
+        "name": "chair",
+        "ap50": 0.2369
+      },
+      "57": {
+        "name": "couch",
+        "ap50": 0.5456
+      },
+      "58": {
+        "name": "potted plant",
+        "ap50": 0.484
+      },
+      "59": {
+        "name": "bed",
+        "ap50": 0.6161
+      },
+      "60": {
+        "name": "dining table",
+        "ap50": 0.3668
+      },
+      "61": {
+        "name": "toilet",
+        "ap50": 0.675
+      },
+      "62": {
+        "name": "tv",
+        "ap50": 0.695
+      },
+      "63": {
+        "name": "laptop",
+        "ap50": 0.3611
+      },
+      "64": {
+        "name": "mouse",
+        "ap50": 0.0045
+      },
+      "65": {
+        "name": "remote",
+        "ap50": 0.53
+      },
+      "66": {
+        "name": "keyboard",
+        "ap50": 0.4454
+      },
+      "67": {
+        "name": "cell phone",
+        "ap50": 0.0334
+      },
+      "68": {
+        "name": "microwave",
+        "ap50": 0.7169
+      },
+      "69": {
+        "name": "oven",
+        "ap50": 0.2666
+      },
+      "70": {
+        "name": "toaster",
+        "ap50": 0.4454
+      },
+      "71": {
+        "name": "sink",
+        "ap50": 0.1255
+      },
+      "72": {
+        "name": "refrigerator",
+        "ap50": 0.4383
+      },
+      "73": {
+        "name": "book",
+        "ap50": 0.1846
+      },
+      "74": {
+        "name": "clock",
+        "ap50": 0.7374
+      },
+      "75": {
+        "name": "vase",
+        "ap50": 0.795
+      },
+      "76": {
+        "name": "scissors",
+        "ap50": 0.0746
+      },
+      "77": {
+        "name": "teddy bear",
+        "ap50": 0.3876
+      },
+      "78": {
+        "name": "hair drier",
+        "ap50": 0.4454
+      },
+      "79": {
+        "name": "toothbrush",
+        "ap50": 0.3718
+      }
+    },
+    "total_images": 128,
+    "total_instances": 929
+  },
+  "waste_model_benchmark": {
+    "model": "yolov8-waste.pt",
+    "classes": {
+      "0": "cardboard",
+      "1": "e-waste",
+      "2": "glass",
+      "3": "medical",
+      "4": "metal",
+      "5": "organic",
+      "6": "paper",
+      "7": "plastic"
+    },
+    "total_images": 128,
+    "total_detections": 149,
+    "detection_class_distribution": {
+      "glass": 44,
+      "plastic": 24,
+      "metal": 10,
+      "cardboard": 43,
+      "e-waste": 20,
+      "paper": 1,
+      "organic": 3,
+      "medical": 4
+    },
+    "avg_confidence": 0.5302,
+    "latency": {
+      "mean_ms": 269.35,
+      "p50_ms": 255.45,
+      "p95_ms": 404.8,
+      "min_ms": 136.87,
+      "max_ms": 534.16
+    }
+  },
+  "coco_model_benchmark": {
+    "model": "yolov8n.pt",
+    "total_images": 128,
+    "total_detections": 642,
+    "latency": {
+      "mean_ms": 121.53,
+      "p50_ms": 102.86,
+      "p95_ms": 231.75
+    }
+  },
+  "composite_scoring": {
+    "total_images": 128,
+    "avg_composite": 0.868,
+    "max_composite": 0.9659,
+    "triage_distribution": {
+      "auto_routed": 122,
+      "pending_review": 6,
+      "auto_dismissed": 0
+    },
+    "triage_percentages": {
+      "auto_routed": 95.31,
+      "pending_review": 4.69,
+      "auto_dismissed": 0.0
+    }
+  }
+}
