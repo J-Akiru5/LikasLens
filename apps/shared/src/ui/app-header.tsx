@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "../utils";
 import type { AppNotification } from "../types/notification";
 import { formatDistanceToNow } from "../lib/format";
+import { LanguageDropdown } from "./language-dropdown";
 
 interface AppHeaderProps {
   greeting?: string;
@@ -146,6 +147,7 @@ export function AppHeader({
           )}
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <LanguageDropdown />
             {onThemeToggle && (
               <button
                 suppressHydrationWarning

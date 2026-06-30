@@ -142,7 +142,7 @@ export function TechStackSection() {
   const activeNode = localizedNodes.find(n => n.id === hoveredNode);
 
   return (
-    <section id="architecture" className="ec-section" style={{ background: "var(--page)" }}>
+    <section id="architecture" className="ec-section" style={{ background: "transparent" }}>
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes techPulse {
           0%, 100% { opacity: 0.3; transform: scale(1); }

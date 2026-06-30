@@ -31,17 +31,18 @@ const SECTION_IDS = [
 ];
 
 const ASEAN_COUNTRIES = [
-  { flag: "🇵🇭", name: "Philippines", status: "PILOT ACTIVE" },
-  { flag: "🇮🇩", name: "Indonesia", status: "PHASE 2" },
-  { flag: "🇻🇳", name: "Vietnam", status: "PHASE 2" },
-  { flag: "🇹🇭", name: "Thailand", status: "PHASE 2" },
-  { flag: "🇲🇾", name: "Malaysia", status: "PHASE 2" },
-  { flag: "🇸🇬", name: "Singapore", status: "PHASE 3" },
-  { flag: "🇧🇳", name: "Brunei", status: "PHASE 3" },
-  { flag: "🇰🇭", name: "Cambodia", status: "PHASE 3" },
-  { flag: "🇱🇦", name: "Laos", status: "PHASE 3" },
-  { flag: "🇲🇲", name: "Myanmar", status: "PHASE 3" },
+  { code: "ph", name: "Philippines", status: "PILOT ACTIVE" },
+  { code: "id", name: "Indonesia", status: "PHASE 2" },
+  { code: "vn", name: "Vietnam", status: "PHASE 2" },
+  { code: "th", name: "Thailand", status: "PHASE 2" },
+  { code: "my", name: "Malaysia", status: "PHASE 2" },
+  { code: "sg", name: "Singapore", status: "PHASE 3" },
+  { code: "bn", name: "Brunei", status: "PHASE 3" },
+  { code: "kh", name: "Cambodia", status: "PHASE 3" },
+  { code: "la", name: "Laos", status: "PHASE 3" },
+  { code: "mm", name: "Myanmar", status: "PHASE 3" },
 ];
+
 
 interface StickyLandingNavProps {
   ghostMode: boolean;
@@ -114,7 +115,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
     >
       {/* Nav bar */}
       <div
-        className="transition-all duration-500"
+        className="transition-all duration-500 relative z-20"
         style={{
           backdropFilter: visible ? "blur(16px)" : "none",
           background: visible
@@ -145,7 +146,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
           </Link>
 
           {/* Section links - Center */}
-          <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+          <div className="hidden lg:flex flex-1 items-center justify-center gap-0.5 xl:gap-1 px-4 min-w-0">
             {NAV_LINKS.map(({ href, label }) => {
               const isActive = activeSection === href.replace("#", "");
               
@@ -163,7 +164,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                 <a
                   key={href}
                   href={href}
-                  className="relative px-3 py-1.5 text-[13px] font-medium transition-all duration-300 no-underline rounded-lg hover:text-white"
+                  className="relative px-2 xl:px-3 py-1.5 text-[12px] xl:text-[13px] font-medium transition-all duration-300 no-underline rounded-lg hover:text-white whitespace-nowrap"
                   style={{
                     color: activeColor,
                     background: activeBg,
@@ -271,60 +272,68 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
         </div>
       </div>
 
-      {/* ASEAN Infinite Hybrid Roadmap Marquee */}
-      <div
-        className="w-full overflow-hidden border-b py-1.5 transition-all duration-500 shadow-sm"
-        style={{
-          background: ghostMode ? "rgba(12, 22, 40, 0.92)" : "rgba(240, 237, 232, 0.95)",
-          borderColor: ghostMode ? "rgba(46, 230, 200, 0.12)" : "rgba(17, 24, 20, 0.08)",
-          backdropFilter: "blur(16px)",
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between gap-6 overflow-hidden">
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#2ee6c8] animate-pulse" />
-            <span
-              className="font-mono text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap"
-              style={{ color: ghostMode ? "#2ee6c8" : "#1b4332" }}
-            >
-              {t("aseanPilotRoadmap")}
-            </span>
-          </div>
+    {/* ASEAN Infinite Hybrid Roadmap Marquee */}
+    <AnimatePresence>
+      {visible && (
+        <m.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full overflow-hidden border-b py-1.5 shadow-sm relative z-10"
+          style={{
+            background: ghostMode ? "rgba(12, 22, 40, 0.95)" : "rgba(255, 255, 255, 0.95)",
+            borderColor: ghostMode ? "rgba(46, 230, 200, 0.12)" : "rgba(0, 0, 0, 0.05)",
+            backdropFilter: "blur(16px)",
+          }}
+        >
+          <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between gap-6 overflow-hidden">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2ee6c8] animate-pulse" />
+              <span
+                className="font-mono text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap"
+                style={{ color: ghostMode ? "#2ee6c8" : "#1b4332" }}
+              >
+                {t("aseanPilotRoadmap")}
+              </span>
+            </div>
 
-          <div className="flex-1 overflow-hidden relative mask-radial">
-            <m.div
-              className="flex items-center gap-10 w-max"
-              animate={{ x: [0, -1200] }}
-              transition={{ repeat: Infinity, duration: 35, ease: "linear" }}
-            >
-              {[...ASEAN_COUNTRIES, ...ASEAN_COUNTRIES].map((country, idx) => (
-                <div key={`${country.name}-${idx}`} className="flex items-center gap-2.5 inline-flex">
-                  <span className="text-sm select-none">{country.flag}</span>
-                  <span
-                    className="font-mono text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap"
-                    style={{ color: ghostMode ? "rgba(232,224,212,0.85)" : "rgba(17,24,20,0.85)" }}
-                  >
-                    {country.name}
-                  </span>
-                  <span
-                    className="font-mono text-[9px] px-2 py-0.5 rounded-full font-bold tracking-widest uppercase whitespace-nowrap"
-                    style={{
-                      background: country.status.includes("ACTIVE")
-                        ? (ghostMode ? "rgba(46,230,200,0.15)" : "#1b4332")
-                        : (ghostMode ? "rgba(255,255,255,0.08)" : "rgba(17,24,20,0.06)"),
-                      color: country.status.includes("ACTIVE")
-                        ? (ghostMode ? "#2ee6c8" : "#ffffff")
-                        : (ghostMode ? "rgba(232,224,212,0.5)" : "rgba(17,24,20,0.6)"),
-                    }}
-                  >
-                    {country.status}
-                  </span>
-                </div>
-              ))}
-            </m.div>
+            <div className="flex-1 overflow-hidden relative mask-radial">
+              <m.div
+                className="flex items-center gap-10 w-max"
+                animate={{ x: [0, -1200] }}
+                transition={{ repeat: Infinity, duration: 35, ease: "linear" }}
+              >
+                {[...ASEAN_COUNTRIES, ...ASEAN_COUNTRIES].map((country, idx) => (
+                  <div key={`${country.name}-${idx}`} className="flex items-center gap-2.5 inline-flex">
+                    <img src={`https://flagcdn.com/w20/${country.code}.png`} alt={country.name} className="w-[18px] h-auto shadow-sm rounded-sm" />
+                    <span
+                      className="font-mono text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap"
+                      style={{ color: ghostMode ? "rgba(232,224,212,0.85)" : "rgba(17,24,20,0.85)" }}
+                    >
+                      {country.name}
+                    </span>
+                    <span
+                      className="font-mono text-[9px] px-2 py-0.5 rounded-full font-bold tracking-widest uppercase whitespace-nowrap"
+                      style={{
+                        background: country.status.includes("ACTIVE")
+                          ? "rgba(46,230,200,0.15)"
+                          : (ghostMode ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.04)"),
+                        color: country.status.includes("ACTIVE")
+                          ? (ghostMode ? "#2ee6c8" : "#1b4332")
+                          : (ghostMode ? "rgba(232,224,212,0.5)" : "rgba(17,24,20,0.6)"),
+                      }}
+                    >
+                      {country.status}
+                    </span>
+                  </div>
+                ))}
+              </m.div>
+            </div>
           </div>
-        </div>
-      </div>
+        </m.div>
+      )}
+    </AnimatePresence>
 
       {/* Mobile Menu Dropdown */}
       <AnimatePresence>

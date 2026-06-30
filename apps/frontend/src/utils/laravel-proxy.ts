@@ -49,13 +49,22 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
   console.log(`[laravelAuthProxy] Request for ${path}. Token length: ${accessToken.length}`);
 
   // ── Fast path: forward the Supabase JWT ──────────────────────────
-  const res = await fetch(`${LARAVEL_API}${path}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${LARAVEL_API}${path}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error(`[laravelAuthProxy] Network error fetching ${path}:`, error);
+    return Response.json(
+      { success: false, message: "Backend API unavailable" },
+      { status: 503 }
+    );
+  }
 
   console.log(`[laravelAuthProxy] Response status for ${path}: ${res.status}`);
 
@@ -88,13 +97,22 @@ export async function laravelAuthProxy(path: string): Promise<Response> {
 
   console.log(`[laravelAuthProxy] Session refreshed. Retrying ${path}...`);
 
-  const retryRes = await fetch(`${LARAVEL_API}${path}`, {
-    headers: {
-      Authorization: `Bearer ${refreshedSession.access_token}`,
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
+  let retryRes: Response;
+  try {
+    retryRes = await fetch(`${LARAVEL_API}${path}`, {
+      headers: {
+        Authorization: `Bearer ${refreshedSession.access_token}`,
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error(`[laravelAuthProxy] Network error on retry fetching ${path}:`, error);
+    return Response.json(
+      { success: false, message: "Backend API unavailable" },
+      { status: 503 }
+    );
+  }
 
   console.log(`[laravelAuthProxy] Retry response status for ${path}: ${retryRes.status}`);
 

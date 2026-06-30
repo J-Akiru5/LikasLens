@@ -178,21 +178,23 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
 
             {/* Mode Lore Card */}
             <div 
-              className="p-4 rounded-xl border backdrop-blur-md transition-all duration-700 max-w-md"
+              className="p-5 transition-all duration-700 max-w-md"
               style={{
-                background: ghostMode ? "rgba(3,20,14,0.6)" : "rgba(255,255,255,0.55)",
-                borderColor: ghostMode ? "rgba(46,230,200,0.15)" : "rgba(27,67,50,0.12)",
+                background: ghostMode ? "linear-gradient(135deg, rgba(3,20,14,0.7) 0%, rgba(3,20,14,0.4) 100%)" : "linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.45) 100%)",
+                backdropFilter: "blur(24px)",
+                clipPath: "polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px)",
+                borderLeft: ghostMode ? "3px solid var(--accent-bright)" : "3px solid var(--accent)",
               }}
             >
               <p 
-                className="font-semibold text-[13px] transition-colors duration-700"
-                style={{ color: ghostMode ? "#2EE6C8" : "#14532d" }}
+                className="font-bold font-mono tracking-wide text-[11px] uppercase transition-colors duration-700"
+                style={{ color: ghostMode ? "#2EE6C8" : "#1B4332" }}
               >
                 {ghostMode ? t("ghostModeLabel") : t("civicModeLabel")}
               </p>
               <p 
-                className="mt-1.5 leading-relaxed text-xs transition-colors duration-700"
-                style={{ color: ghostMode ? "rgba(255,255,255,0.75)" : "rgba(27,67,50,0.85)" }}
+                className="mt-2 leading-relaxed text-[13px] font-medium transition-colors duration-700"
+                style={{ color: ghostMode ? "rgba(255,255,255,0.9)" : "rgba(27,67,50,0.9)" }}
               >
                 {ghostMode 
                   ? t("ghostModeDesc")
@@ -201,19 +203,21 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
             </div>
 
             {/* Social */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 mt-1">
               <a 
                 href="https://github.com/J-Akiru5/LikasLens" 
                 target="_blank" 
                 rel="noreferrer" 
                 aria-label={t("githubLink")} 
-                className="w-9 h-9 rounded-full border flex items-center justify-center hover:text-accent hover:border-accent hover:bg-accent/10 transition-all group"
+                className="w-10 h-10 flex items-center justify-center transition-all group hover:-translate-y-1"
                 style={{
-                  borderColor: ghostMode ? "rgba(255,255,255,0.15)" : "rgba(27,67,50,0.2)",
-                  color: ghostMode ? "rgba(255,255,255,0.6)" : "rgba(27,67,50,0.6)",
+                  background: ghostMode ? "rgba(255,255,255,0.05)" : "rgba(27,67,50,0.05)",
+                  color: ghostMode ? "rgba(255,255,255,0.8)" : "rgba(27,67,50,0.8)",
+                  clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)",
+                  borderLeft: ghostMode ? "2px solid rgba(255,255,255,0.2)" : "2px solid rgba(27,67,50,0.2)",
                 }}
               >
-                <GitHubCatIcon className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" aria-hidden="true" />
+                <GitHubCatIcon className="w-4 h-4 transition-transform group-hover:scale-110" aria-hidden="true" />
               </a>
             </div>
           </div>

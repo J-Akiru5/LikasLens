@@ -1,7 +1,7 @@
 "use client";
 
 import { m } from "framer-motion";
-import { Fingerprint, Eye, ShieldCheck, CheckCircle } from "lucide-react";
+import { Fingerprint, Eye, ShieldCheck, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -39,9 +39,9 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
               ? "0 20px 40px -10px color-mix(in oklab, var(--accent-bright) 10%, transparent)" 
               : "0 10px 40px -10px rgba(0,0,0,0.05)",
             background: ghostMode
-              ? "linear-gradient(150deg, rgba(13,26,18,0.9) 0%, rgba(13,26,18,0.7) 100%)"
-              : "var(--panel)",
-            backdropFilter: ghostMode ? "blur(24px)" : "none",
+              ? "linear-gradient(150deg, rgba(13,26,18,0.85) 0%, rgba(13,26,18,0.55) 100%)"
+              : "linear-gradient(150deg, color-mix(in oklab, var(--panel) 85%, transparent) 0%, color-mix(in oklab, var(--panel) 60%, transparent) 100%)",
+            backdropFilter: "blur(24px)",
             transition: "all 0.6s cubic-bezier(0.16,1,0.3,1)",
           }}
         >
@@ -87,7 +87,9 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                 {t("ghostSpotlightDesc")}
               </p>
 
-              <button
+              <m.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={onGhostToggle}
                 aria-pressed={ghostMode}
                 aria-label={ghostMode ? t("deactivateGhostMode") : t("activateGhostMode")}
@@ -110,7 +112,68 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                 ) : (
                   <><Eye style={{ width: 16, height: 16 }} aria-hidden="true" /> {t("turnOnGhostMode")}</>
                 )}
-              </button>
+              </m.button>
+
+              {/* Context Callout */}
+              <a
+                href="https://globalwitness.org/en/campaigns/land-and-environmental-defenders/in-numbers-lethal-attacks-against-defenders-since-2012/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  marginTop: 8,
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 12,
+                  padding: "16px",
+                  background: ghostMode 
+                    ? "linear-gradient(135deg, rgba(46, 230, 200, 0.15) 0%, rgba(46, 230, 200, 0.02) 100%)" 
+                    : "linear-gradient(135deg, rgba(17, 24, 20, 0.08) 0%, rgba(17, 24, 20, 0.02) 100%)",
+                  clipPath: "polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)",
+                  borderLeft: ghostMode ? "3px solid var(--accent-bright)" : "3px solid var(--ink)",
+                  textDecoration: "none",
+                  position: "relative",
+                  transition: "all 0.3s",
+                  maxWidth: 460,
+                }}
+                className="hover:-translate-y-0.5"
+              >
+
+                {/* Icon */}
+                <div style={{
+                  width: 26, height: 26, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: ghostMode ? "rgba(46, 230, 200, 0.15)" : "rgba(17, 24, 20, 0.08)",
+                  borderRadius: "50%",
+                  color: ghostMode ? "var(--accent-bright)" : "var(--ink)",
+                  position: "relative",
+                  zIndex: 1
+                }}>
+                  <AlertCircle style={{ width: 14, height: 14 }} strokeWidth={2.5} />
+                </div>
+                
+                {/* Text */}
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <p style={{
+                    margin: 0, fontSize: 13, lineHeight: 1.5,
+                    color: ghostMode ? "rgba(240,237,232,0.9)" : "var(--ink)",
+                    fontFamily: "var(--font-body)",
+                    fontWeight: 500
+                  }}>
+                    <strong style={{ color: ghostMode ? "var(--accent-bright)" : "var(--ink)", fontWeight: 800 }}>STARK REALITY:</strong> The Philippines is the deadliest country in Asia for environmental defenders. We engineered Ghost Mode because protecting nature should never compromise your safety.
+                  </p>
+                  <p style={{
+                    margin: "6px 0 0", fontSize: 11,
+                    color: ghostMode ? "rgba(240,237,232,0.5)" : "var(--muted)",
+                    fontFamily: "var(--font-mono)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    display: "flex", alignItems: "center", gap: 5,
+                    fontWeight: 600
+                  }}>
+                    Source: Global Witness Report <ExternalLink style={{ width: 11, height: 11 }} />
+                  </p>
+                </div>
+              </a>
             </div>
 
             {/* Right — operational artifact. Flips with the mode. */}
@@ -180,9 +243,13 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                 ) : (
                   <>
                     {/* Civic — the "before" state */}
-                    <div style={{ width: 92, height: 92, borderRadius: 16, border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--panel-elevated)" }}>
+                    <m.div
+                      whileHover={{ y: -6, boxShadow: "0 20px 40px -10px rgba(0,0,0,0.15)" }}
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                      style={{ width: 92, height: 92, borderRadius: 16, border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--panel-elevated)", cursor: "default" }}
+                    >
                       <Eye style={{ width: 44, height: 44, color: "var(--muted)" }} />
-                    </div>
+                    </m.div>
                     <div>
                       <p style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 4px" }}>
                         {t("normalReport")}

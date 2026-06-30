@@ -74,7 +74,7 @@ export function HowItWorksSection() {
   const stepIcons = [Camera, Cpu, Send, Bell];
 
   return (
-    <section id="how-it-works" className="ec-section" style={{ background: "var(--page)" }}>
+    <section id="how-it-works" className="ec-section" style={{ background: "transparent" }}>
       {/* Pipeline connector animation keyframes */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes flowDotHorizontal {

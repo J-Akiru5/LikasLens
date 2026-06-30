@@ -12,7 +12,7 @@ import { useTranslations } from "next-intl";
 export function ScoreboardSection() {
   const t = useTranslations("landing");
   return (
-    <section id="scoreboard" className="ec-section" style={{ background: "var(--page)" }}>
+    <section id="scoreboard" className="ec-section" style={{ background: "transparent" }}>
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <m.div
           initial={{ opacity: 0, y: 20 }}

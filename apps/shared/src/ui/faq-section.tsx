@@ -44,7 +44,7 @@ export function FaqSection() {
           {t("subtitle")}
         </p>
       </div>
-      <div className="divide-y divide-border">
+      <div className="w-full">
         {faqs.map((faq, idx) => {
           const isOpen = openIdx === idx;
           return (

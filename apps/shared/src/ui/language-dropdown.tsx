@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { Globe } from "lucide-react";
+import { Globe, ChevronDown } from "lucide-react";
 import { locales, localeNames } from "../i18n/config";
 import { setLocaleCookie } from "../i18n/language-suggestion";
 
@@ -43,11 +43,16 @@ export function LanguageDropdown({
         onClick={() => setOpen(!open)}
         aria-label={t("switchLanguage")}
         className={
-          buttonClassName ??
-          "p-2 rounded-xl text-ink/50 hover:text-ink hover:bg-ink/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          (buttonClassName ??
+            "p-2 rounded-xl text-ink/50 hover:text-ink hover:bg-ink/5 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2") +
+          " flex items-center gap-1.5"
         }
       >
-        <Globe className="w-5 h-5" aria-hidden="true" />
+        <Globe className="w-4 h-4" aria-hidden="true" />
+        <span className="text-[11px] font-bold tracking-widest uppercase font-mono mt-[1px]">
+          {activeLocale}
+        </span>
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 opacity-70 ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (

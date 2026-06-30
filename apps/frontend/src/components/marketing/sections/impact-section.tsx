@@ -65,7 +65,7 @@ export function ImpactSection() {
   const maxType = typeEntries.length > 0 ? Math.max(...typeEntries.map(([, c]) => c)) : 1;
 
   return (
-    <section id="impact" className="ec-section" style={{ background: "var(--page)" }}>
+    <section id="impact" className="ec-section" style={{ background: "transparent" }}>
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
 
         {/* Editorial intro */}

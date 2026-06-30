@@ -39,18 +39,7 @@ function SectionDivider({ variant = "subtle" }: { variant?: "subtle" | "accent" 
     <div
       className="w-full pointer-events-none"
       style={{ height: variant === "accent" ? 80 : 48 }}
-    >
-      {variant === "accent" && (
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 h-full flex items-center">
-          <div
-            className="h-px w-full"
-            style={{
-              background: "linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent)",
-            }}
-          />
-        </div>
-      )}
-    </div>
+    />
   );
 }
 
@@ -100,8 +89,8 @@ export default function HomeClient() {
     <LazyMotion features={domAnimation}>
       <StickyLandingNav ghostMode={ghostMode} onGhostToggle={toggleGhost} />
       <main
-        className="relative min-h-dvh"
-        style={{ background: "var(--page)", color: "var(--ink)" }}
+        className="relative min-h-dvh bg-transparent"
+        style={{ color: "var(--ink)" }}
       >
         <HeroSection ghostMode={ghostMode} onGhostToggle={toggleGhost} />
         <PartnerCarousel />
