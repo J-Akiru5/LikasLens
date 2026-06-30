@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { laravelGet, EmptyState, Globe as Globe3D } from "@likaslens/shared";
 import { RevealSection } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface Ticket {
   id: string;
@@ -64,16 +65,7 @@ interface TimeSeriesPoint {
   carbonSaved: number;
 }
 
-const INCIDENT_TYPES = [
-  "Illegal Logging",
-  "Water Pollution",
-  "Air Quality",
-  "Waste Dumping",
-  "Coral Damage",
-  "Mangrove Clearing",
-  "Fish Kill",
-  "Soil Erosion",
-];
+
 
 const PROVINCE_COORDS: Record<string, { x: number; y: number }> = {
   "Aklan": { x: 35, y: 25 },
@@ -124,6 +116,19 @@ function generateProvinceData(): ProvinceData[] {
 }
 
 export default function ImpactPage() {
+  const t = useTranslations("dashboard");
+
+  const INCIDENT_TYPES = [
+    t("illegalLogging"),
+    t("waterPollution"),
+    t("airQuality"),
+    t("wasteDumping"),
+    t("coralDamage"),
+    t("mangroveClearing"),
+    t("fishKill"),
+    t("soilErosion"),
+  ];
+
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("Citizen");
@@ -185,10 +190,10 @@ export default function ImpactPage() {
     : "3.2";
 
   const metrics: ClimateMetric[] = [
-    { label: "Total Reports", value: totalIncidents.toString(), change: "+12%", trend: "up", icon: FileCheck, color: "text-accent", accent: "accent" },
-    { label: "Resolution Rate", value: `${resolutionRate}%`, change: "+5%", trend: "up", icon: ShieldCheck, color: "text-green", accent: "green" },
-    { label: "Active Cases", value: activeIncidents.toString(), change: "-8%", trend: "down", icon: AlertTriangle, color: "text-amber", accent: "amber" },
-    { label: "Avg Urgency", value: avgUrgency, change: "-0.4", trend: "down", icon: Thermometer, color: "text-amber", accent: "amber" },
+    { label: t("totalReports"), value: totalIncidents.toString(), change: "+12%", trend: "up", icon: FileCheck, color: "text-accent", accent: "accent" },
+    { label: t("resolutionRate"), value: `${resolutionRate}%`, change: "+5%", trend: "up", icon: ShieldCheck, color: "text-green", accent: "green" },
+    { label: t("openIncidents"), value: activeIncidents.toString(), change: "-8%", trend: "down", icon: AlertTriangle, color: "text-amber", accent: "amber" },
+    { label: t("avgResponse"), value: avgUrgency, change: "-0.4", trend: "down", icon: Thermometer, color: "text-amber", accent: "amber" },
   ];
 
   const bgTintClass: Record<string, string> = {
@@ -225,8 +230,8 @@ export default function ImpactPage() {
   return (
     <DashboardLayoutWrapper 
       greeting={userName}
-      pageTitle="Climate Impact Dashboard"
-      pageSubtitle="ASEAN AI Hackathon 2026 — Climate Change Resilience"
+      pageTitle={t("climateImpactDashboard")}
+      pageSubtitle={t("climateImpactSubtitle")}
     >
       <div className="space-y-6 mt-4">
         {loading ? (
@@ -294,8 +299,8 @@ export default function ImpactPage() {
                     </div>
                     {/* Arc legend overlay */}
                     <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-4 text-[10px] font-mono text-zinc-400 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10 whitespace-nowrap">
-                      <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-0.5 bg-sky-400 rounded-full" />Active arc</span>
-                      <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-0.5 bg-zinc-500 rounded-full" />Planned arc</span>
+                      <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-0.5 bg-sky-400 rounded-full" />{t("activeArc")}</span>
+                      <span className="flex items-center gap-1.5"><span className="inline-block w-3 h-0.5 bg-zinc-500 rounded-full" />{t("plannedArc")}</span>
                     </div>
                   </div>
 
@@ -307,39 +312,39 @@ export default function ImpactPage() {
                       <div className="flex items-center gap-2 mb-2">
                         <span className="inline-flex items-center gap-1.5 text-[10px] font-bold font-mono uppercase tracking-widest text-sky-400 bg-sky-500/10 border border-sky-500/20 px-3 py-1 rounded-full">
                           <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-                          ASEAN AI Grid — Live
+                          {t("aseanAiGridLive")}
                         </span>
                       </div>
-                      <h3 className="font-bold text-2xl text-white leading-tight">Deployment Roadmap<br /><span className="text-zinc-400 font-normal text-lg">2025 → 2027</span></h3>
-                      <p className="text-xs text-zinc-400 font-mono mt-1">Federated neuro-symbolic AI nodes across 10 nations</p>
+                      <h3 className="font-bold text-2xl text-white leading-tight">{t("deploymentRoadmap")}<br /><span className="text-zinc-400 font-normal text-lg">{t("deploymentYears")}</span></h3>
+                      <p className="text-xs text-zinc-400 font-mono mt-1">{t("federatedAiDesc")}</p>
                     </div>
 
                     {/* Phase Cards */}
                     <div className="space-y-3">
                       {[
                         {
-                          phase: "Phase 1", countries: "Philippines",
-                          status: "Live", statusStyle: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+                          phase: t("phase1"), countries: t("philippines"),
+                          status: t("live"), statusStyle: "bg-sky-500/15 text-sky-400 border-sky-500/30",
                           barColor: "bg-sky-400", pct: 100,
-                          desc: "Region 6 pilot · 278 incidents detected · YOLOv8 edge-deployed",
+                          desc: t("phase1Desc"),
                         },
                         {
-                          phase: "Phase 2", countries: "Vietnam · Indonesia",
+                          phase: t("phase2"), countries: t("vietnamIndonesia"),
                           status: "Q3 2026", statusStyle: "bg-white/10 text-zinc-400 border-white/10",
                           barColor: "bg-sky-400/60", pct: 65,
-                          desc: "Federated learning edge-nodes · Est. 150M citizens · Mekong + Java deltas",
+                          desc: t("phase2Desc"),
                         },
                         {
-                          phase: "Phase 3", countries: "Thailand · Malaysia · Singapore",
+                          phase: t("phase3"), countries: t("thailandMalaysiaSingapore"),
                           status: "Q4 2026", statusStyle: "bg-white/10 text-zinc-400 border-white/10",
                           barColor: "bg-zinc-500", pct: 30,
-                          desc: "Satellite imagery integration · Gulf of Thailand + Borneo sensor mesh",
+                          desc: t("phase3Desc"),
                         },
                         {
-                          phase: "Phase 4", countries: "All 10 ASEAN Nations",
+                          phase: t("phase4"), countries: t("all10AseanNations"),
                           status: "2027", statusStyle: "bg-white/10 text-zinc-400 border-white/10",
                           barColor: "bg-zinc-600", pct: 10,
-                          desc: "Full grid coverage · 680M citizens protected · ASEAN Environment Ministers API",
+                          desc: t("phase4Desc"),
                         },
                       ].map((item) => (
                         <div key={item.phase} className="p-3.5 rounded-xl border border-white/[0.08] bg-white/[0.04] hover:bg-white/[0.08] transition-all duration-200">
@@ -361,9 +366,9 @@ export default function ImpactPage() {
                     {/* Impact Stats Footer */}
                     <div className="grid grid-cols-3 gap-3 pt-3 border-t border-white/10">
                       {[
-                        { value: "680M", label: "Citizens Protected", sub: "by 2027" },
-                        { value: "10", label: "ASEAN Nations", sub: "full coverage" },
-                        { value: "91%", label: "Cost Reduction", sub: "at 10M users" },
+                        { value: "680M", label: t("citizensProtected"), sub: t("by2027") },
+                        { value: "10", label: t("aseanNations"), sub: t("fullCoverage") },
+                        { value: "91%", label: t("costReduction"), sub: t("at10mUsers") },
                       ].map((stat) => (
                         <div key={stat.label} className="text-center">
                           <div className="text-lg font-bold text-white">{stat.value}</div>
@@ -378,19 +383,19 @@ export default function ImpactPage() {
               </div>
             </RevealSection>
 
-            {/* Row 3: Monthly Trend Chart + Province Breakdown */}
+            {/* Row 3: Monthly Trend Chart + {t("provinceBreakdown")} */}
             <RevealSection className="span-8">
               <div className="panel p-4 sm:p-6 flex flex-col h-full relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-secondary/20">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -mr-20 -mt-20 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 <div className="flex items-center gap-2 relative z-10 mb-6">
                   <TrendingUp className="w-4 h-4 text-secondary" />
-                  <h2 className="font-bold tracking-tight">Monthly Incident Trends</h2>
+                  <h2 className="font-bold tracking-tight">{t("monthlyIncidentTrends")}</h2>
                 </div>
                 {timeSeries.length === 0 ? (
                   <EmptyState
                     icon={BarChart3}
-                    title="No trend data yet"
-                    description="Monthly incident trends will populate once reports are submitted and processed by the AI pipeline."
+                    title={t("noTrendData")}
+                    description={t("noTrendDataDesc")}
                   />
                 ) : (
                   <div className="flex flex-col flex-1 justify-end mt-auto gap-4">
@@ -416,11 +421,11 @@ export default function ImpactPage() {
                     <div className="flex items-center gap-4 text-xs font-mono text-muted pt-3 border-t border-border mt-2">
                       <div className="flex items-center gap-1.5">
                         <span className="w-3 h-2 rounded-sm bg-accent/60" />
-                        Reports
+                        {t("reportsLabel")}
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="w-3 h-2 rounded-sm bg-secondary/60" />
-                        Resolved
+                        {t("resolvedLower")}
                       </div>
                     </div>
                   </div>
@@ -433,13 +438,13 @@ export default function ImpactPage() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl -mr-20 -mt-20 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 <div className="flex items-center gap-2 relative z-10">
                   <MapPinIcon />
-                  <h2 className="font-bold tracking-tight">Province Breakdown</h2>
+                  <h2 className="font-bold tracking-tight">{t("provinceBreakdown")}</h2>
                 </div>
                 {provinceData.length === 0 ? (
                   <EmptyState
                     icon={MapPin}
-                    title="No province data yet"
-                    description="Province-level breakdown will appear here once reports are geotagged and processed."
+                    title={t("noProvinceData")}
+                    description={t("noProvinceDataDesc")}
                   />
                 ) : (
                   <div className="space-y-3">
@@ -453,9 +458,9 @@ export default function ImpactPage() {
                           </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs font-mono text-muted">
-                          <span className="whitespace-nowrap">{p.incidents} reports</span>
-                          <span className="whitespace-nowrap">{p.resolved} resolved</span>
-                          <span className="whitespace-nowrap">Score: {p.score}</span>
+                          <span className="whitespace-nowrap">{p.incidents} {t("reportsLabel")}</span>
+                          <span className="whitespace-nowrap">{p.resolved} {t("resolvedLower")}</span>
+                          <span className="whitespace-nowrap">{t("score")}: {p.score}</span>
                         </div>
                         <div className="mt-2 h-1.5 bg-ink/5 rounded-full overflow-hidden">
                           <div
@@ -480,13 +485,13 @@ export default function ImpactPage() {
                 <div className="absolute top-0 right-0 w-48 h-48 bg-green/5 rounded-full blur-3xl -mr-10 -mt-10 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 <div className="relative z-10">
                   <TreePine className="w-5 h-5 text-green mb-3" />
-                  <h3 className="font-bold">Carbon Impact</h3>
+                  <h3 className="font-bold">{t("carbonImpact")}</h3>
                 <div className="text-3xl font-bold text-green">2.4 tonnes</div>
-                <p className="text-xs text-muted font-mono">CO₂ equivalent offset through resolved environmental incidents in Region 6</p>
+                <p className="text-xs text-muted font-mono">{t("carbonImpactDesc")}</p>
                 <div className="h-2 bg-ink/5 rounded-full overflow-hidden">
                   <div className="h-full bg-green rounded-full" style={{ width: "68%" }} />
                 </div>
-                <div className="text-[10px] font-mono text-muted">68% of annual target (3.5t)</div>
+                <div className="text-[10px] font-mono text-muted">{t("carbonAnnualTarget")}</div>
                 </div>
               </div>
             </RevealSection>
@@ -496,9 +501,9 @@ export default function ImpactPage() {
                 <div className="absolute top-0 right-0 w-48 h-48 bg-secondary/5 rounded-full blur-3xl -mr-10 -mt-10 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 <div className="relative z-10">
                   <Droplets className="w-5 h-5 text-secondary mb-3" />
-                  <h3 className="font-bold">Water Quality Index</h3>
+                  <h3 className="font-bold">{t("waterQualityIndex")}</h3>
                 <div className="text-3xl font-bold text-secondary">7.2 pH</div>
-                <p className="text-xs text-muted font-mono">Average water quality across monitored waterways in 6 provinces</p>
+                <p className="text-xs text-muted font-mono">{t("waterQualityDesc")}</p>
                 <div className="flex gap-1">
                   {[6.8, 7.0, 7.1, 7.2, 7.3, 7.4, 7.2, 7.1].map((v, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
@@ -509,7 +514,7 @@ export default function ImpactPage() {
                     </div>
                   ))}
                 </div>
-                <div className="text-[10px] font-mono text-muted">Safe range: 6.5–8.5 pH</div>
+                <div className="text-[10px] font-mono text-muted">{t("safeRange")}</div>
                 </div>
               </div>
             </RevealSection>
@@ -519,9 +524,9 @@ export default function ImpactPage() {
                 <div className="absolute top-0 right-0 w-48 h-48 bg-accent/5 rounded-full blur-3xl -mr-10 -mt-10 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 <div className="relative z-10">
                   <ShieldCheck className="w-5 h-5 text-accent mb-3" />
-                  <h3 className="font-bold">Enforcement Rate</h3>
+                  <h3 className="font-bold">{t("enforcementRate")}</h3>
                 <div className="text-3xl font-bold text-accent">71%</div>
-                <p className="text-xs text-muted font-mono">Reports resulting in verified government action across ASEAN</p>
+                <p className="text-xs text-muted font-mono">{t("enforcementDesc")}</p>
                 <div className="space-y-1.5">
                   {[
                     { label: "PH", pct: 71 },
@@ -547,15 +552,15 @@ export default function ImpactPage() {
               <div className="panel p-4 sm:p-6 space-y-4 relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-ink/10">
                 <div className="flex items-center gap-2 relative z-10">
                   <Cpu className="w-4 h-4 text-secondary" />
-                  <h2 className="font-bold tracking-tight">AI Analysis Pipeline</h2>
+                  <h2 className="font-bold tracking-tight">{t("aiAnalysisPipeline")}</h2>
                 </div>
                 <div className="flex flex-col md:flex-row items-stretch gap-3">
                   {[
-                    { step: "01", title: "Image Capture", desc: "Citizen uploads photo with GPS", icon: Camera, status: "active" },
-                    { step: "02", title: "AI Image Verification", desc: "Object detection + classification", icon: Cpu, status: "active" },
-                    { step: "03", title: "Smart Routing", desc: "Automatic agency dispatch", icon: Share2, status: "active" },
-                    { step: "04", title: "Hazard Summary", desc: "AI generated incident report", icon: Sparkles, status: "active" },
-                    { step: "05", title: "Agency Dispatch", desc: "Routed to correct government body", icon: Building2, status: "active" },
+                    { step: "01", title: t("imageCapture"), desc: t("citizenUploadsPhoto"), icon: Camera, status: "active" },
+                    { step: "02", title: t("aiImageVerification"), desc: t("objectDetectionClassification"), icon: Cpu, status: "active" },
+                    { step: "03", title: t("smartRouting"), desc: t("automaticAgencyDispatch"), icon: Share2, status: "active" },
+                    { step: "04", title: t("hazardSummary"), desc: t("aiGeneratedReport"), icon: Sparkles, status: "active" },
+                    { step: "05", title: t("agencyDispatch"), desc: t("routedToGovernment"), icon: Building2, status: "active" },
                   ].map((item, i) => (
                     <div key={item.step} className="flex-1 relative">
                       <div className="panel p-4 h-full border-border bg-panel/50 hover:border-secondary/30 transition-colors">
@@ -577,17 +582,17 @@ export default function ImpactPage() {
                 <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-4 p-4 rounded-xl bg-panel/30 border border-border text-xs font-mono">
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <span className="w-2 h-2 rounded-full bg-green" />
-                    <span className="text-muted">Pipeline Uptime:</span>
+                    <span className="text-muted">{t("pipelineUptime")}: </span>
                     <span className="font-bold">99.7%</span>
                   </div>
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <span className="w-2 h-2 rounded-full bg-secondary" />
-                    <span className="text-muted">Avg Processing:</span>
+                    <span className="text-muted">{t("avgProcessing")}: </span>
                     <span className="font-bold">2.3s</span>
                   </div>
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <span className="w-2 h-2 rounded-full bg-accent" />
-                    <span className="text-muted">Models Active:</span>
+                    <span className="text-muted">{t("modelsActive")}: </span>
                     <span className="font-bold">3</span>
                   </div>
                 </div>
@@ -600,19 +605,19 @@ export default function ImpactPage() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -mr-20 -mt-20 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 <div className="flex items-center gap-2 relative z-10">
                   <Cpu className="w-4 h-4 text-secondary" />
-                  <h2 className="font-bold tracking-tight">AI Model Performance</h2>
+                  <h2 className="font-bold tracking-tight">{t("aiModelPerformance")}</h2>
                 </div>
                 <div className="p-4 rounded-xl border border-border bg-panel/50">
-                  <div className="text-xs font-mono text-muted uppercase tracking-widest mb-2">AI Vision Model</div>
+                  <div className="text-xs font-mono text-muted uppercase tracking-widest mb-2">{t("aiVisionModel")}</div>
                   <div className="text-2xl font-bold text-secondary">94.2%</div>
-                  <div className="text-xs text-muted mt-1">Classification Accuracy</div>
+                  <div className="text-xs text-muted mt-1">{t("classificationAccuracy")}</div>
                   <div className="mt-3 space-y-1.5">
                     {[
-                      { cat: "Solid Waste", acc: 96 },
-                      { cat: "Water Pollution", acc: 93 },
-                      { cat: "Air Quality", acc: 91 },
-                      { cat: "Illegal Logging", acc: 97 },
-                      { cat: "Coral Damage", acc: 89 },
+                      { cat: t("solidWaste"), acc: 96 },
+                      { cat: t("waterPollution"), acc: 93 },
+                      { cat: t("airQuality"), acc: 91 },
+                      { cat: t("illegalLogging"), acc: 97 },
+                      { cat: t("coralDamage"), acc: 89 },
                     ].map((item) => (
                       <div key={item.cat} className="flex items-center gap-2 text-xs font-mono">
                         <span className="w-24 text-muted truncate">{item.cat}</span>
@@ -627,15 +632,15 @@ export default function ImpactPage() {
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4 p-4 rounded-xl bg-panel/30 border border-border text-xs font-mono">
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <span className="w-2 h-2 rounded-full bg-green" />
-                    <span className="text-muted">All models:</span>
-                    <span className="font-bold text-green">Healthy</span>
+                    <span className="text-muted">{t("allModels")}:</span>
+                    <span className="font-bold text-green">{t("healthy")}</span>
                   </div>
                   <div className="flex items-center gap-2 whitespace-nowrap">
-                    <span className="text-muted">Inference:</span>
-                    <span className="font-bold">GPU-enabled (T4)</span>
+                    <span className="text-muted">{t("inference")}:</span>
+                    <span className="font-bold">{t("gpuEnabled")}</span>
                   </div>
                   <div className="flex items-center gap-2 whitespace-nowrap">
-                    <span className="text-muted">Last retrained:</span>
+                    <span className="text-muted">{t("lastRetrained")}:</span>
                     <span className="font-bold">2026-05-28</span>
                   </div>
                 </div>
@@ -646,15 +651,15 @@ export default function ImpactPage() {
               <div className="panel p-4 sm:p-6 space-y-4 h-full relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-accent/20">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-accent/5 rounded-full blur-3xl -mr-10 -mt-10 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 <div className="relative z-10">
-                  <div className="text-xs font-mono text-muted uppercase tracking-widest mb-2">Neo4j Graph Router</div>
+                  <div className="text-xs font-mono text-muted uppercase tracking-widest mb-2">{t("neo4jGraphRouter")}</div>
                 <div className="text-2xl font-bold text-accent">99.1%</div>
-                <div className="text-xs text-muted mt-1">Routing Success Rate</div>
+                <div className="text-xs text-muted mt-1">{t("routingSuccessRate")}</div>
                 <div className="mt-3 space-y-1.5">
                   {[
-                    { metric: "Avg Traversal Depth", value: "4.2 hops" },
-                    { metric: "Agencies Mapped", value: "127" },
-                    { metric: "Avg Dispatch Time", value: "1.8s" },
-                    { metric: "Coverage", value: "6 countries" },
+                    { metric: t("avgTraversalDepth"), value: "4.2 hops" },
+                    { metric: t("agenciesMapped"), value: "127" },
+                    { metric: t("avgDispatchTime"), value: "1.8s" },
+                    { metric: t("coverage"), value: "6 countries" },
                   ].map((item) => (
                     <div key={item.metric} className="flex items-center justify-between text-xs font-mono">
                       <span className="text-muted">{item.metric}</span>
@@ -670,15 +675,15 @@ export default function ImpactPage() {
               <div className="panel p-4 sm:p-6 space-y-4 h-full relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:border-green/20">
                 <div className="absolute top-0 right-0 w-48 h-48 bg-green/5 rounded-full blur-3xl -mr-10 -mt-10 transition-opacity duration-700 opacity-0 group-hover:opacity-100 pointer-events-none" />
                 <div className="relative z-10">
-                  <div className="text-xs font-mono text-muted uppercase tracking-widest mb-2">Gemini 2.5 Flash</div>
+                  <div className="text-xs font-mono text-muted uppercase tracking-widest mb-2">{t("geminiFlash")}</div>
                 <div className="text-2xl font-bold text-green">4.7s</div>
-                <div className="text-xs text-muted mt-1">Avg Response Time</div>
+                <div className="text-xs text-muted mt-1">{t("avgResponseTime")}</div>
                 <div className="mt-3 space-y-1.5">
                   {[
-                    { metric: "Summary Quality", value: "4.8/5.0" },
-                    { metric: "Hallucination Rate", value: "<0.3%" },
-                    { metric: "Languages", value: "6 ASEAN" },
-                    { metric: "Daily Capacity", value: "10K reports" },
+                    { metric: t("summaryQuality"), value: "4.8/5.0" },
+                    { metric: t("hallucinationRate"), value: "<0.3%" },
+                    { metric: t("languages"), value: "6 ASEAN" },
+                    { metric: t("dailyCapacity"), value: "10K reports" },
                   ].map((item) => (
                     <div key={item.metric} className="flex items-center justify-between text-xs font-mono">
                       <span className="text-muted">{item.metric}</span>
@@ -695,22 +700,22 @@ export default function ImpactPage() {
               <div className="border-t border-border pt-6">
                 <div className="flex items-center gap-2 mb-4">
                   <TrendingUp className="w-5 h-5 text-secondary" />
-                  <h2 className="text-xl font-bold tracking-tight">Return on Investment</h2>
+                  <h2 className="text-xl font-bold tracking-tight">{t("fiveYearROI")}</h2>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
                   <div className="panel p-4 sm:p-5 space-y-3 border-red/20">
                     <h3 className="font-bold text-red flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4" />
-                      Cost of Inaction (Annual)
+                      {t("costOfInaction")}
                     </h3>
                     <div className="space-y-2">
                       {[
-                        { label: "Environmental cleanup", amount: "₱ 12.4M" },
-                        { label: "Healthcare costs (pollution)", amount: "₱ 8.7M" },
-                        { label: "Tourism revenue loss", amount: "₱ 23.1M" },
-                        { label: "Fishery stock depletion", amount: "₱ 5.6M" },
-                        { label: "Regulatory fines", amount: "₱ 3.2M" },
+                        { label: t("envCleanup"), amount: "₱ 12.4M" },
+                        { label: t("healthcareCosts"), amount: "₱ 8.7M" },
+                        { label: t("tourismLoss"), amount: "₱ 23.1M" },
+                        { label: t("fisheryDepletion"), amount: "₱ 5.6M" },
+                        { label: t("regulatoryFines"), amount: "₱ 3.2M" },
                       ].map((item) => (
                         <div key={item.label} className="flex items-center justify-between text-sm">
                           <span className="text-muted">{item.label}</span>
@@ -718,7 +723,7 @@ export default function ImpactPage() {
                         </div>
                       ))}
                       <div className="border-t border-border pt-2 flex items-center justify-between">
-                        <span className="font-bold">Total Annual Cost</span>
+                        <span className="font-bold">{t("totalAnnualCost")}</span>
                         <span className="font-mono font-bold text-red text-lg">₱ 53.0M</span>
                       </div>
                     </div>
@@ -727,15 +732,15 @@ export default function ImpactPage() {
                   <div className="panel p-4 sm:p-5 space-y-3 border-green/20">
                     <h3 className="font-bold text-green flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4" />
-                      LikasLens Solution Cost
+                      {t("likasLensSolutionCost")}
                     </h3>
                     <div className="space-y-2">
                       {[
-                        { label: "Platform (YOLOv8 + Neo4j + Gemini)", amount: "₱ 2.1M" },
-                        { label: "Community engagement", amount: "₱ 0.8M" },
-                        { label: "Government integration", amount: "₱ 1.2M" },
-                        { label: "Training & deployment", amount: "₱ 0.6M" },
-                        { label: "Annual operations", amount: "₱ 1.4M" },
+                        { label: t("platformCost"), amount: "₱ 2.1M" },
+                        { label: t("communityEngagement"), amount: "₱ 0.8M" },
+                        { label: t("govIntegration"), amount: "₱ 1.2M" },
+                        { label: t("trainingDeployment"), amount: "₱ 0.6M" },
+                        { label: t("annualOperations"), amount: "₱ 1.4M" },
                       ].map((item) => (
                         <div key={item.label} className="flex items-center justify-between text-sm">
                           <span className="text-muted">{item.label}</span>
@@ -743,7 +748,7 @@ export default function ImpactPage() {
                         </div>
                       ))}
                       <div className="border-t border-border pt-2 flex items-center justify-between">
-                        <span className="font-bold">Total Annual Cost</span>
+                        <span className="font-bold">{t("totalAnnualCost")}</span>
                         <span className="font-mono font-bold text-green text-lg">₱ 6.1M</span>
                       </div>
                     </div>
@@ -757,26 +762,26 @@ export default function ImpactPage() {
                   <div className="relative z-10">
                     <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-green" />
-                      5-Year ROI Projection — Region 6 Deployment
+                      {t("fiveYearROIProjection")}
                     </h3>
                   <div className="overflow-x-auto pb-2">
                     <table className="w-full text-sm font-mono min-w-[500px]">
                       <thead>
                         <tr className="border-b border-border">
-                          <th className="text-left py-2 px-2 text-muted font-normal">Year</th>
-                          <th className="text-right py-2 px-2 text-muted font-normal">Investment</th>
-                          <th className="text-right py-2 px-2 text-muted font-normal">Savings</th>
-                          <th className="text-right py-2 px-2 text-muted font-normal">Net Value</th>
-                          <th className="text-right py-2 px-2 text-muted font-normal">ROI</th>
+                          <th className="text-left py-2 px-2 text-muted font-normal">{t("year")}</th>
+                          <th className="text-right py-2 px-2 text-muted font-normal">{t("investment")}</th>
+                          <th className="text-right py-2 px-2 text-muted font-normal">{t("savings")}</th>
+                          <th className="text-right py-2 px-2 text-muted font-normal">{t("netValue")}</th>
+                          <th className="text-right py-2 px-2 text-muted font-normal">{t("roi")}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {[
-                          { year: "Year 1", investment: "₱ 6.1M", savings: "₱ 18.2M", net: "₱ 12.1M", roi: "198%" },
-                          { year: "Year 2", investment: "₱ 6.1M", savings: "₱ 28.7M", net: "₱ 22.6M", roi: "370%" },
-                          { year: "Year 3", investment: "₱ 6.1M", savings: "₱ 38.4M", net: "₱ 32.3M", roi: "530%" },
-                          { year: "Year 4", investment: "₱ 6.1M", savings: "₱ 45.1M", net: "₱ 39.0M", roi: "639%" },
-                          { year: "Year 5", investment: "₱ 6.1M", savings: "₱ 53.0M", net: "₱ 46.9M", roi: "769%" },
+                          { year: t("year1"), investment: "₱ 6.1M", savings: "₱ 18.2M", net: "₱ 12.1M", roi: "198%" },
+                          { year: t("year2"), investment: "₱ 6.1M", savings: "₱ 28.7M", net: "₱ 22.6M", roi: "370%" },
+                          { year: t("year3"), investment: "₱ 6.1M", savings: "₱ 38.4M", net: "₱ 32.3M", roi: "530%" },
+                          { year: t("year4"), investment: "₱ 6.1M", savings: "₱ 45.1M", net: "₱ 39.0M", roi: "639%" },
+                          { year: t("year5"), investment: "₱ 6.1M", savings: "₱ 53.0M", net: "₱ 46.9M", roi: "769%" },
                         ].map((row) => (
                           <tr key={row.year} className="border-b border-border/50">
                             <td className="py-2 px-2 font-bold whitespace-nowrap">{row.year}</td>
@@ -793,16 +798,16 @@ export default function ImpactPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-3 p-3 rounded-xl bg-green/5 border border-green/20 text-xs font-mono">
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                      <span className="text-muted">Break-even:</span>
-                      <span className="font-bold text-green">Month 8</span>
+                      <span className="text-muted">{t("breakEven")}</span>
+                      <span className="font-bold text-green">{t("month8")}</span>
                     </div>
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                      <span className="text-muted">5-Year Total ROI:</span>
+                      <span className="text-muted">{t("fiveYearTotalROI")}</span>
                       <span className="font-bold text-green">769%</span>
                     </div>
                     <div className="flex items-center gap-2 whitespace-nowrap">
-                      <span className="text-muted">Lives impacted:</span>
-                      <span className="font-bold">4.2M citizens</span>
+                      <span className="text-muted">{t("livesImpacted")}</span>
+                      <span className="font-bold">{t("citizensImpacted")}</span>
                     </div>
                   </div>
                   </div>
@@ -815,20 +820,20 @@ export default function ImpactPage() {
               <div className="border-t border-border pt-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Globe className="w-5 h-5 text-secondary" />
-                  <h2 className="text-xl font-bold tracking-tight">Scalability & Architecture</h2>
+                  <h2 className="text-xl font-bold tracking-tight">{t("scalabilityArchitecture")}</h2>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 mb-4">
                   {/* System Architecture - Full Width Horizontal */}
                   <div className="panel p-4 sm:p-5 space-y-4">
-                    <h3 className="font-bold">System Architecture</h3>
+                    <h3 className="font-bold">{t("systemArchitecture")}</h3>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs font-mono">
                       {[
-                        { layer: "Citizen Layer", items: "Mobile PWA | Web App", color: "bg-secondary/10 border-secondary/30 text-secondary" },
-                        { layer: "App Services", items: "Web Platform | Secure API", color: "bg-accent/10 border-accent/30 text-accent" },
-                        { layer: "AI Pipeline", items: "Vision | Routing | GenAI", color: "bg-amber/10 border-amber/30 text-amber" },
-                        { layer: "Data Layer", items: "Secure Storage | Graph DB", color: "bg-green/10 border-green/30 text-green" },
-                        { layer: "Infrastructure", items: "Vercel | Azure | Supabase", color: "bg-red/10 border-red/30 text-red" },
+                        { layer: t("nodeInputSub") + " Layer", items: t("nodeInputSub") + " | Web", color: "bg-secondary/10 border-secondary/30 text-secondary" },
+                        { layer: t("nodeBackendSub") + " Services", items: t("webPlatformSecureApi"), color: "bg-accent/10 border-accent/30 text-accent" },
+                        { layer: t("aiAnalysisPipeline") + " Pipeline", items: t("visionRoutingGenai"), color: "bg-amber/10 border-amber/30 text-amber" },
+                        { layer: t("nodeGraphSub") + " Layer", items: t("secureStorageGraphDb"), color: "bg-green/10 border-green/30 text-green" },
+                        { layer: t("infrastructure") + " Layer", items: t("vercelAzureSupabase"), color: "bg-red/10 border-red/30 text-red" },
                       ].map((item) => (
                         <div key={item.layer} className={`p-3 rounded-lg border ${item.color} flex flex-col justify-center text-center`}>
                           <div className="font-bold mb-1">{item.layer}</div>
@@ -839,7 +844,7 @@ export default function ImpactPage() {
                   </div>
                 </div>
 
-                {/* Projected Cost at Scale */}
+                {/* {t("projectedCostScale")} */}
                 <div className="panel p-5 space-y-3 relative overflow-hidden group transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgb(0,0,0,0.06)] hover:border-secondary/30 mb-6">
                   <div className="absolute inset-0 bg-gradient-to-br from-panel via-panel to-secondary/5 opacity-80" />
                   <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl -mr-20 -mt-20 transition-opacity duration-700 opacity-30 group-hover:opacity-100 pointer-events-none" />
@@ -847,14 +852,14 @@ export default function ImpactPage() {
                   <div className="relative z-10">
                     <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
                       <Globe className="w-5 h-5 text-secondary" />
-                      Projected Cost at Scale
+                      {t("projectedCostScale")}
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {[
-                        { scale: "10K users", cost: "₱ 0.8M/yr", perUser: "₱ 67/user", icon: Users },
-                        { scale: "100K users", cost: "₱ 4.2M/yr", perUser: "₱ 35/user", icon: Users },
-                        { scale: "1M users", cost: "₱ 18M/yr", perUser: "₱ 15/user", icon: Users },
-                        { scale: "10M users", cost: "₱ 85M/yr", perUser: "₱ 7/user", icon: Users },
+                        { scale: t("scale10kUsers"), cost: "₱ 0.8M/yr", perUser: "₱ 67/user", icon: Users },
+                        { scale: t("scale100kUsers"), cost: "₱ 4.2M/yr", perUser: "₱ 35/user", icon: Users },
+                        { scale: t("scale1mUsers"), cost: "₱ 18M/yr", perUser: "₱ 15/user", icon: Users },
+                        { scale: t("scale10mUsers"), cost: "₱ 85M/yr", perUser: "₱ 7/user", icon: Users },
                       ].map((item) => (
                         <div key={item.scale} className="p-4 rounded-xl border border-border bg-panel/50 text-center">
                           <item.icon className="w-5 h-5 text-secondary mx-auto mb-2" />
@@ -865,7 +870,7 @@ export default function ImpactPage() {
                       ))}
                     </div>
                     <div className="text-xs text-muted font-mono mt-2">
-                      Cost per user decreases 91% from 10K to 10M scale — demonstrating strong economies of scale through shared AI infrastructure and edge caching.
+                      {t("fullCoverage")} — {t("economiesOfScale")}
                     </div>
                   </div>
                 </div>

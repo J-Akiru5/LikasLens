@@ -7,6 +7,7 @@ import { User, LogOut, LayoutGrid, UserCircle2, ChevronDown, Settings } from "lu
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { showToast, ConfirmModal } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 export function UserNav({ invert = false, variant = "header" }: { invert?: boolean; variant?: "header" | "sidebar" } = {}) {
@@ -15,6 +16,8 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
   const [loading, setLoading] = useState(true);
   const [showLogoutAlert, setShowLogoutAlert] = useState(false);
   const supabase = useMemo(() => createClient(), []);
+  const nav = useTranslations("nav");
+  const common = useTranslations("common");
 
   useEffect(() => {
     async function getUser() {
@@ -39,7 +42,7 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
       try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
       window.location.href = "/login";
     } catch {
-      showToast("Failed to log out. Please try again.", "error");
+      showToast(common("failedToLogout"), "error");
     }
   };
 
@@ -120,9 +123,9 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
           isOpen={showLogoutAlert}
           onClose={() => setShowLogoutAlert(false)}
           onConfirm={handleLogout}
-          title="Sign Out"
-          message="Are you sure you want to log out of your account?"
-          confirmLabel="Log Out"
+          title={common("signOut")}
+          message={nav("logoutConfirm")}
+          confirmLabel={common("logout")}
           variant="danger"
         />
       </div>
@@ -170,7 +173,7 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
               className="absolute right-0 mt-3 w-56 rounded-2xl border border-ink/10 bg-page shadow-xl overflow-hidden z-50"
             >
               <div className="p-3 border-b border-ink/10">
-                <p className="font-mono text-[10px] text-ink/40 uppercase tracking-wider">Signed in as</p>
+                <p className="font-mono text-[10px] text-ink/40 uppercase tracking-wider">{nav("signedInAs")}</p>
                 <p className="text-sm text-ink mt-0.5 truncate">{user.email}</p>
               </div>
 
@@ -191,7 +194,7 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
                   onClick={() => setIsOpen(false)}
                 >
                   <UserCircle2 className="w-4 h-4" />
-                  Profile Settings
+                  {nav("profileSettings")}
                 </Link>
                 <button
                   className="flex items-center gap-2 px-3 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors w-full text-left"
@@ -199,7 +202,7 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
                   onClick={() => { setIsOpen(false); setShowLogoutAlert(true); }}
                 >
                   <LogOut className="w-4 h-4" />
-                  Logout
+                  {common("logout")}
                 </button>
               </div>
             </motion.div>
@@ -211,9 +214,9 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
         isOpen={showLogoutAlert}
         onClose={() => setShowLogoutAlert(false)}
         onConfirm={handleLogout}
-        title="Sign Out"
-        message="Are you sure you want to log out of your account?"
-        confirmLabel="Log Out"
+        title={common("signOut")}
+        message={nav("logoutConfirm")}
+        confirmLabel={common("logout")}
         variant="danger"
       />
     </div>

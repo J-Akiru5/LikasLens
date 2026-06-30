@@ -131,8 +131,6 @@ export function useCamera(initialFacing: FacingMode = "environment"): UseCameraR
     }
   }, [acquireStream, facingMode, stopTracks]);
 
-  // Removed proactive permission check to prevent false positives in privacy browsers.
-
   // Clean up all tracks when the component using this hook unmounts.
   useEffect(() => {
     return () => {

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import {
   m,
   useScroll,
@@ -52,12 +53,7 @@ const SEED_LEDGER: LedgerEntry[] = [
   { id: "RPT-7777", coords: "10.32°N 123.91°E", agency: "DENR", type: "Coral blast-fishing, Cebu", confidence: 94.6, state: "critical", note: "Escalated to PCG" },
 ];
 
-const STATE_LABEL: Record<LedgerState, string> = {
-  routing: "Routing",
-  resolved: "Resolved",
-  critical: "Critical",
-  active: "Active",
-};
+// STATE_LABEL moved inside component
 
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
@@ -78,7 +74,15 @@ interface HeroSectionProps {
 
 
 export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
+  const t = useTranslations("landing");
   const sectionRef = useRef<HTMLElement>(null);
+  const tLedger = useTranslations("dashboard");
+  const STATE_LABEL: Record<LedgerState, string> = {
+    routing: tLedger("routing"),
+    resolved: tLedger("resolvedLower"),
+    critical: tLedger("critical"),
+    active: tLedger("active"),
+  };
   const [ledger, setLedger] = useState<LedgerEntry[]>(SEED_LEDGER);
   const [counter, setCounter] = useState(0);
 
@@ -217,7 +221,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 textShadow: "0 4px 24px rgba(0,0,0,0.6)"
               }}
             >
-              AI-Powered Environmental Protection.
+              {t("heroTitle1")} {t("heroTitle2")} {t("heroTitle3")}
             </m.h1>
 
             <m.p
@@ -231,9 +235,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 textShadow: "0 2px 12px rgba(0,0,0,0.8)"
               }}
             >
-              Take a photo of any environmental hazard. Our AI instantly analyzes the issue,
-              identifies legal violations, and routes it to the correct government agency.
-              Every case lands on the public record.
+              {t("heroSubtitle")}
             </m.p>
 
             <m.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -251,7 +253,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                   }}
                 >
                   <Camera style={{ width: 16, height: 16 }} />
-                  Report an issue
+                  {t("reportIssue")}
                   <ArrowRight style={{ width: 16, height: 16 }} />
                 </Link>
               </MagneticButton>
@@ -270,7 +272,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                   }}
                 >
                   <BarChart3 style={{ width: 16, height: 16 }} />
-                  See public records
+                  {t("viewPublicReports")}
                 </a>
               </MagneticButton>
             </m.div>
@@ -297,7 +299,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
             <div 
               className="ec-ledger shadow-2xl backdrop-blur-md" 
               role="group" 
-              aria-label="Live incident ledger"
+              aria-label={tLedger("liveIncidentLedger")}
               style={{
                 background: ghostMode ? "rgba(13, 26, 18, 0.8)" : "rgba(13, 26, 18, 0.5)",
                 border: "1px solid rgba(255, 255, 255, 0.12)",
@@ -375,7 +377,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 </div>
                 <button
                   onClick={handleInstall}
-                  aria-label="Install LikasLens app"
+                  aria-label={tLedger("installApp")}
                   className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
                   style={{
                     display: "flex", alignItems: "center", gap: 5,

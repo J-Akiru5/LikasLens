@@ -1,4 +1,6 @@
 import { useRef, useCallback } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import type { ExportOptions } from "@/lib/pdf-export-types";
 
 export function usePdfExport() {
@@ -19,11 +21,6 @@ export function usePdfExport() {
       }
 
       try {
-        const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-          import("html2canvas"),
-          import("jspdf"),
-        ]);
-
         const canvas = await html2canvas(exportRef.current, {
           scale,
           backgroundColor: preserveBackgroundColor ? null : "#ffffff",

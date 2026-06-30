@@ -6,6 +6,7 @@ import { laravelGet, getTickets, showToast } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
 import { TimeSeriesChart } from "@/components/charts/time-series-chart";
 import { ViolationDonut } from "@/components/charts/violation-donut";
+import { useTranslations } from "next-intl";
 
 interface DashboardStats {
   active_incidents: number;
@@ -20,6 +21,7 @@ interface StatusCount {
 }
 
 export default function ReportsAnalyticsPage() {
+  const t = useTranslations("dashboard");
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,9 +126,9 @@ export default function ReportsAnalyticsPage() {
           printWindow.print();
         }, 500);
       }
-      showToast("Report exported — use Print to PDF in the dialog", "success");
+      showToast(t("reportExported"), "success");
     } catch (err) {
-      showToast("Failed to export report", "error");
+      showToast(t("exportFailed"), "error");
     } finally {
       setExporting(false);
     }
@@ -136,7 +138,7 @@ export default function ReportsAnalyticsPage() {
     return (
       <div className="min-h-full pb-24 bg-page">
         <header className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10 px-4 h-16 flex items-center">
-          <h1 className="ios-large-title ios-large-title--xl">Reports</h1>
+          <h1 className="ios-large-title ios-large-title--xl">{t("reports")}</h1>
         </header>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-green" />
@@ -148,14 +150,14 @@ export default function ReportsAnalyticsPage() {
   return (
     <div className="min-h-full pb-24 bg-page">
       <header className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10 px-4 h-16 flex items-center">
-        <h1 className="ios-large-title ios-large-title--xl">Reports</h1>
+        <h1 className="ios-large-title ios-large-title--xl">{t("reports")}</h1>
         <button
           onClick={handleExportPDF}
           disabled={exporting}
           className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green text-white text-xs font-bold disabled:opacity-50"
         >
           <Download className="w-3.5 h-3.5" />
-          Export PDF
+          {t("exportPdf")}
         </button>
       </header>
 
@@ -165,28 +167,28 @@ export default function ReportsAnalyticsPage() {
           <div className="ios-grouped-list p-4">
             <div className="flex items-center gap-2 mb-2">
               <FileText className="w-4 h-4 text-ink/30" />
-              <span className="text-[10px] text-ink/40 font-bold uppercase tracking-wider">Total Reports</span>
+              <span className="text-[10px] text-ink/40 font-bold uppercase tracking-wider">{t("totalReports")}</span>
             </div>
             <p className="text-3xl font-black text-ink">{totalCount}</p>
           </div>
           <div className="ios-grouped-list p-4">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-4 h-4 text-green/50" />
-              <span className="text-[10px] text-ink/40 font-bold uppercase tracking-wider">Resolved</span>
+              <span className="text-[10px] text-ink/40 font-bold uppercase tracking-wider">{t("resolvedLower")}</span>
             </div>
             <p className="text-3xl font-black text-green">{resolvedCount}</p>
           </div>
           <div className="ios-grouped-list p-4">
             <div className="flex items-center gap-2 mb-2">
               <AlertCircle className="w-4 h-4 text-amber-500/50" />
-              <span className="text-[10px] text-ink/40 font-bold uppercase tracking-wider">Open</span>
+              <span className="text-[10px] text-ink/40 font-bold uppercase tracking-wider">{t("openStatus")}</span>
             </div>
             <p className="text-3xl font-black text-amber-500">{openCount}</p>
           </div>
           <div className="ios-grouped-list p-4">
             <div className="flex items-center gap-2 mb-2">
               <Clock className="w-4 h-4 text-blue-500/50" />
-              <span className="text-[10px] text-ink/40 font-bold uppercase tracking-wider">Avg Response</span>
+              <span className="text-[10px] text-ink/40 font-bold uppercase tracking-wider">{t("avgResponseHours")}</span>
             </div>
             <p className="text-3xl font-black text-blue-500">
               {stats?.avg_response_hours ? `${Math.round(stats.avg_response_hours)}h` : "—"}
@@ -202,11 +204,11 @@ export default function ReportsAnalyticsPage() {
 
         {/* Status Breakdown */}
         <div className="ios-grouped-list p-4">
-          <p className="text-[10px] font-bold text-ink/40 uppercase tracking-wider mb-3">By Status</p>
+          <p className="text-[10px] font-bold text-ink/40 uppercase tracking-wider mb-3">{t("byStatus")}</p>
           {statusBreakdown.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 text-ink/30">
               <PieChart className="w-8 h-8 mb-2 opacity-50" strokeWidth={1.5} />
-              <p className="text-xs font-medium">No status data yet</p>
+              <p className="text-xs font-medium">{t("noStatusDataYet")}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -227,7 +229,7 @@ export default function ReportsAnalyticsPage() {
 
         {/* Resolution Rate */}
         <div className="ios-grouped-list p-4">
-          <p className="text-[10px] font-bold text-ink/40 uppercase tracking-wider mb-3">Resolution Rate</p>
+          <p className="text-[10px] font-bold text-ink/40 uppercase tracking-wider mb-3">{t("resolutionRate")}</p>
           <div className="relative h-3 bg-ink/10 rounded-full overflow-hidden">
             <div
               className="h-full bg-green rounded-full transition-all duration-700"

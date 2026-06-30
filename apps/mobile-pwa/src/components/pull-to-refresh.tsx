@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, type ReactNode } from "react";
 import { Loader2, ArrowDown } from "lucide-react";
 import { cn } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface PullToRefreshProps {
   children: ReactNode;
@@ -23,6 +24,7 @@ export function PullToRefresh({
   className,
   disabled = false,
 }: PullToRefreshProps) {
+  const t = useTranslations("pullToRefresh");
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const startY = useRef(0);
@@ -105,11 +107,11 @@ export function PullToRefresh({
             <ArrowDown className="w-5 h-5" />
           )}
           {refreshing ? (
-            <span>Refreshing...</span>
+            <span>{t("refreshing")}</span>
           ) : pullDistance >= THRESHOLD ? (
-            <span>Release to refresh</span>
+            <span>{t("releaseToRefresh")}</span>
           ) : (
-            <span>Pull to refresh</span>
+            <span>{t("pullToRefresh")}</span>
           )}
         </div>
       </div>

@@ -1,763 +1,686 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="civic">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lou (Dev 1) — Frontend Sprint Roadmap</title>
+<title>LikasLens Sprint — Developer 1: Design & Frontend</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --blue-900: #1e3a5f;
-    --blue-700: #2563eb;
-    --blue-500: #3b82f6;
-    --blue-100: #dbeafe;
-    --green: #22c55e;
-    --amber: #f59e0b;
-    --red: #ef4444;
-    --slate-50: #f8fafc;
-    --slate-100: #f1f5f9;
-    --slate-200: #e2e8f0;
-    --slate-300: #cbd5e1;
-    --slate-400: #94a3b8;
-    --slate-500: #64748b;
-    --slate-600: #475569;
-    --slate-700: #334155;
-    --slate-800: #1e293b;
-    --slate-900: #0f172a;
-    --radius: 8px;
-    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
-    --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
-    --shadow-lg: 0 10px 15px rgba(0,0,0,.1), 0 4px 6px rgba(0,0,0,.05);
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
-    background: var(--slate-100);
-    color: var(--slate-800);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+:root {
+  --primary: #1B4332;
+  --secondary: #2DE1C2;
+  --accent: #FFB703;
+  --background: #F8F9FA;
+  --foreground: #081C15;
+  --panel: #F8F9FA;
+  --panel-border: rgba(8, 28, 21, 0.2);
+  --muted-text: rgba(8, 28, 21, 0.85);
+  --dev-accent: #7b1fa2;
+  --shadow-color: #1B4332;
+}
+[data-theme="ghost"] {
+  --primary: #2DE1C2;
+  --secondary: #2DE1C2;
+  --accent: #FFB703;
+  --background: #081C15;
+  --foreground: #F8F9FA;
+  --panel: rgba(8, 28, 21, 0.9);
+  --panel-border: rgba(45, 225, 194, 0.35);
+  --muted-text: rgba(248, 249, 250, 0.85);
+  --shadow-color: #2DE1C2;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  line-height: 1.6;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+code, pre, .font-data { font-family: 'Space Mono', monospace; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
 
-  /* Header */
-  .header {
-    background: linear-gradient(135deg, var(--blue-900), var(--blue-700));
-    color: #fff;
-    padding: 32px 28px;
-    border-radius: var(--radius);
-    margin-bottom: 24px;
-    box-shadow: var(--shadow-lg);
-  }
-  .header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 4px; }
-  .header .subtitle { opacity: .85; font-size: .95rem; margin-bottom: 16px; }
-  .header-meta { display: flex; flex-wrap: wrap; gap: 12px; }
-  .header-meta .tag {
-    background: rgba(255,255,255,.18);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: .8rem;
-    font-weight: 500;
-    backdrop-filter: blur(4px);
-  }
+/* Theme Toggle */
+.theme-toggle {
+  position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--panel); border: 4px solid var(--foreground);
+  box-shadow: 4px 4px 0px var(--shadow-color);
+  padding: 0.5rem 1rem; cursor: pointer;
+  font-family: 'Montserrat', sans-serif; font-weight: 700;
+  font-size: 0.75rem; text-transform: uppercase;
+  color: var(--foreground); transition: all 0.3s ease;
+}
+.theme-toggle:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--shadow-color); }
+.theme-toggle .dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--accent); transition: background 0.3s ease;
+}
+[data-theme="ghost"] .theme-toggle .dot { background: var(--secondary); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-  /* Progress */
-  .progress-card {
-    background: #fff;
-    border-radius: var(--radius);
-    padding: 20px 24px;
-    margin-bottom: 24px;
-    box-shadow: var(--shadow);
-  }
-  .progress-card h3 { font-size: .85rem; color: var(--slate-500); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
-  .progress-bar-track {
-    height: 14px;
-    background: var(--slate-200);
-    border-radius: 7px;
-    overflow: hidden;
-    position: relative;
-  }
-  .progress-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--blue-500), var(--blue-700));
-    border-radius: 7px;
-    transition: width .5s ease;
-    min-width: 0;
-  }
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
-    font-size: .85rem;
-    color: var(--slate-600);
-    font-weight: 500;
-  }
+/* Hero */
+.hero {
+  background: var(--primary);
+  color: #F8F9FA;
+  padding: 3rem 0;
+  border-bottom: 4px solid var(--foreground);
+}
+.hero .icon { font-size: 3rem; margin-bottom: 0.5rem; }
+.hero h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+.hero .accent-line { color: var(--dev-accent); font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1rem;
+}
+.hero-meta .meta-chip {
+  background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
+  padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600;
+  font-family: 'Space Mono', monospace;
+}
 
-  /* Cards */
-  .card {
-    background: #fff;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-  .card-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--slate-200);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .card-header h2 { font-size: 1rem; font-weight: 600; }
-  .card-body { padding: 16px 20px; }
+/* Progress Bar */
+.progress-container {
+  background: var(--panel);
+  border: 4px solid var(--foreground);
+  box-shadow: 8px 8px 0px var(--shadow-color);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.progress-title {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: var(--foreground);
+}
+.progress-pct {
+  font-family: 'Space Mono', monospace;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--dev-accent);
+}
+.progress-track {
+  height: 12px;
+  background: rgba(8, 28, 21, 0.1);
+  border: 2px solid var(--foreground);
+  overflow: hidden;
+}
+[data-theme="ghost"] .progress-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+.progress-fill {
+  height: 100%;
+  background: var(--dev-accent);
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-detail {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted-text);
+  margin-top: 0.5rem;
+}
 
-  /* Team Roster */
-  .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
-  .team-member {
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    transition: border-color .2s;
-  }
-  .team-member.active { border-color: var(--blue-500); background: var(--blue-100); }
-  .team-member .dev-tag { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--slate-400); }
-  .team-member.active .dev-tag { color: var(--blue-700); }
-  .team-member .name { font-weight: 600; font-size: .95rem; }
-  .team-member .role { font-size: .8rem; color: var(--slate-500); }
-  .team-member .focus { font-size: .78rem; color: var(--slate-400); margin-top: 2px; }
+/* Brutal Panel */
+.brutal-panel {
+  background: var(--panel);
+  border: 4px solid var(--foreground);
+  box-shadow: 8px 8px 0px var(--shadow-color);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.2s ease;
+}
+.brutal-panel:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0px var(--shadow-color); }
 
-  /* Dependency table */
-  .dep-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-  .dep-table th { text-align: left; padding: 10px 12px; background: var(--slate-50); color: var(--slate-500); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; border-bottom: 2px solid var(--slate-200); }
-  .dep-table td { padding: 10px 12px; border-bottom: 1px solid var(--slate-100); vertical-align: top; }
-  .dep-table tr:last-child td { border-bottom: none; }
-  .badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: .72rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-  }
-  .badge-red { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
-  .badge-amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-  .badge-green { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
-  .badge-blue { background: var(--blue-100); color: var(--blue-700); border: 1px solid #bfdbfe; }
-  .badge-slate { background: var(--slate-100); color: var(--slate-600); border: 1px solid var(--slate-300); }
+/* Section Headers */
+.section-header {
+  font-size: 1.5rem;
+  color: var(--primary);
+  margin: 2.5rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 4px solid var(--dev-accent);
+  display: inline-block;
+}
+[data-theme="ghost"] .section-header { color: var(--secondary); }
 
-  /* Priority sections */
-  .priority-section { margin-bottom: 20px; }
-  .priority-toggle {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 20px;
-    background: #fff;
-    border: none;
-    border-radius: var(--radius);
-    cursor: pointer;
-    font-size: .95rem;
-    font-weight: 600;
-    color: var(--slate-800);
-    box-shadow: var(--shadow);
-    text-align: left;
-    transition: box-shadow .2s;
-  }
-  .priority-toggle:hover { box-shadow: var(--shadow-md); }
-  .priority-toggle .chevron {
-    width: 20px;
-    height: 20px;
-    transition: transform .25s ease;
-    flex-shrink: 0;
-    color: var(--slate-400);
-  }
-  .priority-toggle.open .chevron { transform: rotate(90deg); }
-  .priority-toggle .priority-badge { flex-shrink: 0; }
-  .priority-toggle .task-count {
-    margin-left: auto;
-    font-size: .78rem;
-    font-weight: 500;
-    color: var(--slate-400);
-    background: var(--slate-100);
-    padding: 2px 10px;
-    border-radius: 12px;
-  }
-  .priority-content {
-    display: none;
-    padding: 12px 0 0;
-  }
-  .priority-content.open { display: block; }
+/* Day Section */
+.day-section { margin: 2rem 0; }
+.day-header {
+  background: var(--dev-accent);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  border: 4px solid var(--foreground);
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.day-header .day-num {
+  background: rgba(255,255,255,0.2);
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+}
 
-  /* Task items */
-  .task-group { margin-bottom: 16px; }
-  .task-group-title {
-    font-size: .85rem;
-    font-weight: 700;
-    color: var(--slate-700);
-    padding: 8px 16px 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .task-group-title .issue-num { color: var(--blue-500); }
-  .task {
-    background: #fff;
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius);
-    padding: 12px 16px;
-    margin: 6px 0;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    transition: border-color .2s, background .2s;
-  }
-  .task:hover { border-color: var(--blue-500); }
-  .task.done { background: var(--slate-50); border-color: var(--slate-200); opacity: .7; }
-  .task.done .task-desc { text-decoration: line-through; color: var(--slate-400); }
-  .task input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    margin-top: 2px;
-    accent-color: var(--blue-500);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .task-body { flex: 1; min-width: 0; }
-  .task-desc { font-weight: 500; font-size: .88rem; color: var(--slate-800); }
-  .task-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; align-items: center; }
-  .task-files {
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-    font-size: .75rem;
-    background: var(--slate-100);
-    padding: 6px 10px;
-    border-radius: 4px;
-    color: var(--slate-600);
-    margin-top: 6px;
-    word-break: break-all;
-    line-height: 1.7;
-  }
-  .task-files code { background: var(--slate-200); padding: 1px 5px; border-radius: 3px; font-size: .73rem; }
-  .time-est {
-    font-size: .72rem;
-    font-weight: 600;
-    color: var(--slate-500);
-    background: var(--slate-100);
-    padding: 2px 8px;
-    border-radius: 4px;
-    white-space: nowrap;
-  }
-  .issue-badge {
-    font-size: .7rem;
-    font-weight: 600;
-    color: var(--blue-700);
-    background: var(--blue-100);
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-  .blocked-note {
-    font-size: .75rem;
-    color: #b45309;
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    border-radius: 4px;
-    padding: 4px 10px;
-    margin-top: 6px;
-    display: inline-block;
-  }
+/* Task Card */
+.task-card { margin-bottom: 2rem; }
+.task-title {
+  font-size: 1.1rem; font-weight: 800;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+  display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+.task-title .task-id {
+  background: var(--dev-accent); color: #fff;
+  padding: 0.15rem 0.5rem; font-size: 0.7rem;
+  font-family: 'Space Mono', monospace;
+}
 
-  /* Velocity table */
-  .velocity-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-  .velocity-table th { text-align: left; padding: 10px 12px; background: var(--slate-50); color: var(--slate-500); font-weight: 600; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; border-bottom: 2px solid var(--slate-200); }
-  .velocity-table td { padding: 10px 12px; border-bottom: 1px solid var(--slate-100); }
-  .velocity-table tr:last-child td { border-bottom: none; }
-  .velocity-table .total-row { font-weight: 700; background: var(--slate-50); }
+/* Interactive Checkboxes */
+.task-check {
+  appearance: none;
+  width: 18px; height: 18px;
+  border: 3px solid var(--foreground);
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+.task-check:checked {
+  background: var(--secondary);
+}
+.task-check:checked::after {
+  content: '\2713';
+  position: absolute;
+  top: -2px; left: 2px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--foreground);
+}
+.task-check-label {
+  display: flex;
+  align-items: center;
+  padding: 0.35rem 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.task-check-label.done {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
 
-  /* Post-hackathon table */
-  .post-table { width: 100%; border-collapse: collapse; font-size: .83rem; }
-  .post-table th { text-align: left; padding: 8px 12px; background: var(--slate-50); color: var(--slate-500); font-weight: 600; font-size: .73rem; text-transform: uppercase; letter-spacing: .04em; border-bottom: 2px solid var(--slate-200); }
-  .post-table td { padding: 8px 12px; border-bottom: 1px solid var(--slate-100); }
-  .post-table tr:last-child td { border-bottom: none; }
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  border: 2px solid;
+  margin-right: 0.25rem;
+}
+.tag-done { background: rgba(45, 225, 194, 0.2); border-color: #2DE1C2; color: #1B4332; }
+.tag-pending { background: rgba(255, 183, 3, 0.15); border-color: #FFB703; color: #b8860b; }
+.tag-blocked { background: rgba(220, 53, 69, 0.1); border-color: #dc3545; color: #dc3545; }
 
-  /* Definition of Done */
-  .dod-list { list-style: none; }
-  .dod-list li {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 6px 0;
-    font-size: .85rem;
-    color: var(--slate-700);
-  }
-  .dod-list li input[type="checkbox"] { margin-top: 3px; accent-color: var(--green); cursor: pointer; width: 16px; height: 16px; flex-shrink: 0; }
-  .dod-list li.done { color: var(--slate-400); text-decoration: line-through; }
-
-  /* Notes */
-  .notes-list { list-style: none; }
-  .notes-list li { padding: 5px 0; font-size: .84rem; color: var(--slate-600); display: flex; align-items: flex-start; gap: 8px; }
-  .notes-list li::before { content: '•'; color: var(--blue-500); font-weight: 700; flex-shrink: 0; }
-
-  /* Footer */
-  .footer {
-    text-align: center;
-    padding: 24px 16px;
-    font-size: .78rem;
-    color: var(--slate-400);
-    border-top: 1px solid var(--slate-200);
-    margin-top: 12px;
-  }
-  .footer a { color: var(--blue-500); text-decoration: none; }
-
-  /* Status indicator */
-  .status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-  }
-  .status-dot.red { background: var(--red); }
-  .status-dot.amber { background: var(--amber); }
-  .status-dot.green { background: var(--green); }
-
-  /* Reset button */
-  .reset-btn {
-    background: none;
-    border: 1px solid var(--slate-300);
-    color: var(--slate-500);
-    padding: 5px 12px;
-    border-radius: 4px;
-    font-size: .75rem;
-    cursor: pointer;
-    transition: all .2s;
-  }
-  .reset-btn:hover { border-color: var(--red); color: var(--red); }
-
-  /* Responsive */
-  @media (max-width: 640px) {
-    .container { padding: 12px 8px; }
-    .header { padding: 20px 16px; }
-    .header h1 { font-size: 1.3rem; }
-    .header-meta { gap: 6px; }
-    .header-meta .tag { font-size: .7rem; padding: 3px 8px; }
-    .card-body { padding: 12px 14px; }
-    .team-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-    .task { flex-direction: column; gap: 8px; }
-    .dep-table, .velocity-table, .post-table { font-size: .78rem; }
-    .dep-table th, .dep-table td,
-    .velocity-table th, .velocity-table td,
-    .post-table th, .post-table td { padding: 7px 8px; }
-    .priority-toggle { padding: 12px 14px; font-size: .88rem; }
-  }
-  @media (max-width: 400px) {
-    .team-grid { grid-template-columns: 1fr; }
-  }
-
-  /* Print */
-  @media print {
-    body { background: #fff; }
-    .priority-content { display: block !important; }
-    .reset-btn, .progress-card { display: none; }
-    .card, .priority-toggle, .task { box-shadow: none; border: 1px solid #ddd; }
-  }
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.85rem;
+}
+th, td {
+  border: 2px solid var(--foreground);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+th {
+  background: var(--primary);
+  color: #F8F9FA;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+tr:nth-child(even) { background: rgba(0,0,0,0.02); }
+[data-theme="ghost"] tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+code {
+  background: rgba(0,0,0,0.06);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.85em;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+[data-theme="ghost"] code {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.15);
+}
+pre {
+  background: var(--foreground);
+  color: var(--background);
+  padding: 1rem;
+  border: 4px solid var(--foreground);
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  font-size: 0.8rem;
+}
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+.footer {
+  margin-top: 4rem;
+  padding: 2rem 0;
+  border-top: 4px solid var(--foreground);
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted-text);
+}
+.footer a { color: var(--dev-accent); font-weight: 700; }
+@media (max-width: 768px) {
+  .hero h1 { font-size: 1.75rem; }
+  .hero-meta { flex-direction: column; }
+  .brutal-panel { padding: 1rem; }
+  table { font-size: 0.75rem; }
+  th, td { padding: 0.35rem 0.5rem; }
+  .progress-container { position: static; }
+}
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- Header -->
-  <div class="header">
-    <h1>Developer 1 — Frontend Sprint Roadmap</h1>
-    <p class="subtitle">Post-Pull Bug Fix &amp; Integration Sprint · v0.9.3 → v0.9.5</p>
-    <div class="header-meta">
-      <span class="tag">📅 June 21–25, 2026</span>
-      <span class="tag">⏱ 38h estimated</span>
-      <span class="tag">👤 Lou (Dev 1)</span>
-      <span class="tag">🔴 NOT STARTED</span>
+<button class="theme-toggle" onclick="toggleTheme()">
+  <span class="dot"></span>
+  <span class="label" id="theme-label">CIVIC</span>
+</button>
+
+<div class="hero">
+  <div class="container">
+    <div class="icon">🎨</div>
+    <h1>Developer 1: Design & Frontend</h1>
+    <div class="accent-line">ASEAN AI Hackathon Prep</div>
+    <div class="hero-meta">
+      <span class="meta-chip">📅 June 5-8, 2026 (Thu-Sun)</span>
+      <span class="meta-chip">⏱ 24h</span>
+      <span class="meta-chip">👤 Lou (replacing Katherine)</span>
+      
     </div>
+    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.85">UI/UX polish, impact dashboard, Ghost Mode, mobile responsiveness</p>
   </div>
-
-  <!-- Progress -->
-  <div class="progress-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-      <h3 style="margin:0;">Sprint Progress</h3>
-      <button class="reset-btn" onclick="resetProgress()">Reset All</button>
-    </div>
-    <div class="progress-bar-track">
-      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
-    </div>
-    <div class="progress-label">
-      <span id="progressText">0 / 0 tasks completed</span>
-      <span id="progressPct">0%</span>
-    </div>
-  </div>
-
-  <!-- Team Roster -->
-  <div class="card">
-    <div class="card-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <h2>Team Roster</h2>
-    </div>
-    <div class="card-body">
-      <div class="team-grid">
-        <div class="team-member active">
-          <span class="dev-tag">Dev 1</span>
-          <span class="name">Lou</span>
-          <span class="role">Frontend / UI</span>
-          <span class="focus">Next.js UI, Tailwind, responsive design, PWA, shared components</span>
-        </div>
-        <div class="team-member">
-          <span class="dev-tag">Dev 2</span>
-          <span class="name">Jeff</span>
-          <span class="role">AI / Backend</span>
-          <span class="focus">FastAPI AI service, YOLOv8, Neo4j graph, Gemini</span>
-        </div>
-        <div class="team-member">
-          <span class="dev-tag">Dev 3</span>
-          <span class="name">Charlyn</span>
-          <span class="role">Backend / Infrastructure</span>
-          <span class="focus">Laravel API, Supabase, CI/CD, admin portal</span>
-        </div>
-        <div class="team-member">
-          <span class="dev-tag">Dev 4</span>
-          <span class="name">Katherine</span>
-          <span class="role">Integration / PWA / APK</span>
-          <span class="focus">E2E testing, PWA offline, Capacitor APK, demo prep</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Dependencies -->
-  <div class="card">
-    <div class="card-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-      <h2>Dependencies on Other Developers</h2>
-    </div>
-    <div class="card-body" style="overflow-x:auto;">
-      <table class="dep-table">
-        <thead>
-          <tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Status</th><th>Notes</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>APK install link / download endpoint</td>
-            <td>Dev 4 (Katherine)</td>
-            <td>Day 1</td>
-            <td><span class="badge badge-red">🔴 Blocked</span></td>
-            <td>Issue #164 — Lou needs working URL for install page</td>
-          </tr>
-          <tr>
-            <td>Android app ownership intent filters</td>
-            <td>Dev 4 (Katherine)</td>
-            <td>Day 1</td>
-            <td><span class="badge badge-red">🔴 Blocked</span></td>
-            <td>Issue #176 — <code>.well-known/assetlinks.json</code> config</td>
-          </tr>
-          <tr>
-            <td>Backend profile update endpoint</td>
-            <td>Dev 3 (Charlyn)</td>
-            <td>Day 2</td>
-            <td><span class="badge badge-amber">🟡 Pending</span></td>
-            <td>Issue #169 — Edit Profile needs <code>PUT /api/user/profile</code></td>
-          </tr>
-          <tr>
-            <td>Dashboard search API</td>
-            <td>Dev 3 (Charlyn)</td>
-            <td>Day 2</td>
-            <td><span class="badge badge-amber">🟡 Pending</span></td>
-            <td>Issue #168 — Search needs backend query support</td>
-          </tr>
-          <tr>
-            <td>Neo4j graph label confirmation</td>
-            <td>Dev 2 (Jeff)</td>
-            <td>Day 1</td>
-            <td><span class="badge badge-amber">🟡 Pending</span></td>
-            <td>Tech-stack copy fix depends on Jeff confirming DB choice</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Priority Sections -->
-  <div id="prioritySections"></div>
-
-  <!-- Sprint Velocity Tracker -->
-  <div class="card">
-    <div class="card-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      <h2>Sprint Velocity Tracker</h2>
-    </div>
-    <div class="card-body" style="overflow-x:auto;">
-      <table class="velocity-table">
-        <thead>
-          <tr><th>Day</th><th>Date</th><th>Focus</th><th>Hours</th><th>Tasks</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>1</td><td>Sat Jun 21</td><td>Critical fixes + blocked items</td><td>8h</td><td>#175, #176, #174, #163, #164, Gremlin fix</td></tr>
-          <tr><td>2</td><td>Sun Jun 22</td><td>High priority + shared integration</td><td>8h</td><td>#173, global-search, pwa-install, format.ts</td></tr>
-          <tr><td>3</td><td>Mon Jun 23</td><td>Medium priority mobile-pwa fixes</td><td>8h</td><td>#170, #172, #165, #166, auth polish, map polish</td></tr>
-          <tr><td>4</td><td>Tue Jun 24</td><td>Remaining medium + low priority</td><td>8h</td><td>#168, #169, #167, consistency audit</td></tr>
-          <tr><td>5</td><td>Wed Jun 25</td><td>Buffer / testing / polish</td><td>6h</td><td>Remaining items, cross-app testing</td></tr>
-          <tr class="total-row"><td colspan="3">Total</td><td>38h</td><td></td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Post-Hackathon Deferred Tasks -->
-  <div class="card">
-    <div class="card-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-      <h2>Post-Hackathon Deferred Tasks</h2>
-    </div>
-    <div class="card-body" style="overflow-x:auto;">
-      <table class="post-table">
-        <thead>
-          <tr><th>Task</th><th>Priority</th><th>Notes</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Full i18n audit for all <code>[locale]</code> routes</td><td><span class="badge badge-amber">MEDIUM</span></td><td>Verify all translated strings are present</td></tr>
-          <tr><td>Offline-first PWA enhancement</td><td><span class="badge badge-amber">MEDIUM</span></td><td>Service worker caching strategy</td></tr>
-          <tr><td>Dark mode (Ghost Mode) across mobile-pwa</td><td><span class="badge badge-amber">MEDIUM</span></td><td>Currently frontend-only</td></tr>
-          <tr><td>Component library documentation (Storybook)</td><td><span class="badge badge-slate">LOW</span></td><td>For shared components</td></tr>
-          <tr><td>E2E test coverage for critical flows</td><td><span class="badge badge-slate">LOW</span></td><td>Playwright or Cypress</td></tr>
-          <tr><td>Performance budget &amp; Lighthouse audit</td><td><span class="badge badge-slate">LOW</span></td><td>Target 90+ on mobile</td></tr>
-          <tr><td>Image lazy loading optimization</td><td><span class="badge badge-slate">LOW</span></td><td>Below-the-fold images</td></tr>
-          <tr><td>Font loading optimization</td><td><span class="badge badge-slate">LOW</span></td><td><code>font-display: swap</code> for Montserrat, Inter, Space Mono</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Definition of Done -->
-  <div class="card">
-    <div class="card-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-      <h2>Sprint Definition of Done</h2>
-    </div>
-    <div class="card-body">
-      <ul class="dod-list" id="dodList"></ul>
-    </div>
-  </div>
-
-  <!-- Notes -->
-  <div class="card">
-    <div class="card-header">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-      <h2>Notes</h2>
-    </div>
-    <div class="card-body">
-      <ul class="notes-list">
-        <li>Always run <code>pnpm install</code> from repo root before building</li>
-        <li>Use <code>pnpm --filter frontend dev</code> or <code>pnpm --filter mobile-pwa dev</code> for isolated dev</li>
-        <li>Respect monorepo boundaries — never import from <code>apps/backend</code> or <code>apps/ai-service</code> directly</li>
-        <li>For image uploads: always include EXIF stripping before transmission</li>
-        <li>Follow existing code conventions — check neighboring files before writing new patterns</li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <div class="footer">
-    <p><strong>LikasLens</strong> — Developer 1 Frontend Sprint Roadmap · v0.9.3 → v0.9.5</p>
-    <p>Sprint dates: June 21–25, 2026 · Generated from <code>sprint-dev1-frontend.md</code></p>
-    <p style="margin-top:6px;">Progress is saved locally in your browser.</p>
-  </div>
-
 </div>
 
+<main class="container">
+
+  <div class="progress-container" id="progress-bar">
+    <div class="progress-header">
+      <span class="progress-title">Sprint Progress</span>
+      <span class="progress-pct" id="progress-pct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <div class="progress-detail">
+      <span id="progress-done">0</span> / <span id="progress-total">0</span> tasks completed
+    </div>
+  </div>
+
+<p>> <strong>Sprint:</strong> ASEAN AI Hackathon Prep</p>
+<p>> <strong>Timeline:</strong> June 5-8, 2026 (Thu-Sun)</p>
+<p>> <strong>Total Hours:</strong> 24h</p>
+<p>> <strong>Assigned To:</strong> Lou (replacing Katherine)</p>
+<p>> <strong>Focus:</strong> UI/UX polish, impact dashboard, Ghost Mode, mobile responsiveness</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">👥 Team Roster</h2>
+<table>
+<tr><th>Dev</th><th>Name</th><th>Role</th><th>Focus</th></tr>
+<tr><td>Dev 1</td><td>Lou</td><td>Frontend/UI</td><td>Next.js UI, Tailwind, responsive design, Ghost Mode theme</td></tr>
+<tr><td>Dev 2</td><td>Jeff</td><td>AI/Backend</td><td>FastAPI AI service, YOLOv8, Gremlin graph, Gemini</td></tr>
+<tr><td>Dev 3</td><td>Charlyn</td><td>Backend/Infrastructure</td><td>Laravel API, Supabase, CI/CD, admin portal</td></tr>
+<tr><td>Dev 4</td><td>Katherine</td><td>Integration/PWA/APK</td><td>E2E testing, PWA offline, Capacitor APK, demo prep</td></tr>
+</table>
+<p>> <strong>Note:</strong> Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.</p>
+<div class="brutal-panel"><h3 style="margin-bottom:0.75rem">✅ Completed Work</h3>
+</div>
+<p style="padding-left:1rem">• ✅ Impact dashboard significantly expanded (`dashboard/impact/page.tsx` — 977+ lines with charts, stats, activity feed)</p>
+<p style="padding-left:1rem">• ✅ Landing page updates (`page.tsx` — 88+ lines of changes)</p>
+<p style="padding-left:1rem">• ✅ Register form improvements</p>
+<p style="padding-left:1rem">• ✅ Sidebar refinements</p>
+<p style="padding-left:1rem">• ✅ Theme provider updates</p>
+<p style="padding-left:1rem">• ✅ Global CSS adjustments</p>
+<p style="padding-left:1rem">• ✅ Changelog page with GitHub cat logo in footer (v0.6.x)</p>
+<p style="padding-left:1rem">• ✅ Loading states for scoreboard, report, contact, laws, privacy pages (v0.7.2)</p>
+<p style="padding-left:1rem">• ✅ Error boundary pages for all major routes (v0.7.2)</p>
+<p style="padding-left:1rem">• ✅ Contact form page with API integration (v0.7.2)</p>
+<p style="padding-left:1rem">• ✅ EXIF stripping utility + inline implementation in report page (v0.7.1)</p>
+<p style="padding-left:1rem">• ✅ Offline queue built into report page (IndexedDB + auto-flush) (v0.7.2)</p>
+<p style="padding-left:1rem">• ✅ Framer motion ease type fix on landing page</p>
+<p style="padding-left:1rem">• ✅ Recharts type errors fix</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Dependencies on Other Developers</h2>
+<table>
+<tr><th>Dependency</th><th>From</th><th>Needed By</th><th>Notes</th></tr>
+<tr><td>Working API endpoints</td><td>Dev 3 (Charlyn)</td><td>Fri morning</td><td>Impact dashboard needs <code>/api/dashboard/stats</code></td></tr>
+<tr><td>Seeded demo data</td><td>Dev 3 (Charlyn)</td><td>Fri afternoon</td><td>Dashboard needs real tickets/users to display</td></tr>
+<tr><td>Ghost Mode theme tokens</td><td>Already built</td><td>Thu</td><td><code>data-theme="ghost"</code> CSS vars exist in <code>globals.css</code></td></tr>
+<tr><td>AI triage working</td><td>Dev 2 (Jeff)</td><td>Sat</td><td>Edge Interceptor modal needs triage responses</td></tr>
+</table>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 1</span>Thursday, June 5</div>
+<div class="task-card"><div class="task-title"><span class="task-id">1.1</span>Role-Aware Sidebar Rendering</div>
+<p><strong>Time:</strong> 3h | <strong>Priority:</strong> HIGH</p>
+<p><strong>Problem:</strong> The sidebar currently shows the same nav items for all users. Analyst and super_admin roles should see different navigation options.</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Files to modify:</p>
+<p style="padding-left:1rem">• `apps/frontend/src/components/layout/sidebar.tsx`</p>
+<p style="padding-left:1rem">• `apps/shared/src/ui/` (any shared nav components)</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-1" checked> Citizen sees: Dashboard, Report, Scoreboard, Laws, Profile</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-2" checked> Analyst sees: + Incidents, Towns Analytics</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-3"> Super Admin sees: + Users, NGOs, Laws Admin, Rewards, Audit Logs</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-1-4" checked> Role fetched from `/api/user/profile` and cached</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-1-5"> Loading state while role is being fetched</label>
+</div>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Implementation Notes:</p>
+<p style="padding-left:1rem">• Role is fetched from Supabase `user_metadata` via `getRole(user?.user_metadata)` (not from Laravel API)</p>
+<p style="padding-left:1rem">• Stored in `useState`, not a context/zustand store</p>
+<p style="padding-left:1rem">• Conditionally render nav items based on role</p>
+<p style="padding-left:1rem">• Uses `lucide-react` icons matching existing icon patterns</p>
+<p style="padding-left:1rem">• **Missing:** Laws Admin link for super_admin, loading skeleton while role fetches</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">1.2</span>Scoreboard Page Polish</div>
+<p><strong>Time:</strong> 3h | <strong>Priority:</strong> MEDIUM</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Files to modify:</p>
+<p style="padding-left:1rem">• `apps/frontend/src/app/[locale]/scoreboard/page.tsx`</p>
+<p style="padding-left:1rem">• `apps/shared/src/ui/public-scoreboard.tsx`</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-6" checked> Top 3 ranked users have special visual treatment (gold/silver/bronze)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-7" checked> Rank #1 has amber glow: `shadow-[0_0_16px_rgba(255,183,3,0.12)]`</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-8" checked> Eco-credit balance visible per user</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-2-9"> Mobile layout is responsive (single column on small screens)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-10" checked> Loading skeleton matches Civic Brutalism style</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-2-11" checked> Empty state message when no data</label>
+</div>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Design Reference:</p>
+<p style="padding-left:1rem">• Uses `font-heading font-black uppercase` for rank names</p>
+<p style="padding-left:1rem">• Uses `font-data` for XP numbers</p>
+<p style="padding-left:1rem">• Applies `brutal-panel` + `panel-surface` classes</p>
+<p style="padding-left:1rem">• Hard shadows: `shadow-[4px_4px_0px_#1b4332]`</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 2</span>Friday, June 6</div>
+<div class="task-card"><div class="task-title"><span class="task-id">2.1</span>Impact Dashboard Page</div>
+<p><strong>Time:</strong> 8h | <strong>Priority:</strong> HIGH</p>
+<p><strong>New file:</strong> <code>apps/frontend/src/app/[locale]/dashboard/impact/page.tsx</code></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">This is the centerpiece feature for the hackathon demo.</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Data Sources (from Laravel API):</p>
+<p style="padding-left:1rem">• `GET /api/dashboard/stats` — total tickets, resolution rate, avg response time</p>
+<p style="padding-left:1rem">• `GET /api/tickets` — all tickets with lat/lng for heat map</p>
+<p style="padding-left:1rem">• `GET /api/leaderboard` — top reporters</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Dashboard Sections:</p>
+<h4 style="font-size:0.95rem;margin:1rem 0 0.5rem;font-weight:700">Section A: Key Metrics (Top Row)</h4>
+<p style="padding-left:1rem">• Total Reports Submitted</p>
+<p style="padding-left:1rem">• Reports Resolved (with % rate)</p>
+<p style="padding-left:1rem">• Average Response Time (hours)</p>
+<p style="padding-left:1rem">• Active Citizens (unique reporters)</p>
+<p><strong>Component:</strong> <code>StatsCards</code> from <code>apps/shared/src/ui/stats-cards.tsx</code></p>
+<h4 style="font-size:0.95rem;margin:1rem 0 0.5rem;font-weight:700">Section B: Resolution Rate Chart</h4>
+<p style="padding-left:1rem">• Bar chart showing tickets by status (open, investigating, monitoring, resolved, closed)</p>
+<p style="padding-left:1rem">• Use a lightweight chart library (recharts or chart.js)</p>
+<h4 style="font-size:0.95rem;margin:1rem 0 0.5rem;font-weight:700">Section C: Geographic Heat Map</h4>
+<p style="padding-left:1rem">• Leaflet map with markers for each ticket's lat/lng</p>
+<p style="padding-left:1rem">• Cluster markers for dense areas</p>
+<p style="padding-left:1rem">• Color-coded by urgency_score (1-5)</p>
+<p style="padding-left:1rem">• **Reuse `GeoTagMap` component** from `apps/frontend/src/components/maps/`</p>
+<h4 style="font-size:0.95rem;margin:1rem 0 0.5rem;font-weight:700">Section D: AI Confidence Trends</h4>
+<p style="padding-left:1rem">• Line chart showing avg `ai_confidence` over time</p>
+<p style="padding-left:1rem">• Grouped by week</p>
+<h4 style="font-size:0.95rem;margin:1rem 0 0.5rem;font-weight:700">Section E: Recent Activity Feed</h4>
+<p style="padding-left:1rem">• Last 10 tickets with status, type, location</p>
+<p style="padding-left:1rem">• **Reuse `ActivityFeed`** from `apps/frontend/src/components/dashboard/`</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-12" checked> Page loads with real data from API</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-13" checked> Stats cards show correct numbers</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-14"> Map renders with ticket markers (uses SVG ASEAN map instead of Leaflet)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-15" checked> Charts are responsive</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-16" checked> Mobile layout stacks vertically</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-3-17" checked> Loading states for each section</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-3-18"> Error states if API fails (falls back silently, no explicit error UI)</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">2.2</span>Install Chart Library</div>
+<p><strong>Time:</strong> 1h | <strong>Priority:</strong> HIGH</p>
+<p><code>`</code>bash</p>
+<p>pnpm --filter frontend add recharts</p>
+<p><code>`</code></p>
+<p><span class="tag tag-done">✅ Complete</span></p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 3</span>Saturday, June 7</div>
+<div class="task-card"><div class="task-title"><span class="task-id">3.1</span>Ghost Mode Enhancements</div>
+<p><strong>Time:</strong> 4h | <strong>Priority:</strong> HIGH</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Files to modify:</p>
+<p style="padding-left:1rem">• `apps/frontend/src/app/[locale]/report/page.tsx`</p>
+<p style="padding-left:1rem">• `apps/frontend/src/components/modals/EdgeInterceptorModal.tsx`</p>
+<p style="padding-left:1rem">• `apps/frontend/src/app/globals.css`</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Enhancements:</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-19"> Ghost Mode toggle has animated transition (dark theme fade-in)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-20" checked> Edge Interceptor modal copy is clear and compelling for demo</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-21"> Ghost Mode status indicator (pulsing amber dot) in header when active</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-5-22"> EXIF stripping confirmation toast: "Metadata stripped for your safety"</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-5-23" checked> Stealth theme: all UI elements switch to dark palette</label>
+</div>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Ghost Mode CSS (already exists, verify):</p>
+<p><code>`</code>css</p>
+<p>[data-theme="ghost"] {</p>
+<p>    --primary: #2DE1C2;</p>
+<p>    --background: #081C15;</p>
+<p>    --foreground: #F8F9FA;</p>
+<p>    --panel: rgba(8, 28, 21, 0.9);</p>
+<p>    --panel-border: rgba(45, 225, 194, 0.35);</p>
+<p>}</p>
+<p><code>`</code></p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Additional completed work:</p>
+<p style="padding-left:1rem">• ✅ EXIF stripping now applied in all modes (not just Ghost Mode) — v0.7.1</p>
+<p style="padding-left:1rem">• ✅ `exif-stripper.ts` utility exists at `apps/frontend/src/utils/exif-stripper.ts`</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">3.2</span>Mobile Responsiveness Audit</div>
+<p><strong>Time:</strong> 2h | <strong>Priority:</strong> MEDIUM</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Pages to audit:</p>
+<p style="padding-left:1rem">• `/report` — camera view, form fields, submit button</p>
+<p style="padding-left:1rem">• `/dashboard` — stats cards, activity feed</p>
+<p style="padding-left:1rem">• `/dashboard/impact` — new impact dashboard</p>
+<p style="padding-left:1rem">• `/scoreboard` — rank cards</p>
+<p style="padding-left:1rem">• `/laws` — law cards, search</p>
+<p style="padding-left:1rem">• `/contact` — form layout</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Fixes:</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-24"> All pages work at 375px width (iPhone SE) — unverifiable, needs runtime testing</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-25"> No horizontal scroll on any page — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-6-26"> Touch targets are minimum 44px — unverifiable</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-6-27" checked> Bottom nav doesn't overlap content — pages use `pb-20 lg:pb-6`</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="day-section"><div class="day-header"><span class="day-num">Day 4</span>Sunday, June 8</div>
+<div class="task-card"><div class="task-title"><span class="task-id">4.1</span>Demo Script UI Flows</div>
+<p><strong>Time:</strong> 3h | <strong>Priority:</strong> HIGH</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Ensure these flows are demo-ready:</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Flow 1: Citizen Report</p>
+<p style="padding-left:1rem">1. Landing page loads fast (< 2s)</p>
+<p style="padding-left:1rem">2. Click "Report" → camera activates</p>
+<p style="padding-left:1rem">3. Capture photo → GPS acquired</p>
+<p style="padding-left:1rem">4. Select incident type → add description</p>
+<p style="padding-left:1rem">5. Triage pre-check runs (Edge Interceptor if high-risk)</p>
+<p style="padding-left:1rem">6. Submit → success animation</p>
+<p style="padding-left:1rem">7. View in dashboard</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Flow 2: Ghost Mode</p>
+<p style="padding-left:1rem">1. Toggle Ghost Mode → theme transitions</p>
+<p style="padding-left:1rem">2. Capture photo → EXIF stripped toast</p>
+<p style="padding-left:1rem">3. Submit anonymously → confirmation</p>
+<p style="padding-left:1rem">4. Verify no user info in response</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Flow 3: Impact Dashboard</p>
+<p style="padding-left:1rem">1. Navigate to Impact Dashboard</p>
+<p style="padding-left:1rem">2. Show stats, map, charts</p>
+<p style="padding-left:1rem">3. Point out resolution rate</p>
+<p style="padding-left:1rem">4. Show geographic hotspots</p>
+<p style="font-weight:700;margin:0.75rem 0 0.25rem">Acceptance Criteria:</p>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-7-28"> All 3 flows complete without errors — unverifiable, needs runtime testing</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-7-29"> Each flow takes < 30 seconds — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-7-30"> UI looks polished at every step — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-7-31"> No console errors during demo — unverifiable</label>
+</div>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<div class="task-card"><div class="task-title"><span class="task-id">4.2</span>Final UI Fixes</div>
+<p><strong>Time:</strong> 1h | <strong>Priority:</strong> LOW</p>
+<p style="padding-left:1rem">• Fix any visual glitches found during rehearsal</p>
+<p style="padding-left:1rem">• Ensure consistent spacing across pages</p>
+<p style="padding-left:1rem">• Verify all fonts load (Montserrat, Inter, Space Mono)</p>
+<p style="padding-left:1rem">• Check dark mode (Ghost Mode) on all pages</p>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Risk Items</h2>
+<table>
+<tr><th>Risk</th><th>Status</th><th>Mitigation</th></tr>
+<tr><td>Chart library SSR issues</td><td>✅ Resolved</td><td>Uses direct imports in <code>"use client"</code> component</td></tr>
+<tr><td>Map not rendering on mobile</td><td>⚠️ Open</td><td>Uses SVG ASEAN map instead of Leaflet</td></tr>
+<tr><td>API data not available</td><td>✅ Resolved</td><td>Dev 3 seeded demo data (LikasLensSeeder)</td></tr>
+<tr><td>Ghost Mode CSS conflicts</td><td>✅ Resolved</td><td>Comprehensive <code>[data-theme="ghost"]</code> rules in globals.css</td></tr>
+</table>
+<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
+<h2 class="section-header">Definition of Done</h2>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-32" checked> Role-aware sidebar works for citizen/analyst/admin (missing Laws Admin for super_admin)</label>
+<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="task-8-33" checked> Impact dashboard shows real data with charts + map (SVG map, not Leaflet)</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-34"> Ghost Mode flow is polished and compelling (missing pulsing indicator + EXIF toast)</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-35"> All pages responsive at 375px — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-36"> All 3 demo flows complete without errors — unverifiable</label>
+<label class="task-check-label"><input type="checkbox" class="task-check" data-id="task-8-37"> No console errors on any page — unverifiable</label>
+</div>
+
+<div class="footer">
+  <p>LikasLens Sprint Roadmap — Generated 2026-06-09</p>
+  <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a> · <a href="/">Home</a></p>
+</div>
+</main>
+
 <script>
-const STORAGE_KEY = 'likaslens-dev1-sprint';
+(function() {
+  var STORAGE_KEY = 'likaslens-sprint-progress';
 
-const TASKS = [
-  // CRITICAL
-  { id: 't175', section: 'critical', group: '#175 — Broken Android App Logo', desc: 'Fix PWA manifest icon paths for Android', files: ['apps/mobile-pwa/public/manifest.json', 'apps/mobile-pwa/next.config.ts', 'apps/mobile-pwa/src/app/layout.tsx'], est: '2h', issue: '#175' },
-  { id: 't176a', section: 'critical', group: '#176 — Android Ownership Not Working', desc: 'Verify Digital Asset Links and intent filters', files: ['apps/mobile-pwa/public/.well-known/assetlinks.json', 'apps/mobile-pwa/next.config.ts'], est: '2h', issue: '#176', blocked: 'Dev 4 (Katherine) — needs Capacitor package name + signing cert fingerprint' },
-  // HIGH
-  { id: 't174', section: 'high', group: '#174 — Broken OG Image', desc: 'Fix Open Graph meta image for social sharing', files: ['apps/frontend/src/app/layout.tsx', 'apps/frontend/public/og-image.png', 'apps/frontend/next.config.ts'], est: '1.5h', issue: '#174' },
-  { id: 't163', section: 'high', group: '#163 — Chatbot Blocks Input with "Log In" Button', desc: 'Fix chatbot overlay blocking input fields', files: ['apps/frontend/src/components/chatbot/', 'apps/frontend/src/app/[locale]/layout.tsx'], est: '2h', issue: '#163' },
-  { id: 't164', section: 'high', group: '#164 — Install/APK Link Broken', desc: 'Fix install page download link and PWA install prompt', files: ['apps/mobile-pwa/src/app/[locale]/install/page.tsx', 'apps/shared/src/ui/pwa-install-prompt.tsx', 'apps/frontend/src/components/'], est: '2h', issue: '#164', blocked: 'Dev 4 (Katherine) — needs working APK URL' },
-  { id: 't173', section: 'high', group: '#173 — Laws Database: Broken Card Layout', desc: 'Fix law card grid layout on mobile-pwa', files: ['apps/mobile-pwa/src/app/[locale]/(app)/laws/page.tsx'], est: '2h', issue: '#173' },
-  { id: 'tGremlin', section: 'high', group: 'Gremlin → Neo4j Copy Fix', desc: 'Fix incorrect database reference in tech stack section', files: ['apps/frontend/src/components/marketing/sections/tech-stack-section.tsx:71'], est: '10min' },
-  // MEDIUM
-  { id: 't170', section: 'medium', group: '#170 — Incidents: Broken Card Layout', desc: 'Fix incident card layout on mobile-pwa', files: ['apps/mobile-pwa/src/app/[locale]/(app)/incidents/page.tsx'], est: '1.5h', issue: '#170' },
-  { id: 't172', section: 'medium', group: '#172 — Leaderboard: 1st–3rd Placement Crowded', desc: 'Fix top-3 rank display spacing on mobile-pwa', files: ['apps/mobile-pwa/src/app/[locale]/(app)/scoreboard/page.tsx'], est: '1.5h', issue: '#172' },
-  { id: 't165', section: 'medium', group: '#165 — Display Name Squeezed to Side', desc: 'Fix display name alignment/overflow in mobile-pwa', files: ['apps/mobile-pwa/src/app/[locale]/(app)/profile/page.tsx', 'apps/mobile-pwa/src/app/[locale]/(app)/layout.tsx'], est: '1h', issue: '#165' },
-  { id: 't166', section: 'medium', group: '#166 — Impact Insights: Broken Card Layout', desc: 'Fix impact insights card layout on mobile-pwa', files: ['apps/mobile-pwa/src/app/[locale]/(app)/impact/page.tsx'], est: '1.5h', issue: '#166' },
-  { id: 't168', section: 'medium', group: '#168 — Dashboard Search Bar Not Working', desc: 'Wire global search into mobile-pwa dashboard', files: ['apps/mobile-pwa/src/app/[locale]/(app)/dashboard/page.tsx', 'apps/shared/src/ui/global-search.tsx'], est: '2h', issue: '#168', blocked: 'Dev 3 (Charlyn) — search API endpoint' },
-  { id: 't169', section: 'medium', group: '#169 — No Edit Profile Feature', desc: 'Implement edit profile page on mobile-pwa', files: ['apps/mobile-pwa/src/app/[locale]/(app)/profile/edit/page.tsx', 'apps/shared/src/ui/'], est: '3h', issue: '#169', blocked: 'Dev 3 (Charlyn) — profile update endpoint' },
-  { id: 'tSearch', section: 'medium', group: 'Shared Component Integration', desc: 'Integrate global-search into frontend and mobile-pwa', files: ['apps/shared/src/ui/global-search.tsx', 'apps/frontend/src/components/layout/', 'apps/mobile-pwa/src/app/[locale]/(app)/layout.tsx'], est: '2h' },
-  { id: 'tPwaInstall', section: 'medium', group: 'Shared Component Integration', desc: 'Integrate pwa-install-prompt into both apps', files: ['apps/shared/src/ui/pwa-install-prompt.tsx', 'apps/frontend/src/app/layout.tsx', 'apps/mobile-pwa/src/app/layout.tsx'], est: '1h' },
-  { id: 'tSplash', section: 'medium', group: 'Shared Component Integration', desc: 'Verify pwa-splash-screen integration', files: ['apps/shared/src/ui/pwa-splash-screen.tsx', 'apps/mobile-pwa/src/components/apple-splash-screens.tsx', 'apps/mobile-pwa/src/components/splash-screen.tsx'], est: '1.5h' },
-  { id: 'tFormat', section: 'medium', group: 'Shared Component Integration', desc: 'Integrate format.ts utilities across pages', files: ['apps/shared/src/lib/format.ts', 'All pages displaying dates, numbers, coordinates, file sizes'], est: '2h' },
-  { id: 'tAuthFe', section: 'medium', group: 'Auth Callback Flow Polish', desc: 'Polish frontend auth callback', files: ['apps/frontend/src/app/auth/callback/route.ts'], est: '1h' },
-  { id: 'tAuthMpa', section: 'medium', group: 'Auth Callback Flow Polish', desc: 'Polish mobile-pwa auth callback', files: ['apps/mobile-pwa/src/app/[locale]/auth/callback/page.tsx', 'apps/mobile-pwa/src/lib/auth-init.ts'], est: '1h' },
-  { id: 'tMap', section: 'medium', group: 'Map & Heatmap Polish', desc: 'Polish enhanced map widget', files: ['apps/mobile-pwa/src/components/map/enhanced-map.tsx', 'apps/mobile-pwa/src/app/[locale]/(app)/map/page.tsx'], est: '1.5h' },
-  // LOW
-  { id: 't167', section: 'low', group: '#167 — Dashboard Column Separation', desc: 'Improve dashboard column visual separation on mobile-pwa', files: ['apps/mobile-pwa/src/app/[locale]/(app)/dashboard/page.tsx'], est: '1h', issue: '#167' },
-  { id: 'tConsistency', section: 'low', group: 'Cross-App Consistency Audit', desc: 'Verify design consistency between frontend and mobile-pwa', files: ['Shared component usage', 'Tailwind config alignment'], est: '2h' },
-  { id: 'tLoading', section: 'low', group: 'Loading & Error State Audit', desc: 'Verify all loading.tsx and error.tsx files render correctly', files: ['apps/mobile-pwa/src/app/[locale]/(app)/*/loading.tsx', 'apps/mobile-pwa/src/app/[locale]/(app)/error.tsx', 'apps/mobile-pwa/src/app/not-found.tsx'], est: '1.5h' },
-  { id: 'tA11y', section: 'low', group: 'Accessibility Quick Pass', desc: 'Check key accessibility issues on mobile-pwa', files: ['aria-labels on interactive elements', 'Color contrast WCAG AA', 'Keyboard navigation on critical flows'], est: '1.5h' },
-];
-
-const DOD_ITEMS = [
-  'All CRITICAL issues resolved (#175, #176)',
-  'All HIGH issues resolved (#174, #163, #164, #173)',
-  'All MEDIUM issues resolved or have clear fallback',
-  'Gremlin → Neo4j copy fixed',
-  'Shared components integrated (global-search, pwa-install-prompt, pwa-splash-screen)',
-  'format.ts utilities integrated across pages',
-  'Auth callback flows polished on both apps',
-  'Map/heatmap widgets verified and polished',
-  'No TypeScript errors: pnpm --filter frontend build && pnpm --filter mobile-pwa build',
-  'No lint errors: pnpm --filter frontend lint && pnpm --filter mobile-pwa lint',
-  'All pages render at 375px width (iPhone SE)',
-];
-
-const SECTIONS = [
-  { id: 'critical', label: 'CRITICAL Priority', color: 'red', timeline: 'Day 1 — June 21' },
-  { id: 'high', label: 'HIGH Priority', color: 'amber', timeline: 'Day 1–2 — June 21–22' },
-  { id: 'medium', label: 'MEDIUM Priority', color: 'blue', timeline: 'Day 2–3 — June 22–23' },
-  { id: 'low', label: 'LOW Priority', color: 'slate', timeline: 'Day 3–4 — June 23–24' },
-];
-
-function loadState() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { tasks: {}, dod: {} };
-  } catch { return { tasks: {}, dod: {} }; }
-}
-function saveState(state) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function resetProgress() {
-  if (confirm('Reset all progress? This cannot be undone.')) {
-    localStorage.removeItem(STORAGE_KEY);
-    render();
+  function loadState() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch(e) {
+      return {};
+    }
   }
-}
 
-function updateProgress() {
-  const state = loadState();
-  const total = TASKS.length + DOD_ITEMS.length;
-  const done = Object.values(state.tasks).filter(Boolean).length + Object.values(state.dod).filter(Boolean).length;
-  const pct = total ? Math.round((done / total) * 100) : 0;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('progressText').textContent = done + ' / ' + total + ' tasks completed';
-  document.getElementById('progressPct').textContent = pct + '%';
-}
+  function saveState(state) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {
+      console.warn('Could not save progress to localStorage');
+    }
+  }
 
-function badgeColor(section) {
-  const map = { critical: 'red', high: 'amber', medium: 'blue', low: 'slate' };
-  return map[section] || 'slate';
-}
+  function updateProgress() {
+    var checks = document.querySelectorAll('.task-check');
+    var checked = document.querySelectorAll('.task-check:checked');
+    var total = checks.length;
+    var done = checked.length;
+    var pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
-function renderPrioritySections() {
-  const container = document.getElementById('prioritySections');
-  const state = loadState();
-  let html = '';
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-done').textContent = done;
+    document.getElementById('progress-total').textContent = total;
 
-  SECTIONS.forEach(sec => {
-    const tasks = TASKS.filter(t => t.section === sec.id);
-    const doneCount = tasks.filter(t => state.tasks[t.id]).length;
-    const colorClass = badgeColor(sec.id);
+    var fill = document.getElementById('progress-fill');
+    if (pct >= 100) {
+      fill.style.background = '#4caf50';
+    } else if (pct >= 50) {
+      fill.style.background = 'var(--dev-accent)';
+    } else {
+      fill.style.background = 'var(--accent)';
+    }
+  }
 
-    html += `<div class="priority-section">
-      <button class="priority-toggle" onclick="toggleSection('${sec.id}')">
-        <svg class="chevron" id="chevron-${sec.id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        <span class="priority-badge"><span class="badge badge-${colorClass}">${sec.label}</span></span>
-        <span style="font-size:.78rem;color:var(--slate-400);font-weight:400;">${sec.timeline}</span>
-        <span class="task-count">${doneCount}/${tasks.length}</span>
-      </button>
-      <div class="priority-content" id="content-${sec.id}">`;
+  function init() {
+    var state = loadState();
+    var checks = document.querySelectorAll('.task-check');
 
-    // Group tasks
-    const groups = {};
-    tasks.forEach(t => {
-      if (!groups[t.group]) groups[t.group] = [];
-      groups[t.group].push(t);
-    });
+    checks.forEach(function(cb) {
+      var id = cb.getAttribute('data-id');
 
-    Object.entries(groups).forEach(([groupName, groupTasks]) => {
-      html += `<div class="task-group">
-        <div class="task-group-title">${groupName}</div>`;
-      groupTasks.forEach(t => {
-        const checked = state.tasks[t.id] ? 'checked' : '';
-        const doneClass = state.tasks[t.id] ? 'done' : '';
-        const filesHtml = t.files.map(f => {
-          const parts = f.split('/');
-          const isFile = f.includes('.') || f.includes(':');
-          return isFile ? '<code>' + f + '</code>' : f;
-        }).join('<br>');
-        const issueHtml = t.issue ? `<span class="issue-badge">${t.issue}</span>` : '';
-        const blockedHtml = t.blocked ? `<div class="blocked-note">⚠ Blocked by: ${t.blocked}</div>` : '';
-        html += `<div class="task ${doneClass}">
-          <input type="checkbox" ${checked} onchange="toggleTask('${t.id}')">
-          <div class="task-body">
-            <div class="task-desc">${t.desc}</div>
-            <div class="task-meta">
-              <span class="time-est">⏱ ${t.est}</span>
-              ${issueHtml}
-            </div>
-            <div class="task-files">${filesHtml}</div>
-            ${blockedHtml}
-          </div>
-        </div>`;
+      if (state[id]) {
+        cb.checked = true;
+      }
+
+      cb.addEventListener('change', function() {
+        var currentState = loadState();
+        if (this.checked) {
+          currentState[id] = true;
+          this.parentElement.classList.add('done');
+        } else {
+          delete currentState[id];
+          this.parentElement.classList.remove('done');
+        }
+        saveState(currentState);
+        updateProgress();
       });
-      html += `</div>`;
+
+      // Set initial done class
+      if (cb.checked) {
+        cb.parentElement.classList.add('done');
+      }
     });
 
-    html += `</div></div>`;
-  });
+    updateProgress();
+  }
 
-  container.innerHTML = html;
-}
+  window.toggleTheme = function() {
+    var html = document.documentElement;
+    var label = document.getElementById('theme-label');
+    if (html.getAttribute('data-theme') === 'ghost') {
+      html.setAttribute('data-theme', 'civic');
+      label.textContent = 'CIVIC';
+      localStorage.setItem('likaslens-theme', 'civic');
+    } else {
+      html.setAttribute('data-theme', 'ghost');
+      label.textContent = 'GHOST';
+      localStorage.setItem('likaslens-theme', 'ghost');
+    }
+  };
 
-function renderDod() {
-  const list = document.getElementById('dodList');
-  const state = loadState();
-  list.innerHTML = DOD_ITEMS.map((item, i) => {
-    const checked = state.dod[i] ? 'checked' : '';
-    const cls = state.dod[i] ? 'done' : '';
-    return `<li class="${cls}"><input type="checkbox" ${checked} onchange="toggleDod(${i})"><span>${item}</span></li>`;
-  }).join('');
-}
+  var savedTheme = localStorage.getItem('likaslens-theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    var label = document.getElementById('theme-label');
+    if (label) label.textContent = savedTheme.toUpperCase();
+  }
 
-function render() {
-  renderPrioritySections();
-  renderDod();
-  updateProgress();
-}
-
-function toggleSection(id) {
-  const content = document.getElementById('content-' + id);
-  const chevron = document.getElementById('chevron-' + id);
-  const btn = chevron.closest('.priority-toggle');
-  content.classList.toggle('open');
-  btn.classList.toggle('open');
-}
-
-function toggleTask(id) {
-  const state = loadState();
-  state.tasks[id] = !state.tasks[id];
-  saveState(state);
-  render();
-}
-
-function toggleDod(index) {
-  const state = loadState();
-  state.dod[index] = !state.dod[index];
-  saveState(state);
-  render();
-}
-
-render();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
 </script>
 </body>
 </html>

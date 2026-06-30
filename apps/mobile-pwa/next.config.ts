@@ -76,4 +76,5 @@ const nextConfig: NextConfig = {
   },
 };
 
+// @ts-expect-error — @ducanh2912/next-pwa return type doesn't match Next.js 16 NextConfig
 export default withNextIntl(withPWA(nextConfig));

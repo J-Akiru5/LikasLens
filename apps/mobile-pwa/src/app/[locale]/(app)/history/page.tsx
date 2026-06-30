@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Search, Loader2, MapPin, Clock, Filter } from "lucide-react";
 import { cn, laravelGet } from "@likaslens/shared";
 import { EmptyState } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface ReportEntry {
   id: string;
@@ -38,6 +39,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function HistoryPage() {
+  const t = useTranslations("dashboard");
   const [reports, setReports] = useState<ReportEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,7 +73,7 @@ export default function HistoryPage() {
     return (
       <div className="min-h-full pb-24 bg-page">
         <header className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10 px-4 h-16 flex items-center">
-          <h1 className="ios-large-title ios-large-title--xl">History</h1>
+          <h1 className="ios-large-title ios-large-title--xl">{t("history")}</h1>
         </header>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-green" />
@@ -83,7 +85,7 @@ export default function HistoryPage() {
   return (
     <div className="min-h-full pb-24 bg-page">
       <header className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10 px-4 h-16 flex items-center">
-        <h1 className="ios-large-title ios-large-title--xl">History</h1>
+        <h1 className="ios-large-title ios-large-title--xl">{t("history")}</h1>
       </header>
 
       <main className="pb-6">
@@ -93,7 +95,7 @@ export default function HistoryPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30" />
             <input
               type="text"
-              placeholder="Search reports..."
+              placeholder={t("searchReports")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-ink/5 rounded-xl text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/30"
@@ -115,7 +117,7 @@ export default function HistoryPage() {
                     : "bg-ink/5 text-ink/50 hover:text-ink/70"
                 )}
               >
-                {status === "all" ? "All" : status.replace(/_/g, " ")}
+                {status === "all" ? t("all") : status.replace(/_/g, " ")}
               </button>
             ))}
           </div>
@@ -126,12 +128,12 @@ export default function HistoryPage() {
           {filtered.length === 0 ? (
             <EmptyState
               icon={Search}
-              title="No reports found"
-              description={searchQuery ? "Try a different search term." : "Your report history will appear here."}
+              title={t("noReportsFound")}
+              description={searchQuery ? t("tryDifferentSearch") : t("reportHistoryAppears")}
             />
           ) : (
             <div className="space-y-3">
-              <p className="text-xs text-ink/40 font-medium">{filtered.length} report{filtered.length !== 1 ? "s" : ""}</p>
+              <p className="text-xs text-ink/40 font-medium">{filtered.length} {filtered.length !== 1 ? t("reports") : t("report")}</p>
               {filtered.map((report) => (
                 <div key={report.id} className="ios-grouped-list p-4">
                   <div className="flex items-start gap-3">

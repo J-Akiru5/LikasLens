@@ -9,8 +9,10 @@ import { TimeSeriesChart } from "@/components/charts/time-series-chart";
 import { ViolationDonut } from "@/components/charts/violation-donut";
 import { SankeyFlow } from "@/components/charts/sankey-flow";
 import { HotspotList } from "@/components/charts/hotspot-list";
+import { useTranslations } from "next-intl";
 
 export default function AnalyticsPage() {
+  const t = useTranslations("analytics");
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -36,7 +38,7 @@ export default function AnalyticsPage() {
   const Header = () => (
     <div className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10">
       <div className="flex items-center h-16 px-4">
-        <h1 className="ios-large-title ios-large-title--xl">Analytics
+        <h1 className="ios-large-title ios-large-title--xl">{t("title")}
         </h1>
         <PulseBadge label="Live" size="sm" />
       </div>
@@ -72,7 +74,7 @@ export default function AnalyticsPage() {
               <div className="w-10 h-10 rounded-2xl bg-green/10 flex items-center justify-center mb-2">
                 <BarChart3 className="w-5 h-5 text-green" />
               </div>
-              <span className="text-[10px] font-bold text-ink/40 uppercase tracking-wider">Total Reports</span>
+              <span className="text-[10px] font-bold text-ink/40 uppercase tracking-wider">{t("totalReports")}</span>
               <span className="text-3xl font-black text-ink tracking-tighter tabular-nums mt-1 block">
                 {stats?.total_reports != null ? <AnimatedCounter value={stats.total_reports} /> : "—"}
               </span>
@@ -81,7 +83,7 @@ export default function AnalyticsPage() {
               <div className="w-10 h-10 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-2">
                 <TrendingUp className="w-5 h-5 text-amber-500" />
               </div>
-              <span className="text-[10px] font-bold text-ink/40 uppercase tracking-wider">Resolution</span>
+              <span className="text-[10px] font-bold text-ink/40 uppercase tracking-wider">{t("resolution")}</span>
               <span className="text-3xl font-black text-amber-600 tracking-tighter tabular-nums mt-1 block">
                 {stats?.resolved_today_progress != null ? (
                   <AnimatedCounter value={stats.resolved_today_progress} suffix="%" />
@@ -98,14 +100,14 @@ export default function AnalyticsPage() {
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
                 <Users className="w-5 h-5 opacity-80" />
-                <h2 className="font-bold text-base tracking-tight">Active Citizens</h2>
+                <h2 className="font-bold text-base tracking-tight">{t("activeCitizens")}</h2>
               </div>
               <div className="flex items-end gap-2">
                 <span className="text-4xl font-bold tracking-tighter">
                   {stats?.total_users != null ? <AnimatedCounter value={stats.total_users} /> : "—"}
                 </span>
                 <span className="text-xs font-mono opacity-80 mb-1">
-                  {stats?.active_incidents_trend ?? ""} this week
+                  {stats?.active_incidents_trend ?? ""} {t("thisWeek")}
                 </span>
               </div>
             </div>
@@ -141,7 +143,7 @@ export default function AnalyticsPage() {
         {lastUpdated && (
           <div className="text-center py-2">
             <span className="text-[10px] text-ink/30 font-mono">
-              Updated {lastUpdated.toLocaleTimeString()}
+              {t("updated")} {lastUpdated.toLocaleTimeString()}
             </span>
           </div>
         )}

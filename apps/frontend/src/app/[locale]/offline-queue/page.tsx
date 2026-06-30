@@ -25,6 +25,7 @@ import {
   type SyncProgress,
 } from "@likaslens/shared";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
+import { useTranslations } from "next-intl";
 
 const BATCH_SIZE = 5;
 
@@ -39,8 +40,8 @@ const INCIDENT_TYPE_LABELS: Record<string, string> = {
 };
 
 function getTypeLabel(payload: Record<string, unknown>): string {
-  const t = payload.report_type as string | undefined;
-  return t ? INCIDENT_TYPE_LABELS[t] ?? t.replace(/_/g, " ") : "Unknown";
+  const rt = payload.report_type as string | undefined;
+  return rt ? INCIDENT_TYPE_LABELS[rt] ?? rt.replace(/_/g, " ") : "Unknown";
 }
 
 function timeAgo(iso: string): string {
@@ -66,6 +67,7 @@ function truncate(str: string, max: number): string {
 }
 
 export default function OfflineQueuePage() {
+  const t = useTranslations("dashboard");
   const params = useParams();
 
   const [queue, setQueue] = useState<QueuedReport[]>([]);
@@ -83,11 +85,11 @@ export default function OfflineQueuePage() {
       );
       setQueue(items);
     } catch {
-      showToast("Failed to load queue", "error");
+      showToast(t("failedToLoadQueue"), "error");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadQueue();
@@ -148,14 +150,14 @@ export default function OfflineQueuePage() {
   const handleClearAll = useCallback(async () => {
     await clearQueue();
     setQueue([]);
-    showToast("Queue cleared.", "info");
+    showToast(t("queueCleared"), "info");
   }, []);
 
   const offlineBanner = (
     <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-amber/20 bg-amber/5">
       <WifiOff className="w-4 h-4 text-amber shrink-0" />
       <p className="text-xs text-ink/60 m-0">
-        You are offline. Reports will sync when a connection is available.
+        {t("offlineLabel") || "You are offline. Reports will sync when connection returns."}
       </p>
     </div>
   );
@@ -163,7 +165,7 @@ export default function OfflineQueuePage() {
   const syncProgressBanner = progress && (
     <div className="p-4 rounded-xl border border-accent/25 bg-accent/5">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-ink">Sync complete</span>
+        <span className="text-xs font-semibold text-ink">{t("syncComplete", {}) || "Sync complete"}</span>
         <span className="font-mono text-xs text-ink/50">
           {progress.succeeded}/{progress.total}
         </span>
@@ -186,16 +188,16 @@ export default function OfflineQueuePage() {
       </div>
       <div className="flex gap-4 mt-2">
         <span className="font-mono text-xs text-green">
-          ✓ {progress.succeeded} synced
+          ✓ {progress.succeeded} {t("syncedLabel")}
         </span>
         {progress.failed > 0 && (
           <span className="font-mono text-xs text-red">
-            ✗ {progress.failed} failed
+            ✗ {progress.failed} {t("failedLabel")}
           </span>
         )}
         {progress.skipped > 0 && (
           <span className="font-mono text-xs text-ink/40">
-            – {progress.skipped} skipped
+            – {progress.skipped} {t("skippedLabel")}
           </span>
         )}
       </div>
@@ -226,11 +228,11 @@ export default function OfflineQueuePage() {
             <span className="text-sm font-semibold text-ink">{typeLabel}</span>
             {item.lastError ? (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-red/10 text-red">
-                Failed
+                {t("statusFailed")}
               </span>
             ) : (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-ink/5 text-ink/50">
-                Pending
+                {t("statusPending")}
               </span>
             )}
           </div>
@@ -278,7 +280,7 @@ export default function OfflineQueuePage() {
         <button
           onClick={() => handleRemove(item.id)}
           className="touch-target p-2 rounded-full hover:bg-ink/5 transition-colors shrink-0"
-          aria-label="Remove queued report"
+          aria-label={t("removeQueuedReport")}
         >
           <X className="w-3.5 h-3.5 text-ink/30" />
         </button>
@@ -288,7 +290,7 @@ export default function OfflineQueuePage() {
 
   return (
     <DashboardLayoutWrapper
-      pageTitle="Offline Queue"
+      pageTitle={t("allQueuedReports")}
       pageSubtitle={
         queue.length > 0
           ? `${queue.length} report${queue.length !== 1 ? "s" : ""} pending`
@@ -299,9 +301,7 @@ export default function OfflineQueuePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-ink">
-              Offline Queue
-            </h1>
+            <h1 className="text-2xl font-semibold tracking-tight text-ink">{t("allQueuedReports")}</h1>
             {queue.length > 0 && (
               <p className="text-xs font-medium text-ink/50 mt-1">
                 {queue.length} report{queue.length !== 1 ? "s" : ""} pending
@@ -312,11 +312,9 @@ export default function OfflineQueuePage() {
             <button
               onClick={handleClearAll}
               className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-ink/50 hover:text-ink transition-colors rounded-lg hover:bg-ink/5"
-              aria-label="Clear all queued reports"
+              aria-label={t("clearAllQueuedReports")}
             >
-              <Trash2 className="w-3.5 h-3.5" />
-              Clear All
-            </button>
+              <Trash2 className="w-3.5 h-3.5" />{t("clearAllQueuedReports").split(" ").slice(0,2).join(" ")}</button>
           )}
         </div>
 
@@ -340,8 +338,8 @@ export default function OfflineQueuePage() {
             {queue.length === 0 ? (
               <EmptyState
                 icon={CheckCircle2}
-                title="All caught up"
-                description="No offline reports waiting to sync. When you submit a report without internet, it will appear here."
+                title={t("allCaughtUp")}
+                description={t("offlineQueueEmpty")}
                 className="mt-16"
               />
             ) : (
@@ -383,17 +381,17 @@ export default function OfflineQueuePage() {
               {syncing ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Syncing...
+                  {t("syncComplete") || "Syncing..."}
                 </>
               ) : !navigator.onLine ? (
                 <>
                   <WifiOff className="w-4 h-4" />
-                  Offline
+                  {t("offlineLabel") || "Offline"}
                 </>
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4" />
-                  Sync Now
+                  {t("syncNow") || "Sync Now"}
                 </>
               )}
             </button>

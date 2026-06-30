@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldAlert, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
 const EDGE_INTERCEPTOR_CANCEL_CLASS =
@@ -25,6 +26,7 @@ export function EdgeInterceptorModal({
   isLoading = false,
   indicators = [],
 }: EdgeInterceptorModalProps) {
+  const t = useTranslations("edgeInterceptor");
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -58,9 +60,9 @@ export function EdgeInterceptorModal({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <ShieldAlert className="w-6 h-6 text-ink/40 fill-current" aria-hidden="true" />
-                    <h2 id="edge-alert-title" className="font-semibold tracking-tight text-lg text-ink">Edge Alert</h2>
+                    <h2 id="edge-alert-title" className="font-semibold tracking-tight text-lg text-ink">{t("title")}</h2>
                   </div>
-                  <button onClick={onCancel} className="p-1 text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2" aria-label="Close">
+                  <button onClick={onCancel} className="p-1 text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2" aria-label={t("cancel")}>
                     <X className="w-5 h-5" aria-hidden="true" />
                   </button>
                 </div>
@@ -68,7 +70,7 @@ export function EdgeInterceptorModal({
 
               <div className="p-6 space-y-4">
                 <div>
-                  <h3 className="font-semibold tracking-tight text-base text-ink mb-2">High-Risk Incident Detected</h3>
+                  <h3 className="font-semibold tracking-tight text-base text-ink mb-2">{t("highRiskDetected")}</h3>
                   <p className="font-mono text-sm text-ink/60 leading-relaxed">
                     Our AI has flagged this submission as potentially dangerous. This might involve illegal logging, dangerous criminals, or high-risk environmental crimes.
                   </p>
@@ -82,22 +84,22 @@ export function EdgeInterceptorModal({
                 </div>
 
                 <div className="border-l-2 border-ink/10 pl-4 py-2">
-                  <p className="font-mono text-sm text-ink/80 font-medium">Recommendation: Use Ghost Mode</p>
-                  <p className="font-mono text-xs text-ink/50 mt-1">This removes your identity, location, and device info from the report. Only the facts matter.</p>
+                  <p className="font-mono text-sm text-ink/80 font-medium">{t("recommendationGhostMode")}</p>
+                  <p className="font-mono text-xs text-ink/50 mt-1">{t("ghostModeDescription")}</p>
                 </div>
 
                 <label className="flex items-center gap-3 cursor-pointer">
-                  <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#2d6a4f]" disabled={isLoading} aria-label="Submit in Ghost Mode (recommended)" />
-                  <span className="font-mono text-sm text-ink/60">Submit in Ghost Mode (recommended)</span>
+                  <input type="checkbox" defaultChecked className="w-4 h-4 accent-[#2d6a4f]" disabled={isLoading} aria-label={t("submitInGhostMode")} />
+                  <span className="font-mono text-sm text-ink/60">{t("submitInGhostMode")}</span>
                 </label>
               </div>
 
               <div className="flex gap-3 p-6 border-t border-ink/10">
-                <button onClick={onCancel} disabled={isLoading} aria-label="Cancel" className={EDGE_INTERCEPTOR_CANCEL_CLASS}>
+                <button onClick={onCancel} disabled={isLoading} aria-label={t("cancel")} className={EDGE_INTERCEPTOR_CANCEL_CLASS}>
                   Cancel
                 </button>
-                <button onClick={onProceed} disabled={isLoading} aria-label="Proceed anonymously" className={EDGE_INTERCEPTOR_CONFIRM_CLASS}>
-                  {isLoading ? "Submitting..." : "Proceed Anonymously"}
+                <button onClick={onProceed} disabled={isLoading} aria-label={t("proceedAnonymously")} className={EDGE_INTERCEPTOR_CONFIRM_CLASS}>
+                  {isLoading ? t("submitting") : t("proceedAnonymously")}
                 </button>
               </div>
             </div>

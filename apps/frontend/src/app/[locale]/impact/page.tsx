@@ -20,6 +20,7 @@ import {
 import { UserNav } from "@/components/layout/user-nav";
 import { laravelGet, Skeleton } from "@likaslens/shared";
 import type { PublicImpactData } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 /* ── Animations ────────────────────────────────────────── */
 const staggerContainer = {
@@ -139,6 +140,8 @@ function AnimatedCounter({ value, duration = 1.5 }: { value: number; duration?: 
 
 /* ── Page Component ────────────────────────────────────── */
 export default function ImpactPage() {
+  const t = useTranslations("impact");
+  const tl = useTranslations("landing");
   const [data, setData] = useState<PublicImpactData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -186,25 +189,25 @@ export default function ImpactPage() {
   const statCards = [
     {
       icon: FileText,
-      label: "Total Reports",
+      label: t("totalReports"),
       value: stats.total_reports,
       color: "var(--accent)",
     },
     {
       icon: CheckCircle2,
-      label: "Resolved",
+      label: t("resolved"),
       value: stats.total_resolved,
       color: "#22c55e",
     },
     {
       icon: Users,
-      label: "Active Citizens",
+      label: t("activeCitizens"),
       value: stats.total_citizens,
       color: "var(--secondary)",
     },
     {
       icon: Building2,
-      label: "Partner NGOs",
+      label: t("partnerNgos"),
       value: stats.total_ngos,
       color: "#f59e0b",
     },
@@ -277,7 +280,7 @@ export default function ImpactPage() {
               textDecoration: "none",
             }}
           >
-            Home
+            {t("navHome")}
           </Link>
           <Link
             href="/report"
@@ -290,7 +293,7 @@ export default function ImpactPage() {
               textDecoration: "none",
             }}
           >
-            Report
+            {t("navReport")}
           </Link>
           <Link
             href="/laws"
@@ -303,7 +306,7 @@ export default function ImpactPage() {
               textDecoration: "none",
             }}
           >
-            Laws
+            {t("navLaws")}
           </Link>
         </div>
 
@@ -374,7 +377,7 @@ export default function ImpactPage() {
               }}
             >
               <Activity style={{ width: 12, height: 12 }} />
-              Public Impact Dashboard
+              {t("publicImpactDashboard")}
             </span>
           </motion.div>
 
@@ -390,9 +393,9 @@ export default function ImpactPage() {
               maxWidth: 700,
             }}
           >
-            Protecting Our
+            {t("protectingEnvironment")}
             <br />
-            Environment{" "}
+            {" "}
             <span
               style={{
                 background:
@@ -402,7 +405,7 @@ export default function ImpactPage() {
                 backgroundClip: "text",
               }}
             >
-              Together
+              {t("together")}
             </span>
           </motion.h1>
 
@@ -437,7 +440,7 @@ export default function ImpactPage() {
                 color: "rgba(240,237,232,0.5)",
               }}
             >
-              Environmental Reports Submitted
+              {t("environmentalReportsSubmitted")}
             </span>
           </motion.div>
 
@@ -468,7 +471,7 @@ export default function ImpactPage() {
                 color: "rgba(240,237,232,0.5)",
               }}
             >
-              Resolution Rate
+              {t("resolutionRate")}
             </span>
           </motion.div>
 
@@ -501,7 +504,7 @@ export default function ImpactPage() {
                 e.currentTarget.style.boxShadow = "none";
               }}
             >
-              Submit a Report <ArrowRight style={{ width: 16, height: 16 }} />
+              {t("submitReport")} <ArrowRight style={{ width: 16, height: 16 }} />
             </Link>
           </motion.div>
         </motion.div>
@@ -619,13 +622,13 @@ export default function ImpactPage() {
                   margin: 0,
                 }}
               >
-                Reports by Type
+                {t("reportsByType")}
               </h2>
             </div>
 
             {typeEntries.length === 0 ? (
               <p style={{ color: "var(--muted)", fontSize: 14 }}>
-                No classification data available yet.
+                {t("noClassificationData")}
               </p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -719,13 +722,13 @@ export default function ImpactPage() {
                   margin: 0,
                 }}
               >
-                Recently Resolved
+                {t("recentlyResolved")}
               </h2>
             </div>
 
             {stats.recent_verified.length === 0 ? (
               <p style={{ color: "var(--muted)", fontSize: 14 }}>
-                No verified reports yet.
+                {t("noVerifiedReports")}
               </p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
@@ -768,7 +771,7 @@ export default function ImpactPage() {
                           lineHeight: 1.4,
                         }}
                       >
-                        {item.title ?? "Environmental Report"}
+                        {item.title ?? tl("defaultReportTitle")}
                       </p>
                       <div
                         style={{
@@ -867,10 +870,10 @@ export default function ImpactPage() {
                 maxWidth: 500,
               }}
             >
-              Every report matters.
+              {t("everyReportMatters")}
               <br />
               <span style={{ color: "var(--accent-bright)" }}>
-                Make yours count.
+                {t("makeYoursCount")}
               </span>
             </h2>
             <p
@@ -882,9 +885,7 @@ export default function ImpactPage() {
                 margin: 0,
               }}
             >
-              Snap a photo of any environmental issue and our AI will route it
-              directly to the responsible agency. Track the resolution in real
-              time.
+              {t("snapDescription")}
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center" }}>
               <Link
@@ -911,7 +912,7 @@ export default function ImpactPage() {
                   e.currentTarget.style.transform = "translateY(0)";
                 }}
               >
-                Submit a Report <ArrowRight style={{ width: 16, height: 16 }} />
+                {t("submitReport")} <ArrowRight style={{ width: 16, height: 16 }} />
               </Link>
               <Link
                 href="/laws"
@@ -938,7 +939,7 @@ export default function ImpactPage() {
                   e.currentTarget.style.color = "#fff";
                 }}
               >
-                Browse Environmental Laws
+                {t("browseLaws")}
               </Link>
             </div>
           </div>
@@ -959,7 +960,7 @@ export default function ImpactPage() {
               textAlign: "center",
             }}
           >
-            Some impact data could not be loaded. Showing cached or partial results.
+            {t("dataLoadError")}
           </div>
         </section>
       )}

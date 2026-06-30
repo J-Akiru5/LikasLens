@@ -6,6 +6,7 @@ import { echarts, useEChartsTheme } from "./echarts-theme";
 import { useChartColors } from "./use-chart-colors";
 import { laravelGet } from "@likaslens/shared";
 import type { ApiResponse } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface TimeSeriesEntry {
   date: string;
@@ -18,6 +19,7 @@ interface AnalyticsData {
 }
 
 export function TimeSeriesChart() {
+  const t = useTranslations("timeSeriesChart");
   const [data, setData] = useState<{ dates: string[]; reports: number[]; resolved: number[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const chartTheme = useEChartsTheme();
@@ -30,9 +32,9 @@ export function TimeSeriesChart() {
         const analytics = res?.data;
         if (analytics?.time_series) {
           setData({
-            dates: analytics.time_series.map((t) => t.date),
-            reports: analytics.time_series.map((t) => t.count),
-            resolved: analytics.time_series.map((t) => t.resolved ?? 0),
+            dates: analytics.time_series.map((entry) => entry.date),
+            reports: analytics.time_series.map((entry) => entry.count),
+            resolved: analytics.time_series.map((entry) => entry.resolved ?? 0),
           });
         }
       } catch {
@@ -61,7 +63,7 @@ export function TimeSeriesChart() {
       axisPointer: { type: "cross" as const },
     },
     legend: {
-      data: ["Reports", "Resolved"],
+      data: [t("reportsLabel"), t("resolvedLabel")],
       top: 0,
       right: 0,
       textStyle: { color: c.textMuted, fontSize: 10 },
@@ -94,7 +96,7 @@ export function TimeSeriesChart() {
     ],
     series: [
       {
-        name: "Reports",
+        name: t("reportsLabel"),
         type: "line",
         smooth: true,
         data: data?.reports ?? [],
@@ -119,7 +121,7 @@ export function TimeSeriesChart() {
         },
       },
       {
-        name: "Resolved",
+        name: t("resolvedLabel"),
         type: "line",
         smooth: true,
         data: data?.resolved ?? [],
@@ -147,7 +149,7 @@ export function TimeSeriesChart() {
   if (loading) {
     return (
       <div className="ios-grouped-list p-5 flex items-center justify-center" style={{ minHeight: 300 }}>
-        <div className="animate-pulse text-sm text-ink/40">Loading trend...</div>
+        <div className="animate-pulse text-sm text-ink/40">{t("loadingTrend")}</div>
       </div>
     );
   }
@@ -156,7 +158,7 @@ export function TimeSeriesChart() {
     <div className="ios-grouped-list p-4">
       <div className="flex items-center gap-2 mb-3">
         <span className="font-mono text-[10px] text-ink/50 uppercase tracking-widest">
-          30-Day Trend
+          {t("thirtyDayTrend")}
         </span>
       </div>
       <ReactECharts

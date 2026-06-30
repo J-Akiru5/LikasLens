@@ -5,6 +5,7 @@ import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wra
 import { Scale, Search, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { laravelGet, type PaginatedResponse, ErrorPage, EmptySearch, EmptyFeed, Skeleton } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface Law {
   id: string;
@@ -22,6 +23,7 @@ export default function LawsPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations("laws");
 
   useEffect(() => {
     const fetchLaws = async () => {
@@ -35,7 +37,7 @@ export default function LawsPage() {
         if (res.success) setLaws(res.data);
       } catch (err) {
         console.error("Failed to fetch laws:", err);
-        setError("Could not load environmental laws. Please try again later.");
+        setError(t("couldNotLoad"));
       } finally {
         setLoading(false);
       }
@@ -53,7 +55,7 @@ export default function LawsPage() {
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-ink/10 pb-6">
           <div>
-            <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink mb-3">Environmental Laws</h1>
+            <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink mb-3">{t("title")}</h1>
             <p className="font-mono text-sm text-ink/50 max-w-xl leading-relaxed">
               Search Philippine environmental legislation. Browse active laws protecting our natural resources.
             </p>
@@ -63,7 +65,7 @@ export default function LawsPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink/30" />
             <input
               type="text"
-              placeholder="Search by title, code, or keyword..."
+              placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-12 pr-4 py-3.5 text-base bg-panel border border-ink/5 text-ink placeholder:text-ink/30 focus:outline-none focus:border-green/50 focus:ring-1 focus:ring-green/50 rounded-2xl shadow-sm transition-all"
@@ -98,8 +100,8 @@ export default function LawsPage() {
 
         {error && (
           <ErrorPage
-            title="Unable to load laws database"
-            message="The environmental laws data couldn't be fetched. It may be a temporary network issue or the service might be down. Please try again later."
+            title={t("unableToLoad")}
+            message={t("loadError")}
           />
         )}
 
@@ -113,14 +115,14 @@ export default function LawsPage() {
                 />
               ) : (
                 <EmptyFeed
-                  title="No laws available"
-                  description="Check back soon for Philippine environmental legislation."
+                  title={t("noLawsAvailable")}
+                  description={t("noLawsDesc")}
                 />
               )
             ) : (
               <>
                 <p className="font-mono text-xs text-ink/40 uppercase tracking-widest font-bold">
-                  Showing {filtered.length} active law{filtered.length !== 1 ? "s" : ""}
+                  {t("showingActiveLaws", { count: filtered.length, plural: filtered.length !== 1 ? "s" : "" })}
                 </p>
                 <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   {filtered.map((law) => (

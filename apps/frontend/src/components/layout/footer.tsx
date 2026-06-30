@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 function GitHubCatIcon({ className }: { className?: string }) {
   return (
@@ -18,6 +19,7 @@ function GitHubCatIcon({ className }: { className?: string }) {
 }
 
 export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
+  const t = useTranslations("footer");
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -186,15 +188,15 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 className="font-semibold text-[13px] transition-colors duration-700"
                 style={{ color: ghostMode ? "#2EE6C8" : "#14532d" }}
               >
-                {ghostMode ? "Ghost Mode (Deep Sea)" : "Civic Mode (Mountain)"}
+                {ghostMode ? t("ghostModeLabel") : t("civicModeLabel")}
               </p>
               <p 
                 className="mt-1.5 leading-relaxed text-xs transition-colors duration-700"
                 style={{ color: ghostMode ? "rgba(255,255,255,0.75)" : "rgba(27,67,50,0.85)" }}
               >
                 {ghostMode 
-                  ? "Submerged deep-data surveillance, operating beneath the surface to uncover hidden anomalies securely."
-                  : "Surface-level visibility, representing transparent civic participation and community awareness."}
+                  ? t("ghostModeDesc")
+                  : t("civicModeDesc")}
               </p>
             </div>
 
@@ -204,7 +206,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 href="https://github.com/J-Akiru5/LikasLens" 
                 target="_blank" 
                 rel="noreferrer" 
-                aria-label="LikasLens on GitHub" 
+                aria-label={t("githubLink")} 
                 className="w-9 h-9 rounded-full border flex items-center justify-center hover:text-accent hover:border-accent hover:bg-accent/10 transition-all group"
                 style={{
                   borderColor: ghostMode ? "rgba(255,255,255,0.15)" : "rgba(27,67,50,0.2)",
@@ -223,12 +225,12 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 className="font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-1 transition-colors duration-700"
                 style={{ color: ghostMode ? "rgba(46,230,200,0.6)" : "rgba(27,67,50,0.5)" }}
               >
-                Platform
+                {t("platform")}
               </h3>
               {[
-                { href: "/#features", label: "Features" },
-                { href: "/#scoreboard", label: "Public Records" },
-                { href: "/changelog", label: "Changelog" },
+                { href: "/#features", label: t("features") },
+                { href: "/#scoreboard", label: t("publicRecords") },
+                { href: "/changelog", label: t("changelog") },
               ].map(link => (
                 <Link 
                   key={link.href}
@@ -244,8 +246,8 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 className="text-sm font-medium hover:text-accent hover:translate-x-1 transition-all w-fit flex flex-wrap items-center gap-2"
                 style={{ color: ghostMode ? "#ffffff" : "#1B4332" }}
               >
-                Citizen Portal 
-                <span className="px-1.5 py-0.5 rounded bg-accent/20 text-accent-bright text-[9px] font-bold uppercase tracking-wider">Beta</span>
+                {t("citizenPortal")} 
+                <span className="px-1.5 py-0.5 rounded bg-accent/20 text-accent-bright text-[9px] font-bold uppercase tracking-wider">{t("beta")}</span>
               </Link>
             </div>
 
@@ -254,12 +256,12 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 className="font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-1 transition-colors duration-700"
                 style={{ color: ghostMode ? "rgba(46,230,200,0.6)" : "rgba(27,67,50,0.5)" }}
               >
-                Legal
+                {t("legal")}
               </h3>
               {[
-                { href: "/privacy", label: "Privacy Policy" },
-                { href: "/terms", label: "Terms of Service" },
-                { href: "/contact", label: "Contact Us" },
+                { href: "/privacy", label: t("privacyPolicy") },
+                { href: "/terms", label: t("termsOfService") },
+                { href: "/contact", label: t("contactUs") },
               ].map(link => (
                 <Link 
                   key={link.href}
@@ -300,7 +302,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
             className="font-mono text-[10px] sm:text-xs tracking-wider transition-colors duration-700"
             style={{ color: ghostMode ? "rgba(255,255,255,0.5)" : "rgba(27,67,50,0.5)" }}
           >
-            &copy; {new Date().getFullYear()} LIKASLENS. ALL RIGHTS RESERVED.
+            &copy; {new Date().getFullYear()} LIKASLENS. {t("allRightsReserved")}
           </p>
           <div 
             className="flex items-center gap-2.5 px-3 py-1.5 rounded-full border backdrop-blur-sm transition-all duration-700"
@@ -317,7 +319,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
               className="font-mono text-[10px] tracking-widest uppercase font-semibold transition-colors duration-700"
               style={{ color: ghostMode ? "rgba(255,255,255,0.85)" : "rgba(27,67,50,0.7)" }}
             >
-              Systems Operational
+              {t("systemsOperational")}
             </span>
           </div>
         </div>

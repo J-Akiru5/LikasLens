@@ -7,43 +7,23 @@ import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wra
 import { createClient } from "@/utils/supabase/client";
 import {
   Filter,
-  MoreVertical,
-  Eye,
-  UserCheck,
-  Flag,
-  Trash2,
   X,
   Search,
   Clock,
   MapPin,
 } from "lucide-react";
-
-const statusDot: Record<string, string> = {
-  open: "bg-[#c27a2e]",
-  investigating: "bg-[#c27a2e]",
-  monitoring: "bg-[#2d6a4f]",
-  resolved: "bg-[#3a7d54]",
-  closed: "bg-[#3a7d54]",
-};
+import { useTranslations } from "next-intl";
 
 export default function IncidentsPage() {
+  const t = useTranslations("incidents");
+  const td = useTranslations("dashboard");
+  const tc = useTranslations("common");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<Ticket | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }: { data: { user: { user_metadata?: { role?: string } } | null } | null }) => {
-      const role = data?.user?.user_metadata?.role as string | undefined;
-      setIsAdmin(
-        role === "super_admin" || role === "analyst" || role === "lgu" || role === "partner"
-      );
-    });
-  }, []);
 
   useEffect(() => {
     getTickets({ per_page: "50" })
@@ -126,7 +106,7 @@ export default function IncidentsPage() {
           <div className="span-12">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ink/10 pb-5">
               <h1 className="font-semibold tracking-tight text-4xl md:text-5xl text-ink">
-                Reported Incidents
+                {t("title")}
               </h1>
               <div className="flex items-center gap-3">
                 <div className="relative">
@@ -134,7 +114,7 @@ export default function IncidentsPage() {
                   <input
                     type="text"
                     inputMode="search"
-                    placeholder="Search ID, title, location..."
+                    placeholder={t("searchPlaceholder")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 pr-4 py-2.5 text-base bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 rounded-lg"
@@ -150,7 +130,7 @@ export default function IncidentsPage() {
                   <button
                     onClick={clearFilters}
                     className="p-2.5 border border-ink/10 text-ink/40 hover:text-ink transition-colors rounded-lg"
-                    title="Clear all filters"
+                    title={t("clearFilters")}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -172,7 +152,7 @@ export default function IncidentsPage() {
                       : "border-ink/10 text-ink/40 hover:text-ink"
                   }`}
                 >
-                  All
+                  {t("filterAll")}
                 </button>
                 {statuses.map((status) => (
                   <button
@@ -195,7 +175,7 @@ export default function IncidentsPage() {
         <div className="bento-grid">
           <div className="span-12">
             <div className="font-mono text-sm text-ink/40">
-              Showing {filteredIncidents.length} of {tickets.length} incidents
+              {t("showingOf", { filtered: filteredIncidents.length, total: tickets.length })}
             </div>
           </div>
         </div>
@@ -228,7 +208,6 @@ export default function IncidentsPage() {
                       onClick={() => setSelectedIncident(ticket)}
                       className="bg-panel rounded-[1.5rem] p-4 sm:p-6 shadow-sm border border-ink/5 transition-transform hover:scale-[1.02] cursor-pointer flex flex-col h-full relative"
                     >
-                      {/* Header row: ID + Status */}
                       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-2 mb-3">
                         <span className="font-mono text-[10px] text-ink/40 font-bold tracking-widest uppercase truncate pr-2">
                           {ticket.display_id ||
@@ -247,21 +226,15 @@ export default function IncidentsPage() {
 
                       <div className="flex flex-col gap-2.5 pt-4 border-t border-ink/5">
                         <div className="flex items-start gap-2.5 text-ink/60">
-                          <MapPin
-                            className="w-4 h-4 shrink-0 opacity-60"
-                            strokeWidth={2}
-                          />
+                          <MapPin className="w-4 h-4 shrink-0 opacity-60" strokeWidth={2} />
                           <span className="text-[14px] leading-tight line-clamp-2">
                             {ticket.location}
                           </span>
                         </div>
                         <div className="flex items-center gap-2.5 text-ink/40">
-                          <Clock
-                            className="w-4 h-4 shrink-0 opacity-60"
-                            strokeWidth={2}
-                          />
+                          <Clock className="w-4 h-4 shrink-0 opacity-60" strokeWidth={2} />
                           <span className="text-[11px] font-mono tracking-widest uppercase">
-                            Updated recently
+                            {t("updatedRecently")}
                           </span>
                         </div>
                       </div>
@@ -272,8 +245,8 @@ export default function IncidentsPage() {
                 <div className="col-span-full">
                   <EmptyState
                     icon={Filter}
-                    title="No incidents found"
-                    description="Try adjusting your search criteria."
+                    title={t("noIncidentsFound")}
+                    description={t("noIncidentsDesc")}
                   />
                 </div>
               )}

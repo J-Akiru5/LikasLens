@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Network, ChevronDown, ChevronUp, AlertTriangle, Cpu, Scale, Building2, ShieldCheck, X } from "lucide-react";
 import { cn } from "@likaslens/shared";
 import { useSwipeDownToClose } from "@/hooks/use-swipe-down-to-close";
+import { useTranslations } from "next-intl";
 
 interface GraphNode {
   id: string;
@@ -164,6 +165,7 @@ const PRESETS: Preset[] = [
 ];
 
 export default function KnowledgeGraphPage() {
+  const t = useTranslations("knowledgeGraph");
   const [activeId, setActiveId] = useState("solid-waste");
   const activePreset = PRESETS.find((p) => p.id === activeId)!;
   const [nodes, setNodes] = useState<GraphNode[]>([]);
@@ -305,7 +307,7 @@ export default function KnowledgeGraphPage() {
     <div className="min-h-full pb-24 bg-[#0a0f1a]">
       <header className="sticky top-0 z-30 bg-[#0a0f1a]/90 backdrop-blur-md border-b border-white/10 px-4 h-14 flex items-center">
         <Network className="w-4 h-4 text-[#2ee6c8] mr-2" />
-        <h1 className="text-sm font-bold text-white tracking-wide">Graph Explorer</h1>
+        <h1 className="text-sm font-bold text-white tracking-wide">{t("title")}</h1>
         <button onClick={() => setShowPresets(true)} className="ml-auto px-2 py-1 rounded-lg bg-white/10 text-[10px] text-white/60 font-mono">
           {activePreset.title.split(" ").slice(0, 2).join(" ")}
         </button>
@@ -431,7 +433,7 @@ export default function KnowledgeGraphPage() {
         <button onClick={() => setShowTerminal(!showTerminal)} className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#080c15] border border-white/10">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse" />
-            <span className="text-[10px] font-mono text-white/40">CYPHER QUERY LOG</span>
+            <span className="text-[10px] font-mono text-white/40">{t("cypherQueryLog")}</span>
           </div>
           {showTerminal ? <ChevronDown className="w-3 h-3 text-white/30" /> : <ChevronUp className="w-3 h-3 text-white/30" />}
         </button>
@@ -449,7 +451,7 @@ export default function KnowledgeGraphPage() {
           <div ref={presetSheetRef} className="relative bg-white rounded-t-3xl shadow-2xl max-h-[70vh] flex flex-col">
             <div className="flex justify-center pt-3 pb-2"><div className="w-12 h-1.5 bg-gray-200 rounded-full" /></div>
             <div className="px-5 pb-3 flex justify-between items-center border-b border-gray-100">
-              <h2 className="text-lg font-bold text-ink">Select Scenario</h2>
+              <h2 className="text-lg font-bold text-ink">{t("selectScenario")}</h2>
               <button onClick={() => setShowPresets(false)} className="p-1 text-ink/40"><X className="w-5 h-5" /></button>
             </div>
             <div className="overflow-y-auto px-5 py-4 pb-8 flex-1 space-y-2">

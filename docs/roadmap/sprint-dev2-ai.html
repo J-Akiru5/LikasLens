@@ -531,133 +531,6 @@ pre code {
 <p style="padding-left:1rem">• ✅ Rate limiting middleware (60 req/min general, 10 req/min for expensive endpoints)</p>
 <p style="padding-left:1rem">• ✅ Synced `pyproject.toml` with `requirements.txt`</p>
 <hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
-<h2 class="section-header">June 21 Sprint — Backend & Integration Fixes</h2>
-<p>> <strong>Sprint:</strong> Post-Pull Bug Fix & Integration Sprint</p>
-<p>> <strong>Timeline:</strong> June 21, 2026</p>
-<p>> <strong>Assigned To:</strong> Jeff (Dev 2)</p>
-<p>> <strong>Status:</strong> ✅ <strong>COMPLETE</strong> — All automated tasks delivered</p>
-
-<div class="day-section"><div class="day-header"><span class="day-num">Sprint</span>Backend Infrastructure & Auth Fixes</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.1</span>Register TenantController Routes</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>File modified:</strong> <code>apps/backend/routes/api.php</code></p>
-<p style="padding-left:1rem">• Added <code>TenantController</code> import</p>
-<p style="padding-left:1rem">• Registered 5 CRUD routes: <code>GET/POST /admin/tenants</code>, <code>GET/PUT/DELETE /admin/tenants/{id}</code></p>
-<p style="padding-left:1rem">• All routes behind <code>role:super_admin</code> middleware</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-1" checked> TenantController routes registered</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-2" checked> Routes protected by super_admin role</label>
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.2</span>Add AI_SERVICE_API_KEY to Backend .env.example</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>File modified:</strong> <code>apps/backend/.env.example</code></p>
-<p style="padding-left:1rem">• Added <code>AI_SERVICE_API_KEY</code> with documentation comment</p>
-<p style="padding-left:1rem">• Required for backend → ai-service auth via X-API-Key header</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-3" checked> AI_SERVICE_API_KEY documented in .env.example</label>
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.3</span>Implement SLA Notification Dispatch</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Files modified:</strong></p>
-<p style="padding-left:1rem">• <code>apps/backend/app/Services/SlaService.php</code> — Replaced TODO with notification dispatch</p>
-<p style="padding-left:1rem">• <code>apps/backend/app/Notifications/SlaEscalationNotification.php</code> — New notification class</p>
-<p style="padding-left:1rem">• Sends mail + database notification when ticket is escalated</p>
-<p style="padding-left:1rem">• Graceful error handling (logs failure, doesn't crash)</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-4" checked> SlaEscalationNotification created</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-5" checked> SlaService dispatches notification on escalation</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-6" checked> Error handling for failed notifications</label>
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.4</span>Add Overdue Counts to Leaderboard Stats</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>File modified:</strong> <code>apps/backend/app/Http/Controllers/LeaderboardController.php</code></p>
-<p style="padding-left:1rem">• Added <code>overdue_tickets</code> count (resolution breached, not resolved/closed)</p>
-<p style="padding-left:1rem">• Added <code>response_breached</code> count</p>
-<p style="padding-left:1rem">• Added <code>resolution_breached</code> count</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-7" checked> Overdue counts in leaderboard stats endpoint</label>
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.5</span>Fix Session Cookie Preservation on Token Refresh Failure</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Files modified:</strong></p>
-<p style="padding-left:1rem">• <code>apps/frontend/src/proxy.ts</code> — Restores original cookies if Supabase token refresh fails</p>
-<p style="padding-left:1rem">• <code>apps/admin-portal/src/proxy.ts</code> — Same fix</p>
-<p style="padding-left:1rem">• <code>apps/mobile-pwa/src/proxy.ts</code> — Same fix</p>
-<p style="padding-left:1rem">• Fixes issue #177: Session lost when navigating "Back to Home"</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-8" checked> Frontend middleware preserves cookies on failure</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-9" checked> Admin portal middleware preserves cookies on failure</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-10" checked> Mobile PWA middleware preserves cookies on failure</label>
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.6</span>Fix Deprecated createIntlMiddleware API</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Files modified:</strong></p>
-<p style="padding-left:1rem">• <code>apps/frontend/src/proxy.ts</code> — <code>createIntlMiddleware</code> → <code>createMiddleware</code> (next-intl v4)</p>
-<p style="padding-left:1rem">• <code>apps/admin-portal/src/proxy.ts</code> — Same fix</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-11" checked> Frontend uses new next-intl v4 API</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-12" checked> Admin portal uses new next-intl v4 API</label>
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.7</span>Fix Broken OG Image on Frontend</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Issue:</strong> #174</p>
-<p style="padding-left:1rem">• Frontend had <code>opengraph-image.png</code> but metadata referenced <code>.jpg</code></p>
-<p style="padding-left:1rem">• Copied PWA's <code>.jpg</code> images to frontend</p>
-<p style="padding-left:1rem">• Removed old <code>.png</code> files</p>
-<p style="padding-left:1rem">• Now matches PWA and admin-portal OG images</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-13" checked> opengraph-image.jpg matches PWA</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-14" checked> twitter-image.jpg matches PWA</label>
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.8</span>Fix Mobile PWA Double Sync Bug</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Files modified:</strong></p>
-<p style="padding-left:1rem">• <code>apps/mobile-pwa/src/app/[locale]/login/page.tsx</code> — Removed redundant <code>fetch()</code> to <code>/auth/sync</code></p>
-<p style="padding-left:1rem">• <code>apps/mobile-pwa/src/app/[locale]/register/page.tsx</code> — Same fix</p>
-<p style="padding-left:1rem">• Login/register now sync with Laravel exactly once via <code>laravelPost()</code></p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-15" checked> Login page single sync</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-16" checked> Register page single sync</label>
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.9</span>Run Pending Database Migrations</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Migrations executed:</strong></p>
-<p style="padding-left:1rem">• <code>2026_06_19_000136_fix_personal_access_tokens_tokenable_id_to_uuid</code> — Fixed bigint→uuid cast</p>
-<p style="padding-left:1rem">• <code>2026_06_20_000001_add_triage_disposition_to_tickets_table</code> — Added triage_disposition + composite_confidence</p>
-<p style="padding-left:1rem">• <code>2026_06_21_000001_add_escalation_fields_to_tickets_table</code> — Added reassigned_at, reassigned_to, escalation_level</p>
-<p style="padding-left:1rem">• Fixed PostgreSQL type cast issue (bigint→uuid requires two-step cast via text)</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-17" checked> personal_access_tokens.tokenable_id is now UUID</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-18" checked> tickets table has triage_disposition column</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-19" checked> tickets table has escalation fields</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-20" checked> All 30 migrations ran successfully</label>
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">B.10</span>Vercel Deploy Guard — Only Deploy on Main</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Files modified:</strong></p>
-<p style="padding-left:1rem">• <code>vercel.json</code> (root) — Added <code>ignoreCommand</code></p>
-<p style="padding-left:1rem">• <code>apps/mobile-pwa/vercel.json</code> — Added <code>ignoreCommand</code></p>
-<p style="padding-left:1rem">• <code>apps/admin-portal/vercel.json</code> — Added <code>ignoreCommand</code></p>
-<p style="padding-left:1rem">• Only <code>main</code> branch triggers deployment; all other branches skipped</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-21" checked> Root vercel.json has ignoreCommand</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-22" checked> Mobile PWA vercel.json has ignoreCommand</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-23" checked> Admin portal vercel.json has ignoreCommand</label>
-</div>
-
-</div>
-
-<div class="task-card"><div class="task-title"><span class="task-id">M.1</span>Manual Configuration Roadmap Created</div>
-<p><span class="tag tag-done">✅ Complete</span></p>
-<p><strong>Files created:</strong></p>
-<p style="padding-left:1rem">• <code>docs/roadmap/jeff-manual-config-roadmap.html</code> — Interactive HTML with checkboxes (34 KB)</p>
-<p style="padding-left:1rem">• <code>docs/roadmap/jeff-manual-config-roadmap.md</code> — Markdown version (5.5 KB)</p>
-<p style="padding-left:1rem">• Covers: Google OAuth setup, Vercel deployment, production domains, Supabase verification, Roboflow config, smoke tests</p>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-24" checked> HTML manual roadmap created</label>
-<label class="task-check-label done"><input type="checkbox" class="task-check" data-id="june21-25" checked> MD manual roadmap created</label>
-</div>
-
-<hr style="border:none;border-top:4px solid var(--foreground);margin:2rem 0">
 <h2 class="section-header">Risk Items</h2>
 <table>
 <tr><th>Risk</th><th>Status</th><th>Mitigation</th></tr>
@@ -680,7 +553,7 @@ pre code {
 </div>
 
 <div class="footer">
-  <p>LikasLens Sprint Roadmap — Last Updated: June 21, 2026</p>
+  <p>LikasLens Sprint Roadmap — Generated 2026-06-09</p>
   <p><a href="https://github.com/J-Akiru5/LikasLens">GitHub</a> · <a href="/">Home</a></p>
 </div>
 </main>

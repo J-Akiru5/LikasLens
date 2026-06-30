@@ -7,7 +7,7 @@ You are operating within a `pnpm` monorepo with five strictly isolated environme
 * `apps/admin-portal`: Next.js 16 (App Router), TypeScript, Tailwind. (Desktop admin dashboard)
 * `apps/shared`: React components, API client, TypeScript types, CSS design tokens. (Shared across all Next.js apps)
 * `apps/backend`: Laravel 12, PHP. (Core API, Session Management, Relational DB ONLY)
-* `apps/ai-service`: Python 3.12, FastAPI. (Neuro-Symbolic Logic, YOLOv8, Neo4j DB ONLY)
+* `apps/ai-service`: Python 3.12, FastAPI. (Neuro-Symbolic Logic, YOLOv8, Gremlin DB ONLY)
 
 ## 2. THE CONTRACT LAW (OPENAPI)
 * The **ONLY** acceptable method of communication between `frontend`, `mobile-pwa`, `admin-portal`, `backend`, and `ai-service` is via standard REST JSON payloads defined by the project's OpenAPI specifications.

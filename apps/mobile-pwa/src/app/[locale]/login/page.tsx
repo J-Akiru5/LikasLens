@@ -5,8 +5,10 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Leaf, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
   const [email, setEmail] = useState("");
@@ -72,10 +74,10 @@ export default function LoginPage() {
 
         <div className="mb-8 mt-2">
           <h1 className="font-semibold tracking-tight text-4xl mb-1 text-ink">
-            Welcome
+            {t("welcome")}
           </h1>
           <p className="font-mono text-sm text-muted uppercase tracking-widest">
-            Log in to continue
+            {t("loginToContinue")}
           </p>
         </div>
 
@@ -96,12 +98,12 @@ export default function LoginPage() {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
             )}
-            <span>Continue with Google</span>
+            <span>{t("continueWithGoogle")}</span>
           </button>
 
           <div className="flex items-center gap-4 py-2">
             <div className="h-px flex-1 bg-ink/10" />
-            <span className="text-xs font-mono font-bold text-ink/40 uppercase tracking-widest">Or email</span>
+            <span className="text-xs font-mono font-bold text-ink/40 uppercase tracking-widest">{t("orEmail")}</span>
             <div className="h-px flex-1 bg-ink/10" />
           </div>
 
@@ -115,7 +117,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
                 required
                 className="w-full theme-input px-4 py-4 font-medium bg-transparent border border-ink/20 rounded-xl text-base"
               />
@@ -162,21 +164,21 @@ export default function LoginPage() {
               className="w-full bg-accent text-white rounded-2xl py-4 font-semibold tracking-wide text-lg flex items-center justify-center gap-2 hover:bg-accent/90 disabled:opacity-50 transition-colors shadow-lg"
             >
               {loading ? (
-                <span className="animate-pulse">Logging in...</span>
+                <span className="animate-pulse">{t("loggingIn")}</span>
               ) : (
                 <>
-                  Log In <ArrowRight className="w-6 h-6" />
+                  {t("logIn")} <ArrowRight className="w-6 h-6" />
                 </>
               )}
             </button>
 
             <p className="text-center font-mono text-sm mt-6">
-              Don&apos;t have an account?{" "}
+              {t("dontHaveAccount")}{" "}
               <Link
                 href={`/${locale}/register`}
                 className="text-accent font-bold underline"
               >
-                Sign Up
+                {t("signUp")}
               </Link>
             </p>
           </div>

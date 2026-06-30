@@ -1,3 +1,5 @@
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import type { ExportPdfOptions } from "@/lib/pdf-export-types";
 
 /**
@@ -13,17 +15,13 @@ export async function exportElementToPdf(
 ): Promise<void> {
   const {
     filename = "export.pdf",
+    quality = 2,
     scale = 2,
     preserveBackgroundColor = true,
     margin = { top: 10, right: 10, bottom: 10, left: 10 },
   } = options;
 
   try {
-    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
-      import("html2canvas"),
-      import("jspdf"),
-    ]);
-
     const canvas = await html2canvas(element, {
       scale,
       backgroundColor: preserveBackgroundColor ? null : "#ffffff",

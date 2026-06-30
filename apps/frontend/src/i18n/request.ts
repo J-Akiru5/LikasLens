@@ -10,24 +10,16 @@ export default getRequestConfig(async ({ requestLocale }) => {
   let messages;
   try {
     switch (locale) {
-      case "fil":
-        messages = (await import("@likaslens/shared/i18n/messages/fil")).default;
-        break;
-      case "vi":
-        messages = (await import("@likaslens/shared/i18n/messages/vi")).default;
-        break;
-      case "id":
-        messages = (await import("@likaslens/shared/i18n/messages/id")).default;
-        break;
-      case "ms":
-        messages = (await import("@likaslens/shared/i18n/messages/ms")).default;
-        break;
-      case "ta":
-        messages = (await import("@likaslens/shared/i18n/messages/ta")).default;
-        break;
-      case "en":
-      default:
-        messages = (await import("@likaslens/shared/i18n/messages/en")).default;
+      case "fil": messages = (await import("@likaslens/shared/i18n/messages/fil")).default; break;
+      case "vi": messages = (await import("@likaslens/shared/i18n/messages/vi")).default; break;
+      case "id": messages = (await import("@likaslens/shared/i18n/messages/id")).default; break;
+      case "ms": messages = (await import("@likaslens/shared/i18n/messages/ms")).default; break;
+      case "ta": messages = (await import("@likaslens/shared/i18n/messages/ta")).default; break;
+      case "th": messages = (await import("@likaslens/shared/i18n/messages/th")).default; break;
+      case "km": messages = (await import("@likaslens/shared/i18n/messages/km")).default; break;
+      case "my": messages = (await import("@likaslens/shared/i18n/messages/my")).default; break;
+      case "lo": messages = (await import("@likaslens/shared/i18n/messages/lo")).default; break;
+      default: messages = (await import("@likaslens/shared/i18n/messages/en")).default; break;
     }
   } catch {
     messages = (await import("@likaslens/shared/i18n/messages/en")).default;

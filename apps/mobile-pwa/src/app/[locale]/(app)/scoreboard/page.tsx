@@ -8,6 +8,7 @@ import { ScoreboardSkeleton, EmptyState } from "@likaslens/shared";
 import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
+import { useTranslations } from "next-intl";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -65,6 +66,7 @@ const PODIUM = [
 ];
 
 export default function ScoreboardPage() {
+  const t = useTranslations("dashboard");
   const [activeTab, setActiveTab] = useState<TabKey>("all-time");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
 
@@ -144,12 +146,12 @@ export default function ScoreboardPage() {
     <div className="pb-28">
       <div className="px-5">
         <LargeTitle
-          title="Leaderboard"
-          subtitle="Top environmental reporters, updating live."
+          title={t("leaderboard")}
+          subtitle={t("leaderboardSubtitle")}
           trailing={
             <button
               onClick={refreshAll}
-              aria-label="Refresh"
+              aria-label={t("refresh")}
               className="touch-target"
               style={{ color: "var(--accent)" }}
             >
@@ -168,7 +170,7 @@ export default function ScoreboardPage() {
           >
             <Image
               src="https://images.unsplash.com/photo-1455218873509-8097305ee378?auto=format&fit=crop&w=900&q=80"
-              alt="Sunrise over a protected Philippine forest canopy"
+              alt={t("forestCanopyAlt")}
               fill
               sizes="100vw"
             />
@@ -262,7 +264,7 @@ export default function ScoreboardPage() {
 
             {/* Rest — ranked feed */}
             {rest.length === 0 && top3.length < 3 && entries.length === 0 ? (
-              <EmptyState icon={Trophy} title="No data available" description="Be the first to submit a report and earn your place." />
+              <EmptyState icon={Trophy} title={t("noDataAvailable")} description={t("beFirstToReport")} />
             ) : (
               <div className="ios-grouped-list">
                 {rest.map((entry, i) => {

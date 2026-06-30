@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { CloudOff, RefreshCw, Trophy } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { getTickets } from "../api/admin";
 import { cn } from "../utils";
 import type { Ticket } from "../types/ticket";
@@ -19,6 +20,7 @@ interface PublicReportRow {
 const FETCH_TIMEOUT_MS = 10_000;
 
 export function PublicScoreboard() {
+  const t = useTranslations("dashboard");
   const [rows, setRows] = useState<PublicReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,17 +40,17 @@ export function PublicScoreboard() {
       const body = await getTickets({ per_page: "10" });
       const tickets: Ticket[] = Array.isArray(body?.data) ? body.data : [];
       setRows(
-        tickets.map((t, i) => ({
+        tickets.map((ticket, i) => ({
           rank: i + 1,
-          agency: t.reporter || t.location || "Unknown",
-          title: t.title || "Environmental Issue",
-          status: t.status || "Open",
-          time: t.resolved_at ? formatTimeSince(t.resolved_at) : t.created_at ? formatTimeSince(t.created_at) : "\u2014",
+          agency: ticket.reporter || ticket.location || t("unknown"),
+          title: ticket.title || t("environmentalIssue"),
+          status: ticket.status || "Open",
+          time: ticket.resolved_at ? formatTimeSince(ticket.resolved_at) : ticket.created_at ? formatTimeSince(ticket.created_at) : "\u2014",
         }))
       );
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      setError("Connection error — backend may be starting up");
+      setError(t("connectionError"));
     } finally {
       clearTimeout(timeoutId);
       // Only clear loading if this is still the active request
@@ -98,8 +100,8 @@ export function PublicScoreboard() {
   if (error || displayRows.length === 0) {
     return (
       <EmptyLeaderboard 
-        title="No activity yet"
-        description="Top contributors will be highlighted here once reports are submitted."
+        title={t("noActivityYet")}
+        description={t("topContributorsDesc")}
       />
     );
   }
@@ -107,10 +109,10 @@ export function PublicScoreboard() {
   return (
     <div className="space-y-1">
       <div className="hidden sm:grid sm:grid-cols-[1.2fr_2.5fr_0.8fr_0.5fr] gap-4 px-4 pb-3 mb-2 border-b border-ink/5 font-mono text-[10px] font-bold text-ink/40 uppercase tracking-widest">
-        <div>Reporter / Location</div>
-        <div>Issue</div>
-        <div>Status</div>
-        <div className="text-right">Time</div>
+        <div>{t("reporterLocation")}</div>
+        <div>{t("issue")}</div>
+        <div>{t("status")}</div>
+        <div className="text-right">{t("time")}</div>
       </div>
       {displayRows.map((row, idx) => {
         const isResolved = row.status?.toLowerCase().includes("resolv") || row.status?.toLowerCase() === "fixed" || row.status?.toLowerCase() === "closed";

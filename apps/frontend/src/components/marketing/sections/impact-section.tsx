@@ -5,6 +5,7 @@ import Image from "next/image";
 import { m } from "framer-motion";
 import { CheckCircle2, MapPin } from "lucide-react";
 import { laravelGet, EmptyState } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 import type { PublicImpactData } from "@likaslens/shared";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -33,6 +34,8 @@ function AnimatedCounter({ value, duration = 1.6 }: { value: number; duration?: 
 }
 
 export function ImpactSection() {
+  const t = useTranslations("landing");
+  const ti = useTranslations("impact");
   const [data, setData] = useState<PublicImpactData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,11 +84,10 @@ export function ImpactSection() {
               margin: 0, textWrap: "balance" as const,
             }}
           >
-            Every report leaves a mark on the public record.
+            {t("publicRecordTitle")}
           </h2>
           <p style={{ fontSize: 17, color: "var(--muted)", lineHeight: 1.6, margin: 0, maxWidth: 560 }}>
-            Resolution is not promised in a press release. It is counted here,
-            case by case, where it can be checked.
+            {t("publicRecordDesc")}
           </p>
         </m.div>
 
@@ -102,7 +104,7 @@ export function ImpactSection() {
           >
             <div>
               <p style={{ fontFamily: "var(--font-data)", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--accent)", margin: "0 0 14px" }}>
-                Cases on the public record
+                {t("casesOnRecord")}
               </p>
               <span style={{ display: "block", fontSize: "clamp(3.5rem, 8vw, 6rem)", fontFamily: "var(--font-heading)", fontWeight: 700, letterSpacing: "-0.04em", lineHeight: 0.95, color: "var(--accent)" }}>
                 {loading ? <span style={{ opacity: 0.3 }}>—</span> : <AnimatedCounter value={stats.total_reports} />}
@@ -113,19 +115,19 @@ export function ImpactSection() {
                 <p style={{ fontFamily: "var(--font-data)", fontSize: 22, fontWeight: 700, color: "var(--ink)", margin: 0 }}>
                   {loading ? "—" : <AnimatedCounter value={stats.total_resolved} duration={1.4} />}
                 </p>
-                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "4px 0 0" }}>resolved</p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "4px 0 0" }}>{t("resolved")}</p>
               </div>
               <div>
                 <p style={{ fontFamily: "var(--font-data)", fontSize: 22, fontWeight: 700, color: "var(--ink)", margin: 0 }}>
                   {loading ? "—" : <AnimatedCounter value={stats.total_citizens} duration={1.4} />}
                 </p>
-                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "4px 0 0" }}>citizens reporting</p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "4px 0 0" }}>{t("citizensReporting")}</p>
               </div>
               <div>
                 <p style={{ fontFamily: "var(--font-data)", fontSize: 22, fontWeight: 700, color: "var(--ink)", margin: 0 }}>
                   {loading ? "—" : stats.total_ngos}
                 </p>
-                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "4px 0 0" }}>partner agencies</p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: "4px 0 0" }}>{t("partnerAgencies")}</p>
               </div>
             </div>
           </m.div>
@@ -148,7 +150,7 @@ export function ImpactSection() {
             />
             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "40px 32px 32px", background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)" }}>
               <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "rgba(255, 255, 255, 0.95)", margin: 0, maxWidth: 320, lineHeight: 1.5, fontWeight: 500, textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>
-                Reports come from ridge to reef. Each is geotagged, classified, and routed to the agency with jurisdiction.
+                {t("impactPhotoCaption")}
               </p>
             </div>
           </m.div>
@@ -166,10 +168,10 @@ export function ImpactSection() {
             style={{ padding: 28, background: "var(--panel)", borderRadius: "20px", border: "1px solid var(--border)", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)" }}
           >
             <h3 style={{ fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", letterSpacing: "-0.01em", color: "var(--ink)", margin: "0 0 20px" }}>
-              Reports by type
+              {ti("reportsByType")}
             </h3>
             {typeEntries.length === 0 ? (
-              <EmptyState svg="reports" title="No classification data" description="Reports by type will appear here once submitted." className="py-10" />
+              <EmptyState svg="reports" title={ti("noClassificationData")} description={ti("reportsByTypeDesc")} className="py-10" />
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {typeEntries.map(([name, count]) => {
@@ -200,10 +202,10 @@ export function ImpactSection() {
             style={{ padding: 28, background: "var(--panel)", borderRadius: "20px", border: "1px solid var(--border)", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)" }}
           >
             <h3 style={{ fontSize: 15, fontWeight: 700, fontFamily: "var(--font-body)", letterSpacing: "-0.01em", color: "var(--ink)", margin: "0 0 16px" }}>
-              Recently resolved
+              {ti("recentlyResolved")}
             </h3>
             {stats.recent_verified.length === 0 ? (
-              <EmptyState svg="search" title="No verified reports" description="Resolved environmental reports will appear here." className="py-10" />
+              <EmptyState svg="search" title={ti("noVerifiedReports")} description={ti("resolvedDesc")} className="py-10" />
             ) : (
               <div style={{ display: "flex", flexDirection: "column" }}>
                 {stats.recent_verified.slice(0, 5).map((item, idx, arr) => (
@@ -212,7 +214,7 @@ export function ImpactSection() {
                       <CheckCircle2 style={{ width: 14, height: 14, color: "var(--green)" }} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: 0, lineHeight: 1.4 }}>{item.title ?? "Environmental report"}</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: 0, lineHeight: 1.4 }}>{item.title ?? t("defaultReportTitle")}</p>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)" }}>
                           <MapPin style={{ width: 10, height: 10 }} /> {item.location}

@@ -3,6 +3,7 @@
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import dynamic from "next/dynamic";
 import { MapPin, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const EnhancedMap = dynamic(
   () =>
@@ -21,10 +22,11 @@ const EnhancedMap = dynamic(
 );
 
 export default function MapPage() {
+  const t = useTranslations("dashboard");
   return (
     <DashboardLayoutWrapper 
-      pageTitle="Environmental Report Map" 
-      pageSubtitle="Geographic visualization of reports, clusters, and hot zones across the Philippines"
+      pageTitle={t("environmentalReportMap")} 
+      pageSubtitle={t("geographicVisualization")}
     >
       <div className="space-y-4">
 

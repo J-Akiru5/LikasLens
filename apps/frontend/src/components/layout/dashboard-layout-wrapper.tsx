@@ -16,23 +16,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { UserNav } from "./user-nav";
-
-const SIDEBAR_NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true },
-  { href: "/scoreboard", label: "Scoreboard", icon: Trophy },
-  
-  { divider: true, dividerLabel: "Analytics" },
-  { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
-  { href: "/dashboard/reports", label: "Reports", icon: FileText },
-  { href: "/dashboard/impact", label: "Impact Map", icon: BarChart3 },
-  { href: "/dashboard/knowledge-graph", label: "Graph Explorer", icon: Network },
-  
-  { divider: true, dividerLabel: "Quick Access" },
-  { href: "/report", label: "Submit Report", icon: Camera },
-  { href: "/offline-queue", label: "Offline Queue", icon: WifiOff },
-  { href: "/laws", label: "Laws Database", icon: Scale },
-  { href: "/profile", label: "Citizen Profile", icon: User },
-];
+import { useTranslations } from "next-intl";
 
 interface DashboardLayoutWrapperProps {
   children: ReactNode;
@@ -53,6 +37,7 @@ export function DashboardLayoutWrapper({
   userRole,
   headerChildren,
 }: DashboardLayoutWrapperProps) {
+  const tn = useTranslations("nav");
   const [isGhostMode, setIsGhostMode] = useState(false);
   const [queueCount, setQueueCount] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -72,6 +57,23 @@ export function DashboardLayoutWrapper({
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
+
+  const SIDEBAR_NAV_ITEMS: NavItem[] = [
+    { href: "/dashboard", label: tn("dashboard"), icon: LayoutGrid, exact: true },
+    { href: "/scoreboard", label: tn("scoreboard"), icon: Trophy },
+    
+    { divider: true, dividerLabel: tn("analytics") },
+    { href: "/dashboard/incidents", label: tn("incidents"), icon: AlertCircle },
+    { href: "/dashboard/reports", label: tn("reports"), icon: FileText },
+    { href: "/dashboard/impact", label: tn("impactMap"), icon: BarChart3 },
+    { href: "/dashboard/knowledge-graph", label: tn("graphExplorer"), icon: Network },
+    
+    { divider: true, dividerLabel: tn("quickAccess") },
+    { href: "/report", label: tn("submitReport"), icon: Camera },
+    { href: "/offline-queue", label: tn("offlineQueue"), icon: WifiOff },
+    { href: "/laws", label: tn("lawsDatabase"), icon: Scale },
+    { href: "/profile", label: tn("citizenProfile"), icon: User },
+  ];
 
   // Build nav items with dynamic badge
   const navItemsWithBadge: NavItem[] = SIDEBAR_NAV_ITEMS.map((item) => {

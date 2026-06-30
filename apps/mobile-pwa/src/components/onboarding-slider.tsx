@@ -13,49 +13,9 @@ import {
 } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { cn } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
-const ONBOARDING_STEPS = [
-  {
-    icon: Camera,
-    badge: "REPORT",
-    title: "Snap It.\nReport It.",
-    description:
-      "Point your camera at any environmental issue — illegal dumping, pollution, deforestation. GPS coordinates are captured automatically.",
-    colorClass: "accent",
-    bg: "bg-accent/5",
-    border: "border-accent/15",
-  },
-  {
-    icon: Brain,
-    badge: "AI POWERED",
-    title: "AI Reads\nThe Scene.",
-    description:
-      "Our YOLOv8 vision model instantly identifies the issue type, severity level, and routes it to the exact government agency responsible.",
-    colorClass: "amber",
-    bg: "bg-amber/5",
-    border: "border-amber/15",
-  },
-  {
-    icon: Fingerprint,
-    badge: "GHOST MODE",
-    title: "Your Identity.\nProtected.",
-    description:
-      "For high-risk reports like illegal logging, activate Ghost Mode. Your identity is stripped from the submission — zero trace.",
-    colorClass: "secondary",
-    bg: "bg-secondary/5",
-    border: "border-secondary/15",
-  },
-  {
-    icon: MapPin,
-    badge: "TRACK",
-    title: "Watch It\nGet Fixed.",
-    description:
-      "Follow your report from submission to resolution. Get notified the moment your community issue is addressed.",
-    colorClass: "accent",
-    bg: "bg-accent/5",
-    border: "border-accent/15",
-  },
-];
+
 
 const COLOR_MAP: Record<string, string> = {
   accent: "text-accent",
@@ -66,6 +26,46 @@ const COLOR_MAP: Record<string, string> = {
 export function OnboardingSlider() {
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
+  const t = useTranslations("dashboard");
+
+  const ONBOARDING_STEPS = [
+    {
+      icon: Camera,
+      badge: "REPORT",
+      title: "Snap It.\nReport It.",
+      description: t("onboarding1"),
+      colorClass: "accent",
+      bg: "bg-accent/5",
+      border: "border-accent/15",
+    },
+    {
+      icon: Brain,
+      badge: "AI POWERED",
+      title: "AI Reads\nThe Scene.",
+      description: t("onboardingAiDesc"),
+      colorClass: "amber",
+      bg: "bg-amber/5",
+      border: "border-amber/15",
+    },
+    {
+      icon: Fingerprint,
+      badge: "GHOST MODE",
+      title: "Your Identity.\nProtected.",
+      description: t("onboarding2"),
+      colorClass: "secondary",
+      bg: "bg-secondary/5",
+      border: "border-secondary/15",
+    },
+    {
+      icon: MapPin,
+      badge: "TRACK",
+      title: "Watch It\nGet Fixed.",
+      description: t("onboarding3"),
+      colorClass: "accent",
+      bg: "bg-accent/5",
+      border: "border-accent/15",
+    },
+  ];
   // Tweaked embla config for snappier feeling
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, dragFree: false, skipSnaps: false });
   const [selectedIndex, setSelectedIndex] = useState(0);

@@ -19,6 +19,7 @@ import {
   Pause,
 } from "lucide-react";
 import { cn, laravelGet, Dropdown } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface HeatmapPoint {
   lat: number;
@@ -240,6 +241,8 @@ interface EnhancedMapProps {
 }
 
 export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
+  const t = useTranslations("dashboard");
+  const tMap = useTranslations("enhancedMap");
   const [data, setData] = useState<HeatmapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -271,10 +274,10 @@ export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
       if (res?.success) {
         setData(res.data);
       } else {
-        setError("Failed to load map data");
+        setError(t("failedToLoadMap"));
       }
     } catch {
-      setError("Unable to connect to the server");
+      setError(t("unableToConnect"));
     } finally {
       setLoading(false);
     }
@@ -305,9 +308,9 @@ export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-2 pb-1">
           {[
-            { mode: "hexagon" as const, icon: Grid3X3, label: "Hex" },
-            { mode: "heatmap" as const, icon: Layers, label: "Heat" },
-            { mode: "points" as const, icon: Filter, label: "Points" },
+            { mode: "hexagon" as const, icon: Grid3X3, label: tMap("hex") },
+            { mode: "heatmap" as const, icon: Layers, label: tMap("heat") },
+            { mode: "points" as const, icon: Filter, label: tMap("points") },
           ].map(({ mode, icon: Icon, label }) => (
             <button
               key={mode}
@@ -328,10 +331,10 @@ export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
           value={selectedType}
           onChange={(val) => setSelectedType(val)}
           options={[
-            { value: "", label: "All Types" },
+            { value: "", label: tMap("allTypes") },
             ...violationTypes.map((vt) => ({ value: vt.code, label: vt.name })),
           ]}
-          placeholder="All Types"
+          placeholder={t("allTypes")}
           size="sm"
           className="w-36 shrink-0 !rounded-full"
         />
@@ -346,7 +349,7 @@ export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
           )}
         >
           <Satellite className="w-4 h-4" />
-          Sat
+          {tMap("sat")}
         </button>
 
         {showSatellite && (
@@ -374,17 +377,17 @@ export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
           className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold text-ink/60 bg-ink/5 shrink-0"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-          Refresh
+          {tMap("refresh")}
         </button>
       </div>
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-3 text-[10px] text-ink/60">
         {[
-          { label: "Critical", color: "#dc2626" },
-          { label: "High", color: "#ef4444" },
-          { label: "Medium", color: "#f59e0b" },
-          { label: "Low", color: "#3b82f6" },
+          { label: tMap("critical"), color: "#dc2626" },
+          { label: tMap("high"), color: "#ef4444" },
+          { label: tMap("medium"), color: "#f59e0b" },
+          { label: tMap("low"), color: "#3b82f6" },
         ].map((item) => (
           <span key={item.label} className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full inline-block" style={{ background: item.color }} />
@@ -394,7 +397,7 @@ export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
         {data?.hot_zones && data.hot_zones.length > 0 && (
           <span className="flex items-center gap-1 text-amber-500 font-medium">
             <Flame className="w-3 h-3" />
-            {data.hot_zones.length} Hot Zone{data.hot_zones.length !== 1 ? "s" : ""}
+            {data.hot_zones.length} {data.hot_zones.length !== 1 ? tMap("hotZones") : tMap("hotZonesSingular")}
           </span>
         )}
       </div>
@@ -413,7 +416,7 @@ export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
               <AlertTriangle className="w-6 h-6 text-red-500" />
               <p className="text-xs text-ink/70">{error}</p>
               <button onClick={fetchData} className="text-xs text-accent font-medium">
-                Try again
+                {t("tryAgain")}
               </button>
             </div>
           </div>
@@ -435,7 +438,7 @@ export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
           <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
             <div className="text-center px-4">
               <Layers className="w-6 h-6 text-ink/40 mx-auto mb-1" />
-              <p className="text-xs font-semibold text-ink/70">No reports for this area</p>
+              <p className="text-xs font-semibold text-ink/70">{tMap("noReportsForArea")}</p>
             </div>
           </div>
         )}
@@ -444,9 +447,9 @@ export function EnhancedMap({ days = 30, height = "60vh" }: EnhancedMapProps) {
       {/* Stats */}
       {data && data.points.length > 0 && (
         <div className="flex flex-wrap gap-4 text-[10px] text-ink/60">
-          <span><strong className="text-ink">{data.points.length}</strong> reports</span>
-          <span><strong className="text-ink">{data.clusters.length}</strong> clusters</span>
-          <span><strong className="text-ink">{data.hot_zones.length}</strong> hot zones</span>
+          <span><strong className="text-ink">{data.points.length}</strong> {tMap("reports")}</span>
+          <span><strong className="text-ink">{data.clusters.length}</strong> {tMap("clusters")}</span>
+          <span><strong className="text-ink">{data.hot_zones.length}</strong> {tMap("hotZones")}</span>
         </div>
       )}
     </div>

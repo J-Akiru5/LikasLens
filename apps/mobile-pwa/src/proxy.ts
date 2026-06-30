@@ -31,6 +31,7 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  // @ts-expect-error — duplicate NextRequest types from workspace hoisting
   let supabaseResponse = intlMiddleware(request);
 
   // If Supabase is not configured yet, apply simple public-route logic only

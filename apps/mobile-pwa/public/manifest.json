@@ -51,32 +51,18 @@
       ]
     }
   ],
-  "prefer_related_applications": false,
-  "share_target": {
-    "action": "/report",
-    "method": "POST",
-    "enctype": "multipart/form-data",
-    "params": {
-      "title": "title",
-      "text": "description",
-      "url": "link",
-      "files": [
-        {
-          "name": "photo",
-          "accept": ["image/jpeg", "image/png", "image/webp"]
-        }
-      ]
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/report.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
-  },
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "display_override": [
-    "window-controls-overlay",
-    "standalone",
-    "minimal-ui"
-  ],
-  "edge_side_panel": {
-    "preferred_width": 400
-  }
+  ]
 }

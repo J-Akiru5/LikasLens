@@ -18,6 +18,7 @@ import {
 import { cn, showToast, laravelPost, EmptyState } from "@likaslens/shared";
 import { useParams, useRouter } from "next/navigation";
 import { useHaptics } from "@/hooks/use-haptics";
+import { useTranslations } from "next-intl";
 import {
   getAllQueued,
   removeQueued,
@@ -63,6 +64,7 @@ function truncate(str: string, max: number): string {
 }
 
 export default function OfflineQueuePage() {
+  const t = useTranslations("dashboard");
   const params = useParams();
   const router = useRouter();
   const locale = (params?.locale as string) || "en";
@@ -84,7 +86,7 @@ export default function OfflineQueuePage() {
       );
       setQueue(items);
     } catch {
-      showToast("Failed to load queue", "error");
+      showToast(t("failedToLoadQueue"), "error");
     } finally {
       setLoading(false);
     }
@@ -135,7 +137,7 @@ export default function OfflineQueuePage() {
       await loadQueue();
     } catch (err) {
       showToast(
-        err instanceof Error ? err.message : "Sync failed",
+        err instanceof Error ? err.message : t("syncFailed"),
         "error",
       );
     } finally {
@@ -156,14 +158,14 @@ export default function OfflineQueuePage() {
     haptic("light");
     await clearQueue();
     setQueue([]);
-    showToast("Queue cleared.", "info");
+    showToast(t("queueCleared"), "info");
   }, [haptic]);
 
   if (loading) {
     return (
       <div className="min-h-full pb-24 bg-page">
         <header className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10 px-4 h-16 flex items-center">
-          <h1 className="ios-large-title ios-large-title--xl">Offline Queue</h1>
+          <h1 className="ios-large-title ios-large-title--xl">{t("offlineQueue")}</h1>
         </header>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-green" />
@@ -177,7 +179,7 @@ export default function OfflineQueuePage() {
       {/* Header */}
       <header className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10 px-4 h-16 flex items-center justify-between">
         <div>
-          <h1 className="ios-large-title ios-large-title--xl">Offline Queue</h1>
+          <h1 className="ios-large-title ios-large-title--xl">{t("offlineQueue")}</h1>
           {queue.length > 0 && (
             <p
               className="text-xs font-medium"
@@ -195,7 +197,7 @@ export default function OfflineQueuePage() {
           <button
             onClick={handleClearAll}
             className="touch-target p-2 rounded-full hover:bg-ink/5 transition-colors"
-            aria-label="Clear all queued reports"
+            aria-label={t("clearAllQueued")}
           >
             <Trash2
               style={{ width: 18, height: 18, color: "var(--muted)" }}
@@ -320,8 +322,8 @@ export default function OfflineQueuePage() {
         {queue.length === 0 ? (
           <EmptyState
             icon={CheckCircle2}
-            title="All caught up"
-            description="No offline reports waiting to sync. When you submit a report without internet, it will appear here."
+            title={t("allCaughtUp")}
+            description={t("allCaughtUpDesc")}
             className="mt-16"
           />
         ) : (
@@ -491,7 +493,7 @@ export default function OfflineQueuePage() {
                     <button
                       onClick={() => handleRemove(item.id)}
                       className="touch-target p-2 rounded-full hover:bg-ink/5 transition-colors flex-shrink-0"
-                      aria-label="Remove queued report"
+                      aria-label={t("removeQueued")}
                     >
                       <X
                         style={{

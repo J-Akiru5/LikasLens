@@ -52,11 +52,32 @@ const translations: Record<Locale, LangSuggestionText> = {
     neverShow: "மீண்டும் காட்டாதே",
   },
   th: {
-    title: "คำแนะนำภาษา",
-    message: "เราตรวจพบว่าเบราว์เซอร์ของคุณตั้งค่าเป็น {lang} คุณต้องการสลับหรือไม่?",
+    title: "ข้อเสนอแนะภาษา",
+    message: "เราพบว่าเบราว์เซอร์ของคุณตั้งค่าเป็น {lang} คุณต้องการเปลี่ยนหรือไม่?",
     setDefault: "ตั้งเป็นค่าเริ่มต้น",
     no: "ไม่",
-    neverShow: "ไม่แสดงอีก",
+    neverShow: "ไม่แสดงอีกครั้ง",
+  },
+  km: {
+    title: "ការណែនាំភាសា",
+    message: "យើងបានរកឃើញថាកម្មវិធីរុករករបស់អ្នកកំណត់ទៅ {lang}។ តើអ្នកចង់ប្តូរទេ?",
+    setDefault: "កំណត់ជាលំនាំដើម",
+    no: "ទេ",
+    neverShow: "កុំបង្ហាញម្តងទៀត",
+  },
+  my: {
+    title: "ဘာသာစကားအကြံပြုချက်",
+    message: "သင့်ဘရောက်ဆာသည် {lang} သို့သတ်မှတ်ထားကြောင်း ကျွန်ုပ်တို့ ရှာဖွေတွေ့ရှိပါသည်။ ပြောင်းလဲလိုပါသလား?",
+    setDefault: "အမြဲတမ်းအဖြစ်သတ်မှတ်ရန်",
+    no: "မလိုပါ",
+    neverShow: "ထပ်မပြပါနဲ့",
+  },
+  lo: {
+    title: "ຄຳແນະນຳພາສາ",
+    message: "ພວກເຮົາພົບວ່າຕົວທ່ອງເວັບຂອງທ່ານຖືກກຳນົດເປັນ {lang} ທ່ານຕ້ອງການປ່ຽນບໍ?",
+    setDefault: "ກຳນົດເປັນຄ່າເລີ່ມຕົ້ນ",
+    no: "ບໍ່",
+    neverShow: "ບໍ່ສະແດງອີກ",
   },
 };
 
@@ -67,7 +88,10 @@ const localeNames: Record<Locale, string> = {
   id: "Bahasa Indonesia",
   ms: "Bahasa Melayu",
   ta: "தமிழ்",
-  th: "ภาษาไทย",
+  th: "ไทย",
+  km: "ភាសាខ្មែរ",
+  my: "မြန်မာ",
+  lo: "ລາວ",
 };
 
 const NEVER_SHOW_KEY = "likaslens-lang-suggestion-dismissed";
@@ -77,7 +101,7 @@ function getSupportedLocaleFromNavigator(): Locale | null {
   const langs = navigator.languages || [navigator.language];
   for (const lang of langs) {
     const code = lang.split("-")[0].toLowerCase();
-    const supported: Locale[] = ["fil", "vi", "id", "ms", "ta", "th"];
+    const supported: Locale[] = ["fil", "vi", "id", "ms", "ta", "th", "km", "my", "lo"];
     if (code === "tl") return "fil";
     if (supported.includes(code as Locale)) return code as Locale;
   }

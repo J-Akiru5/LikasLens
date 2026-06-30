@@ -6,8 +6,10 @@ import { ArrowLeft, Mail, MessageCircle, MapPin, Send, CheckCircle, Loader2 } fr
 import { motion, AnimatePresence } from "framer-motion";
 import { AppHeader } from "@likaslens/shared";
 import { showToast } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 export default function ContactPage() {
+  const t = useTranslations("contact");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
@@ -27,13 +29,13 @@ export default function ContactPage() {
       });
       if (response.ok) {
         setSubmitted(true);
-        showToast("Message sent successfully", "success");
+        showToast(t("sendSuccess"), "success");
       } else {
-        showToast("Failed to send message. Please try again.", "error");
+        showToast(t("sendError"), "error");
       }
     } catch (error) {
       console.error("Failed to submit contact form", error);
-      showToast("Failed to send message. Check your connection.", "error");
+      showToast(t("sendErrorConn"), "error");
     } finally {
       setSubmitting(false);
     }
@@ -54,10 +56,9 @@ export default function ContactPage() {
         {/* Back Navigation */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 mb-8 px-4 py-2 border border-border text-accent hover:bg-accent/5 rounded-lg transition-colors font-mono text-sm font-medium uppercase tracking-wider"
-        >
+          className="inline-flex items-center gap-2 mb-8 px-4 py-2 border border-border text-accent hover:bg-accent/5 rounded-lg transition-colors font-mono text-sm font-medium uppercase tracking-wider"          >
           <ArrowLeft className="w-4 h-4" />
-          Back to Home
+          {t("backToHome")}
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -67,14 +68,14 @@ export default function ContactPage() {
               <div className="inline-flex items-center gap-2 px-4 py-2 border border-border mb-4 rounded-lg">
                 <MessageCircle className="w-4 h-4 text-green" />
                 <span className="font-mono text-xs font-medium uppercase tracking-widest text-accent">
-                  Get in Touch
+                  {t("getInTouch")}
                 </span>
               </div>
               <h1 className="font-semibold tracking-tight text-4xl sm:text-6xl text-ink mb-4">
-                Connect With Us
+                {t("connectWithUs")}
               </h1>
               <p className="text-xl text-ink/80 font-semibold">
-                Have questions about the platform, partnerships, or environmental laws? Our team is here to help.
+                {t("heroDesc")}
               </p>
             </div>
 
@@ -82,16 +83,16 @@ export default function ContactPage() {
               <div className="flex items-start gap-4 p-4 panel">
                 <Mail className="w-6 h-6 text-green shrink-0" />
                 <div>
-                  <h3 className="font-semibold tracking-tight uppercase text-sm text-ink">Email</h3>
+                  <h3 className="font-semibold tracking-tight uppercase text-sm text-ink">{t("emailLabel")}</h3>
                   <p className="font-mono text-sm">hello@likaslens.ph</p>
                 </div>
               </div>
               <div className="flex items-start gap-4 p-4 panel">
                 <MapPin className="w-6 h-6 text-green shrink-0" />
                 <div>
-                  <h3 className="font-semibold tracking-tight uppercase text-sm text-ink">Location</h3>
+                  <h3 className="font-semibold tracking-tight uppercase text-sm text-ink">{t("locationLabel")}</h3>
                   <p className="font-mono text-sm uppercase">Iloilo, Philippines</p>
-                  <p className="text-xs text-muted mt-1">Distributed Team • Remote First</p>
+                  <p className="text-xs text-muted mt-1">{t("distributedTeam")}</p>
                 </div>
               </div>
             </div>
@@ -114,36 +115,36 @@ export default function ContactPage() {
                   className="space-y-6"
                 >
                   <div>
-                    <label className="block font-semibold tracking-tight uppercase text-sm text-ink mb-2">Name</label>
+                    <label className="block font-semibold tracking-tight uppercase text-sm text-ink mb-2">{t("nameLabel")}</label>
                     <input 
                       type="text" 
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       className="w-full theme-input px-4 py-3 font-mono text-sm"
-                      placeholder="Juan Dela Cruz"
+                      placeholder={t("namePlaceholder")}
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold tracking-tight uppercase text-sm text-ink mb-2">Email</label>
+                    <label className="block font-semibold tracking-tight uppercase text-sm text-ink mb-2">{t("emailAddressLabel")}</label>
                     <input 
                       type="email" 
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       className="w-full theme-input px-4 py-3 font-mono text-sm"
-                      placeholder="juan@example.ph"
+                      placeholder={t("emailPlaceholder")}
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold tracking-tight uppercase text-sm text-ink mb-2">Message</label>
+                    <label className="block font-semibold tracking-tight uppercase text-sm text-ink mb-2">{t("messageLabel")}</label>
                     <textarea 
                       required
                       rows={4}
                       value={formData.message}
                       onChange={(e) => setFormData({...formData, message: e.target.value})}
                       className="w-full theme-input px-4 py-3 font-mono text-sm resize-none"
-                      placeholder="How can we assist you?"
+                      placeholder={t("messagePlaceholder")}
                     />
                   </div>
                   <button 
@@ -154,12 +155,12 @@ export default function ContactPage() {
                     {submitting ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Sending...
+                        {t("sending")}
                       </>
                     ) : (
                       <>
                         <Send className="w-5 h-5" />
-                        Send Message
+                        {t("sendMessage")}
                       </>
                     )}
                   </button>
@@ -172,15 +173,15 @@ export default function ContactPage() {
                   className="h-full flex flex-col items-center justify-center text-center py-12"
                 >
                   <CheckCircle className="w-16 h-16 text-green mb-6 fill-current" />
-                  <h2 className="font-semibold tracking-tight text-3xl text-ink mb-2">Received!</h2>
+                  <h2 className="font-semibold tracking-tight text-3xl text-ink mb-2">{t("receivedTitle")}</h2>
                   <p className="text-ink/70 font-semibold">
-                    Thanks for reaching out, {formData.name.split(' ')[0]}. We&rsquo;ll get back to you shortly.
+                    {t("receivedDesc", { name: formData.name.split(' ')[0] })}
                   </p>
                   <button 
                     onClick={() => setSubmitted(false)}
                     className="mt-8 font-mono text-xs font-medium uppercase tracking-widest text-green hover:underline"
                   >
-                    Send another message
+                    {t("sendAnotherMessage")}
                   </button>
                 </motion.div>
               )}

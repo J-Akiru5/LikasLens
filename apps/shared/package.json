@@ -9,12 +9,20 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./i18n/messages": "./src/i18n/messages",
+    "./i18n/messages/": "./src/i18n/messages/",
+    "./i18n/messages/*": "./src/i18n/messages/*",
     "./i18n/messages/en": "./src/i18n/messages/en.json",
     "./i18n/messages/fil": "./src/i18n/messages/fil.json",
     "./i18n/messages/vi": "./src/i18n/messages/vi.json",
     "./i18n/messages/id": "./src/i18n/messages/id.json",
     "./i18n/messages/ms": "./src/i18n/messages/ms.json",
     "./i18n/messages/ta": "./src/i18n/messages/ta.json",
+    "./i18n/messages/th": "./src/i18n/messages/th.json",
+    "./i18n/messages/km": "./src/i18n/messages/km.json",
+    "./i18n/messages/my": "./src/i18n/messages/my.json",
+    "./i18n/messages/lo": "./src/i18n/messages/lo.json",
+    "./i18n/yolo-labels/*": "./src/i18n/yolo-labels/*",
     "./i18n/yolo-labels/en": "./src/i18n/yolo-labels/en.json",
     "./i18n/yolo-labels/fil": "./src/i18n/yolo-labels/fil.json",
     "./i18n/yolo-labels/vi": "./src/i18n/yolo-labels/vi.json",
@@ -28,33 +36,31 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "i18n:generate": "npx tsx src/i18n/generate.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "i18n:generate": "npx tsx src/i18n/generate.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
     "cobe": "^2.0.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.14.0",
+    "onnxruntime-web": "^1.27.0",
     "tailwind-merge": "^3.5.0"
   },
-  "optionalDependencies": {
-    "onnxruntime-web": "^1.21.0"
-  },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
+    "react": "^19",
+    "react-dom": "^19",
     "typescript": "^5",
     "vitest": "^4.1.9"
   },
   "peerDependencies": {
-    "next": "^16.2.2",
+    "next": ">=15",
     "next-intl": "^4",
     "react": "^19",
     "react-dom": "^19"

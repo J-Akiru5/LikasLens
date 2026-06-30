@@ -1,4 +1,4 @@
-const CACHE_NAME = 'likaslens-pwa-v3';
+const CACHE_NAME = 'likaslens-pwa-v2';
 
 // App shell assets to precache on install
 const STATIC_ASSETS = [
@@ -6,18 +6,8 @@ const STATIC_ASSETS = [
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
+  '/icons/maskable-icon-512x512.png',
   '/icons/apple-touch-icon.png',
-  '/en/~offline', // The offline fallback page
-  '/images/likas-lens-logo.png' // Splash screen logo
-];
-
-// ONNX model files — cached on first access for offline inference
-const MODEL_ASSETS = [
-  '/models/yolov8s-coco.onnx',
-  '/models/yolov8s-waste.onnx',
-  '/models/coco-classes.json',
-  '/models/waste-classes.json',
-  '/models/model-meta.json',
 ];
 
 // Read-only API endpoints that use stale-while-revalidate
@@ -28,6 +18,8 @@ const SWR_PATHS = [
 ];
 
 // IndexedDB helpers for offline queue
+// This is a basic implementation — a production app would want retry limits,
+// exponential backoff, deduplication, and proper error handling.
 const DB_NAME = 'likaslens-offline';
 const DB_VERSION = 1;
 const STORE_NAME = 'offline-queue';
@@ -138,29 +130,6 @@ self.addEventListener('fetch', (event) => {
   // Skip other non-GET requests
   if (request.method !== 'GET') return;
 
-  // --- Navigation Requests (HTML pages) ---
-  // Network first, falling back to cache, then falling back to offline page
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // Runtime caching of visited pages
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
-          return response;
-        })
-        .catch(() => {
-          // Network failed, try cache
-          return caches.match(request).then((cachedResponse) => {
-            if (cachedResponse) return cachedResponse;
-            // Not in cache, serve offline fallback
-            return caches.match('/en/~offline');
-          });
-        })
-    );
-    return;
-  }
-
   // --- Stale-while-revalidate for read-only API endpoints ---
   if (SWR_PATHS.some((path) => url.pathname.startsWith(path))) {
     event.respondWith(
@@ -173,6 +142,7 @@ self.addEventListener('fetch', (event) => {
             return response;
           }).catch(() => cached);
 
+          // Return cached immediately, update in background
           return cached || fetched;
         })
       )
@@ -188,7 +158,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // --- Cache-first for static assets (images, JS, CSS) and ONNX models ---
+  // --- Cache-first for static assets ---
   event.respondWith(
     caches.match(request).then((cached) => {
       const fetched = fetch(request).then((response) => {
@@ -210,36 +180,5 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-reports') {
     event.waitUntil(drainQueue());
-  }
-});
-
-// ---------------------------------------------------------------------------
-// Message: preload ONNX models into cache for offline inference
-// ---------------------------------------------------------------------------
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'CACHE_MODELS') {
-    event.waitUntil(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        const results = await Promise.allSettled(
-          MODEL_ASSETS.map(async (url) => {
-            const existing = await cache.match(url);
-            if (existing) return 'cached';
-            const resp = await fetch(url);
-            if (resp.ok) {
-              await cache.put(url, resp.clone());
-              return 'fetched';
-            }
-            return 'failed';
-          })
-        );
-        const clients = await self.clients.matchAll();
-        for (const client of clients) {
-          client.postMessage({
-            type: 'MODELS_CACHED',
-            results: results.map((r) => r.status),
-          });
-        }
-      })
-    );
   }
 });

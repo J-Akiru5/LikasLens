@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import Map, { useMap, useControl } from "react-map-gl/maplibre";
 import type { Map as MaplibreMap } from "maplibre-gl";
 import { MapboxOverlay } from "@deck.gl/mapbox";
@@ -154,6 +155,7 @@ const FAST_DARK_MAP = {
 };
 
 export function HeatmapWidget() {
+  const t = useTranslations("dashboard");
   const [data, setData] = useState<HeatmapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -203,8 +205,8 @@ export function HeatmapWidget() {
             <MapPin className="w-5 h-5 text-amber-600 dark:text-amber-500" />
           </div>
           <div className="pr-2">
-            <h3 className="font-black text-ink text-sm tracking-tight leading-none">Live Incident Heatmap</h3>
-            <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-ink/40 mt-1.5">Last 30 Days</p>
+            <h3 className="font-black text-ink text-sm tracking-tight leading-none">{t("liveIncidentHeatmap")}</h3>
+            <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-ink/40 mt-1.5">{t("last30Days")}</p>
           </div>
           
           <div className="w-px h-8 bg-ink/10 mx-1" />
@@ -212,7 +214,7 @@ export function HeatmapWidget() {
           <Link
             href="/en/dashboard/map"
             className="w-9 h-9 rounded-full bg-ink/5 hover:bg-accent/10 flex items-center justify-center text-ink/40 hover:text-accent transition-colors"
-            title="Expand Map"
+            title={t("expandMap")}
           >
             <ExternalLink className="w-4 h-4" />
           </Link>
@@ -228,11 +230,11 @@ export function HeatmapWidget() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
               </span>
-              <strong className="text-ink text-xs">{data.points.length}</strong> <span className="text-ink/40">Reports</span>
+              <strong className="text-ink text-xs">{data.points.length}</strong> <span className="text-ink/40">{t("reportsLabel")}</span>
             </span>
             <div className="w-px h-4 bg-ink/10" />
             <span className="flex items-center gap-2">
-              <strong className="text-ink text-xs">{data.clusters.length}</strong> <span className="text-ink/40">Clusters</span>
+              <strong className="text-ink text-xs">{data.clusters.length}</strong> <span className="text-ink/40">{t("clustersLabel")}</span>
             </span>
           </div>
         </div>
@@ -245,7 +247,7 @@ export function HeatmapWidget() {
             <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center border border-accent/20">
               <Loader2 className="w-6 h-6 text-accent animate-spin" />
             </div>
-            <p className="font-mono text-xs uppercase tracking-widest text-ink/60 font-bold">Connecting to Satellites...</p>
+            <p className="font-mono text-xs uppercase tracking-widest text-ink/60 font-bold">{t("connectingToSatellites")}</p>
           </div>
         </div>
       )}
@@ -257,14 +259,14 @@ export function HeatmapWidget() {
               <AlertTriangle className="w-6 h-6 text-red" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-ink">Connection Lost</p>
-              <p className="text-xs text-ink/60 mt-1">Unable to load live map data.</p>
+              <p className="text-sm font-semibold text-ink">{t("connectionLost")}</p>
+              <p className="text-xs text-ink/60 mt-1">{t("unableToLoadMapData")}</p>
             </div>
             <button 
               onClick={fetchData} 
               className="mt-2 text-xs font-bold uppercase tracking-wider bg-ink/[0.04] hover:bg-ink/[0.08] text-ink px-4 py-2 rounded-lg transition-colors"
             >
-              Retry
+              {t("retryMap")}
             </button>
           </div>
         </div>
@@ -294,7 +296,7 @@ export function HeatmapWidget() {
         <div className="absolute inset-0 z-[999] flex items-center justify-center pointer-events-none">
           <div className="text-center px-6">
             <MapPin className="w-8 h-8 text-ink/50 mx-auto mb-2 drop-shadow-sm" />
-            <p className="text-base font-bold text-ink drop-shadow-md">No records match the selected criteria</p>
+            <p className="text-base font-bold text-ink drop-shadow-md">{t("noRecordsMatch")}</p>
           </div>
         </div>
       )}

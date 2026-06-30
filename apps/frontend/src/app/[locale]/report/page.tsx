@@ -8,35 +8,29 @@ import { ArrowLeft, Camera, MapPin, Fingerprint, RefreshCw, FileText, RotateCcw 
 import { motion, AnimatePresence } from "framer-motion";
 import { useCamera } from "@/hooks/useCamera";
 import { ToastContainer, showToast, EmptyState, Skeleton, notifyThemeColor, laravelPost, queueReport, useOnnxInference } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 import { stripExif } from "@/utils/exif-stripper";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { CustomSelect } from "@/components/ui/custom-select";
 
-const INCIDENT_TYPES = [
-  { value: "illegal_logging", label: "Illegal Logging" },
-  { value: "water_pollution", label: "Water Pollution" },
-  { value: "illegal_fishing", label: "Illegal Fishing" },
-  { value: "waste_dumping", label: "Waste Dumping" },
-  { value: "wildlife_poaching", label: "Wildlife Poaching" },
-  { value: "mining_violation", label: "Mining Violation" },
-  { value: "air_pollution", label: "Air Pollution" },
-  { value: "land_encroachment", label: "Land Encroachment" },
-  { value: "other", label: "Other" },
-];
-
-const getBrowserInstructions = (): string => {
-  if (typeof window === "undefined") return "";
-  const ua = navigator.userAgent.toLowerCase();
-  const isIOS = /ipad|iphone|ipod/.test(ua);
-  if (isIOS) {
-    return "Camera access is blocked. Tap the aA icon in your address bar, select Website Settings, and allow Camera.";
-  }
-  return "Camera access is blocked. Tap the lock icon 🔒 in your address bar, go to Permissions, and allow Camera access.";
-};
 
 export default function ReportPage() {
+  const t = useTranslations("report");
+  const tc = useTranslations("common");
+
+  const INCIDENT_TYPES = [
+    { value: "illegal_logging", label: t("illegalLogging") },
+    { value: "water_pollution", label: t("waterPollution") },
+    { value: "illegal_fishing", label: t("illegalFishing") },
+    { value: "waste_dumping", label: t("wasteDumping") },
+    { value: "wildlife_poaching", label: t("wildlifePoaching") },
+    { value: "mining_violation", label: t("miningViolation") },
+    { value: "air_pollution", label: t("airPollution") },
+    { value: "land_encroachment", label: t("landEncroachment") },
+    { value: "other", label: t("other") },
+  ];
   const [base64Image, setBase64Image] = useState<string>("");
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
@@ -97,8 +91,8 @@ export default function ReportPage() {
 
 
   useEffect(() => {
-    const handleOnline = () => { setIsOnline(true); showToast("Connection restored.", "success"); };
-    const handleOffline = () => { setIsOnline(false); showToast("Connection lost. Reports will queue until you are back online.", "error"); };
+    const handleOnline = () => { setIsOnline(true); showToast(t("connectionRestored"), "success"); };
+    const handleOffline = () => { setIsOnline(false); showToast(t("connectionLostQueue"), "error"); };
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     setIsOnline(navigator.onLine);
@@ -127,7 +121,7 @@ export default function ReportPage() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => { setLatitude(position.coords.latitude); setLongitude(position.coords.longitude); },
-        () => { setShowManualCoords(true); showToast("Could not get GPS location. Enter coordinates manually below.", "info"); },
+        () => { setShowManualCoords(true); showToast(t("gpsFallback"), "info"); },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
@@ -153,7 +147,7 @@ export default function ReportPage() {
           },
           () => {
             setShowManualCoords(true);
-            showToast("Could not get GPS location. Enter coordinates manually below.", "info");
+            showToast(t("gpsFallback"), "info");
           },
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
@@ -200,19 +194,19 @@ export default function ReportPage() {
 
     if (!navigator.onLine) {
       await queueReport(payload);
-      showToast("You are offline. Report queued securely.", "info");
+      showToast(t("offlineQueued"), "info");
       setIsSubmitting(false);
       return;
     }
 
     const responseData = await laravelPost<{ message: string }>("/reports", payload);
-    showToast(responseData.message || "Report submitted successfully!", "success");
+    showToast(responseData.message || t("successDefault"), "success");
     clearForm();
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!base64Image) { showToast("Please capture a photo first.", "error"); return; }
+    if (!base64Image) { showToast(t("captureRequired"), "error"); return; }
     setIsSubmitting(true);
     try {
       const cleanedImage = await stripExif(base64Image);
@@ -249,7 +243,7 @@ export default function ReportPage() {
 
       await finalizeSubmission(cleanedImage);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Error submitting report. Check console.", "error");
+      showToast(error instanceof Error ? error.message : t("errorSubmitting"), "error");
     } finally { setIsSubmitting(false); }
   };
 
@@ -275,17 +269,17 @@ export default function ReportPage() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-[#3a7d54]" />
-              <span className="font-mono text-xs text-ink/40 uppercase tracking-wider">Report an Issue</span>
+              <span className="font-mono text-xs text-ink/40 uppercase tracking-wider">{t("pageTitle")}</span>
             </div>
-            <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink">Document the Problem</h1>
-            <p className="font-mono text-sm text-ink/50">Your evidence helps protect our earth. Every photo, every detail counts.</p>
+            <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink">{t("heroTitle")}</h1>
+            <p className="font-mono text-sm text-ink/50">{t("heroSubtitle")}</p>
           </div>
 
           {!isOnline && (
             <div className="flex items-center gap-2 p-3 border border-ink/10 font-mono text-xs text-ink/50">
               <span className="h-2 w-2 rounded-full bg-ink/30" />
-              Offline &mdash; reports will queue until connection returns.
-              {onnx.isReady && <span className="text-accent">On-device AI active.</span>}
+              {t("offlineNotice")}
+              {onnx.isReady && <span className="text-accent">{t("onDeviceAiActive")}</span>}
             </div>
           )}
 
@@ -293,12 +287,12 @@ export default function ReportPage() {
             <section className="space-y-4">
               <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
                 <Camera className="w-4 h-4 text-ink/40" />
-                Evidence Photo
+                {t("evidencePhoto")}
               </h2>
 
               {base64Image ? (
                 <div className="border border-ink/10 p-4 rounded-xl">
-                  <NextImage src={base64Image} alt="Report Evidence" width={800} height={600} className="max-h-64 w-full object-contain" />
+                  <NextImage src={base64Image} alt={t("reportEvidence")} width={800} height={600} className="max-h-64 w-full object-contain" />
                 </div>
               ) : camera.isActive ? (
                 <div className="relative bg-black/90 border border-ink/10 overflow-hidden rounded-xl">
@@ -314,11 +308,11 @@ export default function ReportPage() {
                     <RotateCcw className="w-5 h-5" />
                   </button>
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
-                    <button type="button" onClick={capturePhoto} aria-label="Capture photo" className="px-5 py-2.5 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
-                      <Camera className="w-4 h-4" aria-hidden="true" /> Capture
+                    <button type="button" onClick={capturePhoto} aria-label={t("capturePhotoAria")} className="px-5 py-2.5 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                      <Camera className="w-4 h-4" aria-hidden="true" />{t("capture")}
                     </button>
-                    <button type="button" onClick={() => camera.stop()} aria-label="Cancel camera" className="px-5 py-2.5 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
-                      Cancel
+                    <button type="button" onClick={() => camera.stop()} aria-label={t("cancelCamera")} className="px-5 py-2.5 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+                      {t("cancel")}
                     </button>
                   </div>
                 </div>
@@ -336,13 +330,13 @@ export default function ReportPage() {
                     <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-ink/[0.04] text-ink/40 group-hover:bg-accent/10 group-hover:text-accent transition-colors">
                       <Camera className="w-7 h-7" aria-hidden="true" />
                     </div>
-                    <h3 className="text-base font-medium text-ink mb-1.5">Evidence Photo</h3>
+                    <h3 className="text-base font-medium text-ink mb-1.5">{t("evidencePhoto")}</h3>
                     <p className="text-sm text-ink/50 max-w-sm leading-relaxed mx-auto mb-6">
-                      Upload an existing photo from your gallery or capture a new one using your camera.
+                      {t("evidencePhotoDesc")}
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                       <label className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-5 py-2.5 rounded-lg border border-ink/10 text-ink/70 text-sm font-medium hover:text-ink hover:bg-ink/[0.02] transition-colors cursor-pointer focus-within:ring-2 focus-within:ring-accent/40">
-                        Upload Photo
+                        {t("uploadPhoto")}
                         <input
                           type="file"
                           accept="image/*"
@@ -356,13 +350,13 @@ export default function ReportPage() {
                         className="inline-flex w-full sm:w-auto justify-center items-center gap-2 px-5 py-2.5 rounded-lg bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
                       >
                         <Camera className="w-4 h-4" />
-                        Open Camera
+                        {t("openCamera")}
                       </button>
                     </div>
                   </div>
                   {camera.error && (
                     <p className="font-mono text-xs text-red-500/80 text-center max-w-md mx-auto">
-                      {camera.error === "NOT_ALLOWED" ? getBrowserInstructions() : camera.errorMessage}
+                      {camera.error === "NOT_ALLOWED" ? (typeof navigator !== "undefined" && /ipad|iphone|ipod/.test(navigator.userAgent.toLowerCase()) ? t("cameraBlockedIos") : t("cameraBlockedAndroid")) : camera.errorMessage}
                     </p>
                   )}
                 </div>
@@ -372,11 +366,11 @@ export default function ReportPage() {
             <section className="space-y-4">
               <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-ink/40" />
-                Location Data
+                {t("locationData")}
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 <div className="border border-ink/10 p-4 space-y-2 rounded-lg">
-                  <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Latitude</span>
+                  <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">{t("latitude")}</span>
                   <p className="font-mono text-lg text-ink">{latitude?.toFixed(6) ?? "\u2014"}</p>
                   {showManualCoords && (
                     <input
@@ -384,7 +378,7 @@ export default function ReportPage() {
                       inputMode="decimal"
                       step="any"
                       placeholder="e.g. 11.7053"
-                      aria-label="Latitude coordinate"
+                      aria-label={t("latitudeAria")}
                       value={manualLat}
                       onChange={(e) => { setManualLat(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -90 && val <= 90) setLatitude(val); }}
                       className="w-full px-3 py-2 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none rounded-lg mt-2"
@@ -392,7 +386,7 @@ export default function ReportPage() {
                   )}
                 </div>
                 <div className="border border-ink/10 p-4 space-y-2 rounded-lg">
-                  <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Longitude</span>
+                  <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">{t("longitude")}</span>
                   <p className="font-mono text-lg text-ink">{longitude?.toFixed(6) ?? "\u2014"}</p>
                   {showManualCoords && (
                     <input
@@ -400,7 +394,7 @@ export default function ReportPage() {
                       inputMode="decimal"
                       step="any"
                       placeholder="e.g. 122.2970"
-                      aria-label="Longitude coordinate"
+                      aria-label={t("longitudeAria")}
                       value={manualLng}
                       onChange={(e) => { setManualLng(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -180 && val <= 180) setLongitude(val); }}
                       className="w-full px-3 py-2 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none rounded-lg mt-2"
@@ -409,8 +403,8 @@ export default function ReportPage() {
                 </div>
               </div>
               {!showManualCoords && (
-                <button type="button" onClick={() => setShowManualCoords(true)} aria-label="Enter coordinates manually" className="font-mono text-xs text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
-                  Enter coordinates manually
+                <button type="button" onClick={() => setShowManualCoords(true)} aria-label={t("enterCoordsManually")} className="font-mono text-xs text-ink/40 hover:text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+                  {t("enterCoordsManually")}
                 </button>
               )}
             </section>
@@ -419,11 +413,11 @@ export default function ReportPage() {
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-ink/40" />
-                  Pin on Map
+                  {t("pinOnMap")}
                 </h2>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={useMapPinning} onChange={(e) => setUseMapPinning(e.target.checked)} className="w-4 h-4 accent-green" />
-                  <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">Enable Map</span>
+                  <span className="font-mono text-xs text-ink/40 uppercase tracking-wide">{t("enableMap")}</span>
                 </label>
               </div>
               {useMapPinning ? (
@@ -431,8 +425,8 @@ export default function ReportPage() {
               ) : (
                 <EmptyState
                   icon={MapPin}
-                  title="Map pinning is disabled"
-                  description={'Toggle "Enable Map" above to pin your exact location on the map.'}
+                  title={t("mapPinningDisabled")}
+                  description={t("mapPinningDisabledDesc")}
                   className="border border-ink/10 rounded-xl"
                 />
               )}
@@ -441,24 +435,24 @@ export default function ReportPage() {
             <section className="space-y-4">
               <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
                 <FileText className="w-4 h-4 text-ink/40" />
-                Incident Details
+                {t("incidentDetails")}
               </h2>
               <div className="space-y-4">
                 <div>
-                  <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">Incident Type</label>
+                  <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">{t("incidentType")}</label>
                   <CustomSelect
                     value={reportType}
                     onChange={setReportType}
                     options={INCIDENT_TYPES}
-                    placeholder="-- Select Incident Type --"
+                    placeholder={t("selectIncidentType")}
                   />
                 </div>
                 <div>
-                  <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">Description</label>
+                  <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">{t("description")}</label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe what you observed..."
+                    placeholder={t("descriptionPlaceholder")}
                     rows={5}
                     maxLength={2000}
                     className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 resize-y min-h-[120px] rounded-lg"
@@ -473,27 +467,27 @@ export default function ReportPage() {
                 <div className="flex items-center gap-3">
                   <Fingerprint className={`w-5 h-5 transition-colors ${isGhostMode ? "text-[#2EE6C8]" : "text-ink/40"}`} />
                   <div>
-                    <p className={`font-semibold tracking-tight text-base transition-colors ${isGhostMode ? "text-[#2EE6C8]" : "text-ink"}`}>Ghost Mode</p>
-                    <p className="font-mono text-xs text-ink/50">Send anonymously. Remove all identifying data.</p>
+                    <p className={`font-semibold tracking-tight text-base transition-colors ${isGhostMode ? "text-[#2EE6C8]" : "text-ink"}`}>{t("ghostModeLabel")}</p>
+                    <p className="font-mono text-xs text-ink/50">{t("ghostModeDesc")}</p>
                   </div>
                 </div>
-                <div className="inline-flex items-center" aria-label="Toggle Ghost Mode">
+                <div className="inline-flex items-center" aria-label={t("toggleGhostModeAria")}>
                   <input type="checkbox" checked={isGhostMode} onChange={(e) => handleGhostModeToggle(e.target.checked)} className="w-4 h-4 accent-[#2EE6C8] cursor-pointer" />
                 </div>
               </div>
             </label>
 
             <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
-              <button type="button" onClick={clearForm} aria-label="Clear form" className="py-3 border border-ink/10 text-sm text-ink/50 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
-                Clear Form
+              <button type="button" onClick={clearForm} aria-label={t("clearFormAria")} className="py-3 border border-ink/10 text-sm text-ink/50 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+                {t("clearForm")}
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || isTriaging || !base64Image || latitude === null || longitude === null}
-                aria-label="Submit report"
+                aria-label={t("submitReportAria")}
                 className="py-3 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
               >
-                {isSubmitting ? "Submitting..." : isTriaging ? "Analyzing..." : "Submit Report"}
+                {isSubmitting ? t("submitting") : isTriaging ? t("analyzing") : t("submitReport")}
               </button>
             </div>
           </form>

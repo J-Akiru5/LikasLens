@@ -5,6 +5,7 @@ import { Trophy, Medal, BadgeCheck, Shield, Star, Loader2 } from "lucide-react";
 import { cn, laravelGet } from "@likaslens/shared";
 import type { Achievement, RankProgress } from "@likaslens/shared";
 import { EmptyState } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 const tierColors: Record<string, string> = {
   basic: "text-blue-500 bg-blue-500/10",
@@ -23,6 +24,7 @@ const tierIcons: Record<string, typeof BadgeCheck> = {
 type FilterTier = "all" | "basic" | "verified" | "advanced" | "authority";
 
 export default function AchievementsPage() {
+  const t = useTranslations("dashboard");
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [rankProgress, setRankProgress] = useState<RankProgress | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ export default function AchievementsPage() {
     return (
       <div className="min-h-full pb-24 bg-page">
         <header className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10 px-4 h-16 flex items-center">
-          <h1 className="ios-large-title ios-large-title--xl">Achievements</h1>
+          <h1 className="ios-large-title ios-large-title--xl">{t("achievements")}</h1>
         </header>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-green" />
@@ -148,7 +150,7 @@ export default function AchievementsPage() {
         {/* Achievement List */}
         <div className="px-4 mt-4">
           {filteredAchievements.length === 0 ? (
-            <EmptyState icon={Trophy} title="No achievements yet" description="Start making reports to earn badges." />
+            <EmptyState icon={Trophy} title={t("noAchievementsYet")} description={t("startReporting")} />
           ) : (
             <div className="ios-grouped-list divide-y divide-ink/10">
               {filteredAchievements.map((ach) => {

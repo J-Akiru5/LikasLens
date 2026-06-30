@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
+import { useTranslations } from "next-intl";
 import {
   Network,
   RefreshCw,
@@ -257,6 +258,7 @@ const PRESETS: Preset[] = [
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function KnowledgeGraphPage() {
+  const t = useTranslations("dashboard");
   const [activeId, setActiveId] = useState("solid-waste");
   const activePreset = PRESETS.find((p) => p.id === activeId)!;
 
@@ -438,8 +440,8 @@ export default function KnowledgeGraphPage() {
 
   return (
     <DashboardLayoutWrapper
-      pageTitle="Graph Explorer"
-      pageSubtitle="Neuro-symbolic knowledge graph — Cypher traversal engine connecting incidents to statutes and agencies"
+      pageTitle={t("graphExplorer")}
+      pageSubtitle={t("graphExplorerDesc")}
     >
       {/*
         ╔══════════════════════════════════════════════════════════════╗
@@ -457,8 +459,8 @@ export default function KnowledgeGraphPage() {
           <div className="w-72 shrink-0 flex flex-col border-r border-border bg-panel hidden lg:flex">
             {/* Panel header */}
             <div className="px-4 pt-4 pb-3 border-b border-border">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">Incident Presets</p>
-              <p className="text-[11px] text-ink/50 mt-0.5">Select a violation type to simulate</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{t("incidentPresets")}</p>
+              <p className="text-[11px] text-ink/50 mt-0.5">{t("selectViolation")}</p>
             </div>
 
             {/* Preset list */}
@@ -487,7 +489,7 @@ export default function KnowledgeGraphPage() {
                     {active && (
                       <div className="mt-2 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                        <span className="text-[10px] text-accent font-medium">Active traversal</span>
+                        <span className="text-[10px] text-accent font-medium">{t("activeTraversal")}</span>
                       </div>
                     )}
                   </button>
@@ -498,7 +500,7 @@ export default function KnowledgeGraphPage() {
             {/* Legend — rounded card section */}
             <div className="p-3 border-t border-border">
               <div className="rounded-xl border border-border/70 bg-ink/[0.02] p-3 space-y-2">
-                <p className="text-[10px] uppercase tracking-widest text-ink/35 font-semibold mb-2.5">Legend</p>
+                <p className="text-[10px] uppercase tracking-widest text-ink/35 font-semibold mb-2.5">{t("legend")}</p>
                 {(Object.entries(NODE_CONFIG) as [GraphNode["type"], typeof NODE_CONFIG[GraphNode["type"]]][]).map(([type, cfg]) => {
                   const LIcon = TypeIcon[type];
                   return (
@@ -520,7 +522,7 @@ export default function KnowledgeGraphPage() {
             <div className="p-3 border-t border-border">
               <div className="rounded-xl border border-border/70 bg-ink/[0.02] p-3">
                 <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-[10px] uppercase tracking-widest text-ink/35 font-semibold">AI Microservice</span>
+                  <span className="text-[10px] uppercase tracking-widest text-ink/35 font-semibold">{t("aiMicroservice")}</span>
                   <span className={`w-2 h-2 rounded-full ${apiStatus === "ok" ? "bg-emerald-400" : apiStatus === "error" ? "bg-red-500" : apiStatus === "connecting" ? "bg-amber-400 animate-pulse" : "bg-ink/20"}`} />
                 </div>
                 <button
@@ -529,7 +531,7 @@ export default function KnowledgeGraphPage() {
                   className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-semibold rounded-lg bg-accent text-white hover:bg-accent-hover transition-colors disabled:opacity-50"
                 >
                   {apiStatus === "connecting" ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
-                  {apiStatus === "connecting" ? "Connecting…" : apiStatus === "ok" ? "Verified ✓" : "Verify Live Endpoints"}
+                  {apiStatus === "connecting" ? t("connecting") : apiStatus === "ok" ? t("verifiedOk") : t("verifyLiveEndpoints")}
                 </button>
               </div>
             </div>
@@ -543,7 +545,7 @@ export default function KnowledgeGraphPage() {
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5">
                   <Network className="w-3.5 h-3.5 text-[#2ee6c8]" />
-                  <span className="text-[11px] text-white/40 font-mono tracking-wide">GRAPH TRAVERSAL ENGINE</span>
+                  <span className="text-[11px] text-white/40 font-mono tracking-wide">{t("graphTraversalEngine")}</span>
                 </div>
                 <div className="h-3 w-px bg-white/10" />
                 <span className="text-[11px] font-mono text-white/30">{activePreset.nodes.length} vertices · {activePreset.links.length} edges</span>
@@ -551,10 +553,10 @@ export default function KnowledgeGraphPage() {
               <div className="flex items-center gap-2 text-[10px] text-white/25 font-mono">
                 <span className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#2ee6c8] animate-pulse" />
-                  LIVE PHYSICS
+                  {t("livePhysics")}
                 </span>
                 <span>·</span>
-                <span>DRAG TO REARRANGE</span>
+                <span>{t("dragToRearrange")}</span>
               </div>
             </div>
 
@@ -732,8 +734,8 @@ export default function KnowledgeGraphPage() {
           {/* ── RIGHT PANEL: Inspector ───────────────────────────── */}
           <div className="w-72 shrink-0 flex flex-col border-l border-border bg-panel hidden lg:flex">
             <div className="px-4 pt-4 pb-3 border-b border-border">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">Node Inspector</p>
-              <p className="text-[11px] text-ink/50 mt-0.5">Click any vertex to inspect</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">{t("nodeInspector")}</p>
+              <p className="text-[11px] text-ink/50 mt-0.5">{t("clickVertexHint")}</p>
             </div>
 
             {selectedNode ? (
@@ -758,13 +760,13 @@ export default function KnowledgeGraphPage() {
 
                 {/* Description — rounded card */}
                 <div className="rounded-xl border border-border/70 bg-ink/[0.02] p-3">
-                  <p className="text-[9px] uppercase tracking-widest text-ink/35 font-semibold mb-2">Description</p>
+                  <p className="text-[9px] uppercase tracking-widest text-ink/35 font-semibold mb-2">{t("description")}</p>
                   <p className="text-[11px] text-ink/70 leading-relaxed">{selectedNode.details}</p>
                 </div>
 
                 {/* Vertex properties — rounded card */}
                 <div className="rounded-xl border border-border/70 bg-ink/[0.02] p-3">
-                  <p className="text-[9px] uppercase tracking-widest text-ink/35 font-semibold mb-2.5">Vertex Properties</p>
+                  <p className="text-[9px] uppercase tracking-widest text-ink/35 font-semibold mb-2.5">{t("vertexProperties")}</p>
                   <div className="space-y-2">
                     {Object.entries(selectedNode.meta).map(([k, v]) => (
                       <div key={k} className="flex items-start justify-between gap-2">
@@ -793,7 +795,7 @@ export default function KnowledgeGraphPage() {
 
                 {/* Connections — rounded card */}
                 <div className="rounded-xl border border-border/70 bg-ink/[0.02] p-3">
-                  <p className="text-[9px] uppercase tracking-widest text-ink/35 font-semibold mb-2.5">Connections</p>
+                  <p className="text-[9px] uppercase tracking-widest text-ink/35 font-semibold mb-2.5">{t("connections")}</p>
                   <div className="space-y-1.5">
                     {activePreset.links
                       .filter((l) => l.source === selectedId || l.target === selectedId)
@@ -824,7 +826,7 @@ export default function KnowledgeGraphPage() {
                 <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] border border-border flex items-center justify-center mb-3">
                   <Info className="w-5 h-5 text-ink/20" />
                 </div>
-                <p className="text-[11px] text-ink/35 leading-relaxed">Click any vertex on the graph canvas to inspect its properties</p>
+                <p className="text-[11px] text-ink/35 leading-relaxed">{t("clickVertexHint")}</p>
               </div>
             )}
           </div>
@@ -839,7 +841,7 @@ export default function KnowledgeGraphPage() {
           >
             <div className="flex items-center gap-2.5">
               <Terminal className="w-3.5 h-3.5 text-[#2ee6c8]" />
-              <span className="text-[11px] font-mono tracking-wider uppercase">Cypher Query Log</span>
+              <span className="text-[11px] font-mono tracking-wider uppercase">{t("cypherQueryLog")}</span>
               <div className="flex items-center gap-1 text-[10px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
                 <span className="text-[#22c55e] font-mono">live</span>

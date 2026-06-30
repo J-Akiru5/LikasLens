@@ -7,6 +7,12 @@
  */
 export type ConfidenceTier = "Watch" | "Advisory" | "Confirmed";
 
+export interface ConfidenceBreakdown {
+  visual: number;
+  community_corroboration: number;
+  geo_within_known_zone: number;
+}
+
 export function getConfidenceTier(score: number): ConfidenceTier {
   const v = Number(score);
   if (Number.isNaN(v)) return "Watch";

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
 import { useSwipeDownToClose } from "@/hooks/use-swipe-down-to-close";
+import { useTranslations } from "next-intl";
 
 interface WalletData {
   available_credits: number;
@@ -36,6 +37,7 @@ interface RewardItem {
 }
 
 export default function WalletPage() {
+  const t = useTranslations("dashboard");
   const haptic = useHaptics();
   const [activeModal, setActiveModal] = useState<"redeem" | "earned" | null>(null);
 
@@ -55,7 +57,7 @@ export default function WalletPage() {
       if (rewardsRes.success) setRewards(rewardsRes.data);
     } catch (err) {
       console.error(err);
-      showToast("Failed to load wallet data", "error");
+      showToast(t("failedToLoadWallet"), "error");
     } finally {
       setLoading(false);
     }
@@ -76,14 +78,14 @@ export default function WalletPage() {
         setWallet((prev) => prev ? { ...prev, available_credits: res.data.new_balance } : prev);
         setRewards((prev) => prev.filter((r) => r.id !== rewardId));
         haptic("success");
-        showToast("Reward redeemed successfully!", "success");
+        showToast(t("rewardRedeemed"), "success");
       } else {
-        showToast(res.message || "Redemption failed", "error");
+        showToast(res.message || t("redemptionFailed"), "error");
         haptic("error");
       }
     } catch (err: unknown) {
       const apiErr = err as { response?: { data?: { message?: string } }; message?: string } | null;
-      const message = apiErr?.response?.data?.message || apiErr?.message || "Redemption failed";
+      const message = apiErr?.response?.data?.message || apiErr?.message || t("redemptionFailed");
       showToast(message, "error");
       haptic("error");
     } finally {
@@ -109,7 +111,7 @@ export default function WalletPage() {
     return (
       <div className="min-h-full pb-24 bg-page">
         <header className="h-16 flex items-center justify-center relative px-5">
-          <h1 className="ios-large-title ios-large-title--xl">Eco-Wallet</h1>
+          <h1 className="ios-large-title ios-large-title--xl">{t("ecoWallet")}</h1>
         </header>
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-6 h-6 animate-spin text-green" />
@@ -121,7 +123,7 @@ export default function WalletPage() {
   return (
     <div className="min-h-full pb-24 bg-page">
       <header className="h-16 flex items-center justify-center relative px-5">
-        <h1 className="ios-large-title ios-large-title--xl">Eco-Wallet</h1>
+        <h1 className="ios-large-title ios-large-title--xl">{t("ecoWallet")}</h1>
       </header>
 
       <main className="pb-6 pt-2">
@@ -150,7 +152,7 @@ export default function WalletPage() {
                 </svg>
 
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Eco-Credits</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t("ecoCredits")}</span>
                   {wallet && wallet.lifetime_earned > 0 && (
                     <span className="text-[9px] font-bold text-[#4a7c59] bg-[#4a7c59]/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
                       <Zap className="w-2.5 h-2.5" /> {wallet.lifetime_earned.toLocaleString()} total
@@ -160,7 +162,7 @@ export default function WalletPage() {
                 <h2 className="text-[24px] font-black text-[#2c4c3b] m-0 leading-none mb-1 flex items-center gap-1">
                   {wallet?.available_credits.toLocaleString() ?? "0"} <span className="text-[14px] text-gray-400 font-bold">pts</span>
                 </h2>
-                <p className="text-[10px] text-gray-400 m-0">Available for partner rewards</p>
+                <p className="text-[10px] text-gray-400 m-0">{t("availableForRewards")}</p>
               </div>
 
               <div className="flex items-center gap-2 z-10 pl-1">
@@ -168,13 +170,13 @@ export default function WalletPage() {
                   onClick={() => { haptic("medium"); setActiveModal("redeem"); }}
                   className="bg-white text-[#4a7c59] rounded-xl px-4 py-1.5 text-[11px] font-bold shadow-sm transition-transform active:scale-95"
                 >
-                  Redeem
+                  {t("redeemBtn")}
                 </button>
                 <button
                   onClick={() => { haptic("medium"); setActiveModal("earned"); }}
                   className="bg-white/20 hover:bg-white/30 text-white rounded-xl px-4 py-1.5 text-[11px] font-semibold border border-white/30 transition-all backdrop-blur-sm shadow-sm active:scale-95"
                 >
-                  Earned
+                  {t("earnedBtn")}
                 </button>
               </div>
             </div>
@@ -184,7 +186,7 @@ export default function WalletPage() {
         <div className="px-5">
           {/* Quick Actions Grid */}
           <div className="mt-8">
-            <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-2">Quick Actions</h3>
+            <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4 px-2">{t("quickActions")}</h3>
             <div className="grid grid-cols-4 gap-y-6 gap-x-2">
               {[
                 { label: "Badges", Icon: Award, href: "/achievements" },
@@ -229,7 +231,7 @@ export default function WalletPage() {
 
             <div className="px-6 pb-4 flex justify-between items-center border-b border-gray-100">
               <h2 className="text-xl font-bold text-ink">
-                {activeModal === "redeem" ? "Redeem Rewards" : "Earning History"}
+                {activeModal === "redeem" ? t("redeemRewards") : t("earningHistory")}
               </h2>
               <button
                 onClick={() => setActiveModal(null)}
@@ -248,7 +250,7 @@ export default function WalletPage() {
                   {rewards.length === 0 ? (
                     <div className="text-center py-8">
                       <AlertCircle className="w-8 h-8 text-ink/20 mx-auto mb-2" />
-                      <p className="text-sm text-ink/40">No rewards available right now.</p>
+                      <p className="text-sm text-ink/40">{t("noRewardsAvailable")}</p>
                     </div>
                   ) : (
                     rewards.map((reward) => (
@@ -286,11 +288,11 @@ export default function WalletPage() {
 
               {activeModal === "earned" && (
                 <div className="flex flex-col gap-4">
-                  <p className="text-sm text-gray-500 mb-2">Your recent eco-credit activity.</p>
+                  <p className="text-sm text-gray-500 mb-2">{t("recentEcoActivity")}</p>
                   {!wallet?.recent_activity?.length ? (
                     <div className="text-center py-8">
                       <Clock className="w-8 h-8 text-ink/20 mx-auto mb-2" />
-                      <p className="text-sm text-ink/40">No earning history yet.</p>
+                      <p className="text-sm text-ink/40">{t("noEarningHistory")}</p>
                     </div>
                   ) : (
                     wallet.recent_activity.map((entry) => (

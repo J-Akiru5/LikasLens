@@ -2,6 +2,7 @@
 
 import { m } from "framer-motion";
 import { Fingerprint, Eye, ShieldCheck, CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Ghost Mode — the signature safety mechanic. Not a cosmetic dark theme.
@@ -11,12 +12,7 @@ import { Fingerprint, Eye, ShieldCheck, CheckCircle } from "lucide-react";
    data tokens that describe the protection state.
    ───────────────────────────────────────────────────────────────────────────── */
 
-const PROTECTIONS = [
-  "Photo location stripped (EXIF)",
-  "Device fingerprint removed",
-  "Encrypted transport",
-  "Zero-knowledge routing",
-];
+// PROTECTIONS moved inside component
 
 interface GhostModeSectionProps {
   ghostMode: boolean;
@@ -24,6 +20,13 @@ interface GhostModeSectionProps {
 }
 
 export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionProps) {
+  const t = useTranslations("landing");
+  const PROTECTIONS = [
+    t("photoLocationStripped"),
+    t("deviceFingerprintRemoved"),
+    t("encryptedTransport"),
+    t("zeroKnowledgeRouting"),
+  ];
   return (
     <section id="ghost" className="ec-section">
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
@@ -71,7 +74,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                   textWrap: "balance" as const,
                 }}
               >
-                Report the dangerous ones without exposing who you are.
+                {t("ghostSpotlightTitle1")} {t("ghostSpotlightTitle2")}
               </h2>
 
               <p
@@ -81,16 +84,13 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                   transition: "color 0.5s",
                 }}
               >
-                Illegal logging near syndicate territory. Industrial dumping under
-                surveillance. Ghost Mode is built for these. It strips your
-                identity, scrubs photo EXIF metadata, and transmits the report
-                with no trace back to you.
+                {t("ghostSpotlightDesc")}
               </p>
 
               <button
                 onClick={onGhostToggle}
                 aria-pressed={ghostMode}
-                aria-label={ghostMode ? "Deactivate Ghost Mode" : "Activate Ghost Mode"}
+                aria-label={ghostMode ? t("deactivateGhostMode") : t("activateGhostMode")}
                 className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-2 self-start"
                 style={{
                   display: "flex", alignItems: "center", gap: 10,
@@ -106,9 +106,9 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                 }}
               >
                 {ghostMode ? (
-                  <><ShieldCheck style={{ width: 16, height: 16 }} aria-hidden="true" /> Deactivate Ghost Mode</>
+                  <><ShieldCheck style={{ width: 16, height: 16 }} aria-hidden="true" /> {t("turnOffGhostMode")}</>
                 ) : (
-                  <><Eye style={{ width: 16, height: 16 }} aria-hidden="true" /> Activate Ghost Mode</>
+                  <><Eye style={{ width: 16, height: 16 }} aria-hidden="true" /> {t("turnOnGhostMode")}</>
                 )}
               </button>
             </div>
@@ -160,10 +160,10 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
 
                     <div>
                       <p style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent-bright)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 4px" }}>
-                        Identity hidden
+                        {t("identityHidden")}
                       </p>
                       <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "rgba(240,237,232,0.55)", margin: 0 }}>
-                        Location removed · sent over an encrypted tunnel
+                        {t("photoLocationRemoved")}
                       </p>
                     </div>
 
@@ -185,10 +185,10 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                     </div>
                     <div>
                       <p style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 4px" }}>
-                        Standard report
+                        {t("normalReport")}
                       </p>
                       <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: 0 }}>
-                        Identity visible · location attached · public credit
+                        {t("yourNameShown")}
                       </p>
                     </div>
                   </>

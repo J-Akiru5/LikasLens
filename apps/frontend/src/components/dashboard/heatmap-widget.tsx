@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { Loader2, AlertTriangle, MapPin, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { laravelGet } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface HeatmapPoint {
   lat: number;
@@ -40,6 +41,7 @@ interface HeatmapData {
  * Shows last 7 days of reports in a smaller map view.
  */
 export function HeatmapWidget() {
+  const t = useTranslations("dashboard");
   const [data, setData] = useState<HeatmapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,10 +63,10 @@ export function HeatmapWidget() {
       if (res.success) {
         setData(res.data);
       } else {
-        setError("Failed to load map data");
+        setError(t("failedToLoadQueue"));
       }
     } catch {
-      setError("Unable to connect");
+      setError(t("unableToConnect"));
     } finally {
       setLoading(false);
     }
@@ -202,8 +204,8 @@ export function HeatmapWidget() {
             <MapPin className="w-5 h-5 text-amber" />
           </div>
           <div>
-            <h3 className="font-bold text-ink text-sm">Live Incident Heatmap</h3>
-            <p className="text-xs text-ink/50">Last 7 days</p>
+            <h3 className="font-bold text-ink text-sm">{t("liveIncidentHeatmap")}</h3>
+            <p className="text-xs text-ink/50">{t("last7Days")}</p>
           </div>
         </div>
         <Link
@@ -240,8 +242,8 @@ export function HeatmapWidget() {
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-ink/[0.02] to-ink/[0.06] flex items-center justify-center mx-auto mb-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.08] ring-8 ring-ink/[0.015]">
                 <MapPin className="w-7 h-7 text-ink/30" />
               </div>
-              <h3 className="font-medium text-ink mb-1.5">No reports yet</h3>
-              <p className="text-sm text-ink/50 leading-relaxed">No incidents mapped in the last 7 days.</p>
+              <h3 className="font-medium text-ink mb-1.5">{t("noReportsYet")}</h3>
+              <p className="text-sm text-ink/50 leading-relaxed">{t("noIncidentsMapped")}</p>
             </div>
           </div>
         )}
@@ -251,13 +253,13 @@ export function HeatmapWidget() {
       {data && data.points.length > 0 && (
         <div className="flex items-center justify-between px-5 py-3 border-t border-ink/5 text-xs text-ink/50">
           <span>
-            <strong className="text-ink">{data.points.length}</strong> reports
+            <strong className="text-ink">{data.points.length}</strong>{t("reportsLabel")}
           </span>
           <span>
-            <strong className="text-ink">{data.clusters.length}</strong> clusters
+            <strong className="text-ink">{data.clusters.length}</strong>{t("clustersLabel")}
           </span>
           <span>
-            <strong className="text-ink">{data.hot_zones.length}</strong> hot zones
+            <strong className="text-ink">{data.hot_zones.length}</strong>{t("hotZonesLabel")}
           </span>
         </div>
       )}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { m } from "framer-motion";
+import { useTranslations } from "next-intl";
 import {
   Brain,
   Database,
@@ -118,8 +119,27 @@ const staggerContainer = {
 };
 
 export function TechStackSection() {
+  const t = useTranslations("landing");
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const activeNode = TECH_NODES.find(n => n.id === hoveredNode);
+
+  const localizedNodes: TechNode[] = TECH_NODES.map(node => {
+    let keyPrefix = "";
+    if (node.id === "input") keyPrefix = "nodeInput";
+    else if (node.id === "yolo") keyPrefix = "nodeYolo";
+    else if (node.id === "neuro") keyPrefix = "nodeNeuro";
+    else if (node.id === "graph") keyPrefix = "nodeGraph";
+    else if (node.id === "routing") keyPrefix = "nodeRouting";
+    else if (node.id === "backend") keyPrefix = "nodeBackend";
+
+    return {
+      ...node,
+      label: t(`${keyPrefix}Label`),
+      sublabel: t(`${keyPrefix}Sub`),
+      detail: t(`${keyPrefix}Detail`),
+    };
+  });
+
+  const activeNode = localizedNodes.find(n => n.id === hoveredNode);
 
   return (
     <section id="architecture" className="ec-section" style={{ background: "var(--page)" }}>
@@ -154,7 +174,7 @@ export function TechStackSection() {
             }}
           >
             <Shield style={{ width: 14, height: 14 }} aria-hidden="true" />
-            Technical Architecture
+            {t("techHeader")}
           </div>
           <h2
             style={{
@@ -164,11 +184,10 @@ export function TechStackSection() {
               margin: 0, textWrap: "balance" as const,
             }}
           >
-            Not a wrapper. A full neuro-symbolic pipeline.
+            {t("techTitle")}
           </h2>
           <p style={{ fontSize: 17, color: "var(--muted)", lineHeight: 1.6, margin: 0, maxWidth: 560 }}>
-            Six purpose-built systems working in concert. Hover any node to see
-            what it does and why it matters.
+            {t("techSub")}
           </p>
         </m.div>
 
@@ -182,7 +201,7 @@ export function TechStackSection() {
             viewport={{ once: true, margin: "-60px" }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           >
-            {TECH_NODES.map((node) => {
+            {localizedNodes.map((node) => {
               const isHovered = hoveredNode === node.id;
               const isConnected = hoveredNode
                 ? CONNECTIONS.some(
@@ -248,7 +267,7 @@ export function TechStackSection() {
                     <div className="flex gap-1 mt-1">
                       {CONNECTIONS.filter(c => c.from === node.id || c.to === node.id).map((conn, i) => {
                         const other = conn.from === node.id ? conn.to : conn.from;
-                        const otherNode = TECH_NODES.find(n => n.id === other);
+                        const otherNode = localizedNodes.find(n => n.id === other);
                         return (
                           <div
                             key={i}
@@ -300,13 +319,13 @@ export function TechStackSection() {
                   className="font-mono text-[10px] font-bold uppercase tracking-widest transition-colors duration-300"
                   style={{ color: activeNode?.color ?? "var(--muted)", margin: 0 }}
                 >
-                  {activeNode ? activeNode.sublabel : "System Details"}
+                  {activeNode ? activeNode.sublabel : t("systemDetails")}
                 </p>
                 <p
                   className="text-lg font-bold transition-colors duration-300 mt-1"
                   style={{ color: "var(--ink)", margin: 0, fontFamily: "var(--font-heading)" }}
                 >
-                  {activeNode ? activeNode.label : "Hover a node"}
+                  {activeNode ? activeNode.label : t("hoverNode")}
                 </p>
               </div>
 
@@ -322,14 +341,14 @@ export function TechStackSection() {
                 >
                   {activeNode
                     ? activeNode.detail
-                    : "Hover any technology node on the left to see its role in the LikasLens pipeline. Each system is purpose-built, not borrowed from a template."}
+                    : t("hoverNodeDesc")}
                 </p>
               </div>
 
               {/* Flow visualization */}
               <div className="px-6 pb-5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  {TECH_NODES.map((node, i) => (
+                  {localizedNodes.map((node, i) => (
                     <div key={node.id} className="flex items-center gap-2">
                       <div
                         className="w-2 h-2 rounded-full transition-all duration-300"
@@ -338,14 +357,14 @@ export function TechStackSection() {
                           boxShadow: hoveredNode === node.id ? `0 0 8px ${node.color}` : "none",
                         }}
                       />
-                      {i < TECH_NODES.length - 1 && (
+                      {i < localizedNodes.length - 1 && (
                         <div className="w-4 h-px" style={{ background: "var(--border)" }} />
                       )}
                     </div>
                   ))}
                 </div>
                 <p className="font-mono text-[9px] text-muted mt-2 tracking-wider uppercase">
-                  Data Flow Pipeline
+                  {t("dataFlowPipeline")}
                 </p>
               </div>
             </div>

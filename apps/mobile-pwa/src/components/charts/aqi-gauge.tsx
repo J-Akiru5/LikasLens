@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
 import { echarts, useEChartsTheme } from "./echarts-theme";
 import { laravelGet } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface AqiData {
   us_aqi: number;
@@ -13,15 +14,6 @@ interface AqiData {
   nitrogen_dioxide?: number;
   sulphur_dioxide?: number;
   ozone?: number;
-}
-
-function getAqiLabel(aqi: number): { label: string; color: string } {
-  if (aqi <= 50) return { label: "Good", color: "#34d399" };
-  if (aqi <= 100) return { label: "Moderate", color: "#fbbf24" };
-  if (aqi <= 150) return { label: "Unhealthy (Sensitive)", color: "#fb923c" };
-  if (aqi <= 200) return { label: "Unhealthy", color: "#f87171" };
-  if (aqi <= 300) return { label: "Very Unhealthy", color: "#a855f7" };
-  return { label: "Hazardous", color: "#7f1d1d" };
 }
 
 function useIsGhostMode() {
@@ -37,10 +29,20 @@ function useIsGhostMode() {
 }
 
 export function AqiGauge() {
+  const t = useTranslations("aqiGauge");
   const [data, setData] = useState<AqiData | null>(null);
   const [loading, setLoading] = useState(true);
   const isGhost = useIsGhostMode();
   const chartTheme = useEChartsTheme();
+
+  const getTranslatedAqiLabel = (aqiVal: number): { label: string; color: string } => {
+    if (aqiVal <= 50) return { label: t("good"), color: "#34d399" };
+    if (aqiVal <= 100) return { label: t("moderate"), color: "#fbbf24" };
+    if (aqiVal <= 150) return { label: t("unhealthySensitive"), color: "#fb923c" };
+    if (aqiVal <= 200) return { label: t("unhealthy"), color: "#f87171" };
+    if (aqiVal <= 300) return { label: t("veryUnhealthy"), color: "#a855f7" };
+    return { label: t("hazardous"), color: "#7f1d1d" };
+  };
 
   useEffect(() => {
     async function fetchAqi() {
@@ -75,7 +77,7 @@ export function AqiGauge() {
   }, []);
 
   const aqi = data?.us_aqi ?? 0;
-  const { label, color } = getAqiLabel(aqi);
+  const { label, color } = getTranslatedAqiLabel(aqi);
 
   const tickColor = isGhost ? "#fff" : "#94a3b8";
   const pointerColor = isGhost ? "#e2e8f0" : "#475569";
@@ -149,7 +151,7 @@ export function AqiGauge() {
   if (loading) {
     return (
       <div className="ios-grouped-list p-5 flex items-center justify-center" style={{ minHeight: 260 }}>
-        <div className="animate-pulse text-sm text-ink/40">Loading AQI...</div>
+        <div className="animate-pulse text-sm text-ink/40">{t("loadingAqi")}</div>
       </div>
     );
   }
@@ -159,7 +161,7 @@ export function AqiGauge() {
       <div className="flex items-center gap-2 mb-3">
         <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: color }} />
         <span className="font-mono text-[10px] text-ink/50 uppercase tracking-widest">
-          Air Quality Index
+          {t("airQualityIndex")}
         </span>
         <span className="ml-auto font-mono text-[10px] text-ink/30">Likas Bay</span>
       </div>

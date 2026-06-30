@@ -7,6 +7,7 @@ import { getQueueCount } from "@likaslens/shared";
 import type { DashboardStats, ActivityFeedItem } from "@likaslens/shared";
 import { AlertTriangle, Activity, Clock, CheckCircle, TriangleAlert, TrendingUp, Loader2, WifiOff, RefreshCw } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 const HeatmapWidget = dynamic(
   () =>
@@ -43,6 +44,7 @@ const CITIZEN_TAB_INACTIVE =
   "flex items-center justify-center px-2 sm:px-4 py-2 sm:py-1.5 text-[11px] sm:text-sm font-medium rounded-md transition-all duration-200 text-ink/60 hover:text-ink";
 
 export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeActive }: CitizenDashboardProps) {
+  const t = useTranslations("dashboard");
   const points = (impact as any)?.reward_points_balance ?? 0;
   const [activeTab, setActiveTab] = useState<"overview" | "installed" | "uninstalled">("overview");
   const [queueCount, setQueueCount] = useState(0);
@@ -67,29 +69,29 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
   const statCards = stats ? [
     {
       id: "active-incidents",
-      label: "Active Incidents",
+      label: t("activeIncidents"),
       value: String(stats.active_incidents),
       trend: stats.active_incidents === 0 ? "up" as const : "down" as const,
       delta: stats.active_incidents_trend,
       sparkline: [12, 8, 15, 6, 10, 9, stats.active_incidents],
-      category: "Current Cases",
+      category: t("currentCases"),
       icon: TriangleAlert,
       accent: "amber" as const,
     },
     {
       id: "resolved-today",
-      label: "Resolved Today",
+      label: t("resolvedToday"),
       value: String(stats.resolved_today),
       trend: "up" as const,
       delta: stats.resolved_today_trend,
       sparkline: [3, 7, 4, 9, 6, 8, stats.resolved_today],
-      category: "Daily Resolution",
+      category: t("dailyResolution"),
       icon: CheckCircle,
       accent: "green" as const,
     },
     {
       id: "avg-response",
-      label: "Avg Response",
+      label: t("avgResponse"),
       value: `${stats.avg_response_minutes}`,
       trend: "up" as const,
       delta: stats.avg_response_trend,
@@ -100,12 +102,12 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
     },
     {
       id: "total-reports",
-      label: "Total Reports",
+      label: t("totalReports"),
       value: String(stats.total_reports),
       trend: "flat" as const,
       delta: `${stats.total_users} users`,
       sparkline: [120, 145, 132, 158, 140, 165, stats.total_reports],
-      category: "Platform Total",
+      category: t("platformTotal"),
       icon: Activity,
       accent: "muted" as const,
     },
@@ -142,11 +144,11 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
 
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Dashboard Overview</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">{t("dashboardOverview")}</h1>
         <div className="flex items-center gap-3">
           <PulseBadge label="Live" size="sm" />
           <Button asChild variant="ink" size="md">
-            <Link href="/report">Submit Report</Link>
+            <Link href="/report">{t("submitReport")}</Link>
           </Button>
         </div>
       </div>
@@ -158,19 +160,19 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
             onClick={() => setActiveTab('overview')}
             className={cn(activeTab === 'overview' ? CITIZEN_TAB_ACTIVE : CITIZEN_TAB_INACTIVE)}
           >
-            All Reports
+            {t("allReports")}
           </button>
           <button
             onClick={() => setActiveTab('installed')}
             className={cn(activeTab === 'installed' ? CITIZEN_TAB_ACTIVE : CITIZEN_TAB_INACTIVE)}
           >
-            Resolved
+            {t("tabResolved")}
           </button>
           <button
             onClick={() => setActiveTab('uninstalled')}
             className={cn(activeTab === 'uninstalled' ? CITIZEN_TAB_ACTIVE : CITIZEN_TAB_INACTIVE)}
           >
-            Pending
+            {t("tabPending")}
           </button>
         </div>
 
@@ -179,7 +181,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             <input
               type="text"
-              placeholder="Search reports..."
+              placeholder={t("searchReports")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full sm:w-64 pl-9 pr-4 py-2 text-sm border border-border bg-page text-ink placeholder:text-muted focus:ring-2 focus:ring-accent focus:ring-offset-2 rounded-lg"
@@ -191,8 +193,8 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
               value={sortBy}
               onChange={setSortBy}
               options={[
-                { value: "latest", label: "Latest" },
-                { value: "impact", label: "Highest Impact" }
+                { value: "latest", label: t("latest") },
+                { value: "impact", label: t("highestImpact") }
               ]}
             />
           </div>
@@ -214,10 +216,10 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-ink m-0">
-                  {queueCount} offline report{queueCount > 1 ? "s" : ""} pending
+                  {t("offlineReportsPending", {count: queueCount})}
                 </p>
                 <p className="text-xs text-ink/50 mt-0.5 m-0">
-                  Tap to review and sync now
+                  {t("tapToReview")}
                 </p>
               </div>
               <RefreshCw className="w-4 h-4 text-ink/30 shrink-0" />
@@ -227,14 +229,14 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
           {/* Section 1: Insights — staggered entrance */}
           <RevealSection>
             <section>
-              <h2 className="font-semibold text-base text-ink mb-4">Environmental Impact Insights</h2>
+              <h2 className="font-semibold text-base text-ink mb-4">{t("environmentalImpactInsights")}</h2>
               {statCards ? (
                 <StatsCards items={statCards} />
               ) : (
                 <EmptyState
                   icon={Activity}
-                  title="No Impact Data Yet"
-                  description="Your environmental impact insights will appear here once data is collected and processed."
+                  title={t("noImpactDataYet")}
+                  description={t("noImpactDataDesc")}
                 />
               )}
             </section>
@@ -243,7 +245,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
           {/* Section 2: Tracking — staggered entrance */}
           <RevealSection stagger={0.12}>
             <section>
-              <h2 className="font-semibold text-base text-ink mb-4">Incident & Reporting Tracking</h2>
+              <h2 className="font-semibold text-base text-ink mb-4">{t("incidentTracking")}</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <SpotlightCard spotlightColor="rgba(46,230,200,0.04)">
@@ -251,7 +253,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-medium text-sm text-ink/80 flex items-center gap-2">
                            <Activity className="w-4 h-4 text-ink/40" />
-                           Recent Activity
+                           {t("recentActivity")}
                         </h3>
                       </div>
                       <ActivityFeed items={feedItems} />
@@ -265,7 +267,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
                        <div className="flex items-center justify-between mb-4">
                         <h3 className="font-medium text-sm text-ink/80 flex items-center gap-2">
                            <TrendingUp className="w-4 h-4 text-ink/40" />
-                           Top Contributors
+                           {t("topContributors")}
                         </h3>
                        </div>
                        <PublicScoreboard />
@@ -291,8 +293,8 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
           <EmptyState
             icon={CheckCircle}
             colorTheme="green"
-            title="Resolved Reports"
-            description="All environmental reports that have been successfully resolved by partnering agencies will appear here."
+            title={t("resolvedReports")}
+            description={t("resolvedReportsDesc")}
           />
         </div>
       )}
@@ -302,8 +304,8 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
           <EmptyState
             icon={Clock}
             colorTheme="amber"
-            title="Pending Reports"
-            description="Reports awaiting agency review or currently under investigation will appear here."
+            title={t("pendingReports")}
+            description={t("pendingReportsDesc")}
           />
         </div>
       )}

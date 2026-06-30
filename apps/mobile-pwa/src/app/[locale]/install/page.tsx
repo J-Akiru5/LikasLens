@@ -2,8 +2,10 @@
 
 import { Share, PlusSquare, Smartphone } from "lucide-react";
 import { m } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 export default function InstallPage() {
+  const t = useTranslations("dashboard");
   return (
     <div 
       className="min-h-dvh flex flex-col relative overflow-hidden"
@@ -64,12 +66,12 @@ export default function InstallPage() {
           {
             icon: Share,
             title: "1. Tap the Share Button",
-            desc: "Look for the share icon at the very bottom of your Safari browser bar."
+            desc: t("installIosStep1")
           },
           {
             icon: PlusSquare,
             title: "2. Add to Home Screen",
-            desc: "Scroll down the share menu until you find \"Add to Home Screen\" and tap it."
+            desc: t("installIosStep2")
           },
           {
             icon: Smartphone,

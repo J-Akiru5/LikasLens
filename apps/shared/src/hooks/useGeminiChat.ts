@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
-import { useTranslations } from "next-intl";
 import { laravelPost } from "../api/client";
 
 export interface ChatMessage {
@@ -10,7 +9,7 @@ export interface ChatMessage {
   content: string;
 }
 
-const CITIZEN_PROMPT = `You are Liksi, a friendly and knowledgeable AI assistant for LikasLens — a neuro-symbolic civic environmental reporting platform in the Philippines.
+const CITIZEN_PROMPT = `You are Likasy, a friendly and knowledgeable AI assistant for LikasLens — a neuro-symbolic civic environmental reporting platform in the Philippines.
 
 Your role:
 - Help citizens understand how to report environmental issues (illegal dumping, deforestation, water pollution, air quality, wildlife crimes)
@@ -22,7 +21,7 @@ Your role:
 
 Keep responses brief (2-3 paragraphs max) and conversational.`;
 
-const ADMIN_PROMPT = `You are Liksi, a technical AI assistant for the LikasLens Admin Portal.
+const ADMIN_PROMPT = `You are Likasy, a technical AI assistant for the LikasLens Admin Portal.
 
 Your role:
 - Help analysts and administrators triage reports, assign tickets, and manage users
@@ -34,6 +33,9 @@ Your role:
 
 Use bullet points where helpful.`;
 
+const WELCOME_CITIZEN = "Hey! I'm Likasy, your AI guide to LikasLens. Ask me anything about reporting environmental issues, using the platform, or Philippine environmental laws!";
+const WELCOME_ADMIN = "Welcome to the LikasLens Admin Portal! I'm Likasy, your AI operations assistant. I can help you triage reports, analyze trends, check laws, and manage the platform.";
+
 const LOCALE_INSTRUCTION: Record<string, string> = {
   en: "Respond in English.",
   fil: "Respond in Filipino (Tagalog). Use natural Filipino conversational style.",
@@ -41,15 +43,13 @@ const LOCALE_INSTRUCTION: Record<string, string> = {
   id: "Respond in Bahasa Indonesia. Use natural Indonesian conversational style.",
   ms: "Respond in Malay (Bahasa Melayu). Use natural Malay conversational style.",
   ta: "Respond in Tamil (தமிழ்). Use natural Tamil conversational style. Use Tamil script.",
-  th: "Respond in Thai (ภาษาไทย). Use natural Thai conversational style. Use Thai script.",
 };
 
 type Persona = "citizen" | "admin";
 
 export function useGeminiChat(persona: Persona = "citizen", locale: string = "en") {
-  const t = useTranslations("chat");
   const basePrompt = persona === "admin" ? ADMIN_PROMPT : CITIZEN_PROMPT;
-  const welcome = persona === "admin" ? t("welcomeAdmin") : t("welcomeCitizen");
+  const welcome = persona === "admin" ? WELCOME_ADMIN : WELCOME_CITIZEN;
   const localeInstruction = LOCALE_INSTRUCTION[locale] || LOCALE_INSTRUCTION.en;
   const systemPrompt = `${basePrompt}\n\nLANGUAGE: ${localeInstruction}`;
 
@@ -86,15 +86,15 @@ export function useGeminiChat(persona: Persona = "citizen", locale: string = "en
         60000
       );
 
-      const reply = data?.reply || t("errorProcess");
+      const reply = data?.reply || "Sorry, I couldn't process that. Try again!";
       setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: reply }]);
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: t("errorFallback") }]);
+      setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: "Oops! I couldn't reach my brain right now. Please check your connection or try again later." }]);
     } finally {
       setLoading(false);
     }
-  }, [messages, systemPrompt, t]);
+  }, [messages, systemPrompt]);
 
   return { messages, loading, sendMessage };
 }

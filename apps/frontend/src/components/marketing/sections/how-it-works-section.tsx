@@ -2,6 +2,8 @@
 
 import { m } from "framer-motion";
 import { Camera, Cpu, Send, Bell, ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Evidence-board pipeline — with animated connector lines.
@@ -10,45 +12,6 @@ import { Camera, Cpu, Send, Bell, ArrowRight } from "lucide-react";
    → Route → Notify). Connector lines with flowing dots show the data flow
    between stages. Staggered scroll-reveal entrance.
    ───────────────────────────────────────────────────────────────────────────── */
-
-const NODES = [
-  {
-    n: "01",
-    Icon: Camera,
-    tag: "Capture",
-    title: "A citizen files evidence",
-    body: "One photo from a phone. GPS and timestamp attach automatically. Nothing else is asked of the reporter in the moment.",
-    artifact: "EVIDENCE FRAME",
-    meta: "IMG · EXIF · GPS · TS",
-  },
-  {
-    n: "02",
-    Icon: Cpu,
-    tag: "Classify",
-    title: "AI Analysis",
-    body: "The model identifies the violation type and matches it against environmental laws.",
-    artifact: "YOLOv8",
-    meta: "TYPE · MATCH",
-  },
-  {
-    n: "03",
-    Icon: Send,
-    tag: "Route",
-    title: "Auto-Dispatch",
-    body: "Routed to the exact government desk. No more reports dying in the wrong inbox.",
-    artifact: "AGENCY ROUTING",
-    meta: "DENR · EMB · PCG",
-  },
-  {
-    n: "04",
-    Icon: Bell,
-    tag: "Notify",
-    title: "Public Tracking",
-    body: "The case is tracked openly until it closes. You get a receipt and live updates.",
-    artifact: "PUBLIC RECORD",
-    meta: "ID · TIMESTAMP",
-  },
-];
 
 const staggerContainer = {
   hidden: {},
@@ -107,6 +70,9 @@ function PipelineConnector({ vertical = false }: { vertical?: boolean }) {
 }
 
 export function HowItWorksSection() {
+  const t = useTranslations("howItWorks");
+  const stepIcons = [Camera, Cpu, Send, Bell];
+
   return (
     <section id="how-it-works" className="ec-section" style={{ background: "var(--page)" }}>
       {/* Pipeline connector animation keyframes */}
@@ -147,11 +113,10 @@ export function HowItWorksSection() {
               textWrap: "balance" as const,
             }}
           >
-            From a single photo to an open public case.
+            {t("title")}
           </h2>
           <p style={{ fontSize: 17, color: "var(--muted)", lineHeight: 1.6, margin: 0, maxWidth: 560 }}>
-            Four steps, none of them manual beyond the first. Every stage leaves
-            a record the public can read back.
+            {t("subtitle")}
           </p>
         </m.div>
 
@@ -163,99 +128,109 @@ export function HowItWorksSection() {
           viewport={{ once: true, margin: "-60px" }}
           className="flex flex-col lg:flex-row lg:items-stretch gap-0"
         >
-          {NODES.map(({ n, Icon, tag, title, body, artifact, meta }, index) => (
-            <div key={n} className="contents">
-              {/* Card */}
-              <m.article
-                variants={fadeUp}
-                className="group hover:shadow-xl transition-all duration-500 flex-1"
-                style={{
-                  padding: "32px 28px",
-                  position: "relative",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 16,
-                  background: "var(--panel)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "20px",
-                  boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)",
-                }}
-              >
-                {/* Header row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 8,
-                      fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700,
-                      letterSpacing: "0.08em", textTransform: "uppercase",
-                      color: "var(--accent)",
-                    }}
-                  >
-                    <Icon style={{ width: 16, height: 16 }} aria-hidden="true" />
-                    {tag}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "var(--font-data)", fontSize: 16, fontWeight: 800,
-                      color: "var(--border)",
-                    }}
-                  >
-                    {n}
-                  </span>
-                </div>
+          {([1, 2, 3, 4] as const).map((stepNum, index) => {
+            const Icon = stepIcons[index];
+            const tag = t(`step${stepNum}Tag`);
+            const title = t(`step${stepNum}Title`);
+            const body = t(`step${stepNum}Body`);
+            const artifact = t(`step${stepNum}Artifact`);
+            const meta = t(`step${stepNum}Meta`);
 
-                <h3
+            return (
+              <div key={stepNum} className="contents">
+                {/* Card */}
+                <m.article
+                  variants={fadeUp}
+                  className="group hover:shadow-xl transition-all duration-500 flex-1"
                   style={{
-                    fontSize: "1.35rem",
-                    fontFamily: "var(--font-heading)",
-                    fontWeight: 700,
-                    letterSpacing: "-0.02em",
-                    lineHeight: 1.2,
-                    color: "var(--ink)",
-                    margin: 0,
+                    padding: "32px 28px",
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 16,
+                    background: "var(--panel)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "20px",
+                    boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)",
                   }}
                 >
-                  {title}
-                </h3>
-
-                <p style={{ fontSize: 14.5, color: "var(--muted)", lineHeight: 1.65, margin: 0 }}>
-                  {body}
-                </p>
-
-                {/* Artifact strip */}
-                <div style={{ marginTop: "auto", paddingTop: 16, borderTop: "1px solid var(--border)" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                  {/* Header row */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <Icon style={{ width: 16, height: 16, color: "var(--accent)" }} aria-hidden="true" />
+                      <span
+                        style={{
+                          fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700,
+                          letterSpacing: "0.08em", textTransform: "uppercase",
+                          color: "var(--accent)",
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    </div>
                     <span
                       style={{
-                        fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700,
-                        letterSpacing: "0.08em", textTransform: "uppercase",
-                        color: "var(--accent)",
+                        fontFamily: "var(--font-data)", fontSize: 16, fontWeight: 800,
+                        color: "var(--border-strong)",
                       }}
                     >
-                      {artifact}
-                    </span>
-                    <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)", letterSpacing: "0.05em" }}>
-                      {meta}
+                      0{stepNum}
                     </span>
                   </div>
-                </div>
-              </m.article>
 
-              {/* Connector between cards (not after the last one) */}
-              {index < NODES.length - 1 && (
-                <m.div variants={fadeUp} className="flex flex-col justify-center self-stretch">
-                  {/* Desktop: horizontal connector */}
-                  <div className="hidden lg:block">
-                    <PipelineConnector />
+                  <h3
+                    style={{
+                      fontSize: "1.35rem",
+                      fontFamily: "var(--font-heading)",
+                      fontWeight: 700,
+                      letterSpacing: "-0.02em",
+                      lineHeight: 1.2,
+                      color: "var(--ink)",
+                      margin: 0,
+                    }}
+                  >
+                    {title}
+                  </h3>
+
+                  <p style={{ fontSize: 14.5, color: "var(--muted)", lineHeight: 1.65, margin: 0 }}>
+                    {body}
+                  </p>
+
+                  {/* Artifact strip */}
+                  <div style={{ marginTop: "auto", paddingTop: 16, borderTop: "1px solid var(--border)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                      <span
+                        style={{
+                          fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700,
+                          letterSpacing: "0.08em", textTransform: "uppercase",
+                          color: "var(--accent)",
+                        }}
+                      >
+                        {artifact}
+                      </span>
+                      <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)", letterSpacing: "0.05em" }}>
+                        {meta}
+                      </span>
+                    </div>
                   </div>
-                  {/* Mobile: vertical connector */}
-                  <div className="lg:hidden">
-                    <PipelineConnector vertical />
-                  </div>
-                </m.div>
-              )}
-            </div>
-          ))}
+                </m.article>
+
+                {/* Connector between cards (not after the last one) */}
+                {index < 3 && (
+                  <m.div variants={fadeUp} className="flex flex-col justify-center self-stretch">
+                    {/* Desktop: horizontal connector */}
+                    <div className="hidden lg:block">
+                      <PipelineConnector />
+                    </div>
+                    {/* Mobile: vertical connector */}
+                    <div className="lg:hidden">
+                      <PipelineConnector vertical />
+                    </div>
+                  </m.div>
+                )}
+              </div>
+            );
+          })}
         </m.div>
       </div>
     </section>

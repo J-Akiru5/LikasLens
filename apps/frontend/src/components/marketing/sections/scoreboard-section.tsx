@@ -2,6 +2,7 @@
 
 import { m } from "framer-motion";
 import { PublicScoreboard } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Public Records — the accountability surface. Frames the shared scoreboard
@@ -9,6 +10,7 @@ import { PublicScoreboard } from "@likaslens/shared";
    ───────────────────────────────────────────────────────────────────────────── */
 
 export function ScoreboardSection() {
+  const t = useTranslations("landing");
   return (
     <section id="scoreboard" className="ec-section" style={{ background: "var(--page)" }}>
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
@@ -28,11 +30,10 @@ export function ScoreboardSection() {
               textWrap: "balance" as const,
             }}
           >
-            The scoreboard governments cannot edit.
+            {t("publicRecordsTitle")}
           </h2>
           <p style={{ fontSize: 16, color: "var(--muted)", lineHeight: 1.6, margin: 0, maxWidth: 520 }}>
-            Open case files, tracked from the moment they are filed. Resolution
-            times and non-responses are both on the record.
+            {t("publicRecordDesc")}
           </p>
         </m.div>
 

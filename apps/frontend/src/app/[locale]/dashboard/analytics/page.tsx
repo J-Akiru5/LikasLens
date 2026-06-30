@@ -18,6 +18,7 @@ import {
   PulseBadge,
   Skeleton,
 } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 
 const AqiGauge = dynamic(
@@ -48,14 +49,15 @@ interface DashboardStats {
   system_load: number;
 }
 
-const kpiCards: { key: keyof DashboardStats; icon: React.ElementType; label: string; color: string; suffix: string; decimals: number }[] = [
-  { key: "active_incidents", icon: Activity, label: "Active Incidents", color: "#f87171", suffix: "", decimals: 0 },
-  { key: "resolved_today", icon: CheckCircle2, label: "Resolved Today", color: "#34d399", suffix: "", decimals: 0 },
-  { key: "avg_response_hours", icon: Clock, label: "Avg Response", color: "#22d3ee", suffix: "h", decimals: 0 },
-  { key: "system_load", icon: Cpu, label: "System Load", color: "#fbbf24", suffix: "%", decimals: 0 },
+const kpiCardDefs: { key: keyof DashboardStats; icon: React.ElementType; labelKey: string; color: string; suffix: string; decimals: number }[] = [
+  { key: "active_incidents", icon: Activity, labelKey: "activeIncidents", color: "#f87171", suffix: "", decimals: 0 },
+  { key: "resolved_today", icon: CheckCircle2, labelKey: "resolvedToday", color: "#34d399", suffix: "", decimals: 0 },
+  { key: "avg_response_hours", icon: Clock, labelKey: "avgResponse", color: "#22d3ee", suffix: "h", decimals: 0 },
+  { key: "system_load", icon: Cpu, labelKey: "systemLoad", color: "#fbbf24", suffix: "%", decimals: 0 },
 ];
 
 export default function AnalyticsPage() {
+  const t = useTranslations("dashboard");
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
@@ -91,10 +93,14 @@ export default function AnalyticsPage() {
     return Number(val).toLocaleString();
   }
 
+  const kpiCards = kpiCardDefs.map((def) => ({
+    ...def,
+    label: t(def.labelKey as never),
+  }));
+
   return (
-    <DashboardLayoutWrapper greeting="Analyst" pageTitle="Analytics Dashboard" pageSubtitle="Real-time environmental monitoring and AI-powered insights">
+    <DashboardLayoutWrapper greeting={t("greetingAnalyst")} pageTitle={t("analyticsDashboard")} pageSubtitle={t("analyticsSubtitle")}>
       <div className="space-y-6">
-        {/* KPI Strip — Animated counters + GlowCards */}
         <RevealSection stagger={0.1}>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {kpiCards.map(({ key, icon: Icon, label, color, suffix, decimals }) => (
@@ -126,13 +132,11 @@ export default function AnalyticsPage() {
           </div>
         </RevealSection>
 
-        {/* Live indicator */}
         <div className="flex items-center gap-3">
           <PulseBadge label="Live" />
-          <span className="text-xs text-ink/40 font-mono">Auto-refreshing every 30s</span>
+          <span className="text-xs text-ink/40 font-mono">{t("autoRefreshing")}</span>
         </div>
 
-        {/* Main content grid — staggered entrance */}
         <RevealSection stagger={0.12}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
@@ -167,7 +171,6 @@ export default function AnalyticsPage() {
           </div>
         </RevealSection>
 
-        {/* Hotspot List */}
         <RevealSection>
           <HotspotList />
         </RevealSection>

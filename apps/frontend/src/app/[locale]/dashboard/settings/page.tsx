@@ -197,6 +197,8 @@ function SecuritySection() {
 }
 
 function AccountSection() {
+  const t = useTranslations("settings");
+  const tc = useTranslations("common");
   const supabase = createClient();
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -213,10 +215,10 @@ function AccountSection() {
       await supabase.auth.signOut();
       try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
       try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
-      showToast("Logged out successfully", "success");
+      showToast(t("loggedOutSuccess"), "success");
       setTimeout(() => { window.location.href = "/login"; }, 500);
     } catch {
-      showToast("Failed to log out. Please try again.", "error");
+      showToast(t("loggedOutError"), "error");
       setActionLoading(null);
     }
   };
@@ -228,7 +230,7 @@ function AccountSection() {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.email) {
-      setMessage({ type: "error", text: "Unable to retrieve your email. Please try again." });
+      setMessage({ type: "error", text: tc("error") });
       setActionLoading(null);
       return;
     }
@@ -240,8 +242,8 @@ function AccountSection() {
     if (error) {
       setMessage({ type: "error", text: error.message });
     } else {
-      showToast("Check your email for a password reset link", "success");
-      setMessage({ type: "success", text: "Password reset email sent. Check your inbox." });
+      showToast(t("passwordResetSent"), "success");
+      setMessage({ type: "success", text: t("passwordResetSent") });
       setTimeout(() => {
         setShowPasswordModal(false);
         resetPasswordForm();
@@ -255,7 +257,7 @@ function AccountSection() {
     const result = await deleteAccount();
 
     if (!result.success) {
-      setMessage({ type: "error", text: result.error || "Failed to delete account." });
+      setMessage({ type: "error", text: result.error || tc("error") });
       setActionLoading(null);
     } else {
       window.location.href = "/?message=Account+deleted";
@@ -268,7 +270,7 @@ function AccountSection() {
         <section className="space-y-5">
           <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
             <Key className="w-4 h-4 text-ink/40" />
-            Credentials
+            {t("credentials")}
           </h2>
           <button
             type="button"
@@ -278,14 +280,14 @@ function AccountSection() {
             }}
             className="w-full py-3 px-4 border border-ink/10 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors text-left rounded-lg"
           >
-            Change Password
+            {t("changePassword")}
           </button>
         </section>
 
         <section className="space-y-5">
           <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2">
             <LogOut className="w-4 h-4 text-muted" />
-            Account
+            {t("account")}
           </h2>
           <div className="space-y-3">
             <button
@@ -297,10 +299,10 @@ function AccountSection() {
               {actionLoading === "logout" ? (
                 <span className="inline-flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Logging out...
+                  {t("loggingOut")}
                 </span>
               ) : (
-                "Log Out"
+                t("logOut")
               )}
             </button>
             <button
@@ -312,7 +314,7 @@ function AccountSection() {
               disabled={actionLoading === "delete"}
               className="w-full py-3 px-4 border border-ink/10 text-sm text-ink/40 hover:text-ink transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
             >
-              Delete Account
+              {t("deleteAccountBtn")}
             </button>
           </div>
         </section>
@@ -325,7 +327,7 @@ function AccountSection() {
             <div className="flex items-center justify-between p-6 border-b border-ink/10">
               <div className="flex items-center gap-3">
                 <Key className="w-4 h-4 text-ink/40" />
-                <h3 className="font-semibold tracking-tight text-lg text-ink">Reset Password</h3>
+                <h3 className="font-semibold tracking-tight text-lg text-ink">{t("resetPassword")}</h3>
               </div>
               <button
                 type="button"
@@ -346,7 +348,7 @@ function AccountSection() {
               )}
 
               <p className="text-sm text-ink/60 leading-relaxed">
-                We&rsquo;ll send a password reset link to your registered email.
+                {t("resetPasswordDesc")}
               </p>
 
               <div className="flex gap-3 pt-2">
@@ -355,7 +357,7 @@ function AccountSection() {
                   onClick={() => { setShowPasswordModal(false); resetPasswordForm(); }}
                   className="flex-1 py-3 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg"
                 >
-                  Cancel
+                  {tc("cancel")}
                 </button>
                 <button
                   type="submit"
@@ -365,10 +367,10 @@ function AccountSection() {
                   {actionLoading === "password" ? (
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Sending...
+                      {t("sending")}
                     </span>
                   ) : (
-                    "Send Reset Link"
+                    t("sendResetLink")
                   )}
                 </button>
               </div>
@@ -384,7 +386,7 @@ function AccountSection() {
             <div className="flex items-center justify-between p-6 border-b border-ink/10">
               <div className="flex items-center gap-3">
                     <AlertTriangle className="w-4 h-4 text-muted" />
-                <h3 className="font-semibold tracking-tight text-lg text-ink">Delete Account</h3>
+                <h3 className="font-semibold tracking-tight text-lg text-ink">{t("deleteAccountBtn")}</h3>
               </div>
               <button
                 type="button"
@@ -397,7 +399,7 @@ function AccountSection() {
 
             <div className="p-6 space-y-5">
               <p className="text-sm text-ink/60 leading-relaxed">
-                This action is permanent and cannot be undone. All your data, reports, and eco-credits will be erased.
+                {t("deleteAccountWarning")}
               </p>
 
               {message && (
@@ -410,7 +412,7 @@ function AccountSection() {
                   onClick={() => setShowDeleteConfirm(false)}
                   className="flex-1 py-3 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg"
                 >
-                  Cancel
+                  {tc("cancel")}
                 </button>
                 <button
                   type="button"
@@ -421,10 +423,10 @@ function AccountSection() {
                   {actionLoading === "delete" ? (
                     <span className="inline-flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Deleting...
+                      {t("deleting")}
                     </span>
                   ) : (
-                    "Yes, Delete My Account"
+                    t("yesDeleteAccount")
                   )}
                 </button>
               </div>
@@ -466,14 +468,14 @@ function PlatformSection() {
     document.documentElement.setAttribute("data-theme", value);
     notifyThemeColor();
     window.dispatchEvent(new Event("themechange"));
-    showToast(`Theme switched to ${value === "civic" ? "Civic" : "Ghost"} mode`, "success");
+    showToast(t("themeSwitched", { mode: value === "civic" ? tn("civic") : tn("ghost") }), "success");
   };
 
   const handleLocaleChange = (newLocale: string) => {
     if (newLocale === currentLocale) return;
     const newPath = pathname.replace(new RegExp(`^/${currentLocale}(/|$)`), `/${newLocale}$1`);
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000;SameSite=Lax`;
-    showToast(`Language changed to ${localeNames[newLocale as keyof typeof localeNames]?.native || newLocale}`, "success");
+    showToast(t("languageChanged"), "success");
     startTransition(() => {
       router.replace(newPath);
     });

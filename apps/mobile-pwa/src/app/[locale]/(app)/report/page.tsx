@@ -28,6 +28,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useVoiceInput } from "@/hooks/use-voice-input";
 import { useHaptics } from "@/hooks/use-haptics";
 import { BottomSheet } from "@/components/native/bottom-sheet";
+import { useTranslations } from "next-intl";
 
 interface FailedPayload {
   base64Image: string;
@@ -44,31 +45,32 @@ interface FailedSubmission {
   retriesExhausted?: boolean;
 }
 
-const INCIDENT_TYPES: { value: string; label: string }[] = [
-  { value: "waste_dumping", label: "Illegal Dumping" },
-  { value: "water_pollution", label: "Water Pollution" },
-  { value: "air_pollution", label: "Air Pollution" },
-  { value: "illegal_logging", label: "Deforestation" },
-  { value: "other", label: "Noise Pollution" },
-  { value: "wildlife_poaching", label: "Wildlife Threat" },
-  { value: "other", label: "Chemical Spill" },
-  { value: "other", label: "Other" },
-];
+
 
 type Step = "camera" | "preview" | "form";
 
-const getBrowserInstructions = (): string => {
+const getBrowserInstructions = (t: (key: string) => string): string => {
   if (typeof window === "undefined") return "";
   const ua = navigator.userAgent.toLowerCase();
   const isIOS = /ipad|iphone|ipod/.test(ua);
   if (isIOS) {
-    return "Camera access is blocked. Tap the aA icon in your address bar, select Website Settings, and allow Camera.";
+    return t("cameraBlockedIos");
   }
-  return "Camera access is blocked. Tap the lock icon 🔒 in your address bar, go to Permissions, and allow Camera access.";
+  return t("cameraBlockedAndroid");
 };
 
 export default function ReportPage() {
+  const t = useTranslations("dashboard");
   const router = useRouter();
+
+  const INCIDENT_TYPES: { value: string; label: string }[] = [
+    { value: "waste_dumping", label: t("illegalDumping") },
+    { value: "water_pollution", label: t("waterPollution") },
+    { value: "air_pollution", label: t("airPollution") },
+    { value: "illegal_logging", label: t("deforestation") },
+    { value: "wildlife_poaching", label: t("wildlifeThreat") },
+    { value: "other", label: t("other") },
+  ];
   const params = useParams();
   const searchParams = useSearchParams();
   const locale = (params?.locale as string) || "en";
@@ -119,12 +121,12 @@ export default function ReportPage() {
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      showToast("Connection restored.", "success");
+      showToast(t("connectionRestored"), "success");
     };
 
     const handleOffline = () => {
       setIsOnline(false);
-      showToast("Connection lost. Reports will queue until you are back online.", "error");
+      showToast(t("connectionLostQueue"), "error");
     };
 
     window.addEventListener("online", handleOnline);
@@ -165,7 +167,7 @@ export default function ReportPage() {
         } else {
           setCameraError("UNKNOWN");
         }
-        showToast("Camera access denied or unavailable", "error");
+        showToast(t("cameraAccessDenied"), "error");
       }
     } finally {
       setCameraInitialising(false);
@@ -311,17 +313,17 @@ export default function ReportPage() {
 
   async function handleSubmit() {
     if (!incidentType) {
-      showToast("Please select an incident type", "error");
+      showToast(t("selectIncidentType"), "error");
       haptic("error");
       return;
     }
     if (!photo) {
-      showToast("No photo captured", "error");
+      showToast(t("noPhotoCaptured"), "error");
       haptic("error");
       return;
     }
     if (!gps) {
-      showToast("Location not available. Enter coordinates or enable GPS.", "error");
+      showToast(t("locationUnavailable"), "error");
       haptic("error");
       return;
     }
@@ -351,7 +353,7 @@ export default function ReportPage() {
           const onnxResult = await onnx.infer(base64Image);
           if (onnxResult.has_environmental_concern) {
             showToast(
-              `On-device AI detected: ${onnxResult.environmental_indicators.join(", ")}. Submitting offline.`,
+              `${t("onDeviceAiDetected")}: ${onnxResult.environmental_indicators.join(", ")}. ${t("submittingOffline")}.`,
               "info"
             );
           }
@@ -360,7 +362,7 @@ export default function ReportPage() {
         }
       }
 
-      showToast("Submitting report...", "info");
+      showToast(t("submittingReport"), "info");
 
       const payload: FailedPayload = {
         base64Image,
@@ -374,7 +376,7 @@ export default function ReportPage() {
       if (!navigator.onLine) {
         await queueReport(payload as unknown as Record<string, unknown>);
         haptic("success");
-        showToast("You are offline. Report queued securely.", "info");
+        showToast(t("offlineQueued"), "info");
         setPhoto(null);
         setIncidentType("");
         setDescription("");
@@ -387,9 +389,9 @@ export default function ReportPage() {
       haptic("success");
 
       if (ghostMode) {
-        showToast("Metadata stripped for your safety. Report submitted!", "success");
+        showToast(t("ghostSubmitted"), "success");
       } else {
-        showToast("Report submitted successfully!", "success");
+        showToast(t("reportSubmitted"), "success");
       }
 
       setPhoto(null);
@@ -399,7 +401,7 @@ export default function ReportPage() {
       router.push(`/${locale}/dashboard`);
     } catch (err) {
       haptic("error");
-      const message = err instanceof Error ? err.message : "Failed to submit report";
+      const message = err instanceof Error ? err.message : t("failedToSubmit");
       showToast(message, "error");
       setFailedSubmission({
         error: message,
@@ -432,7 +434,7 @@ export default function ReportPage() {
               setShowManualCoords(false);
               router.push(`/${locale}/dashboard`);
             }}
-            aria-label="Close camera"
+            aria-label={t("closeCamera")}
             className="touch-target rounded-full bg-black/30 text-white"
             style={{ backdropFilter: "blur(10px)" }}
           >
@@ -442,7 +444,7 @@ export default function ReportPage() {
           <div className="flex items-center gap-2">
             {isQuickMode && (
               <span className="flex items-center gap-1 px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#facc15]/90 text-black" style={{ backdropFilter: "blur(10px)" }}>
-                <Zap className="w-3 h-3" /> Quick
+                <Zap className="w-3 h-3" /> {t("quick")}
               </span>
             )}
             {/* Flip camera button */}
@@ -451,10 +453,10 @@ export default function ReportPage() {
               disabled={cameraInitialising}
               className="touch-target flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all bg-black/40 text-white/85 border border-white/20 disabled:opacity-40"
               style={{ backdropFilter: "blur(10px)" }}
-              aria-label={`Switch to ${facingMode === "environment" ? "front" : "back"} camera`}
+              aria-label={t("switchCamera")}
             >
               <RotateCcw className="w-4 h-4" />
-              {facingMode === "environment" ? "Back" : "Front"}
+              {facingMode === "environment" ? t("back") : t("front")}
             </button>
             <button
               onClick={() => { setGhostMode(!ghostMode); haptic("light"); }}
@@ -468,7 +470,7 @@ export default function ReportPage() {
               style={{ backdropFilter: "blur(10px)" }}
             >
               <Fingerprint className="w-4 h-4" />
-              Ghost {ghostMode ? "On" : "Off"}
+              {ghostMode ? t("ghostOn") : t("ghostOff")}
             </button>
           </div>
         </div>
@@ -481,15 +483,15 @@ export default function ReportPage() {
                 <Camera className="w-8 h-8" />
               </div>
               <div className="space-y-2 max-w-sm">
-                <h3 className="text-lg font-bold">Camera Access Blocked</h3>
+                <h3 className="text-lg font-bold">{t("cameraAccessBlocked")}</h3>
                 <p className="text-sm text-zinc-400 leading-relaxed">
-                  {getBrowserInstructions()}
+                  {getBrowserInstructions(t)}
                 </p>
               </div>
               
               <label className="touch-target inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#3a7d54] text-white text-sm font-semibold active:scale-95 transition-transform cursor-pointer">
                 <Camera className="w-4 h-4" />
-                Upload Photo / Capture
+                {t("uploadOrCapture")}
                 <input
                   type="file"
                   accept="image/*"
@@ -502,7 +504,7 @@ export default function ReportPage() {
           ) : cameraInitialising ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 text-white gap-4">
               <Loader2 className="w-10 h-10 animate-spin text-zinc-400" />
-              <p className="text-sm text-zinc-500 font-medium">Initializing camera...</p>
+              <p className="text-sm text-zinc-500 font-medium">{t("initializingCamera")}</p>
             </div>
           ) : (
             <>
@@ -516,7 +518,7 @@ export default function ReportPage() {
             </>
           )
         ) : (
-          <img src={photo!} alt="Captured evidence preview" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={photo!} alt={t("capturedEvidencePreview")} className="absolute inset-0 w-full h-full object-cover" />
         )}
 
         {/* Bottom controls */}
@@ -525,7 +527,7 @@ export default function ReportPage() {
             cameraError !== "NOT_ALLOWED" && (
               <button
                 onClick={capturePhoto}
-                aria-label="Capture photo"
+                aria-label={t("capturePhoto")}
                 className="w-[76px] h-[76px] rounded-full bg-white/20 border-4 border-white flex items-center justify-center active:scale-95 transition-transform"
               >
                 <div className="w-[58px] h-[58px] rounded-full bg-white" />
@@ -540,7 +542,7 @@ export default function ReportPage() {
                 <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white active:scale-95 transition-transform border border-white/10" style={{ backdropFilter: "blur(10px)" }}>
                   <RefreshCw className="w-6 h-6" />
                 </div>
-                <span style={{ fontFamily: "var(--font-body)" }} className="text-white/85 text-[11px] font-semibold">Retake</span>
+                <span style={{ fontFamily: "var(--font-body)" }} className="text-white/85 text-[11px] font-semibold">{t("retake")}</span>
               </button>
 
               <button
@@ -550,7 +552,7 @@ export default function ReportPage() {
                 <div className="w-16 h-16 rounded-full bg-green flex items-center justify-center text-white active:scale-95 transition-transform shadow-[0_0_24px_rgba(46,230,200,0.55)]">
                   <Check className="w-8 h-8" />
                 </div>
-                <span style={{ fontFamily: "var(--font-body)" }} className="text-green font-bold text-[11px]">Use photo</span>
+                <span style={{ fontFamily: "var(--font-body)" }} className="text-green font-bold text-[11px]">{t("usePhoto")}</span>
               </button>
             </div>
           )}
@@ -569,7 +571,7 @@ export default function ReportPage() {
     try {
       await laravelPost("/reports", failedSubmission.payload);
       haptic("success");
-      showToast("Report submitted successfully!", "success");
+      showToast(t("reportSubmittedSuccess"), "success");
       setFailedSubmission(null);
       setRetryCount(0);
       setPhoto(null);
@@ -579,12 +581,12 @@ export default function ReportPage() {
       router.push(`/${locale}/dashboard`);
     } catch (err) {
       haptic("error");
-      const msg = err instanceof Error ? err.message : "Request failed";
+      const msg = err instanceof Error ? err.message : t("requestFailed");
       const remaining = MAX_RETRIES - attempt;
       if (remaining > 0) {
-        showToast(`Attempt ${attempt} of ${MAX_RETRIES} failed. ${remaining} retr${remaining > 1 ? "ies" : "y"} left.`, "error");
+        showToast(`${t("attempt")} ${attempt} / ${MAX_RETRIES} — ${remaining} ${remaining > 1 ? t("retriesLeft") : t("retryLeft")}`, "error");
       } else {
-        showToast(`Attempt ${attempt} of ${MAX_RETRIES} — max retries reached. Please try again later.`, "error");
+        showToast(`${t("attempt")} ${attempt} / ${MAX_RETRIES} — ${t("maxRetriesReached")}`, "error");
       }
       setFailedSubmission((prev) =>
         prev
@@ -644,7 +646,7 @@ export default function ReportPage() {
           </div>
           <button
             onClick={() => { setFailedSubmission(null); setRetryCount(0); }}
-            aria-label="Dismiss retry"
+            aria-label={t("dismissRetry")}
             className="touch-target rounded-full"
             style={{
               background: "color-mix(in oklab, var(--ink) 8%, transparent)",
@@ -675,7 +677,7 @@ export default function ReportPage() {
               color: "var(--muted)",
             }}
           >
-            Dismiss
+            {t("dismiss")}
           </button>            <button
             onClick={retrySubmission}
             disabled={submitting || autoRetrying || failedSubmission.retriesExhausted}
@@ -708,7 +710,7 @@ export default function ReportPage() {
             {autoRetrying ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : null}
-            {failedSubmission.retriesExhausted ? "Max retries" : autoRetrying ? "Auto-retrying..." : `Retry ${retryCount > 0 ? `(${retryCount}/${MAX_RETRIES})` : ""}`}
+            {failedSubmission.retriesExhausted ? t("maxRetries") : autoRetrying ? t("autoRetrying") : `${t("retry")}${retryCount > 0 ? ` (${retryCount}/${MAX_RETRIES})` : ""}`}
           </button>
         </div>
       </div>
@@ -732,7 +734,7 @@ export default function ReportPage() {
       <button
         onClick={() => { setGhostMode(!ghostMode); haptic("light"); }}
         aria-pressed={ghostMode}
-        aria-label="Toggle Ghost Mode"
+        aria-label={t("toggleGhostMode")}
         className={cn("relative shrink-0 rounded-full transition-colors")}
         style={{ width: 44, height: 26, background: ghostMode ? "var(--secondary)" : "color-mix(in oklab, var(--ink) 20%, transparent)" }}
       >
@@ -747,14 +749,14 @@ export default function ReportPage() {
           <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600, color: "var(--ink)", margin: 0 }}>Ghost Mode</p>
           {ghostMode && (
             <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 6, background: "color-mix(in oklab, var(--secondary) 16%, transparent)", color: "var(--secondary)" }}>
-              EXIF STRIPPED
+              {t("exifStripped")}
             </span>
           )}
         </div>
         <p style={{ fontFamily: "var(--font-body)", fontSize: 12.5, color: "var(--muted)", margin: "5px 0 0", lineHeight: 1.5 }}>
           {ghostMode
-            ? "Your identity and location are stripped from this report before it is transmitted."
-            : "Strip location and device metadata to protect your identity on sensitive reports."}
+            ? t("ghostModeActiveDesc")
+            : t("ghostModeInactiveDesc")}
         </p>
       </div>
     </div>
@@ -784,13 +786,13 @@ export default function ReportPage() {
     return (
       <div className="p-5 space-y-5 pb-32">
         <div className="flex items-center gap-3">
-          <button onClick={() => setStep("preview")} aria-label="Back to preview" className="touch-target -ml-2 rounded-full text-ink">
+          <button onClick={() => setStep("preview")} aria-label={t("backToPreview")} className="touch-target -ml-2 rounded-full text-ink">
             <ArrowLeft className="w-6 h-6" />
           </button>
           <div className="flex-1">
-            <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>Quick report</h1>
+            <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>{t("quickReport")}</h1>
             <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: "3px 0 0" }}>
-              GPS {gps ? "detected" : showManualCoords ? "enter manual" : "pending"}
+              {gps ? t("gpsDetected") : showManualCoords ? t("gpsManual") : t("gpsPending")}
             </p>
           </div>
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-[#facc15]/20 text-[#b8860b] border border-[#facc15]/30">
@@ -799,7 +801,7 @@ export default function ReportPage() {
         </div>
 
         <div className="relative rounded-2xl overflow-hidden bg-black/5 aspect-[4/3] w-full" style={{ maxHeight: 240 }}>
-          <img src={photo!} alt="Captured evidence" className="w-full h-full object-cover" />
+          <img src={photo!} alt={t("capturedEvidence")} className="w-full h-full object-cover" />
           <button
             onClick={() => setStep("camera")}
             className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-semibold uppercase"
@@ -817,18 +819,18 @@ export default function ReportPage() {
 
         {/* Incident type selector */}
         <div>
-          <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Incident type</label>
+          <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>{t("incidentType")}</label>
           <button
             onClick={() => { setTypeSheetOpen(true); haptic("light"); }}
             className="ios-list-row w-full"
             style={{ borderRadius: 16, border: "1px solid var(--border)", background: "var(--panel)", minHeight: 56 }}
           >
             <span style={{ flex: 1, textAlign: "left", fontFamily: "var(--font-body)", fontSize: 15, color: incidentType ? "var(--ink)" : "var(--muted-subtle)" }}>
-              {INCIDENT_TYPES.find(t => t.value === incidentType)?.label || "Select classification"}
+              {INCIDENT_TYPES.find(t => t.value === incidentType)?.label || t("selectClassification")}
             </span>
             {!gps && (
               <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--red)", marginLeft: 8 }}>
-                GPS pending
+                {t("gpsPending")}
               </span>
             )}
             <Camera style={{ width: 18, height: 18, color: "var(--muted)" }} />
@@ -839,13 +841,13 @@ export default function ReportPage() {
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: "color-mix(in oklab, var(--ink) 6%, transparent)", border: "1px solid color-mix(in oklab, var(--ink) 12%, transparent)" }}>
             <div className="w-2 h-2 rounded-full bg-ink/30" />
             <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: 0 }}>
-              Offline — reports will queue until connection returns.
+              {t("offlineNotice")}
             </p>
           </div>
         )}
         <RetryBanner />
         <GhostToggle />
-        <SubmitButton label="Submit report" disabled={!incidentType || !gps} />
+        <SubmitButton label={t("submitReport")} disabled={!incidentType || !gps} />
       </div>
     );
   }
@@ -854,18 +856,18 @@ export default function ReportPage() {
   return (
     <div className="p-5 space-y-6 pb-32">
       <div className="flex items-center gap-3">
-        <button onClick={() => setStep("preview")} aria-label="Back to preview" className="touch-target -ml-2 rounded-full text-ink">
+        <button onClick={() => setStep("preview")} aria-label={t("backToPreview")} className="touch-target -ml-2 rounded-full text-ink">
           <ArrowLeft className="w-6 h-6" />
         </button>
         <div>
-          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>Report details</h1>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: "3px 0 0" }}>Review and submit evidence</p>
+          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>{t("reportDetails")}</h1>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: "3px 0 0" }}>{t("reviewSubmitEvidence")}</p>
         </div>
       </div>
 
       {/* Photo thumbnail */}
       <div className="relative rounded-2xl overflow-hidden bg-black/5 aspect-[4/3] w-full" style={{ maxHeight: 260 }}>
-        <img src={photo!} alt="Captured evidence" className="w-full h-full object-cover" />
+        <img src={photo!} alt={t("capturedEvidencePreview")} className="w-full h-full object-cover" />
         <button
           onClick={() => setStep("camera")}
           className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-semibold uppercase"
@@ -877,7 +879,7 @@ export default function ReportPage() {
 
       {/* Map */}
       <div>
-        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Location</label>
+        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>{t("location")}</label>
         <GeoTagMap
           lat={gps?.lat ?? null}
           lng={gps?.lng ?? null}
@@ -888,20 +890,20 @@ export default function ReportPage() {
 
       {/* Incident type — opens a bottom sheet, not a dropdown */}
       <div>
-        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Incident type</label>
+        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>{t("incidentType")}</label>
         <button
           onClick={() => { setTypeSheetOpen(true); haptic("light"); }}
           className="ios-list-row w-full"
           style={{ borderRadius: 16, border: "1px solid var(--border)", background: "var(--panel)", minHeight: 56 }}
         >
           <span style={{ flex: 1, textAlign: "left", fontFamily: "var(--font-body)", fontSize: 15, color: incidentType ? "var(--ink)" : "var(--muted-subtle)" }}>
-            {INCIDENT_TYPES.find(t => t.value === incidentType)?.label || "Select classification"}
+            {INCIDENT_TYPES.find(t => t.value === incidentType)?.label || t("selectClassification")}
           </span>
           <Camera style={{ width: 18, height: 18, color: "var(--muted)" }} />
         </button>
       </div>
 
-      <BottomSheet open={typeSheetOpen} onClose={() => setTypeSheetOpen(false)} title="Select incident type">
+      <BottomSheet open={typeSheetOpen} onClose={() => setTypeSheetOpen(false)} title={t("selectIncidentType")}>
         <div className="ios-grouped-list">
           {INCIDENT_TYPES.map(({ value, label }) => (
             <button
@@ -920,26 +922,26 @@ export default function ReportPage() {
       {/* Manual GPS coordinates fallback */}
       {showManualCoords && (
         <div>
-          <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>GPS unavailable — enter coordinates</label>
+          <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>{t("gpsUnavailable")}</label>
           <div style={{ display: "flex", gap: 12 }}>
             <input
               type="number"
               inputMode="decimal"
               step="any"
-              placeholder="Latitude (e.g. 14.5833)"
+              placeholder={t("latitudePlaceholder")}
               value={manualLat}
               onChange={(e) => { setManualLat(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -90 && val <= 90) setGps(prev => ({ lat: val, lng: prev?.lng ?? 0 })); }}
-              aria-label="Latitude coordinate"
+              aria-label={t("latitudeAria")}
               style={{ flex: 1, padding: "12px 14px", borderRadius: 14, background: "var(--panel)", border: "1px solid var(--border)", fontFamily: "var(--font-data)", fontSize: 14, color: "var(--ink)", outline: "none" }}
             />
             <input
               type="number"
               inputMode="decimal"
               step="any"
-              placeholder="Longitude (e.g. 120.9833)"
+              placeholder={t("longitudePlaceholder")}
               value={manualLng}
               onChange={(e) => { setManualLng(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -180 && val <= 180) setGps(prev => ({ lat: prev?.lat ?? 0, lng: val })); }}
-              aria-label="Longitude coordinate"
+              aria-label={t("longitudeAria")}
               style={{ flex: 1, padding: "12px 14px", borderRadius: 14, background: "var(--panel)", border: "1px solid var(--border)", fontFamily: "var(--font-data)", fontSize: 14, color: "var(--ink)", outline: "none" }}
             />
           </div>
@@ -948,12 +950,12 @@ export default function ReportPage() {
 
       {/* Description + voice */}
       <div>
-        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Description (optional)</label>
+        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>{t("descriptionOptional")}</label>
         <div className="relative">
           <textarea
             value={description}
             onChange={(e) => { if (e.target.value.length <= 5000) setDescription(e.target.value); }}
-            placeholder="Add any extra details about the location or situation..."
+            placeholder={t("descriptionPlaceholder")}
             rows={4}
             maxLength={5000}
             style={{
@@ -969,7 +971,7 @@ export default function ReportPage() {
             <button
               type="button"
               onClick={() => { toggleListening(); haptic("light"); }}
-              aria-label={isListening ? "Stop listening" : "Speak description"}
+              aria-label={isListening ? t("stopListening") : t("speakDescription")}
               className={cn("absolute bottom-3 right-3 rounded-full transition-all")}
               style={{
                 background: isListening ? "var(--red)" : "color-mix(in oklab, var(--ink) 5%, transparent)",
@@ -981,7 +983,7 @@ export default function ReportPage() {
               {isListening ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
             </button>
           ) : (
-            <div className="absolute bottom-3 right-3 rounded-full flex items-center justify-center" style={{ width: 40, height: 40, background: "color-mix(in oklab, var(--ink) 5%, transparent)", color: "var(--muted-subtle)" }} title="Voice input not supported">
+            <div className="absolute bottom-3 right-3 rounded-full flex items-center justify-center" style={{ width: 40, height: 40, background: "color-mix(in oklab, var(--ink) 5%, transparent)", color: "var(--muted-subtle)" }} title={t("voiceNotSupported")}>
               <MicOff className="w-5 h-5" />
             </div>
           )}
@@ -989,7 +991,7 @@ export default function ReportPage() {
         {isListening && (
           <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--red)", margin: "8px 0 0 2px", display: "flex", alignItems: "center", gap: 6 }}>
             <span className="inline-block w-2 h-2 rounded-full bg-[var(--red)] animate-pulse" />
-            Listening...
+            {t("listening")}
           </p>
         )}
         {voiceError && <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--red)", margin: "8px 0 0 2px" }}>{voiceError}</p>}
@@ -1001,13 +1003,13 @@ export default function ReportPage() {
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: "color-mix(in oklab, var(--ink) 6%, transparent)", border: "1px solid color-mix(in oklab, var(--ink) 12%, transparent)" }}>
             <div className="w-2 h-2 rounded-full bg-ink/30" />
             <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: 0 }}>
-              Offline — reports will queue until connection returns.
+              {t("offlineNotice")}
             </p>
           </div>
         )}
         <RetryBanner />
         <GhostToggle />
-        <SubmitButton label="Submit evidence" disabled={!incidentType || !gps} />
+        <SubmitButton label={t("submitEvidence")} disabled={!incidentType || !gps} />
       </div>
   );
 }

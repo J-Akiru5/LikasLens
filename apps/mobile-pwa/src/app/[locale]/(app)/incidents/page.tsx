@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { getTickets, Button, type Ticket } from "@likaslens/shared";
 import { Search, Loader2, MapPin, Clock, Filter } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const statusDot: Record<string, string> = {
   open: "bg-[#c27a2e]",
@@ -13,6 +14,7 @@ const statusDot: Record<string, string> = {
 };
 
 export default function IncidentsPage() {
+  const t = useTranslations("dashboard");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,7 +61,7 @@ export default function IncidentsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink/40" />
           <input
             type="text"
-            placeholder="Search by ID, location..."
+            placeholder={t("searchIdLocation")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-12 pr-4 py-4 text-[15px] bg-panel border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-green rounded-3xl shadow-sm transition-colors"
@@ -93,8 +95,8 @@ export default function IncidentsPage() {
             <div className="w-16 h-16 rounded-full bg-ink/5 flex items-center justify-center mx-auto mb-6">
               <Filter className="w-8 h-8 text-ink/40" />
             </div>
-            <p className="font-bold text-lg text-ink">No incidents found</p>
-            <p className="text-sm text-ink/50">Try adjusting your filters or search query.</p>
+            <p className="font-bold text-lg text-ink">{t("noIncidentsFound")}</p>
+            <p className="text-sm text-ink/50">{t("tryAdjustingFiltersOrSearch")}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -133,7 +135,7 @@ export default function IncidentsPage() {
                     </div>
                     <div className="flex items-center gap-2.5 text-ink/40">
                       <Clock className="w-4 h-4 shrink-0 opacity-60" strokeWidth={2} />
-                      <span className="text-[11px] font-mono tracking-widest uppercase">Updated recently</span>
+                      <span className="text-[11px] font-mono tracking-widest uppercase">{t("updatedRecently")}</span>
                     </div>
                   </div>
                 </div>

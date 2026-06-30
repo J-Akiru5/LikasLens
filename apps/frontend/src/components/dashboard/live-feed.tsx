@@ -11,6 +11,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { useSSE, type SSEEvent } from "@/hooks/use-sse";
+import { useTranslations } from "next-intl";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -56,6 +57,7 @@ interface LiveFeedProps {
 }
 
 export function LiveFeed({ maxItems = 15, enabled = true }: LiveFeedProps) {
+  const t = useTranslations("dashboard");
   const { events, isConnected, error } = useSSE({ enabled });
 
   // Filter to ticket events only
@@ -74,8 +76,8 @@ export function LiveFeed({ maxItems = 15, enabled = true }: LiveFeedProps) {
             <Radio className="w-5 h-5 text-red" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-ink">Live Feed</h3>
-            <p className="text-xs text-ink/50">Real-time incoming reports</p>
+            <h3 className="text-sm font-semibold text-ink">{t("liveFeed")}</h3>
+            <p className="text-xs text-ink/50">{t("realTimeReports")}</p>
           </div>
         </div>
         {/* Connection status */}

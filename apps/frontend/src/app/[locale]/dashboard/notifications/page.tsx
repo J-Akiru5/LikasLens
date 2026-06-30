@@ -5,6 +5,7 @@ import { cn } from "@likaslens/shared";
 import { formatDate } from "@likaslens/shared";
 import { Bell, AlertCircle, CheckCircle, Info, CheckCheck, Loader2 } from "lucide-react";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
+import { useTranslations } from "next-intl";
 
 function getNotifIcon(type: string) {
   if (type.includes("Escalation") || type.includes("breach"))
@@ -40,21 +41,22 @@ function NotificationSkeleton() {
   );
 }
 
-function EmptyState() {
+function EmptyState({ t }: { t: (key: string) => string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="w-16 h-16 rounded-full bg-ink/5 flex items-center justify-center mb-4">
         <Bell className="w-7 h-7 text-ink/30" />
       </div>
-      <h3 className="font-semibold text-lg text-ink mb-1">No notifications yet</h3>
+      <h3 className="font-semibold text-lg text-ink mb-1">{t("noNotificationsYet")}</h3>
       <p className="text-sm text-ink/50 max-w-xs">
-        When there&apos;s activity on your reports or incidents, you&apos;ll see it here.
+        {t("noNotificationsDesc")}
       </p>
     </div>
   );
 }
 
 export default function NotificationsPage() {
+  const t = useTranslations("dashboard");
   const {
     notifications,
     meta,
@@ -69,8 +71,8 @@ export default function NotificationsPage() {
 
   return (
     <DashboardLayoutWrapper
-      pageTitle="Notifications"
-      pageSubtitle={unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+      pageTitle={t("notifications")}
+      pageSubtitle={unreadCount > 0 ? t("unreadCount").replace("{count}", String(unreadCount)) : t("allCaughtUpShort")}
     >
       <div className="max-w-3xl mx-auto space-y-6">
         {unreadCount > 0 && (
@@ -80,7 +82,7 @@ export default function NotificationsPage() {
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono text-ink/60 hover:text-ink border border-ink/10 rounded-lg hover:bg-ink/[0.02] transition-colors"
             >
               <CheckCheck className="w-4 h-4" />
-              Mark all as read
+              {t("markAllAsRead")}
             </button>
           </div>
         )}
@@ -88,7 +90,7 @@ export default function NotificationsPage() {
         {loading && notifications.length === 0 ? (
           <NotificationSkeleton />
         ) : notifications.length === 0 ? (
-          <EmptyState />
+          <EmptyState t={t} />
         ) : (
           <div className="space-y-2">
             {notifications.map((n) => (
@@ -144,10 +146,10 @@ export default function NotificationsPage() {
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Loading...
+                      {t("loading")}
                     </>
                   ) : (
-                    "Load more"
+                    t("loadMore")
                   )}
                 </button>
               </div>

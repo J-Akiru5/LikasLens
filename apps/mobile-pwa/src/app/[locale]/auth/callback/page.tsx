@@ -4,8 +4,10 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslations } from "next-intl";
 
 function CallbackHandler() {
+  const t = useTranslations("dashboard");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +27,7 @@ function CallbackHandler() {
         }
 
         if (!data.session?.user) {
-          setError("No user session returned");
+          setError(t("noSessionReturned"));
           return;
         }
 
@@ -33,7 +35,7 @@ function CallbackHandler() {
         const redirectTo = searchParams.get("redirect_to") || `/${locale}/dashboard`;
         router.replace(redirectTo);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Authentication failed");
+        setError(err instanceof Error ? err.message : t("authFailed"));
       }
     }
 
@@ -47,13 +49,13 @@ function CallbackHandler() {
           <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto">
             <span className="text-red-500 text-2xl font-bold">!</span>
           </div>
-          <h1 className="font-semibold text-xl text-ink">Authentication Failed</h1>
+          <h1 className="font-semibold text-xl text-ink">{t("authenticationFailed")}</h1>
           <p className="text-sm text-ink/60">{error}</p>
           <button
             onClick={() => router.replace("/login")}
             className="mt-4 px-6 py-3 bg-accent text-white rounded-xl font-semibold text-sm"
           >
-            Back to Login
+            {t("backToLogin")}
           </button>
         </div>
       </div>
@@ -64,7 +66,7 @@ function CallbackHandler() {
     <div className="h-dvh flex items-center justify-center bg-page">
       <div className="text-center space-y-4">
         <Loader2 className="w-8 h-8 animate-spin text-accent mx-auto" />
-        <p className="text-sm text-ink/60 font-medium">Completing sign in...</p>
+        <p className="text-sm text-ink/60 font-medium">{t("completingSignIn")}</p>
       </div>
     </div>
   );
@@ -76,7 +78,7 @@ export default function AuthCallbackPage() {
       <div className="h-dvh flex items-center justify-center bg-page">
         <div className="text-center space-y-4">
           <Loader2 className="w-8 h-8 animate-spin text-accent mx-auto" />
-          <p className="text-sm text-ink/60 font-medium">Loading...</p>
+          <p className="text-sm text-ink/60 font-medium">Loading…</p>
         </div>
       </div>
     }>

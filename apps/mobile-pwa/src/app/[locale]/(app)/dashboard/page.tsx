@@ -19,6 +19,7 @@ import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
 import { getQueueCount } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface RewardOffer {
   id: string;
@@ -30,6 +31,7 @@ interface RewardOffer {
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [feed, setFeed] = useState<ActivityFeedItem[]>([]);
   const [rewards, setRewards] = useState<RewardOffer[]>([]);
@@ -40,10 +42,10 @@ export default function DashboardPage() {
   const haptic = useHaptics();
 
   const chatMessages = [
-    "Welcome back! I'm Liksi, your AI assistant. 🌿",
-    "Ready to make an impact today? Every report counts! 🌍",
-    "See something wrong? Tap the Report tab below! ⚡",
-    "I'll route your reports to the right agency! 🤖",
+    t("chatWelcome"),
+    t("chatImpact"),
+    t("chatReport"),
+    t("chatRoute"),
   ];
   const [chatIndex, setChatIndex] = useState(0);
   const [userName, setUserName] = useState("Citizen");
@@ -56,7 +58,7 @@ export default function DashboardPage() {
     const date = new Date();
     const hour = date.getHours();
     setTimeState({
-      greeting: hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,",
+      greeting: hour < 12 ? t("goodMorning") : hour < 18 ? t("goodAfternoon") : t("goodEvening"),
       dateStr: formatDate(date, "long", locale).toUpperCase()
     });
   }, [locale]);
@@ -99,7 +101,7 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.error("Failed to load dashboard:", err);
-      showToast("Failed to load dashboard data", "error");
+      showToast(t("failedToLoadDashboard"), "error");
     } finally {
       setLoading(false);
     }
@@ -224,20 +226,19 @@ export default function DashboardPage() {
         {/* ── My Impact — grouped inset card, mono on numbers only ─────────── */}
         <section style={{ marginBottom: 24 }}>
           <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
-            <h2 className="ios-section-label">My impact</h2>
+            <h2 className="ios-section-label">{t("myImpact")}</h2>
             <Link
               href={`/${locale}/impact`}
               className="flex items-center gap-0.5"
               style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
-            >
-              Details <ChevronRight style={{ width: 14, height: 14 }} />
+            >                  {t("details")} <ChevronRight style={{ width: 14, height: 14 }} />
             </Link>
           </div>
           <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", padding: 0 }}>
             {[
-              { label: "Reports", value: totalReports, color: "var(--ink)" },
-              { label: "Resolved", value: resolvedToday, color: "var(--green)" },
-              { label: "Active", value: activeIncidents, color: "var(--amber)" },
+              { label: t("reportsLabel"), value: totalReports, color: "var(--ink)" },
+              { label: t("resolved"), value: resolvedToday, color: "var(--green)" },
+              { label: t("active"), value: activeIncidents, color: "var(--amber)" },
             ].map((item, i) => (
               <div
                 key={item.label}
@@ -291,7 +292,7 @@ export default function DashboardPage() {
                     margin: 0,
                   }}
                 >
-                  {queueCount} offline report{queueCount > 1 ? "s" : ""} pending
+                  {queueCount} {queueCount} {t("offlineReportsPending", { count: queueCount })}
                 </p>
                 <p
                   style={{
@@ -301,7 +302,7 @@ export default function DashboardPage() {
                     margin: "2px 0 0",
                   }}
                 >
-                  Tap to review and sync now
+                  {t("tapToReview")}
                 </p>
               </div>
               <div
@@ -322,10 +323,10 @@ export default function DashboardPage() {
         <section style={{ marginBottom: 24 }}>
           <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", padding: "10px 6px" }}>
             {[
-              { href: `/${locale}/report`, label: "Report", Icon: Camera },
-              { href: `/${locale}/wallet`, label: "Wallet", Icon: Gift },
-              { href: `/${locale}/laws`, label: "Laws", Icon: Scale },
-              { href: `/${locale}/impact`, label: "Impact", Icon: Activity },
+              { href: `/${locale}/report`, label: t("report"), Icon: Camera },
+              { href: `/${locale}/wallet`, label: t("wallet"), Icon: Gift },
+              { href: `/${locale}/laws`, label: t("laws"), Icon: Scale },
+              { href: `/${locale}/impact`, label: t("impact"), Icon: Activity },
             ].map(({ href, label, Icon }) => (
               <Link
                 key={label}
@@ -347,13 +348,12 @@ export default function DashboardPage() {
         {/* ── Partner offers rail (from API) ────────────────────────── */}
         <section style={{ marginBottom: 24 }}>
           <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
-            <h2 className="ios-section-label">Redeem eco-credits</h2>
+            <h2 className="ios-section-label">{t("redeemEcoCredits")}</h2>
             <Link
               href={`/${locale}/wallet`}
               className="flex items-center gap-0.5"
               style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
-            >
-              All <ChevronRight style={{ width: 14, height: 14 }} />
+            >                  {t("all")} <ChevronRight style={{ width: 14, height: 14 }} />
             </Link>
           </div>
           {rewardsLoading ? (
@@ -373,7 +373,7 @@ export default function DashboardPage() {
           ) : rewards.length === 0 ? (
             <div className="ios-grouped-list p-6 text-center flex flex-col items-center justify-center">
               <Gift className="w-8 h-8 text-ink/20 mb-2" />
-              <p className="text-xs font-medium text-ink/40">No rewards available yet.</p>
+              <p className="text-xs font-medium text-ink/40">{t("noRewardsAvailable")}</p>
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto pb-1 -mx-5 px-5 snap-x snap-mandatory scrollbar-hide">
@@ -409,18 +409,17 @@ export default function DashboardPage() {
         {/* ── Recent activity — grouped rows ──────────────────────────────── */}
         <section>
           <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
-            <h2 className="ios-section-label">Recent activity</h2>
+            <h2 className="ios-section-label">{t("recentActivity")}</h2>
             <Link
               href={`/${locale}/history`}
               className="flex items-center gap-0.5"
               style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
-            >
-              All <ChevronRight style={{ width: 14, height: 14 }} />
+            >                  {t("all")} <ChevronRight style={{ width: 14, height: 14 }} />
             </Link>
           </div>
 
           {feed.length === 0 ? (
-            <EmptyFeed description="No recent activity" />
+            <EmptyFeed description={t("noRecentActivity")} />
           ) : (
             <div className="ios-grouped-list">
               {feed.map((item) => {

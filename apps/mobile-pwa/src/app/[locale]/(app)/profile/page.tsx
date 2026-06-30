@@ -26,33 +26,37 @@ import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
 import { MobileProfileSkeleton } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Profile — identity header card + grouped inset list (iOS Settings pattern).
    Two grouped sections (Account, Citizen tools) + a separated destructive row.
    ───────────────────────────────────────────────────────────────────────────── */
 
-const ACCOUNT_ITEMS = [
-  { href: "/history", label: "Report history", Icon: History, tint: "var(--accent)" },
-  { href: "/offline-queue", label: "Offline Queue", Icon: WifiOff, tint: "var(--amber)" },
-  { href: "/achievements", label: "Achievements", Icon: Award, tint: "#b8860b" },
-  { href: "/settings", label: "Settings", Icon: Settings, tint: "var(--muted)" },
-];
 
-const TOOL_ITEMS = [
-  { href: "/incidents", label: "Incidents", Icon: AlertCircle, tint: "var(--red)" },
-  { href: "/analytics", label: "Analytics", Icon: BarChart3, tint: "var(--accent)" },
-  { href: "/reports", label: "Reports analytics", Icon: FileText, tint: "var(--accent)" },
-  { href: "/impact", label: "Impact", Icon: TrendingUp, tint: "var(--green)" },
-  { href: "/map", label: "Map view", Icon: Map, tint: "#3b82f6" },
-  { href: "/knowledge-graph", label: "Knowledge graph", Icon: Network, tint: "#a78bfa" },
-  { href: "/laws", label: "Laws database", Icon: Scale, tint: "var(--secondary)" },
-];
 
 export default function ProfilePage() {
+  const t = useTranslations("dashboard");
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
   const haptic = useHaptics();
+
+  const ACCOUNT_ITEMS = [
+    { href: "/history", label: t("reportHistory"), Icon: History, tint: "var(--accent)" },
+    { href: "/offline-queue", label: t("offlineQueue"), Icon: WifiOff, tint: "var(--amber)" },
+    { href: "/achievements", label: t("achievements"), Icon: Award, tint: "#b8860b" },
+    { href: "/settings", label: t("settings"), Icon: Settings, tint: "var(--muted)" },
+  ];
+
+  const TOOL_ITEMS = [
+    { href: "/incidents", label: t("incidents"), Icon: AlertCircle, tint: "var(--red)" },
+    { href: "/analytics", label: t("analytics"), Icon: BarChart3, tint: "var(--accent)" },
+    { href: "/reports", label: t("reportsAnalytics"), Icon: FileText, tint: "var(--accent)" },
+    { href: "/impact", label: t("impact"), Icon: TrendingUp, tint: "var(--green)" },
+    { href: "/map", label: t("mapView"), Icon: Map, tint: "#3b82f6" },
+    { href: "/knowledge-graph", label: t("knowledgeGraph"), Icon: Network, tint: "#a78bfa" },
+    { href: "/laws", label: t("lawsDatabase"), Icon: Scale, tint: "var(--secondary)" },
+  ];
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -86,7 +90,7 @@ export default function ProfilePage() {
   return (
     <div className="pb-28">
       <div className="px-5">
-        <LargeTitle title="Profile" />
+        <LargeTitle title={t("profile")} />
       </div>
 
       <div className="px-5">
@@ -95,7 +99,7 @@ export default function ProfilePage() {
           <Link
             href={`/${locale}/profile/edit`}
             onClick={() => haptic("light")}
-            aria-label="Edit profile"
+            aria-label={t("editProfile")}
             className="touch-target"
             style={{ position: "absolute", top: 12, right: 12, borderRadius: 9999, background: "rgba(0,0,0,0.28)", backdropFilter: "blur(8px)", zIndex: 2 }}
           >
@@ -117,7 +121,7 @@ export default function ProfilePage() {
         </div>
 
         {/* ── Account group ──────────────────────────────────────────────── */}
-        <h2 className="ios-section-label" style={{ marginBottom: 8, padding: "0 4px" }}>Account</h2>
+        <h2 className="ios-section-label" style={{ marginBottom: 8, padding: "0 4px" }}>{t("account")}</h2>
         <div className="ios-grouped-list" style={{ marginBottom: 22 }}>
           {ACCOUNT_ITEMS.map(({ href, label, Icon, tint }) => (
             <Link
@@ -138,7 +142,7 @@ export default function ProfilePage() {
         </div>
 
         {/* ── Citizen tools group ────────────────────────────────────────── */}
-        <h2 className="ios-section-label" style={{ marginBottom: 8, padding: "0 4px" }}>Citizen tools</h2>
+        <h2 className="ios-section-label" style={{ marginBottom: 8, padding: "0 4px" }}>{t("citizenTools")}</h2>
         <div className="ios-grouped-list" style={{ marginBottom: 28 }}>
           {TOOL_ITEMS.map(({ href, label, Icon, tint }) => (
             <Link

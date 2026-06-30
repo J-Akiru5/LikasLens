@@ -4,19 +4,21 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import { formatDate } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface LiksiBannerProps {
   userName: string;
 }
 
 export function LiksiBanner({ userName }: LiksiBannerProps) {
+  const t = useTranslations("dashboard");
   const params = useParams<{ locale: string }>();
   const locale = params?.locale || "en";
   const chatMessages = [
-    "Welcome back! I'm Liksi, your AI assistant. 🌿",
-    "Ready to make an impact today? Every report counts! 🌍",
-    "See something wrong? Tap the Report tab below! ⚡",
-    "I'll route your reports to the right agency! 🤖",
+    t("liksiWelcome1"),
+    t("liksiWelcome2"),
+    t("liksiWelcome3"),
+    t("liksiWelcome4"),
   ];
   const [chatIndex, setChatIndex] = useState(0);
 
@@ -26,7 +28,7 @@ export function LiksiBanner({ userName }: LiksiBannerProps) {
     const date = new Date();
     const hour = date.getHours();
     setTimeState({
-      greeting: hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,",
+      greeting: hour < 12 ? t("goodMorning") : hour < 18 ? t("goodAfternoon") : t("goodEvening"),
       dateStr: formatDate(date, "long", locale).toUpperCase()
     });
   }, [locale]);

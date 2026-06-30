@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { AlertTriangle, RefreshCw, ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function ErrorPage({
   error,
@@ -11,6 +12,7 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations("errorPage");
   useEffect(() => {
     console.error("Page error:", error);
   }, [error]);
@@ -23,9 +25,9 @@ export default function ErrorPage({
         </div>
 
         <div className="space-y-2">
-          <h1 className="font-semibold text-2xl text-ink">Something went wrong</h1>
+          <h1 className="font-semibold text-2xl text-ink">{t("title")}</h1>
           <p className="text-sm text-ink/60 leading-relaxed">
-            An unexpected error occurred. Our team has been notified.
+            {t("description")}
           </p>
         </div>
 
@@ -35,7 +37,7 @@ export default function ErrorPage({
             className="flex items-center justify-center gap-2 w-full px-6 py-3 bg-accent text-white rounded-2xl font-semibold text-sm active:scale-[0.98] transition-transform"
           >
             <RefreshCw className="w-4 h-4" />
-            Try again
+            {t("tryAgain")}
           </button>
 
           <Link
@@ -43,7 +45,7 @@ export default function ErrorPage({
             className="flex items-center justify-center gap-2 w-full px-6 py-3 border border-ink/10 text-ink rounded-2xl font-semibold text-sm active:scale-[0.98] transition-transform"
           >
             <ArrowLeft className="w-4 h-4" />
-            Go home
+            {t("goHome")}
           </Link>
         </div>
       </div>

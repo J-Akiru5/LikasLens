@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { UserProfile } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 import { RankProgressCard, AchievementCard } from "@likaslens/shared";
 import {
   MapPin, Crosshair, Globe, Eye, EyeOff, Loader2,
@@ -13,6 +14,7 @@ interface ContributorProfileProps {
 }
 
 export function ContributorProfile({ locale }: ContributorProfileProps) {
+  const t = useTranslations("dashboard");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,11 +35,11 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
 
       if (!res.ok) {
         if (res.status === 401) {
-          setError("Unauthenticated");
+          setError(t("unauthenticated"));
         } else if (res.status === 404) {
-          setError("User not found");
+          setError(t("userNotFound"));
         } else {
-          setError("Failed to load profile");
+          setError(t("failedToLoadProfile"));
         }
         return;
       }
@@ -45,9 +47,9 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
       setProfile(body.data || body);
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
-        setError("Request timed out");
+        setError(t("requestTimedOut"));
       } else {
-        setError("Unable to connect to server");
+        setError(t("unableToConnect"));
       }
     } finally {
       setLoading(false);
@@ -102,11 +104,11 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-ink/[0.02] to-ink/[0.06] flex items-center justify-center mx-auto mb-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-ink/[0.08] ring-8 ring-ink/[0.015]">
           <User className="w-7 h-7 text-ink/30" />
         </div>
-        <h2 className="font-semibold tracking-tight text-lg text-ink mb-1.5">Profile Unavailable</h2>
+        <h2 className="font-semibold tracking-tight text-lg text-ink mb-1.5">{t("profileUnavailable")}</h2>
         <p className="text-sm text-ink/50 max-w-sm mx-auto leading-relaxed">
           {error === "User not found" 
-            ? "This citizen hasn't set up their public profile yet." 
-            : "We couldn't load this profile right now. The systems might be syncing."}
+            ? t("citizenNotSetUp") 
+            : t("couldNotLoadProfile")}
         </p>
       </div>
     );
@@ -139,7 +141,7 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
 
             {(profile?.bio || !ghostMode) && (
               <p className="font-mono text-sm text-ink/60 max-w-xl">
-                {profile?.bio || "Citizen reporter dedicated to environmental conservation and monitoring."}
+                {profile?.bio || t("citizenReporterDesc")}
               </p>
             )}
 
@@ -177,7 +179,7 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
             className="flex items-center gap-1.5 font-mono text-xs text-ink/40 hover:text-ink transition-colors"
           >
             {ghostMode ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            {ghostMode ? "Reveal Identity" : "Ghost Mode"}
+            {ghostMode ? t("revealIdentity") : t("ghostMode")}
           </button>
         </div>
 
@@ -197,14 +199,14 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
 
       {profile?.rankProgress && (
         <section>
-          <h2 className="font-semibold tracking-tight text-2xl text-ink mb-6">Contributor Tier</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink mb-6">{t("contributorTier")}</h2>
           <RankProgressCard rankProgress={profile.rankProgress} ecoCreditEquivalent={profile.eco_credit_equivalent} />
         </section>
       )}
 
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-semibold tracking-tight text-2xl text-ink">Credentials</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink">{t("credentials")}</h2>
         </div>
         {profile?.achievements && profile.achievements.length > 0 ? (
           <div>
@@ -213,7 +215,7 @@ export function ContributorProfile({ locale }: ContributorProfileProps) {
             ))}
           </div>
         ) : (
-          <p className="font-mono text-sm text-ink/40 italic">No credentials earned yet</p>
+          <p className="font-mono text-sm text-ink/40 italic">{t("noCredentialsEarned")}</p>
         )}
       </section>
     </div>

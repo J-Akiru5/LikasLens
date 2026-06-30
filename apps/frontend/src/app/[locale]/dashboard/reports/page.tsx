@@ -13,9 +13,11 @@ import {
 import type { Ticket, DashboardStats } from "@likaslens/shared";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { BarChart3, TrendingUp, Download, AlertCircle, FileText, CheckCircle, TriangleAlert, Activity } from "lucide-react";
-import { ToastContainer } from "@likaslens/shared";
+import { ToastContainer, showToast } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 export default function ReportsPage() {
+  const t = useTranslations("dashboard");
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -117,7 +119,7 @@ export default function ReportsPage() {
 
   return (
     <DashboardLayoutWrapper
-      pageTitle="Platform Analytics"
+      pageTitle={t("platformAnalytics")}
       headerChildren={
         <button
           onClick={() => {
@@ -154,12 +156,12 @@ export default function ReportsPage() {
               w.document.write(htmlContent);
               w.document.close();
             } else {
-              alert("Please disable pop-up blocker to generate PDF");
+              showToast(t("popupBlocked"), "error");
             }
           }}
           className="flex items-center gap-2 px-4 py-2 bg-panel rounded-full font-mono text-[10px] uppercase tracking-widest text-ink hover:text-green border border-ink/5 shadow-sm hover:shadow-md transition-all"
         >
-          <Download className="w-3.5 h-3.5" /> Export Data
+          <Download className="w-3.5 h-3.5" />{t("exportData")}
         </button>
       }
     >
@@ -172,32 +174,32 @@ export default function ReportsPage() {
             items={[
               {
                 id: "total",
-                category: "Total Tracked",
-                label: "All Time Reports",
+                category: t("totalTracked"),
+                label: t("allTimeReports"),
                 value: totalIncidents.toLocaleString(),
                 accent: "accent",
                 icon: FileText,
               },
               {
                 id: "rate",
-                category: "Resolution Rate",
-                label: "Overall Avg",
+                category: t("resolutionRate"),
+                label: t("overallAvg"),
                 value: `${avgResolutionRate}%`,
                 accent: "green",
                 icon: Activity,
               },
               {
                 id: "open",
-                category: "Open Incidents",
-                label: "Currently Active",
+                category: t("openIncidents"),
+                label: t("currentlyActive"),
                 value: stats?.active_incidents ?? 0,
                 accent: "amber",
                 icon: TriangleAlert,
               },
               {
                 id: "resolved",
-                category: "Resolved Today",
-                label: "Last 24h",
+                category: t("resolvedToday"),
+                label: t("last24h"),
                 value: stats?.resolved_today ?? 0,
                 accent: "green",
                 icon: CheckCircle,
@@ -217,14 +219,14 @@ export default function ReportsPage() {
             <section className="bg-panel rounded-3xl p-6 md:p-8 shadow-sm border border-ink/5">
               <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2 mb-6">
                 <BarChart3 className="w-5 h-5 text-ink/40" />
-                Incident Types
+                {t("incidentTypes")}
               </h2>
               <div className="space-y-5">
                 {typeStats.length === 0 ? (
                   <EmptyState
                     icon={BarChart3}
-                    title="No incident data yet"
-                    description="Reports with classifications will appear here once tickets are created and processed."
+                    title={t("noIncidentData")}
+                    description={t("noIncidentDataDesc")}
                   />
                 ) : (
                   typeStats.map((stat, i) => (
@@ -254,7 +256,7 @@ export default function ReportsPage() {
             <section className="bg-panel rounded-3xl p-6 md:p-8 shadow-sm border border-ink/5">
               <h2 className="font-semibold tracking-tight text-xl text-ink flex items-center gap-2 mb-6">
                 <TrendingUp className="w-5 h-5 text-ink/40" />
-                Status Breakdown
+                {t("statusBreakdown")}
               </h2>
               <div className="space-y-5">
                 {(() => {
@@ -267,8 +269,8 @@ export default function ReportsPage() {
                     return (
                       <EmptyState
                         icon={AlertCircle}
-                        title="No status data yet"
-                        description="Ticket status breakdown will appear here once reports are submitted and processed."
+                        title={t("noStatusData")}
+                        description={t("noStatusDataDesc")}
                       />
                     );
                   }

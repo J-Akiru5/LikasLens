@@ -5,6 +5,7 @@ import ReactECharts from "echarts-for-react/lib/core";
 import { echarts, useEChartsTheme } from "./echarts-theme";
 import { useChartColors } from "./use-chart-colors";
 import { laravelGet } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface ReportsByType {
   [type: string]: number;
@@ -31,7 +32,22 @@ function formatType(code: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+const VIOLATION_KEY_MAP: Record<string, string> = {
+  illegal_dumping: "illegalDumping",
+  water_pollution: "waterPollution",
+  illegal_logging: "illegalLogging",
+  air_pollution: "airPollution",
+  open_burning: "other",
+  wildlife_poaching: "wildlifePoaching",
+  mining_violation: "miningViolation",
+  land_encroachment: "landEncroachment",
+  other: "other",
+  unknown: "other",
+};
+
 export function ViolationDonut() {
+  const t = useTranslations("violationDonut");
+  const tReport = useTranslations("report");
   const [data, setData] = useState<{ name: string; value: number; itemStyle: { color: string } }[]>([]);
   const [loading, setLoading] = useState(true);
   const chartTheme = useEChartsTheme();
@@ -52,14 +68,21 @@ export function ViolationDonut() {
           );
         }
       } catch {
-        setData([
-          { name: "Illegal Dumping", value: 34, itemStyle: { color: "#f87171" } },
-          { name: "Water Pollution", value: 28, itemStyle: { color: "#22d3ee" } },
-          { name: "Illegal Logging", value: 22, itemStyle: { color: "#34d399" } },
-          { name: "Air Pollution", value: 18, itemStyle: { color: "#fbbf24" } },
-          { name: "Open Burning", value: 12, itemStyle: { color: "#fb923c" } },
-          { name: "Other", value: 8, itemStyle: { color: "#94a3b8" } },
-        ]);
+        const fallback: Array<{ code: string; count: number }> = [
+          { code: "illegal_dumping", count: 34 },
+          { code: "water_pollution", count: 28 },
+          { code: "illegal_logging", count: 22 },
+          { code: "air_pollution", count: 18 },
+          { code: "open_burning", count: 12 },
+          { code: "other", count: 8 },
+        ];
+        setData(
+          fallback.map(({ code, count }) => ({
+            name: tReport(VIOLATION_KEY_MAP[code] ?? "other"),
+            value: count,
+            itemStyle: { color: TYPE_COLORS[code] ?? "#94a3b8" },
+          }))
+        );
       } finally {
         setLoading(false);
       }
@@ -131,7 +154,7 @@ export function ViolationDonut() {
         left: "27%",
         top: "54%",
         style: {
-          text: "TOTAL",
+          text: t("total"),
           textAlign: "center" as const,
           fill: c.textMuted,
           fontSize: 9,
@@ -148,7 +171,7 @@ export function ViolationDonut() {
   if (loading) {
     return (
       <div className="ios-grouped-list p-5 flex items-center justify-center" style={{ minHeight: 260 }}>
-        <div className="animate-pulse text-sm text-ink/40">Loading violations...</div>
+        <div className="animate-pulse text-sm text-ink/40">{t("loadingViolations")}</div>
       </div>
     );
   }
@@ -157,7 +180,7 @@ export function ViolationDonut() {
     <div className="ios-grouped-list p-4">
       <div className="flex items-center gap-2 mb-3">
         <span className="font-mono text-[10px] text-ink/50 uppercase tracking-widest">
-          Violation Breakdown
+          {t("violationBreakdown")}
         </span>
       </div>
       <ReactECharts

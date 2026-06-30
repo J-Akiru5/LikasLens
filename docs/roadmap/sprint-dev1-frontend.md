@@ -1,335 +1,282 @@
-# Developer 1 — Frontend Sprint Roadmap
+# Developer 1 — Design & Frontend
 
-> **Sprint:** Post-Pull Bug Fix & Integration Sprint
-> **Version:** v0.9.3 → v0.9.5
-> **Timeline:** June 21–25, 2026 (Sat–Wed)
-> **Total Estimated Hours:** 38h
-> **Assigned To:** Lou (Dev 1)
-> **Scope:** ALL frontend — `apps/frontend`, `apps/mobile-pwa`, `apps/shared`
-> **Status:** 🔴 NOT STARTED
+> **Sprint:** ASEAN AI Hackathon Prep
+> **Timeline:** June 5-8, 2026 (Thu-Sun)
+> **Total Hours:** 24h
+> **Assigned To:** Lou (replacing Katherine)
+> **Focus:** UI/UX polish, impact dashboard, Ghost Mode, mobile responsiveness
 
 ---
 
-## Team Roster
+## Team Roster (Updated)
 
 | Dev | Name | Role | Focus |
 |-----|------|------|-------|
-| Dev 1 | **Lou** | Frontend/UI | Next.js UI, Tailwind, responsive design, PWA, shared components |
-| Dev 2 | Jeff | AI/Backend | FastAPI AI service, YOLOv8, Neo4j graph, Gemini |
+| Dev 1 | Lou | Frontend/UI | Next.js UI, Tailwind, responsive design, Ghost Mode theme |
+| Dev 2 | Jeff | AI/Backend | FastAPI AI service, YOLOv8, Gremlin graph, Gemini |
 | Dev 3 | Charlyn | Backend/Infrastructure | Laravel API, Supabase, CI/CD, admin portal |
 | Dev 4 | Katherine | Integration/PWA/APK | E2E testing, PWA offline, Capacitor APK, demo prep |
 
----
+> **Note:** Roseby is no longer on the team. Katherine moved from Dev 1 to Dev 4. Lou joined as Dev 1.
 
-## Summary of Responsibilities
-
-Lou owns **all user-facing frontend code** across three apps:
-
-- **`apps/frontend`** — Public marketing site + full web app (Next.js 16 App Router)
-- **`apps/mobile-pwa`** — Installable mobile PWA with native feel (Next.js 16 App Router)
-- **`apps/shared`** — Shared React components, API client, types, design tokens
-
-This sprint focuses on **stabilizing the post-pull codebase**, fixing broken layouts and critical mobile-pwa issues, and integrating newly pulled shared components.
-
----
-
-## Recent Pull Context
-
-The latest pull brought these features that need integration/verification:
-
-| Feature | Status | Action Needed |
-|---------|--------|---------------|
-| Auth callback routes (`frontend` + `mobile-pwa`) | Pulled | Polish & verify flows |
-| Apple splash screens (`mobile-pwa`) | Pulled | Verify integration |
-| PWA install prompt (`shared`) | Pulled | Wire into both apps |
-| Global search (`shared`) | Pulled | Wire into both apps |
-| Enhanced map/heatmap widgets | Pulled | Polish & verify |
-| `format.ts` utilities (`shared`) | Pulled | Integrate across pages |
-| `auth-init` libraries (all 3 apps) | Pulled | Verify initialization |
-| Error pages (`mobile-pwa`) | Pulled | Verify rendering |
+### Lou's Completed Work (from codebase evidence)
+- ✅ Impact dashboard significantly expanded (`dashboard/impact/page.tsx` — 977+ lines with charts, stats, activity feed)
+- ✅ Landing page updates (`page.tsx` — 88+ lines of changes)
+- ✅ Register form improvements
+- ✅ Sidebar refinements
+- ✅ Theme provider updates
+- ✅ Global CSS adjustments
+- ✅ Changelog page with GitHub cat logo in footer (v0.6.x)
+- ✅ Loading states for scoreboard, report, contact, laws, privacy pages (v0.7.2)
+- ✅ Error boundary pages for all major routes (v0.7.2)
+- ✅ Contact form page with API integration (v0.7.2)
+- ✅ EXIF stripping utility + inline implementation in report page (v0.7.1)
+- ✅ Offline queue built into report page (IndexedDB + auto-flush) (v0.7.2)
+- ✅ Framer motion ease type fix on landing page
+- ✅ Recharts type errors fix
 
 ---
 
 ## Dependencies on Other Developers
 
-| Dependency | From | Needed By | Status | Notes |
-|------------|------|-----------|--------|-------|
-| APK install link / download endpoint | Dev 4 (Katherine) | Day 1 | 🔴 Blocked | Issue #164 — Lou needs working URL for install page |
-| Android app ownership intent filters | Dev 4 (Katherine) | Day 1 | 🔴 Blocked | Issue #176 — `.well-known/assetlinks.json` config |
-| Backend profile update endpoint | Dev 3 (Charlyn) | Day 2 | 🟡 Pending | Issue #169 — Edit Profile needs `PUT /api/user/profile` |
-| Dashboard search API | Dev 3 (Charlyn) | Day 2 | 🟡 Pending | Issue #168 — Search needs backend query support |
-| Neo4j graph label confirmation | Dev 2 (Jeff) | Day 1 | 🟡 Pending | Tech-stack copy fix depends on Jeff confirming DB choice |
+| Dependency | From | Needed By | Notes |
+|------------|------|-----------|-------|
+| Working API endpoints | Dev 3 (Charlyn) | Fri morning | Impact dashboard needs `/api/dashboard/stats` |
+| Seeded demo data | Dev 3 (Charlyn) | Fri afternoon | Dashboard needs real tickets/users to display |
+| Ghost Mode theme tokens | Already built | Thu | `data-theme="ghost"` CSS vars exist in `globals.css` |
+| AI triage working | Dev 2 (Jeff) | Sat | Edge Interceptor modal needs triage responses |
 
 ---
 
-## CRITICAL Priority (Day 1 — June 21)
+## Day 1 — Thursday, June 5
 
-### #175 — Broken Android App Logo
-- [ ] **Fix PWA manifest icon paths for Android**
-  - **Files:**
-    - `apps/mobile-pwa/public/manifest.json`
-    - `apps/mobile-pwa/next.config.ts` (PWA plugin config)
-    - `apps/mobile-pwa/src/app/layout.tsx` (meta tags)
-  - **Description:** Android displays default browser icon instead of LikasLens logo. Verify all icon sizes (192x192, 512x512) are present and correctly referenced in manifest. Ensure `maskable` purpose variants exist.
-  - **Est:** 2h
-  - **Issue:** #175
+### Task 1.1: Role-Aware Sidebar Rendering
+**Time:** 3h | **Priority:** HIGH
 
-### #176 — Android Ownership Not Working
-- [ ] **Verify Digital Asset Links and intent filters**
-  - **Files:**
-    - `apps/mobile-pwa/public/.well-known/assetlinks.json`
-    - `apps/mobile-pwa/next.config.ts` (PWA config)
-    - Android Capacitor config (if hybrid)
-  - **Description:** Android does not recognize app ownership. Verify `assetlinks.json` is served correctly at `/.well-known/assetlinks.json`. Confirm `package_name` and `sha256_cert_fingerprint` match. Coordinate with Dev 4 for Capacitor-side intent filter config.
-  - **Est:** 2h
-  - **Blocked by:** Dev 4 (Katherine) — needs Capacitor package name + signing cert fingerprint
-  - **Issue:** #176
+**Problem:** The sidebar currently shows the same nav items for all users. Analyst and super_admin roles should see different navigation options.
 
----
+**Files to modify:**
+- `apps/frontend/src/components/layout/sidebar.tsx`
+- `apps/shared/src/ui/` (any shared nav components)
 
-## HIGH Priority (Day 1–2 — June 21–22)
+**Acceptance Criteria:**
+- [x] Citizen sees: Dashboard, Report, Scoreboard, Laws, Profile
+- [x] Analyst sees: + Incidents, Towns Analytics
+- [ ] Super Admin sees: + Users, NGOs, Laws Admin, Rewards, Audit Logs
+- [x] Role fetched from `/api/user/profile` and cached
+- [ ] Loading state while role is being fetched
 
-### #174 — Broken OG Image
-- [ ] **Fix Open Graph meta image for social sharing**
-  - **Files:**
-    - `apps/frontend/src/app/layout.tsx` (metadata)
-    - `apps/frontend/public/og-image.png` (or equivalent)
-    - `apps/frontend/next.config.ts` (image domains)
-  - **Description:** OG image does not render when sharing links on social media. Verify the image file exists, metadata references the correct absolute URL, and `og:image` dimensions are set (1200x630 recommended).
-  - **Est:** 1.5h
-  - **Issue:** #174
-
-### #163 — Chatbot Blocks Input with "Log In" Button
-- [ ] **Fix chatbot overlay blocking input fields**
-  - **Files:**
-    - `apps/frontend/src/components/chatbot/` (chatbot widget)
-    - `apps/frontend/src/app/[locale]/layout.tsx` (chatbot placement)
-  - **Description:** The chatbot's "Log In" CTA button overlaps input fields on certain pages, preventing user interaction. Adjust z-index stacking, add dismiss behavior, or reposition chatbot trigger to avoid blocking form inputs.
-  - **Est:** 2h
-  - **Issue:** #163
-
-### #164 — Install/APK Link Broken
-- [ ] **Fix install page download link and PWA install prompt**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/install/page.tsx`
-    - `apps/shared/src/ui/pwa-install-prompt.tsx`
-    - `apps/frontend/src/components/` (install CTA if any)
-  - **Description:** The APK download link on the install page is broken. Coordinate with Dev 4 for working download URL. Also integrate the new shared `pwa-install-prompt` component into both `frontend` and `mobile-pwa` for browser-based install flow.
-  - **Est:** 2h
-  - **Blocked by:** Dev 4 (Katherine) — needs working APK URL
-  - **Issue:** #164
-
-### #173 — Laws Database: Broken Card Layout
-- [ ] **Fix law card grid layout on mobile-pwa**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/(app)/laws/page.tsx`
-  - **Description:** Law cards are broken on mobile — likely grid/flex overflow or missing responsive breakpoints. Cards should stack single-column on mobile, 2-col on tablet. Verify card content truncation and tap targets.
-  - **Est:** 2h
-  - **Issue:** #173
-
-### Gremlin → Neo4j Copy Fix
-- [ ] **Fix incorrect database reference in tech stack section**
-  - **File:** `apps/frontend/src/components/marketing/sections/tech-stack-section.tsx:71`
-  - **Current:** `"Gremlin-powered graph database..."`
-  - **Fix to:** `"Neo4j-powered graph database mapping relationships between violations, locations, agencies, statutes, and temporal patterns. Enables Cypher queries for pattern detection."`
-  - **Est:** 10min
+**Implementation Notes:**
+- Role is fetched from Supabase `user_metadata` via `getRole(user?.user_metadata)` (not from Laravel API)
+- Stored in `useState`, not a context/zustand store
+- Conditionally render nav items based on role
+- Uses `lucide-react` icons matching existing icon patterns
+- **Missing:** Laws Admin link for super_admin, loading skeleton while role fetches
 
 ---
 
-## MEDIUM Priority (Day 2–3 — June 22–23)
+### Task 1.2: Scoreboard Page Polish
+**Time:** 3h | **Priority:** MEDIUM
 
-### #170 — Incidents: Broken Card Layout
-- [ ] **Fix incident card layout on mobile-pwa**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/(app)/incidents/page.tsx`
-  - **Description:** Incident cards have layout issues — likely overflow, truncation, or broken grid. Apply consistent card pattern matching other mobile-pwa pages.
-  - **Est:** 1.5h
-  - **Issue:** #170
+**Files to modify:**
+- `apps/frontend/src/app/[locale]/scoreboard/page.tsx`
+- `apps/shared/src/ui/public-scoreboard.tsx`
 
-### #172 — Leaderboard: 1st–3rd Placement Crowded
-- [ ] **Fix top-3 rank display spacing on mobile-pwa**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/(app)/scoreboard/page.tsx`
-  - **Description:** Top 3 leaderboard entries are visually crowded — gold/silver/bronze badges overlap or text is clipped. Add proper spacing, reduce font size on mobile, or reflow to vertical stack.
-  - **Est:** 1.5h
-  - **Issue:** #172
+**Acceptance Criteria:**
+- [x] Top 3 ranked users have special visual treatment (gold/silver/bronze)
+- [x] Rank #1 has amber glow: `shadow-[0_0_16px_rgba(255,183,3,0.12)]`
+- [x] Eco-credit balance visible per user
+- [ ] Mobile layout is responsive (single column on small screens)
+- [x] Loading skeleton matches Civic Brutalism style
+- [x] Empty state message when no data
 
-### #165 — Display Name Squeezed to Side
-- [ ] **Fix display name alignment/overflow in mobile-pwa**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/(app)/profile/page.tsx`
-    - `apps/mobile-pwa/src/app/[locale]/(app)/layout.tsx` (header/nav)
-  - **Description:** User's display name is pushed to the edge or clipped. Likely a flex/overflow issue in the profile header or navigation bar. Ensure proper padding and text truncation with `ellipsis`.
-  - **Est:** 1h
-  - **Issue:** #165
-
-### #166 — Impact Insights: Broken Card Layout
-- [ ] **Fix impact insights card layout on mobile-pwa**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/(app)/impact/page.tsx`
-  - **Description:** Impact/insights cards have broken layout — likely chart overflow or grid misalignment. Verify responsive grid, chart container sizing, and card padding.
-  - **Est:** 1.5h
-  - **Issue:** #166
-
-### #168 — Dashboard Search Bar Not Working
-- [ ] **Wire global search into mobile-pwa dashboard**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/(app)/dashboard/page.tsx`
-    - `apps/shared/src/ui/global-search.tsx`
-  - **Description:** Dashboard search bar does not trigger queries. Integrate the new shared `global-search` component. Requires backend search endpoint (coordinate with Dev 3). If endpoint unavailable, implement client-side filtering as fallback.
-  - **Est:** 2h
-  - **Blocked by:** Dev 3 (Charlyn) — search API endpoint
-  - **Issue:** #168
-
-### #169 — No Edit Profile Feature
-- [ ] **Implement edit profile page on mobile-pwa**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/(app)/profile/edit/page.tsx` (exists, verify)
-    - `apps/shared/src/ui/` (form components)
-  - **Description:** Edit profile page exists at `profile/edit/page.tsx` but may be non-functional. Wire up form fields (display name, avatar, bio), connect to `PUT /api/user/profile` endpoint. Coordinate with Dev 3 for API availability.
-  - **Est:** 3h
-  - **Blocked by:** Dev 3 (Charlyn) — profile update endpoint
-  - **Issue:** #169
-
-### Shared Component Integration
-- [ ] **Integrate global-search into frontend and mobile-pwa**
-  - **Files:**
-    - `apps/shared/src/ui/global-search.tsx`
-    - `apps/frontend/src/components/layout/` (header/sidebar)
-    - `apps/mobile-pwa/src/app/[locale]/(app)/layout.tsx`
-  - **Est:** 2h
-
-- [ ] **Integrate pwa-install-prompt into both apps**
-  - **Files:**
-    - `apps/shared/src/ui/pwa-install-prompt.tsx`
-    - `apps/frontend/src/app/layout.tsx`
-    - `apps/mobile-pwa/src/app/layout.tsx`
-  - **Est:** 1h
-
-- [ ] **Verify pwa-splash-screen integration**
-  - **Files:**
-    - `apps/shared/src/ui/pwa-splash-screen.tsx`
-    - `apps/mobile-pwa/src/components/apple-splash-screens.tsx`
-    - `apps/mobile-pwa/src/components/splash-screen.tsx`
-  - **Description:** Verify Apple splash screen images load correctly. Ensure `apple-splash-screens.tsx` renders the right viewport-specific splash images. Test on iOS Safari.
-  - **Est:** 1.5h
-
-- [ ] **Integrate format.ts utilities across pages**
-  - **Files:**
-    - `apps/shared/src/lib/format.ts`
-    - All pages displaying dates, numbers, coordinates, file sizes
-  - **Description:** Replace ad-hoc formatting with shared `format.ts` functions (e.g., `formatDate`, `formatNumber`, `formatCoordinate`, `formatFileSize`). Search for manual `toLocaleDateString()`, `toFixed()`, etc.
-  - **Est:** 2h
-
-### Auth Callback Flow Polish
-- [ ] **Polish frontend auth callback**
-  - **Files:**
-    - `apps/frontend/src/app/auth/callback/route.ts`
-  - **Description:** Verify OAuth callback handles success, error, and edge cases (expired tokens, missing code). Ensure proper redirect after auth.
-  - **Est:** 1h
-
-- [ ] **Polish mobile-pwa auth callback**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/auth/callback/page.tsx`
-    - `apps/mobile-pwa/src/lib/auth-init.ts`
-  - **Description:** Verify mobile auth callback renders loading state, handles errors gracefully, and redirects to dashboard on success.
-  - **Est:** 1h
-
-### Map & Heatmap Polish
-- [ ] **Polish enhanced map widget**
-  - **Files:**
-    - `apps/mobile-pwa/src/components/map/enhanced-map.tsx`
-    - `apps/mobile-pwa/src/app/[locale]/(app)/map/page.tsx`
-  - **Description:** Verify map renders correctly, markers are interactive, and map is responsive on mobile. Test touch gestures (pinch zoom, pan).
-  - **Est:** 1.5h
+**Design Reference:**
+- Uses `font-heading font-black uppercase` for rank names
+- Uses `font-data` for XP numbers
+- Applies `brutal-panel` + `panel-surface` classes
+- Hard shadows: `shadow-[4px_4px_0px_#1b4332]`
 
 ---
 
-## LOW Priority (Day 3–4 — June 23–24)
+## Day 2 — Friday, June 6
 
-### #167 — Dashboard Column Separation
-- [ ] **Improve dashboard column visual separation on mobile-pwa**
-  - **Files:**
-    - `apps/mobile-pwa/src/app/[locale]/(app)/dashboard/page.tsx`
-  - **Description:** Dashboard sections lack visual separation — add dividers, spacing, or card containers to distinguish metric groups.
-  - **Est:** 1h
-  - **Issue:** #167
+### Task 2.1: Impact Dashboard Page
+**Time:** 8h | **Priority:** HIGH
 
-### Cross-App Consistency Audit
-- [ ] **Verify design consistency between frontend and mobile-pwa**
-  - Compare shared component usage across both apps
-  - Ensure both apps use `apps/shared` components (not duplicated local versions)
-  - Verify Tailwind config alignment
-  - **Est:** 2h
+**New file:** `apps/frontend/src/app/[locale]/dashboard/impact/page.tsx`
 
-### Loading & Error State Audit
-- [ ] **Verify all loading.tsx and error.tsx files render correctly**
-  - `apps/mobile-pwa/src/app/[locale]/(app)/*/loading.tsx` (12 files)
-  - `apps/mobile-pwa/src/app/[locale]/(app)/error.tsx`
-  - `apps/mobile-pwa/src/app/[locale]/error.tsx`
-  - `apps/mobile-pwa/src/app/not-found.tsx`
-  - **Est:** 1.5h
+**This is the centerpiece feature for the hackathon demo.**
 
-### Accessibility Quick Pass
-- [ ] **Check key accessibility issues on mobile-pwa**
-  - Verify `aria-labels` on interactive elements
-  - Ensure color contrast meets WCAG AA
-  - Test keyboard navigation on critical flows
-  - **Est:** 1.5h
+**Data Sources (from Laravel API):**
+- `GET /api/dashboard/stats` — total tickets, resolution rate, avg response time
+- `GET /api/tickets` — all tickets with lat/lng for heat map
+- `GET /api/leaderboard` — top reporters
 
----
+**Dashboard Sections:**
 
-## Post-Hackathon Deferred Tasks
+#### Section A: Key Metrics (Top Row)
+- Total Reports Submitted
+- Reports Resolved (with % rate)
+- Average Response Time (hours)
+- Active Citizens (unique reporters)
 
-These tasks are out of scope for the current sprint but should be tracked:
+**Component:** `StatsCards` from `apps/shared/src/ui/stats-cards.tsx`
 
-| Task | Priority | Notes |
-|------|----------|-------|
-| Full i18n audit for all `[locale]` routes | MEDIUM | Verify all translated strings are present |
-| Offline-first PWA enhancement | MEDIUM | Service worker caching strategy |
-| Dark mode (Ghost Mode) across mobile-pwa | MEDIUM | Currently frontend-only |
-| Component library documentation (Storybook) | LOW | For shared components |
-| E2E test coverage for critical flows | LOW | Playwright or Cypress |
-| Performance budget & Lighthouse audit | LOW | Target 90+ on mobile |
-| Image lazy loading optimization | LOW | Below-the-fold images |
-| Font loading optimization (Montserrat, Inter, Space Mono) | LOW | `font-display: swap` |
+#### Section B: Resolution Rate Chart
+- Bar chart showing tickets by status (open, investigating, monitoring, resolved, closed)
+- Use a lightweight chart library (recharts or chart.js)
 
----
+#### Section C: Geographic Heat Map
+- Leaflet map with markers for each ticket's lat/lng
+- Cluster markers for dense areas
+- Color-coded by urgency_score (1-5)
+- **Reuse `GeoTagMap` component** from `apps/frontend/src/components/maps/`
 
-## Sprint Velocity Tracker
+#### Section D: AI Confidence Trends
+- Line chart showing avg `ai_confidence` over time
+- Grouped by week
 
-| Day | Date | Focus | Hours | Tasks |
-|-----|------|-------|-------|-------|
-| 1 | Sat Jun 21 | Critical fixes + blocked items | 8h | #175, #176, #174, #163, #164, Gremlin fix |
-| 2 | Sun Jun 22 | High priority + shared integration | 8h | #173, global-search, pwa-install, format.ts |
-| 3 | Mon Jun 23 | Medium priority mobile-pwa fixes | 8h | #170, #172, #165, #166, auth polish, map polish |
-| 4 | Tue Jun 24 | Remaining medium + low priority | 8h | #168, #169, #167, consistency audit |
-| 5 | Wed Jun 25 | Buffer / testing / polish | 6h | Remaining items, cross-app testing |
+#### Section E: Recent Activity Feed
+- Last 10 tickets with status, type, location
+- **Reuse `ActivityFeed`** from `apps/frontend/src/components/dashboard/`
 
-**Total: 38h estimated**
+**Acceptance Criteria:**
+- [x] Page loads with real data from API
+- [x] Stats cards show correct numbers
+- [ ] Map renders with ticket markers (uses SVG ASEAN map instead of Leaflet)
+- [x] Charts are responsive
+- [x] Mobile layout stacks vertically
+- [x] Loading states for each section
+- [ ] Error states if API fails (falls back silently, no explicit error UI)
 
 ---
 
-## Checklist: Sprint Definition of Done
+### Task 2.2: Install Chart Library
+**Time:** 1h | **Priority:** HIGH
 
-- [ ] All CRITICAL issues resolved (#175, #176)
-- [ ] All HIGH issues resolved (#174, #163, #164, #173)
-- [ ] All MEDIUM issues resolved or have clear fallback
-- [ ] Gremlin → Neo4j copy fixed
-- [ ] Shared components integrated (global-search, pwa-install-prompt, pwa-splash-screen)
-- [ ] `format.ts` utilities integrated across pages
-- [ ] Auth callback flows polished on both apps
-- [ ] Map/heatmap widgets verified and polished
-- [ ] No TypeScript errors: `pnpm --filter frontend build && pnpm --filter mobile-pwa build`
-- [ ] No lint errors: `pnpm --filter frontend lint && pnpm --filter mobile-pwa lint`
-- [ ] All pages render at 375px width (iPhone SE)
+```bash
+pnpm --filter frontend add recharts
+```
+
+**Status:** ✅ DONE — `recharts@^2.15.4` installed in `package.json`
 
 ---
 
-## Notes
+## Day 3 — Saturday, June 7
 
-- Always run `pnpm install` from repo root before building
-- Use `pnpm --filter frontend dev` or `pnpm --filter mobile-pwa dev` for isolated dev
-- Respect monorepo boundaries — never import from `apps/backend` or `apps/ai-service` directly
-- For image uploads: always include EXIF stripping before transmission
-- Follow existing code conventions — check neighboring files before writing new patterns
+### Task 3.1: Ghost Mode Enhancements
+**Time:** 4h | **Priority:** HIGH
+
+**Files to modify:**
+- `apps/frontend/src/app/[locale]/report/page.tsx`
+- `apps/frontend/src/components/modals/EdgeInterceptorModal.tsx`
+- `apps/frontend/src/app/globals.css`
+
+**Enhancements:**
+- [ ] Ghost Mode toggle has animated transition (dark theme fade-in)
+- [x] Edge Interceptor modal copy is clear and compelling for demo
+- [ ] Ghost Mode status indicator (pulsing amber dot) in header when active
+- [ ] EXIF stripping confirmation toast: "Metadata stripped for your safety"
+- [x] Stealth theme: all UI elements switch to dark palette
+
+**Ghost Mode CSS (already exists, verify):**
+```css
+[data-theme="ghost"] {
+    --primary: #2DE1C2;
+    --background: #081C15;
+    --foreground: #F8F9FA;
+    --panel: rgba(8, 28, 21, 0.9);
+    --panel-border: rgba(45, 225, 194, 0.35);
+}
+```
+
+**Additional completed work:**
+- ✅ EXIF stripping now applied in all modes (not just Ghost Mode) — v0.7.1
+- ✅ `exif-stripper.ts` utility exists at `apps/frontend/src/utils/exif-stripper.ts`
+
+---
+
+### Task 3.2: Mobile Responsiveness Audit
+**Time:** 2h | **Priority:** MEDIUM
+
+**Pages to audit:**
+- `/report` — camera view, form fields, submit button
+- `/dashboard` — stats cards, activity feed
+- `/dashboard/impact` — new impact dashboard
+- `/scoreboard` — rank cards
+- `/laws` — law cards, search
+- `/contact` — form layout
+
+**Fixes:**
+- [ ] All pages work at 375px width (iPhone SE) — unverifiable, needs runtime testing
+- [ ] No horizontal scroll on any page — unverifiable
+- [ ] Touch targets are minimum 44px — unverifiable
+- [x] Bottom nav doesn't overlap content — pages use `pb-20 lg:pb-6`
+
+---
+
+## Day 4 — Sunday, June 8
+
+### Task 4.1: Demo Script UI Flows
+**Time:** 3h | **Priority:** HIGH
+
+**Ensure these flows are demo-ready:**
+
+**Flow 1: Citizen Report**
+1. Landing page loads fast (< 2s)
+2. Click "Report" → camera activates
+3. Capture photo → GPS acquired
+4. Select incident type → add description
+5. Triage pre-check runs (Edge Interceptor if high-risk)
+6. Submit → success animation
+7. View in dashboard
+
+**Flow 2: Ghost Mode**
+1. Toggle Ghost Mode → theme transitions
+2. Capture photo → EXIF stripped toast
+3. Submit anonymously → confirmation
+4. Verify no user info in response
+
+**Flow 3: Impact Dashboard**
+1. Navigate to Impact Dashboard
+2. Show stats, map, charts
+3. Point out resolution rate
+4. Show geographic hotspots
+
+**Acceptance Criteria:**
+- [ ] All 3 flows complete without errors — unverifiable, needs runtime testing
+- [ ] Each flow takes < 30 seconds — unverifiable
+- [ ] UI looks polished at every step — unverifiable
+- [ ] No console errors during demo — unverifiable
+
+---
+
+### Task 4.2: Final UI Fixes
+**Time:** 1h | **Priority:** LOW
+
+- Fix any visual glitches found during rehearsal
+- Ensure consistent spacing across pages
+- Verify all fonts load (Montserrat, Inter, Space Mono)
+- Check dark mode (Ghost Mode) on all pages
+
+---
+
+## Risk Items
+
+| Risk | Status | Mitigation |
+|------|--------|-----------|
+| Chart library SSR issues | ✅ Resolved | Uses direct imports in `"use client"` component |
+| Map not rendering on mobile | ⚠️ Open | Uses SVG ASEAN map instead of Leaflet |
+| API data not available | ✅ Resolved | Dev 3 seeded demo data (LikasLensSeeder) |
+| Ghost Mode CSS conflicts | ✅ Resolved | Comprehensive `[data-theme="ghost"]` rules in globals.css |
+
+---
+
+## Definition of Done
+
+- [x] Role-aware sidebar works for citizen/analyst/admin (missing Laws Admin for super_admin)
+- [x] Impact dashboard shows real data with charts + map (SVG map, not Leaflet)
+- [ ] Ghost Mode flow is polished and compelling (missing pulsing indicator + EXIF toast)
+- [ ] All pages responsive at 375px — unverifiable
+- [ ] All 3 demo flows complete without errors — unverifiable
+- [ ] No console errors on any page — unverifiable

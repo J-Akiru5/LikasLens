@@ -5,8 +5,10 @@ import { useRouter, useParams } from "next/navigation";
 import { User, Camera, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getProfile, laravelPut, showToast, Button } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 export default function EditProfilePage() {
+  const t = useTranslations("dashboard");
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
   const [name, setName] = useState("");
@@ -35,16 +37,16 @@ export default function EditProfilePage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) {
-      showToast("Please enter a display name", "error");
+      showToast(t("enterDisplayName"), "error");
       return;
     }
     setSaving(true);
     try {
       await laravelPut("/user/profile", { name: name.trim() });
-      showToast("Profile updated successfully", "success");
+      showToast(t("profileUpdated"), "success");
       router.push(`/${locale}/profile`);
     } catch {
-      showToast("Failed to update profile", "error");
+      showToast(t("profileUpdateFailed"), "error");
     } finally {
       setSaving(false);
     }
@@ -67,7 +69,7 @@ export default function EditProfilePage() {
               <Camera className="w-4 h-4 text-ink/60" />
             </div>
           </div>
-          <p className="label-pill label-pill-light">Tap to change avatar</p>
+          <p className="label-pill label-pill-light">{t("tapToChangeAvatar")}</p>
         </div>
 
         {loading ? (
@@ -85,7 +87,7 @@ export default function EditProfilePage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                placeholder={t("yourName")}
                 className="w-full theme-input px-4 py-4 font-medium bg-ink/5 border border-ink/10 rounded-xl text-base focus:border-accent outline-none transition-colors"
               />
             </div>

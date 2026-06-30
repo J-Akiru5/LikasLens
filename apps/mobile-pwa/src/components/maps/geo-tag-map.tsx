@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MapPin, Navigation, Crosshair } from "lucide-react";
 import type L from "leaflet";
+import { useTranslations } from "next-intl";
 
 interface GeoTagMapProps {
   /** Initial GPS coordinates — typically from device geolocation */
@@ -30,6 +31,7 @@ interface GeoTagMapProps {
  *   - "Re-center" button snaps back to device GPS
  */
 export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoTagMapProps) {
+  const t = useTranslations("geoTagMap");
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -178,7 +180,7 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
         style={{ height }}
       >
         <div className="w-5 h-5 rounded-full border-2 border-green/30 border-t-green animate-spin" />
-        <span className="font-mono text-[10px] text-ink/40 uppercase tracking-wider">Loading map…</span>
+        <span className="font-mono text-[10px] text-ink/40 uppercase tracking-wider">{t("loadingMap")}</span>
       </div>
     );
   }
@@ -190,7 +192,7 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
         <div className="flex items-center gap-1.5 text-ink/40">
           <MapPin className="w-3.5 h-3.5 text-green" />
           <span className="font-mono text-[10px] uppercase tracking-wider">
-            Tap map or drag pin to adjust
+            {t("tapMapToAdjust")}
           </span>
         </div>
       </div>
@@ -224,7 +226,7 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
         ) : (
           <Navigation className="w-4 h-4" />
         )}
-        Auto-Detect My Location
+        {t("autoDetectLocation")}
       </button>
     </div>
   );

@@ -15,6 +15,7 @@ import {
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { EmptyState, ErrorPage, ScoreboardSkeleton } from "@likaslens/shared";
 import { cn } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -52,11 +53,7 @@ interface LeaderboardStats {
 
 type TabKey = "all-time" | "monthly" | "weekly";
 
-const TABS: { key: TabKey; label: string; icon: typeof Trophy }[] = [
-  { key: "all-time", label: "All Time", icon: Trophy },
-  { key: "monthly", label: "This Month", icon: TrendingUp },
-  { key: "weekly", label: "This Week", icon: BarChart3 },
-];
+// TABS moved inside component
 
 const ENDPOINTS: Record<TabKey, string> = {
   "all-time": "/leaderboard",
@@ -69,7 +66,14 @@ const ENDPOINTS: Record<TabKey, string> = {
 /* ------------------------------------------------------------------ */
 
 export default function ScoreboardPage() {
+  const t = useTranslations("dashboard");
+  const tp = useTranslations("profile");
   const router = useRouter();
+  const TABS: { key: TabKey; label: string; icon: typeof Trophy }[] = [
+    { key: "all-time", label: t("allTime"), icon: Trophy },
+    { key: "monthly", label: t("thisMonth"), icon: TrendingUp },
+    { key: "weekly", label: t("thisWeek"), icon: BarChart3 },
+  ];
   const [activeTab, setActiveTab] = useState<TabKey>("all-time");
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
 
@@ -93,12 +97,12 @@ export default function ScoreboardPage() {
         setEntries(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
-        setError("Unable to load leaderboard");
+        setError(t("unableToLoadLeaderboard"));
       } finally {
         setLoading(false);
       }
     },
-    [laravelUrl]
+    [laravelUrl, t]
   );
 
   /* ---- Fetch spotlight & stats ---- */
@@ -179,8 +183,8 @@ export default function ScoreboardPage() {
 
   return (
     <DashboardLayoutWrapper 
-      pageTitle="Public Leaderboard" 
-      pageSubtitle="Top environmental reporters ranked by eco-credits earned"
+      pageTitle={t("topEnvironmentalReporters")} 
+      pageSubtitle={t("topReportersSubtitle")}
     >
       <div className="space-y-6 mt-4">
 
@@ -194,7 +198,7 @@ export default function ScoreboardPage() {
                     <Crown className="w-12 h-12 text-amber-500/20" />
                   </div>
                   <p className="text-[10px] font-mono uppercase tracking-widest text-amber-600 mb-4">
-                    Eco-Warrior of the Month
+                    {t("topReportersSubtitle")}
                   </p>
                   <div className="flex items-center gap-5">
                     <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center shrink-0">
@@ -205,8 +209,8 @@ export default function ScoreboardPage() {
                         {spotlight.name || "Citizen"}
                       </p>
                       <p className="text-xs font-mono text-ink/50 mt-1">
-                        {spotlight.level} &middot; {spotlight.report_count} reports
-                        this month
+                        {spotlight.level} &middot; {spotlight.report_count} {t("reportsLabel")}
+                        {t("thisMonth")}
                       </p>
                     </div>
                     <div className="text-right shrink-0">
@@ -217,7 +221,7 @@ export default function ScoreboardPage() {
                         {spotlight.eco_credits.toLocaleString()}
                       </p>
                       <p className="text-[10px] font-mono text-ink/40 uppercase">
-                        eco-credits this month
+                        {tp("ecoCredits")} {t("thisMonth")}
                       </p>
                     </div>
                   </div>
@@ -229,7 +233,7 @@ export default function ScoreboardPage() {
                 {spotlight ? (
                   <div className="bg-panel rounded-3xl border border-ink/5 p-6 h-full">
                     <p className="text-[10px] font-mono uppercase tracking-widest text-ink/40 mb-4">
-                      Platform Statistics
+                      {t("topReportersSubtitle")}
                     </p>
                     <div className="space-y-4">
                       <div>
@@ -240,7 +244,7 @@ export default function ScoreboardPage() {
                           {stats.total_reports.toLocaleString()}
                         </p>
                         <p className="text-xs font-mono text-ink/40 uppercase">
-                          Total Reports
+                          {tp("reportsFiled")}
                         </p>
                       </div>
                       <div>
@@ -251,7 +255,7 @@ export default function ScoreboardPage() {
                           {stats.total_citizens.toLocaleString()}
                         </p>
                         <p className="text-xs font-mono text-ink/40 uppercase">
-                          Total Citizens
+                          {t("citizen")}
                         </p>
                       </div>
                       <div>
@@ -262,7 +266,7 @@ export default function ScoreboardPage() {
                           {stats.avg_eco_credits.toLocaleString()}
                         </p>
                         <p className="text-xs font-mono text-ink/40 uppercase">
-                          Avg Eco-Credits
+                          {tp("ecoCredits")}
                         </p>
                       </div>
                     </div>
@@ -278,7 +282,7 @@ export default function ScoreboardPage() {
                         <FileText className="w-16 h-16 sm:w-28 sm:h-28" />
                       </div>
                       <p className="text-[10px] sm:text-xs font-mono text-ink/40 uppercase mb-1 sm:mb-2 tracking-wider relative z-10">
-                        Total Reports
+                        {tp("reportsFiled")}
                       </p>
                       <p
                         className="text-3xl sm:text-4xl font-bold text-green relative z-10"
@@ -297,7 +301,7 @@ export default function ScoreboardPage() {
                         <Users className="w-16 h-16 sm:w-28 sm:h-28" />
                       </div>
                       <p className="text-[10px] sm:text-xs font-mono text-ink/40 uppercase mb-1 sm:mb-2 tracking-wider relative z-10">
-                        Total Citizens
+                        {t("citizen")}
                       </p>
                       <p
                         className="text-3xl sm:text-4xl font-bold text-secondary relative z-10"
@@ -316,7 +320,7 @@ export default function ScoreboardPage() {
                         <Trophy className="w-16 h-16 sm:w-28 sm:h-28" />
                       </div>
                       <p className="text-[10px] sm:text-xs font-mono text-ink/40 uppercase mb-1 sm:mb-2 tracking-wider relative z-10">
-                        Avg Eco-Credits
+                        {tp("ecoCredits")}
                       </p>
                       <p
                         className="text-3xl sm:text-4xl font-bold text-amber-600 relative z-10"
@@ -368,10 +372,10 @@ export default function ScoreboardPage() {
               /* ---- Citizen Leaderboard ---- */
               <div className="bg-panel rounded-3xl border border-ink/5 overflow-hidden">
                 <div className="hidden sm:grid grid-cols-[60px_1fr_1fr_1fr] gap-4 px-6 py-3 border-b border-ink/5 font-mono text-[10px] text-ink/40 uppercase tracking-wider">
-                  <div>Rank</div>
-                  <div>Citizen</div>
-                  <div className="text-center">Reports</div>
-                  <div className="text-right">Eco-Credits</div>
+                  <div>{t("rank")}</div>
+                  <div>{t("citizen")}</div>
+                  <div className="text-center">{t("reportsHeader")}</div>
+                  <div className="text-right">{tp("ecoCredits")}</div>
                 </div>
                 {entries.length === 0 ? (
                   <EmptyState 
@@ -381,8 +385,8 @@ export default function ScoreboardPage() {
                       activeTab === "weekly" ? BarChart3 :
                       Trophy
                     }
-                    title="No rankings yet"
-                    description="Be the first to submit a report and earn your place on the leaderboard."
+                    title={t("noRankingsYet")}
+                    description={t("noRankingsDesc")}
                   />
                 ) : (
                   entries.map((entry, index) => {
@@ -438,7 +442,7 @@ export default function ScoreboardPage() {
           <div className="span-12">
             <div className="text-center py-8">
               <p className="text-[10px] font-mono text-ink/30 uppercase tracking-wide">
-                Rankings update in real-time as reports are processed
+                {t("topReportersSubtitle")}
               </p>
             </div>
           </div>

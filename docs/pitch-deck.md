@@ -81,7 +81,7 @@ Speaker notes:
 │        Works offline with PWA + IndexedDB queue     │
 │                                                     │
 │     2. NEURO-SYMBOLIC AI                            │
-│        YOLOv8 Nano detects hazard -> Neo4j graph       │
+│        YOLOv8 Nano detects hazard -> Gremlin graph       │
 │        traces it through LAW -> AGENCY ->           │
 │        JURISDICTION -> Gemini 2.5 Flash brief       │
 │                                                     │
@@ -91,7 +91,7 @@ Speaker notes:
 │                                                     │
 │     4. ASEAN GRAPH DATABASE                         │
 │        6 countries, 25+ laws, 10+ agencies          │
-│        Transboundary routing via Neo4j Cypher       │
+│        Transboundary routing via Gremlin            │
 │                                                     │
 │     "We don't just detect hazards.                  │
 │      We reason across laws, agencies, and borders." │
@@ -121,16 +121,17 @@ Speaker notes:
 │          │              │                │         │
 │          │              ▼                ▼         │
 │          │         ┌─────────┐     ┌──────────┐   │
-│          │         │  MySQL  │     │  Neo4j   │   │
-│          │         │  (RDB)  │     │  (Graph) │   │
-│          │         └─────────┘     └──────────┘   │
+│          │         │  MySQL  │     │  Cosmos  │   │
+│          │         │  (RDB)  │     │  Gremlin │   │
+│          │         └─────────┘     │  (Graph) │   │
+│          │                         └──────────┘   │
 │          ▼                                         │
 │     ┌─────────┐                                    │
 │     │Supabase │    Auth + Social Login              │
 │     │  Auth   │                                    │
 │     └─────────┘                                    │
 │                                                     │
-│     Neo4j (Cypher) - neuro-symbolic                 │
+│     Cosmos DB (Apache Gremlin) - neuro-symbolic     │
 │     graph traversal.                                │
 │     All services communicate via REST JSON          │
 │     OpenAPI contracts. PWA deploys on Vercel.       │
@@ -140,8 +141,8 @@ Speaker notes:
 Speaker notes:
 - "Three services, strictly separated, communicating only via REST"
 - "Next.js PWA is installable on any device — no app store needed"
-- "Neo4j handles the graph traversal for neuro-symbolic reasoning"
-- "Cypher is the graph query language that lets us traverse hazard→law→agency→jurisdiction in one hop"
+- "Cosmos Gremlin handles the graph traversal for neuro-symbolic reasoning"
+- "Apache Gremlin is the graph query language that lets us traverse hazard→law→agency→jurisdiction in one hop"
 ```
 
 ---
@@ -164,7 +165,7 @@ Speaker notes:
 │     └────────────────┬─────────────────────────┘    │
 │                      ▼                               │
 │     ┌──────────────────────────────────────────┐    │
-│     │ NEO4J CYPHER TRAVERSAL:                  │    │
+│     │ GREMLIN GRAPH TRAVERSAL:                 │    │
 │     │  illegal_logging ──violates──▶ PD-705    │    │
 │     │  PD-705 ──enforced_by──▶ Forest Watch    │    │
 │     │  PD-705 ──governed_by──▶ PH-NATIONAL     │    │
@@ -181,7 +182,7 @@ Speaker notes:
 └─────────────────────────────────────────────────────┘
 
 Speaker notes:
-- "The Neo4j graph is the secret weapon — it connects hazards to laws, agencies, and jurisdictions"
+- "The Gremlin graph is the secret weapon — it connects hazards to laws, agencies, and jurisdictions"
 - "Same pipeline handles transboundary incidents — haze from Indonesia triggers Singapore laws"
 - "Gemini generates a human-readable brief that any agency officer can act on"
 - "Bonus: the same verified incident feed becomes REDD+ MRV-eligible data — opening carbon market revenue for partner communities"

@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { EnhancedMap } from "@/components/map/enhanced-map";
+import { useTranslations } from "next-intl";
 
 export default function MapPage() {
+  const t = useTranslations("mapPage");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -14,7 +16,7 @@ export default function MapPage() {
   return (
     <div className="min-h-full pb-24 bg-page">
       <header className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10 px-4 h-16 flex items-center">
-        <h1 className="ios-large-title ios-large-title--xl">Map</h1>
+        <h1 className="ios-large-title ios-large-title--xl">{t("title")}</h1>
       </header>
 
       <div className="p-4">

@@ -1,6 +1,9 @@
+"use client";
+
 import { Download } from "lucide-react";
 import { usePdfExport } from "@/hooks/usePdfExport";
 import { generateExportFilename } from "@/utils/pdf-export";
+import { useTranslations } from "next-intl";
 
 interface AnalyticsExportButtonProps {
   disabled?: boolean;
@@ -15,6 +18,7 @@ export function AnalyticsExportButton({
   onExportComplete,
   onExportError,
 }: AnalyticsExportButtonProps) {
+  const t = useTranslations("dashboard");
   const { handleExportPDF } = usePdfExport();
 
   const handleClick = async () => {
@@ -43,10 +47,10 @@ export function AnalyticsExportButton({
       onClick={handleClick}
       disabled={disabled}
       className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent/90 text-background rounded-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      title="Export Analytics & Reports as PDF"
+      title={t("exportAnalyticsPdf")}
     >
       <Download size={18} />
-      <span>Export PDF</span>
+      <span>{t("exportPdfBtn")}</span>
     </button>
   );
 }

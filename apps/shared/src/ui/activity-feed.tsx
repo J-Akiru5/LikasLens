@@ -2,6 +2,7 @@
 
 import { AlertTriangle, Info, MapPin, AlertCircle, Activity } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { EmptyFeed } from "./empty-state";
 
 interface FeedItem {
@@ -26,6 +27,7 @@ const typeDot: Record<string, string> = {
 };
 
 export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; loading?: boolean; error?: string }) {
+  const t = useTranslations("dashboard");
   const [displayedCount, setDisplayedCount] = useState(3);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -57,7 +59,7 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
       <div className="rounded-xl border border-red/20 bg-red/5 p-6 text-center">
         <AlertCircle className="mx-auto h-8 w-8 text-red mb-2 fill-red" />
         <p className="text-sm text-red">{error}</p>
-        <p className="text-xs text-muted mt-1">Try refreshing the page.</p>
+        <p className="text-xs text-muted mt-1">{t("tryRefreshing")}</p>
       </div>
     );
   }
@@ -65,8 +67,8 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
   if (!items || items.length === 0) {
     return (
       <EmptyFeed 
-        title="No activity yet"
-        description="Recent reports and updates will appear here."
+        title={t("noActivityYet")}
+        description={t("noActivityDesc")}
       />
     );
   }
@@ -84,10 +86,10 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between pb-5 border-b border-border mb-3">
-        <h2 className="text-2xl font-semibold text-ink">Live Intelligence Feed</h2>
+        <h2 className="text-2xl font-semibold text-ink">{t("liveIntelligenceFeed")}</h2>
         <span className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-green animate-[breathe_4s_ease-in-out_infinite]" />
-          <span className="font-mono text-sm text-muted">Live</span>
+          <span className="font-mono text-sm text-muted">{t("liveLabel")}</span>
         </span>
       </div>
 
@@ -137,13 +139,13 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
             {isLoadingMore ? (
               <span className="flex items-center gap-2.5">
                 <span className="w-3.5 h-3.5 rounded-full border-2 border-ink/20 border-t-ink/60 animate-spin" />
-                Retrieving Logs...
+                {t("retrievingLogs")}
               </span>
             ) : (
               <>
-                Load Older Logs
+                {t("loadOlderLogs")}
                 <span className="bg-ink/5 text-ink/50 group-hover:bg-accent/10 group-hover:text-accent px-2 py-0.5 rounded-md transition-colors text-[10px]">
-                  {allItems.length - displayedCount} MORE
+                  {allItems.length - displayedCount} {t("moreLabel")}
                 </span>
               </>
             )}
@@ -152,7 +154,7 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
         {displayedCount >= allItems.length && (
           <div className="flex items-center justify-center gap-4 py-4 text-[10px] font-bold text-ink/30 uppercase tracking-widest">
             <div className="h-px w-12 bg-ink/5" />
-            End of Live Feed
+            {t("endOfFeed")}
             <div className="h-px w-12 bg-ink/5" />
           </div>
         )}

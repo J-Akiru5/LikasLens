@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { Scale, Search, ExternalLink, Loader2 } from "lucide-react";
 import { laravelGet, Button, type PaginatedResponse } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface Law {
   id: string;
@@ -16,6 +17,7 @@ interface Law {
 }
 
 export default function LawsPage() {
+  const t = useTranslations("dashboard");
   const [laws, setLaws] = useState<Law[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ export default function LawsPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink/40" />
           <input
             type="text"
-            placeholder="Search by title, code..."
+            placeholder={t("searchTitleCode")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-12 pr-4 py-4 text-[15px] bg-panel border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-green rounded-3xl shadow-sm transition-colors"
@@ -81,8 +83,8 @@ export default function LawsPage() {
             <div className="w-16 h-16 rounded-full bg-ink/5 flex items-center justify-center mx-auto mb-6">
               <Scale className="w-8 h-8 text-ink/40" />
             </div>
-            <p className="font-bold text-lg text-ink">No laws found</p>
-            <p className="text-sm text-ink/50">Try adjusting your search criteria.</p>
+            <p className="font-bold text-lg text-ink">{t("noLawsFound")}</p>
+            <p className="text-sm text-ink/50">{t("tryAdjustingSearchCriteria")}</p>
           </div>
         ) : (
           <div className="space-y-4">

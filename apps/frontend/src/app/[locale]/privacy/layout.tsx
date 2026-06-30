@@ -8,12 +8,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "privacy" });
-  const tSeo = await getTranslations({ locale, namespace: "seo" });
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://likaslens.syntaxure.dev";
 
   return {
-    title: t("title"),
-    description: tSeo("privacyDescription"),
+    title: t("ogTitle"),
+    description: t("description"),
     alternates: {
       canonical: `${baseUrl}/${locale}/privacy`,
       languages: {
@@ -29,8 +28,8 @@ export async function generateMetadata({
     openGraph: {
       type: "website",
       siteName: "LikasLens",
-      title: t("title"),
-      description: tSeo("privacyDescription"),
+      title: t("ogTitle"),
+      description: t("description"),
       locale,
       url: `${baseUrl}/${locale}/privacy`,
       images: [
@@ -38,7 +37,7 @@ export async function generateMetadata({
           url: `${baseUrl}/twitter-image.jpg`,
           width: 1200,
           height: 630,
-          alt: "LikasLens — From snapshot to solution",
+          alt: t("ogImageAlt"),
         },
       ],
     },

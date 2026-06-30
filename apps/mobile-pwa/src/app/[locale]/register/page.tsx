@@ -6,8 +6,10 @@ import Link from "next/link";
 import { Leaf, Eye, EyeOff, Check, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslations } from "next-intl";
 
 export default function RegisterPage() {
+  const t = useTranslations("auth");
   const router = useRouter();
   const { locale } = useParams<{ locale: string }>();
   const [name, setName] = useState("");
@@ -78,10 +80,10 @@ export default function RegisterPage() {
 
         <div className="mb-8 mt-2">
           <h1 className="font-semibold tracking-tight text-3xl mb-1 text-ink">
-            Create Account
+            {t("createAccount")}
           </h1>
           <p className="font-mono text-sm text-muted uppercase tracking-widest">
-            Join the movement
+            {t("joinTheMovement")}
           </p>
         </div>
 
@@ -102,12 +104,12 @@ export default function RegisterPage() {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
             )}
-            <span>Continue with Google</span>
+            <span>{t("continueWithGoogle")}</span>
           </button>
 
           <div className="flex items-center gap-4 py-2">
             <div className="h-px flex-1 bg-ink/10" />
-            <span className="text-xs font-mono font-bold text-ink/40 uppercase tracking-widest">Or email</span>
+            <span className="text-xs font-mono font-bold text-ink/40 uppercase tracking-widest">{t("orEmail")}</span>
             <div className="h-px flex-1 bg-ink/10" />
           </div>
         </div>
@@ -122,7 +124,7 @@ export default function RegisterPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                placeholder={t("namePlaceholder")}
                 required
                 className="w-full theme-input px-4 py-4 font-medium bg-transparent border border-ink/20 rounded-xl text-base"
               />
@@ -136,7 +138,7 @@ export default function RegisterPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
                 required
                 className="w-full theme-input px-4 py-4 font-medium bg-transparent border border-ink/20 rounded-xl text-base"
               />
@@ -151,7 +153,7 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a password"
+                  placeholder={t("createPasswordPlaceholder")}
                   required
                   minLength={6}
                   className="w-full theme-input px-4 py-4 pr-12 font-medium bg-transparent border border-ink/20 rounded-xl text-base"
@@ -207,7 +209,7 @@ export default function RegisterPage() {
                 </div>
               </div>
               <span className="text-sm font-medium text-ink/60 leading-snug group-hover:text-ink/80 transition-colors">
-                I agree to help keep my community safe and only submit real, accurate reports.
+                {t("agreeToTerms")}
               </span>
             </label>
           </div>
@@ -219,19 +221,19 @@ export default function RegisterPage() {
               className="w-full bg-accent text-white rounded-2xl py-4 font-semibold tracking-wide text-lg flex items-center justify-center gap-2 hover:bg-accent/90 disabled:opacity-50 transition-colors shadow-lg"
             >
               {loading ? (
-                <span className="animate-pulse">Creating...</span>
+                <span className="animate-pulse">{t("creating")}</span>
               ) : (
-                "Create Account"
+                t("createAccount")
               )}
             </button>
 
             <p className="text-center font-mono text-sm mt-6">
-              Already have an account?{" "}
+              {t("alreadyHaveAccount")}{" "}
               <Link
                 href={`/${locale}/login`}
                 className="text-accent font-bold underline"
               >
-                Sign In
+                {t("signIn")}
               </Link>
             </p>
           </div>

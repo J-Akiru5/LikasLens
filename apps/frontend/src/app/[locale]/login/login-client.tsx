@@ -10,9 +10,11 @@ import { signIn } from "@/app/[locale]/actions/auth";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@likaslens/shared";
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const t = useTranslations("auth");
   return (
     <Button
       variant="ink"
@@ -21,9 +23,9 @@ function SubmitButton() {
       loading={pending}
       className="w-full !bg-[#0f4c5c] hover:!bg-[#0b3844] !text-white !border-transparent"
     >
-      {pending ? "Logging in..." : (
+      {pending ? t("loggingIn") : (
         <>
-          Log In <ArrowRight className="w-5 h-5" />
+          {t("logIn")} <ArrowRight className="w-5 h-5" />
         </>
       )}
     </Button>
@@ -31,6 +33,7 @@ function SubmitButton() {
 }
 
 export function LoginClient() {
+  const t = useTranslations("auth");
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -103,7 +106,7 @@ export function LoginClient() {
               </span>
             </div>
             <h2 className="text-3xl font-bold tracking-tight text-white leading-snug drop-shadow-lg max-w-md">
-              Protect our earth, <br/>one observation at a time.
+              {t("loginTagline")}
             </h2>
           </motion.div>
         </div>
@@ -126,10 +129,10 @@ export function LoginClient() {
 
           <div className="mb-10 lg:text-left text-center">
             <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink mb-2">
-              Welcome Back
+              {t("welcomeBack")}
             </h1>
             <p className="text-ink/60 text-base">
-              Log in to your account to continue.
+              {t("loginDesc")}
             </p>
           </div>
 
@@ -164,12 +167,12 @@ export function LoginClient() {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
             )}
-            <span>Continue with Google</span>
+            <span>{t("continueGoogle")}</span>
           </button>
 
           <div className="flex items-center gap-4 my-8">
             <div className="h-px flex-1 bg-ink/10" />
-            <span className="text-xs font-semibold text-ink/40 uppercase tracking-widest">Or log in with email</span>
+            <span className="text-xs font-semibold text-ink/40 uppercase tracking-widest">{t("orLogInEmail")}</span>
             <div className="h-px flex-1 bg-ink/10" />
           </div>
 
@@ -203,7 +206,7 @@ export function LoginClient() {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? t("hidePassword") : t("showPassword")}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -217,7 +220,7 @@ export function LoginClient() {
 
           <div className="mt-8 text-center space-y-4">
             <p className="text-sm text-ink/60">
-              Don&apos;t have an account?{" "}
+              {t("noAccount")}{" "}
               <Link
                 href="/register"
                 className="font-semibold text-ink hover:text-accent transition-colors underline decoration-ink/20 underline-offset-4"
@@ -230,7 +233,7 @@ export function LoginClient() {
                 href="/"
                 className="text-xs font-medium text-ink/40 hover:text-ink transition-colors flex items-center justify-center gap-1"
               >
-                &larr; Back to Home
+                &larr; {t("backToHome")}
               </Link>
             </div>
           </div>

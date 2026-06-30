@@ -72,3 +72,4 @@ export * from "./wow/magnetic-button";
 export * from "./wow/spotlight-card";
 export * from "./motion";
 export * from "./globe";
+export { LanguageDropdown } from "./language-dropdown";

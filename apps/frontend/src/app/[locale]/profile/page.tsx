@@ -249,7 +249,7 @@ function ProfilePageContent() {
     if (error) {
       showToast(error.message, "error");
     } else {
-      showToast("Profile updated successfully", "success");
+      showToast(tp("profileUpdatedSuccess"), "success");
     }
   };
 
@@ -332,14 +332,14 @@ function ProfilePageContent() {
           
           <div className="flex-1 text-center md:text-left z-10">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-ink mb-1">
-              {displayName || (userEmail ? userEmail.split("@")[0] : "Citizen")}
+              {displayName || (userEmail ? userEmail.split("@")[0] : "—")}
             </h1>
             {userEmail && <p className="font-mono text-sm text-ink/50">{userEmail}</p>}
             
             {userCreated && (
               <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 bg-ink/5 rounded-full font-mono text-xs text-ink/50">
                 <Calendar className="w-3.5 h-3.5" />
-                Joined {userCreated}
+                {tp("joined")} {userCreated}
               </div>
             )}
           </div>
@@ -347,7 +347,7 @@ function ProfilePageContent() {
           <div className="flex flex-col gap-4 z-10 shrink-0 w-full md:w-auto">
             <div className="bg-ink/5 rounded-2xl p-4 flex flex-col items-center justify-center min-w-[140px]">
               <span className="font-mono text-[10px] text-ink/40 uppercase tracking-widest font-bold block mb-1">
-                Impact Score
+                {tp("impactScore")}
               </span>
               <span className="text-3xl font-semibold tracking-tight text-ink block">
                 {(rewardPoints ?? 0).toLocaleString()}
@@ -358,7 +358,7 @@ function ProfilePageContent() {
               className="flex items-center justify-center gap-2 px-4 py-2.5 bg-ink/5 hover:bg-ink/10 text-ink text-sm font-medium rounded-xl transition-colors"
             >
               <Settings className="w-4 h-4" />
-              Edit Profile
+              {tp("editProfile")}
             </button>
           </div>
           
@@ -383,7 +383,7 @@ function ProfilePageContent() {
                 {tab === "overview" && <User className="w-3.5 h-3.5" />}
                 {tab === "achievements" && <Medal className="w-3.5 h-3.5" />}
                 {tab === "settings" && <Settings className="w-3.5 h-3.5" />}
-                {tab === "achievements" ? "Credentials" : tab}
+                {tab === "achievements" ? tp("credentials") : tab}
               </button>
             ))}
           </div>
@@ -401,7 +401,7 @@ function ProfilePageContent() {
                         {profileStats.reports_filed}
                       </span>
                       <span className="font-mono text-[9px] sm:text-[10px] text-ink/40 uppercase tracking-[0.2em] font-bold block">
-                        Filed
+                        {tp("filed")}
                       </span>
                     </div>
                     <div className="space-y-3 px-2 sm:px-4 transition-transform duration-500 hover:scale-105">
@@ -409,7 +409,7 @@ function ProfilePageContent() {
                         {profileStats.reports_verified}
                       </span>
                       <span className="font-mono text-[9px] sm:text-[10px] text-ink/40 uppercase tracking-[0.2em] font-bold block">
-                        Verified
+                        {tp("verified")}
                       </span>
                     </div>
                     <div className="space-y-3 px-2 sm:px-4 transition-transform duration-500 hover:scale-105">
@@ -432,20 +432,20 @@ function ProfilePageContent() {
                   
                   <div className="relative z-10 space-y-3">
                     <span className="font-mono text-[10px] text-white/80 uppercase tracking-[0.2em] font-bold flex items-center gap-2">
-                      Eco-Credits Balance
+                      {tp("ecoCreditsBalance")}
                     </span>
                     <span className="font-semibold tracking-tight text-6xl text-white block leading-none drop-shadow-sm">
                       {(ecoCredits ?? 0).toLocaleString()}
                     </span>
                     {userRank && (
                       <span className="inline-flex px-3 py-1 bg-white/20 backdrop-blur-md text-white rounded-full font-mono text-[10px] uppercase tracking-widest font-bold mt-2 border border-white/20 shadow-sm">
-                        Rank #{userRank}
+                        {tp("rankLabel")} #{userRank}
                       </span>
                     )}
                     {ecoCreditEquivalent && (
                       <div className="pt-6 mt-4 border-t border-white/20">
                         <span className="font-mono text-[9px] text-white/70 uppercase tracking-[0.2em] font-bold block mb-1.5">
-                          Eco Value (Fiat)
+                          {tp("ecoValueFiat")}
                         </span>
                         <span className="font-medium tracking-tight text-3xl text-white block leading-none">
                           {ecoCreditEquivalent}
@@ -457,13 +457,13 @@ function ProfilePageContent() {
                   {rewardPoints !== null && (
                     <div className="relative z-10 space-y-3 sm:border-l sm:border-white/20 sm:pl-8">
                       <span className="font-mono text-[10px] text-white/80 uppercase tracking-[0.2em] font-bold flex items-center gap-2">
-                        Total Impact Score
+                        {tp("totalImpactScore")}
                       </span>
                       <span className="font-semibold tracking-tight text-6xl text-white block leading-none drop-shadow-sm">
                         {(rewardPoints ?? 0).toLocaleString()}
                       </span>
                       <p className="font-mono text-[10px] text-white/70 mt-4 leading-relaxed max-w-[200px] uppercase tracking-widest">
-                        Earn impact score by submitting accurate reports and verifying data.
+                        {tp("earnImpactDesc")}
                       </p>
                     </div>
                   )}
@@ -474,7 +474,7 @@ function ProfilePageContent() {
             {rankProgress && (
               <section className="border-t border-ink/10 pt-12">
                 <h2 className="font-semibold tracking-tight text-2xl text-ink mb-6">
-                  Contributor Tier
+                  {tp("contributorTier")}
                 </h2>
                 <RankProgressCard
                   rankProgress={rankProgress}
@@ -484,9 +484,8 @@ function ProfilePageContent() {
             )}
 
             <section className="border-t border-ink/10 pt-12">
-              <h2 className="font-semibold tracking-tight text-2xl text-ink mb-6">
-                Score Sources
-              </h2>
+              <h2 className="font-semibold tracking-tight text-2xl text-ink mb-6">                  {tp("scoreSources")}
+                </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {(() => {
                   const unlockedAchievements = achievements.filter(
@@ -508,22 +507,22 @@ function ProfilePageContent() {
                         }))
                       : [
                           {
-                            activity: "Submit an environmental report",
+                            activity: tp("activitySubmitReport"),
                             amount: "+50",
                             percentage: 25,
                           },
                           {
-                            activity: "Report verified by an LGU",
+                            activity: tp("activityLguVerified"),
                             amount: "+100 + Eco-Credits",
                             percentage: 25,
                           },
                           {
-                            activity: "Community corroboration (500m geofence)",
+                            activity: tp("activityCorroboration"),
                             amount: "+150",
                             percentage: 25,
                           },
                           {
-                            activity: "Tier advancement bonus",
+                            activity: tp("activityTierBonus"),
                             amount: "+Eco-Credits",
                             percentage: 25,
                           },
@@ -546,7 +545,7 @@ function ProfilePageContent() {
                       </div>
                       <div className="relative z-10 space-y-2 mt-auto">
                         <div className="flex justify-between items-center text-[10px] uppercase font-mono tracking-widest text-ink/40 font-bold">
-                          <span>Contribution</span>
+                          <span>{tp("contribution")}</span>
                           <span>{item.percentage}%</span>
                         </div>
                         <div className="h-2 bg-ink/5 shadow-[inset_0_1px_0_rgba(0,0,0,0.05)] rounded-full overflow-hidden">
@@ -744,8 +743,8 @@ function ProfilePageContent() {
               <div className="col-span-full">
                 <EmptyState 
                   icon={Medal}
-                  title={filter === "unlocked" ? t("noAchievementsUnlocked") : filter === "locked" ? t("noAchievementsLocked") : "No achievements found."}
-                  description={filter === "unlocked" ? t("noAchievementsUnlockedDesc") : filter === "locked" ? t("noAchievementsLockedDesc") : "Try adjusting your filters."}
+                  title={filter === "unlocked" ? t("noAchievementsUnlocked") : filter === "locked" ? t("noAchievementsLocked") : t("noAchievements")}
+                  description={filter === "unlocked" ? t("noAchievementsUnlockedDesc") : filter === "locked" ? t("noAchievementsLockedDesc") : t("tryAdjustingFilters")}
                 />
               </div>
             )}
@@ -905,7 +904,7 @@ function ProfilePageContent() {
             <div className="md:col-span-1 space-y-6">
               <div className="bg-panel border border-ink/5 rounded-3xl p-8 shadow-sm flex flex-col items-center">
                 <h2 className="font-semibold tracking-tight text-xl text-ink mb-6 w-full text-left">
-                  Profile Photo
+                  {tp("profilePhoto")}
                 </h2>
                 {userEmail && (
                   <AvatarUpload
@@ -920,18 +919,18 @@ function ProfilePageContent() {
             <div className="md:col-span-2 space-y-6">
               <div className="bg-panel border border-ink/5 rounded-3xl p-8 shadow-sm">
                 <h2 className="font-semibold tracking-tight text-xl text-ink mb-6">
-                  Profile Information
+                  {tp("profileInformation")}
                 </h2>
                 <div className="space-y-5">
                   <div>
                     <label className="font-mono text-xs text-ink/40 uppercase tracking-widest block mb-2">
-                    Display Name
+                    {tp("displayNameLabel")}
                   </label>
                   <input
                     type="text"
                     value={displayName || ""}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Your public name"
+                    placeholder={tp("namePlaceholder")}
                     className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 rounded-lg"
                     maxLength={50}
                   />
@@ -939,12 +938,12 @@ function ProfilePageContent() {
 
                 <div>
                   <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">
-                    Bio
+                    {tp("bioLabel")}
                   </label>
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell the community about yourself..."
+                    placeholder={tp("bioPlaceholder")}
                     className="w-full px-4 py-3 text-sm bg-transparent border border-ink/10 text-ink placeholder:text-ink/30 focus:outline-none focus:border-ink/30 resize-none rounded-lg"
                     rows={4}
                     maxLength={300}
@@ -957,7 +956,7 @@ function ProfilePageContent() {
                 <div>
                   <label className="font-mono text-xs text-ink/40 uppercase tracking-wide block mb-2">
                     <span className="flex items-center gap-2">
-                      <Globe className="w-3.5 h-3.5" /> Country / Region
+                      <Globe className="w-3.5 h-3.5" /> {tp("countryRegion")}
                     </span>
                   </label>
                   <CustomSelect
@@ -978,7 +977,7 @@ function ProfilePageContent() {
                   />
                   {currencySetting && (
                     <p className="font-mono text-xs text-ink/40 mt-2">
-                      Eco-Credit Rate: 1 Eco = {currencySetting.currency_code}{" "}
+                      {tp("ecoCreditRate")} 1 Eco = {currencySetting.currency_code}{" "}
                       {currencySetting.eco_credit_rate.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                       })}
@@ -993,7 +992,7 @@ function ProfilePageContent() {
                     className="flex items-center justify-center w-full sm:w-auto gap-2 px-8 py-3 bg-accent text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-sm"
                   >
                     <Save className="w-4 h-4" />
-                    {saving ? "Saving..." : "Save Changes"}
+                    {saving ? tp("saving") : tp("saveChanges")}
                   </button>
                 </div>
                 </div>

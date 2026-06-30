@@ -1,9 +1,10 @@
 interface SpinnerProps {
   size?: number;
   className?: string;
+  ariaLabel?: string;
 }
 
-export function Spinner({ size = 24, className = "" }: SpinnerProps) {
+export function Spinner({ size = 24, className = "", ariaLabel = "Loading" }: SpinnerProps) {
   return (
     <svg
       className={`animate-spin ${className}`}
@@ -11,7 +12,7 @@ export function Spinner({ size = 24, className = "" }: SpinnerProps) {
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      aria-label="Loading"
+      aria-label={ariaLabel}
     >
       <circle
         className="opacity-25"

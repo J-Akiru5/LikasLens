@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { MapPin, AlertTriangle, TrendingUp } from "lucide-react";
 import { laravelGet } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 interface Hotspot {
   province: string;
@@ -11,16 +12,16 @@ interface Hotspot {
   dominant_type: string;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  illegal_logging: "Illegal Logging",
-  water_pollution: "Water Pollution",
-  illegal_fishing: "Illegal Fishing",
-  waste_dumping: "Waste Dumping",
-  wildlife_poaching: "Wildlife Poaching",
-  mining_violation: "Mining Violation",
-  air_pollution: "Air Pollution",
-  land_encroachment: "Land Encroachment",
-  other: "Other",
+const TYPE_KEY_MAP: Record<string, string> = {
+  illegal_logging: "illegalLogging",
+  water_pollution: "waterPollution",
+  illegal_fishing: "illegalFishing",
+  waste_dumping: "wasteDumping",
+  wildlife_poaching: "wildlifePoaching",
+  mining_violation: "miningViolation",
+  air_pollution: "airPollution",
+  land_encroachment: "landEncroachment",
+  other: "other",
 };
 
 function getRiskColor(score: number): string {
@@ -31,8 +32,12 @@ function getRiskColor(score: number): string {
 }
 
 export function HotspotList() {
+  const t = useTranslations("hotspotList");
+  const tReport = useTranslations("report");
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const typeLabel = (code: string) => tReport(TYPE_KEY_MAP[code] ?? "other");
 
   useEffect(() => {
     async function fetchHotspots() {
@@ -59,7 +64,7 @@ export function HotspotList() {
   if (loading) {
     return (
       <div className="ios-grouped-list p-5 flex items-center justify-center" style={{ minHeight: 260 }}>
-        <div className="animate-pulse text-sm text-ink/40">Loading hotspots...</div>
+        <div className="animate-pulse text-sm text-ink/40">{t("loadingHotspots")}</div>
       </div>
     );
   }
@@ -69,7 +74,7 @@ export function HotspotList() {
       <div className="flex items-center gap-2 mb-3">
         <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
         <span className="font-mono text-[10px] text-ink/50 uppercase tracking-widest">
-          Top Hotspots
+          {t("topHotspots")}
         </span>
       </div>
       <div className="space-y-2">
@@ -87,7 +92,7 @@ export function HotspotList() {
                 <span className="text-sm font-semibold text-ink truncate">{h.province}</span>
               </div>
               <span className="font-mono text-[10px] text-ink/40 uppercase">
-                {TYPE_LABELS[h.dominant_type] ?? h.dominant_type}
+                {typeLabel(h.dominant_type)}
               </span>
             </div>
             <div className="text-right shrink-0">
@@ -97,7 +102,7 @@ export function HotspotList() {
                   {(h.risk_score * 100).toFixed(0)}%
                 </span>
               </div>
-              <span className="font-mono text-[10px] text-ink/40">{h.report_count} reports</span>
+              <span className="font-mono text-[10px] text-ink/40">{h.report_count} {t("reportsUnit")}</span>
             </div>
           </div>
         ))}

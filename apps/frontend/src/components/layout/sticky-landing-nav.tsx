@@ -6,6 +6,8 @@ import { m, AnimatePresence } from "framer-motion";
 import { Leaf, Fingerprint, Menu, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { UserNav } from "./user-nav";
+import { LanguageDropdown } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Sticky Landing Nav — appears after scrolling past the hero.
@@ -18,14 +20,27 @@ import { UserNav } from "./user-nav";
    - Smooth slide-down entrance
    ───────────────────────────────────────────────────────────────────────────── */
 
-const NAV_LINKS = [
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#ghost", label: "Ghost Mode" },
-  { href: "#scoreboard", label: "Records" },
-  { href: "#impact", label: "Impact" },
-  { href: "#architecture", label: "Architecture" },
-  { href: "#faq", label: "FAQ" },
-  { href: "#install-guide", label: "Install" },
+const SECTION_IDS = [
+  "how-it-works",
+  "ghost",
+  "scoreboard",
+  "impact",
+  "architecture",
+  "faq",
+  "install-guide",
+];
+
+const ASEAN_COUNTRIES = [
+  { flag: "🇵🇭", name: "Philippines", status: "PILOT ACTIVE" },
+  { flag: "🇮🇩", name: "Indonesia", status: "PHASE 2" },
+  { flag: "🇻🇳", name: "Vietnam", status: "PHASE 2" },
+  { flag: "🇹🇭", name: "Thailand", status: "PHASE 2" },
+  { flag: "🇲🇾", name: "Malaysia", status: "PHASE 2" },
+  { flag: "🇸🇬", name: "Singapore", status: "PHASE 3" },
+  { flag: "🇧🇳", name: "Brunei", status: "PHASE 3" },
+  { flag: "🇰🇭", name: "Cambodia", status: "PHASE 3" },
+  { flag: "🇱🇦", name: "Laos", status: "PHASE 3" },
+  { flag: "🇲🇲", name: "Myanmar", status: "PHASE 3" },
 ];
 
 interface StickyLandingNavProps {
@@ -34,6 +49,17 @@ interface StickyLandingNavProps {
 }
 
 export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavProps) {
+  const t = useTranslations("nav");
+  const NAV_LINKS = [
+    { href: "#how-it-works", label: t("howItWorks") },
+    { href: "#ghost", label: t("ghostMode") },
+    { href: "#scoreboard", label: t("records") },
+    { href: "#impact", label: t("impact") },
+    { href: "#architecture", label: t("architecture") },
+    { href: "#faq", label: t("faq") },
+    { href: "#install-guide", label: t("install") },
+  ];
+
   const [visible, setVisible] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeSection, setActiveSection] = useState("");
@@ -62,9 +88,8 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
     setScrollProgress(docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0);
 
     // Determine active section
-    const sections = NAV_LINKS.map(l => l.href.replace("#", ""));
     let current = "";
-    for (const id of sections) {
+    for (const id of SECTION_IDS) {
       const el = document.getElementById(id);
       if (el) {
         const rect = el.getBoundingClientRect();
@@ -160,18 +185,21 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
 
           {/* Right side: toggle + auth */}
           <div className="flex items-center gap-4">
+            {/* Multi-Language Switcher Dropdown */}
+            <LanguageDropdown buttonClassName={`p-2 rounded-xl transition-all focus:outline-none ${!visible || ghostMode ? "text-[#e8e0d4] hover:bg-white/10" : "text-[#111814] hover:bg-ink/5"}`} />
+
             {/* Ghost/Civic toggle */}
             <button
               suppressHydrationWarning
               onClick={onGhostToggle}
-              aria-label={ghostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
+              aria-label={ghostMode ? t("switchToCivicMode") : t("switchToGhostMode")}
               aria-pressed={ghostMode}
               className={`relative flex items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
                 ghostMode
                   ? "bg-secondary/10 border border-secondary/20 shadow-inner"
                   : (!visible ? "bg-white/10 border border-white/20" : "bg-ink/5 border border-ink/10 hover:bg-ink/10 shadow-inner")
               }`}
-              title="Toggle Ghost Mode"
+              title={t("toggleGhostMode")}
             >
               <div
                 className={`absolute top-1 left-1 w-6 h-6 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 flex items-center justify-center z-10 ${
@@ -187,10 +215,10 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
               
               <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-mono font-bold tracking-widest uppercase">
                 <span className={`transition-opacity duration-300 ${ghostMode ? "opacity-100 text-[#2ee6c8]" : "opacity-0"}`}>
-                  Ghost
+                  {t("ghost")}
                 </span>
                 <span className={`transition-opacity duration-300 ${ghostMode ? "opacity-0" : (!visible ? "opacity-100 text-white" : "opacity-100 text-[#1b4332]")}`}>
-                  Civic
+                  {t("civic")}
                 </span>
               </div>
             </button>
@@ -210,7 +238,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                     onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = !visible || ghostMode ? "#ffffff" : "#111814")}
                     onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = !visible || ghostMode ? "rgba(240,237,232,0.8)" : "rgba(17,24,20,0.7)")}
                   >
-                    Log In
+                    {t("logIn")}
                   </Link>
                   <Link
                     href="/register"
@@ -222,7 +250,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                     onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#40f0d4")}
                     onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#2ee6c8")}
                   >
-                    Sign Up
+                    {t("signUp")}
                   </Link>
                 </>
               )}
@@ -234,11 +262,66 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-1.5 rounded-md focus:outline-none transition-colors"
                 style={{ color: !visible || ghostMode ? "#e8e0d4" : "#111814" }}
-                aria-label="Toggle mobile menu"
+                aria-label={t("toggleMobileMenu")}
               >
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ASEAN Infinite Hybrid Roadmap Marquee */}
+      <div
+        className="w-full overflow-hidden border-b py-1.5 transition-all duration-500 shadow-sm"
+        style={{
+          background: ghostMode ? "rgba(12, 22, 40, 0.92)" : "rgba(240, 237, 232, 0.95)",
+          borderColor: ghostMode ? "rgba(46, 230, 200, 0.12)" : "rgba(17, 24, 20, 0.08)",
+          backdropFilter: "blur(16px)",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between gap-6 overflow-hidden">
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#2ee6c8] animate-pulse" />
+            <span
+              className="font-mono text-[10px] font-bold tracking-[0.2em] uppercase whitespace-nowrap"
+              style={{ color: ghostMode ? "#2ee6c8" : "#1b4332" }}
+            >
+              {t("aseanPilotRoadmap")}
+            </span>
+          </div>
+
+          <div className="flex-1 overflow-hidden relative mask-radial">
+            <m.div
+              className="flex items-center gap-10 w-max"
+              animate={{ x: [0, -1200] }}
+              transition={{ repeat: Infinity, duration: 35, ease: "linear" }}
+            >
+              {[...ASEAN_COUNTRIES, ...ASEAN_COUNTRIES].map((country, idx) => (
+                <div key={`${country.name}-${idx}`} className="flex items-center gap-2.5 inline-flex">
+                  <span className="text-sm select-none">{country.flag}</span>
+                  <span
+                    className="font-mono text-[11px] font-semibold tracking-wider uppercase whitespace-nowrap"
+                    style={{ color: ghostMode ? "rgba(232,224,212,0.85)" : "rgba(17,24,20,0.85)" }}
+                  >
+                    {country.name}
+                  </span>
+                  <span
+                    className="font-mono text-[9px] px-2 py-0.5 rounded-full font-bold tracking-widest uppercase whitespace-nowrap"
+                    style={{
+                      background: country.status.includes("ACTIVE")
+                        ? (ghostMode ? "rgba(46,230,200,0.15)" : "#1b4332")
+                        : (ghostMode ? "rgba(255,255,255,0.08)" : "rgba(17,24,20,0.06)"),
+                      color: country.status.includes("ACTIVE")
+                        ? (ghostMode ? "#2ee6c8" : "#ffffff")
+                        : (ghostMode ? "rgba(232,224,212,0.5)" : "rgba(17,24,20,0.6)"),
+                    }}
+                  >
+                    {country.status}
+                  </span>
+                </div>
+              ))}
+            </m.div>
           </div>
         </div>
       </div>
@@ -292,7 +375,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                     style={{ background: "#2ee6c8", color: "#0d1a12" }}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Dashboard
+                    {t("dashboard")}
                   </Link>
                 ) : (
                   <>
@@ -302,7 +385,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                       style={{ color: ghostMode ? "#ffffff" : "#111814" }}
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Log In
+                      {t("logIn")}
                     </Link>
                     <Link
                       href="/register"
@@ -310,7 +393,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                       style={{ background: "#2ee6c8", color: "#0d1a12" }}
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Sign Up
+                      {t("signUp")}
                     </Link>
                   </>
                 )}

@@ -13,6 +13,7 @@ import {
   Link2,
 } from "lucide-react";
 import { laravelGet } from "@likaslens/shared";
+import { useTranslations } from "next-intl";
 import { ConfidenceWaterfall } from "./confidence-waterfall";
 import type {
   TicketExplainResponse,
@@ -95,6 +96,7 @@ function NeighbourCard({ ticket }: { ticket: NeighbourTicket }) {
 // ── Main Panel ─────────────────────────────────────────────────────────
 
 export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
+  const t = useTranslations("dashboard");
   const [data, setData] = useState<TicketExplainResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,10 +112,10 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
       if (res.success) {
         setData(res.data);
       } else {
-        setError("Explain data unavailable");
+        setError(t("noBreakdownData"));
       }
     } catch {
-      setError("Unable to load AI explanation");
+      setError(t("retry"));
     } finally {
       setLoading(false);
     }
@@ -144,7 +146,7 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
             <Brain className="w-5 h-5 text-purple" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-ink">AI Explainability</h3>
+            <h3 className="text-sm font-semibold text-ink">{t("aiExplainability")}</h3>
             <p className="text-xs text-ink/50">
               Confidence breakdown and rule reasoning for this incident
             </p>
@@ -156,11 +158,11 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
       <div className="px-5 pt-4 pb-2">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-ink/50">Category:</span>
+            <span className="text-xs text-ink/50">{t("categoryLabel")}</span>
             <span className="text-xs font-semibold text-ink">{category}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-ink/50">Confidence:</span>
+            <span className="text-xs text-ink/50">{t("confidenceLabel")}</span>
             <span
               className={`text-sm font-bold ${
                 confidence >= 0.7
@@ -199,7 +201,7 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
         {loading && (
           <div className="flex flex-col items-center justify-center h-[240px] gap-3">
             <Loader2 className="w-6 h-6 text-purple animate-spin" />
-            <span className="text-xs text-ink/50">Analyzing incident...</span>
+            <span className="text-xs text-ink/50">{t("analyzingIncident")}</span>
           </div>
         )}
 
@@ -252,21 +254,21 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
                 {breakdown && (
                   <div className="space-y-2">
                     <FactorExplanation
-                      label="Visual Detection (YOLO)"
+                      label={t("factorVisualDetection")}
                       value={breakdown.visual}
-                      description="Object detection confidence from YOLOv8 model analyzing the uploaded image"
+                      description={t("factorVisualDetectionDesc")}
                       color="text-cyan"
                     />
                     <FactorExplanation
-                      label="Community Corroboration"
+                      label={t("factorCommunityCorroboration")}
                       value={breakdown.community_corroboration}
-                      description="Score boosted when multiple reporters submit similar reports (chain)"
+                      description={t("factorCommunityCorroborationDesc")}
                       color="text-green"
                     />
                     <FactorExplanation
-                      label="Geographic Proximity"
+                      label={t("factorGeographicProximity")}
                       value={breakdown.geo_within_known_zone}
-                      description="Score boosted when other reports exist within ~5km radius"
+                      description={t("factorGeographicProximityDesc")}
                       color="text-purple"
                     />
                   </div>
@@ -322,6 +324,7 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
                 <CounterfactualPanel
                   confidence={confidence}
                   breakdown={breakdown}
+                  t={t}
                 />
               </div>
             )}
@@ -421,6 +424,7 @@ function RuleChainDisplay({ ruleChain }: { ruleChain: RuleChain }) {
 function CounterfactualPanel({
   confidence,
   breakdown,
+  t,
 }: {
   confidence: number;
   breakdown?: {
@@ -428,28 +432,29 @@ function CounterfactualPanel({
     community_corroboration: number;
     geo_within_known_zone: number;
   };
+  t: (key: string) => string;
 }) {
   const baseVisual = breakdown?.visual ?? confidence;
 
   const scenarios = [
     {
-      label: "Without community corroboration",
+      label: t("withoutCommunityCorroboration"),
       description:
-        "If this was a single-report incident with no chain evidence",
+        t("withoutCommunityCorroborationDesc"),
       impact: -0.12,
       newConfidence: Math.max(0, confidence - 0.12),
     },
     {
-      label: "Without geographic data",
+      label: t("withoutGeographicData"),
       description:
-        "If no similar reports existed in the 5km zone",
+        t("withoutGeographicDataDesc"),
       impact: -0.08,
       newConfidence: Math.max(0, confidence - 0.08),
     },
     {
-      label: "Lower visual confidence",
+      label: t("lowerVisualConfidence"),
       description:
-        "If YOLO detection was borderline (50% instead of current)",
+        t("lowerVisualConfidenceDesc"),
       impact: baseVisual > 0.5 ? -(baseVisual - 0.5) * 0.5 : 0,
       newConfidence: Math.max(
         0,
@@ -457,9 +462,9 @@ function CounterfactualPanel({
       ),
     },
     {
-      label: "With additional corroborating reports",
+      label: t("withAdditionalCorroboratingReports"),
       description:
-        "If 3 more community members reported the same issue",
+        t("withAdditionalCorroboratingReportsDesc"),
       impact: 0.08,
       newConfidence: Math.min(1, confidence + 0.08),
     },
