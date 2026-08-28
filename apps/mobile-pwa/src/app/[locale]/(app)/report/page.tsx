@@ -17,6 +17,13 @@ import {
   Loader2,
   AlertTriangle,
   RotateCcw,
+  ChevronDown,
+  ImagePlus,
+  Flashlight,
+  FlashlightOff,
+  Images,
+  Minus,
+  Plus,
 } from "lucide-react";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { cn, laravelPost, showToast, Button } from "@likaslens/shared";
@@ -92,7 +99,12 @@ export default function ReportPage() {
   const [manualLat, setManualLat] = useState("");
   const [manualLng, setManualLng] = useState("");
   const [cameraInitialising, setCameraInitialising] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [zoom, setZoom] = useState(1);
   const MAX_RETRIES = 3;
+  const MAX_PHOTOS = 3;
 
   const [failedSubmission, setFailedSubmission] = useState<FailedSubmission | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -135,7 +147,7 @@ export default function ReportPage() {
     };
   }, []);
 
-  const startCamera = useCallback(async (facing?: "user" | "environment") => {
+const startCamera = useCallback(async (facing?: "user" | "environment") => {
     const targetFacing = facing ?? facingMode;
     setCameraError(null);
     setCameraInitialising(true);
@@ -147,25 +159,16 @@ export default function ReportPage() {
       streamRef.current = mediaStream;
       setStream(mediaStream);
     } catch (err) {
-      try {
-        const fallbackStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: targetFacing } },
-          audio: false,
-        });
-        streamRef.current = fallbackStream;
-        setStream(fallbackStream);
-      } catch (fallbackErr) {
-        console.error("Camera access denied:", fallbackErr);
-        const errName = (fallbackErr as Error)?.name;
-        if (errName === "NotAllowedError" || errName === "PermissionDeniedError") {
-          setCameraError("NOT_ALLOWED");
-        } else if (errName === "NotFoundError" || errName === "DevicesNotFoundError") {
-          setCameraError("NOT_FOUND");
-        } else {
-          setCameraError("UNKNOWN");
-        }
-        showToast("Camera access denied or unavailable", "error");
+      console.error("Camera access denied:", err);
+      const errName = (err as Error)?.name;
+      if (errName === "NotAllowedError" || errName === "PermissionDeniedError") {
+        setCameraError("NOT_ALLOWED");
+      } else if (errName === "NotFoundError" || errName === "DevicesNotFoundError") {
+        setCameraError("NOT_FOUND");
+      } else {
+        setCameraError("UNKNOWN");
       }
+      showToast("Camera access denied or unavailable", "error");
     } finally {
       setCameraInitialising(false);
     }
@@ -233,7 +236,31 @@ export default function ReportPage() {
       streamRef.current = null;
     }
     setStream(null);
+    setTorchOn(false);
   }, []);
+
+  const toggleTorch = useCallback(async () => {
+    if (!streamRef.current) return;
+    const track = streamRef.current.getVideoTracks()[0];
+    if (!track) return;
+    const caps = track.getCapabilities() as MediaTrackCapabilities & { torch?: boolean };
+    if (!caps.torch) return;
+    const next = !torchOn;
+    await track.applyConstraints({ advanced: [{ torch: next } as MediaTrackConstraintSet] } as unknown as MediaTrackConstraints);
+    setTorchOn(next);
+    haptic("light");
+  }, [torchOn, haptic]);
+
+  const toggleZoom = useCallback((delta: number) => {
+    if (!streamRef.current) return;
+    const track = streamRef.current.getVideoTracks()[0];
+    if (!track) return;
+    const caps = track.getCapabilities() as MediaTrackCapabilities & { zoom?: { min: number; max: number } };
+    if (!caps.zoom) return;
+    const newZoom = Math.max(caps.zoom.min, Math.min(caps.zoom.max, zoom + delta));
+    setZoom(newZoom);
+    track.applyConstraints({ advanced: [{ zoom: newZoom } as MediaTrackConstraintSet] } as unknown as MediaTrackConstraints);
+  }, [zoom]);
 
   const handleFileCaptureMobile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -265,10 +292,15 @@ export default function ReportPage() {
       ghostMode,
     });
     haptic("medium");
+    const nextPhotos = [...photos, dataUrl];
+    setPhotos(nextPhotos);
+    setActivePhotoIndex(nextPhotos.length - 1);
     setPhoto(dataUrl);
-    setStep("preview");
-    stopCamera();
-  }, [stopCamera, gps, ghostMode, haptic]);
+    if (nextPhotos.length >= MAX_PHOTOS) {
+      setStep("preview");
+      stopCamera();
+    }
+  }, [stopCamera, gps, ghostMode, haptic, photos]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -448,6 +480,15 @@ export default function ReportPage() {
               <RotateCcw className="w-4 h-4" />
               {facingMode === "environment" ? "Back" : "Front"}
             </button>
+            {/* Torch toggle */}
+            <button
+              onClick={toggleTorch}
+              aria-label={torchOn ? "Turn off flash" : "Turn on flash"}
+              className="touch-target rounded-full bg-black/40 text-white/85 border border-white/20"
+              style={{ backdropFilter: "blur(10px)" }}
+            >
+              {torchOn ? <Flashlight className="w-5 h-5 text-yellow-400" /> : <FlashlightOff className="w-5 h-5" />}
+            </button>
             <button
               onClick={() => { setGhostMode(!ghostMode); haptic("light"); }}
               aria-pressed={ghostMode}
@@ -507,6 +548,26 @@ export default function ReportPage() {
                 backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.14) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.14) 1px, transparent 1px)",
                 backgroundSize: "33.33% 33.33%",
               }} />
+              {/* Zoom controls */}
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
+                <button
+                  onClick={() => toggleZoom(0.5)}
+                  className="w-10 h-10 rounded-full bg-black/40 text-white/80 flex items-center justify-center border border-white/15 active:scale-95 transition-transform"
+                  style={{ backdropFilter: "blur(8px)" }}
+                  aria-label="Zoom in"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
+                <span className="text-white/50 text-[10px] font-semibold text-center">{zoom.toFixed(1)}x</span>
+                <button
+                  onClick={() => toggleZoom(-0.5)}
+                  className="w-10 h-10 rounded-full bg-black/40 text-white/80 flex items-center justify-center border border-white/15 active:scale-95 transition-transform"
+                  style={{ backdropFilter: "blur(8px)" }}
+                  aria-label="Zoom out"
+                >
+                  <Minus className="w-5 h-5" />
+                </button>
+              </div>
             </>
           )
         ) : (
@@ -517,13 +578,41 @@ export default function ReportPage() {
         <div className="absolute bottom-0 left-0 right-0 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-16 flex justify-center items-center bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           {step === "camera" ? (
             cameraError !== "NOT_ALLOWED" && (
-              <button
-                onClick={capturePhoto}
-                aria-label="Capture photo"
-                className="w-[76px] h-[76px] rounded-full bg-white/20 border-4 border-white flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <div className="w-[58px] h-[58px] rounded-full bg-white" />
-              </button>
+              <div className="flex items-center gap-6">
+                {/* Gallery picker */}
+                <label className="flex flex-col items-center gap-1 cursor-pointer">
+                  <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center text-white/70 active:scale-95 transition-transform border border-white/10" style={{ backdropFilter: "blur(8px)" }}>
+                    {photos.length > 0 ? (
+                      <div className="relative w-full h-full rounded-xl overflow-hidden">
+                        <img src={photos[photos.length - 1]} alt="Last capture" className="w-full h-full object-cover" />
+                        <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green text-white text-[10px] font-bold flex items-center justify-center">{photos.length}</span>
+                      </div>
+                    ) : (
+                      <ImagePlus className="w-5 h-5" />
+                    )}
+                  </div>
+                  <span className="text-white/60 text-[10px] font-semibold">Gallery</span>
+                  <input type="file" accept="image/*" onChange={handleFileCaptureMobile} className="sr-only" />
+                </label>
+
+                {/* Shutter button */}
+                <button
+                  onClick={capturePhoto}
+                  aria-label="Capture photo"
+                  className="w-[76px] h-[76px] rounded-full bg-white/20 border-4 border-white flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <div className="w-[58px] h-[58px] rounded-full bg-white" />
+                </button>
+
+                {/* Photo count */}
+                <div className="w-12 h-12 flex flex-col items-center justify-center">
+                  {photos.length > 0 ? (
+                    <span className="text-white/60 text-[10px] font-semibold">{photos.length}/{MAX_PHOTOS}</span>
+                  ) : (
+                    <span className="text-white/30 text-[10px]">0/{MAX_PHOTOS}</span>
+                  )}
+                </div>
+              </div>
             )
           ) : (
             <div className="flex w-full px-12 justify-between items-center">
@@ -825,7 +914,7 @@ export default function ReportPage() {
                 GPS pending
               </span>
             )}
-            <Camera style={{ width: 18, height: 18, color: "var(--muted)" }} />
+            <ChevronDown style={{ width: 18, height: 18, color: "var(--muted)" }} />
           </button>
         </div>
 
@@ -857,16 +946,58 @@ export default function ReportPage() {
         </div>
       </div>
 
-      {/* Photo thumbnail */}
-      <div className="relative rounded-2xl overflow-hidden bg-black/5 aspect-[4/3] w-full" style={{ maxHeight: 260 }}>
-        <img src={photo!} alt="Captured evidence" className="w-full h-full object-cover" />
-        <button
-          onClick={() => setStep("camera")}
-          className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-semibold uppercase"
-          style={{ backdropFilter: "blur(8px)" }}
-        >
-          Retake photo
-        </button>
+      {/* Photos */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <label className="ios-section-label" style={{ margin: 0, paddingLeft: 2 }}>Evidence photos ({photos.length}/{MAX_PHOTOS})</label>
+          {photos.length < MAX_PHOTOS && (
+            <button onClick={() => setStep("camera")} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "var(--accent)" }}>
+              <ImagePlus className="w-3.5 h-3.5" /> Add more
+            </button>
+          )}
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+          {photos.map((p, i) => (
+            <div key={i} className="relative shrink-0" style={{ width: 100, height: 100 }}>
+              <img src={p} alt={`Evidence ${i + 1}`} className="w-full h-full object-cover rounded-xl" style={{ border: i === activePhotoIndex ? "2px solid var(--accent)" : "2px solid transparent" }} />
+              <button
+                onClick={() => {
+                  const next = photos.filter((_, idx) => idx !== i);
+                  setPhotos(next);
+                  if (activePhotoIndex >= next.length) setActivePhotoIndex(Math.max(0, next.length - 1));
+                  setPhoto(next[activePhotoIndex] || null);
+                  haptic("light");
+                }}
+                className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"
+                style={{ backdropFilter: "blur(4px)" }}
+                aria-label={`Remove photo ${i + 1}`}
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+          {photos.length < MAX_PHOTOS && (
+            <button
+              onClick={() => setStep("camera")}
+              className="shrink-0 flex flex-col items-center justify-center rounded-xl border border-dashed"
+              style={{ width: 100, height: 100, borderColor: "var(--border)", color: "var(--muted)" }}
+            >
+              <ImagePlus className="w-5 h-5 mb-1" />
+              <span style={{ fontSize: 10 }}>Add</span>
+            </button>
+          )}
+        </div>
+        {/* Main preview */}
+        <div className="relative rounded-2xl overflow-hidden bg-black/5 aspect-[4/3] w-full mt-2" style={{ maxHeight: 260 }}>
+          <img src={photo!} alt="Captured evidence" className="w-full h-full object-cover" />
+          <button
+            onClick={() => setStep("camera")}
+            className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-semibold uppercase"
+            style={{ backdropFilter: "blur(8px)" }}
+          >
+            Retake
+          </button>
+        </div>
       </div>
 
       {/* Map */}
@@ -891,7 +1022,7 @@ export default function ReportPage() {
           <span style={{ flex: 1, textAlign: "left", fontFamily: "var(--font-body)", fontSize: 15, color: incidentType ? "var(--ink)" : "var(--muted-subtle)" }}>
             {INCIDENT_TYPES.find(t => t.value === incidentType)?.label || "Select classification"}
           </span>
-          <Camera style={{ width: 18, height: 18, color: "var(--muted)" }} />
+          <ChevronDown style={{ width: 18, height: 18, color: "var(--muted)" }} />
         </button>
       </div>
 
