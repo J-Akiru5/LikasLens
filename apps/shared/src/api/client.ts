@@ -219,9 +219,11 @@ async function routeRequest<T>(
         longitude,
         status: "pending",
       };
-      await db().from("reports").insert(reportPayload).catch(() => {
+      try {
+        await db().from("reports").insert(reportPayload);
+      } catch {
         // reports table insert is non-critical
-      });
+      }
     }
 
     return { success: true, data: ticket } as T;

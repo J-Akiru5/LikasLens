@@ -6,8 +6,10 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 interface IncidentPin {
   id: string;
-  lat: number;
-  lng: number;
+  lat?: number | null;
+  lng?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
   status: string;
   title: string;
 }
@@ -50,7 +52,7 @@ export function PublicRecordMap({
   }, []);
 
   const validIncidents = useMemo(
-    () => incidents.filter((i) => i.lat && i.lng),
+    () => incidents.filter((i) => (i.lat || i.latitude) && (i.lng || i.longitude)),
     [incidents]
   );
 
@@ -60,9 +62,9 @@ export function PublicRecordMap({
       return { latitude: 12.8797, longitude: 121.774 }; // Default Philippines
     }
     const avgLat =
-      validIncidents.reduce((sum, i) => sum + i.lat, 0) / validIncidents.length;
+      validIncidents.reduce((sum, i) => sum + (i.lat || i.latitude || 0), 0) / validIncidents.length;
     const avgLng =
-      validIncidents.reduce((sum, i) => sum + i.lng, 0) / validIncidents.length;
+      validIncidents.reduce((sum, i) => sum + (i.lng || i.longitude || 0), 0) / validIncidents.length;
     return { latitude: avgLat, longitude: avgLng };
   }, [validIncidents]);
 
@@ -91,8 +93,8 @@ export function PublicRecordMap({
         {validIncidents.map((incident) => (
           <Marker
             key={incident.id}
-            longitude={incident.lng}
-            latitude={incident.lat}
+            longitude={incident.lng || incident.longitude || 0}
+            latitude={incident.lat || incident.latitude || 0}
             anchor="bottom"
             onClick={() => onPinClick?.(incident.id)}
           >

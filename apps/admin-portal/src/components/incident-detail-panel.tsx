@@ -141,7 +141,7 @@ export function IncidentDetailPanel({
                   <span
                     className={cn(
                       "px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider",
-                      confidenceColor(ticket.ai_confidence)
+                      confidenceColor(ticket.ai_confidence ?? null)
                     )}
                   >
                     {ticket.ai_confidence !== null

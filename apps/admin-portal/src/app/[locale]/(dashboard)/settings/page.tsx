@@ -57,6 +57,7 @@ interface SettingsState {
 const DEFAULT_SETTINGS: SettingsState = {
   platformName: "LikasLens Admin",
   defaultLanguage: "en",
+  ecoCreditRate: 10,
   registrationOpen: true,
   aiModeration: true,
   maintenanceMode: false,
