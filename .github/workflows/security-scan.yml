@@ -13,7 +13,7 @@ on:
 
 env:
   NODE_VERSION: 22
-  PNPM_VERSION: 10
+  PNPM_VERSION: 11
 
 jobs:
   # ── 1. Trivy container scan (AI service image) ──────────────────────

@@ -25,7 +25,7 @@ on:
   workflow_dispatch: # allow manual trigger
 
 env:
-  PNPM_VERSION: 10
+  PNPM_VERSION: 11
   NODE_VERSION: 22
   PYTHON_VERSION: "3.12"
 
