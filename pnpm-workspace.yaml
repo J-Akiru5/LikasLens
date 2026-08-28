@@ -1,6 +1,5 @@
 packages:
   - "apps/frontend"
-  - "apps/backend"
   - "apps/admin-portal"
   - "apps/mobile-pwa"
   - "apps/shared"

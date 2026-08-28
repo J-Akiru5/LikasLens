@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Sep 3 Execution Roadmap &amp; Live Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0D12;--bg-2:#0E1219;--bg-3:#131924;--line:#1E2733;--line-2:#2A3646;
+  --fg:#E6EDF6;--fg-2:#9FB0C4;--fg-3:#65788E;
+  --cy:#22D3EE;--vi:#8B7BFF;--ok:#34D399;--warn:#FBBF24;--bad:#F87171;
+  --mono:'JetBrains Mono',ui-monospace,monospace;--sans:'Inter',system-ui,sans-serif;
+  --pad:clamp(20px,5vw,80px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{width:100%;padding:0 var(--pad)}
+.prose{max-width:760px}.wide{max-width:1180px}
+h1,h2,h3,h4{line-height:1.2;letter-spacing:-.02em;margin:0}
+h2{font-size:clamp(24px,4.2vw,34px);margin:0 0 6px}
+h3{font-size:clamp(18px,2.6vw,22px);margin:32px 0 10px}
+h4{font-size:14px;margin:18px 0 8px;font-family:var(--mono);color:var(--cy);text-transform:uppercase;letter-spacing:.08em}
+p{margin:0 0 14px;color:var(--fg-2)}
+strong{color:var(--fg);font-weight:600}
+code{font-family:var(--mono);font-size:.85em;background:var(--bg-3);border:1px solid var(--line);padding:1px 6px;border-radius:5px;color:var(--cy);word-break:break-word}
+section{padding:52px 0;border-top:1px solid var(--line)}
+.sec-tag{font-family:var(--mono);font-size:12px;color:var(--vi);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px}
+ul.clean{padding-left:20px;margin:0 0 14px;color:var(--fg-2)}
+ul.clean li{margin-bottom:7px}
+
+.term{border-bottom:1px solid var(--line);background:#080A0E;padding:9px var(--pad);display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--fg-3)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.hero{background:linear-gradient(160deg,#0E1219,#0A0D12 60%);border-bottom:1px solid var(--line)}
+.hero-in{padding:52px 0 56px}
+h1{font-size:clamp(28px,6vw,50px)}
+.kick{font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--cy);margin-bottom:14px}
+.sub{font-size:clamp(15px,2.3vw,18px);color:var(--fg-2);margin-top:16px;max-width:720px}
+
+/* global progress */
+.gp{margin-top:30px;max-width:720px}
+.gp-bar{height:12px;background:var(--bg-3);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.gp-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cy),var(--vi));transition:width .35s ease}
+.gp-meta{display:flex;justify-content:space-between;margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--fg-3);gap:12px;flex-wrap:wrap}
+.gp-meta b{color:var(--cy);font-weight:700}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:26px 0}
+.stat{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:18px}
+.stat .n{font-family:var(--mono);font-size:clamp(22px,3.6vw,30px);font-weight:700;color:var(--cy);line-height:1}
+.stat .n.v{color:var(--vi)}.stat .n.r{color:var(--bad)}.stat .n.g{color:var(--ok)}
+.stat .l{font-size:13px;color:var(--fg-3);margin-top:8px;line-height:1.4}
+
+.call{border-left:3px solid var(--cy);background:var(--bg-2);border-radius:0 10px 10px 0;padding:18px 20px;margin:22px 0}
+.call.w{border-color:var(--warn)}.call.b{border-color:var(--bad)}.call.g{border-color:var(--ok)}.call.v{border-color:var(--vi)}
+.call h4{margin-top:0}.call.w h4{color:var(--warn)}.call.b h4{color:var(--bad)}.call.g h4{color:var(--ok)}.call.v h4{color:var(--vi)}
+.call p:last-child{margin-bottom:0}
+
+.tw{overflow-x:auto;margin:20px 0;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:600px;font-size:14px}
+th{background:var(--bg-3);text-align:left;padding:11px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--fg-3);border-bottom:1px solid var(--line)}
+td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--fg-2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.tag{font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:5px;white-space:nowrap;display:inline-block}
+.t-jeff{background:#221B2E;color:var(--vi)}.t-agent{background:#131E38;color:var(--cy)}
+.t-open{background:#2C2410;color:var(--warn)}.t-block{background:#2C1116;color:var(--bad)}.t-done{background:#0C2C22;color:var(--ok)}
+
+/* phase blocks */
+.phase{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;margin:20px 0;overflow:hidden}
+.phase-h{padding:20px 22px;border-bottom:1px solid var(--line);background:var(--bg-3)}
+.phase-top{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap}
+.phase-n{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--vi)}
+.phase-date{font-family:var(--mono);font-size:11px;color:var(--fg-3);letter-spacing:.06em}
+.phase-t{font-size:clamp(18px,2.6vw,22px);font-weight:600;margin:6px 0 0;letter-spacing:-.02em}
+.phase-body{padding:20px 22px}
+.phase-body p{font-size:14.5px}
+.pbar{height:6px;background:var(--bg);border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-top:14px}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cy),var(--vi));transition:width .3s ease}
+.pbar-l{font-family:var(--mono);font-size:11px;color:var(--fg-3);margin-top:7px}
+.dod{background:var(--bg);border:1px dashed var(--line-2);border-radius:10px;padding:14px 16px;margin-top:16px}
+.dod .h{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ok);margin-bottom:7px}
+.dod p{margin:0;font-size:14px}
+
+/* checklist */
+ul.ck{list-style:none;padding:0;margin:16px 0 0}
+ul.ck li{border-top:1px solid var(--line)}
+ul.ck li:first-child{border-top:none}
+ul.ck label{display:flex;gap:12px;align-items:flex-start;padding:11px 2px;min-height:42px;cursor:pointer;font-size:14.5px;color:var(--fg-2)}
+ul.ck input{margin-top:4px;width:17px;height:17px;accent-color:var(--cy);flex:none;cursor:pointer}
+ul.ck input:checked + span{color:var(--fg-3);text-decoration:line-through}
+.own{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:4px;margin-right:8px;vertical-align:1px;white-space:nowrap}
+.own.j{background:#221B2E;color:var(--vi)}
+.own.a{background:#131E38;color:var(--cy)}
+
+.grid{display:grid;gap:14px;margin:22px 0}
+.g2{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h4{margin-top:0}.card p{font-size:14px;margin-bottom:0}
+
+.gate{display:flex;gap:14px;align-items:flex-start;background:var(--bg-2);border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:0 12px 12px 0;padding:18px 20px;margin:14px 0}
+.gate .num{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--warn);flex:none;line-height:1.2}
+.gate strong{display:block;margin-bottom:4px}
+.gate p{font-size:14px;margin:0}
+
+footer{padding:36px 0 60px;border-top:1px solid var(--line);color:var(--fg-3);font-family:var(--mono);font-size:12px}
+.reset{background:none;border:1px solid var(--line-2);color:var(--fg-3);font-family:var(--mono);font-size:11px;padding:7px 13px;border-radius:6px;cursor:pointer;margin-top:18px}
+.reset:hover{border-color:var(--bad);color:var(--bad)}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="term">
+    <span class="dot" style="background:#F87171"></span><span class="dot" style="background:#FBBF24"></span><span class="dot" style="background:#34D399"></span>
+    <span style="margin-left:8px">syntaxure ~ /likaslens — roadmap --consolidated --judge=2026-09-03</span>
+  </div>
+  <div class="wrap hero-in">
+    <div class="prose">
+      <div class="kick">Execution Roadmap &amp; Live Tracker</div>
+      <h1>Laravel out. FastAPI unified. Nine days.</h1>
+      <p class="sub">Six phases from "backend is dead" to a live demo at University of Makati. The Laravel backend has been fully consolidated into <code>apps/ai-service</code> — one Python service handles auth, reports, tickets, AI inference, and routing. Every task is owned by either you or the agent. Check items as you go; state persists in this browser.</p>
+      <div class="gp">
+        <div class="gp-bar"><div class="gp-fill" id="gfill"></div></div>
+        <div class="gp-meta">
+          <span id="gpct">0% complete</span>
+          <span id="gcount">0 / 0 tasks</span>
+          <span>Freeze: <b>Aug 31</b> · Judging: <b>Sep 3</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="tldr">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">01 — TL;DR</div>
+  <h2>The shape of the next nine days</h2>
+  <p>The migration is <strong>done</strong>. <code>apps/backend</code> has been deleted and its API responsibilities consolidated into <code>apps/ai-service</code> (FastAPI / Python 3.12). One unified service now handles auth, reports, tickets, AI inference, and Neo4j routing. Frontend apps talk to a single origin.</p>
+  <p>What remains is verification (Phase 0), end-to-end testing (Phase 1), demo seeding (Phase 2), the AI triage pipeline hardening (Phase 3), fixture mode for the venue (Phase 4), and freeze-rehearse-travel (Phase 5).</p>
+</div>
+
+<div class="wide">
+<div class="stats">
+  <div class="stat"><div class="n g">DONE</div><div class="l">Laravel → FastAPI migration complete</div></div>
+  <div class="stat"><div class="n">11</div><div class="l">New API routes in unified ai-service</div></div>
+  <div class="stat"><div class="n v">6</div><div class="l">Phases · Aug 23 → Sep 3</div></div>
+  <div class="stat"><div class="n g">1</div><div class="l">Service to deploy (was 2)</div></div>
+</div>
+</div>
+
+<div class="prose">
+<div class="call v">
+  <h4>Ownership legend</h4>
+  <p><span class="own j">JEFF</span> Console access, credentials, judgment calls, anything that touches a billing account or a live service you can be locked out of. <span class="own a">AGENT</span> Code, schema reading, response-shape mirroring, seeding scripts, tests. The agent never touches a cloud console and never holds a service-role key it wasn't handed.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="migration">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">02 — Migration complete</div>
+  <h2>FastAPI unified service — what was built</h2>
+  <p>The Laravel backend has been fully consolidated into <code>apps/ai-service</code>. Here's what now lives in the single Python service:</p>
+</div>
+
+<div class="wide">
+<div class="tw">
+<table>
+<thead><tr><th>Route</th><th>Method</th><th>Auth</th><th>Ported From</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><code>/api/v1/auth/sync</code></td><td>POST</td><td>None</td><td>AuthController::sync</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/reports</code></td><td>POST</td><td>Optional</td><td>ReportController::store</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/reports/triage</code></td><td>POST</td><td>None</td><td>ReportController::triage</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/tickets</code></td><td>GET</td><td>LGU</td><td>TicketController::index</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/tickets/{id}</code></td><td>GET</td><td>LGU</td><td>TicketController::show</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/tickets/{id}/timeline</code></td><td>GET</td><td>None</td><td>TicketController::timeline</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/tickets/{id}/status</code></td><td>PATCH</td><td>LGU</td><td>TicketController::updateStatus</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/tickets/{id}/explain</code></td><td>GET</td><td>None</td><td>TicketController::explain</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/public/tickets</code></td><td>GET</td><td>None</td><td>PublicApiController</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/public/tickets/{id}</code></td><td>GET</td><td>None</td><td>PublicApiController</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/api/v1/liksi/chat</code></td><td>POST</td><td>Optional</td><td>ChatController::send</td><td><span class="tag t-done">DONE</span></td></tr>
+<tr><td><code>/health/models</code></td><td>GET</td><td>None</td><td>New</td><td><span class="tag t-done">DONE</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="prose">
+<div class="call g">
+  <h4>Architecture: before vs after</h4>
+  <p><strong>Before:</strong> Two processes (<code>apps/backend</code> Laravel on :8000 + <code>apps/ai-service</code> FastAPI on :8001), PHP ↔ Python HTTP calls on every request, Sanctum + Supabase dual auth, GD extension for EXIF stripping.</p>
+  <p><strong>After:</strong> One Python service on :8001. Direct in-process AI calls. Supabase JWT-only auth. Pillow EXIF strip. Single Docker image. One deploy.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="p0">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">03 — Phase 0</div>
+  <h2>Unblock: verification gates</h2>
+  <p>Before the service can be tested end-to-end, these infrastructure checks must pass. The agent cannot log into Supabase, Neo4j Aura, or Google AI Studio for you.</p>
+</div>
+
+<div class="wide">
+<div class="gate">
+  <span class="num">01</span>
+  <div>
+    <strong>Supabase — is the project awake, and is the data there?</strong>
+    <p>Free-tier projects pause after ~7 days idle but restore intact. Log in, unpause if needed, then run row counts on <code>reports</code>, <code>tickets</code>, <code>environmental_laws_ph</code>, <code>users</code>. Take a <code>pg_dump</code> backup. <strong>Blocker if failed:</strong> total — nothing else can proceed.</p>
+  </div>
+</div>
+<div class="gate">
+  <span class="num">02</span>
+  <div>
+    <strong>Neo4j Aura — does the graph still exist?</strong>
+    <p>Aura Free auto-pauses on inactivity and deletes after ~30 days. If gone: provision a fresh Free instance and re-seed from <code>ai-service/seed_neo4j.py</code>. <strong>Blocker if failed and unrecoverable:</strong> severe — the symbolic routing claim depends on this. Fallback: PostgreSQL rule-based routing (already implemented as <code>POSTGRESQL_ROUTING_RULES</code> in <code>triage_service.py</code>).</p>
+  </div>
+</div>
+<div class="gate">
+  <span class="num">03</span>
+  <div>
+    <strong>Gemini API key — does it still authenticate?</strong>
+    <p>Test with a single curl. Confirm nothing in GCP is still accruing charges. <strong>Blocker if failed:</strong> moderate — issue a new key from AI Studio on a clean project.</p>
+  </div>
+</div>
+<div class="gate">
+  <span class="num">04</span>
+  <div>
+    <strong>FastAPI service — does it start and connect to Supabase PostgreSQL?</strong>
+    <p>Set <code>DATABASE_URL</code>, <code>SUPABASE_JWT_SECRET</code>, and storage credentials in <code>apps/ai-service/.env</code>. Run <code>cd apps/ai-service && python -m uvicorn main:app --reload --port 8001</code>. Confirm <code>curl localhost:8001/health</code> returns <code>{"status":"ok"}</code>. <strong>Blocker if failed:</strong> check DATABASE_URL format (<code>postgresql+asyncpg://...</code>).</p>
+  </div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="phases">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">04 — The build</div>
+  <h2>Phases 1–5</h2>
+  <p>Each phase has an explicit definition of done. If a phase isn't done by its end date, the correct response is to cut its remaining scope — not to extend it into the next phase.</p>
+</div>
+
+<div class="wide">
+
+<!-- PHASE 1 — DONE: Migration foundation -->
+<div class="phase" data-phase="p1">
+  <div class="phase-h">
+    <div class="phase-top"><span class="phase-n">Phase 1</span><span class="phase-date">Mon Aug 24–28 · Days 1–5</span></div>
+    <div class="phase-t">FastAPI migration — foundation + all routers <span class="tag t-done" style="margin-left:10px">COMPLETE</span></div>
+    <div class="pbar"><i></i></div><div class="pbar-l">100%</div>
+  </div>
+  <div class="phase-body">
+    <p>The Laravel backend has been fully consolidated into <code>apps/ai-service</code>. All 11 API endpoints are ported, JWT auth works, EXIF stripping uses Pillow, and Ghost Mode fuzzing is in-process.</p>
+    <ul class="ck">
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>db/connection.py</code> — async SQLAlchemy engine + <code>get_db()</code> dependency</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>db/models.py</code> — ORM models mapping to existing Supabase tables (User, Ticket, TicketEvidence, TicketTimeline)</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>auth/supabase_jwt.py</code> — JWT verification via Supabase secret (replaces Sanctum)</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>services/exif.py</code> — EXIF strip via Pillow (replaces GD extension)</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>services/ghost_mode.py</code> — identity strip + location fuzzing</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>routers/auth.py</code> — POST /api/v1/auth/sync</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>routers/reports.py</code> — POST /api/v1/reports + /triage</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>routers/tickets.py</code> — GET/PATCH /api/v1/tickets/* (5 routes)</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>routers/public.py</code> — GET /api/v1/public/tickets (no auth, no identity)</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>routers/liksi.py</code> — POST /api/v1/liksi/chat (citizen + LGU modes)</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Create <code>services/triage_service.py</code> — in-process AI triage with circuit breaker</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Register all routers in <code>main.py</code> + add <code>/health/models</code> endpoint</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Install new deps: sqlalchemy, asyncpg, python-jose, boto3, httpx, email-validator</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Delete <code>apps/backend/</code> directory (12,644 files)</span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Remove backend from <code>pnpm-workspace.yaml</code></span></label></li>
+      <li><label><input type="checkbox" checked><span><span class="own a">AGENT</span>Update <code>AGENTS.md</code> — 4-app monorepo, unified ai-service</span></label></li>
+    </ul>
+    <div class="dod"><div class="h">Done means</div><p>All 16 migration tasks complete. <code>apps/backend</code> deleted. Single service on :8001 handles everything.</p></div>
+  </div>
+</div>
+
+<!-- PHASE 2 — Verification + end-to-end testing -->
+<div class="phase" data-phase="p2">
+  <div class="phase-h">
+    <div class="phase-top"><span class="phase-n">Phase 2</span><span class="phase-date">Aug 29–30 · Days 6–7</span></div>
+    <div class="phase-t">End-to-end verification + Alembic scaffolding</div>
+    <div class="pbar"><i></i></div><div class="pbar-l">0%</div>
+  </div>
+  <div class="phase-body">
+    <p>The code exists, but none of it has been tested against the real Supabase database. Phase 2 is about proving the service actually works end-to-end: the DB connection, JWT auth, report submission with EXIF stripping, ticket CRUD, and the public feed.</p>
+    <p>Alembic migration scaffolding is already in place (<code>db/migrations/</code>). The initial migration documents the schema. Use <code>alembic upgrade head</code> against a fresh database to verify, or just test against the existing Supabase tables.</p>
+    <ul class="ck">
+      <li><label><input type="checkbox"><span><span class="own j">JEFF</span>Set <code>DATABASE_URL</code>, <code>SUPABASE_JWT_SECRET</code>, storage creds in <code>apps/ai-service/.env</code></span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Run all 9 smoke tests from the migration plan against localhost:8001</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Verify <code>POST /api/v1/auth/sync</code> creates user in Supabase <code>users</code> table</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Verify <code>POST /api/v1/reports</code> — image upload, EXIF strip, Ghost Mode fuzz, DB persist</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Verify ghost ticket has "Anonymous Reporter" in LGU view, no identity leaked</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Verify <code>GET /api/v1/public/tickets</code> returns no reporter identity</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Verify <code>PATCH /api/v1/tickets/{id}/status</code> enforces transition rules</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Verify <code>POST /api/v1/liksi/chat</code> works in both citizen and LGU modes</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Run <code>alembic upgrade head --sql</code> offline to verify migration generates valid SQL</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j">JEFF</span>Confirm login still works end-to-end on Supabase Auth alone</span></label></li>
+    </ul>
+    <div class="dod"><div class="h">Done means</div><p>Every smoke test passes. The service connects to Supabase, handles auth, persists data, and returns the correct JSON shapes.</p></div>
+  </div>
+</div>
+
+<!-- PHASE 3 — Demo seeding + data population -->
+<div class="phase" data-phase="p3">
+  <div class="phase-h">
+    <div class="phase-top"><span class="phase-n">Phase 3</span><span class="phase-date">Aug 30 · Day 7</span></div>
+    <div class="phase-t">Demo seeding + AI pipeline hardening</div>
+    <div class="pbar"><i></i></div><div class="pbar-l">0%</div>
+  </div>
+  <div class="phase-body">
+    <p>An empty database reads as a prototype, not a platform. Seed enough data across all status stages that the dashboard, ticket list, and map look inhabited. Then harden the triage pipeline so the AI analysis actually runs end-to-end.</p>
+    <ul class="ck">
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Run <code>seed_demo.py</code> — 5 demo tickets across all status stages</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Seed historical reports so heatmap + leaderboard look inhabited</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Verify triage pipeline: <code>POST /api/v1/reports</code> triggers AI analysis + Neo4j routing</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Verify <code>GET /api/v1/tickets/{id}/explain</code> returns rule chain + statute + agency</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j">JEFF</span>Walk every demo-script read screen and confirm it renders</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j">JEFF</span>Confirm the deck's technical claims match what the build actually does</span></label></li>
+    </ul>
+    <div class="dod"><div class="h">Done means</div><p>The platform looks lived-in. You photograph something, and within seconds a ticket appears with a statute, agency, and confidence score.</p></div>
+  </div>
+</div>
+
+<!-- PHASE 4 — Fixture mode + safety net -->
+<div class="phase" data-phase="p4">
+  <div class="phase-h">
+    <div class="phase-top"><span class="phase-n">Phase 4</span><span class="phase-date">Aug 30–31 · Days 7–8</span></div>
+    <div class="phase-t">Fixture mode + safety net</div>
+    <div class="pbar"><i></i></div><div class="pbar-l">0%</div>
+  </div>
+  <div class="phase-body">
+    <p>A venue network is hostile until proven otherwise. Build a <code>?demo=1</code> mode that serves pre-computed responses from local fixtures, and record every flow on video. <strong>Judges accept a recording. They do not accept a spinner.</strong></p>
+    <ul class="ck">
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Build <code>?demo=1</code> fixture mode bypassing all external calls (Supabase, Neo4j, Gemini)</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Pre-compute fixture responses for: /reports, /tickets, /public/tickets, /liksi/chat</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a">AGENT</span>Verify ONNX weights + YOLO models cache after first load</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j\">JEFF</span>Screen-record every demo flow; store offline on laptop <em>and</em> phone</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j\">JEFF</span>Ally: screenshot fallback pack embedded in the pitch deck</span></label></li>
+    </ul>
+    <div class="dod"><div class="h">Done means</div><p>You could run the entire ten minutes with the wifi switched off and still show every screen.</p></div>
+  </div>
+</div>
+
+<!-- PHASE 5 — Freeze, rehearse, travel, present -->
+<div class="phase" data-phase="p5">
+  <div class="phase-h">
+    <div class="phase-top"><span class="phase-n">Phase 5</span><span class="phase-date">Mon Aug 31 → Thu Sep 3</span></div>
+    <div class="phase-t">Freeze, rehearse, travel, present</div>
+    <div class="pbar"><i></i></div><div class="pbar-l">0%</div>
+  </div>
+  <div class="phase-body">
+    <p>Aug 31 is a hard freeze, not a soft target. After the final deploy, any bug you find gets <em>cut from the demo</em>, not fixed. The failure mode this prevents is specific and common: a late "small" fix that breaks a build nobody has time to re-verify.</p>
+    <p>The tether test matters. Campus wifi is nothing like a competition venue — run the full flow on your phone's mobile data.</p>
+    <ul class="ck">
+      <li><label><input type="checkbox"><span><span class="own j\">JEFF</span><strong>Aug 31 — CODE FREEZE.</strong> Final production deploy, then stop committing</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j\">JEFF</span>Full end-to-end run on mobile data, not campus wifi</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own a\">AGENT</span>Final HTML docs report written to <code>docs/</code> — architecture record for KWADRA</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j\">JEFF</span>Sep 1 — three timed rehearsals, no commits</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j\">JEFF</span>Sep 1 — Ally watches a rehearsal; act on what confuses her</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j\">JEFF</span>Kath: Manila travel + IPOPHIL requirements confirmed with Doc. Diamante</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j\">JEFF</span>ENARDD physical submission resolved — it collides with Sep 3</span></label></li>
+      <li><label><input type="checkbox"><span><span class="own j\">JEFF</span>Offline recording + deck on laptop and phone before boarding</span></label></li>
+    </ul>
+    <div class="dod"><div class="h">Done means</div><p>You walk into University of Makati able to present the full pipeline three ways — live, from fixtures, or from the recording — and nothing about the venue's network can change that.</p></div>
+  </div>
+</div>
+
+</div>
+</div>
+</section>
+
+<section id="blockers">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">05 — Blocker board</div>
+  <h2>Known unknowns</h2>
+  <p>These are the things that could still change the plan. Everything above assumes they resolve favourably; this table is what you do when they don't.</p>
+</div>
+<div class="wide">
+<div class="tw">
+<table>
+<thead><tr><th>Blocker</th><th>Owner</th><th>Gate</th><th>If it fails</th></tr></thead>
+<tbody>
+<tr><td><strong>Neo4j Aura instance deleted</strong> after 60d idle</td><td><span class="tag t-jeff">JEFF</span></td><td>Phase 0</td><td>Re-provision free tier + re-seed same day. If unrecoverable: PostgreSQL fallback routing already works (<code>POSTGRESQL_ROUTING_RULES</code> in <code>triage_service.py</code>). Less impressive, still defensible.</td></tr>
+<tr><td><strong>Supabase project paused or data missing</strong></td><td><span class="tag t-jeff">JEFF</span></td><td>Phase 0</td><td>Unpause restores intact. If data is genuinely gone, seed from scratch — <code>seed_demo.py</code> is ready.</td></tr>
+<tr><td><strong>Gemini key died with the GCP project</strong></td><td><span class="tag t-jeff">JEFF</span></td><td>Phase 0</td><td>New key from AI Studio on a clean project. Low severity — one env var.</td></tr>
+<tr><td><strong>Triage pipeline not working by Aug 30</strong></td><td><span class="tag t-jeff">JEFF</span></td><td>Phase 3</td><td>Collapse to a Gemini-only vision call — one fetch, no ONNX, no graph — and present the symbolic layer from seeded data plus slides rather than live.</td></tr>
+<tr><td><strong>Response shapes don't match, frontend renders empty</strong></td><td><span class="tag t-agent">AGENT</span></td><td>Phase 2</td><td>Most likely cause is the missing <code>{data, meta}</code> pagination envelope. The <code>{success, data, meta}</code> pattern is already implemented in all routers.</td></tr>
+<tr><td><strong>Solo build + illness or ENARDD eating a day</strong></td><td><span class="tag t-jeff">JEFF</span></td><td>Ongoing</td><td>Bus factor is 1 by choice. Brief Lou on the architecture even without repo access. The FastAPI service is the single deployment target — simpler to recover than the old two-service setup.</td></tr>
+<tr><td><strong>Scope creep</strong> — "while I'm in here…"</td><td><span class="tag t-jeff">JEFF</span></td><td>Ongoing</td><td>The 11-endpoint list is the contract. If a screen isn't in <code>docs/demo-script.md</code>, its endpoints don't get ported. Don't renegotiate with yourself at 2am.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+
+<section id="rules">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">06 — Standing rules</div>
+  <h2>Rules that survive the whole sprint</h2>
+</div>
+<div class="wide">
+<div class="grid g2">
+  <div class="card"><h4>Single service</h4><p><code>apps/ai-service</code> is the only backend. No other service to deploy, monitor, or debug. The old <code>apps/backend</code> has been deleted — don't recreate it.</p></div>
+  <div class="card"><h4>No Turborepo before Sep 3</h4><p>It's a build-cache layer. It ports zero endpoints and introduces a new way for the Vercel deploy to break. October problem.</p></div>
+  <div class="card"><h4>One identity provider</h4><p>Supabase Auth only. No Sanctum, no <code>laravel_token</code>, no second bearer. <code>auth/supabase_jwt.py</code> is the single JWT verifier — don't add alternatives.</p></div>
+  <div class="card"><h4>Ghost Mode is sacred</h4><p>Identity strip + location fuzzing runs on every report, ghost or not. EXIF stripping via Pillow happens before any image touches storage or YOLO. Never negotiate this.</p></div>
+  <div class="card"><h4>Mirror the JSON exactly</h4><p>The frontend is not being rewritten, so every ported handler must return <code>{success, data, meta}</code> matching the old controller shape. Read the Laravel controller before writing the handler.</p></div>
+  <div class="card"><h4>The demo script is the spec</h4><p><code>docs/demo-script.md</code> defines what exists. Not the README, not the roadmap docs, not what the platform could theoretically do. If it isn't in the script, it isn't in scope.</p></div>
+</div>
+</div>
+</div>
+</section>
+
+<footer>
+<div class="wrap"><div class="prose">
+  LikasLens execution roadmap · consolidated 28 Aug 2026 · <code>Laravel→FastAPI migration complete</code><br>
+  Syntaxure Labs — IPOPHIL SRT Final Judging, University of Makati, 03 Sep 2026
+  <br><button class="reset" id="reset">reset tracker state</button>
+</div></div>
+</footer>
+
+<script>
+(function(){
+  var KEY='likaslens-roadmap-v2';
+  var all=Array.prototype.slice.call(document.querySelectorAll('ul.ck input[type=checkbox]'));
+  all.forEach(function(b,i){b.dataset.gid='t'+i;});
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){saved={};}
+  function save(){
+    var s={};
+    all.forEach(function(b){ if(b.checked) s[b.dataset.gid]=1; });
+    localStorage.setItem(KEY,JSON.stringify(s));
+  }
+  function update(){
+    var done=0;
+    all.forEach(function(b){ if(b.checked) done++; });
+    var pct=all.length?Math.round(100*done/all.length):0;
+    document.getElementById('gfill').style.width=pct+'%';
+    document.getElementById('gpct').textContent=pct+'% complete';
+    document.getElementById('gcount').textContent=done+' / '+all.length+' tasks';
+    document.querySelectorAll('.phase').forEach(function(ph){
+      var boxes=ph.querySelectorAll('ul.ck input[type=checkbox]');
+      var d=0; boxes.forEach(function(b){ if(b.checked) d++; });
+      var p=boxes.length?Math.round(100*d/boxes.length):0;
+      ph.querySelector('.pbar i').style.width=p+'%';
+      ph.querySelector('.pbar-l').textContent=p+'% — '+d+' of '+boxes.length;
+    });
+  }
+  all.forEach(function(b){
+    b.checked=!!saved[b.dataset.gid];
+    b.addEventListener('change',function(){save();update();});
+  });
+  document.getElementById('reset').addEventListener('click',function(){
+    if(!confirm('Clear all checked items?'))return;
+    localStorage.removeItem(KEY);
+    all.forEach(function(b){b.checked=false;});
+    update();
+  });
+  update();
+})();
+</script>
+</body>
+</html>

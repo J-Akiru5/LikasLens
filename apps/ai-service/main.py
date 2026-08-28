@@ -590,6 +590,38 @@ async def chat_proxy(payload: dict):
     return ChatResponse(reply=reply)
 
 
+# ---------------------------------------------------------------------------
+# Business API routers (replaces apps/backend Laravel)
+# ---------------------------------------------------------------------------
+
+try:
+    from routers.auth    import router as auth_router
+    from routers.reports import router as reports_router
+    from routers.tickets import router as tickets_router
+    from routers.public  import router as public_router
+    from routers.liksi   import router as liksi_router
+
+    app.include_router(auth_router)
+    app.include_router(reports_router)
+    app.include_router(tickets_router)
+    app.include_router(public_router)
+    app.include_router(liksi_router)
+    logger.info("Business API routers loaded: auth, reports, tickets, public, liksi")
+except ImportError as exc:
+    logger.warning("Business API routers not loaded (DB deps may be missing): %s", exc)
+
+
+@app.get("/health/models")
+async def health_models():
+    """Check which AI models are loaded and available."""
+    from image_analysis import _COCO_MODEL_NAME, _ENV_MODEL_NAME
+    return {
+        "yolo_coco": bool(_COCO_MODEL_NAME),
+        "yolo_env": bool(_ENV_MODEL_NAME),
+        "gemini_available": bool(os.getenv("GOOGLE_API_KEY")),
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 
