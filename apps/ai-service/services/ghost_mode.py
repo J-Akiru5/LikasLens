@@ -50,7 +50,7 @@ def sanitize_report_payload(
 
 
 # Fields that must NEVER appear in public or LGU responses
-IDENTITY_FIELDS = frozenset(["reporter_user_id", "reporter_email", "reporter_phone", "reporter_ip"])
+IDENTITY_FIELDS = frozenset(["reporter_user_id", "reporter_email", "reporter_phone", "reporter_ip", "ghost_mode"])
 
 
 def sanitize_for_public(ticket_dict: dict) -> dict:
