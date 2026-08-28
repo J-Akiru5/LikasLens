@@ -111,7 +111,6 @@ export default function SettingsPage() {
       await supabase.auth.signOut();
       try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
       try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
-      document.cookie = "laravel_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
       showToast("Logged out successfully", "success");
       setTimeout(() => { window.location.href = "/login"; }, 500);
     } catch {
@@ -392,7 +391,7 @@ export default function SettingsPage() {
             </div>
             <div className="p-5 space-y-4">
               <p className="text-sm text-ink/60">
-                This action is permanent and cannot be undone. All your data, reports, and eco-credits will be erased.
+                This action is permanent and cannot be undone. All your data and reports will be erased.
               </p>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 border border-ink/10 text-sm text-ink/60 rounded-xl">

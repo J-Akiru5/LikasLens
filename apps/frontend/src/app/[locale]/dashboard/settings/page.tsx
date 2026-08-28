@@ -397,7 +397,7 @@ function AccountSection() {
 
             <div className="p-6 space-y-5">
               <p className="text-sm text-ink/60 leading-relaxed">
-                This action is permanent and cannot be undone. All your data, reports, and eco-credits will be erased.
+                This action is permanent and cannot be undone. All your data and reports will be erased.
               </p>
 
               {message && (

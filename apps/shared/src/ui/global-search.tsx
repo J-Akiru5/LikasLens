@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent,
@@ -135,9 +136,10 @@ interface GlobalSearchProps {
 export function GlobalSearch({
   open: controlledOpen,
   onOpenChange,
-  entities: entityTypes = ["ticket", "law", "ngo", "user"],
+  entities: entityTypesProp,
 }: GlobalSearchProps) {
   const router = useRouter();
+  const entityTypes = useMemo(() => entityTypesProp ?? ["ticket", "law", "ngo", "user"], [entityTypesProp]);
   const inputRef = useRef<HTMLInputElement>(null);
   const [internalOpen, setInternalOpen] = useState(false);
   const [query, setQuery] = useState("");

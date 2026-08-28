@@ -8,5 +8,6 @@ allowBuilds:
   '@swc/core': true
   core-js: true
   esbuild: true
+  protobufjs: set this to true or false
   sharp: true
   unrs-resolver: true

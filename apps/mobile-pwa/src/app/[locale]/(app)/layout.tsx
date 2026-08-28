@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MobileLayout, RouteProgress, notifyThemeColor } from "@likaslens/shared";
-import { LayoutDashboard, Camera, Trophy, User, Wallet } from "lucide-react";
+import { LayoutDashboard, Camera, User, Globe } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PageTransition } from "@/components/page-transition";
 import { usePathname } from "next/navigation";
@@ -11,9 +11,8 @@ import { PullToRefreshProvider, usePullToRefreshFn } from "@/context/pull-to-ref
 
 const BOTTOM_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
   { href: "/report", label: "Report", icon: Camera, isPrimary: true },
-  { href: "/scoreboard", label: "Records", icon: Trophy },
+  { href: "/incidents", label: "Records", icon: Globe },
   { href: "/profile", label: "Profile", icon: User },
 ];
 

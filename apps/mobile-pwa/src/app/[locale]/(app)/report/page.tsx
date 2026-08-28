@@ -27,6 +27,8 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useVoiceInput } from "@/hooks/use-voice-input";
 import { useHaptics } from "@/hooks/use-haptics";
 import { BottomSheet } from "@/components/native/bottom-sheet";
+import { GhostShieldOverlay } from "@/components/ghost-shield-overlay";
+import { AIAnalysisAnimation } from "@/components/ai-analysis-animation";
 
 interface FailedPayload {
   base64Image: string;
@@ -84,6 +86,7 @@ export default function ReportPage() {
   const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
   const [ghostMode, setGhostMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
   const [typeSheetOpen, setTypeSheetOpen] = useState(false);
   const [showManualCoords, setShowManualCoords] = useState(false);
   const [manualLat, setManualLat] = useState("");
@@ -362,17 +365,8 @@ export default function ReportPage() {
 
       haptic("success");
 
-      if (ghostMode) {
-        showToast("Metadata stripped for your safety. Report submitted!", "success");
-      } else {
-        showToast("Report submitted successfully!", "success");
-      }
-
-      setPhoto(null);
-      setIncidentType("");
-      setDescription("");
-      setStep("camera");
-      router.push(`/${locale}/dashboard`);
+      // Show AI analysis animation before redirecting
+      setShowAnalysis(true);
     } catch (err) {
       haptic("error");
       const message = err instanceof Error ? err.message : "Failed to submit report";
@@ -391,6 +385,28 @@ export default function ReportPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  // AI Analysis animation overlay
+  if (showAnalysis) {
+    return (
+      <AIAnalysisAnimation
+        photoUrl={photo || undefined}
+        onComplete={() => {
+          setShowAnalysis(false);
+          if (ghostMode) {
+            showToast("Metadata stripped for your safety. Report submitted!", "success");
+          } else {
+            showToast("Report submitted successfully!", "success");
+          }
+          setPhoto(null);
+          setIncidentType("");
+          setDescription("");
+          setStep("camera");
+          router.push(`/${locale}/dashboard`);
+        }}
+      />
+    );
   }
 
   /* ───────────────────────────────────────────────────────────────────────
@@ -484,6 +500,8 @@ export default function ReportPage() {
             <>
               <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
               <canvas ref={canvasRef} className="hidden" />
+              {/* Ghost Mode shield overlay */}
+              <GhostShieldOverlay active={ghostMode} />
               {/* Rule-of-thirds guide */}
               <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{
                 backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.14) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.14) 1px, transparent 1px)",
@@ -742,7 +760,7 @@ export default function ReportPage() {
       disabled={disabled || submitting}
       variant="primary"
       className={cn("w-full flex items-center justify-center gap-2 transition-all active:scale-[0.98]")}
-      style={{ height: 54, borderRadius: 14, fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 15, opacity: (disabled || submitting) ? 0.5 : 1 }}
+      style={{ height: 54, borderRadius: 14, fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 15, opacity: (disabled || submitting) ? 0.5 : 1, background: ghostMode ? "#f59e0b" : undefined }}
     >
       {submitting ? (
         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

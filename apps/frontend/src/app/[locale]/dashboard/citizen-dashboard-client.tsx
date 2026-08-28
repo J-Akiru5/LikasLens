@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { StatsCards, ActivityFeed, PublicScoreboard, EmptyState, cn, Dropdown, Button, RevealSection, SpotlightCard, PulseBadge } from "@likaslens/shared";
+import { StatsCards, ActivityFeed, EmptyState, cn, Dropdown, Button, RevealSection, SpotlightCard, PulseBadge } from "@likaslens/shared";
 import { getQueueCount } from "@likaslens/shared";
 import type { DashboardStats, ActivityFeedItem } from "@likaslens/shared";
 import { AlertTriangle, Activity, Clock, CheckCircle, TriangleAlert, TrendingUp, Loader2, WifiOff, RefreshCw } from "lucide-react";
@@ -34,7 +34,6 @@ interface CitizenDashboardProps {
   ghostModeActive?: boolean;
 }
 
-type Panel = "feed" | "scoreboard" | null;
 
 const CITIZEN_TAB_ACTIVE =
   "flex items-center justify-center px-2 sm:px-4 py-2 sm:py-1.5 text-[11px] sm:text-sm font-medium rounded-md transition-all duration-200 bg-accent text-page shadow-sm shadow-accent/25";
@@ -43,7 +42,6 @@ const CITIZEN_TAB_INACTIVE =
   "flex items-center justify-center px-2 sm:px-4 py-2 sm:py-1.5 text-[11px] sm:text-sm font-medium rounded-md transition-all duration-200 text-ink/60 hover:text-ink";
 
 export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeActive }: CitizenDashboardProps) {
-  const points = (impact as any)?.reward_points_balance ?? 0;
   const [activeTab, setActiveTab] = useState<"overview" | "installed" | "uninstalled">("overview");
   const [queueCount, setQueueCount] = useState(0);
 
@@ -265,10 +263,10 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
                        <div className="flex items-center justify-between mb-4">
                         <h3 className="font-medium text-sm text-ink/80 flex items-center gap-2">
                            <TrendingUp className="w-4 h-4 text-ink/40" />
-                           Top Contributors
+                           Recent Activity
                         </h3>
                        </div>
-                       <PublicScoreboard />
+                       <ActivityFeed items={feedItems} />
                     </div>
                   </SpotlightCard>
                 </div>

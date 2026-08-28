@@ -7,7 +7,6 @@ const publicPages = [
   { path: "", changefreq: "daily" as const, priority: 1.0 },
   { path: "impact", changefreq: "weekly" as const, priority: 0.9 },
   { path: "laws", changefreq: "weekly" as const, priority: 0.8 },
-  { path: "scoreboard", changefreq: "daily" as const, priority: 0.8 },
   { path: "report", changefreq: "monthly" as const, priority: 0.9 },
   { path: "contact", changefreq: "monthly" as const, priority: 0.5 },
   { path: "changelog", changefreq: "weekly" as const, priority: 0.6 },

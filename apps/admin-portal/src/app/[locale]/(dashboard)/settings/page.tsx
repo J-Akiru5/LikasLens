@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { getAdminCurrencySettings, updateAdminCurrencySetting } from "@likaslens/shared";
-import type { CurrencySetting } from "@likaslens/shared";
 import { showToast, Button } from "@likaslens/shared";
 import {
   Globe,
@@ -17,11 +15,9 @@ import {
   Key,
   Trash2,
   Copy,
-  Coins,
-  Loader2,
 } from "lucide-react";
 
-type AdminSettingsTab = "platform" | "notifications" | "security" | "developers" | "currency";
+type AdminSettingsTab = "platform" | "notifications" | "security" | "developers";
 
 interface TabCard {
   id: AdminSettingsTab;
@@ -35,7 +31,6 @@ const TABS: TabCard[] = [
   { id: "notifications", label: "Notifications", description: "Alert configuration", icon: Bell },
   { id: "security", label: "Security", description: "Access controls", icon: Shield },
   { id: "developers", label: "Developers", description: "API Keys", icon: Key },
-  { id: "currency", label: "Currency", description: "Eco-credit rates", icon: Coins },
 ];
 
 interface SettingsState {
@@ -62,7 +57,6 @@ interface SettingsState {
 const DEFAULT_SETTINGS: SettingsState = {
   platformName: "LikasLens Admin",
   defaultLanguage: "en",
-  ecoCreditRate: 100,
   registrationOpen: true,
   aiModeration: true,
   maintenanceMode: false,
@@ -91,151 +85,6 @@ function loadSettings(): SettingsState {
   return DEFAULT_SETTINGS;
 }
 
-function CurrencySection() {
-  const [currencies, setCurrencies] = useState<CurrencySetting[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [savingId, setSavingId] = useState<string | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [rates, setRates] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    getAdminCurrencySettings()
-      .then((res) => {
-        if (res.success) {
-          setCurrencies(res.data);
-          const rateMap: Record<string, string> = {};
-          res.data.forEach((c) => {
-            if (c.id) rateMap[c.id] = String(c.eco_credit_rate);
-          });
-          setRates(rateMap);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleSaveRate = async (id: string) => {
-    const rateStr = rates[id];
-    if (!rateStr) return;
-
-    const rate = parseFloat(rateStr);
-    if (isNaN(rate) || rate < 0.0001) {
-      setErrors({ ...errors, [id]: "Rate must be at least 0.0001" });
-      return;
-    }
-
-    setSavingId(id);
-    setErrors({ ...errors, [id]: "" });
-    try {
-      const res = await updateAdminCurrencySetting(id, { eco_credit_rate: rate });
-      if (res.success) {
-        setCurrencies((prev) =>
-          prev.map((c) => (c.id === id ? res.data : c)),
-        );
-        showToast("Rate updated successfully", "success");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to update rate", "error");
-    } finally {
-      setSavingId(null);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-ink/30" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-            <Coins className="w-6 h-6 text-ink/40" />
-          </div>
-          <div>
-            <h2 className="font-semibold tracking-tight text-2xl text-ink">Currency Settings</h2>
-            <p className="font-mono text-sm text-muted mt-1">
-              Configure eco-credit conversion rates per country. Changes take effect immediately on the public rate endpoint.
-            </p>
-          </div>
-        </div>
-
-        {currencies.length === 0 ? (
-          <p className="text-muted text-sm py-8 text-center">No currency settings configured.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {currencies.map((c) => (
-              <div
-                key={c.id}
-                className={`border rounded-2xl p-4 ${c.is_active ? "border-ink/5" : "border-ink/5 opacity-50"}`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <span className="font-mono text-xs font-bold text-green bg-green/5 px-2 py-0.5 rounded">
-                      {c.country_code}
-                    </span>
-                    <span className="ml-2 font-medium text-sm text-ink">
-                      {c.country_name}
-                    </span>
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${
-                      c.is_active
-                        ? "bg-green/10 text-green"
-                        : "bg-ink/[0.04] text-ink/40"
-                    }`}
-                  >
-                    {c.is_active ? "Active" : "Inactive"}
-                  </span>
-                </div>
-                <div className="font-mono text-xs text-muted mb-3">
-                  {c.currency_code} — {c.currency_name}
-                </div>
-                <div className="space-y-2">
-                  <label className="font-mono text-[10px] text-ink/50 uppercase tracking-widest block">
-                    Eco-Credit Rate
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      step="0.0001"
-                      min="0.0001"
-                      value={rates[c.id ?? ""] ?? ""}
-                      onChange={(e) => {
-                        setRates({ ...rates, [c.id ?? ""]: e.target.value });
-                        setErrors({ ...errors, [c.id ?? ""]: "" });
-                      }}
-                      className={`flex-1 bg-page border px-3 py-2 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${
-                        errors[c.id ?? ""] ? "border-red" : "border-ink/10"
-                      }`}
-                    />
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => c.id && handleSaveRate(c.id)}
-                      loading={savingId === c.id}
-                      disabled={savingId === c.id || String(c.eco_credit_rate) === rates[c.id ?? ""]}
-                    >
-                      Save
-                    </Button>
-                  </div>
-                  {errors[c.id ?? ""] && (
-                    <p className="font-mono text-xs text-red">{errors[c.id ?? ""]}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function PlatformSection({ settings, update }: { settings: SettingsState; update: (key: keyof SettingsState, value: unknown) => void }) {
   return (
@@ -270,12 +119,6 @@ function PlatformSection({ settings, update }: { settings: SettingsState; update
               <option value="my">Burmese</option>
               <option value="lo">Lao</option>
             </select>
-          </div>
-          <div>
-            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Eco Credit Rate (PHP)</label>
-            <input type="number" value={settings.ecoCreditRate}
-              onChange={(e) => update("ecoCreditRate", Number(e.target.value))}
-              className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
           </div>
           <div>
             <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">API Base URL</label>
@@ -589,7 +432,7 @@ function DevelopersSection() {
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab") as AdminSettingsTab | null;
-  const initialTab: AdminSettingsTab = tabParam && ["platform", "notifications", "security", "developers", "currency"].includes(tabParam) ? tabParam : "platform";
+  const initialTab: AdminSettingsTab = tabParam && ["platform", "notifications", "security", "developers"].includes(tabParam) ? tabParam : "platform";
   const [activeTab, setActiveTab] = useState<AdminSettingsTab>(initialTab);
   const [settings, setSettings] = useState<SettingsState>(DEFAULT_SETTINGS);
   const [saving, setSaving] = useState(false);
@@ -668,7 +511,6 @@ export default function SettingsPage() {
         {activeTab === "notifications" && <NotificationsSection settings={settings} update={updateSetting} />}
         {activeTab === "security" && <SecuritySection settings={settings} update={updateSetting} />}
         {activeTab === "developers" && <DevelopersSection />}
-        {activeTab === "currency" && <CurrencySection />}
       </div>
 
       <div className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">

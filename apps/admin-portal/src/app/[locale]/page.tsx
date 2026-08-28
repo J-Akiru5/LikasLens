@@ -45,7 +45,7 @@ const FEATURES = [
   {
     icon: UserCheck,
     title: "Manage Users",
-    description: "Onboard new NGOs, manage role-based access for analysts, and oversee citizen eco-credit distributions.",
+    description: "Onboard new NGOs, manage role-based access for analysts, and oversee citizen reports and account management.",
   },
   {
     icon: ShieldCheck,
