@@ -100,13 +100,13 @@ function makeNodes(incident: Partial<GraphNode>, ai: Partial<GraphNode>, law: Pa
     { id: "ai", type: "ai", x: 280, y: 80, vx: 0, vy: 0, code: "AI_ENGINE", ...ai } as GraphNode,
     { id: "law", type: "law", x: 400, y: 180, vx: 0, vy: 0, code: "STATUTE", ...law } as GraphNode,
     { id: "agency", type: "agency", x: 400, y: 320, vx: 0, vy: 0, code: "AGENCY", ...agency } as GraphNode,
-    { id: "proof", type: "proof", x: 150, y: 320, vx: 0, vy: 0, code: "BLOCKCHAIN", ...proof } as GraphNode,
+    { id: "proof", type: "proof", x: 150, y: 320, vx: 0, vy: 0, code: "AUDIT_LOG", ...proof } as GraphNode,
   ];
 }
 
 const BASE_LINKS: GraphLink[] = [
   { source: "inc", target: "ai", label: "Analyzed By" },
-  { source: "inc", target: "proof", label: "Sealed On-Chain" },
+  { source: "inc", target: "proof", label: "Audit Logged" },
   { source: "inc", target: "law", label: "Violates" },
   { source: "law", target: "agency", label: "Enforced By" },
   { source: "ai", target: "agency", label: "Routes To" },
@@ -121,7 +121,7 @@ const PRESETS: Preset[] = [
       { label: "YOLOv8 Classifier", sublabel: "FastAPI AI-Service", details: "Computer vision model detecting 47 environmental violation classes.", meta: { Model: "YOLOv8-Env-v2", Accuracy: "94.2%", Latency: "~120ms" } },
       { label: "Republic Act 9003", sublabel: "Ecological Solid Waste Mgmt.", details: "RA 9003 Section 48 — Fines up to ₱300,000 and 6 years imprisonment.", meta: { Statute: "RA 9003", Max_Fine: "₱300,000" } },
       { label: "CENRO Task Force", sublabel: "City Environment & NR Office", details: "Specialized enforcement unit. SLA: 24-hour field response.", meta: { Unit: "CENRO", SLA: "24 Hours" } },
-      { label: "Polygon Mainnet", sublabel: "Block #4,829,188", details: "Tamper-proof SHA-256 evidence hash committed to blockchain.", meta: { Network: "Polygon", Block: "#4,829,188" } }
+      { label: "Immutable Audit Log", sublabel: "Hash-chained record", details: "SHA-256 evidence hash committed to append-only audit log.", meta: { Method: "Hash Chain", Algorithm: "SHA-256" } }
     ),
     links: BASE_LINKS,
   },
@@ -133,7 +133,7 @@ const PRESETS: Preset[] = [
       { label: "Forestry Sentinel AI", sublabel: "Multispectral Analysis", details: "NDVI change-detection model comparing satellite bands to baseline.", meta: { Model: "NDVI-ChangeNet", Change: "-12% NDVI" } },
       { label: "P.D. 705 — Forestry Code", sublabel: "Revised Forestry Code", details: "Prohibits cutting timber in forest lands without license.", meta: { Statute: "P.D. 705", Max_Fine: "₱500,000" } },
       { label: "DENR — Forest Police", sublabel: "Dept. of Env. & Natural Res.", details: "Forest rangers with arrest authority for field intercept.", meta: { Unit: "DENR Rangers", Priority: "CRITICAL" } },
-      { label: "Sepolia Testnet", sublabel: "TX: 0x9f1a...8e2c", details: "Evidence hash anchored to Ethereum Sepolia.", meta: { Network: "Ethereum Sepolia", Status: "Confirmed" } }
+      { label: "Audit Chain Entry", sublabel: "Block #921,029", details: "Evidence timestamp and AI classification hash in immutable audit trail.", meta: { Status: "Confirmed" } }
     ),
     links: BASE_LINKS,
   },
@@ -450,7 +450,7 @@ export default function KnowledgeGraphPage() {
             <div className="flex justify-center pt-3 pb-2"><div className="w-12 h-1.5 bg-gray-200 rounded-full" /></div>
             <div className="px-5 pb-3 flex justify-between items-center border-b border-gray-100">
               <h2 className="text-lg font-bold text-ink">Select Scenario</h2>
-              <button onClick={() => setShowPresets(false)} className="p-1 text-ink/40"><X className="w-5 h-5" /></button>
+              <button onClick={() => setShowPresets(false)} aria-label="Close presets" className="p-1 text-ink/40"><X className="w-5 h-5" /></button>
             </div>
             <div className="overflow-y-auto px-5 py-4 pb-8 flex-1 space-y-2">
               {PRESETS.map((p) => (

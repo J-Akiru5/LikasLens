@@ -164,7 +164,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
     >
       {/* Premium Data Topography Background */}
       <div style={{ position: "absolute", inset: 0, opacity: ghostMode ? 0.6 : 1, transition: "opacity 0.6s ease" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/landing_hero_bg_premium.png')", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.8 }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/landing_hero_bg.webp')", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.8 }} />
         {/* Subtle dark gradient overlay to ensure text remains perfectly readable */}
         <div
           style={{

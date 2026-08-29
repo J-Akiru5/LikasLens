@@ -165,7 +165,7 @@ export function IncidentDrawer({ isOpen, onClose, incident }: IncidentDrawerProp
               </div>
             </div>
 
-            {/* 3. Blockchain Receipt Card */}
+            {/* 3. Audit Trail Receipt Card */}
             <div className="bg-[#080c15] rounded-2xl p-5 border border-white/10 relative overflow-hidden shadow-xl">
               {/* Decorative background glow */}
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-teal-500/10 blur-3xl rounded-full pointer-events-none" />

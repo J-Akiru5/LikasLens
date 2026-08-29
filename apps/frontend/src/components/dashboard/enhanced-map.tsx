@@ -5,12 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import Map, { useMap, useControl } from "react-map-gl/maplibre";
 import type { Map as MaplibreMap } from "maplibre-gl";
 import { MapboxOverlay } from "@deck.gl/mapbox";
-import { HexagonLayer } from "@deck.gl/aggregation-layers";
 import { HeatmapLayer } from "@deck.gl/aggregation-layers";
 import { ScatterplotLayer } from "@deck.gl/layers";
 import {
   Layers,
-  Grid3X3,
+  MapPin,
   Filter,
   Loader2,
   AlertTriangle,
@@ -25,57 +24,10 @@ import { laravelGet } from "@likaslens/shared";
 
 // ── Constants ────────────────────────────────────────────────────────────
 
-const FAST_LIGHT_MAP = {
-  version: 8,
-  sources: {
-    "carto-light": {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-      ],
-      tileSize: 256,
-      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
-    }
-  },
-  layers: [
-    {
-      id: "carto-light-layer",
-      type: "raster",
-      source: "carto-light",
-      minzoom: 0,
-      maxzoom: 20
-    }
-  ]
-};
+// Vector GL styles — much faster than raster tiles, smooth panning
+const VECTOR_LIGHT = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+const VECTOR_DARK  = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 
-const FAST_DARK_MAP = {
-  version: 8,
-  sources: {
-    "carto-dark": {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-      ],
-      tileSize: 256,
-      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
-    }
-  },
-  layers: [
-    {
-      id: "carto-dark-layer",
-      type: "raster",
-      source: "carto-dark",
-      minzoom: 0,
-      maxzoom: 20
-    }
-  ]
-};
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -114,7 +66,7 @@ interface ViolationType {
   name: string;
 }
 
-type ViewMode = "hexagon" | "heatmap" | "points";
+type ViewMode = "heatmap" | "points";
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -236,55 +188,26 @@ function DeckGLOverlay({
       urgency_score: p.urgency_score ?? 1,
     }));
 
-    if (viewMode === "hexagon") {
-      return [
-        new HexagonLayer({
-          id: "hexagon",
-          data: points,
-          getPosition: (d: (typeof points)[0]) => d.position,
-          getElevationWeight: (d: (typeof points)[0]) => d.weight,
-          getColorWeight: (d: (typeof points)[0]) => d.urgency_score,
-          colorAggregation: 'MAX',
-          elevationScale: 30,
-          extruded: true,
-          radius: 2000,
-          coverage: 0.92,
-          colorRange: [
-            [147, 197, 253], // Very Low (Light Blue)
-            [59, 130, 246],  // Low (Blue)
-            [251, 191, 36],  // Medium-Low (Yellow/Amber)
-            [245, 158, 11],  // Medium (Orange/Amber)
-            [239, 68, 68],   // High (Light Red)
-            [220, 38, 38],   // Critical (Deep Red)
-          ],
-          opacity: 0.9,
-          pickable: true,
-          autoHighlight: true,
-          highlightColor: isGhost ? [255, 255, 255, 80] : [0, 0, 0, 80],
-          parameters: { depthTest: false },
-        }),
-      ];
-    }
-
     if (viewMode === "heatmap") {
       return [
         new HeatmapLayer({
           id: "heatmap",
           data: points,
           getPosition: (d: (typeof points)[0]) => d.position,
-          getWeight: (d: (typeof points)[0]) => d.urgency_score * 2, // Boost critical heat
-          radiusPixels: 55,
+          getWeight: (d: (typeof points)[0]) => d.urgency_score * 2,
+          // Tuned down for smooth GPU rendering
+          radiusPixels: 38,
           intensity: 1.2,
           threshold: 0.05,
           colorRange: [
-            [147, 197, 253], // Very Low (Light Blue)
-            [59, 130, 246],  // Low (Blue)
-            [251, 191, 36],  // Medium-Low (Yellow/Amber)
-            [245, 158, 11],  // Medium (Orange/Amber)
-            [239, 68, 68],   // High (Light Red)
-            [220, 38, 38],   // Critical (Deep Red)
+            [45, 212, 191],   // Teal 400 - Low density
+            [14, 165, 233],   // Sky 500
+            [59, 130, 246],   // Blue 500 - Moderate
+            [249, 115, 22],   // Orange 500 - Elevated
+            [239, 68, 68],    // Crimson 500 - High
+            [159, 18, 57],    // Deep Ruby 800 - Critical Hotspot
           ],
-          opacity: 0.85,
+          opacity: 0.88,
         }),
       ];
     }
@@ -312,12 +235,8 @@ function DeckGLOverlay({
     ];
   }, [data, viewMode, isGhost]);
 
-  const overlay = useControl(
-    () =>
-      new MapboxOverlay({
-        interleaved: true,
-      })
-  );
+  // interleaved: false avoids expensive per-frame compositing
+  const overlay = useControl(() => new MapboxOverlay({ interleaved: false }));
 
   useEffect(() => {
     overlay.setProps({ layers });
@@ -384,8 +303,12 @@ export function EnhancedMap({
       const res = await laravelGet<{ success: boolean; data: HeatmapData }>(
         `/reports/heatmap?${params.toString()}`
       );
-      if (res.success) {
-        setData(res.data);
+      if (res.success && res.data) {
+        setData({
+          points: Array.isArray(res.data.points) ? res.data.points : [],
+          clusters: Array.isArray(res.data.clusters) ? res.data.clusters : [],
+          hot_zones: Array.isArray(res.data.hot_zones) ? res.data.hot_zones : [],
+        });
       } else {
         setError("Failed to load map data");
       }
@@ -426,8 +349,7 @@ export function EnhancedMap({
           <div className="flex rounded-xl bg-ink/[0.04] p-1">
             {[
               { mode: "heatmap" as const, icon: Layers, label: "Heatmap" },
-              { mode: "hexagon" as const, icon: Grid3X3, label: "Hexagon" },
-              { mode: "points" as const, icon: Filter, label: "Points" },
+              { mode: "points" as const, icon: MapPin, label: "Scatter Pins" },
             ].map(({ mode, icon: Icon, label }) => (
               <button
                 key={mode}
@@ -615,8 +537,9 @@ export function EnhancedMap({
               zoom: 6,
             }}
             style={{ width: "100%", height: "100%" }}
-            mapStyle={isGhost ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"}
+            mapStyle={isGhost ? VECTOR_DARK : VECTOR_LIGHT}
             attributionControl={false}
+            reuseMaps
           >
             {/* NASA GIBS Satellite overlay */}
             <SatelliteLayer date={satelliteDate} visible={showSatellite} />
@@ -643,18 +566,18 @@ export function EnhancedMap({
       </div>
 
       {/* Stats summary */}
-      {data && data.points.length > 0 && (
+      {data && Array.isArray(data.points) && data.points.length > 0 && (
         <div className="flex flex-wrap gap-6 text-xs text-ink/60">
           <span>
             <strong className="text-ink">{data.points.length}</strong> total reports
           </span>
           <span>
-            <strong className="text-ink">{data.clusters.length}</strong> cluster
-            {data.clusters.length !== 1 ? "s" : ""}
+            <strong className="text-ink">{data.clusters?.length ?? 0}</strong> cluster
+            {(data.clusters?.length ?? 0) !== 1 ? "s" : ""}
           </span>
           <span>
-            <strong className="text-ink">{data.hot_zones.length}</strong> hot zone
-            {data.hot_zones.length !== 1 ? "s" : ""}
+            <strong className="text-ink">{data.hot_zones?.length ?? 0}</strong> hot zone
+            {(data.hot_zones?.length ?? 0) !== 1 ? "s" : ""}
           </span>
         </div>
       )}

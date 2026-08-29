@@ -37,16 +37,27 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeSection, setActiveSection] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getSession().then((response: any) => {
-      setIsAuthenticated(!!response?.data?.session);
-    });
+    async function loadUser() {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        setUser(authUser ?? null);
+      } catch {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          setUser(session?.user ?? null);
+        } catch {
+          setUser(null);
+        }
+      }
+    }
+    loadUser();
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      setIsAuthenticated(!!session);
+      setUser(session?.user ?? null);
     });
     
     return () => subscription.unsubscribe();
@@ -105,7 +116,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group no-underline">
             <img
-              src="/images/likas-lens-logo.png"
+              src="/images/likas-lens-logo.webp"
               alt="LikasLens"
               className="w-7 h-7 object-contain group-hover:scale-110 transition-transform duration-300"
               style={{ filter: !visible || ghostMode ? "brightness(0) invert(1)" : "none" }}
@@ -195,36 +206,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
             </button>
 
             <div className="hidden sm:flex items-center gap-4 ml-2">
-              {isAuthenticated ? (
-                <UserNav invert={!visible || ghostMode} />
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="font-mono text-[11px] font-bold tracking-[0.1em] uppercase transition-colors"
-                    style={{
-                      color: !visible || ghostMode ? "rgba(240,237,232,0.8)" : "rgba(17,24,20,0.7)",
-                      textDecoration: "none",
-                    }}
-                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = !visible || ghostMode ? "#ffffff" : "#111814")}
-                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = !visible || ghostMode ? "rgba(240,237,232,0.8)" : "rgba(17,24,20,0.7)")}
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="px-4 py-2 rounded-lg text-xs font-bold transition-all no-underline shadow-sm"
-                    style={{
-                      background: "#2ee6c8",
-                      color: "#0d1a12",
-                    }}
-                    onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#40f0d4")}
-                    onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#2ee6c8")}
-                  >
-                    Sign Up
-                  </Link>
-                </>
-              )}
+              <UserNav invert={!visible || ghostMode} />
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -284,7 +266,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
               <div className="h-px w-full my-1" style={{ background: ghostMode ? "rgba(46, 230, 200, 0.1)" : "rgba(0, 0, 0, 0.05)" }} />
               
               <div className="flex flex-col gap-3 sm:hidden pt-1">
-                {isAuthenticated ? (
+                {user ? (
                   <Link
                     href="/dashboard"
                     className="inline-flex items-center justify-center px-4 py-3 rounded-xl text-sm font-bold w-full text-center transition-colors shadow-sm"

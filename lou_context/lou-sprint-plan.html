@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lou's Frontend Sprint Plan — LikasLens SRT 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-void:       #050a0e;
+      --bg-deep:       #080f14;
+      --bg-card:       #0c1620;
+      --bg-card-hover: #101e2e;
+      --bg-panel:      #0a1420;
+      --border:        rgba(30, 180, 100, 0.12);
+      --border-bright: rgba(30, 180, 100, 0.35);
+      --green-dim:     #1a7a4a;
+      --green-mid:     #1eb464;
+      --green-bright:  #22d672;
+      --green-glow:    rgba(34, 214, 114, 0.15);
+      --amber:         #f59e0b;
+      --amber-dim:     rgba(245,158,11,0.15);
+      --red-hot:       #ef4444;
+      --red-dim:       rgba(239,68,68,0.15);
+      --blue-ice:      #38bdf8;
+      --blue-dim:      rgba(56,189,248,0.12);
+      --purple:        #a78bfa;
+      --purple-dim:    rgba(167,139,250,0.12);
+      --text-primary:  #e8f5ee;
+      --text-secondary:#8fb3a0;
+      --text-muted:    #4a6a58;
+      --font-sans: 'Space Grotesk', 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--green-dim); border-radius: 3px; }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(30,180,100,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30,180,100,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .wrap { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+    .hero {
+      min-height: 60vh;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      text-align: center; padding: 80px 32px 40px;
+    }
+    .hero-glow {
+      position: absolute; top: 30%; left: 50%; transform: translate(-50%, -60%);
+      width: 700px; height: 500px;
+      background: radial-gradient(ellipse at center, rgba(56,189,248,0.1) 0%, rgba(56,189,248,0.03) 40%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--blue-ice); border: 1px solid rgba(56,189,248,0.3);
+      padding: 6px 16px; border-radius: 100px; background: rgba(56,189,248,0.05); margin-bottom: 24px;
+    }
+    .hero-eyebrow .dot { width: 6px; height: 6px; background: var(--blue-ice); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+    .hero-title {
+      font-size: clamp(42px, 7vw, 80px); font-weight: 900; letter-spacing: -3px; line-height: 1;
+      background: linear-gradient(135deg, #e8f5ee 0%, var(--blue-ice) 50%, var(--green-bright) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;
+    }
+    .hero-subtitle { font-size: clamp(15px, 2vw, 20px); color: var(--text-secondary); max-width: 620px; margin: 16px auto 0; }
+    .hero-meta { display: flex; gap: 28px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+    .hero-meta-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .hero-meta-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+    .hero-meta-value { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .hero-meta-divider { width: 1px; height: 40px; background: var(--border); align-self: center; }
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border-bright), transparent); }
+    .section { padding: 64px 0; }
+    .section-label {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;
+    }
+    .section-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--blue-ice); }
+    .section-title { font-size: clamp(26px, 3.5vw, 44px); font-weight: 800; letter-spacing: -1.5px; color: var(--text-primary); margin-bottom: 12px; }
+    .section-title span { color: var(--blue-ice); }
+    .section-desc { font-size: 15px; color: var(--text-secondary); max-width: 540px; margin-bottom: 40px; }
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 28px;
+      transition: border-color 0.3s, box-shadow 0.3s; position: relative; overflow: hidden;
+    }
+    .card:hover { border-color: var(--border-bright); box-shadow: 0 0 32px var(--green-glow); }
+
+    /* Day Cards */
+    .day-grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 32px; }
+    .day-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .day-card:hover { border-color: var(--border-bright); box-shadow: 0 0 48px var(--green-glow); }
+    .day-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .day-number { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+    .day-title { font-size: 18px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; margin-top: 4px; }
+    .day-status { font-family: var(--font-mono); font-size: 10px; padding: 4px 10px; border-radius: 6px; }
+    .status-active { background: var(--red-dim); color: var(--red-hot); border: 1px solid rgba(239,68,68,0.25); }
+    .status-next { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .status-final { background: var(--blue-dim); color: var(--blue-ice); border: 1px solid rgba(56,189,248,0.25); }
+    .day-body { padding: 24px; }
+    .task-list { list-style: none; }
+    .task-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 8px 0;
+      font-size: 14px; color: var(--text-secondary); border-bottom: 1px solid rgba(30,180,100,0.04);
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-check { width: 18px; height: 18px; border: 1.5px solid var(--border-bright); border-radius: 5px; flex-shrink: 0; margin-top: 2px; background: var(--bg-panel); }
+    .task-priority { font-family: var(--font-mono); font-size: 9px; padding: 1px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+    .tp-p0 { background: var(--red-dim); color: var(--red-hot); }
+    .tp-p1 { background: var(--amber-dim); color: var(--amber); }
+    .task-detail { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+    .task-files { font-family: var(--font-mono); font-size: 11px; color: var(--green-mid); margin-top: 6px; }
+
+    /* Feature cards */
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+    .feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 22px; transition: all 0.25s; }
+    .feature-card:hover { border-color: var(--border-bright); transform: translateY(-2px); box-shadow: 0 8px 32px var(--green-glow); }
+    .feature-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .feature-icon { font-size: 22px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: var(--bg-panel); border-radius: 10px; border: 1px solid var(--border); flex-shrink: 0; }
+    .feature-name { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; }
+    .feature-owner { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-left: auto; }
+    .owner-lou { background: rgba(56,189,248,0.12); color: var(--blue-ice); border: 1px solid rgba(56,189,248,0.25); }
+    .feature-list { list-style: none; }
+    .feature-list li { font-size: 13px; color: var(--text-secondary); padding: 4px 0; display: flex; align-items: flex-start; gap: 8px; }
+    .feature-list li::before { content: '→'; color: var(--green-mid); font-family: var(--font-mono); flex-shrink: 0; margin-top: 1px; }
+    .guardrail {
+      background: var(--red-dim); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px;
+      padding: 14px 16px; margin-top: 12px; font-size: 12px; color: #fca5a5;
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+
+    /* Code block */
+    .code-block {
+      background: var(--bg-void); border: 1px solid var(--border); border-radius: 10px;
+      padding: 18px 20px; font-family: var(--font-mono); font-size: 12px; color: var(--green-bright);
+      line-height: 1.7; overflow-x: auto; margin: 16px 0;
+    }
+    .code-dim { color: var(--text-muted); }
+    .code-blue { color: var(--blue-ice); }
+    .code-amber { color: var(--amber); }
+
+    /* Removal list */
+    .removal-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    .removal-tag {
+      display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 8px;
+      background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2);
+      font-size: 12px; color: #fca5a5;
+    }
+    .removal-tag::before { content: '✗'; color: var(--red-hot); font-weight: 700; }
+
+    /* Truth panel */
+    .truth-panel {
+      background: linear-gradient(135deg, rgba(56,189,248,0.06) 0%, rgba(56,189,248,0.02) 100%);
+      border: 1px solid rgba(56,189,248,0.25); border-radius: 20px; padding: 48px; text-align: center; margin-top: 60px;
+    }
+    .truth-quote { font-size: clamp(15px, 2vw, 20px); font-weight: 500; color: var(--text-primary); line-height: 1.6; max-width: 800px; margin: 0 auto 24px; }
+    .truth-quote strong { color: var(--blue-ice); }
+    .truth-credit { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+
+    /* Nav */
+    .top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(5,10,14,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); }
+    .nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; height: 56px; display: flex; align-items: center; gap: 32px; }
+    .nav-brand { font-size: 15px; font-weight: 800; color: var(--blue-ice); letter-spacing: -0.5px; text-decoration: none; }
+    .nav-links { display: flex; gap: 4px; margin-left: auto; }
+    .nav-link { font-size: 12px; color: var(--text-muted); text-decoration: none; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; font-family: var(--font-mono); letter-spacing: 0.5px; }
+    .nav-link:hover { color: var(--text-primary); background: var(--bg-card); }
+
+    /* Footer */
+    .footer { padding: 40px 0; border-top: 1px solid var(--border); text-align: center; }
+    .footer-text { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; }
+    .footer-text span { color: var(--blue-ice); }
+
+    @media (max-width: 900px) {
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="#top" class="nav-brand">🖥 Lou's Sprint Plan</a>
+    <nav class="nav-links">
+      <a href="#context" class="nav-link">Context</a>
+      <a href="#removal" class="nav-link">Strip</a>
+      <a href="#day1" class="nav-link">Day 1</a>
+      <a href="#day2" class="nav-link">Day 2</a>
+      <a href="#day3" class="nav-link">Day 3</a>
+      <a href="#files" class="nav-link">Files</a>
+    </nav>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow">
+    <span class="dot"></span>
+    LOU'S FRONTEND SPRINT — SRT 2026
+  </div>
+  <h1 class="hero-title">LikasLens</h1>
+  <p class="hero-subtitle">
+    Frontend implementation plan — strip gamification, build the command center, ship the demo loop.
+  </p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Owner</span>
+      <span class="hero-meta-value">Lou (Frontend)</span>
+    </div>
+    <div class="hero-meta-divider"></div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Timeline</span>
+      <span class="hero-meta-value">3-Day Sprint</span>
+    </div>
+    <div class="hero-meta-divider"></div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Apps</span>
+      <span class="hero-meta-value">3 Frontend Apps</span>
+    </div>
+    <div class="hero-meta-divider"></div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Backend</span>
+      <span class="hero-meta-value">Jeff (Do Not Touch)</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STRATEGIC CONTEXT -->
+<section class="section" id="context">
+  <div class="wrap">
+    <div class="section-label">Section 01</div>
+    <h2 class="section-title">Strategic <span>Context</span></h2>
+    <p class="section-desc">
+      Decisions from Jeff's war plan + advisor meeting (Aug 25) + Lou's improvements.
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-card-header">
+          <div class="feature-icon">🚫</div>
+          <div class="feature-name">Gamification Removed</div>
+        </div>
+        <ul class="feature-list">
+          <li>Advisors (Zeno & Ann) explicitly said to remove it</li>
+          <li>"Citizens need a reliable platform, not incentivization"</li>
+          <li>Makes app look serious, not like a game</li>
+          <li>Frees up time for core features</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-header">
+          <div class="feature-icon">🌊</div>
+          <div class="feature-name">Water Monitoring Scope</div>
+        </div>
+        <ul class="feature-list">
+          <li>Focus on clean rivers and water waste</li>
+          <li>Not broad environmental — narrow and deep</li>
+          <li>Align with CENRO / MENRO offices</li>
+          <li>UI copy should emphasize water/waste</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-header">
+          <div class="feature-icon">💰</div>
+          <div class="feature-name">Subscription Licensing</div>
+        </div>
+        <ul class="feature-list">
+          <li>₱1-5M/year LGU license, 3-year terms</li>
+          <li>Aligned with October budget planning</li>
+          <li>Admin portal must feel enterprise-grade</li>
+          <li>These are paying government clients</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-header">
+          <div class="feature-icon">🎯</div>
+          <div class="feature-name">Pitch = The Demo Loop</div>
+        </div>
+        <ul class="feature-list">
+          <li>Citizen → AI → LGU → Public</li>
+          <li>Every screen serves this narrative</li>
+          <li>Skip technical intros, show the problem → solution</li>
+          <li>Use "Founder" titles, not CEO/CTO</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 24px;">
+      <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--blue-ice); margin-bottom: 16px;">Pitch Flow (Mandated by Advisors)</div>
+      <div class="code-block" style="margin: 0;">
+<span class="code-dim">1.</span> "Here's the problem"          → Environmental incidents going unreported
+<span class="code-dim">2.</span> "Citizens report"              → Camera → Ghost Mode → Submit
+<span class="code-dim">3.</span> "AI analyzes"                  → YOLO + Gemini → Structured result
+<span class="code-dim">4.</span> "AI recommends"                → Routing intelligence
+<span class="code-dim">5.</span> "AI doesn't act alone"         → LGU officer reviews in Kanban
+<span class="code-dim">6.</span> "Officer takes action"         → Status flow: NEW → RESOLVED
+<span class="code-dim">7.</span> "Public sees results"          → Public Record with map</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- GAMIFICATION REMOVAL -->
+<section class="section" id="removal">
+  <div class="wrap">
+    <div class="section-label">Section 02</div>
+    <h2 class="section-title">Strip <span>Gamification</span></h2>
+    <p class="section-desc">
+      Remove every trace of rewards, scoreboards, achievements, and eco-credits. Make it a serious civic tool.
+    </p>
+
+    <div class="removal-grid">
+      <span class="removal-tag">Scoreboard / Leaderboard pages</span>
+      <span class="removal-tag">Eco-Credit Wallet</span>
+      <span class="removal-tag">Achievement badges & cards</span>
+      <span class="removal-tag">Reward points display</span>
+      <span class="removal-tag">Partner store redemptions</span>
+      <span class="removal-tag">XP / Ranking tiers</span>
+      <span class="removal-tag">Scoreboard nav links</span>
+      <span class="removal-tag">Wallet tab in mobile nav</span>
+      <span class="removal-tag">Admin rewards management</span>
+      <span class="removal-tag">Landing page scoreboard section</span>
+    </div>
+
+    <div class="feature-grid" style="margin-top: 32px;">
+      <div class="feature-card">
+        <div class="feature-card-header">
+          <div class="feature-icon">🖥</div>
+          <div class="feature-name">Frontend App</div>
+          <div class="feature-owner owner-lou">Lou</div>
+        </div>
+        <ul class="feature-list">
+          <li>Remove "Scoreboard" from dashboard nav</li>
+          <li>Remove scoreboard-section from landing page</li>
+          <li>Redirect /scoreboard → /public-record</li>
+          <li>Hide achievements in profile page</li>
+          <li>Remove reward links from footer & sticky nav</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-header">
+          <div class="feature-icon">📱</div>
+          <div class="feature-name">Mobile PWA</div>
+          <div class="feature-owner owner-lou">Lou</div>
+        </div>
+        <ul class="feature-list">
+          <li>Remove "Records/Scoreboard" from bottom nav</li>
+          <li>Grey out wallet/page.tsx → "UNDER DEVELOPMENT"</li>
+          <li>Grey out scoreboard/page.tsx</li>
+          <li>Remove achievement display from profile</li>
+          <li>Remove Trophy icon references</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card-header">
+          <div class="feature-icon">🏛</div>
+          <div class="feature-name">Admin Portal</div>
+          <div class="feature-owner owner-lou">Lou</div>
+        </div>
+        <ul class="feature-list">
+          <li>Mark rewards/ page as "UNDER DEVELOPMENT"</li>
+          <li>Remove rewards from active admin nav</li>
+          <li>Clean reward-related dashboard widgets</li>
+          <li>Keep triage page (rewrite as Kanban)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DAY 1 -->
+<section class="section" id="day1">
+  <div class="wrap">
+    <div class="section-label">Section 03</div>
+    <h2 class="section-title">Day 1 — <span>Strip & Build</span></h2>
+    <p class="section-desc">
+      Remove gamification. Build the Kanban board. Add Ghost Mode visual shield.
+    </p>
+
+    <div class="day-grid">
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 1.1</div>
+            <div class="day-title">Gamification Removal</div>
+          </div>
+          <div class="day-status status-active">🔴 P0</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Remove scoreboard nav links from all 3 apps</div>
+                <div class="task-detail">frontend: dashboard-layout-wrapper.tsx, footer.tsx, sticky-landing-nav.tsx, HomeClient.tsx<br>mobile-pwa: (app)/layout.tsx — remove Trophy/Records tab</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Grey out or redirect scoreboard/wallet pages</div>
+                <div class="task-detail">mobile-pwa: wallet/page.tsx, scoreboard/page.tsx → "UNDER DEVELOPMENT"<br>frontend: scoreboard/ → redirect to /public-record (once built)</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Mark admin rewards page as UNDER DEVELOPMENT</div>
+                <div class="task-detail">admin-portal: rewards/page.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Remove scoreboard marketing section from landing page</div>
+                <div class="task-detail">frontend: HomeClient.tsx — remove ScoreboardSection import</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 1.2</div>
+            <div class="day-title">LGU Kanban Board</div>
+          </div>
+          <div class="day-status status-active">🔴 P0</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Build 4-column Kanban layout</div>
+                <div class="task-detail">Columns: NEW → REVIEW → VERIFY → RESOLVED<br>CSS Grid/Flexbox, no drag-and-drop library<br>Button-based status transitions</div>
+                <div class="task-files">admin-portal/src/components/kanban-board.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Build compact incident card component</div>
+                <div class="task-detail">Photo thumb, AI confidence badge, urgency score, title, location, time, Ghost indicator</div>
+                <div class="task-files">admin-portal/src/components/incident-card.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Build slide-over detail panel</div>
+                <div class="task-detail">Full photo, AI analysis, recommended routing, action buttons (Accept/Reassign/Invalid), status flow</div>
+                <div class="task-files">admin-portal/src/components/incident-detail-panel.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Rewrite triage page to use Kanban</div>
+                <div class="task-detail">Replace table-based layout with Kanban board<br>Reuse existing Button, Skeleton, EmptyState from shared</div>
+                <div class="task-files">admin-portal/src/app/[locale]/(dashboard)/triage/page.tsx</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 1.3</div>
+            <div class="day-title">Ghost Mode Visual Shield</div>
+          </div>
+          <div class="day-status status-active">🔴 P0</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Build Ghost Shield overlay component</div>
+                <div class="task-detail">Amber/gold overlay on camera preview<br>Translucent shield watermark in center<br>"Identity Protected" label below viewfinder</div>
+                <div class="task-files">mobile-pwa/src/components/ghost-shield-overlay.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Modify camera view for Ghost Mode states</div>
+                <div class="task-detail">ON: amber overlay + shield + gold toggle + amber submit<br>OFF: normal camera + green submit<br>Smooth animated transition (framer-motion)</div>
+                <div class="task-files">mobile-pwa/src/app/[locale]/(app)/report/page.tsx</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DAY 2 -->
+<section class="section" id="day2">
+  <div class="wrap">
+    <div class="section-label">Section 04</div>
+    <h2 class="section-title">Day 2 — <span>Core Loop & Wow</span></h2>
+    <p class="section-desc">
+      Public Record with map. Liksi proactive cards. AI analysis animation.
+    </p>
+
+    <div class="day-grid">
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 2.1</div>
+            <div class="day-title">Public Record with Mini-Map</div>
+          </div>
+          <div class="day-status status-next">🟠 P0</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Build public record page</div>
+                <div class="task-detail">Desktop: left = incident cards, right = map<br>Mobile: cards on top, map toggle below<br>No filtering, no analytics — clean visual record</div>
+                <div class="task-files">frontend/src/app/[locale]/public-record/page.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Build incident feed component</div>
+                <div class="task-detail">Cards with: photo, category badge, location, status badge, timestamp<br>Ghost Mode reports: zero identity exposure</div>
+                <div class="task-files">frontend/src/components/public-record/public-record-feed.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Build map component with incident pins</div>
+                <div class="task-detail">Reuse existing GeoTagMap or enhanced-map<br>Clustered pins color-coded by status<br>Click pin → highlight corresponding card</div>
+                <div class="task-files">frontend/src/components/public-record/public-record-map.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Add navigation link to public record</div>
+                <div class="task-detail">Add to frontend layout nav and footer</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 2.2</div>
+            <div class="day-title">Liksi Proactive Cards + Chat</div>
+          </div>
+          <div class="day-status status-next">🟠 P1</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p1">P1</span>
+              <div>
+                <div>Build LiksiContextCard component</div>
+                <div class="task-detail">Report page: "You can report: Illegal dumping, Water pollution..."<br>Dashboard: "3 new incidents in your area today"<br>Public Record: "127 reports this month, 89% resolved"<br>Green glow animation, Liksi avatar icon</div>
+                <div class="task-files">frontend/src/components/chat/liksi-context-card.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p1">P1</span>
+              <div>
+                <div>Enhance Liksi chat with dual context</div>
+                <div class="task-detail">Citizen mode: "What can I report? Is this relevant?"<br>LGU mode: "Summarize this. Why this office?"<br>Use existing useGeminiChat hook</div>
+                <div class="task-files">frontend/src/components/chat/liksi-chat-dual-context.tsx</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 2.3</div>
+            <div class="day-title">AI Analysis Animation</div>
+          </div>
+          <div class="day-status status-next">🟠 P0</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Build animated analysis sequence</div>
+                <div class="task-detail">5-step animation over 4-5 seconds:<br>1. "Scanning evidence..." (photo blurs, scan line sweeps)<br>2. "✓ Environmental incident detected" (slides in)<br>3. "✓ Category identified: Illegal Waste" (typewriter)<br>4. "✓ Severity assessed: High" (badge fades in)<br>5. "✓ Recommended: LGU Environment Office" (green glow)<br>Pulsing green circle behind AI icon</div>
+                <div class="task-files">mobile-pwa/src/components/ai-analysis-animation.tsx</div>
+              </div>
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              <div>
+                <div>Integrate into report submission flow</div>
+                <div class="task-detail">Show after submit, before redirect to dashboard<br>Uses existing framer-motion dependency</div>
+                <div class="task-files">mobile-pwa/src/app/[locale]/(app)/report/page.tsx</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DAY 3 -->
+<section class="section" id="day3">
+  <div class="wrap">
+    <div class="section-label">Section 05</div>
+    <h2 class="section-title">Day 3 — <span>Polish & Judge-Proof</span></h2>
+    <p class="section-desc">
+      Error states, loading states, typography, and the final walkthrough.
+    </p>
+
+    <div class="day-grid">
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 3.1</div>
+            <div class="day-title">Error & Loading States</div>
+          </div>
+          <div class="day-status status-final">🔵 POLISH</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item"><div class="task-check"></div><div>All pages: friendly error messages (not technical)</div></li>
+            <li class="task-item"><div class="task-check"></div><div>Loading skeletons for all data-fetching pages</div></li>
+            <li class="task-item"><div class="task-check"></div><div>Empty states with helpful text</div></li>
+            <li class="task-item"><div class="task-check"></div><div>Network error → "Connection lost. Try again."</div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 3.2</div>
+            <div class="day-title">Typography & Visual Hierarchy</div>
+          </div>
+          <div class="day-status status-final">🔵 POLISH</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item"><div class="task-check"></div><div>LGU screens: 16px+ body, 24px+ headings</div></li>
+            <li class="task-item"><div class="task-check"></div><div>High contrast action buttons</div></li>
+            <li class="task-item"><div class="task-check"></div><div>Enterprise-grade feel for admin portal</div></li>
+            <li class="task-item"><div class="task-check"></div><div>Consistent spacing with existing Tailwind tokens</div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 3.3</div>
+            <div class="day-title">Mark Unfinished Modules</div>
+          </div>
+          <div class="day-status status-final">🔵 POLISH</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item"><div class="task-check"></div><div>Grey out P2/UNDER DEVELOPMENT features with badges</div></li>
+            <li class="task-item"><div class="task-check"></div><div>Ensure judges can see what's planned vs active</div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Task 3.4</div>
+            <div class="day-title">Final Walkthrough (3x)</div>
+          </div>
+          <div class="day-status status-final">🔵 CRITICAL</div>
+        </div>
+        <div class="day-body">
+          <ul class="task-list">
+            <li class="task-item"><div class="task-check"></div><div><strong>Journey 1 — Citizen:</strong> Report → AI animation → Done</div></li>
+            <li class="task-item"><div class="task-check"></div><div><strong>Journey 2 — LGU:</strong> Kanban → Pick incident → Review AI → Act → Resolved</div></li>
+            <li class="task-item"><div class="task-check"></div><div><strong>Journey 3 — Public:</strong> Public Record → Browse → See map → Understand</div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FILES SUMMARY -->
+<section class="section" id="files">
+  <div class="wrap">
+    <div class="section-label">Section 06</div>
+    <h2 class="section-title">Files <span>Summary</span></h2>
+    <p class="section-desc">
+      Every file Lou creates or modifies during the sprint.
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-card-header">
+          <div class="feature-icon">➕</div>
+          <div class="feature-name">New Files (10)</div>
+        </div>
+        <div class="code-block" style="font-size: 11px; line-height: 2;">
+<span class="code-blue">admin-portal</span>
+  components/kanban-board.tsx
+  components/incident-card.tsx
+  components/incident-detail-panel.tsx
+
+<span class="code-blue">mobile-pwa</span>
+  components/ghost-shield-overlay.tsx
+  components/ai-analysis-animation.tsx
+
+<span class="code-blue">frontend</span>
+  app/[locale]/public-record/page.tsx
+  components/public-record/public-record-feed.tsx
+  components/public-record/public-record-map.tsx
+  components/chat/liksi-context-card.tsx
+  components/chat/liksi-chat-dual-context.tsx</div>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-card-header">
+          <div class="feature-icon">✏️</div>
+          <div class="feature-name">Modified Files (6)</div>
+        </div>
+        <div class="code-block" style="font-size: 11px; line-height: 2;">
+<span class="code-blue">admin-portal</span>
+  triage/page.tsx <span class="code-dim">← rewrite as Kanban</span>
+
+<span class="code-blue">mobile-pwa</span>
+  report/page.tsx <span class="code-dim">← Ghost shield + AI anim</span>
+  (app)/layout.tsx <span class="code-dim">← remove scoreboard nav</span>
+
+<span class="code-blue">frontend</span>
+  dashboard-layout-wrapper.tsx <span class="code-dim">← remove scoreboard</span>
+  footer.tsx <span class="code-dim">← remove gamification links</span>
+  HomeClient.tsx <span class="code-dim">← remove scoreboard section</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TRUTH -->
+<section class="section">
+  <div class="wrap">
+    <div class="truth-panel">
+      <p class="truth-quote">
+        "<strong>LikasLens captures environmental evidence</strong>, analyzes it through resilient AI intelligence, recommends the appropriate response pathway, <strong>keeps humans in control of the action</strong>, and closes the loop through transparent status updates. <strong>No gamification. No toys. Just a serious civic tool.</strong>"
+      </p>
+      <div class="truth-credit">Lou's Implementation Plan — SRT 2026</div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-text">
+      <span>LikasLens</span> · Lou's Frontend Sprint Plan · Generated 2026-08-28 · Confidential — Team Only
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

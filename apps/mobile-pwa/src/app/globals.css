@@ -207,6 +207,12 @@ body {
   box-shadow: 0 4px 12px color-mix(in oklab, var(--accent) 25%, transparent);
 }
 
+/* ── Focus visible (WCAG 2.4.7) ─────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* ── Reduced motion (PRODUCT.md: this is a field tool, not a showcase) ────── */
 @media (prefers-reduced-motion: reduce) {
   * {

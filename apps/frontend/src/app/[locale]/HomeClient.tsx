@@ -9,25 +9,35 @@ import { StickyLandingNav } from "@/components/layout/sticky-landing-nav";
 import { PartnerCarousel, FaqSection, LanguageSuggestionPopup, notifyThemeColor } from "@likaslens/shared";
 import { HeroSection } from "@/components/marketing/sections/hero-section";
 
+const SectionSkeleton = () => (
+  <div className="ec-section">
+    <div className="max-w-7xl mx-auto px-5 sm:px-8">
+      <div className="h-8 w-48 bg-ink/5 rounded-lg animate-pulse mb-6" />
+      <div className="h-4 w-full bg-ink/5 rounded animate-pulse mb-3" />
+      <div className="h-4 w-3/4 bg-ink/5 rounded animate-pulse" />
+    </div>
+  </div>
+);
+
 const HowItWorksSection = dynamic(
   () => import("@/components/marketing/sections/how-it-works-section").then((m) => m.HowItWorksSection),
-  { ssr: false }
+  { ssr: false, loading: SectionSkeleton }
 );
 const GhostModeSection = dynamic(
   () => import("@/components/marketing/sections/ghost-mode-section").then((m) => m.GhostModeSection),
-  { ssr: false }
+  { ssr: false, loading: SectionSkeleton }
 );
 const ImpactSection = dynamic(
   () => import("@/components/marketing/sections/impact-section").then((m) => m.ImpactSection),
-  { ssr: false }
+  { ssr: false, loading: SectionSkeleton }
 );
 const TechStackSection = dynamic(
   () => import("@/components/marketing/sections/tech-stack-section").then((m) => m.TechStackSection),
-  { ssr: false }
+  { ssr: false, loading: SectionSkeleton }
 );
 const InstallCtaSection = dynamic(
   () => import("@/components/marketing/sections/install-cta-section").then((m) => m.InstallCtaSection),
-  { ssr: false }
+  { ssr: false, loading: SectionSkeleton }
 );
 
 function SectionDivider({ variant = "subtle" }: { variant?: "subtle" | "accent" }) {

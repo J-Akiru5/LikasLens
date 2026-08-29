@@ -114,7 +114,7 @@ export default function DashboardPage() {
     <div className="pb-28">
       <div className="px-5 pb-2 pt-1 flex justify-between items-end"  >
         <div>
-          <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1 min-h-[15px]">
+          <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1 min-h-[15px]">
             {timeState.dateStr}
           </p>
           <h1 className="text-[24px] font-medium tracking-tight text-ink m-0" style={{ letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>

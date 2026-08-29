@@ -96,7 +96,7 @@ const NODE_CONFIG = {
     glow: "rgba(167,139,250,0.35)",
     ring: "#a78bfa",
     bg: "rgba(167,139,250,0.12)",
-    label: "Blockchain Proof",
+    label: "Audit Trail",
     radius: 24,
   },
 } as const;
@@ -179,7 +179,7 @@ function makeNodes(incident: Partial<GraphNode>, ai: Partial<GraphNode>, law: Pa
     { id: "ai", type: "ai", x: 340, y: 100, vx: 0, vy: 0, code: "AI_ENGINE", ...ai } as GraphNode,
     { id: "law", type: "law", x: 500, y: 220, vx: 0, vy: 0, code: "STATUTE", ...law } as GraphNode,
     { id: "agency", type: "agency", x: 500, y: 380, vx: 0, vy: 0, code: "AGENCY", ...agency } as GraphNode,
-    { id: "proof", type: "proof", x: 180, y: 380, vx: 0, vy: 0, code: "BLOCKCHAIN", ...proof } as GraphNode,
+    { id: "proof", type: "proof", x: 180, y: 380, vx: 0, vy: 0, code: "AUDIT_LOG", ...proof } as GraphNode,
   ];
 }
 
@@ -203,7 +203,7 @@ const PRESETS: Preset[] = [
       { label: "YOLOv8 Classifier", sublabel: "FastAPI AI-Service", details: "Computer vision model running on LikasLens AI microservice. Detects 47 environmental violation classes.", meta: { Model: "YOLOv8-Env-v2", Accuracy: "94.2%", Latency: "~120ms", Framework: "FastAPI / Python 3.12" } },
       { label: "Republic Act 9003", sublabel: "Ecological Solid Waste Mgmt.", details: "RA 9003 Section 48 — Prohibited Acts. Fines up to ₱300,000 and 6 years imprisonment.", meta: { Statute: "RA 9003", Section: "Sec. 48", Max_Fine: "₱300,000", Imprisonment: "Up to 6 years" } },
       { label: "CENRO Task Force", sublabel: "City Environment & NR Office", details: "Specialized enforcement unit. SLA: 24-hour field response. Coordinates with MMDA for Metro Manila.", meta: { Unit: "CENRO Enforcement", SLA: "24 Hours", Jurisdiction: "Metro Manila", Contact: "CENRO-Manila" } },
-      { label: "Polygon Mainnet", sublabel: "Block #4,829,188", details: "Tamper-proof SHA-256 evidence hash committed to Polygon blockchain. Permanently verifiable by courts.", meta: { Network: "Polygon (MATIC)", Block: "#4,829,188", Gas: "0.0012 MATIC ≈ $0.001", Verifiable: "polygonscan.com" } }
+      { label: "Immutable Audit Log", sublabel: "Hash-chained record", details: "SHA-256 evidence hash committed to append-only audit log with cryptographic chain integrity.", meta: { Method: "Hash Chain", Algorithm: "SHA-256", Integrity: "Cryptographically verified" } }
     ),
     links: BASE_LINKS,
   },
@@ -218,7 +218,7 @@ const PRESETS: Preset[] = [
       { label: "Forestry Sentinel AI", sublabel: "Multispectral Analysis", details: "NDVI change-detection model comparing bi-weekly satellite bands to baseline forest coverage.", meta: { Model: "NDVI-ChangeNet", Bands: "B04,B08 (NIR)", Change: "-12% NDVI", Confidence: "91.0%" } },
       { label: "P.D. 705 — Forestry Code", sublabel: "Revised Forestry Code", details: "Presidential Decree 705. Prohibits cutting, gathering, removing timber in forest lands without license.", meta: { Statute: "P.D. 705", Jurisdiction: "All forest lands", Max_Fine: "₱500,000", Imprisonment: "Up to 20 years" } },
       { label: "DENR — Forest Police", sublabel: "Dept. of Env. & Natural Res.", details: "Forest rangers with arrest authority. Deployed with GPS coordinates for field intercept operations.", meta: { Unit: "DENR Forest Rangers", Response: "Field Intercept", Alert: "SMS + Radio Broadcast", Priority: "CRITICAL" } },
-      { label: "Sepolia Testnet", sublabel: "TX: 0x9f1a...8e2c", details: "Evidence timestamp and AI classification hash anchored to Ethereum Sepolia for demo. Mainnet-ready.", meta: { Network: "Ethereum Sepolia", TX: "0x9f1a...8e2c", Block: "#921,029", Status: "Confirmed" } }
+      { label: "Audit Chain Entry", sublabel: "Block #921,029", details: "Evidence timestamp and AI classification hash recorded in immutable audit trail.", meta: { Status: "Confirmed", Tamper: "Detected via hash verification" } }
     ),
     links: BASE_LINKS,
   },

@@ -18,15 +18,25 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
 
   useEffect(() => {
     async function getUser() {
-      const { data: { session } } = await supabase.auth.getSession();
-      const authUser = session?.user ?? null;
-      setUser(authUser);
-      setLoading(false);
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        setUser(authUser ?? null);
+      } catch {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          setUser(session?.user ?? null);
+        } catch {
+          setUser(null);
+        }
+      } finally {
+        setLoading(false);
+      }
     }
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -37,7 +47,8 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
       await supabase.auth.signOut();
       try { localStorage.removeItem("likaslens-prefs"); } catch { /* ignore */ }
       try { localStorage.removeItem("likaslens-theme"); } catch { /* ignore */ }
-      window.location.href = "/login";
+      setUser(null);
+      window.location.href = "/";
     } catch {
       showToast("Failed to log out. Please try again.", "error");
     }
@@ -61,12 +72,12 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
             fontSize: 11,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "rgba(240,237,232,0.55)",
+            color: invert ? "rgba(240,237,232,0.85)" : "rgba(17,24,20,0.75)",
             textDecoration: "none",
             transition: "color 0.2s",
           }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = "#f0ede8")}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = "rgba(240,237,232,0.55)")}
+          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = invert ? "#ffffff" : "#111814")}
+          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = invert ? "rgba(240,237,232,0.85)" : "rgba(17,24,20,0.75)")}
         >
           Log In
         </Link>

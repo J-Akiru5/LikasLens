@@ -69,7 +69,7 @@ export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated 
 
           {/* Floating Logo Avatar without background circle */}
           <img 
-            src="/images/liksi-logo.png" 
+            src="/images/liksi-logo.webp" 
             alt="Liksi Chat" 
             className="w-full h-full object-contain drop-shadow-xl animate-float relative z-10 transition-transform duration-300 group-hover:scale-110 active:scale-95" 
           />
@@ -90,7 +90,7 @@ export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated 
               style={{ color: "var(--accent-foreground)" }}
             >
               <div className="flex items-center justify-center w-8 h-8 shrink-0 drop-shadow-sm">
-                 <img src="/images/liksi-logo.png" alt="Liksi" className="w-full h-full object-contain" />
+                 <img src="/images/liksi-logo.webp" alt="Liksi" className="w-full h-full object-contain" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold">{t("title")}</div>
@@ -113,7 +113,7 @@ export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated 
               {loading && (
                 <div className="flex items-start gap-2">
                   <div className="flex items-center justify-center w-7 h-7 shrink-0 mt-1 drop-shadow-sm">
-                     <img src="/images/liksi-logo.png" alt="Liksi" className="w-full h-full object-contain animate-pulse" />
+                     <img src="/images/liksi-logo.webp" alt="Liksi" className="w-full h-full object-contain animate-pulse" />
                   </div>
                   <div className="flex items-center gap-1 px-3 py-2 rounded-xl bg-panel border border-border">
                     <span className="w-2 h-2 rounded-full bg-accent animate-bounce" />
@@ -203,7 +203,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
         </div>
       ) : (
         <div className="flex items-center justify-center w-7 h-7 shrink-0 mt-1 drop-shadow-sm">
-          <img src="/images/liksi-logo.png" alt="Liksi" className="w-full h-full object-contain" />
+          <img src="/images/liksi-logo.webp" alt="Liksi" className="w-full h-full object-contain" />
         </div>
       )}
       <div className={`max-w-[80%] px-3 py-2 rounded-xl text-sm leading-relaxed ${isUser ? "bg-ink text-page" : "bg-panel text-ink border border-border"}`}>

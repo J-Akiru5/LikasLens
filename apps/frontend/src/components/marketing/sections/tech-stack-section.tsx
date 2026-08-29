@@ -86,9 +86,9 @@ const TECH_NODES: TechNode[] = [
   {
     id: "backend",
     Icon: Layers,
-    label: "Laravel 12 API",
-    sublabel: "Core Backend",
-    detail: "RESTful API with session management, relational DB, role-based access control. Handles citizen accounts, report lifecycle, agency coordination, and public transparency records.",
+    label: "FastAPI + Supabase",
+    sublabel: "Core Backend & DB",
+    detail: "High-performance Python 3.12 FastAPI core combined with Supabase PostgreSQL, row-level security, encrypted evidence vaults, and real-time public record synchronization.",
     color: "#ef4444",
     row: 1,
     col: 0,

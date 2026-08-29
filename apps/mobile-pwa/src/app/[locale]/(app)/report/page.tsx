@@ -515,7 +515,7 @@ const startCamera = useCallback(async (facing?: "user" | "environment") => {
               </div>
               <div className="space-y-2 max-w-sm">
                 <h3 className="text-lg font-bold">Camera Access Blocked</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">
+                <p className="text-sm text-muted leading-relaxed">
                   {getBrowserInstructions()}
                 </p>
               </div>

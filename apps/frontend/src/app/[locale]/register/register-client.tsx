@@ -2,49 +2,94 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { useFormStatus } from "react-dom";
 import { ArrowRight, Eye, EyeOff, Loader2, Check } from "lucide-react";
-import { signUp } from "@/app/[locale]/actions/auth";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@likaslens/shared";
 import { motion } from "framer-motion";
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button
-      variant="ink"
-      size="xl"
-      type="submit"
-      loading={pending}
-      className="w-full !bg-[#0f4c5c] hover:!bg-[#0b3844] !text-white !border-transparent"
-    >
-      {pending ? "Creating account..." : (
-        <>
-          Create Account <ArrowRight className="w-5 h-5" />
-        </>
-      )}
-    </Button>
-  );
-}
-
 export function RegisterClient() {
+  const params = useParams();
   const searchParams = useSearchParams();
+  const locale = typeof params?.locale === "string" ? params.locale : "en";
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [localError, setLocalError] = useState("");
+  const [localSuccess, setLocalSuccess] = useState("");
 
-  const redirectTo = searchParams.get("redirect_to") || "/dashboard";
+  const rawRedirectTo = searchParams.get("redirect_to") || `/${locale}/dashboard`;
+  const redirectTo = rawRedirectTo.startsWith(`/${locale}`)
+    ? rawRedirectTo
+    : `/${locale}${rawRedirectTo.startsWith("/") ? rawRedirectTo : "/" + rawRedirectTo}`;
 
   const status = useMemo(() => {
+    if (localError) return { type: "error" as const, message: localError };
+    if (localSuccess) return { type: "success" as const, message: localSuccess };
     const error = searchParams.get("error");
     const message = searchParams.get("message");
     if (error) return { type: "error" as const, message: error };
     if (message) return { type: "success" as const, message };
     return { type: "" as const, message: "" };
-  }, [searchParams]);
+  }, [searchParams, localError, localSuccess]);
+
+  const handleEmailRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setLocalError("Email and password are required.");
+      return;
+    }
+    if (!agreed) {
+      setLocalError("Please agree to the terms to continue.");
+      return;
+    }
+    setLoading(true);
+    setLocalError("");
+    setLocalSuccess("");
+    try {
+      const supabase = createClient();
+      const name = email.split("@")[0];
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
+        options: {
+          data: { name, role: "citizen" },
+        },
+      });
+
+      if (error) {
+        setLocalError(error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data.session) {
+        window.location.href = redirectTo;
+        return;
+      }
+
+      // Try automatic sign in
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
+      });
+
+      if (!signInError && signInData.session) {
+        window.location.href = redirectTo;
+        return;
+      }
+
+      setLocalSuccess("Account created! Please check your email to verify or sign in.");
+      setLoading(false);
+    } catch (err: any) {
+      setLocalError(err?.message || "Failed to create account. Please try again.");
+      setLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
@@ -65,7 +110,7 @@ export function RegisterClient() {
           {/* Light Mode: Crystal Clear Beach */}
           <div className="absolute inset-0 z-0 block [[data-theme=ghost]_&]:hidden">
             <Image
-              src="/images/auth-nature-bg-v2.png"
+              src="/images/auth-nature-bg-v2.webp"
               alt="Crystal clear tropical beach"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -77,7 +122,7 @@ export function RegisterClient() {
           {/* Ghost Mode: Coral Reef Undersea */}
           <div className="absolute inset-0 z-0 hidden [[data-theme=ghost]_&]:block">
             <Image
-              src="/images/auth-undersea-bg.png"
+              src="/images/auth-undersea-bg.webp"
               alt="Beautiful colorful coral reef with fish"
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -98,7 +143,7 @@ export function RegisterClient() {
             className="relative z-10 p-12 flex flex-col gap-4"
           >
             <div className="flex items-center gap-3 mb-2">
-              <img src="/images/likas-lens-logo.png" alt="LikasLens" className="w-8 h-8 object-contain drop-shadow-lg brightness-0 invert" />
+              <img src="/images/likas-lens-logo.webp" alt="LikasLens" className="w-8 h-8 object-contain drop-shadow-lg brightness-0 invert" />
               <span className="font-heading tracking-[0.2em] text-white text-xl flex items-center drop-shadow-lg">
                 <span className="font-medium">LIK</span><span className="font-semibold mx-[1px]">Λ</span><span className="font-medium mr-2">S</span><span className="font-bold">LENS</span>
               </span>
@@ -121,7 +166,7 @@ export function RegisterClient() {
           {/* Logo for Mobile only */}
           <div className="flex lg:hidden justify-center mb-8">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-accent/5">
-              <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-10 h-10 object-contain drop-shadow-sm" />
+              <img src="/images/likas-lens-logo.webp" alt="LikasLens Logo" className="w-10 h-10 object-contain drop-shadow-sm" />
             </div>
           </div>
 
@@ -174,8 +219,7 @@ export function RegisterClient() {
             <div className="h-px flex-1 bg-ink/10" />
           </div>
 
-          <form action={signUp} className="space-y-5">
-            <input type="hidden" name="redirect_to" value={redirectTo} />
+          <form onSubmit={handleEmailRegister} className="space-y-5">
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-ink/80">
                 Email Address
@@ -183,6 +227,8 @@ export function RegisterClient() {
               <input
                 type="email"
                 name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3.5 bg-ink/[0.02] border border-ink/10 rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink/30 transition-all placeholder:text-ink/30"
                 placeholder="you@example.com"
                 required
@@ -196,6 +242,8 @@ export function RegisterClient() {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3.5 bg-ink/[0.02] border border-ink/10 rounded-xl text-ink focus:outline-none focus:ring-2 focus:ring-ink/20 focus:border-ink/30 transition-all placeholder:text-ink/30 pr-12"
                   placeholder="••••••••"
                   required
@@ -247,7 +295,19 @@ export function RegisterClient() {
             </label>
 
             <div className="pt-2">
-              <SubmitButton />
+              <Button
+                variant="ink"
+                size="xl"
+                type="submit"
+                loading={loading}
+                className="w-full !bg-[#0f4c5c] hover:!bg-[#0b3844] !text-white !border-transparent"
+              >
+                {loading ? "Creating account..." : (
+                  <>
+                    Create Account <ArrowRight className="w-5 h-5" />
+                  </>
+                )}
+              </Button>
             </div>
           </form>
 
