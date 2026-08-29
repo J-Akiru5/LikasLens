@@ -1,16 +1,13 @@
 /**
  * POST /api/v1/ai/chat
  *
- * Backend API endpoint for Liksi chat.
+ * Admin portal endpoint for Liksi chat.
  * Proxies requests through the AI Gateway with automatic failover.
- *
- * Flow:
- *   Client → This route → AI Gateway → Render (primary) / Local (fallback)
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { AIGateway, type AIGatewayConfig } from "@likaslens/shared/ai-gateway";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

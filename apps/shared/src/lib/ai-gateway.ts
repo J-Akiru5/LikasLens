@@ -57,31 +57,6 @@ export interface HealthStatus {
 }
 
 // ---------------------------------------------------------------------------
-// Factory
-// ---------------------------------------------------------------------------
-
-/**
- * Create an AIGateway instance from environment variables.
- * Reads: RENDER_AI_URL, LOCAL_AI_URL, AI_TIMEOUT_MS, AI_HEALTH_CACHE_TTL
- */
-export function createAIGatewayFromEnv(): AIGateway {
-  const primaryUrl = process.env.RENDER_AI_URL || "";
-  const fallbackUrl = process.env.LOCAL_AI_URL || "http://127.0.0.1:8001";
-  const timeoutMs = parseInt(process.env.AI_TIMEOUT_MS || "5000", 10);
-  const healthCacheTtlMs = parseInt(
-    process.env.AI_HEALTH_CACHE_TTL || "30000",
-    10
-  );
-
-  return new AIGateway({
-    primaryUrl,
-    fallbackUrl,
-    timeoutMs,
-    healthCacheTtlMs,
-  });
-}
-
-// ---------------------------------------------------------------------------
 // AIGateway class
 // ---------------------------------------------------------------------------
 
