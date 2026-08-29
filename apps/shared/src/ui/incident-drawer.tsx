@@ -165,7 +165,7 @@ export function IncidentDrawer({ isOpen, onClose, incident }: IncidentDrawerProp
               </div>
             </div>
 
-            {/* 3. Audit Trail Receipt Card */}
+            {/* 3. Forensic Evidence Receipt Card */}
             <div className="bg-[#080c15] rounded-2xl p-5 border border-white/10 relative overflow-hidden shadow-xl">
               {/* Decorative background glow */}
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-teal-500/10 blur-3xl rounded-full pointer-events-none" />
@@ -176,21 +176,21 @@ export function IncidentDrawer({ isOpen, onClose, incident }: IncidentDrawerProp
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-5 h-5 text-[#2ee6c8]" />
-                      <h4 className="text-white font-bold tracking-wide">Ledger Receipt</h4>
+                      <h4 className="text-white font-bold tracking-wide">Forensic Evidence Receipt</h4>
                     </div>
-                    <p className="text-[#2ee6c8]/60 text-xs font-mono uppercase tracking-widest">
-                      Hedera Testnet Verified
+                    <p className="text-[#2ee6c8]/80 text-xs font-mono uppercase tracking-widest">
+                      SHA-256 Vault Verified
                     </p>
                   </div>
                   <div className="bg-white/10 p-2 rounded-xl backdrop-blur-sm">
-                    <LinkIcon className="w-5 h-5 text-white/80" />
+                    <Fingerprint className="w-5 h-5 text-white/80" />
                   </div>
                 </div>
 
                 <div className="space-y-3 pt-2">
                   <div className="bg-black/40 rounded-xl p-3 border border-white/5 space-y-1">
                     <div className="flex items-center gap-1.5 text-white/40 text-[10px] font-mono uppercase tracking-widest">
-                      <Hash className="w-3 h-3" /> Transaction Hash
+                      <Hash className="w-3 h-3" /> Evidence Checksum (SHA-256)
                     </div>
                     <div className="text-white/90 font-mono text-xs break-all">
                       {txHash}
@@ -200,30 +200,33 @@ export function IncidentDrawer({ isOpen, onClose, incident }: IncidentDrawerProp
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-black/40 rounded-xl p-3 border border-white/5 space-y-1">
                       <div className="flex items-center gap-1.5 text-white/40 text-[10px] font-mono uppercase tracking-widest">
-                        <Box className="w-3 h-3" /> Block
+                        <ShieldCheck className="w-3 h-3" /> EXIF Privacy
                       </div>
-                      <div className="text-white/90 font-mono text-sm">
-                        {blockNum.toLocaleString()}
+                      <div className="text-white/90 font-mono text-xs font-semibold">
+                        Stripped & Sealed
                       </div>
                     </div>
                     <div className="bg-black/40 rounded-xl p-3 border border-white/5 space-y-1">
                       <div className="flex items-center gap-1.5 text-white/40 text-[10px] font-mono uppercase tracking-widest">
-                        <ShieldCheck className="w-3 h-3" /> Status
+                        <Box className="w-3 h-3" /> Storage Vault
                       </div>
-                      <div className="text-[#2ee6c8] font-mono text-sm font-bold flex items-center gap-1.5">
+                      <div className="text-[#2ee6c8] font-mono text-xs font-bold flex items-center gap-1.5">
                         <span className="relative flex h-2 w-2">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2ee6c8] opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-[#2ee6c8]"></span>
                         </span>
-                        Sealed
+                        Supabase S3
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <button className="w-full mt-2 py-3 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors rounded-xl flex items-center justify-center gap-2 text-white text-xs font-mono font-bold tracking-wider uppercase">
-                  View on Explorer <ExternalLink className="w-3.5 h-3.5" />
-                </button>
+                <a
+                  href="/en/public-record"
+                  className="w-full mt-2 py-3 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors rounded-xl flex items-center justify-center gap-2 text-white text-xs font-mono font-bold tracking-wider uppercase"
+                >
+                  View Public Record <ExternalLink className="w-3.5 h-3.5" />
+                </a>
               </div>
             </div>
             

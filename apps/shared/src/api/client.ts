@@ -261,13 +261,14 @@ async function routeRequest<T>(
     });
 
     const recent_verified = allTickets
-      .filter((t) => ["resolved", "investigating", "action_taken"].includes(t.status))
-      .slice(0, 20)
+      .filter((t) => t.latitude != null && t.longitude != null)
+      .slice(0, 50)
       .map((t) => ({
         id: t.id,
         title: t.title || "Environmental Incident",
-        location: t.address_text || "Unknown location",
-        status: t.status,
+        description: t.description,
+        location: t.address_text || "Philippines",
+        status: t.status || "open",
         date: t.created_at,
         photo_url: null,
         latitude: t.latitude,
@@ -724,24 +725,52 @@ async function routeRequest<T>(
     }
   }
 
-  // ── Heatmap data ───────────────────────────────────────────────────────────
+  // ── Heatmap data (5-min in-memory cache for fast repeat loads) ────────────
   if (path === "reports/heatmap" && method === "GET") {
+    const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+    // Build cache key without _bust so busting doesn't pollute the key space
+    const cleanParams = new URLSearchParams(params);
+    const forceRefresh = cleanParams.has("_bust");
+    cleanParams.delete("_bust");
+    const cacheKey = `heatmap:${cleanParams.toString()}`;
+
+    // Use globalThis to persist cache across module re-evaluations
+    const store = (globalThis as any).__likaslens_cache__ ??= {} as Record<string, { data: unknown; ts: number }>;
+
+    // Bust cache if user explicitly refreshed
+    if (forceRefresh) delete store[cacheKey];
+
+    const cached = store[cacheKey];
+    if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
+      return cached.data as T;
+    }
+
     const { data } = await db()
       .from("tickets")
-      .select("latitude, longitude, urgency_score, status")
+      .select("id, title, description, latitude, longitude, urgency_score, status, address_text, ai_triage_summary, created_at")
       .not("latitude", "is", null);
 
-    return {
+    const result = {
       success: true,
       data: {
         points: (data || []).map((t) => ({
+          id: t.id,
+          title: t.title,
+          description: t.description,
           lat: t.latitude,
           lng: t.longitude,
           weight: (t.urgency_score || 1) / 5,
+          urgency_score: t.urgency_score,
           status: t.status,
+          address: t.address_text,
+          summary: t.ai_triage_summary,
+          created_at: t.created_at,
         })),
       },
     } as T;
+
+    store[cacheKey] = { data: result, ts: Date.now() };
+    return result;
   }
 
   // ── Generic table fallback ─────────────────────────────────────────────────

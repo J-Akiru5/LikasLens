@@ -39,6 +39,7 @@ export default function PublicRecordPage() {
           const mapped = res.data.recent_verified.map((r: any, i: number) => ({
             id: r.id || `incident-${i}`,
             title: r.title || "Environmental Incident",
+            description: r.description || undefined,
             location: r.location || "Unknown location",
             status: r.status || "open",
             created_at: r.date || new Date().toISOString(),

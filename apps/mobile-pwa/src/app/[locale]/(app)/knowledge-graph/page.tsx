@@ -121,7 +121,7 @@ const PRESETS: Preset[] = [
       { label: "YOLOv8 Classifier", sublabel: "FastAPI AI-Service", details: "Computer vision model detecting 47 environmental violation classes.", meta: { Model: "YOLOv8-Env-v2", Accuracy: "94.2%", Latency: "~120ms" } },
       { label: "Republic Act 9003", sublabel: "Ecological Solid Waste Mgmt.", details: "RA 9003 Section 48 — Fines up to ₱300,000 and 6 years imprisonment.", meta: { Statute: "RA 9003", Max_Fine: "₱300,000" } },
       { label: "CENRO Task Force", sublabel: "City Environment & NR Office", details: "Specialized enforcement unit. SLA: 24-hour field response.", meta: { Unit: "CENRO", SLA: "24 Hours" } },
-      { label: "Immutable Audit Log", sublabel: "Hash-chained record", details: "SHA-256 evidence hash committed to append-only audit log.", meta: { Method: "Hash Chain", Algorithm: "SHA-256" } }
+      { label: "Digital Audit Trail", sublabel: "SHA-256 Hash", details: "SHA-256 evidence hash committed to tamper-evident audit log.", meta: { Method: "SHA-256 Hash", Storage: "Supabase Vault" } }
     ),
     links: BASE_LINKS,
   },
@@ -133,7 +133,7 @@ const PRESETS: Preset[] = [
       { label: "Forestry Sentinel AI", sublabel: "Multispectral Analysis", details: "NDVI change-detection model comparing satellite bands to baseline.", meta: { Model: "NDVI-ChangeNet", Change: "-12% NDVI" } },
       { label: "P.D. 705 — Forestry Code", sublabel: "Revised Forestry Code", details: "Prohibits cutting timber in forest lands without license.", meta: { Statute: "P.D. 705", Max_Fine: "₱500,000" } },
       { label: "DENR — Forest Police", sublabel: "Dept. of Env. & Natural Res.", details: "Forest rangers with arrest authority for field intercept.", meta: { Unit: "DENR Rangers", Priority: "CRITICAL" } },
-      { label: "Audit Chain Entry", sublabel: "Block #921,029", details: "Evidence timestamp and AI classification hash in immutable audit trail.", meta: { Status: "Confirmed" } }
+      { label: "Audit Dossier Entry", sublabel: "Dossier #921,029", details: "Evidence timestamp and AI classification hash in tamper-evident audit trail.", meta: { Status: "Confirmed" } }
     ),
     links: BASE_LINKS,
   },
@@ -145,7 +145,7 @@ const PRESETS: Preset[] = [
       { label: "Water Sentinel AI", sublabel: "Spectral Analysis", details: "Analyzes photo color histograms against baseline water profiles.", meta: { Model: "WaterSpec-v1.3", Confidence: "88.5%" } },
       { label: "Republic Act 9275", sublabel: "Clean Water Act of 2004", details: "Section 27 — Discharge of pollutants is a criminal offense.", meta: { Statute: "RA 9275", Max_Fine: "₱200,000/day" } },
       { label: "DENR-EMB & LLDA", sublabel: "Laguna Lake Dev. Authority", details: "Joint inspection team with water sampling authority.", meta: { Unit: "LLDA + EMB", Action: "Joint Inspection" } },
-      { label: "Arbitrum One", sublabel: "TX: 0x3b8c...c2f1", details: "Audit-grade evidence sealed on Arbitrum L2.", meta: { Network: "Arbitrum One", Status: "Finalized" } }
+      { label: "Supabase Vault", sublabel: "SHA-256 Forensic Hash", details: "Audit-grade evidence sealed in encrypted Supabase Vault.", meta: { Storage: "Supabase S3", Status: "Verified" } }
     ),
     links: BASE_LINKS,
   },
@@ -157,7 +157,7 @@ const PRESETS: Preset[] = [
       { label: "Marine Audio-Visual AI", sublabel: "WaveformNet Classifier", details: "Audio pattern matching on underwater explosion frequencies.", meta: { Model: "WaveformNet-v2", Accuracy: "95.4%" } },
       { label: "Republic Act 8550", sublabel: "Philippine Fisheries Code", details: "Sections 88–92. Dynamite fishing is a grave offense.", meta: { Statute: "RA 8550", Imprisonment: "20 yrs" } },
       { label: "BFAR + PCG — Maritime", sublabel: "Bureau of Fisheries & Coast Guard", details: "PCG Patrol Boat intercepting vessel. BFAR files charges.", meta: { Unit: "BFAR + PCG", Response: "Maritime Intercept" } },
-      { label: "Hedera Hashgraph", sublabel: "Consensus #HCS-0.0.491124", details: "Enterprise-grade Hedera consensus with Byzantine fault tolerance.", meta: { Network: "Hedera HCS", Cost: "0.0001 HBAR" } }
+      { label: "Forensic Audit Trail", sublabel: "SHA-256 Timeline Record", details: "Forensic timestamping with zero-knowledge ghost mode protection.", meta: { Method: "SHA-256 Audit Log", Status: "Verified" } }
     ),
     links: BASE_LINKS,
   },
