@@ -6,6 +6,7 @@ import { ArrowLeft, Mail, MessageCircle, MapPin, Send, CheckCircle, Loader2 } fr
 import { motion, AnimatePresence } from "framer-motion";
 import { AppHeader } from "@likaslens/shared";
 import { showToast } from "@likaslens/shared";
+import { getSupabaseClient } from "@/utils/supabase/client";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -17,20 +18,13 @@ export default function ContactPage() {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/contact-messages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-      if (response.ok) {
-        setSubmitted(true);
-        showToast("Message sent successfully", "success");
-      } else {
-        showToast("Failed to send message. Please try again.", "error");
-      }
+      const { error } = await getSupabaseClient()
+        .from("contact_messages")
+        .insert({ name: formData.name, email: formData.email, message: formData.message });
+
+      if (error) throw error;
+      setSubmitted(true);
+      showToast("Message sent successfully", "success");
     } catch (error) {
       console.error("Failed to submit contact form", error);
       showToast("Failed to send message. Check your connection.", "error");

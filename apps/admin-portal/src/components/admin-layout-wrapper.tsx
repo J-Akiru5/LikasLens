@@ -4,10 +4,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout, type NavItem, GlobalSearch, useNotifications } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase";
-import { initAuthRefresh } from "@/lib/auth-init";
-
-// Register the 401 token refresh handler once at app startup
-initAuthRefresh();
 import {
   LayoutDashboard,
   BarChart3,

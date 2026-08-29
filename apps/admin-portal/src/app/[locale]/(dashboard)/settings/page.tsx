@@ -121,12 +121,6 @@ function PlatformSection({ settings, update }: { settings: SettingsState; update
               <option value="lo">Lao</option>
             </select>
           </div>
-          <div>
-            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">API Base URL</label>
-            <div className="w-full p-3 border border-ink/10 rounded-xl bg-page font-mono text-sm text-ink/60 truncate" title={process.env.NEXT_PUBLIC_API_URL || "Not configured"}>
-              {process.env.NEXT_PUBLIC_API_URL || "Not configured"}
-            </div>
-          </div>
         </div>
       </div>
 
@@ -288,77 +282,6 @@ function SecuritySection({ settings, update }: { settings: SettingsState; update
 }
 
 function DevelopersSection() {
-  const [tokens, setTokens] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [newTokenName, setNewTokenName] = useState("");
-  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchTokens();
-  }, []);
-
-  async function fetchTokens() {
-    setLoading(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/user/api-tokens`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("sb-auth-token")}`,
-        },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setTokens(json.data || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function generateToken() {
-    if (!newTokenName.trim()) return;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/user/api-tokens`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("sb-auth-token")}`,
-        },
-        body: JSON.stringify({ token_name: newTokenName }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setGeneratedToken(json.data.token);
-        setNewTokenName("");
-        fetchTokens();
-        showToast("API token created", "success");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to create token", "error");
-    }
-  }
-
-  async function revokeToken(id: string) {
-    if (!confirm("Are you sure you want to revoke this token?")) return;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/user/api-tokens/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("sb-auth-token")}`,
-        },
-      });
-      if (res.ok) {
-        fetchTokens();
-        showToast("Token revoked", "success");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to revoke token", "error");
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
@@ -366,64 +289,11 @@ function DevelopersSection() {
           <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
             <Key className="w-6 h-6 text-ink/40" />
           </div>
-          <h2 className="font-semibold tracking-tight text-2xl text-ink">Personal Access Tokens</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink">API Access</h2>
         </div>
-
-        {generatedToken && (
-          <div className="mb-6 p-4 rounded-xl border border-green/30 bg-green/5 text-sm">
-            <p className="font-medium text-ink mb-2">Save this token now. It will not be shown again.</p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 block p-3 bg-white border border-ink/10 rounded-lg text-ink font-mono break-all select-all">
-                {generatedToken}
-              </code>
-              <button onClick={() => {
-                navigator.clipboard.writeText(generatedToken);
-                showToast("Copied to clipboard", "success");
-              }} className="p-3 bg-white border border-ink/10 rounded-lg hover:bg-ink/5 transition-colors">
-                <Copy size={16} className="text-ink" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-4 mb-8">
-          <input
-            type="text"
-            placeholder="Token name (e.g., IoT Device 1)"
-            value={newTokenName}
-            onChange={(e) => setNewTokenName(e.target.value)}
-            className="flex-1 p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20"
-          />
-          <Button
-            variant="primary"
-            type="button"
-            onClick={generateToken}
-            disabled={!newTokenName.trim()}
-          >
-            Generate Token
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          {loading ? (
-            <div className="text-center py-8 text-muted text-sm">Loading tokens...</div>
-          ) : tokens.length === 0 ? (
-            <div className="text-center py-8 border border-dashed border-ink/10 rounded-xl text-muted text-sm">
-              No API tokens generated yet.
-            </div>
-          ) : (
-            tokens.map(token => (
-              <div key={token.id} className="flex items-center justify-between p-4 border border-ink/5 rounded-xl bg-page">
-                <div>
-                  <p className="font-medium text-ink text-sm">{token.name}</p>
-                  <p className="font-mono text-xs text-muted mt-1">Created: {new Date(token.created_at).toLocaleDateString()}</p>
-                </div>
-                <button onClick={() => revokeToken(token.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Revoke Token">
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            ))
-          )}
+        <div className="p-4 rounded-xl border border-ink/10 bg-page text-sm text-muted">
+          <p className="font-medium text-ink mb-1">Authentication is managed through Supabase</p>
+          <p>API access uses Supabase JWT tokens. No separate API tokens are needed.</p>
         </div>
       </div>
     </div>

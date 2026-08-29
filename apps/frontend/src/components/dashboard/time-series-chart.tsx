@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
 import { echarts, useEChartsTheme } from "./echarts-theme";
 import { useChartColors } from "./use-chart-colors";
+import { getSupabaseClient } from "@/utils/supabase/client";
 
 interface TimeSeriesData {
   dates: string[];
@@ -20,21 +21,40 @@ export function TimeSeriesChart() {
   useEffect(() => {
     async function fetchTimeSeries() {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? ""}/api/analytics/dashboard`,
-          { credentials: "include" }
-        );
-        const json = await res.json();
-        if (json.success && json.data?.time_series) {
-          const ts = json.data.time_series;
-          setData({
-            dates: ts.map((t: { date: string }) => t.date),
-            reports: ts.map((t: { count: number }) => t.count),
-            resolved: ts.map((t: { resolved: number }) => t.resolved ?? 0),
+        const supabase = getSupabaseClient();
+        const { data: tickets } = await supabase
+          .from("tickets")
+          .select("created_at, status")
+          .order("created_at", { ascending: true });
+
+        if (tickets && tickets.length > 0) {
+          const dayMap: Record<string, { reports: number; resolved: number }> = {};
+          const now = new Date();
+          for (let i = 29; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().split("T")[0];
+            dayMap[key] = { reports: 0, resolved: 0 };
+          }
+
+          tickets.forEach((t: { created_at: string; status: string }) => {
+            const key = t.created_at.split("T")[0];
+            if (dayMap[key]) {
+              dayMap[key].reports++;
+              if (t.status === "resolved") dayMap[key].resolved++;
+            }
           });
+
+          const dates = Object.keys(dayMap);
+          setData({
+            dates,
+            reports: dates.map((d) => dayMap[d].reports),
+            resolved: dates.map((d) => dayMap[d].resolved),
+          });
+        } else {
+          throw new Error("No tickets");
         }
       } catch {
-        // Use fallback mock data for demo
         const now = new Date();
         const dates = Array.from({ length: 30 }, (_, i) => {
           const d = new Date(now);
