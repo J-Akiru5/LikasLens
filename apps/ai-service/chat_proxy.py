@@ -8,12 +8,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from typing import Any
 
 import google.generativeai as genai
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
+
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ def _ensure_genai_configured() -> None:
     global _genai_configured
     if _genai_configured:
         return
-    api_key = os.getenv("GOOGLE_API_KEY")
+    api_key = settings.google_api_key
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

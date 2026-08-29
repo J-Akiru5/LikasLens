@@ -3,12 +3,12 @@ Async SQLAlchemy connection to Supabase PostgreSQL.
 Uses the same DB as the old Laravel app — no data loss, no new migrations for existing tables.
 """
 
-import os
-
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "")
+from config import settings
+
+DATABASE_URL = settings.database_url
 
 engine = create_async_engine(
     DATABASE_URL,

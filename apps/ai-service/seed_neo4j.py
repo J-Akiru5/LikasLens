@@ -17,13 +17,14 @@ Environment variables:
 from __future__ import annotations
 
 import asyncio
-import os
 import sys
 import time
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+from config import settings
 
 
 # ---------------------------------------------------------------------------
@@ -47,9 +48,9 @@ CONSTRAINTS = [
 
 async def run_seed(drop: bool = False) -> None:
     """Execute the full seed process."""
-    uri = os.getenv("NEO4J_URI")
-    user = os.getenv("NEO4J_USER", "neo4j")
-    password = os.getenv("NEO4J_PASSWORD")
+    uri = settings.neo4j_uri
+    user = settings.neo4j_user or "neo4j"
+    password = settings.neo4j_password
 
     if not uri or not password:
         print("ERROR: NEO4J_URI and NEO4J_PASSWORD must be set.")
@@ -91,7 +92,7 @@ async def run_seed(drop: bool = False) -> None:
                 print(f"  {item['description']}")
 
             # -- Vector embeddings (optional) --
-            api_key = os.getenv("GOOGLE_API_KEY")
+            api_key = settings.google_api_key
             if api_key:
                 print("\nCreating vector index and embedding laws...")
                 try:

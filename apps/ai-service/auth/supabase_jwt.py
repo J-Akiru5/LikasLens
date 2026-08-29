@@ -5,13 +5,13 @@ The frontend sends the Supabase access token in Authorization: Bearer <token>.
 We verify it against the Supabase JWT secret.
 """
 
-import os
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 
-SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET", "")
+from config import settings
+
+SUPABASE_JWT_SECRET = settings.supabase_jwt_secret
 
 security = HTTPBearer(auto_error=False)
 

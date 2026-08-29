@@ -11,10 +11,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from typing import Any
 
 import google.generativeai as genai
+
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ def _ensure_gemini_configured() -> None:
     """Lazy-configure the Gemini API."""
     global _gemini_configured
     if not _gemini_configured:
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = settings.google_api_key
         if not api_key:
             raise RuntimeError("GOOGLE_API_KEY environment variable not set")
         genai.configure(api_key=api_key)

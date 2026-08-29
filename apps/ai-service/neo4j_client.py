@@ -8,11 +8,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 import re
 from typing import Any
 
 from neo4j import AsyncGraphDatabase, AsyncDriver
+
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +37,9 @@ def _sanitize_id(value: str, field_name: str = "id") -> str:
 def get_connection_params() -> dict[str, str]:
     """Read Neo4j connection parameters from environment."""
     return {
-        "uri": os.getenv("NEO4J_URI", ""),
-        "user": os.getenv("NEO4J_USER", ""),
-        "password": os.getenv("NEO4J_PASSWORD", ""),
+        "uri": settings.neo4j_uri,
+        "user": settings.neo4j_user,
+        "password": settings.neo4j_password,
     }
 
 

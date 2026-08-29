@@ -10,13 +10,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from typing import Any
 
 import google.generativeai as genai
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
 
+from config import settings
 from neo4j_client import is_configured
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ def _get_gemini_model() -> genai.GenerativeModel:
     """Lazy-initialise the Gemini model (thread-safe for FastAPI workers)."""
     global _gemini_model
     if _gemini_model is None:
-        api_key = os.getenv("GOOGLE_API_KEY")
+        api_key = settings.google_api_key
         if not api_key:
             raise RuntimeError("GOOGLE_API_KEY environment variable not set")
         genai.configure(api_key=api_key)

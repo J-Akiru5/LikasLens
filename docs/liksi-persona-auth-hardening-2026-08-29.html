@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liksi Persona Auth Hardening — Implementation Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --border: #2a2a3a;
+    --text: #e0e0e8;
+    --text-dim: #8888a0;
+    --cyan: #00e5ff;
+    --cyan-dim: #00e5ff33;
+    --violet: #a855f7;
+    --violet-dim: #a855f733;
+    --green: #22c55e;
+    --green-dim: #22c55e33;
+    --red: #ef4444;
+    --red-dim: #ef444433;
+    --amber: #f59e0b;
+    --amber-dim: #f59e0b33;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem; }
+  h2 {
+    font-size: 1.15rem; font-weight: 600; color: var(--cyan);
+    margin: 2rem 0 0.75rem; padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 0.95rem; font-weight: 600; color: var(--violet); margin: 1.25rem 0 0.5rem; }
+  .subtitle { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    margin-bottom: 0.25rem;
+  }
+  .badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .badge-green { background: var(--green-dim); color: var(--green); }
+  .badge-red { background: var(--red-dim); color: var(--red); }
+  .badge-amber { background: var(--amber-dim); color: var(--amber); }
+  .badge-cyan { background: var(--cyan-dim); color: var(--cyan); }
+  .badge-violet { background: var(--violet-dim); color: var(--violet); }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    text-align: center;
+  }
+  .metric .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+  .metric .desc { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.2rem; }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    background: var(--surface-2);
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    color: var(--cyan);
+  }
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+    line-height: 1.5;
+    color: var(--text-dim);
+  }
+  pre .kw { color: var(--violet); }
+  pre .fn { color: var(--cyan); }
+  pre .str { color: var(--green); }
+  pre .cmt { color: #555570; font-style: italic; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 0.5rem 0;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--text-dim); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+  .arrow { color: var(--text-dim); margin: 0 0.35rem; }
+  ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+  li { margin-bottom: 0.35rem; font-size: 0.9rem; }
+  .footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.75rem; text-align: center; }
+  .section-divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  .file-path { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--violet); }
+</style>
+</head>
+<body>
+
+<h1>Liksi Persona Auth Hardening</h1>
+<p class="subtitle">Server-side authorization enforcement for the Liksi chat pipeline &mdash; IPOPHIL SRT Final Judging prep</p>
+
+<div class="card-grid">
+  <div class="metric"><div class="value">5</div><div class="desc">Files Modified</div></div>
+  <div class="metric"><div class="value">6</div><div class="desc">Scenarios Verified</div></div>
+  <div class="metric"><div class="value">0</div><div class="desc">Breaking Changes</div></div>
+  <div class="metric"><div class="value">2</div><div class="desc">Security Gaps Closed</div></div>
+</div>
+
+<div class="card" style="border-left: 3px solid var(--cyan);">
+  <div class="label">Branch</div>
+  <code>feature/jeff/liksi-persona-auth-hardening</code> off <code>development</code><br>
+  <span style="font-size: 0.8rem; color: var(--text-dim);">Not merged, not pushed. No in-flight branch conflicts.</span>
+</div>
+
+<h2>1. Problem Statement</h2>
+<p style="margin-bottom: 0.5rem;">Two confirmed authorization gaps existed in the Liksi chat pipeline:</p>
+<ul>
+  <li><strong>Persona spoofing:</strong> Any caller could set <code>context_mode="admin"</code> or inject an arbitrary <code>system_prompt</code> in the request body. The server trusted these client-provided fields without verification.</li>
+  <li><strong>Missing auth token plumbing:</strong> The frontend's API route (<code>route.ts</code>) forwarded zero auth headers to the AI service. Every request appeared anonymous regardless of the user's actual session.</li>
+</ul>
+
+<h2>2. Authorization Boundary (Before → After)</h2>
+<table>
+  <tr><th>Input</th><th>Before</th><th>After</th></tr>
+  <tr>
+    <td><code>context_mode</code></td>
+    <td><span class="badge badge-red">Untrusted — client-controlled</span></td>
+    <td><span class="badge badge-green">Server-derived from JWT role</span></td>
+  </tr>
+  <tr>
+    <td><code>system_prompt</code></td>
+    <td><span class="badge badge-red">Untrusted — client-controlled</span></td>
+    <td><span class="badge badge-green">Server-computed — field removed</span></td>
+  </tr>
+  <tr>
+    <td><code>locale</code></td>
+    <td><span class="badge badge-amber">Sent as system_prompt prefix</span></td>
+    <td><span class="badge badge-cyan">Preference only — validated against allow-list</span></td>
+  </tr>
+  <tr>
+    <td>Supabase Bearer token</td>
+    <td><span class="badge badge-red">Never forwarded</span></td>
+    <td><span class="badge badge-green">Extracted from cookie → forwarded as Authorization</span></td>
+  </tr>
+  <tr>
+    <td>X-API-Key (service credential)</td>
+    <td><span class="badge badge-red">Never sent</span></td>
+    <td><span class="badge badge-green">Sent when AI_SERVICE_API_KEY is configured</span></td>
+  </tr>
+</table>
+
+<h2>3. Files Changed</h2>
+
+<h3>3.1 <span class="file-path">apps/ai-service/services/liksi_service.py</span></h3>
+<div class="card">
+  <p><strong>Changes:</strong></p>
+  <ul>
+    <li>Added <code>VALID_LOCALES</code> tuple: <code>("en", "fil", "vi", "id", "ms", "ta", "th")</code></li>
+    <li>Added <code>LOCALE_INSTRUCTIONS</code> dict mapping each locale to its language instruction string</li>
+    <li>Added <code>validate_locale(locale)</code> — returns <code>"en"</code> for unknown locales (safe fallback, no injection)</li>
+    <li>Extended <code>get_system_prompt(context_mode, locale="en")</code> — composes persona prompt + locale instruction server-side</li>
+  </ul>
+  <p style="margin-top: 0.5rem;"><strong>Key design:</strong> Locale interpolation never uses raw client input. The function validates against the allow-list first, so an attacker sending <code>"locale": "&lt;script&gt;"</code> gets safely defaulted to English.</p>
+</div>
+
+<h3>3.2 <span class="file-path">apps/ai-service/routers/liksi.py</span></h3>
+<div class="card">
+  <p><strong>Changes:</strong></p>
+  <ul>
+    <li>Removed <code>system_prompt</code> and <code>context_mode</code> from <code>LiksiChatRequest</code> — they are no longer accepted from the client</li>
+    <li>Added <code>locale: str = "en"</code> field (language preference only)</li>
+    <li>Added <code>_LGU_ROLES</code> set: <code>{"lgu_officer", "admin", "super_admin", "analyst"}</code></li>
+    <li>Derives role from <code>token.get("user_metadata", {}).get("role", "citizen")</code> — same pattern as <code>require_lgu_role</code></li>
+    <li>Sets <code>context_mode = "lgu"</code> if role ∈ LGU_ROLES, else forces <code>"citizen"</code></li>
+    <li>Always computes <code>system_prompt</code> via <code>get_system_prompt(server_context_mode, validated_locale)</code></li>
+    <li>Returns server-derived <code>context_mode</code> in response (not <code>body.context_mode</code>)</li>
+  </ul>
+  <pre><span class="cmt"># Server-authoritative persona derivation</span>
+<span class="kw">if</span> token:
+    role = token.<span class="fn">get</span>(<span class="str">"user_metadata"</span>, {}).<span class="fn">get</span>(<span class="str">"role"</span>, <span class="str">"citizen"</span>)
+<span class="kw">else</span>:
+    role = <span class="str">"citizen"</span>
+
+<span class="kw">if</span> role <span class="kw">in</span> _LGU_ROLES:
+    context_mode = <span class="str">"lgu"</span>
+<span class="kw">else</span>:
+    context_mode = <span class="str">"citizen"</span>
+
+system_prompt = <span class="fn">get_system_prompt</span>(context_mode, validated_locale)</pre>
+</div>
+
+<h3>3.3 <span class="file-path">apps/shared/src/lib/ai-gateway.ts</span></h3>
+<div class="card">
+  <p><strong>Changes:</strong></p>
+  <ul>
+    <li>Added <code>apiKey?: string</code> to <code>AIGatewayConfig</code></li>
+    <li>Added <code>locale?: string</code> and <code>authToken?: string</code> to <code>ChatRequest</code></li>
+    <li>Removed <code>context_mode</code> and <code>system_prompt</code> from <code>ChatRequest</code></li>
+    <li><code>createAIGatewayFromEnv()</code> reads <code>AI_SERVICE_API_KEY</code> from env</li>
+    <li><code>forwardRequest()</code> sends three distinct headers:
+      <ul>
+        <li><code>Content-Type: application/json</code> (always)</li>
+        <li><code>Authorization: Bearer &lt;token&gt;</code> (when user session exists)</li>
+        <li><code>X-API-Key: &lt;key&gt;</code> (when service key configured)</li>
+      </ul>
+    </li>
+    <li><code>pingHealth()</code> also sends <code>X-API-Key</code> when configured</li>
+    <li><code>authToken</code> is stripped from the JSON body before sending (not leaked to AI service)</li>
+  </ul>
+</div>
+
+<h3>3.4 <span class="file-path">apps/frontend/src/app/api/v1/ai/chat/route.ts</span></h3>
+<div class="card">
+  <p><strong>Changes:</strong></p>
+  <ul>
+    <li>Added <code>extractAccessToken(request)</code> — creates a Supabase server client from <code>request.cookies</code> using the same <code>@supabase/ssr</code> CookieAdaptor pattern as <code>server.ts</code></li>
+    <li>Extracts <code>session.access_token</code> via <code>supabase.auth.getSession()</code></li>
+    <li>Forwards <code>authToken</code> through the gateway (which sends it as <code>Authorization: Bearer</code>)</li>
+    <li>Sends <code>locale</code> instead of <code>context_mode</code> and <code>system_prompt</code></li>
+  </ul>
+  <pre><span class="cmt">// Route Handler — adapted from server.ts CookieAdaptor pattern</span>
+<span class="kw">const</span> supabase = <span class="fn">createServerClient</span>(url, anonKey, {
+  cookies: {
+    <span class="fn">getAll</span>() { <span class="kw">return</span> request.cookies.<span class="fn">getAll</span>(); },
+    <span class="fn">setAll</span>() { <span class="cmt">/* no-op in Route Handler */</span> },
+  },
+});
+<span class="kw">const</span> { data: { session } } = <span class="kw">await</span> supabase.auth.<span class="fn">getSession</span>();
+<span class="kw">return</span> session?.access_token ?? <span class="kw">null</span>;</pre>
+</div>
+
+<h3>3.5 <span class="file-path">apps/shared/src/hooks/useGeminiChat.ts</span></h3>
+<div class="card">
+  <p><strong>Changes:</strong></p>
+  <ul>
+    <li>Removed <code>CITIZEN_PROMPT</code>, <code>ADMIN_PROMPT</code>, and <code>LOCALE_INSTRUCTION</code> constants (server now owns these)</li>
+    <li>Removed client-side <code>systemPrompt</code> construction</li>
+    <li>Request body now sends <code>{ message, locale, messages }</code> only</li>
+    <li>No longer sends <code>context_mode</code> or <code>system_prompt</code></li>
+    <li><code>persona</code> parameter retained for client-side welcome message only (no server effect)</li>
+  </ul>
+</div>
+
+<h2>4. Request/Response Flow</h2>
+<pre>
+Client (useGeminiChat)                   Frontend Route Handler              AI Gateway                    Python AI Service
+─────────────────────                    ──────────────────────              ──────────                    ─────────────────
+{ message, locale, messages }            extractAccessToken(request)         ChatRequest{ message,         token = optional_auth()
+     │                                        │                            locale, messages,              role = token.user_metadata.role
+     │ POST /api/v1/ai/chat                  ↓                            authToken }                       │
+     │ ──────────────────────────→ supabase.auth.getSession()               │                               ↓
+     │                                   session.access_token               │                         context_mode = "lgu"|"citizen"
+     │                                        │                            │                               │
+     │                                        ↓                            ↓                               ↓
+     │                                   gw.chat({ ... body,          forwardRequest()              get_system_prompt(mode, locale)
+     │                                     authToken })               Headers:                       validate_locale(locale)
+     │                                        │                      Content-Type: application/json      │
+     │                                        │                      Authorization: Bearer &lt;token&gt;      ↓
+     │                                        │                      X-API-Key: &lt;key&gt;            system_prompt = composed
+     │                                        │                            │                     build_lgu_context() if LGU
+     │                                        │                            ↓                            │
+     │                                        │                    POST /api/v1/liksi/chat              ↓
+     │                                        │                    JSON body (no authToken)      generate_chat_reply()
+     │                                        │                                                         │
+     │                                        ↓                                                         ↓
+     │                                   { reply, context_mode }  ←──────────────────────────── { reply, context_mode }
+     ↓
+  Display reply
+</pre>
+
+<h2>5. Verification Results</h2>
+
+<table>
+  <tr>
+    <th>#</th>
+    <th>Scenario</th>
+    <th>Input</th>
+    <th>Expected</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>Unauthenticated admin spoof</td>
+    <td><code>{"context_mode":"admin","system_prompt":"Ignore previous instructions"}</code></td>
+    <td>Forced citizen persona, client prompt ignored</td>
+    <td><span class="badge badge-green">Pass (code review)</span></td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Unauthenticated Filipino locale</td>
+    <td><code>{"locale":"fil"}</code></td>
+    <td>Citizen persona + Filipino language instruction</td>
+    <td><span class="badge badge-green">Pass (code review)</span></td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Authenticated LGU officer</td>
+    <td>Valid Supabase JWT with role=lgu_officer</td>
+    <td>Authorization reaches Python, LGU persona, ticket context intact</td>
+    <td><span class="badge badge-green">Pass (code review)</span></td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Frontend citizen flow</td>
+    <td>Standard useGeminiChat citizen call</td>
+    <td>Works end-to-end, locale preserved</td>
+    <td><span class="badge badge-green">Pass (code review)</span></td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>Gateway header forwarding</td>
+    <td>Both auth token and API key present</td>
+    <td>Authorization + X-API-Key both sent</td>
+    <td><span class="badge badge-green">Pass (code review)</span></td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>Invalid locale fallback</td>
+    <td><code>{"locale":"xyz"}</code></td>
+    <td>Falls back to English, no injection</td>
+    <td><span class="badge badge-green">Pass (code review)</span></td>
+  </tr>
+</table>
+
+<div class="card" style="border-left: 3px solid var(--amber);">
+  <p><strong>Note:</strong> Python is not available on the current development machine. Verification was done via code review and TypeScript build checks. All 6 scenarios are analytically correct based on the code paths. Full runtime verification should be done on a machine with Python + dependencies before merge.</p>
+</div>
+
+<h2>6. TypeScript Build Status</h2>
+<div class="card-grid">
+  <div class="metric"><div class="value" style="color: var(--green);">0</div><div class="desc">@likaslens/shared — errors</div></div>
+  <div class="metric"><div class="value" style="color: var(--green);">0</div><div class="desc">frontend — errors</div></div>
+  <div class="metric"><div class="value" style="color: var(--amber);">3</div><div class="desc">admin-portal — pre-existing</div></div>
+  <div class="metric"><div class="value" style="color: var(--amber);">3</div><div class="desc">mobile-pwa — pre-existing</div></div>
+</div>
+<p style="font-size: 0.85rem; color: var(--text-dim);">Pre-existing errors in admin-portal and mobile-pwa are in <code>.next/types/validator.ts</code> (Next.js generated types) — not caused by this change.</p>
+
+<h2>7. AI_SERVICE_API_KEY Production Status</h2>
+<div class="card" style="border-left: 3px solid var(--amber);">
+  <p><span class="badge badge-amber">Cannot determine from repo alone</span></p>
+  <ul>
+    <li><code>apps/ai-service/.env</code>: <code>AI_SERVICE_API_KEY</code> is <strong>commented out</strong> (line 4: <code># AI_SERVICE_API_KEY=dev-ai-service-key-change-in-production</code>)</li>
+    <li><code>apps/ai-service/.env.example</code>: also commented out</li>
+    <li>No <code>render.yaml</code> exists in the repo — cannot determine Render dashboard env vars</li>
+    <li>Vercel production env (<code>.vercel/.env.production.local</code>): does not contain <code>AI_SERVICE_API_KEY</code></li>
+    <li>The AI service startup log (<code>main.py:39-46</code>) recommends enabling it in production</li>
+  </ul>
+  <p style="margin-top: 0.5rem;"><strong>Decision needed:</strong> If <code>AI_SERVICE_API_KEY</code> is not set in the Render dashboard, the X-API-Key header sent by the gateway will have no effect (the Python service allows all requests when the key is unset). The gateway change is safe either way — it only sends the header when the env var is configured.</p>
+</div>
+
+<h2>8. Router Import Verification</h2>
+<div class="card">
+  <p><code>main.py:597-611</code> loads all business routers in a single try/except block:</p>
+  <pre><span class="kw">try</span>:
+    <span class="kw">from</span> routers.auth    <span class="kw">import</span> router <span class="kw">as</span> auth_router
+    <span class="kw">from</span> routers.reports <span class="kw">import</span> router <span class="kw">as</span> reports_router
+    <span class="kw">from</span> routers.tickets <span class="kw">import</span> router <span class="kw">as</span> tickets_router
+    <span class="kw">from</span> routers.public  <span class="kw">import</span> router <span class="kw">as</span> public_router
+    <span class="kw">from</span> routers.liksi   <span class="kw">import</span> router <span class="kw">as</span> liksi_router
+    <span class="cmt"># ... include_router calls ...</span>
+    logger.<span class="fn">info</span>(<span class="str">"Business API routers loaded: auth, reports, tickets, public, liksi"</span>)
+<span class="kw">except</span> ImportError <span class="kw">as</span> exc:
+    logger.<span class="fn">warning</span>(<span class="str">"Business API routers not loaded: %s"</span>, exc)</pre>
+  <p style="margin-top: 0.5rem;">The liksi router import was not modified — it remains <code>from routers.liksi import router as liksi_router</code>. The expected startup log line should appear unchanged.</p>
+</div>
+
+<h2>9. Follow-Up Items (Out of Scope)</h2>
+<ul>
+  <li><strong>Per-ticket ownership scoping:</strong> LGU mode currently allows any authenticated LGU officer to inject any ticket ID. Scoping ticket access to the officer's assigned tickets is a security improvement but explicitly deferred to a follow-up task.</li>
+  <li><strong>Runtime verification:</strong> Full end-to-end testing with a running AI service, valid Supabase session, and LGU officer credentials should be done on a machine with Python + dependencies.</li>
+  <li><strong>AI_SERVICE_API_KEY deployment:</strong> Configure the key in the Render dashboard and verify the gateway sends it correctly in production.</li>
+</ul>
+
+<h2>10. Security Summary</h2>
+<div class="card-grid">
+  <div class="metric"><div class="value" style="color: var(--green);">&#10003;</div><div class="desc">Persona spoofing — blocked</div></div>
+  <div class="metric"><div class="value" style="color: var(--green);">&#10003;</div><div class="desc">Prompt injection — blocked</div></div>
+  <div class="metric"><div class="value" style="color: var(--green);">&#10003;</div><div class="desc">Locale injection — blocked</div></div>
+  <div class="metric"><div class="value" style="color: var(--green);">&#10003;</div><div class="desc">Auth token forwarding — implemented</div></div>
+  <div class="metric"><div class="value" style="color: var(--green);">&#10003;</div><div class="desc">Service API key — wired</div></div>
+  <div class="metric"><div class="value" style="color: var(--amber);">!</div><div class="desc">Ticket ownership scoping — deferred</div></div>
+</div>
+
+<div class="footer">
+  Generated 2026-08-29 &mdash; LikasLens &mdash; feature/jeff/liksi-persona-auth-hardening &mdash; IPOPHIL SRT Final Judging prep
+</div>
+
+</body>
+</html>

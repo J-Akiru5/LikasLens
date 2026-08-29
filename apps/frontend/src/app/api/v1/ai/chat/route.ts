@@ -8,9 +8,14 @@
  *   Client → This route → AI Gateway → Render (primary) / Local (fallback)
  *
  * The frontend never knows which AI instance responded.
+ *
+ * Auth flow:
+ *   Supabase session cookie → extract access_token → forward as Authorization
+ *   header → Python optional_auth → server derives role from JWT.
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 import { createAIGatewayFromEnv } from "@likaslens/shared/ai-gateway";
 
 export const runtime = "nodejs";
@@ -25,6 +30,37 @@ function getGateway() {
   return gateway;
 }
 
+/**
+ * Extract the Supabase access token from the request's session cookie.
+ * Uses the same @supabase/ssr CookieAdaptor pattern as server.ts,
+ * adapted for Route Handler (reads request.cookies, not cookies()).
+ */
+async function extractAccessToken(
+  request: NextRequest
+): Promise<string | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) return null;
+
+  const supabase = createServerClient(url, anonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll() {
+        // Route Handlers cannot set cookies here; no-op.
+      },
+    },
+  });
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return session?.access_token ?? null;
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
@@ -37,13 +73,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const gw = getGateway();
+
+    // Extract user's Supabase access token for server-side persona derivation
+    const authToken = await extractAccessToken(request);
+
     const result = await gw.chat({
       message: body.message,
-      context_mode: body.context_mode || "citizen",
+      locale: body.locale || "en",
       messages: body.messages || [],
-      system_prompt: body.system_prompt,
       ticket_id: body.ticket_id,
       conversation_id: body.conversation_id,
+      authToken: authToken || undefined,
     });
 
     return NextResponse.json(result);
