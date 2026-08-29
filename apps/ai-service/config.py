@@ -13,7 +13,6 @@ Classification:
 from __future__ import annotations
 
 import logging
-import sys
 from typing import Literal
 
 from pydantic import Field, field_validator
@@ -159,7 +158,7 @@ class Settings(BaseSettings):
 
     @property
     def roboflow_configured(self) -> bool:
-        return bool(self.roboflow_api_key and self.roboflow_model_id)
+        return bool(self.roboflow_api_key.strip() and self.roboflow_model_id.strip())
 
     @property
     def gemini_configured(self) -> bool:
@@ -180,7 +179,6 @@ class Settings(BaseSettings):
         warnings = []
 
         if self.is_production:
-            # Required checks in production
             if not self.database_url:
                 warnings.append("CRITICAL: DATABASE_URL not set — database operations will fail")
             if not self.supabase_jwt_secret:
@@ -188,7 +186,6 @@ class Settings(BaseSettings):
             if not self.ai_service_api_key:
                 warnings.append("WARNING: AI_SERVICE_API_KEY not set — running with API key auth DISABLED")
         else:
-            # Development-mode checks
             if not self.database_url:
                 warnings.append("DATABASE_URL not set — using in-memory/dummy database")
 
@@ -211,14 +208,14 @@ class Settings(BaseSettings):
             f"[config] {'PRODUCTION' if is_prod else 'DEVELOPMENT'} mode",
             f"[config]   Service port:      {self.ai_service_port}",
             f"[config]   API key auth:      {'ENABLED' if self.ai_service_api_key else 'DISABLED (dev mode)'}",
-            f"[config]   Database:          {'✓ configured' if self.database_configured else '✗ not configured'}",
-            f"[config]   Supabase Auth:     {'✓ configured' if self.auth_configured else '✗ not configured'}",
-            f"[config]   Supabase Storage:  {'✓ configured' if self.storage_configured else '✗ not configured'}",
-            f"[config]   Gemini AI:         {'✓ configured' if self.gemini_configured else '✗ not configured (GOOGLE_API_KEY missing)'}",
-            f"[config]   Neo4j:             {'✓ configured' if self.neo4j_configured else '✗ not configured'}",
-            f"[config]   Roboflow:          {'✓ configured' if self.roboflow_configured else '✗ not configured'}",
-            f"[config]   YOLO models:       {'✓ custom path' if self.yolo_model_path else 'default'} + {'✓ custom env' if self.env_model_path else 'default env'}",
-            f"[config]   Metrics log:       {'✓ ' + self.likaslens_metrics_log if self.likaslens_metrics_log else '✗ disabled'}",
+            f"[config]   Database:          {'configured' if self.database_configured else 'not configured'}",
+            f"[config]   Supabase Auth:     {'configured' if self.auth_configured else 'not configured'}",
+            f"[config]   Supabase Storage:  {'configured' if self.storage_configured else 'not configured'}",
+            f"[config]   Gemini AI:         {'configured' if self.gemini_configured else 'not configured (GOOGLE_API_KEY missing)'}",
+            f"[config]   Neo4j:             {'configured' if self.neo4j_configured else 'not configured'}",
+            f"[config]   Roboflow:          {'configured' if self.roboflow_configured else 'not configured'}",
+            f"[config]   YOLO models:       {'custom path' if self.yolo_model_path else 'default'} + {'custom env' if self.env_model_path else 'default env'}",
+            f"[config]   Metrics log:       {self.likaslens_metrics_log if self.likaslens_metrics_log else 'disabled'}",
         ]
 
         for line in lines:
@@ -232,7 +229,6 @@ class Settings(BaseSettings):
 
     def health_config(self) -> dict:
         """Return config status for /health/config endpoint. Never returns secret values."""
-
         def _status(configured: bool, required_fields: list[str], missing_fields: list[str]) -> str:
             if configured:
                 return "configured"

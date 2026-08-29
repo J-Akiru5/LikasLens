@@ -11,6 +11,7 @@ import requests
 # Import the module under test
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config import settings
 from roboflow_client import (
     _get_config,
     _MAX_RETRIES,
@@ -26,17 +27,19 @@ from roboflow_client import (
 # ---------------------------------------------------------------------------
 
 @pytest.fixture(autouse=True)
-def _clean_env(monkeypatch):
-    """Ensure env vars are clean before each test."""
-    monkeypatch.delenv("ROBOFLOW_API_KEY", raising=False)
-    monkeypatch.delenv("ROBOFLOW_MODEL_ID", raising=False)
+def _clean_settings():
+    """Ensure settings are clean before each test — mock to empty strings."""
+    with patch.object(settings, "roboflow_api_key", ""), \
+         patch.object(settings, "roboflow_model_id", ""):
+        yield
 
 
 @pytest.fixture()
-def _set_env(monkeypatch):
-    """Set valid env vars for tests that need them."""
-    monkeypatch.setenv("ROBOFLOW_API_KEY", "test-key-123")
-    monkeypatch.setenv("ROBOFLOW_MODEL_ID", "garbage-detection-sht1u/4")
+def _set_settings():
+    """Set valid config for tests that need them."""
+    with patch.object(settings, "roboflow_api_key", "test-key-123"), \
+         patch.object(settings, "roboflow_model_id", "garbage-detection-sht1u/4"):
+        yield
 
 
 # ---------------------------------------------------------------------------
@@ -48,12 +51,12 @@ class TestGetConfig:
         with pytest.raises(ValueError, match="ROBOFLOW_API_KEY"):
             _get_config()
 
-    def test_raises_when_model_id_missing(self, monkeypatch):
-        monkeypatch.setenv("ROBOFLOW_API_KEY", "key")
-        with pytest.raises(ValueError, match="ROBOFLOW_MODEL_ID"):
+    def test_raises_when_model_id_missing(self):
+        with patch.object(settings, "roboflow_api_key", "key"), \
+             pytest.raises(ValueError, match="ROBOFLOW_MODEL_ID"):
             _get_config()
 
-    def test_returns_tuple_when_configured(self, _set_env):
+    def test_returns_tuple_when_configured(self, _set_settings):
         api_key, model_id = _get_config()
         assert api_key == "test-key-123"
         assert model_id == "garbage-detection-sht1u/4"
@@ -67,20 +70,20 @@ class TestIsConfigured:
     def test_false_when_no_env(self):
         assert is_configured() is False
 
-    def test_false_when_only_key(self, monkeypatch):
-        monkeypatch.setenv("ROBOFLOW_API_KEY", "key")
-        assert is_configured() is False
+    def test_false_when_only_key(self):
+        with patch.object(settings, "roboflow_api_key", "key"):
+            assert is_configured() is False
 
-    def test_false_when_only_model(self, monkeypatch):
-        monkeypatch.setenv("ROBOFLOW_MODEL_ID", "model/1")
-        assert is_configured() is False
+    def test_false_when_only_model(self):
+        with patch.object(settings, "roboflow_model_id", "model/1"):
+            assert is_configured() is False
 
-    def test_false_when_empty_strings(self, monkeypatch):
-        monkeypatch.setenv("ROBOFLOW_API_KEY", "  ")
-        monkeypatch.setenv("ROBOFLOW_MODEL_ID", "  ")
-        assert is_configured() is False
+    def test_false_when_empty_strings(self):
+        with patch.object(settings, "roboflow_api_key", "  "), \
+             patch.object(settings, "roboflow_model_id", "  "):
+            assert is_configured() is False
 
-    def test_true_when_both_set(self, _set_env):
+    def test_true_when_both_set(self, _set_settings):
         assert is_configured() is True
 
 
@@ -89,27 +92,27 @@ class TestIsConfigured:
 # ---------------------------------------------------------------------------
 
 class TestHealthCheck:
-    def test_ok_on_200(self, _set_env):
+    def test_ok_on_200(self, _set_settings):
         mock_resp = MagicMock(status_code=200)
         with patch("roboflow_client.requests.get", return_value=mock_resp):
             result = health_check()
         assert result["status"] == "ok"
         assert result["roboflow_connected"] is True
 
-    def test_ok_on_400(self, _set_env):
+    def test_ok_on_400(self, _set_settings):
         mock_resp = MagicMock(status_code=400)
         with patch("roboflow_client.requests.get", return_value=mock_resp):
             result = health_check()
         assert result["status"] == "ok"
         assert result["roboflow_connected"] is True
 
-    def test_ok_on_405(self, _set_env):
+    def test_ok_on_405(self, _set_settings):
         mock_resp = MagicMock(status_code=405)
         with patch("roboflow_client.requests.get", return_value=mock_resp):
             result = health_check()
         assert result["status"] == "ok"
 
-    def test_error_on_401(self, _set_env):
+    def test_error_on_401(self, _set_settings):
         mock_resp = MagicMock(status_code=401)
         with patch("roboflow_client.requests.get", return_value=mock_resp):
             result = health_check()
@@ -117,20 +120,20 @@ class TestHealthCheck:
         assert result["roboflow_connected"] is False
         assert "401" in result["error"]
 
-    def test_error_on_unexpected_status(self, _set_env):
+    def test_error_on_unexpected_status(self, _set_settings):
         mock_resp = MagicMock(status_code=503)
         with patch("roboflow_client.requests.get", return_value=mock_resp):
             result = health_check()
         assert result["status"] == "error"
         assert "503" in result["error"]
 
-    def test_error_on_connection_error(self, _set_env):
+    def test_error_on_connection_error(self, _set_settings):
         with patch("roboflow_client.requests.get", side_effect=requests.ConnectionError("refused")):
             result = health_check()
         assert result["status"] == "error"
         assert "connection" in result["error"].lower()
 
-    def test_error_on_timeout(self, _set_env):
+    def test_error_on_timeout(self, _set_settings):
         with patch("roboflow_client.requests.get", side_effect=requests.Timeout("timed out")):
             result = health_check()
         assert result["status"] == "error"
@@ -148,7 +151,7 @@ class TestHealthCheck:
 class TestDetectFromBytes:
     SAMPLE_IMAGE = b"\xff\xd8\xff\xe0" + b"\x00" * 100  # Fake JPEG header
 
-    def test_success_response(self, _set_env):
+    def test_success_response(self, _set_settings):
         mock_resp = MagicMock(
             status_code=200,
             json=lambda: {
@@ -162,25 +165,25 @@ class TestDetectFromBytes:
         assert len(result["predictions"]) == 1
         assert result["model"] == "garbage-detection-sht1u/4"
 
-    def test_raises_on_401(self, _set_env):
+    def test_raises_on_401(self, _set_settings):
         mock_resp = MagicMock(status_code=401)
         with patch("roboflow_client.requests.post", return_value=mock_resp):
             with pytest.raises(RuntimeError, match="401"):
                 detect_from_bytes(self.SAMPLE_IMAGE)
 
-    def test_raises_on_404(self, _set_env):
+    def test_raises_on_404(self, _set_settings):
         mock_resp = MagicMock(status_code=404)
         with patch("roboflow_client.requests.post", return_value=mock_resp):
             with pytest.raises(RuntimeError, match="404"):
                 detect_from_bytes(self.SAMPLE_IMAGE)
 
-    def test_raises_on_400(self, _set_env):
+    def test_raises_on_400(self, _set_settings):
         mock_resp = MagicMock(status_code=400, text="Bad request")
         with patch("roboflow_client.requests.post", return_value=mock_resp):
             with pytest.raises(RuntimeError, match="400"):
                 detect_from_bytes(self.SAMPLE_IMAGE)
 
-    def test_retries_on_connection_error(self, _set_env):
+    def test_retries_on_connection_error(self, _set_settings):
         with patch(
             "roboflow_client.requests.post",
             side_effect=requests.ConnectionError("refused"),
@@ -189,7 +192,7 @@ class TestDetectFromBytes:
                 detect_from_bytes(self.SAMPLE_IMAGE)
             assert mock_post.call_count == _MAX_RETRIES
 
-    def test_retries_on_timeout(self, _set_env):
+    def test_retries_on_timeout(self, _set_settings):
         with patch(
             "roboflow_client.requests.post",
             side_effect=requests.Timeout("timeout"),
@@ -198,7 +201,7 @@ class TestDetectFromBytes:
                 detect_from_bytes(self.SAMPLE_IMAGE)
             assert mock_post.call_count == _MAX_RETRIES
 
-    def test_retries_on_500(self, _set_env):
+    def test_retries_on_500(self, _set_settings):
         mock_resp = MagicMock(status_code=500)
         with patch(
             "roboflow_client.requests.post",
@@ -208,7 +211,7 @@ class TestDetectFromBytes:
                 detect_from_bytes(self.SAMPLE_IMAGE)
             assert mock_post.call_count == _MAX_RETRIES
 
-    def test_no_retry_on_401(self, _set_env):
+    def test_no_retry_on_401(self, _set_settings):
         mock_resp = MagicMock(status_code=401)
         with patch(
             "roboflow_client.requests.post",

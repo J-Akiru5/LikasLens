@@ -5,7 +5,6 @@ POST /api/v1/reports/triage  — Pre-submission AI check (non-persisting)
 
 import base64
 import logging
-import os
 import uuid
 from datetime import datetime, timezone
 
@@ -15,6 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.supabase_jwt import optional_auth, verify_supabase_token
+from config import settings
 from db.connection import get_db
 from db.models import Ticket, TicketEvidence, TicketTimeline
 from services.exif import strip_exif, get_mime_type
@@ -23,7 +23,7 @@ from services.ghost_mode import sanitize_report_payload
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 logger = logging.getLogger(__name__)
 
-STORAGE_BUCKET = os.getenv("SUPABASE_STORAGE_BUCKET", "evidence")
+STORAGE_BUCKET = settings.supabase_storage_bucket
 
 
 class ReportRequest(BaseModel):
@@ -129,9 +129,9 @@ async def submit_report(
     try:
         s3 = boto3.client(
             "s3",
-            endpoint_url=os.environ.get("SUPABASE_STORAGE_URL"),
-            aws_access_key_id=os.environ.get("SUPABASE_STORAGE_KEY"),
-            aws_secret_access_key=os.environ.get("SUPABASE_STORAGE_SECRET"),
+            endpoint_url=settings.supabase_storage_url,
+            aws_access_key_id=settings.supabase_storage_key,
+            aws_secret_access_key=settings.supabase_storage_secret,
         )
         s3.put_object(
             Bucket=STORAGE_BUCKET,
