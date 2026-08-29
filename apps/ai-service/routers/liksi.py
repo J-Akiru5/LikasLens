@@ -24,6 +24,7 @@ class LiksiChatRequest(BaseModel):
     ticket_id: str | None = None   # LGU mode: inject ticket context
     conversation_id: str | None = None
     messages: list[dict] | None = None  # optional history
+    system_prompt: str | None = None    # client-provided prompt override (locale-aware)
 
 
 @router.post("/chat")
@@ -35,7 +36,8 @@ async def liksi_chat(
     """Context-aware chat endpoint for Liksi AI companion."""
     from chat_proxy import ChatRequest, generate_chat_reply
 
-    system_prompt = get_system_prompt(body.context_mode)
+    # Use client-provided prompt (locale-aware) if available, else server-side default
+    system_prompt = body.system_prompt or get_system_prompt(body.context_mode)
 
     # LGU mode: inject ticket context into the system prompt
     if body.context_mode == "lgu" and body.ticket_id:

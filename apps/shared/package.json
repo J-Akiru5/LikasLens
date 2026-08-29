@@ -9,6 +9,10 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     },
+    "./ai-gateway": {
+      "types": "./src/lib/ai-gateway.ts",
+      "default": "./src/lib/ai-gateway.ts"
+    },
     "./i18n/messages/en": "./src/i18n/messages/en.json",
     "./i18n/messages/fil": "./src/i18n/messages/fil.json",
     "./i18n/messages/vi": "./src/i18n/messages/vi.json",

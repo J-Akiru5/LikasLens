@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { laravelPost } from "../api/client";
 
 export interface ChatMessage {
   id: string;
@@ -74,18 +73,21 @@ export function useGeminiChat(persona: Persona = "citizen", locale: string = "en
       .map((m) => ({ role: m.role, content: m.content }));
 
     try {
-      const data = await laravelPost<{ reply: string }>(
-        "/v1/chat",
-        {
-          messages: [...history, { role: "user", content: text }],
+      const res = await fetch("/api/v1/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          message: text,
+          context_mode: persona,
+          messages: history,
           system_prompt: systemPrompt,
-          temperature: 0.7,
-          max_output_tokens: 2048,
-          top_p: 0.9,
-        },
-        60000
-      );
+        }),
+      });
 
+      if (!res.ok) throw new Error(`Chat API error: ${res.status}`);
+
+      const data = await res.json();
       const reply = data?.reply || t("errorProcess");
       setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "assistant", content: reply }]);
     } catch (err: unknown) {
@@ -94,7 +96,7 @@ export function useGeminiChat(persona: Persona = "citizen", locale: string = "en
     } finally {
       setLoading(false);
     }
-  }, [messages, systemPrompt, t]);
+  }, [messages, systemPrompt, persona, t]);
 
   return { messages, loading, sendMessage };
 }
