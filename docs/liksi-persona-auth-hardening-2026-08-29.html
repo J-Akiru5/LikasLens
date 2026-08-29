@@ -80,14 +80,23 @@
 <h2>Verification</h2>
 <ul>
     <li>All three Next.js apps (frontend, admin-portal, mobile-pwa) build clean with TypeScript passing.</li>
-    <li>Python test suite: 33/33 tests pass (<code>test_roboflow_client.py</code>). <code>test_e2e_migration.py</code> has pre-existing <code>asyncpg</code> import error (unrelated).</li>
-    <li>Security properties confirmed by code inspection:
+    <li>10 automated tests added, covering:
         <ul>
-            <li>Server-authoritative persona derivation: role from JWT, not client input</li>
-            <li>Locale validated against allow-list, unknown falls back to English</li>
-            <li>Token forwarded as Authorization header, stripped from body</li>
-            <li>API key forwarded as X-API-Key header when configured</li>
+            <li><strong>test_unauthenticated_admin_spoof_forced_to_citizen</strong> — unauthenticated + context_mode:"admin" + system_prompt injection → forced citizen, injected prompt absent</li>
+            <li><strong>test_filipino_locale_preserved</strong> — locale:"fil" → Filipino instruction in system prompt</li>
+            <li><strong>test_authenticated_lgu_gets_lgu_persona</strong> — LGU JWT → LGU persona + ticket context in prompt</li>
+            <li><strong>test_citizen_token_cannot_get_lgu_mode</strong> — citizen JWT + context_mode:"admin" → forced citizen</li>
+            <li><strong>test_invalid_locale_falls_back_safely</strong> — locale:"xx-not-real" → English fallback, raw string absent</li>
+            <li><strong>AIGateway sends both headers</strong> — apiKey + authToken → X-API-Key + Authorization present</li>
+            <li><strong>AIGateway sends only X-API-Key</strong> — apiKey only → no Authorization header</li>
+            <li><strong>AIGateway sends only Authorization</strong> — authToken only → no X-API-Key header</li>
+            <li><strong>AIGateway strips authToken from body</strong> — authToken not in JSON payload</li>
+            <li><strong>AIGateway sends neither header</strong> — no apiKey + no authToken → no auth headers</li>
         </ul>
+    </li>
+    <li>Full test suite output (2026-08-30):
+        <pre>pytest: 72 passed, 1 warning in 17.91s
+vitest: 4 test files, 53 tests passed in 13.71s</pre>
     </li>
 </ul>
 
