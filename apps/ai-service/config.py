@@ -51,9 +51,17 @@ class Settings(BaseSettings):
     )
 
     # ── Supabase Auth ─────────────────────────────────────────────────────
+    supabase_url: str = Field(
+        default="",
+        description="Supabase project URL (e.g. https://xxxx.supabase.co). Required for JWKS-based ES256 verification.",
+    )
     supabase_jwt_secret: str = Field(
         default="",
-        description="Supabase JWT secret for verifying access tokens. Required for auth.",
+        description="Supabase JWT secret for legacy HS256 verification. Optional — ES256 via JWKS is preferred.",
+    )
+    jwks_cache_ttl_seconds: int = Field(
+        default=3600,
+        description="How long to cache Supabase JWKS keys (seconds). Default 1 hour.",
     )
 
     # ── Supabase Storage ──────────────────────────────────────────────────
@@ -170,7 +178,17 @@ class Settings(BaseSettings):
 
     @property
     def auth_configured(self) -> bool:
-        return bool(self.supabase_jwt_secret)
+        """Auth is configured if either SUPABASE_URL (ES256 JWKS) or SUPABASE_JWT_SECRET (legacy HS256) is set."""
+        return bool(self.supabase_url or self.supabase_jwt_secret)
+
+    @property
+    def auth_mode(self) -> str:
+        """Return the active auth verification mode."""
+        if self.supabase_url:
+            return "es256_jwks"
+        if self.supabase_jwt_secret:
+            return "hs256_legacy"
+        return "none"
 
     # ── Validation ────────────────────────────────────────────────────────
 
@@ -181,8 +199,8 @@ class Settings(BaseSettings):
         if self.is_production:
             if not self.database_url:
                 warnings.append("CRITICAL: DATABASE_URL not set — database operations will fail")
-            if not self.supabase_jwt_secret:
-                warnings.append("CRITICAL: SUPABASE_JWT_SECRET not set — auth verification will fail")
+            if not self.supabase_url and not self.supabase_jwt_secret:
+                warnings.append("CRITICAL: Neither SUPABASE_URL nor SUPABASE_JWT_SECRET set — auth verification will fail")
             if not self.ai_service_api_key:
                 warnings.append("WARNING: AI_SERVICE_API_KEY not set — running with API key auth DISABLED")
         else:
@@ -208,14 +226,14 @@ class Settings(BaseSettings):
             f"[config] {'PRODUCTION' if is_prod else 'DEVELOPMENT'} mode",
             f"[config]   Service port:      {self.ai_service_port}",
             f"[config]   API key auth:      {'ENABLED' if self.ai_service_api_key else 'DISABLED (dev mode)'}",
-            f"[config]   Database:          {'configured' if self.database_configured else 'not configured'}",
-            f"[config]   Supabase Auth:     {'configured' if self.auth_configured else 'not configured'}",
-            f"[config]   Supabase Storage:  {'configured' if self.storage_configured else 'not configured'}",
-            f"[config]   Gemini AI:         {'configured' if self.gemini_configured else 'not configured (GOOGLE_API_KEY missing)'}",
-            f"[config]   Neo4j:             {'configured' if self.neo4j_configured else 'not configured'}",
-            f"[config]   Roboflow:          {'configured' if self.roboflow_configured else 'not configured'}",
-            f"[config]   YOLO models:       {'custom path' if self.yolo_model_path else 'default'} + {'custom env' if self.env_model_path else 'default env'}",
-            f"[config]   Metrics log:       {self.likaslens_metrics_log if self.likaslens_metrics_log else 'disabled'}",
+            f"[config]   Database:          {'✓ configured' if self.database_configured else '✗ not configured'}",
+            f"[config]   Supabase Auth:     {'✓ configured (' + self.auth_mode + ')' if self.auth_configured else '✗ not configured'}",
+            f"[config]   Supabase Storage:  {'✓ configured' if self.storage_configured else '✗ not configured'}",
+            f"[config]   Gemini AI:         {'✓ configured' if self.gemini_configured else '✗ not configured (GOOGLE_API_KEY missing)'}",
+            f"[config]   Neo4j:             {'✓ configured' if self.neo4j_configured else '✗ not configured'}",
+            f"[config]   Roboflow:          {'✓ configured' if self.roboflow_configured else '✗ not configured'}",
+            f"[config]   YOLO models:       {'✓ custom path' if self.yolo_model_path else 'default'} + {'✓ custom env' if self.env_model_path else 'default env'}",
+            f"[config]   Metrics log:       {'✓ ' + self.likaslens_metrics_log if self.likaslens_metrics_log else '✗ disabled'}",
         ]
 
         for line in lines:
@@ -247,9 +265,17 @@ class Settings(BaseSettings):
             "supabase_auth": {
                 "status": _status(
                     self.auth_configured,
-                    ["SUPABASE_JWT_SECRET"],
-                    ["SUPABASE_JWT_SECRET"] if not self.auth_configured else [],
+                    ["SUPABASE_URL (preferred) or SUPABASE_JWT_SECRET (legacy)"],
+                    (
+                        [k for k, v in [
+                            ("SUPABASE_URL", self.supabase_url),
+                            ("SUPABASE_JWT_SECRET", self.supabase_jwt_secret),
+                        ] if not v]
+                        if not self.auth_configured
+                        else []
+                    ),
                 ),
+                "mode": self.auth_mode,
             },
             "supabase_storage": {
                 "status": _status(
