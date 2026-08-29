@@ -33,7 +33,6 @@ export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated 
   }, []);
 
   const handleSend = () => {
-    if (!isAuthenticated) return;
     const text = input.trim();
     if (!text || loading) return;
     setInput("");
@@ -126,38 +125,25 @@ export function LiksiChat({ persona = "citizen", locale = "en", isAuthenticated 
             </div>
 
             <div className="p-3 shrink-0 border-t border-border bg-panel">
-              {isAuthenticated ? (
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={t("placeholder")}
-                    disabled={loading}
-                    className="flex-1 px-3 py-2 rounded-lg text-sm theme-input"
-                  />
-                  <button
-                    onClick={handleSend}
-                    disabled={loading || !input.trim()}
-                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent text-white shrink-0 transition-all disabled:opacity-40"
-                    aria-label={t("send")}
-                  >
-                      <Send className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-1 gap-2">
-                  <p className="text-xs text-muted text-center">{t("signInPrompt")}</p>
-                  <a
-                    href="/login"
-                    className="w-full py-2 rounded-lg text-sm font-bold text-center transition-colors"
-                    style={{ background: "#2ee6c8", color: "#0d1a12", textDecoration: "none" }}
-                  >
-                    Log In
-                  </a>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={t("placeholder")}
+                  disabled={loading}
+                  className="flex-1 px-3 py-2 rounded-lg text-sm theme-input"
+                />
+                <button
+                  onClick={handleSend}
+                  disabled={loading || !input.trim()}
+                  className="flex items-center justify-center w-10 h-10 rounded-lg bg-accent text-white shrink-0 transition-all disabled:opacity-40"
+                  aria-label={t("send")}
+                >
+                    <Send className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

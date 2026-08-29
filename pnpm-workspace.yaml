@@ -1,6 +1,5 @@
 packages:
   - "apps/frontend"
-  - "apps/backend"
   - "apps/admin-portal"
   - "apps/mobile-pwa"
   - "apps/shared"
@@ -9,5 +8,8 @@ allowBuilds:
   '@swc/core': true
   core-js: true
   esbuild: true
+  protobufjs: true
   sharp: true
   unrs-resolver: true
+overrides:
+  next-intl: "^4"

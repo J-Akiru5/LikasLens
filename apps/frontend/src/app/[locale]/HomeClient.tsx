@@ -17,10 +17,6 @@ const GhostModeSection = dynamic(
   () => import("@/components/marketing/sections/ghost-mode-section").then((m) => m.GhostModeSection),
   { ssr: false }
 );
-const ScoreboardSection = dynamic(
-  () => import("@/components/marketing/sections/scoreboard-section").then((m) => m.ScoreboardSection),
-  { ssr: false }
-);
 const ImpactSection = dynamic(
   () => import("@/components/marketing/sections/impact-section").then((m) => m.ImpactSection),
   { ssr: false }
@@ -109,8 +105,6 @@ export default function HomeClient() {
         <SectionDivider variant="accent" />
         <GhostModeSection ghostMode={ghostMode} onGhostToggle={toggleGhost} />
         <SectionDivider variant="accent" />
-        <ScoreboardSection />
-        <SectionDivider />
         <ImpactSection />
         <SectionDivider variant="accent" />
         <TechStackSection />

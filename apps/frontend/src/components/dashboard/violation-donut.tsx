@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
 import { echarts, useEChartsTheme } from "./echarts-theme";
 import { useChartColors } from "./use-chart-colors";
+import { getSupabaseClient } from "@/utils/supabase/client";
 
 interface ReportsByType {
   [type: string]: number;
@@ -39,13 +40,18 @@ export function ViolationDonut() {
   useEffect(() => {
     async function fetchImpact() {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? ""}/api/public/impact`,
-          { credentials: "include" }
-        );
-        const json = await res.json();
-        if (json.success && json.data?.reports_by_type) {
-          const entries = Object.entries(json.data.reports_by_type as ReportsByType);
+        const supabase = getSupabaseClient();
+        const { data: tickets } = await supabase
+          .from("tickets")
+          .select("ai_triage_summary");
+
+        if (tickets && tickets.length > 0) {
+          const typeCounts: Record<string, number> = {};
+          tickets.forEach((t: { ai_triage_summary: string | null }) => {
+            const cat = t.ai_triage_summary || "other";
+            typeCounts[cat] = (typeCounts[cat] || 0) + 1;
+          });
+          const entries = Object.entries(typeCounts);
           setData(
             entries.map(([type, count]) => ({
               name: formatType(type),
@@ -53,9 +59,10 @@ export function ViolationDonut() {
               itemStyle: { color: TYPE_COLORS[type] ?? "#94a3b8" },
             }))
           );
+        } else {
+          throw new Error("No tickets");
         }
       } catch {
-        // Fallback mock data
         setData([
           { name: "Illegal Dumping", value: 34, itemStyle: { color: "#f87171" } },
           { name: "Water Pollution", value: 28, itemStyle: { color: "#22d3ee" } },

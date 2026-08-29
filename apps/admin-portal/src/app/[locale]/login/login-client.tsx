@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { signIn } from "@/lib/auth";
@@ -10,6 +10,8 @@ import { motion } from "framer-motion";
 
 export function LoginClient() {
   const router = useRouter();
+  const params = useParams<{ locale: string }>();
+  const locale = params?.locale || "en";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -22,7 +24,7 @@ export function LoginClient() {
     try {
       await signIn(email, password);
       showToast("Signed in successfully", "success");
-      router.push("/dashboard");
+      router.push(`/${locale}/dashboard`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "";
       if (message === "ACCESS_DENIED") {

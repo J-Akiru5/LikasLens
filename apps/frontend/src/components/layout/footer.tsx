@@ -227,7 +227,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
               </h3>
               {[
                 { href: "/#architecture", label: "Features" },
-                { href: "/#scoreboard", label: "Public Records" },
+                { href: "/public-record", label: "Public Records" },
                 { href: "/changelog", label: "Changelog" },
               ].map(link => (
                 <Link 

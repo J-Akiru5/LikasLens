@@ -257,7 +257,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
               </MagneticButton>
               <MagneticButton pull={0.15}>
                 <a
-                  href="#scoreboard"
+                  href="/public-record"
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 8,
                     padding: "13px 26px", borderRadius: 10,

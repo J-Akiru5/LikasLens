@@ -4,10 +4,6 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout, type NavItem, GlobalSearch, useNotifications } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase";
-import { initAuthRefresh } from "@/lib/auth-init";
-
-// Register the 401 token refresh handler once at app startup
-initAuthRefresh();
 import {
   LayoutDashboard,
   BarChart3,
@@ -16,7 +12,6 @@ import {
   Building2,
   Scale,
   ScrollText,
-  Gift,
   Settings,
   LogOut,
   MessageSquare,
@@ -24,7 +19,6 @@ import {
   ShieldAlert,
   Gauge,
   MapPinned,
-  Coins,
 } from "lucide-react";
 
 const SIDEBAR_NAV_ITEMS: NavItem[] = [
@@ -42,14 +36,13 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
 
   { divider: true, dividerLabel: "Community" },
   { href: "/users", label: "Users", icon: Users, roles: ["super_admin"] },
-  { href: "/rewards", label: "Rewards", icon: Gift, roles: ["super_admin", "partner"] },
   { href: "/inquiries", label: "Inquiries", icon: MessageSquare, roles: ["super_admin"] },
 
   { divider: true, dividerLabel: "System" },
   { href: "/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["super_admin"] },
   { href: "/changelog", label: "Changelog", icon: FileText, roles: ["analyst", "super_admin"] },
   { href: "/settings", label: "Settings", icon: Settings, roles: ["super_admin", "lgu", "partner"] },
-  { href: "/settings?tab=currency", label: "Currency Rates", icon: Coins, roles: ["super_admin"] },
+  { href: "/settings?tab=currency", label: "Currency Rates", icon: Settings, roles: ["super_admin"] },
 ];
 
 interface AdminDashboardLayoutWrapperProps {

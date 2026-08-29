@@ -1,9 +1,7 @@
 "use server"
 
-import { cookies } from "next/headers"
 import { createClient } from "@/utils/supabase/server"
 
-const LARAVEL_API = process.env.NEXT_PUBLIC_API_URL || ""
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -17,23 +15,7 @@ export async function deleteAccount(): Promise<{ success: boolean; error?: strin
 
   const userId = user.id
 
-  // 1. Notify Laravel backend to clean up user data
-  try {
-    const token = (await cookies()).get("laravel_token")?.value
-    if (token) {
-      await fetch(`${LARAVEL_API}/user/delete`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      })
-    }
-  } catch {
-    // Laravel offline — continue with Supabase deletion
-  }
-
-  // 2. Delete user from Supabase via Admin API
+  // Delete user from Supabase via Admin API
   if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
     return { success: false, error: "Server misconfiguration: missing service role key." }
   }
@@ -51,7 +33,7 @@ export async function deleteAccount(): Promise<{ success: boolean; error?: strin
     return { success: false, error: `Failed to delete account: ${body}` }
   }
 
-  // 3. Sign out to clear session cookies
+  // Sign out to clear session cookies
   await supabase.auth.signOut()
 
   return { success: true }

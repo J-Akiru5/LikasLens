@@ -1,16 +1,15 @@
 # 🌍 LIKASLENS MONOREPO - GLOBAL CONSTITUTION
 
 ## 1. THE ARCHITECTURAL BOUNDARIES
-You are operating within a `pnpm` monorepo with five strictly isolated environments. **NEVER** suggest mixing dependencies or syntax across these boundaries:
+You are operating within a `pnpm` monorepo with four strictly isolated environments. **NEVER** suggest mixing dependencies or syntax across these boundaries:
 * `apps/frontend`: Next.js 16 (App Router), TypeScript, Tailwind. (Public marketing website + full web app)
 * `apps/mobile-pwa`: Next.js 16 (App Router), TypeScript, Tailwind. (Installable mobile PWA with native feel)
 * `apps/admin-portal`: Next.js 16 (App Router), TypeScript, Tailwind. (Desktop admin dashboard)
 * `apps/shared`: React components, API client, TypeScript types, CSS design tokens. (Shared across all Next.js apps)
-* `apps/backend`: Laravel 12, PHP. (Core API, Session Management, Relational DB ONLY)
-* `apps/ai-service`: Python 3.12, FastAPI. (Neuro-Symbolic Logic, YOLOv8, Neo4j DB ONLY)
+* `apps/ai-service`: Python 3.12, FastAPI. (Unified API + AI service: auth, reports, tickets, AI inference, Neo4j routing)
 
 ## 2. THE CONTRACT LAW (OPENAPI)
-* The **ONLY** acceptable method of communication between `frontend`, `mobile-pwa`, `admin-portal`, `backend`, and `ai-service` is via standard REST JSON payloads defined by the project's OpenAPI specifications.
+* The **ONLY** acceptable method of communication between `frontend`, `mobile-pwa`, `admin-portal`, and `ai-service` is via standard REST JSON payloads defined by the project's OpenAPI specifications.
 * Do not create custom ad-hoc endpoints without first proposing the OpenAPI schema update.
 
 ## 3. ZERO-KNOWLEDGE & GHOST MODE PROTOCOLS
@@ -32,9 +31,8 @@ Use these defaults unless a task requires app-specific alternatives:
 * Mobile PWA build: `pnpm --filter mobile-pwa build`
 * Admin Portal only: `pnpm --filter admin-portal dev`
 * Admin Portal build: `pnpm --filter admin-portal build`
-* Backend tests: `cd apps/backend && php artisan test`
-* Backend formatting/linting: `cd apps/backend && ./vendor/bin/pint`
 * AI service run: `cd apps/ai-service && python -m uvicorn main:app --reload --host 127.0.0.1 --port 8001`
+* AI service tests: `cd apps/ai-service && python -m pytest tests/`
 
 ## 6. PROJECT NAVIGATION
 * Primary onboarding and env setup: `README.md`

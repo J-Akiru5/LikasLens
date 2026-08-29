@@ -14,28 +14,17 @@ import {
   formatNumber,
 } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/shared";
-import { Camera, ChevronRight, Gift, Award, Activity, Zap, Scale, WifiOff, RefreshCw } from "lucide-react";
+import { Camera, ChevronRight, Activity, Scale, WifiOff, RefreshCw } from "lucide-react";
 import { LargeTitle } from "@/components/native/large-title";
 import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
 import { getQueueCount } from "@likaslens/shared";
 
-interface RewardOffer {
-  id: string;
-  reward_name: string;
-  reward_type: string;
-  points_cost: number;
-  stock_quantity: number;
-  partner_store?: { name: string };
-}
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [feed, setFeed] = useState<ActivityFeedItem[]>([]);
-  const [rewards, setRewards] = useState<RewardOffer[]>([]);
-  const [walletPoints, setWalletPoints] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [rewardsLoading, setRewardsLoading] = useState(true);
   const [queueCount, setQueueCount] = useState(0);
   const haptic = useHaptics();
 
@@ -64,26 +53,13 @@ export default function DashboardPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsRes, feedRes, userRes, rewardsRes, walletRes] = await Promise.all([
+      const [statsRes, feedRes, userRes] = await Promise.all([
         laravelGet<ApiResponse<DashboardStats>>("/dashboard/stats").catch(() => null),
         getDashboardFeed().catch(() => null),
         laravelGet<any>("/user").catch(() => null),
-        laravelGet<any>("/user/rewards?per_page=10").catch(() => null),
-        laravelGet<any>("/user/wallet").catch(() => null),
       ]);
       setStats(statsRes?.data ?? null);
       setFeed(feedRes?.data ?? []);
-
-      if (rewardsRes?.success && rewardsRes.data) {
-        setRewards(rewardsRes.data);
-        setRewardsLoading(false);
-      } else {
-        setRewardsLoading(false);
-      }
-
-      if (walletRes?.success && walletRes.data) {
-        setWalletPoints(walletRes.data.available_credits ?? 0);
-      }
 
       // Offline queue count
       try {
@@ -145,22 +121,7 @@ export default function DashboardPage() {
             {timeState.greeting} <strong className="font-bold">{userName}!</strong>
           </h1>
         </div>
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "5px 11px",
-            borderRadius: 9999,
-            background: "color-mix(in oklab, var(--accent) 10%, transparent)",
-            marginBottom: 4,
-          }}
-        >
-          <Award style={{ width: 14, height: 14, color: "var(--accent)" }} />
-          <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>
-            {formatNumber(walletPoints, {}, locale)}
-          </span>
-        </div>
+
       </div>
 
       {/* ── Interactive Liksi Mascot Banner (Full Width) ─────────────────── */}
@@ -320,10 +281,10 @@ export default function DashboardPage() {
 
         {/* ── Quick actions rail ───────────────────────────────────────────── */}
         <section style={{ marginBottom: 24 }}>
-          <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", padding: "10px 6px" }}>
+          <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", padding: "10px 6px" }}>
             {[
               { href: `/${locale}/report`, label: "Report", Icon: Camera },
-              { href: `/${locale}/wallet`, label: "Wallet", Icon: Gift },
+
               { href: `/${locale}/laws`, label: "Laws", Icon: Scale },
               { href: `/${locale}/impact`, label: "Impact", Icon: Activity },
             ].map(({ href, label, Icon }) => (
@@ -344,67 +305,7 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* ── Partner offers rail (from API) ────────────────────────── */}
-        <section style={{ marginBottom: 24 }}>
-          <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
-            <h2 className="ios-section-label">Redeem eco-credits</h2>
-            <Link
-              href={`/${locale}/wallet`}
-              className="flex items-center gap-0.5"
-              style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
-            >
-              All <ChevronRight style={{ width: 14, height: 14 }} />
-            </Link>
-          </div>
-          {rewardsLoading ? (
-            <div className="flex gap-3 overflow-hidden -mx-5 px-5">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="w-[148px] shrink-0 rounded-2xl border border-ink/5 p-3.5 space-y-2 animate-pulse">
-                  <div className="w-9 h-9 rounded-xl bg-ink/10" />
-                  <div className="space-y-1.5">
-                    <div className="h-3.5 w-3/4 rounded bg-ink/10" />
-                    <div className="h-3 w-1/2 rounded bg-ink/10" />
-                  </div>
-                  <div className="h-px bg-ink/5" />
-                  <div className="h-3 w-14 rounded bg-ink/10" />
-                </div>
-              ))}
-            </div>
-          ) : rewards.length === 0 ? (
-            <div className="ios-grouped-list p-6 text-center flex flex-col items-center justify-center">
-              <Gift className="w-8 h-8 text-ink/20 mb-2" />
-              <p className="text-xs font-medium text-ink/40">No rewards available yet.</p>
-            </div>
-          ) : (
-            <div className="flex gap-3 overflow-x-auto pb-1 -mx-5 px-5 snap-x snap-mandatory scrollbar-hide">
-              {rewards.map((reward) => {
-                const partnerName = reward.partner_store?.name ?? "Partner";
-                const shortName = partnerName.slice(0, 6).toUpperCase();
-                return (
-                  <Link
-                    key={reward.id}
-                    href={`/${locale}/wallet`}
-                    className="flex-shrink-0 snap-start"
-                    style={{ width: 148, background: "var(--panel)", border: "1px solid var(--border)", borderRadius: 16, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}
-                  >
-                    <div className="ios-row-icon" style={{ background: "color-mix(in oklab, var(--accent) 10%, transparent)", width: 36, height: 36 }}>
-                      <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, color: "var(--accent)" }}>
-                        {shortName.slice(0, 3)}
-                      </span>
-                    </div>
-                    <div>
-                      <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 700, color: "var(--ink)", margin: 0 }}>{reward.reward_name}</p>
-                      <p style={{ fontFamily: "var(--font-body)", fontSize: 11, color: "var(--muted)", margin: "2px 0 0" }}>{partnerName}</p>
-                    </div>
-                    <div style={{ marginTop: "auto", paddingTop: 8, borderTop: "1px solid var(--border)" }}>
-                      <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent)" }}>{reward.points_cost} pts</span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          )}
-        </section>
+
 
         {/* ── Recent activity — grouped rows ──────────────────────────────── */}
         <section>

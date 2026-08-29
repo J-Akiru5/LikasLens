@@ -31,7 +31,7 @@ beforeEach(() => {
   vi.spyOn(crypto, "randomUUID").mockImplementation(
     (() => {
       let n = 0;
-      return () => `int-${String(++n).padStart(6, "0")}`;
+      return () => `int-${String(++n).padStart(6, "0")}` as ReturnType<typeof crypto.randomUUID>;
     })(),
   );
 });

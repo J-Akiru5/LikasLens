@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LikasLens Presentation Reality Check</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #070b14;
+      color: #e2e8f0;
+      line-height: 1.6;
+      padding: 32px 24px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+    .subtitle { color: #94a3b8; font-size: 1.05rem; margin-bottom: 40px; }
+    .badge-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 36px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 100px; font-size: 0.8rem; font-weight: 600;
+    }
+    .badge-red { background: rgba(239,68,68,.18); color: #fca5a5; }
+    .badge-yellow { background: rgba(234,179,8,.15); color: #fde68a; }
+    .badge-green { background: rgba(34,197,94,.15); color: #86efac; }
+    .badge-blue { background: rgba(59,130,246,.15); color: #93c5fd; }
+
+    .section-title {
+      font-size: 1.3rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px;
+      border-bottom: 1px solid rgba(148,163,184,.15);
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    .card {
+      background: #0f172a; border: 1px solid rgba(148,163,184,.1);
+      border-radius: 14px; padding: 24px; transition: border-color .2s;
+    }
+    .card:hover { border-color: rgba(148,163,184,.2); }
+
+    .claim-label {
+      display: inline-block; font-size: .7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .05em; padding: 2px 10px; border-radius: 6px; margin-bottom: 10px;
+    }
+    .claim-label.presentation { background: #1e3a5f; color: #93c5fd; }
+    .claim-label.codebase { background: #1a3a2a; color: #86efac; }
+
+    .card h3 { font-size: 1rem; margin-bottom: 6px; }
+    .card p { font-size: .92rem; color: #cbd5e1; margin-bottom: 4px; }
+    .card .meta { font-size: .82rem; color: #64748b; }
+
+    .verdict {
+      margin-top: 14px; padding: 10px 14px; border-radius: 8px; font-size: .85rem; font-weight: 500;
+    }
+    .verdict.match { background: rgba(34,197,94,.1); border-left: 3px solid #22c55e; color: #86efac; }
+    .verdict.partial { background: rgba(234,179,8,.1); border-left: 3px solid #eab308; color: #fde68a; }
+    .verdict.mismatch { background: rgba(239,68,68,.1); border-left: 3px solid #ef4444; color: #fca5a5; }
+    .verdict.missing { background: rgba(239,68,68,.15); border-left: 3px solid #dc2626; color: #fca5a5; }
+
+    .severity-tag {
+      display: inline-block; font-size: .7rem; font-weight: 700; padding: 2px 10px;
+      border-radius: 100px; margin-left: 8px; vertical-align: middle;
+    }
+    .severity-tag.critical { background: rgba(239,68,68,.25); color: #fca5a5; }
+    .severity-tag.high { background: rgba(239,68,68,.15); color: #fda4af; }
+    .severity-tag.medium { background: rgba(234,179,8,.15); color: #fde68a; }
+    .severity-tag.low { background: rgba(59,130,246,.15); color: #93c5fd; }
+
+    table {
+      width: 100%; border-collapse: collapse; font-size: .9rem; margin-bottom: 24px;
+    }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(148,163,184,.08); }
+    th { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
+    tr:hover td { background: rgba(148,163,184,.03); }
+    .effort { display: inline-flex; align-items: center; gap: 4px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 2px; }
+    .dot-1 { background: #22c55e; } .dot-2 { background: #86efac; }
+    .dot-3 { background: #fde68a; } .dot-4 { background: #fda4af; } .dot-5 { background: #fca5a5; }
+
+    .summary-box {
+      background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
+      border: 1px solid rgba(148,163,184,.12); border-radius: 14px; padding: 28px;
+      margin-top: 16px;
+    }
+    .summary-box h2 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
+    .summary-box ul { padding-left: 20px; }
+    .summary-box li { margin-bottom: 6px; color: #cbd5e1; }
+    .summary-box li strong { color: #e2e8f0; }
+
+    .pipeline-flow {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      flex-wrap: wrap; margin: 20px 0 8px;
+    }
+    .pipeline-flow .step {
+      background: #1e293b; border: 1px solid rgba(148,163,184,.12); border-radius: 10px;
+      padding: 12px 18px; text-align: center; font-size: .82rem; font-weight: 500;
+      flex: 1; min-width: 100px;
+    }
+    .pipeline-flow .arrow { color: #475569; font-size: 1.2rem; font-weight: 300; }
+    .pipeline-flow .step .sub { font-size: .7rem; color: #64748b; font-weight: 400; margin-top: 2px; }
+
+    footer { text-align: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid rgba(148,163,184,.08); color: #475569; font-size: .85rem; }
+
+    @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>LikasLens Master Presentation</h1>
+  <p class="subtitle">Reality Check &amp; Improvement Analysis &mdash; comparing the 10-minute IPOPHL script against what the actual codebase delivers.</p>
+
+  <div class="badge-row">
+    <span class="badge badge-red">8 gaps identified</span>
+    <span class="badge badge-yellow">2 critical</span>
+    <span class="badge badge-blue">5 apps analyzed</span>
+    <span class="badge badge-green">22 claims verified</span>
+  </div>
+
+  <!-- SECTION 1 -->
+  <h2 class="section-title">Section 1 &mdash; Technical Description &amp; System Design</h2>
+  <div class="grid-2">
+    <div class="card">
+      <span class="claim-label presentation">Presentation Claim</span>
+      <h3>&ldquo;Three main parts: web portal, secure backend, dedicated AI service&rdquo;</h3>
+      <p>Built with separate independent blocks, reliable, easy to update, secure against data loss.</p>
+      <span class="claim-label codebase" style="margin-top:12px;display:inline-block;">Codebase Reality</span>
+      <p><strong>5 apps + 1 shared lib:</strong> <code>frontend</code> (public web), <code>mobile-pwa</code> (installable PWA), <code>admin-portal</code> (admin dashboard), <code>backend</code> (Laravel), <code>ai-service</code> (Python FastAPI), <code>shared</code> (common UI, types, API client).</p>
+      <div class="verdict partial">Partial mismatch &mdash; script undersells. The true count is 5 services, not 3. The mobile-pwa and admin-portal are distinct first-class apps. This is actually a <em>stronger</em> story &mdash; update the script to reflect it.</div>
+    </div>
+    <div class="card">
+      <span class="claim-label presentation">Presentation Claim</span>
+      <h3>&ldquo;Works smoothly even without stable internet&rdquo;</h3>
+      <p>Perfect for coastal and farming towns.</p>
+      <span class="claim-label codebase" style="margin-top:12px;display:inline-block;">Codebase Reality</span>
+      <p>Offline queue (IndexedDB + localStorage), service worker with stale-while-revalidate, offline fallback page, background sync for queued reports. Fully real.</p>
+      <div class="verdict match">Verified &mdash; genuinely implemented</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <h2 class="section-title" style="margin-top:28px;">Section 2 &mdash; Dual-Layer AI Pipeline</h2>
+  <div class="grid-2">
+    <div class="card">
+      <span class="claim-label presentation">Presentation Claim</span>
+      <h3>&ldquo;Smart Dual-Layer AI Pipeline&rdquo;</h3>
+      <p>First, visual AI spots violations. Second, checks against Philippine environmental laws using an organized data network.</p>
+      <span class="claim-label codebase" style="margin-top:12px;display:inline-block;">Codebase Reality</span>
+      <p>The term <strong>&ldquo;Dual-Layer&rdquo;</strong> doesn't appear in code, but the pipeline <strong>is real and sophisticated</strong>. However it is actually <em>triple-layer</em>:</p>
+      <div class="pipeline-flow">
+        <div class="step">YOLOv8<br><span class="sub">COCO + waste + Roboflow<br>multi-source fusion</span></div>
+        <span class="arrow">→</span>
+        <div class="step">Neo4j GraphRAG<br><span class="sub">16 PH laws · 18 hazard types<br>vector embedding fallback</span></div>
+        <span class="arrow">→</span>
+        <div class="step">Gemini 2.5 Flash<br><span class="sub">grounded synthesis<br>incident report</span></div>
+      </div>
+      <div class="verdict partial">Accurate in spirit, terminology needs alignment &mdash; either rename to &ldquo;Triple-Layer AI Pipeline&rdquo; or merge GraphRAG + Gemini as the &ldquo;second layer.&rdquo;</div>
+    </div>
+    <div class="card">
+      <span class="claim-label presentation">Presentation Claim</span>
+      <h3>&ldquo;AI Liksi &mdash; conversational assistant on the web portal&rdquo;</h3>
+      <p>Explains complicated legal language in simple terms. Helps local government staff understand violations.</p>
+      <span class="claim-label codebase" style="margin-top:12px;display:inline-block;">Codebase Reality</span>
+      <p><strong>True on frontend &amp; admin-portal:</strong> Both mount the real <code>LiksiChat</code> component (from shared) with API-backed conversational AI via Gemini.<br><br>
+      <span style="color:#fca5a5;font-weight:600;">⚠ CRITICAL GAP on mobile-pwa:</span> Liksi is only a rotating banner of 4 hardcoded messages. <strong>No interactive chat, no API call, no user input.</strong> The component already exists in <code>@likaslens/shared</code> &mdash; mobile just needs to wire it in.</p>
+      <div class="verdict missing">Critical gap &mdash; the app citizens actually use (mobile-pwa) does not have real AI Liksi</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <h2 class="section-title" style="margin-top:28px;">Section 3 &mdash; Ghost Mode &amp; Anonymization</h2>
+  <div class="grid-2">
+    <div class="card">
+      <span class="claim-label presentation">Presentation Claim</span>
+      <h3>&ldquo;Ghost Mode strips all hidden tracking data &amp; replaces with anonymous ID&rdquo;</h3>
+      <p>EXIF stripped, GPS fuzzed, identity hidden.</p>
+      <span class="claim-label codebase" style="margin-top:12px;display:inline-block;">Codebase Reality</span>
+      <p>Fully implemented across the entire stack:</p>
+      <p style="font-size:.88rem;">• <strong>Client-side EXIF stripping</strong> via canvas re-encode (all 3 Next.js apps)<br>
+      • <strong>Server-side EXIF stripping</strong> via Imagick + GD fallback (Laravel)<br>
+      • <strong>GPS fuzzing</strong> via <code>LocationFuzzService</code> (snaps to nearest barangay centroid)<br>
+      • <strong>Anonymous user ID</strong> <code>00000000-0000-0000-0000-000000000000</code><br>
+      • <strong>Theme changes</strong> (navy page, gold accent, teal secondary)<br>
+      • <strong>Timeline masking</strong> for ghost reporters<br>
+      • <strong>Notification suppression</strong> for ghost users</p>
+      <div class="verdict match">Fully verified &mdash; this is the most complete feature in the codebase</div>
+    </div>
+    <div class="card">
+      <span class="claim-label presentation">Presentation Claim</span>
+      <h3>&ldquo;exact camera details and specific phone location records stripped before the report is sent&rdquo;</h3>
+      <p>EXIF removal at capture time.</p>
+      <span class="claim-label codebase" style="margin-top:12px;display:inline-block;">Codebase Reality</span>
+      <p><code>exif-stripper.ts</code> (shared) provides <code>stripExif()</code> and <code>stripExifFromFile()</code>. Called in <code>report/page.tsx</code> and <code>camera-test/page.tsx</code>. The <code>exif_removed_at</code> timestamp is stored on every <code>TicketEvidence</code> record. Server-side also re-strips as a secondary step.</p>
+      <div class="verdict match">Fully verified</div>
+    </div>
+  </div>
+
+  <!-- SECTION 4 -->
+  <h2 class="section-title" style="margin-top:28px;">Section 4 &mdash; UN SDG Alignment</h2>
+  <div class="grid-2">
+    <div class="card" style="grid-column:1/-1;">
+      <span class="claim-label presentation">Presentation Claim</span>
+      <h3>Six specific SDG goals with detailed &ldquo;How LikasLens Helps&rdquo; mapping (SDG 13, 14, 15, 11, 10, 16)</h3>
+      <span class="claim-label codebase" style="margin-top:12px;display:inline-block;">Codebase Reality</span>
+      <p style="color:#fca5a5;font-weight:600;">⚠ CRITICAL GAP &mdash; This entire section is fabricated from an implementation standpoint.</p>
+      <p><strong>Zero SDG references exist anywhere in the codebase.</strong> No SDG model, no SDG dashboard, no SDG filtering, no SDG-CSR attribution per report. The only implicit connection is that the app is environmentally-focused.<br><br>
+      The <code>is_redd_eligible</code> field on tickets is the closest analogue (REDD+ MRV tracking), but REDD+ is not an SDG.</p>
+      <div class="verdict missing">Completely missing &mdash; audience can be shown nothing to back up any SDG claim</div>
+    </div>
+  </div>
+
+  <!-- SECTION 5 -->
+  <h2 class="section-title" style="margin-top:28px;">Section 5 &mdash; Verification Suite &amp; Deployment</h2>
+  <div class="grid-2">
+    <div class="card">
+      <span class="claim-label presentation">Presentation Claim</span>
+      <h3>&ldquo;57 automated verification routines&rdquo;</h3>
+      <p>Tested stability under real-world conditions.</p>
+      <span class="claim-label codebase" style="margin-top:12px;display:inline-block;">Codebase Reality</span>
+      <p><strong>Count is unverifiable.</strong> What exists:</p>
+      <ul style="font-size:.88rem;padding-left:18px;color:#94a3b8;">
+        <li>Backend: 7 test files (~200 lines)</li>
+        <li>ai-service: 1 test file (308 lines, roboflow_client only)</li>
+        <li>Frontend: scattered unit tests (exif-stripper, useCamera)</li>
+        <li>Admin-portal: <strong>zero tests</strong></li>
+      </ul>
+      <p>Total is significantly less than 57. The claim is unsupported.</p>
+      <div class="verdict partial">Unverifiable &mdash; real count is likely ~15-20. Either write 57 tests or lower the number.</div>
+    </div>
+    <div class="card">
+      <span class="claim-label presentation">Presentation Claim</span>
+      <h3>&ldquo;Pilot testing with ISUFST in Iloilo, Western Visayas&rdquo;</h3>
+      <span class="claim-label codebase" style="margin-top:12px;display:inline-block;">Codebase Reality</span>
+      <p>Iloilo locations exist in Neo4j seed data (Iloilo City, Iloilo Province, Western Visayas). The knowledge graph lists these as default locations. But:</p>
+      <ul style="font-size:.88rem;padding-left:18px;color:#94a3b8;">
+        <li>Zero ISUFST-specific code</li>
+        <li>No ISUFST tenant seeding</li>
+        <li>No pilot-mode flag or configuration</li>
+        <li>No partnership branding</li>
+      </ul>
+      <div class="verdict missing">No code representation &mdash; the demo cannot show any ISUFST-specific workflow</div>
+    </div>
+  </div>
+
+  <!-- END-TO-END PIPELINE -->
+  <h2 class="section-title" style="margin-top:36px;">True End-to-End Pipeline (What Actually Exists)</h2>
+  <div class="pipeline-flow" style="margin-bottom:24px;">
+    <div class="step">Camera Capture<br><span class="sub">mobile-pwa / frontend</span></div>
+    <span class="arrow">→</span>
+    <div class="step">EXIF Stripping<br><span class="sub">client-side canvas</span></div>
+    <span class="arrow">→</span>
+    <div class="step">Ghost Mode<br><span class="sub">GPS fuzzing &amp; identity masking</span></div>
+    <span class="arrow">→</span>
+    <div class="step">Report Submission<br><span class="sub">offline queue or direct API</span></div>
+    <span class="arrow">→</span>
+    <div class="step">YOLOv8 Analysis<br><span class="sub">ai-service / backend triage</span></div>
+    <span class="arrow">→</span>
+    <div class="step">Neo4j GraphRAG<br><span class="sub">law &amp; agency retrieval</span></div>
+    <span class="arrow">→</span>
+    <div class="step">Gemini Synthesis<br><span class="sub">grounded incident report</span></div>
+    <span class="arrow">→</span>
+    <div class="step">Admin Triage<br><span class="sub">admin-portal queue</span></div>
+    <span class="arrow">→</span>
+    <div class="step">Timeline &amp; Blockchain<br><span class="sub">transparency record</span></div>
+  </div>
+
+  <!-- MASTER TABLE -->
+  <h2 class="section-title" style="margin-top:36px;">All Gaps at a Glance</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Gap</th><th>Severity</th><th>Effort</th><th>Fix</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>SDG tracking &amp; visualization</strong> &mdash; all 6 SDG claims unsupported</td>
+        <td><span class="severity-tag critical">CRITICAL</span></td>
+        <td><span class="effort"><span class="dot dot-4"></span><span class="dot dot-4"></span><span class="dot dot-4"></span><span class="dot dot-4"></span> 1-2 weeks</span></td>
+        <td>Add <code>sdg_goals</code> to reports/tickets, create SDG dashboard in admin portal, surface SDG stats in impact pages</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>Mobile-pwa Liksi is a decorative banner</strong> &mdash; not a real chatbot</td>
+        <td><span class="severity-tag critical">CRITICAL</span></td>
+        <td><span class="effort"><span class="dot dot-1"></span> 1-2 days</span></td>
+        <td>Wire existing <code>LiksiChat</code> from shared into mobile-pwa layout (same integration pattern as frontend)</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>&ldquo;57 automated verification routines&rdquo; unverifiable</td>
+        <td><span class="severity-tag high">HIGH</span></td>
+        <td><span class="effort"><span class="dot dot-3"></span><span class="dot dot-3"></span><span class="dot dot-3"></span> 1 week</span></td>
+        <td>Write ~57 total tests (15 backend + 10 ai-service + 10 frontend + 10 mobile + 12 admin) or adjust script number to match actual count</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>ISUFST pilot partnership</strong> &mdash; no code representation</td>
+        <td><span class="severity-tag high">HIGH</span></td>
+        <td><span class="effort"><span class="dot dot-1"></span><span class="dot dot-1"></span> 1-2 days</span></td>
+        <td>Add ISUFST tenant seed, pilot-mode flag, ISUFST admin user, demo configuration</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>&ldquo;3 main parts&rdquo; undersells the actual 5-service architecture</td>
+        <td><span class="severity-tag low">LOW</span></td>
+        <td><span class="effort"><span class="dot dot-1"></span> Script fix</span></td>
+        <td>Update script to say &ldquo;5 independent services working together&rdquo;</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>&ldquo;Dual-Layer&rdquo; terminology vs actual triple-layer pipeline</td>
+        <td><span class="severity-tag low">LOW</span></td>
+        <td><span class="effort"><span class="dot dot-1"></span> Script fix</span></td>
+        <td>Rename to &ldquo;Triple-Layer AI Pipeline&rdquo; or reclassify GraphRAG + Gemini as second layer</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong>On-device ONNX inference</strong> &mdash; models exist, hook exists, no consumer</td>
+        <td><span class="severity-tag medium">MEDIUM</span></td>
+        <td><span class="effort"><span class="dot dot-2"></span><span class="dot dot-2"></span><span class="dot dot-2"></span> 3-5 days</span></td>
+        <td>Wire camera capture page to optionally run local ONNX inference as pre-triage step</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><strong>Push notifications</strong> &mdash; SW hooks exist, no subscription code</td>
+        <td><span class="severity-tag medium">MEDIUM</span></td>
+        <td><span class="effort"><span class="dot dot-1"></span><span class="dot dot-1"></span> 1-2 days</span></td>
+        <td>Add push permission request + subscription in mobile-pwa settings</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SUMMARY -->
+  <div class="summary-box">
+    <h2>Summary for the PM</h2>
+    <ul>
+      <li><strong>2 critical gaps must be addressed before the shoot:</strong> SDG tracking (#1) and mobile Liksi (#2). The presentation makes specific claims that a live demo or Q&amp;A will expose.</li>
+      <li><strong>2 high-severity gaps weaken credibility:</strong> The &ldquo;57 tests&rdquo; claim can be challenged by technical judges (#3). The ISUFST claim is an easy &ldquo;show us&rdquo; trap (#4).</li>
+      <li><strong>4 low/medium gaps</strong> are optional refinements that improve the narrative but won't break the presentation if left unfixed.</li>
+      <li><strong>22 claims verified as accurate</strong> &mdash; particularly Ghost Mode, EXIF stripping, GPS anonymization, offline support, PWA features, camera integration, and the core AI pipeline. The product is genuinely solid; the script just over-reaches in 2 areas and undersells in 1.</li>
+      <li><strong>Recommendation:</strong> Fix #1 and #2 before filming. Update #3 and #4 in the script to use defensible numbers/claims. The rest can ship as-is.</li>
+    </ul>
+  </div>
+
+  <footer>
+    LikasLens &mdash; Reality Check v1.0 &bull; Generated from full codebase audit (backend, ai-service, frontend, mobile-pwa, admin-portal, shared)
+  </footer>
+</div>
+</body>
+</html>

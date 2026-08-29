@@ -8,7 +8,7 @@ import {
   User,
   LogOut,
   ChevronRight,
-  Award,
+
   Settings,
   Edit2,
   History,
@@ -35,7 +35,7 @@ import { MobileProfileSkeleton } from "@likaslens/shared";
 const ACCOUNT_ITEMS = [
   { href: "/history", label: "Report history", Icon: History, tint: "var(--accent)" },
   { href: "/offline-queue", label: "Offline Queue", Icon: WifiOff, tint: "var(--amber)" },
-  { href: "/achievements", label: "Achievements", Icon: Award, tint: "#b8860b" },
+
   { href: "/settings", label: "Settings", Icon: Settings, tint: "var(--muted)" },
 ];
 
@@ -76,7 +76,7 @@ export default function ProfilePage() {
     haptic("warning");
     const supabase = createClient();
     await supabase.auth.signOut();
-    document.cookie = "laravel_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+
     router.push(`/${locale}/login`);
   }
 

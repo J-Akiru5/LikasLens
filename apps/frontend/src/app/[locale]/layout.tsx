@@ -2,7 +2,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { locales } from "@likaslens/shared";
 import JsonLd from "@/components/seo/JsonLd";
-import { AuthRefreshInit } from "@/lib/auth-init";
 import { createClient } from "@/utils/supabase/server";
 import { LocaleLayoutClient } from "@/components/layout/locale-layout-client";
 
@@ -32,7 +31,6 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
       <JsonLd locale={locale} />
-      <AuthRefreshInit />
       <LocaleLayoutClient locale={locale} isAuthenticated={isAuthenticated}>
         {children}
       </LocaleLayoutClient>

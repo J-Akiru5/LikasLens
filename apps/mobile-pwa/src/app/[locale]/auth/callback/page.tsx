@@ -4,7 +4,6 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { laravelPost } from "@likaslens/shared";
 
 function CallbackHandler() {
   const router = useRouter();
@@ -29,23 +28,6 @@ function CallbackHandler() {
         if (!data.session?.user) {
           setError("No user session returned");
           return;
-        }
-
-        // Sync with Laravel to get Sanctum token
-        try {
-          const laravelData = await laravelPost<any>("/auth/sync", {
-            supabase_auth_user_id: data.session.user.id,
-            email: data.session.user.email,
-            name: data.session.user.user_metadata?.full_name || data.session.user.email?.split("@")[0],
-          });
-
-          if (laravelData?.data?.token) {
-            const token = laravelData.data.token;
-            const isSecure = window.location.protocol === "https:";
-            document.cookie = `laravel_token=${token}; path=/; max-age=2592000; SameSite=Strict${isSecure ? "; Secure" : ""}`;
-          }
-        } catch {
-          // Sync failure is non-blocking
         }
 
         // Redirect to the original destination or dashboard

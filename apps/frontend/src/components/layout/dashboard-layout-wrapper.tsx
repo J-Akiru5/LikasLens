@@ -9,17 +9,17 @@ import {
   FileText,
   Scale,
   Camera,
-  Trophy,
   User,
   BarChart3,
   Network,
   WifiOff,
+  Globe,
 } from "lucide-react";
 import { UserNav } from "./user-nav";
 
 const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true },
-  { href: "/scoreboard", label: "Scoreboard", icon: Trophy },
+  { href: "/public-record", label: "Public Record", icon: Globe },
   
   { divider: true, dividerLabel: "Analytics" },
   { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },

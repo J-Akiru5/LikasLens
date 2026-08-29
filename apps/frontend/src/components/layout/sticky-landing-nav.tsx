@@ -21,7 +21,6 @@ import { UserNav } from "./user-nav";
 const NAV_LINKS = [
   { href: "#how-it-works", label: "How It Works" },
   { href: "#ghost", label: "Ghost Mode" },
-  { href: "#scoreboard", label: "Records" },
   { href: "#impact", label: "Impact" },
   { href: "#architecture", label: "Architecture" },
   { href: "#faq", label: "FAQ" },

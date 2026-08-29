@@ -19,7 +19,6 @@ export { ThemeToggle } from "./theme-toggle";
 export { OnlineStatusBar } from "./online-status";
 export { StatsCards } from "./stats-cards";
 export { ActivityFeed } from "./activity-feed";
-export { PublicScoreboard } from "./public-scoreboard";
 export { FaqSection } from "./faq-section";
 export { AchievementCard } from "./achievement-card";
 export { RecentMilestonesWidget } from "./recent-unlocks-widget";

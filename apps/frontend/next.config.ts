@@ -9,6 +9,18 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   transpilePackages: ["@likaslens/shared"],
   turbopack: {},
+  redirects: async () => [
+    {
+      source: "/scoreboard",
+      destination: "/public-record",
+      permanent: false,
+    },
+    {
+      source: "/:locale/scoreboard",
+      destination: "/:locale/public-record",
+      permanent: false,
+    },
+  ],
   images: {
     qualities: [70, 75, 85],
     remotePatterns: [
