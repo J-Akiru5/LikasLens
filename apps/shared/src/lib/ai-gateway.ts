@@ -27,6 +27,8 @@ export interface AIGatewayConfig {
   timeoutMs: number;
   /** Health check cache TTL in milliseconds */
   healthCacheTtlMs: number;
+  /** Optional service-to-service API key (sent as X-API-Key) */
+  apiKey?: string;
 }
 
 export interface ChatMessage {
@@ -36,11 +38,12 @@ export interface ChatMessage {
 
 export interface ChatRequest {
   message: string;
-  context_mode?: "citizen" | "lgu" | "admin";
+  locale?: string;
   ticket_id?: string;
   conversation_id?: string;
   messages?: ChatMessage[];
-  system_prompt?: string;
+  /** Supabase access token — forwarded as Authorization: Bearer <token> */
+  authToken?: string;
 }
 
 export interface ChatResponse {
@@ -142,9 +145,15 @@ export class AIGateway {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 3000);
 
+      const headers: Record<string, string> = {};
+      if (this.config.apiKey) {
+        headers["X-API-Key"] = this.config.apiKey;
+      }
+
       const res = await fetch(`${url}/health`, {
         signal: controller.signal,
         method: "GET",
+        headers,
       });
       clearTimeout(timer);
       return res.ok;
@@ -163,12 +172,27 @@ export class AIGateway {
       this.config.timeoutMs
     );
 
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    // User identity — forwarded from Supabase session in the calling route
+    if (request.authToken) {
+      headers["Authorization"] = `Bearer ${request.authToken}`;
+    }
+
+    // Service-to-service authentication
+    if (this.config.apiKey) {
+      headers["X-API-Key"] = this.config.apiKey;
+    }
+
     try {
+      const { authToken: _authToken, ...body } = request;
       const res = await fetch(`${url}/api/v1/liksi/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         signal: controller.signal,
-        body: JSON.stringify(request),
+        body: JSON.stringify(body),
       });
 
       clearTimeout(timer);

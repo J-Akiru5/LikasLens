@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liksi Persona/Auth Security Hardening — Reconciliation Report</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; color: #1a1a1a; }
+        h1 { border-bottom: 2px solid #e53e3e; padding-bottom: 0.5rem; }
+        h2 { color: #2d3748; margin-top: 2rem; }
+        .severity { background: #fed7d7; color: #9b2c2c; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9em; }
+        .fixed { background: #c6f6d5; color: #276749; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9em; }
+        code { background: #edf2f7; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+        pre { background: #2d3748; color: #e2e8f0; padding: 1rem; border-radius: 6px; overflow-x: auto; }
+        .timeline { border-left: 3px solid #e53e3e; padding-left: 1rem; margin: 1rem 0; }
+        .timeline .entry { margin-bottom: 1rem; }
+        .timeline .date { font-weight: bold; color: #718096; }
+        table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+        th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: left; }
+        th { background: #edf2f7; }
+    </style>
+</head>
+<body>
+
+<h1>Liksi Persona/Auth Security Hardening</h1>
+<p><span class="fixed">RECONCILED</span> — 2026-08-29</p>
+
+<h2>TL;DR</h2>
+<p>A server-authoritative persona derivation fix was reviewed and approved across three cycles on <code>feature/jeff/liksi-persona-auth-hardening</code>, but never merged. A subsequent branch (<code>feature/jeff/ai-route-adapters</code>) reintroduced the vulnerability in three places. This report documents the regression and its reconciliation.</p>
+
+<h2>The Vulnerability</h2>
+<p><span class="severity">SECURITY</span> The original route handlers trusted client-supplied <code>context_mode</code> and <code>system_prompt</code> fields. An unauthenticated user could:</p>
+<ul>
+    <li>Send <code>context_mode: "admin"</code> or <code>context_mode: "lgu"</code> to impersonate an officer</li>
+    <li>Inject an arbitrary <code>system_prompt</code> to override the AI's persona and instructions</li>
+    <li>The server would use these values directly without verifying the caller's identity</li>
+</ul>
+
+<h2>Timeline</h2>
+<div class="timeline">
+    <div class="entry">
+        <span class="date">~2026-08-28</span>
+        <p><code>feature/jeff/liksi-persona-auth-hardening</code> created. Server-authoritative persona derivation: role derived from Supabase JWT, locale validated against allow-list, client <code>context_mode</code>/<code>system_prompt</code> never trusted. Reviewed and approved across three cycles. <strong>Never merged.</strong></p>
+    </div>
+    <div class="entry">
+        <span class="date">2026-08-29</span>
+        <p><code>feature/jeff/ai-route-adapters</code> branched from development (before the fix). Created per-app route adapters (frontend, admin-portal, mobile-pwa) with correct architecture (<code>createClient()</code> from each app's own supabase util). However, because it branched before the security fix, it reintroduced the original vulnerability in all three new route files — now three instances instead of one.</p>
+    </div>
+    <div class="entry">
+        <span class="date">2026-08-29</span>
+        <p><code>fix/reconcile-persona-auth-security</code> created. Reapplied the approved fix from <code>feature/jeff/liksi-persona-auth-hardening</code> to all affected files. This is the <strong>second time</strong> this fix has needed re-establishing.</p>
+    </div>
+</div>
+
+<h2>Root Cause</h2>
+<p>The fix was approved but never merged into development. When a later branch (<code>ai-route-adapters</code>) created new route handlers, it branched from the unfixed state of development. The new routes correctly used per-app <code>createClient()</code> (the architectural improvement), but inherited the vulnerable pattern of forwarding client-trusted <code>context_mode</code>/<code>system_prompt</code>.</p>
+<p>This is the second time this fix has needed re-establishing — the first was the original review cycle itself. The pattern is: approved work sits unmerged, subsequent work branches from the unfixed state, vulnerability reappears.</p>
+
+<h2>What Was Fixed</h2>
+
+<h3>Python (ai-service)</h3>
+<table>
+    <tr><th>File</th><th>Change</th></tr>
+    <tr><td><code>routers/liksi.py</code></td><td>Server derives role from JWT <code>user_metadata.role</code>. <code>LiksiChatRequest</code> no longer accepts <code>context_mode</code> or <code>system_prompt</code>. Only <code>locale</code> is accepted (validated server-side).</td></tr>
+    <tr><td><code>services/liksi_service.py</code></td><td>Added <code>validate_locale()</code> against allow-list (<code>en</code>, <code>fil</code>, <code>vi</code>, <code>id</code>, <code>ms</code>, <code>ta</code>, <code>th</code>). Unknown locales fall back to English. <code>get_system_prompt()</code> now takes locale parameter.</td></tr>
+    <tr><td><code>auth/supabase_jwt.py</code></td><td>Reads JWT secret from centralized <code>config.settings</code> instead of <code>os.environ</code>.</td></tr>
+    <tr><td><code>config.py</code></td><td>New centralized configuration module. All env vars loaded once via pydantic-settings.</td></tr>
+</table>
+
+<h3>TypeScript (shared + 3 apps)</h3>
+<table>
+    <tr><th>File</th><th>Change</th></tr>
+    <tr><td><code>apps/shared/ai-gateway.ts</code></td><td>Restored <code>authToken</code> and <code>locale</code> to <code>ChatRequest</code>. Restored <code>apiKey</code> to <code>AIGatewayConfig</code>. Gateway sends <code>Authorization: Bearer &lt;token&gt;</code> and <code>X-API-Key</code> headers. Strips <code>authToken</code> from JSON body before serializing.</td></tr>
+    <tr><td><code>frontend/.../chat/route.ts</code></td><td>Passes <code>session?.access_token</code> as <code>authToken</code>. Forwards <code>body.locale</code>. No longer forwards <code>body.context_mode</code> or <code>body.system_prompt</code>. Adds <code>apiKey</code> to config.</td></tr>
+    <tr><td><code>admin-portal/.../chat/route.ts</code></td><td>Same as frontend.</td></tr>
+    <tr><td><code>mobile-pwa/.../chat/route.ts</code></td><td>Same as frontend.</td></tr>
+    <tr><td>All 3 health routes</td><td>Added <code>apiKey</code> to config (was missing — same regression pattern).</td></tr>
+</table>
+
+<h2>Verification</h2>
+<ul>
+    <li>All three Next.js apps (frontend, admin-portal, mobile-pwa) build clean with TypeScript passing.</li>
+    <li>Python test suite: 33/33 tests pass (<code>test_roboflow_client.py</code>). <code>test_e2e_migration.py</code> has pre-existing <code>asyncpg</code> import error (unrelated).</li>
+    <li>Security properties confirmed by code inspection:
+        <ul>
+            <li>Server-authoritative persona derivation: role from JWT, not client input</li>
+            <li>Locale validated against allow-list, unknown falls back to English</li>
+            <li>Token forwarded as Authorization header, stripped from body</li>
+            <li>API key forwarded as X-API-Key header when configured</li>
+        </ul>
+    </li>
+</ul>
+
+<h2>Lesson Learned</h2>
+<p>This is the second time this fix has needed re-establishing. The root cause is the same both times: approved work sits unmerged, subsequent work branches from the unfixed state. <strong>Merge security fixes immediately upon approval.</strong> Do not let them sit in review branches while other work continues.</p>
+
+</body>
+</html>

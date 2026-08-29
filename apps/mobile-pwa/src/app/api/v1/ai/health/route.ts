@@ -17,6 +17,7 @@ function getConfig(): AIGatewayConfig {
     fallbackUrl: process.env.LOCAL_AI_URL || "http://127.0.0.1:8001",
     timeoutMs: parseInt(process.env.AI_TIMEOUT_MS || "5000", 10),
     healthCacheTtlMs: parseInt(process.env.AI_HEALTH_CACHE_TTL || "30000", 10),
+    apiKey: process.env.AI_SERVICE_API_KEY || undefined,
   };
 }
 

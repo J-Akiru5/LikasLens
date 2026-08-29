@@ -1,8 +1,13 @@
 """
 POST /api/v1/liksi/chat — Context-aware Liksi chat with Citizen and LGU modes.
 Extends the existing /api/v1/chat endpoint with system prompt scoping + ticket context injection.
+
+Authorization is server-authoritative: the caller's role is derived from their
+Supabase JWT (optional_auth). The client may only suggest a locale preference;
+context_mode and system_prompt are never trusted from the request body.
 """
 
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -13,18 +18,22 @@ from sqlalchemy import select
 from auth.supabase_jwt import optional_auth
 from db.connection import get_db
 from db.models import Ticket
-from services.liksi_service import build_lgu_context, get_system_prompt
+from services.liksi_service import build_lgu_context, get_system_prompt, validate_locale
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/liksi", tags=["liksi"])
+
+# Roles that are authorized to use LGU context mode
+_LGU_ROLES = {"lgu_officer", "admin", "super_admin", "analyst"}
 
 
 class LiksiChatRequest(BaseModel):
     message: str
-    context_mode: str = "citizen"  # "citizen" | "lgu"
-    ticket_id: str | None = None   # LGU mode: inject ticket context
+    locale: str = "en"                         # language preference (validated server-side)
+    ticket_id: str | None = None               # LGU mode: inject ticket context
     conversation_id: str | None = None
-    messages: list[dict] | None = None  # optional history
-    system_prompt: str | None = None    # client-provided prompt override (locale-aware)
+    messages: list[dict] | None = None         # optional history
 
 
 @router.post("/chat")
@@ -36,11 +45,27 @@ async def liksi_chat(
     """Context-aware chat endpoint for Liksi AI companion."""
     from chat_proxy import ChatRequest, generate_chat_reply
 
-    # Use client-provided prompt (locale-aware) if available, else server-side default
-    system_prompt = body.system_prompt or get_system_prompt(body.context_mode)
+    # ── Server-authoritative persona derivation ────────────────────────────
+    # The client's context_mode and system_prompt are NEVER trusted.
+    # Role is derived from the verified Supabase JWT (or defaults to citizen).
+    if token:
+        role = token.get("user_metadata", {}).get("role", "citizen")
+    else:
+        role = "citizen"
+
+    if role in _LGU_ROLES:
+        context_mode = "lgu"
+    else:
+        context_mode = "citizen"
+
+    # Validate locale against allow-list; unknown → "en"
+    validated_locale = validate_locale(body.locale)
+
+    # Build system prompt server-side — never from client input
+    system_prompt = get_system_prompt(context_mode, validated_locale)
 
     # LGU mode: inject ticket context into the system prompt
-    if body.context_mode == "lgu" and body.ticket_id:
+    if context_mode == "lgu" and body.ticket_id:
         try:
             result = await db.execute(
                 select(Ticket).where(Ticket.id == uuid.UUID(body.ticket_id))
@@ -79,6 +104,6 @@ async def liksi_chat(
     return {
         "success": True,
         "reply": reply,
-        "context_mode": body.context_mode,
+        "context_mode": context_mode,
         "conversation_id": body.conversation_id or str(uuid.uuid4()),
     }
