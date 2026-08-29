@@ -28,10 +28,29 @@ You help officers:
 Be concise and professional. Final decisions rest with the human officer.
 """.strip()
 
+VALID_LOCALES = ("en", "fil", "vi", "id", "ms", "ta", "th")
 
-def get_system_prompt(context_mode: str) -> str:
-    """Return the system prompt for the given context mode."""
-    return LGU_SYSTEM_PROMPT if context_mode == "lgu" else CITIZEN_SYSTEM_PROMPT
+LOCALE_INSTRUCTIONS = {
+    "en": "Respond in English.",
+    "fil": "Respond in Filipino (Tagalog). Use natural Filipino conversational style.",
+    "vi": "Respond in Vietnamese (Tiếng Việt). Use natural Vietnamese conversational style.",
+    "id": "Respond in Bahasa Indonesia. Use natural Indonesian conversational style.",
+    "ms": "Respond in Malay (Bahasa Melayu). Use natural Malay conversational style.",
+    "ta": "Respond in Tamil (தமிழ்). Use natural Tamil conversational style. Use Tamil script.",
+    "th": "Respond in Thai (ภาษาไทย). Use natural Thai conversational style. Use Thai script.",
+}
+
+
+def validate_locale(locale: str) -> str:
+    """Validate a locale against the allow-list. Returns 'en' for unknown values."""
+    return locale if locale in VALID_LOCALES else "en"
+
+
+def get_system_prompt(context_mode: str, locale: str = "en") -> str:
+    """Return the system prompt for the given context mode and validated locale."""
+    base = LGU_SYSTEM_PROMPT if context_mode == "lgu" else CITIZEN_SYSTEM_PROMPT
+    locale_instruction = LOCALE_INSTRUCTIONS.get(validate_locale(locale), LOCALE_INSTRUCTIONS["en"])
+    return f"{base}\n\nLANGUAGE: {locale_instruction}"
 
 
 def build_lgu_context(ticket_data: dict) -> str:
