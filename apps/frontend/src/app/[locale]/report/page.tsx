@@ -313,11 +313,13 @@ export default function ReportPage() {
                   >
                     <RotateCcw className="w-5 h-5" />
                   </button>
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-3">
-                    <button type="button" onClick={capturePhoto} aria-label="Capture photo" className="px-5 py-2.5 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
-                      <Camera className="w-4 h-4" aria-hidden="true" /> Capture
-                    </button>
-                    <button type="button" onClick={() => camera.stop()} aria-label="Cancel camera" className="px-5 py-2.5 border border-ink/10 text-sm text-ink/60 hover:text-ink transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
+                  <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center gap-2 px-4">
+                    <div className="flex items-center gap-3">
+                      <button type="button" onClick={capturePhoto} aria-label="Capture photo" className="px-6 py-3 bg-ink text-page text-sm font-medium hover:-translate-y-px shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all flex items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2">
+                        <Camera className="w-4 h-4" aria-hidden="true" /> Capture
+                      </button>
+                    </div>
+                    <button type="button" onClick={() => camera.stop()} aria-label="Cancel camera" className="px-4 py-1.5 text-xs text-white/60 hover:text-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2">
                       Cancel
                     </button>
                   </div>

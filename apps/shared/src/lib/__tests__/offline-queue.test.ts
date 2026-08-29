@@ -98,7 +98,7 @@ beforeEach(() => {
   idCounter = 0;
   memoryStore.clear();
   dbFail = false;
-  vi.spyOn(crypto, "randomUUID").mockImplementation(() => `mock-uuid-${++idCounter}`);
+  vi.spyOn(crypto, "randomUUID").mockImplementation(() => `mock-uuid-${++idCounter}` as ReturnType<typeof crypto.randomUUID>);
   setupMockIndexedDB();
 });
 

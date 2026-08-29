@@ -3,5 +3,5 @@
   "buildCommand": "cd ../.. && pnpm --filter frontend build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "ignoreCommand": "if [ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]; then exit 0; else exit 1; fi"
+  "ignoreCommand": "sh ../../vercel-ignore.sh"
 }

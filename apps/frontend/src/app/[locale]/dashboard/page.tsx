@@ -1,28 +1,16 @@
 import { DashboardContent } from "@/components/layout/dashboard-content";
 import { createClient } from "@/utils/supabase/server";
-import { cookies } from "next/headers";
 import { laravelGet } from "@likaslens/shared";
 import { CitizenDashboardClient } from "./citizen-dashboard-client";
 import { LiksiBanner } from "@/components/dashboard/liksi-banner";
-import { ContributorProfile } from "@/components/dashboard/contributor-profile";
-import type { RecentAchievement, RankProgress, DashboardStats, ActivityFeedItem } from "@likaslens/shared";
 
-interface ImpactData {
-  eco_credits: number;
-  reward_points_balance: number;
-  trust_score: number;
-  community_rank: number;
-  total_reports: number;
-  total_citizens: number;
-  rank_progress: RankProgress;
-  recent_achievements: RecentAchievement[];
-  reports: { id: string; status: string; created_at: string }[];
-}
+import type { DashboardStats, ActivityFeedItem } from "@likaslens/shared";
+
+
 
 export default async function DashboardPage() {
   let userGreeting = "Citizen";
   let userRole: string | undefined;
-  let token: string | undefined;
 
   try {
     const supabase = await createClient();
@@ -30,25 +18,20 @@ export default async function DashboardPage() {
     userGreeting = authUser?.email ? authUser.email.split('@')[0] : "Citizen";
     userRole = authUser?.user_metadata?.role as string | undefined;
 
-    const cookieStore = await cookies();
-    token = cookieStore.get("laravel_token")?.value;
   } catch {
     // Auth unavailable — render page without user-specific data
   }
 
-  let impactData: ImpactData | null = null;
   let statsData: DashboardStats | null = null;
   let feedData: ActivityFeedItem[] = [];
 
   const results = await Promise.allSettled([
-    laravelGet<{ success: boolean; data: ImpactData }>("/user/impact", undefined, token),
-    laravelGet<{ success: boolean; data: DashboardStats }>("/dashboard/stats", undefined, token),
-    laravelGet<{ success: boolean; data: ActivityFeedItem[] }>("/dashboard/feed", undefined, token),
+    laravelGet<{ success: boolean; data: DashboardStats }>("/dashboard/stats"),
+    laravelGet<{ success: boolean; data: ActivityFeedItem[] }>("/dashboard/feed"),
   ]);
 
-  if (results[0].status === "fulfilled" && results[0].value.success) impactData = results[0].value.data;
-  if (results[1].status === "fulfilled" && results[1].value.success) statsData = results[1].value.data;
-  if (results[2].status === "fulfilled" && results[2].value.success) feedData = results[2].value.data;
+  if (results[0].status === "fulfilled" && results[0].value.success) statsData = results[0].value.data;
+  if (results[1].status === "fulfilled" && results[1].value.success) feedData = results[1].value.data;
 
   const isAdmin = userRole === "super_admin" || userRole === "analyst" || userRole === "lgu" || userRole === "partner";
 
@@ -84,9 +67,7 @@ export default async function DashboardPage() {
       ) : (
         <>
           <LiksiBanner userName={userGreeting} />
-          <ContributorProfile />
           <CitizenDashboardClient
-            impact={impactData}
             stats={statsData}
             feed={feedData}
             ghostModeActive={false}

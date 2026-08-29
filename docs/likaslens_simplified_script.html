@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LikasLens Presentation Script (10-Minute Simplified Version)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+            border-bottom: 3px solid #1abc9c;
+            padding-bottom: 15px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+        .section-block {
+            margin-bottom: 35px;
+            border-left: 4px solid #3498db;
+            padding-left: 20px;
+        }
+        .section-block:nth-child(even) {
+            border-left-color: #1abc9c;
+        }
+        .header-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+        .timestamp {
+            background: #34495e;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .reporter {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .reporter-jeff { background: #8e44ad; }
+        .reporter-ally { background: #e67e22; }
+        .direction, .narration {
+            margin-bottom: 15px;
+        }
+        .label {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .direction .label { color: #e67e22; }
+        .narration .label { color: #27ae60; }
+        .direction-text {
+            background: #fff9f2;
+            border: 1px dashed #f39c12;
+            padding: 12px;
+            border-radius: 4px;
+            font-style: italic;
+        }
+        .narration-text {
+            background: #f2f9f4;
+            border: 1px solid #2ecc71;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 15px;
+            white-space: pre-line;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #34495e;
+            color: white;
+        }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>LikasLens Master Presentation Script</h1>
+    <div class="subtitle">Simplified 10-Minute Format for IPOPHL Submission</div>
+
+    <!-- SECTION 1 -->
+    <div class="section-block">
+        <div class="header-meta">
+            <span class="section-title">Section 1: Technical Description & System Design</span>
+            <span><span class="reporter reporter-jeff">Jeff</span> <span class="timestamp">00:00 - 02:30</span></span>
+        </div>
+        <div class="direction">
+            <span class="label">Visual Direction</span>
+            <div class="direction-text">
+                Show a clear screen recording of the project code folders in Visual Studio Code. Display a simple diagram showing how the parts connect: apps/frontend (Web Portal), apps/backend (Core Security & Database), and apps/ai-service (AI tools).
+            </div>
+        </div>
+        <div class="narration">
+            <span class="label">Narration / Script</span>
+            <div class="narration-text">
+                "Welcome to our presentation. LikasLens is a professional software platform built to monitor our environment and help local communities. It is designed to work smoothly even without a stable internet connection, making it perfect for coastal and farming towns. 
+                
+                Our system is built from five independent services that work together seamlessly: a public web portal, a dedicated mobile app for on-the-go reporting, an admin dashboard for local governments, a secure backend engine to manage data and security, and a dedicated AI service that processes images instantly. Because it is built using separate, independent blocks, the system is reliable, easy to update, and highly secure against data loss."
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section-block">
+        <div class="header-meta">
+            <span class="section-title">Section 2: Core Breakthroughs & The Triple-Layer AI Pipeline</span>
+            <span><span class="reporter reporter-ally">Ally</span> <span class="timestamp">02:30 - 05:00</span></span>
+        </div>
+        <div class="direction">
+            <span class="label">Visual Direction</span>
+            <div class="direction-text">
+                Show an animation of a photo taken on a phone moving into the AI system. Bounding boxes appear around an environmental violation. Then, transition to the web dashboard and zoom in on a friendly chat sidebar labeled "AI Liksi" translating the legal technical text into simple local terms.
+            </div>
+        </div>
+        <div class="narration">
+            <span class="label">Narration / Script</span>
+            <div class="narration-text">
+                "The core innovation of LikasLens is our Smart Triple-Layer AI Pipeline. First, our vision AI uses advanced object detection to instantly spot environmental violations like illegal trash dumping or water blockages. Second, our legal knowledge graph cross-references the evidence against actual Philippine environmental laws. And third, our language AI synthesizes everything into a clear, actionable incident report.
+                
+                To make this helpful for real people, we built 'AI Liksi'—our easy-to-use conversational assistant available on the web portal and admin dashboard. AI Liksi acts like a helpful local desk assistant. It takes complicated legal language and technical logs and explains them in simple, conversational words. This helps local government staff and community leaders understand violations instantly and take action faster."
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section-block">
+        <div class="header-meta">
+            <span class="section-title">Section 3: Anonymization Engine & Privacy Mechanisms</span>
+            <span><span class="reporter reporter-jeff">Jeff</span> <span class="timestamp">05:00 - 06:15</span></span>
+        </div>
+        <div class="direction">
+            <span class="label">Visual Direction</span>
+            <div class="direction-text">
+                Show a smartphone screen turning on "Ghost Mode". The application theme changes colors, and a quick animation shows the file's hidden data (like exact GPS coordinates and device name) being stripped away and replaced with a random code of zeros.
+            </div>
+        </div>
+        <div class="narration">
+            <span class="label">Narration / Script</span>
+            <div class="narration-text">
+                "Reporting environmental issues in rural areas can sometimes put citizens at risk. To protect everyone who reports a problem, LikasLens introduces a special privacy tool called 'Ghost Mode'. 
+                
+                When a user turns on Ghost Mode, our app automatically strips out all hidden tracking data—such as exact camera details and specific phone location records—before the report is sent to the database. It replaces them with a completely anonymous ID. This guarantees that the informant's identity stays hidden and completely safe."
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="section-block">
+        <div class="header-meta">
+            <span class="section-title">Section 4: UN Sustainable Development Goals (SDG) Alignment</span>
+            <span><span class="reporter reporter-ally">Ally</span> <span class="timestamp">06:15 - 07:45</span></span>
+        </div>
+        <div class="direction">
+            <span class="label">Visual Direction</span>
+            <div class="direction-text">
+                Show a graphic of the UN Sustainable Development Goals with a clean summary table on screen.
+            </div>
+        </div>
+        <div class="narration">
+            <span class="label">Narration / Script</span>
+            <div class="narration-text">
+                "LikasLens is built with the United Nations Sustainable Development Goals as our guiding framework. Our platform's architecture is designed to contribute meaningfully toward these key national and global priorities:
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>UN SDG Goal</th>
+                            <th>How LikasLens Aligns</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SDG 13: Climate Action</strong></td>
+                            <td>Our AI detects blocked waterways and damaged mangroves early to help prevent floods.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SDG 14 & 15: Life Below Water & Land</strong></td>
+                            <td>Illegal waste dumping and forest damage tracking helps protect local ecosystems.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SDG 11: Sustainable Communities</strong></td>
+                            <td>Citizen reports are automatically routed so local governments can respond faster.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SDG 10: Reduced Inequalities</strong></td>
+                            <td>Ghost Mode and AI Liksi give remote communities a safe and accessible way to report issues.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SDG 16: Peace & Strong Institutions</strong></td>
+                            <td>A transparent record of every report ensures accountability and builds trust in the system.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                As we grow, we are committed to deepening this alignment through dedicated SDG tracking and impact dashboards."
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="section-block">
+        <div class="header-meta">
+            <span class="section-title">Section 5: Verification Suite & Deployment Strategy</span>
+            <span><span class="reporter reporter-jeff">Jeff</span> <span class="timestamp">07:45 - 10:00</span></span>
+        </div>
+        <div class="direction">
+            <span class="label">Visual Direction</span>
+            <div class="direction-text">
+                Show a quick list of green checkmarks showing system tests passing successfully. Then transition to a map showing a pilot test area in Iloilo, Western Visayas, highlighting a partnership with ISUFST. Finish with a strong closing title slide.
+            </div>
+        </div>
+        <div class="narration">
+            <span class="label">Narration / Script</span>
+            <div class="narration-text">
+                "We have tested the stability of LikasLens through extensive automated verification across every layer—from the frontend interfaces to the backend security and AI pipeline—to make sure it performs reliably under real-world conditions. 
+                
+                Instead of making generic promises, we are launching a highly localized 3-month pilot testing program right here in Iloilo, Western Visayas. By working directly with the specialized fisheries faculty at ISUFST, we are training our AI model using hundreds of real, local images of coastal environments. 
+                
+                Fully aligned with the Philippine Development Plan, the Disaster Risk Reduction Management Act, and the Indigenous Peoples' Rights Act, LikasLens empowers local governments with the exact tools they need to protect our environment. We are Team Syntaxure SEA from ISUFST, building a safer, smarter, and protected future for our community. Thank you."
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

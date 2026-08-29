@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent,
@@ -135,9 +136,10 @@ interface GlobalSearchProps {
 export function GlobalSearch({
   open: controlledOpen,
   onOpenChange,
-  entities: entityTypes = ["ticket", "law", "ngo", "user"],
+  entities: entityTypesProp,
 }: GlobalSearchProps) {
   const router = useRouter();
+  const entityTypes = useMemo(() => entityTypesProp ?? ["ticket", "law", "ngo", "user"], [entityTypesProp]);
   const inputRef = useRef<HTMLInputElement>(null);
   const [internalOpen, setInternalOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -205,9 +207,9 @@ export function GlobalSearch({
       const q = query.trim();
       if (!q) return;
 
-      const entities = entityTypes;
+      const entities: SearchEntity[] = entityTypes as SearchEntity[];
       const promises = entities.map(async (type) => {
-        const config = ENTITY_CONFIG[type];
+        const config = ENTITY_CONFIG[type as SearchEntity];
         try {
           const data = await laravelGet<any>(
             `${config.endpoint}?per_page=5&search=${encodeURIComponent(q)}`
@@ -222,13 +224,13 @@ export function GlobalSearch({
       const groups: ResultGroup[] = settled
         .filter((g) => g.items.length > 0)
         .map((g) => ({
-          type: g.type,
-          icon: ENTITY_CONFIG[g.type].icon,
-          label: ENTITY_CONFIG[g.type].label,
+          type: g.type as SearchEntity,
+          icon: ENTITY_CONFIG[g.type as SearchEntity].icon,
+          label: ENTITY_CONFIG[g.type as SearchEntity].label,
           results: g.items.map((item: any) => ({
             ...item,
-            type: g.type,
-            href: `${ENTITY_CONFIG[g.type].hrefPrefix}/${item.id}`,
+            type: g.type as SearchEntity,
+            href: `${ENTITY_CONFIG[g.type as SearchEntity].hrefPrefix}/${item.id}`,
           })),
         }));
 

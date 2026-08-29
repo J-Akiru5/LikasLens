@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { getAdminCurrencySettings, updateAdminCurrencySetting } from "@likaslens/shared";
-import type { CurrencySetting } from "@likaslens/shared";
 import { showToast, Button } from "@likaslens/shared";
 import {
   Globe,
@@ -17,11 +15,9 @@ import {
   Key,
   Trash2,
   Copy,
-  Coins,
-  Loader2,
 } from "lucide-react";
 
-type AdminSettingsTab = "platform" | "notifications" | "security" | "developers" | "currency";
+type AdminSettingsTab = "platform" | "notifications" | "security" | "developers";
 
 interface TabCard {
   id: AdminSettingsTab;
@@ -35,7 +31,6 @@ const TABS: TabCard[] = [
   { id: "notifications", label: "Notifications", description: "Alert configuration", icon: Bell },
   { id: "security", label: "Security", description: "Access controls", icon: Shield },
   { id: "developers", label: "Developers", description: "API Keys", icon: Key },
-  { id: "currency", label: "Currency", description: "Eco-credit rates", icon: Coins },
 ];
 
 interface SettingsState {
@@ -62,7 +57,7 @@ interface SettingsState {
 const DEFAULT_SETTINGS: SettingsState = {
   platformName: "LikasLens Admin",
   defaultLanguage: "en",
-  ecoCreditRate: 100,
+  ecoCreditRate: 10,
   registrationOpen: true,
   aiModeration: true,
   maintenanceMode: false,
@@ -91,151 +86,6 @@ function loadSettings(): SettingsState {
   return DEFAULT_SETTINGS;
 }
 
-function CurrencySection() {
-  const [currencies, setCurrencies] = useState<CurrencySetting[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [savingId, setSavingId] = useState<string | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [rates, setRates] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    getAdminCurrencySettings()
-      .then((res) => {
-        if (res.success) {
-          setCurrencies(res.data);
-          const rateMap: Record<string, string> = {};
-          res.data.forEach((c) => {
-            if (c.id) rateMap[c.id] = String(c.eco_credit_rate);
-          });
-          setRates(rateMap);
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleSaveRate = async (id: string) => {
-    const rateStr = rates[id];
-    if (!rateStr) return;
-
-    const rate = parseFloat(rateStr);
-    if (isNaN(rate) || rate < 0.0001) {
-      setErrors({ ...errors, [id]: "Rate must be at least 0.0001" });
-      return;
-    }
-
-    setSavingId(id);
-    setErrors({ ...errors, [id]: "" });
-    try {
-      const res = await updateAdminCurrencySetting(id, { eco_credit_rate: rate });
-      if (res.success) {
-        setCurrencies((prev) =>
-          prev.map((c) => (c.id === id ? res.data : c)),
-        );
-        showToast("Rate updated successfully", "success");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to update rate", "error");
-    } finally {
-      setSavingId(null);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-ink/30" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-            <Coins className="w-6 h-6 text-ink/40" />
-          </div>
-          <div>
-            <h2 className="font-semibold tracking-tight text-2xl text-ink">Currency Settings</h2>
-            <p className="font-mono text-sm text-muted mt-1">
-              Configure eco-credit conversion rates per country. Changes take effect immediately on the public rate endpoint.
-            </p>
-          </div>
-        </div>
-
-        {currencies.length === 0 ? (
-          <p className="text-muted text-sm py-8 text-center">No currency settings configured.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {currencies.map((c) => (
-              <div
-                key={c.id}
-                className={`border rounded-2xl p-4 ${c.is_active ? "border-ink/5" : "border-ink/5 opacity-50"}`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <span className="font-mono text-xs font-bold text-green bg-green/5 px-2 py-0.5 rounded">
-                      {c.country_code}
-                    </span>
-                    <span className="ml-2 font-medium text-sm text-ink">
-                      {c.country_name}
-                    </span>
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${
-                      c.is_active
-                        ? "bg-green/10 text-green"
-                        : "bg-ink/[0.04] text-ink/40"
-                    }`}
-                  >
-                    {c.is_active ? "Active" : "Inactive"}
-                  </span>
-                </div>
-                <div className="font-mono text-xs text-muted mb-3">
-                  {c.currency_code} — {c.currency_name}
-                </div>
-                <div className="space-y-2">
-                  <label className="font-mono text-[10px] text-ink/50 uppercase tracking-widest block">
-                    Eco-Credit Rate
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      step="0.0001"
-                      min="0.0001"
-                      value={rates[c.id ?? ""] ?? ""}
-                      onChange={(e) => {
-                        setRates({ ...rates, [c.id ?? ""]: e.target.value });
-                        setErrors({ ...errors, [c.id ?? ""]: "" });
-                      }}
-                      className={`flex-1 bg-page border px-3 py-2 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${
-                        errors[c.id ?? ""] ? "border-red" : "border-ink/10"
-                      }`}
-                    />
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => c.id && handleSaveRate(c.id)}
-                      loading={savingId === c.id}
-                      disabled={savingId === c.id || String(c.eco_credit_rate) === rates[c.id ?? ""]}
-                    >
-                      Save
-                    </Button>
-                  </div>
-                  {errors[c.id ?? ""] && (
-                    <p className="font-mono text-xs text-red">{errors[c.id ?? ""]}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function PlatformSection({ settings, update }: { settings: SettingsState; update: (key: keyof SettingsState, value: unknown) => void }) {
   return (
@@ -270,18 +120,6 @@ function PlatformSection({ settings, update }: { settings: SettingsState; update
               <option value="my">Burmese</option>
               <option value="lo">Lao</option>
             </select>
-          </div>
-          <div>
-            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Eco Credit Rate (PHP)</label>
-            <input type="number" value={settings.ecoCreditRate}
-              onChange={(e) => update("ecoCreditRate", Number(e.target.value))}
-              className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
-          </div>
-          <div>
-            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">API Base URL</label>
-            <div className="w-full p-3 border border-ink/10 rounded-xl bg-page font-mono text-sm text-ink/60 truncate" title={process.env.NEXT_PUBLIC_API_URL || "Not configured"}>
-              {process.env.NEXT_PUBLIC_API_URL || "Not configured"}
-            </div>
           </div>
         </div>
       </div>
@@ -444,77 +282,6 @@ function SecuritySection({ settings, update }: { settings: SettingsState; update
 }
 
 function DevelopersSection() {
-  const [tokens, setTokens] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [newTokenName, setNewTokenName] = useState("");
-  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchTokens();
-  }, []);
-
-  async function fetchTokens() {
-    setLoading(true);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/user/api-tokens`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("sb-auth-token")}`,
-        },
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setTokens(json.data || []);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function generateToken() {
-    if (!newTokenName.trim()) return;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/user/api-tokens`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("sb-auth-token")}`,
-        },
-        body: JSON.stringify({ token_name: newTokenName }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setGeneratedToken(json.data.token);
-        setNewTokenName("");
-        fetchTokens();
-        showToast("API token created", "success");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to create token", "error");
-    }
-  }
-
-  async function revokeToken(id: string) {
-    if (!confirm("Are you sure you want to revoke this token?")) return;
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/user/api-tokens/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("sb-auth-token")}`,
-        },
-      });
-      if (res.ok) {
-        fetchTokens();
-        showToast("Token revoked", "success");
-      }
-    } catch (err) {
-      console.error(err);
-      showToast("Failed to revoke token", "error");
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
@@ -522,64 +289,11 @@ function DevelopersSection() {
           <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
             <Key className="w-6 h-6 text-ink/40" />
           </div>
-          <h2 className="font-semibold tracking-tight text-2xl text-ink">Personal Access Tokens</h2>
+          <h2 className="font-semibold tracking-tight text-2xl text-ink">API Access</h2>
         </div>
-
-        {generatedToken && (
-          <div className="mb-6 p-4 rounded-xl border border-green/30 bg-green/5 text-sm">
-            <p className="font-medium text-ink mb-2">Save this token now. It will not be shown again.</p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 block p-3 bg-white border border-ink/10 rounded-lg text-ink font-mono break-all select-all">
-                {generatedToken}
-              </code>
-              <button onClick={() => {
-                navigator.clipboard.writeText(generatedToken);
-                showToast("Copied to clipboard", "success");
-              }} className="p-3 bg-white border border-ink/10 rounded-lg hover:bg-ink/5 transition-colors">
-                <Copy size={16} className="text-ink" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-4 mb-8">
-          <input
-            type="text"
-            placeholder="Token name (e.g., IoT Device 1)"
-            value={newTokenName}
-            onChange={(e) => setNewTokenName(e.target.value)}
-            className="flex-1 p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20"
-          />
-          <Button
-            variant="primary"
-            type="button"
-            onClick={generateToken}
-            disabled={!newTokenName.trim()}
-          >
-            Generate Token
-          </Button>
-        </div>
-
-        <div className="space-y-3">
-          {loading ? (
-            <div className="text-center py-8 text-muted text-sm">Loading tokens...</div>
-          ) : tokens.length === 0 ? (
-            <div className="text-center py-8 border border-dashed border-ink/10 rounded-xl text-muted text-sm">
-              No API tokens generated yet.
-            </div>
-          ) : (
-            tokens.map(token => (
-              <div key={token.id} className="flex items-center justify-between p-4 border border-ink/5 rounded-xl bg-page">
-                <div>
-                  <p className="font-medium text-ink text-sm">{token.name}</p>
-                  <p className="font-mono text-xs text-muted mt-1">Created: {new Date(token.created_at).toLocaleDateString()}</p>
-                </div>
-                <button onClick={() => revokeToken(token.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Revoke Token">
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            ))
-          )}
+        <div className="p-4 rounded-xl border border-ink/10 bg-page text-sm text-muted">
+          <p className="font-medium text-ink mb-1">Authentication is managed through Supabase</p>
+          <p>API access uses Supabase JWT tokens. No separate API tokens are needed.</p>
         </div>
       </div>
     </div>
@@ -589,7 +303,7 @@ function DevelopersSection() {
 export default function SettingsPage() {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab") as AdminSettingsTab | null;
-  const initialTab: AdminSettingsTab = tabParam && ["platform", "notifications", "security", "developers", "currency"].includes(tabParam) ? tabParam : "platform";
+  const initialTab: AdminSettingsTab = tabParam && ["platform", "notifications", "security", "developers"].includes(tabParam) ? tabParam : "platform";
   const [activeTab, setActiveTab] = useState<AdminSettingsTab>(initialTab);
   const [settings, setSettings] = useState<SettingsState>(DEFAULT_SETTINGS);
   const [saving, setSaving] = useState(false);
@@ -668,7 +382,6 @@ export default function SettingsPage() {
         {activeTab === "notifications" && <NotificationsSection settings={settings} update={updateSetting} />}
         {activeTab === "security" && <SecuritySection settings={settings} update={updateSetting} />}
         {activeTab === "developers" && <DevelopersSection />}
-        {activeTab === "currency" && <CurrencySection />}
       </div>
 
       <div className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">

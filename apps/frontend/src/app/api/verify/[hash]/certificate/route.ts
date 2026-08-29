@@ -3,11 +3,10 @@ import { createHash } from "node:crypto";
 import { renderToBuffer, Document, Page, Text, View, StyleSheet, Image, Font } from "@react-pdf/renderer";
 import QRCode from "qrcode";
 import React from "react";
+import { createClient } from "@/utils/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const BACKEND_URL = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 const HASH_REGEX = /^[A-Za-z0-9_-]{8,128}$/;
 
@@ -171,30 +170,19 @@ function getClassification(report: ReportFromBackend): string {
 }
 
 async function fetchReport(hash: string): Promise<ReportFromBackend | null> {
-  const candidates = [
-    `${BACKEND_URL}/api/reports/verify-evidence/${encodeURIComponent(hash)}`,
-    `${BACKEND_URL}/api/reports/verify?hash=${encodeURIComponent(hash)}`,
-    `${BACKEND_URL}/api/verify/${encodeURIComponent(hash)}`,
-  ];
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("tickets")
+      .select("*")
+      .eq("hash", hash)
+      .single();
 
-  for (const url of candidates) {
-    try {
-      const res = await fetch(url, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
-      if (!res.ok) continue;
-      const json = (await res.json()) as { data?: ReportFromBackend } | ReportFromBackend;
-      const data = (json && typeof json === "object" && "data" in json ? json.data : json) as ReportFromBackend;
-      if (data && typeof data === "object" && (data.id || data.display_id || data.title || data.hash)) {
-        return data;
-      }
-    } catch {
-      continue;
-    }
+    if (error || !data) return null;
+    return data as ReportFromBackend;
+  } catch {
+    return null;
   }
-  return null;
 }
 
 function CertificateDocument({

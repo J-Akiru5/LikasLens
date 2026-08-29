@@ -25,7 +25,7 @@ on:
   workflow_dispatch: # allow manual trigger
 
 env:
-  PNPM_VERSION: 10
+  PNPM_VERSION: 11
   NODE_VERSION: 22
   PYTHON_VERSION: "3.12"
 
@@ -144,79 +144,7 @@ jobs:
         run: pnpm --filter admin-portal build
         continue-on-error: true
 
-  # ── 6. Backend (Laravel) – PHP lint + tests ─────────────────────────
-  backend:
-    name: ⚙️ Backend – PHP lint + tests
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_DB: likaslens_test
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    defaults:
-      run:
-        working-directory: apps/backend
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-          extensions: mbstring, pdo_pgsql, pdo_mysql, zip, bcmath
-          tools: composer:v2
-          coverage: none
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: apps/backend/vendor
-          key: composer-${{ hashFiles('apps/backend/composer.lock') }}
-
-      - name: Create bootstrap/cache directory
-        run: mkdir -p bootstrap/cache && chmod -R 775 bootstrap/cache storage
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
-
-      - name: Setup environment
-        run: |
-          cp .env.example .env
-          echo "APP_KEY=" >> .env
-          php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
-          php artisan key:generate --force
-        env:
-          APP_ENV: testing
-
-      - name: PHP Syntax (Laravel Pint)
-        run: ./vendor/bin/pint --test
-        continue-on-error: true
-
-      - name: Run tests
-        run: |
-          APP_KEY=\$(php artisan key:generate --show --force)
-          php artisan test
-        env:
-          APP_ENV: testing
-          APP_KEY: "testing"
-          DB_CONNECTION: pgsql
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_DATABASE: likaslens_test
-          DB_USERNAME: test
-          DB_PASSWORD: test
-        continue-on-error: true
-
-  # ── 7. AI Service (Python) – lint + syntax + import check ───────────
+  # ── 6. AI Service (Python) – lint + syntax + import check ───────────
   ai-service:
     name: 🤖 AI Service – lint + syntax
     runs-on: ubuntu-latest
@@ -245,7 +173,7 @@ jobs:
       - name: Check Python syntax
         run: python -c "import ast; ast.parse(open('main.py').read()); print('✓ Syntax OK')"
 
-  # ── 8. Security audit ───────────────────────────────────────────────
+  # ── 7. Security audit ───────────────────────────────────────────────
   security-audit:
     name: 🛡️ Security audit
     runs-on: ubuntu-latest
@@ -264,6 +192,4 @@ jobs:
         run: pnpm audit --audit-level=high
         continue-on-error: true # advisory-only; non-blocking
 
-      - name: Composer audit
-        working-directory: apps/backend
-        run: composer audit || true
+
