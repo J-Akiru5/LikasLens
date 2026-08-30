@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
 
@@ -24,22 +24,21 @@ GEMINI_TIMEOUT_SECONDS = 30
 MAX_MESSAGES = 50
 MAX_CONTENT_LENGTH = 10000
 
-_genai_configured = False
+_client: genai.Client | None = None
 
 
-def _ensure_genai_configured() -> None:
-    """Configure genai once at module level (thread-safe for FastAPI)."""
-    global _genai_configured
-    if _genai_configured:
-        return
-    api_key = settings.google_api_key
-    if not api_key:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="GOOGLE_API_KEY environment variable not set on server",
-        )
-    genai.configure(api_key=api_key)
-    _genai_configured = True
+def _get_client() -> genai.Client:
+    """Lazy-initialise the Gemini client (thread-safe for FastAPI workers)."""
+    global _client
+    if _client is None:
+        api_key = settings.google_api_key
+        if not api_key:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="GOOGLE_API_KEY environment variable not set on server",
+            )
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 
 # ---------------------------------------------------------------------------
@@ -61,63 +60,66 @@ class ChatResponse(BaseModel):
     reply: str
 
 # ---------------------------------------------------------------------------
-# Gemini model initialisation
-# ---------------------------------------------------------------------------
-
-
-def _get_chat_model(system_prompt: str) -> genai.GenerativeModel:
-    """Initialise Gemini 2.5 Flash with the given system instruction."""
-    _ensure_genai_configured()
-    return genai.GenerativeModel(
-        model_name="gemini-2.5-flash",
-        system_instruction=system_prompt,
-    )
-
-
-# ---------------------------------------------------------------------------
 # Core chat function
 # ---------------------------------------------------------------------------
 
 async def generate_chat_reply(request: ChatRequest) -> str:
-    """Send chat history to Gemini and return the assistant's reply."""
-    model = _get_chat_model(request.system_prompt)
+    """Send chat history to Gemini and return the assistant's reply.
 
-    contents: list[dict[str, Any]] = []
+    Retries up to 3 times on rate-limit (429) or timeout with exponential
+    backoff (1s, 2s). Other errors (empty response, malformed input) are
+    raised immediately — retrying won't help.
+    """
+    client = _get_client()
+
+    contents: list[str] = []
     for msg in request.messages:
-        role = "model" if msg.role == "assistant" else "user"
-        contents.append({"role": role, "parts": [{"text": msg.content}]})
+        contents.append(msg.content)
 
-    try:
-        response = await asyncio.wait_for(
-            asyncio.to_thread(
-                model.generate_content,
-                contents,
-                generation_config={
-                    "temperature": request.temperature,
-                    "max_output_tokens": request.max_output_tokens,
-                    "top_p": request.top_p,
-                },
-            ),
-            timeout=GEMINI_TIMEOUT_SECONDS,
-        )
-    except asyncio.TimeoutError:
-        logger.error("Gemini chat timed out after %ds", GEMINI_TIMEOUT_SECONDS)
-        raise HTTPException(
-            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail=f"Gemini API timed out after {GEMINI_TIMEOUT_SECONDS}s",
-        )
-    except Exception as exc:
-        logger.error("Gemini chat API call failed: %s", exc)
+    gen_config = types.GenerateContentConfig(
+        system_instruction=request.system_prompt or None,
+        temperature=request.temperature,
+        max_output_tokens=request.max_output_tokens,
+        top_p=request.top_p,
+    )
+
+    last_exc = None
+    for attempt in range(3):
+        try:
+            response = await asyncio.wait_for(
+                client.aio.models.generate_content(
+                    model="gemini-3.6-flash",
+                    contents=contents,
+                    config=gen_config,
+                ),
+                timeout=GEMINI_TIMEOUT_SECONDS,
+            )
+            text = response.text
+            if not text:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Gemini returned an empty response",
+                )
+            if attempt > 0:
+                logger.info("Gemini chat succeeded on attempt %d/3", attempt + 1)
+            return text.strip()
+        except asyncio.TimeoutError:
+            last_exc = None
+            logger.warning("Gemini chat timeout on attempt %d/3", attempt + 1)
+        except Exception as exc:
+            last_exc = exc
+            logger.warning("Gemini chat error on attempt %d/3: %s", attempt + 1, exc)
+
+        if attempt < 2:
+            delay = 2 ** attempt  # 1s, 2s
+            await asyncio.sleep(delay)
+
+    if last_exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Gemini API call failed",
-        ) from exc
-
-    text = response.text
-    if not text:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Gemini returned an empty response",
-        )
-
-    return text.strip()
+            detail="Gemini API call failed after 3 attempts",
+        ) from last_exc
+    raise HTTPException(
+        status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+        detail=f"Gemini API timed out after 3 attempts",
+    )

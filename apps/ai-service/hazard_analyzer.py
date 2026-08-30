@@ -12,7 +12,8 @@ import asyncio
 import logging
 from typing import Any
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
 
@@ -98,22 +99,21 @@ async def retrieve_legal_context(
 
 
 # ---------------------------------------------------------------------------
-# Neural layer -- Gemini 2.5 Flash
+# Neural layer -- Gemini 3.6 Flash
 # ---------------------------------------------------------------------------
 
-_gemini_model: genai.GenerativeModel | None = None
+_client: genai.Client | None = None
 
 
-def _get_gemini_model() -> genai.GenerativeModel:
-    """Lazy-initialise the Gemini model (thread-safe for FastAPI workers)."""
-    global _gemini_model
-    if _gemini_model is None:
+def _get_client() -> genai.Client:
+    """Lazy-initialise the Gemini client (thread-safe for FastAPI workers)."""
+    global _client
+    if _client is None:
         api_key = settings.google_api_key
         if not api_key:
             raise RuntimeError("GOOGLE_API_KEY environment variable not set")
-        genai.configure(api_key=api_key)
-        _gemini_model = genai.GenerativeModel("gemini-2.5-flash")
-    return _gemini_model
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 
 async def generate_grounded_report(
@@ -123,7 +123,7 @@ async def generate_grounded_report(
     agencies: list[str],
     retrieval_method: str,
 ) -> str:
-    """Generate a formal, grounded incident report via Gemini 2.5 Flash.
+    """Generate a formal, grounded incident report via Gemini 3.6 Flash.
 
     The prompt strictly governs Gemini to only use the provided legal context.
     If no laws were found, returns a manual review escalation message.
@@ -136,7 +136,7 @@ async def generate_grounded_report(
             f"Escalated to regional supervisor for manual review."
         )
 
-    model = _get_gemini_model()
+    client = _get_client()
 
     laws_str = "\n".join(f"- {law}" for law in laws)
     agencies_str = ", ".join(agencies) if agencies else "no enforcing agencies mapped"
@@ -186,7 +186,10 @@ CRITICAL INSTRUCTIONS:
     for attempt in range(3):
         try:
             response = await asyncio.wait_for(
-                asyncio.to_thread(model.generate_content, prompt),
+                client.aio.models.generate_content(
+                    model="gemini-3.6-flash",
+                    contents=prompt,
+                ),
                 timeout=GEMINI_TIMEOUT_SECONDS,
             )
             text = response.text
