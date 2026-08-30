@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { m } from "framer-motion";
+import { useTranslations } from "next-intl";
 import {
   Brain,
   Database,
@@ -15,10 +16,6 @@ import {
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Architecture / Tech Stack — visual proof of technical depth.
-
-   Shows the AI pipeline as an interactive flow:
-   Input → YOLOv8 → Neuro-Symbolic Engine → Knowledge Graph → Agency Routing
-   Each node is hoverable for details. Impresses hackathon judges.
    ───────────────────────────────────────────────────────────────────────────── */
 
 interface TechNode {
@@ -118,8 +115,73 @@ const staggerContainer = {
 };
 
 export function TechStackSection() {
+  const t = useTranslations("architecture");
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const activeNode = TECH_NODES.find(n => n.id === hoveredNode);
+
+  const nodes: TechNode[] = [
+    {
+      id: "input",
+      Icon: Eye,
+      label: t("nodeInputLabel"),
+      sublabel: t("nodeInputSub"),
+      detail: t("nodeInputDetail"),
+      color: "var(--accent)",
+      row: 0,
+      col: 0,
+    },
+    {
+      id: "yolo",
+      Icon: Cpu,
+      label: t("nodeYoloLabel"),
+      sublabel: t("nodeYoloSub"),
+      detail: t("nodeYoloDetail"),
+      color: "#f59e0b",
+      row: 0,
+      col: 1,
+    },
+    {
+      id: "neuro",
+      Icon: Brain,
+      label: t("nodeNeuroLabel"),
+      sublabel: t("nodeNeuroSub"),
+      detail: t("nodeNeuroDetail"),
+      color: "#8b5cf6",
+      row: 0,
+      col: 2,
+    },
+    {
+      id: "graph",
+      Icon: Database,
+      label: t("nodeGraphLabel"),
+      sublabel: t("nodeGraphSub"),
+      detail: t("nodeGraphDetail"),
+      color: "#06b6d4",
+      row: 1,
+      col: 2,
+    },
+    {
+      id: "routing",
+      Icon: Workflow,
+      label: t("nodeRoutingLabel"),
+      sublabel: t("nodeRoutingSub"),
+      detail: t("nodeRoutingDetail"),
+      color: "#10b981",
+      row: 1,
+      col: 1,
+    },
+    {
+      id: "backend",
+      Icon: Layers,
+      label: t("nodeBackendLabel"),
+      sublabel: t("nodeBackendSub"),
+      detail: t("nodeBackendDetail"),
+      color: "#ef4444",
+      row: 1,
+      col: 0,
+    },
+  ];
+
+  const activeNode = nodes.find(n => n.id === hoveredNode);
 
   return (
     <section id="architecture" className="ec-section" style={{ background: "var(--page)" }}>
@@ -154,7 +216,7 @@ export function TechStackSection() {
             }}
           >
             <Shield style={{ width: 14, height: 14 }} aria-hidden="true" />
-            Technical Architecture
+            {t("eyebrow")}
           </div>
           <h2
             style={{
@@ -164,11 +226,10 @@ export function TechStackSection() {
               margin: 0, textWrap: "balance" as const,
             }}
           >
-            Not a wrapper. A full neuro-symbolic pipeline.
+            {t("title")}
           </h2>
           <p style={{ fontSize: 17, color: "var(--muted)", lineHeight: 1.6, margin: 0, maxWidth: 560 }}>
-            Six purpose-built systems working in concert. Hover any node to see
-            what it does and why it matters.
+            {t("subtitle")}
           </p>
         </m.div>
 
@@ -182,73 +243,71 @@ export function TechStackSection() {
             viewport={{ once: true, margin: "-60px" }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           >
-            {TECH_NODES.map((node) => {
+            {nodes.map((node) => {
               const isHovered = hoveredNode === node.id;
               const isConnected = hoveredNode
                 ? CONNECTIONS.some(
                     c => (c.from === hoveredNode && c.to === node.id) || (c.to === hoveredNode && c.from === node.id)
                   )
                 : false;
+              const { Icon } = node;
 
               return (
                 <m.div
                   key={node.id}
                   variants={fadeUp}
-                  className="group cursor-pointer transition-all duration-300"
                   onMouseEnter={() => setHoveredNode(node.id)}
                   onMouseLeave={() => setHoveredNode(null)}
+                  className="group relative cursor-pointer select-none rounded-2xl border p-5 transition-all duration-300"
                   style={{
-                    padding: "24px 22px",
-                    borderRadius: 16,
-                    background: "var(--panel)",
-                    border: `1.5px solid ${isHovered ? node.color : isConnected ? `color-mix(in srgb, ${node.color} 30%, var(--border))` : "var(--border)"}`,
+                    background: isHovered
+                      ? `color-mix(in srgb, ${node.color} 6%, var(--panel))`
+                      : isConnected
+                        ? `color-mix(in srgb, ${node.color} 3%, var(--panel))`
+                        : "var(--panel)",
+                    borderColor: isHovered
+                      ? node.color
+                      : isConnected
+                        ? `color-mix(in srgb, ${node.color} 40%, var(--border))`
+                        : "var(--border)",
+                    transform: isHovered ? "translateY(-2px)" : "none",
                     boxShadow: isHovered
-                      ? `0 8px 32px -8px color-mix(in srgb, ${node.color} 20%, transparent)`
-                      : "0 4px 16px -8px rgba(0,0,0,0.06)",
-                    transform: isHovered ? "translateY(-4px)" : "translateY(0)",
-                    position: "relative",
-                    overflow: "hidden",
+                      ? `0 8px 24px -8px color-mix(in srgb, ${node.color} 25%, transparent)`
+                      : "none",
                   }}
                 >
-                  {/* Subtle glow on hover */}
-                  {isHovered && (
+                  <div className="flex items-start gap-3.5">
                     <div
-                      className="absolute inset-0 pointer-events-none"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110"
                       style={{
-                        background: `radial-gradient(circle at 30% 30%, color-mix(in srgb, ${node.color} 6%, transparent), transparent 70%)`,
+                        background: `color-mix(in srgb, ${node.color} 12%, transparent)`,
+                        color: node.color,
                       }}
-                    />
-                  )}
-
-                  <div className="relative z-10 flex flex-col gap-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300"
-                        style={{
-                          background: `color-mix(in srgb, ${node.color} 12%, transparent)`,
-                          border: `1px solid color-mix(in srgb, ${node.color} 20%, transparent)`,
-                        }}
-                      >
-                        <node.Icon
-                          style={{ width: 18, height: 18, color: node.color }}
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div>
-                        <p style={{ fontWeight: 700, fontSize: 14, color: "var(--ink)", margin: 0, lineHeight: 1.3 }}>
-                          {node.label}
-                        </p>
-                        <p style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)", margin: 0, letterSpacing: "0.04em" }}>
-                          {node.sublabel}
-                        </p>
-                      </div>
+                    >
+                      <Icon className="w-5 h-5" />
                     </div>
 
-                    {/* Connection indicator dots */}
-                    <div className="flex gap-1 mt-1">
-                      {CONNECTIONS.filter(c => c.from === node.id || c.to === node.id).map((conn, i) => {
-                        const other = conn.from === node.id ? conn.to : conn.from;
-                        const otherNode = TECH_NODES.find(n => n.id === other);
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="font-bold text-sm leading-tight transition-colors duration-200"
+                        style={{
+                          color: isHovered ? node.color : "var(--ink)",
+                          fontFamily: "var(--font-heading)",
+                        }}
+                      >
+                        {node.label}
+                      </p>
+                      <p className="font-mono text-[11px] text-muted mt-0.5 truncate">
+                        {node.sublabel}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] text-muted">
+                    <div className="flex items-center gap-1.5">
+                      {CONNECTIONS.filter(c => c.from === node.id || c.to === node.id).map((c, i) => {
+                        const other = c.from === node.id ? c.to : c.from;
+                        const otherNode = nodes.find(n => n.id === other);
                         return (
                           <div
                             key={i}
@@ -257,7 +316,7 @@ export function TechStackSection() {
                               background: hoveredNode === other ? otherNode?.color : "var(--border-strong)",
                               animation: hoveredNode === other ? "techPulse 1.5s ease-in-out infinite" : "none",
                             }}
-                            title={`Connected to ${otherNode?.label}`}
+                            title={`${t("connectedTo")} ${otherNode?.label}`}
                           />
                         );
                       })}
@@ -300,13 +359,13 @@ export function TechStackSection() {
                   className="font-mono text-[10px] font-bold uppercase tracking-widest transition-colors duration-300"
                   style={{ color: activeNode?.color ?? "var(--muted)", margin: 0 }}
                 >
-                  {activeNode ? activeNode.sublabel : "System Details"}
+                  {activeNode ? activeNode.sublabel : t("systemDetails")}
                 </p>
                 <p
                   className="text-lg font-bold transition-colors duration-300 mt-1"
                   style={{ color: "var(--ink)", margin: 0, fontFamily: "var(--font-heading)" }}
                 >
-                  {activeNode ? activeNode.label : "Hover a node"}
+                  {activeNode ? activeNode.label : t("hoverANode")}
                 </p>
               </div>
 
@@ -322,14 +381,14 @@ export function TechStackSection() {
                 >
                   {activeNode
                     ? activeNode.detail
-                    : "Hover any technology node on the left to see its role in the LikasLens pipeline. Each system is purpose-built, not borrowed from a template."}
+                    : t("defaultDetail")}
                 </p>
               </div>
 
               {/* Flow visualization */}
               <div className="px-6 pb-5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  {TECH_NODES.map((node, i) => (
+                  {nodes.map((node, i) => (
                     <div key={node.id} className="flex items-center gap-2">
                       <div
                         className="w-2 h-2 rounded-full transition-all duration-300"
@@ -338,14 +397,14 @@ export function TechStackSection() {
                           boxShadow: hoveredNode === node.id ? `0 0 8px ${node.color}` : "none",
                         }}
                       />
-                      {i < TECH_NODES.length - 1 && (
+                      {i < nodes.length - 1 && (
                         <div className="w-4 h-px" style={{ background: "var(--border)" }} />
                       )}
                     </div>
                   ))}
                 </div>
                 <p className="font-mono text-[9px] text-muted mt-2 tracking-wider uppercase">
-                  Data Flow Pipeline
+                  {t("dataFlowPipeline")}
                 </p>
               </div>
             </div>

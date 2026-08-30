@@ -4,8 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { m, AnimatePresence } from "framer-motion";
 import { Leaf, Fingerprint, Menu, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/utils/supabase/client";
 import { UserNav } from "./user-nav";
+import { LanguageDropdown } from "@likaslens/shared";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Sticky Landing Nav — appears after scrolling past the hero.
@@ -18,26 +20,27 @@ import { UserNav } from "./user-nav";
    - Smooth slide-down entrance
    ───────────────────────────────────────────────────────────────────────────── */
 
-const NAV_LINKS = [
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#ghost", label: "Ghost Mode" },
-  { href: "#impact", label: "Impact" },
-  { href: "#architecture", label: "Architecture" },
-  { href: "#faq", label: "FAQ" },
-  { href: "#install-guide", label: "Install" },
-];
-
 interface StickyLandingNavProps {
   ghostMode: boolean;
   onGhostToggle: (e?: React.MouseEvent) => void;
 }
 
 export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavProps) {
+  const tNav = useTranslations("nav");
   const [visible, setVisible] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeSection, setActiveSection] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+
+  const navLinks = [
+    { href: "#how-it-works", label: tNav("howItWorks") },
+    { href: "#ghost", label: tNav("ghostMode") },
+    { href: "#impact", label: tNav("impact") },
+    { href: "#architecture", label: tNav("architecture") },
+    { href: "#faq", label: tNav("faq") },
+    { href: "#install-guide", label: tNav("install") },
+  ];
 
   useEffect(() => {
     const supabase = createClient();
@@ -64,15 +67,12 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
   }, []);
 
   const handleScroll = useCallback(() => {
-    // Show frosted background after scrolling past a threshold
     setVisible(window.scrollY > 60);
 
-    // Calculate scroll progress
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     setScrollProgress(docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0);
 
-    // Determine active section
-    const sections = NAV_LINKS.map(l => l.href.replace("#", ""));
+    const sections = ["how-it-works", "ghost", "impact", "architecture", "faq", "install-guide"];
     let current = "";
     for (const id of sections) {
       const el = document.getElementById(id);
@@ -86,7 +86,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Call once on mount to set initial state
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
@@ -97,62 +97,58 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="fixed top-0 left-0 right-0 z-[100] transition-all duration-300"
     >
-      {/* Nav bar */}
       <div
-        className="transition-all duration-500"
+        className="absolute top-0 left-0 h-[2px] transition-all duration-150"
         style={{
-          backdropFilter: visible ? "blur(16px)" : "none",
+          width: `${scrollProgress}%`,
+          background: ghostMode ? "#2ee6c8" : "var(--accent)",
+          opacity: visible ? 1 : 0,
+        }}
+      />
+
+      <div
+        className="transition-all duration-300"
+        style={{
           background: visible
-            ? (ghostMode ? "rgba(12, 22, 40, 0.82)" : "rgba(255, 255, 255, 0.82)")
+            ? (ghostMode ? "rgba(13, 26, 18, 0.85)" : "rgba(247, 245, 242, 0.85)")
             : "transparent",
+          backdropFilter: visible ? "blur(16px)" : "none",
           borderBottom: visible
-            ? (ghostMode ? "1px solid rgba(46, 230, 200, 0.08)" : "1px solid rgba(0, 0, 0, 0.06)")
+            ? `1px solid ${ghostMode ? "rgba(46, 230, 200, 0.12)" : "rgba(0, 0, 0, 0.08)"}`
             : "1px solid transparent",
-          paddingTop: visible ? "0" : "8px",
-          paddingBottom: visible ? "0" : "8px",
+          boxShadow: visible
+            ? (ghostMode ? "0 4px 20px -2px rgba(0, 0, 0, 0.5)" : "0 4px 20px -2px rgba(0, 0, 0, 0.05)")
+            : "none",
         }}
       >
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group no-underline">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded-md no-underline"
+            aria-label="LikasLens Home"
+          >
             <img
               src="/images/likas-lens-logo.webp"
-              alt="LikasLens"
-              className="w-7 h-7 object-contain group-hover:scale-110 transition-transform duration-300"
+              alt="LikasLens Logo"
+              className="w-7 h-7 object-contain group-hover:scale-105 transition-transform duration-300"
               style={{ filter: !visible || ghostMode ? "brightness(0) invert(1)" : "none" }}
             />
             <span
-              className="font-heading tracking-[0.15em] text-base font-semibold flex items-center transition-colors duration-500 uppercase"
-              style={{ color: !visible || ghostMode ? "#e8e0d4" : "#111814" }}
+              className="font-mono text-sm font-bold tracking-[0.16em] uppercase transition-colors"
+              style={{ color: !visible || ghostMode ? "#ffffff" : "var(--ink)" }}
             >
-              LIK<span className="font-bold mx-[1px] transition-colors duration-500" style={{ color: !visible || ghostMode ? "#2ee6c8" : "var(--accent)" }}>Λ</span>S LENS
+              LIK<span style={{ color: ghostMode ? "#2ee6c8" : "#2d6a4f" }}>Λ</span>S LENS
             </span>
           </Link>
 
-          {/* Section links - Center */}
-          <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
-            {NAV_LINKS.map(({ href, label }) => {
-              const isActive = activeSection === href.replace("#", "");
-              
-              // When at top (hero), text is white/light. When scrolled, it depends on theme.
-              const defaultColor = !visible || ghostMode ? "rgba(232,224,212,0.7)" : "rgba(17,24,20,0.6)";
-              const activeColor = isActive 
-                ? "#ffffff" // Always white text when active
-                : defaultColor;
-                
-              const activeBg = isActive
-                ? (!visible || ghostMode ? "rgba(46,230,200,0.4)" : "#1b4332") // Translucent bright green on dark, solid dark green on light
-                : "transparent";
-
+          <div className="hidden lg:flex items-center gap-1">
+            {navLinks.map(({ href, label }) => {
+              const sectionId = href.replace("#", "");
+              const isActive = activeSection === sectionId;
               return (
                 <a
                   key={href}
                   href={href}
-                  className="relative px-3 py-1.5 text-[13px] font-medium transition-all duration-300 no-underline rounded-lg hover:text-white"
-                  style={{
-                    color: activeColor,
-                    background: activeBg,
-                  }}
                   onClick={(e) => {
                     e.preventDefault();
                     const target = document.querySelector(href);
@@ -161,6 +157,15 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                       window.scrollTo({ top: y, behavior: "smooth" });
                     }
                   }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all relative"
+                  style={{
+                    color: isActive
+                      ? (ghostMode ? "#2ee6c8" : "var(--accent)")
+                      : (!visible || ghostMode ? "rgba(255, 255, 255, 0.7)" : "rgba(17, 24, 20, 0.65)"),
+                    background: isActive
+                      ? (ghostMode ? "rgba(46, 230, 200, 0.08)" : "rgba(27, 67, 50, 0.06)")
+                      : "transparent",
+                  }}
                 >
                   {label}
                 </a>
@@ -168,40 +173,51 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
             })}
           </div>
 
-          {/* Right side: toggle + auth */}
-          <div className="flex items-center gap-4">
-            {/* Ghost/Civic toggle */}
+          <div className="flex items-center gap-3">
+            <LanguageDropdown
+              buttonClassName={
+                !visible || ghostMode
+                  ? "px-2.5 py-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/10 border border-white/20 transition-all text-xs font-semibold cursor-pointer"
+                  : "px-2.5 py-1.5 rounded-full text-ink/70 hover:text-ink hover:bg-ink/5 border border-ink/10 transition-all text-xs font-semibold cursor-pointer"
+              }
+            />
+
             <button
               suppressHydrationWarning
               onClick={(e) => onGhostToggle(e)}
-              aria-label={ghostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
+              aria-label={ghostMode ? tNav("switchToCivic") : tNav("switchToGhost")}
               aria-pressed={ghostMode}
-              className={`relative flex items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+              className={`relative flex items-center h-8 min-w-[94px] max-w-[120px] rounded-full transition-all duration-300 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
                 ghostMode
-                  ? "bg-secondary/10 border border-secondary/20 shadow-inner"
+                  ? "bg-secondary/15 border border-secondary/30 shadow-inner"
                   : (!visible ? "bg-white/10 border border-white/20" : "bg-ink/5 border border-ink/10 hover:bg-ink/10 shadow-inner")
               }`}
               title="Toggle Ghost Mode"
             >
               <div
-                className={`absolute top-1 left-1 w-6 h-6 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 flex items-center justify-center z-10 ${
-                  ghostMode ? "bg-secondary translate-x-14" : (!visible ? "bg-white translate-x-0" : "bg-page translate-x-0")
+                className={`absolute top-1 w-6 h-6 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 flex items-center justify-center z-10 ${
+                  ghostMode
+                    ? "right-1 bg-secondary"
+                    : (!visible ? "left-1 bg-white" : "left-1 bg-page")
                 }`}
               >
                 {ghostMode ? (
                   <Fingerprint className="w-3.5 h-3.5 text-page" />
                 ) : (
-                  <Leaf className={`w-3.5 h-3.5 ${!visible ? "text-green" : "text-green"}`} />
+                  <Leaf className="w-3.5 h-3.5 text-green" />
                 )}
               </div>
               
-              <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-mono font-bold tracking-widest uppercase">
-                <span className={`transition-opacity duration-300 ${ghostMode ? "opacity-100 text-[#2ee6c8]" : "opacity-0"}`}>
-                  Ghost
-                </span>
-                <span className={`transition-opacity duration-300 ${ghostMode ? "opacity-0" : (!visible ? "opacity-100 text-white" : "opacity-100 text-[#1b4332]")}`}>
-                  Civic
-                </span>
+              <div className="w-full flex items-center pointer-events-none text-[10px] font-mono font-bold tracking-wider uppercase">
+                {ghostMode ? (
+                  <span className="pl-3 pr-8 text-[#2ee6c8] truncate">
+                    {tNav("ghost")}
+                  </span>
+                ) : (
+                  <span className="pl-8 pr-3 text-right w-full truncate" style={{ color: !visible ? "#ffffff" : "#1b4332" }}>
+                    {tNav("civic")}
+                  </span>
+                )}
               </div>
             </button>
 
@@ -209,7 +225,6 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
               <UserNav invert={!visible || ghostMode} />
             </div>
 
-            {/* Mobile Menu Toggle */}
             <div className="flex lg:hidden items-center ml-2">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -224,7 +239,6 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <m.div
@@ -240,7 +254,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
             }}
           >
             <div className="px-5 py-4 flex flex-col gap-4">
-              {NAV_LINKS.map(({ href, label }) => (
+              {navLinks.map(({ href, label }) => (
                 <a
                   key={href}
                   href={href}
@@ -249,7 +263,6 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                   onClick={(e) => {
                     e.preventDefault();
                     setMobileMenuOpen(false);
-                    // Use setTimeout to allow the menu close animation to start before scrolling
                     setTimeout(() => {
                       const target = document.querySelector(href);
                       if (target) {
@@ -273,7 +286,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                     style={{ background: "#2ee6c8", color: "#0d1a12" }}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Dashboard
+                    {tNav("dashboard")}
                   </Link>
                 ) : (
                   <>
@@ -283,7 +296,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                       style={{ color: ghostMode ? "#ffffff" : "#111814" }}
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Log In
+                      {tNav("login")}
                     </Link>
                     <Link
                       href="/register"
@@ -291,7 +304,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                       style={{ background: "#2ee6c8", color: "#0d1a12" }}
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Sign Up
+                      {tNav("signUp")}
                     </Link>
                   </>
                 )}

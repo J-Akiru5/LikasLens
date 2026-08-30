@@ -79,10 +79,22 @@ export function useCamera(initialFacing: FacingMode = "environment"): UseCameraR
         });
       }
 
-      return navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: facing } },
-        audio: false,
-      });
+      try {
+        return await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: facing },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+          audio: false,
+        });
+      } catch {
+        // Fallback to generic video constraints if specific facingMode fails on desktop webcams
+        return await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
+      }
     },
     []
   );

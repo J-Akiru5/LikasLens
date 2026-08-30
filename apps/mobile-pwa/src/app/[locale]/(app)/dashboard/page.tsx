@@ -299,10 +299,10 @@ export default function DashboardPage() {
                       {item.title || "Evidentiary Update"}
                     </div>
                     <p className="text-[11px] text-ink/60 mt-0.5 line-clamp-1 leading-snug">
-                      {item.description || item.action}
+                      {item.description || "Field evidence update"}
                     </p>
                     <div className="text-[10px] font-mono text-ink/40 mt-1">
-                      {item.created_at ? formatDate(new Date(item.created_at), "relative", locale) : "Recently"}
+                      {item.time || "Recently"}
                     </div>
                   </div>
                 </div>

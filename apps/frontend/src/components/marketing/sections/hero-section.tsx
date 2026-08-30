@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import {
   m,
   useScroll,
@@ -78,6 +79,7 @@ interface HeroSectionProps {
 
 
 export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
+  const t = useTranslations("landing");
   const sectionRef = useRef<HTMLElement>(null);
   const [ledger, setLedger] = useState<LedgerEntry[]>(SEED_LEDGER);
   const [counter, setCounter] = useState(0);
@@ -122,9 +124,9 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
 
   // Simulate the live "in transit" marker moving down the ledger.
   useEffect(() => {
-    const t = setInterval(() => setCounter((c) => (c + 1) % ledger.length), 2600);
-    return () => clearInterval(t);
-  }, [ledger.length]);
+    const id = setInterval(() => setCounter((c) => c + 1), 3800);
+    return () => clearInterval(id);
+  }, []);
 
   // Bump the active report ID every few seconds so the feed reads as live.
   useEffect(() => {
@@ -200,7 +202,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 }}
               >
                 <span className="ec-status-dot ec-status-active" style={{ background: "var(--accent-bright)" }} />
-                Civic environmental intelligence
+                {t("readyBanner")}
               </span>
             </m.div>
 
@@ -217,7 +219,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 textShadow: "0 4px 24px rgba(0,0,0,0.6)"
               }}
             >
-              AI-Powered Environmental Protection.
+              {t("heroTitle")}
             </m.h1>
 
             <m.p
@@ -231,9 +233,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 textShadow: "0 2px 12px rgba(0,0,0,0.8)"
               }}
             >
-              Take a photo of any environmental hazard. Our AI instantly analyzes the issue,
-              identifies legal violations, and routes it to the correct government agency.
-              Every case lands on the public record.
+              {t("heroSubtitle")}
             </m.p>
 
             <m.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -251,7 +251,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                   }}
                 >
                   <Camera style={{ width: 16, height: 16 }} />
-                  Report an issue
+                  {t("reportIssue")}
                   <ArrowRight style={{ width: 16, height: 16 }} />
                 </Link>
               </MagneticButton>
@@ -270,7 +270,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                   }}
                 >
                   <BarChart3 style={{ width: 16, height: 16 }} />
-                  See public records
+                  {t("viewPublicReports")}
                 </a>
               </MagneticButton>
             </m.div>
@@ -279,11 +279,11 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
             <m.div variants={fadeUp} style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.5)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 <span className="ec-status-dot ec-status-resolved" />
-                Live ledger · public record
+                {t("liveLedger")}
               </div>
               <span style={{ width: 1, height: 14, background: "rgba(240,237,232,0.14)" }} />
               <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.4)" }}>
-                DENR · DILG · DOST · PCG
+                {t("agencies")}
               </span>
             </m.div>
           </m.div>
@@ -311,7 +311,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span className="ec-status-dot" style={{ background: "var(--accent-bright)", animation: "breathe 3s ease-in-out infinite" }} />
                   <span style={{ fontFamily: "var(--font-data)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(240,237,232,0.55)" }}>
-                    Incident ledger · live
+                    {t("incidentLedgerLive")}
                   </span>
                 </div>
                 <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--accent-bright)", border: "1px solid var(--accent-bright)", borderRadius: 4, padding: "2px 8px" }}>
@@ -323,6 +323,12 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
               <div>
                 {ledger.map((entry, idx) => {
                   const isLive = idx === counter % ledger.length && entry.state === "routing";
+                  const stateLabels: Record<LedgerState, string> = {
+                    routing: t("stateRouting"),
+                    resolved: t("stateResolved"),
+                    critical: t("stateCritical"),
+                    active: t("stateActive"),
+                  };
                   return (
                     <m.div
                       key={entry.id + idx}
@@ -339,7 +345,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                         </span>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "var(--font-data)", fontSize: 9.5, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(240,237,232,0.45)" }}>
                           <span className={`ec-status-dot ec-status-${entry.state}`} />
-                          {STATE_LABEL[entry.state]}
+                          {stateLabels[entry.state] || entry.state}
                         </span>
                       </div>
 
@@ -371,7 +377,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
               <div className="ec-ledger-head" style={{ borderTop: "1px solid var(--ec-rule)", borderBottom: "none" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-data)", fontSize: 10, color: "rgba(240,237,232,0.4)" }}>
                   <span className="ec-status-dot ec-status-resolved" />
-                  All systems operational
+                  {t("allSystemsOperational")}
                 </div>
                 <button
                   onClick={handleInstall}
@@ -384,7 +390,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                     color: "var(--accent-bright)", textDecoration: "underline",
                   }}
                 >
-                  <Download style={{ width: 12, height: 12 }} aria-hidden="true" /> Install app
+                  <Download style={{ width: 12, height: 12 }} aria-hidden="true" /> {t("installAppBtn")}
                 </button>
               </div>
             </div>

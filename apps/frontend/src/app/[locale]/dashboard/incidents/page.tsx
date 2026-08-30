@@ -141,78 +141,142 @@ export default function IncidentsPage() {
   const endCount = Math.min(currentPage * ITEMS_PER_PAGE, filteredIncidents.length);
 
   return (
-    <DashboardLayoutWrapper>
-      <div className="space-y-6">
-        <div className="bento-grid">
-          <div className="span-12">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ink/10 pb-5">
-              <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink">
-                Reported Incidents
-              </h1>
-              <div className="flex items-center gap-3">
-                {/* Wider Search Bar */}
-                <div className="relative w-72 sm:w-80 md:w-96">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40" />
-                  <input
-                    type="text"
-                    inputMode="search"
-                    placeholder="Search ID, title, location, category..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-panel/80 border border-ink/10 text-ink placeholder:text-ink/35 focus:outline-none focus:border-accent/40 focus:ring-2 focus:ring-accent/10 rounded-xl shadow-sm transition-all"
-                  />
-                </div>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`p-2.5 border transition-colors rounded-xl shadow-sm ${showFilters ? "bg-ink/[0.04] border-accent/40 text-accent" : "bg-panel border-ink/10 text-ink/50 hover:text-ink"}`}
-                >
-                  <Filter className="w-4 h-4" />
-                </button>
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearFilters}
-                    className="p-2.5 border border-ink/10 text-ink/40 hover:text-ink transition-colors rounded-xl bg-panel shadow-sm"
-                    title="Clear all filters"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+    <DashboardLayoutWrapper
+      pageTitle="Public Incidents"
+      pageSubtitle="Community-wide environmental reports processed and tracked across the Philippines."
+    >
+      <div className="space-y-5">
+        {/* Unified Top Toolbar: Filters on the Left, Search on the Right */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5 border-b border-ink/10 pb-4">
+          
+          {/* Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
+            <button
+              onClick={() => setSelectedStatus(null)}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                selectedStatus === null
+                  ? "bg-accent text-page shadow-xs"
+                  : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
+              }`}
+            >
+              <span>All Incidents</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
+                  selectedStatus === null
+                    ? "bg-page/20 text-page border border-page/30 shadow-xs"
+                    : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
+                }`}
+              >
+                {tickets.length}
+              </span>
+            </button>
 
-        {showFilters && (
-          <div className="bento-grid">
-            <div className="span-12">
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedStatus(null)}
-                  className={`font-mono text-xs px-3.5 py-1.5 border transition-colors rounded-xl ${
-                    selectedStatus === null
-                      ? "border-accent/40 bg-accent/10 text-accent font-semibold"
-                      : "border-ink/10 text-ink/60 hover:text-ink bg-panel"
-                  }`}
-                >
-                  All Statuses
-                </button>
-                {statuses.map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => setSelectedStatus(status)}
-                    className={`font-mono text-xs px-3.5 py-1.5 border transition-colors rounded-xl uppercase ${
-                      selectedStatus === status
-                        ? "border-accent/40 bg-accent/10 text-accent font-semibold"
-                        : "border-ink/10 text-ink/60 hover:text-ink bg-panel"
-                    }`}
-                  >
-                    {status}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <button
+              onClick={() => setSelectedStatus("open")}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                selectedStatus === "open"
+                  ? "bg-accent text-page shadow-xs"
+                  : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
+              }`}
+            >
+              <span>Received / Open</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
+                  selectedStatus === "open"
+                    ? "bg-page/20 text-page border border-page/30 shadow-xs"
+                    : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
+                }`}
+              >
+                {tickets.filter((t) => t.status === "open").length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSelectedStatus("in_review")}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                selectedStatus === "in_review"
+                  ? "bg-accent text-page shadow-xs"
+                  : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
+              }`}
+            >
+              <span>Under Review</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
+                  selectedStatus === "in_review"
+                    ? "bg-page/20 text-page border border-page/30 shadow-xs"
+                    : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
+                }`}
+              >
+                {tickets.filter((t) => t.status === "in_review").length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSelectedStatus("investigating")}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                selectedStatus === "investigating" || selectedStatus === "assigned"
+                  ? "bg-accent text-page shadow-xs"
+                  : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
+              }`}
+            >
+              <span>Inspectors On Site</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
+                  selectedStatus === "investigating" || selectedStatus === "assigned"
+                    ? "bg-page/20 text-page border border-page/30 shadow-xs"
+                    : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
+                }`}
+              >
+                {tickets.filter((t) => t.status === "investigating" || t.status === "assigned").length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSelectedStatus("resolved")}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                selectedStatus === "resolved" || selectedStatus === "closed"
+                  ? "bg-accent text-page shadow-xs"
+                  : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
+              }`}
+            >
+              <span>Resolved & Cleaned Up</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
+                  selectedStatus === "resolved" || selectedStatus === "closed"
+                    ? "bg-page/20 text-page border border-page/30 shadow-xs"
+                    : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
+                }`}
+              >
+                {tickets.filter((t) => t.status === "resolved" || t.status === "closed").length}
+              </span>
+            </button>
           </div>
-        )}
+
+          {/* Search Input on the Right */}
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="relative w-full sm:w-72 md:w-80">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40" />
+              <input
+                type="text"
+                inputMode="search"
+                placeholder="Search ID, location, title..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-panel/90 border border-ink/10 text-ink placeholder:text-ink/35 focus:outline-none focus:border-accent/40 focus:ring-2 focus:ring-accent/10 rounded-xl shadow-xs transition-all"
+              />
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="p-2 border border-ink/10 text-ink/40 hover:text-ink transition-colors rounded-xl bg-panel shadow-xs shrink-0 cursor-pointer"
+                title="Clear filters"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+        </div>
 
         <div className="bento-grid">
           <div className="span-12">

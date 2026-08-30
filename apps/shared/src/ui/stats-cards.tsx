@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "../utils";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 type Accent = "green" | "amber" | "accent" | "muted";
 
@@ -25,163 +26,141 @@ export interface StatsCardsProps {
   gridClassName?: string;
 }
 
-const accentClass: Record<Accent, string> = {
-  green: "kpi-accent-green",
-  amber: "kpi-accent-amber",
-  accent: "kpi-accent-accent",
-  muted: "kpi-accent-muted",
+const accentColors: Record<Accent, { stroke: string; glow: string; text: string; bgBadge: string }> = {
+  green: { stroke: "#10b981", glow: "rgba(16, 185, 129, 0.15)", text: "text-emerald-500", bgBadge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" },
+  amber: { stroke: "#f59e0b", glow: "rgba(245, 158, 11, 0.15)", text: "text-amber-500", bgBadge: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" },
+  accent: { stroke: "#06b6d4", glow: "rgba(6, 182, 212, 0.15)", text: "text-cyan-500", bgBadge: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20" },
+  muted: { stroke: "#8b5cf6", glow: "rgba(139, 92, 246, 0.15)", text: "text-violet-500", bgBadge: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20" },
 };
 
-const sparklineColor: Record<Accent, string> = {
-  green: "var(--color-green)",
-  amber: "var(--color-amber)",
-  accent: "var(--color-accent)",
-  muted: "var(--muted)",
-};
-
-const trendColor: Record<NonNullable<StatCardItem["trend"]>, string> = {
-  up: "text-green",
-  down: "text-red",
-  flat: "text-muted",
-};
-
-const bgIconColor: Record<Accent, string> = {
-  green: "text-green",
-  amber: "text-amber",
-  accent: "text-accent",
-  muted: "text-muted",
-};
-
-const bgTintClass: Record<Accent, string> = {
-  green: "bg-green/[0.02] hover:bg-green/[0.04]",
-  amber: "bg-amber-500/[0.02] hover:bg-amber-500/[0.04]",
-  accent: "bg-accent/[0.02] hover:bg-accent/[0.04]",
-  muted: "bg-panel",
-};
-
-const valueColorClass: Record<Accent, string> = {
-  green: "text-green",
-  amber: "text-amber-600",
-  accent: "text-accent",
-  muted: "text-ink",
-};
-
-const orbColorClass: Record<Accent, string> = {
-  green: "bg-green",
-  amber: "bg-amber-500",
-  accent: "bg-accent",
-  muted: "bg-ink",
-};
-
-function MiniSparkline({ points, color }: { points: number[]; color: string }) {
-  if (!points.length) return null;
-  const w = 70;
-  const h = 24;
+function SmoothAreaSparkline({ points, color, id }: { points: number[]; color: string; id: string }) {
+  if (!points || points.length < 2) return null;
+  const w = 84;
+  const h = 30;
   const min = Math.min(...points);
   const max = Math.max(...points);
   const span = max - min || 1;
-  const step = w / (points.length - 1 || 1);
-  const path = points
-    .map((p, i) => {
-      const x = i * step;
-      const y = h - ((p - min) / span) * h;
-      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
-    })
-    .join(" ");
+  const step = w / (points.length - 1);
+
+  const coords = points.map((p, i) => {
+    const x = i * step;
+    const y = h - ((p - min) / span) * (h - 8) - 4;
+    return { x, y };
+  });
+
+  // Build smooth bezier path
+  let pathD = `M ${coords[0].x},${coords[0].y}`;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const p0 = coords[i];
+    const p1 = coords[i + 1];
+    const mx = (p0.x + p1.x) / 2;
+    pathD += ` C ${mx},${p0.y} ${mx},${p1.y} ${p1.x},${p1.y}`;
+  }
+
+  const areaD = `${pathD} L ${coords[coords.length - 1].x},${h} L 0,${h} Z`;
+  const lastPoint = coords[coords.length - 1];
+
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true" className="shrink-0 overflow-visible">
-      <path d={path} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <defs>
+        <linearGradient id={`grad-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.0" />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#grad-${id})`} />
+      <path d={pathD} fill="none" stroke={color} strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={lastPoint.x} cy={lastPoint.y} r="2.75" fill={color} />
     </svg>
   );
 }
 
 export function StatsCards({ items, className, gridClassName }: StatsCardsProps) {
   return (
-    <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6", gridClassName, className)}>
-      {items.map((item) => {
+    <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5", gridClassName, className)}>
+      {items.map((item, idx) => {
         const accent = item.accent ?? "accent";
+        const theme = accentColors[accent];
+        const IconComponent = item.icon as any;
+
         return (
           <div
-            key={item.id}
+            key={item.id || idx}
             className={cn(
-              "group relative flex flex-col justify-between rounded-[20px] sm:rounded-[24px] p-4 sm:p-6 overflow-hidden transition-all duration-500",
-              "bg-panel/60 backdrop-blur-xl border border-ink/5 dark:border-white/5 shadow-[0_4px_24px_-8px_rgba(0,0,0,0.02)] dark:shadow-none",
-              "hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.06)] hover:-translate-y-1 hover:border-ink/10 hover:dark:border-white/10",
-              accentClass[accent]
+              "group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl p-5 sm:p-6 overflow-hidden transition-all duration-300",
+              "bg-panel/90 backdrop-blur-xl border border-ink/[0.08] dark:border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)]",
+              "hover:-translate-y-1 hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.08)] hover:border-ink/15 dark:hover:border-white/20"
             )}
           >
-            {/* Glowing Orb */}
-            <div 
-              className={cn(
-                "absolute -top-12 -right-12 w-40 h-40 rounded-full blur-[50px] opacity-[0.08] dark:opacity-[0.15] group-hover:opacity-[0.15] dark:group-hover:opacity-[0.25] transition-opacity duration-700 pointer-events-none",
-                orbColorClass[accent]
-              )}
+            {/* Top glass rim highlight */}
+            <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/50 dark:via-white/20 to-transparent pointer-events-none" />
+
+            {/* Ambient Radial Hover Glow */}
+            <div
+              className="absolute -top-10 -right-10 w-36 h-36 rounded-full blur-[40px] opacity-0 group-hover:opacity-40 transition-opacity duration-500 pointer-events-none"
+              style={{ backgroundColor: theme.stroke }}
             />
 
-            {/* Semantic Background Icon */}
-            {item.icon && (
-              <div 
-                className={cn(
-                  "absolute -right-4 -bottom-4 transition-transform duration-700 pointer-events-none group-hover:scale-110 group-hover:-rotate-3",
-                  bgIconColor[accent]
+            {/* Header: Category chip & Icon */}
+            <div className="relative z-10 flex items-center justify-between gap-2 mb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                {IconComponent && (
+                  <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border", theme.bgBadge)}>
+                    {React.isValidElement(item.icon) ? (
+                      item.icon
+                    ) : (
+                      <IconComponent className="w-3.5 h-3.5" />
+                    )}
+                  </div>
                 )}
-                style={{ opacity: 0.03 }}
-              >
-                {React.isValidElement(item.icon) 
-                  ? React.cloneElement(item.icon as React.ReactElement, { className: "w-36 h-36" } as any) 
-                  : React.createElement(item.icon as any, { className: "w-36 h-36" })
-                }
-              </div>
-            )}
-            
-            <div className="relative z-10 flex items-start justify-between gap-2 sm:gap-4">
-              <div className="space-y-1 sm:space-y-2 min-w-0 flex-1">
-                {item.category ? (
-                  <div className="font-mono text-[8.5px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-ink/40 line-clamp-2">
+                {item.category && (
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-ink/60 truncate">
                     {item.category}
-                  </div>
-                ) : null}
-                <div className={cn(
-                  "text-2xl sm:text-5xl font-black tracking-tighter tabular-nums leading-none",
-                  valueColorClass[accent]
-                )}>
-                  {item.value}
-                </div>
-              </div>
-              
-              <div className="shrink-0 p-1 transition-all duration-300">
-                {item.sparkline ? (
-                  <MiniSparkline points={item.sparkline} color={sparklineColor[accent]} />
-                ) : item.icon && (
-                  <div className={cn("w-6 h-6 opacity-40", valueColorClass[accent])}>
-                    {React.isValidElement(item.icon) 
-                      ? React.cloneElement(item.icon as React.ReactElement, { className: "w-full h-full" } as any) 
-                      : React.createElement(item.icon as any, { className: "w-full h-full" })
-                    }
-                  </div>
+                  </span>
                 )}
               </div>
+
+              {/* Status pulse dot */}
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: theme.stroke }} />
+                <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: theme.stroke }} />
+              </span>
             </div>
 
-            <div className="relative z-10 flex items-center justify-between gap-3 mt-6 pt-4 border-t border-ink/5">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-ink/60 truncate">
+            {/* Hero Value & Sparkline */}
+            <div className="relative z-10 flex items-baseline justify-between gap-3 my-1">
+              <div className="text-3xl sm:text-4xl lg:text-[42px] font-black tracking-tight leading-none text-ink font-sans">
+                {item.value}
+              </div>
+              {item.sparkline && (
+                <SmoothAreaSparkline points={item.sparkline} color={theme.stroke} id={`${item.id}-${idx}`} />
+              )}
+            </div>
+
+            {/* Footer: Metric Label & Trend Chip */}
+            <div className="relative z-10 flex items-center justify-between gap-2 mt-4 pt-3 border-t border-ink/[0.06] dark:border-white/[0.06]">
+              <span className="text-xs font-semibold text-ink/70 uppercase tracking-wide truncate">
                 {item.label}
               </span>
+
               {item.trend && (
                 <span
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider",
-                    item.trend === "up" ? "bg-green/10 text-green" : 
-                    item.trend === "down" ? "bg-red/10 text-red" : 
-                    "bg-ink/5 text-ink/60"
+                    "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0 border",
+                    item.trend === "up"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                      : item.trend === "down"
+                      ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                      : "bg-ink/[0.04] text-ink/70 dark:bg-white/[0.06] dark:text-white/70 border-ink/10"
                   )}
                 >
-                  <span className={cn(
-                    "w-1.5 h-1.5 rounded-full",
-                    item.trend === "up" ? "bg-green" : 
-                    item.trend === "down" ? "bg-red" : 
-                    "bg-ink/40"
-                  )} />
+                  {item.trend === "up" ? (
+                    <TrendingUp className="w-3 h-3" />
+                  ) : item.trend === "down" ? (
+                    <TrendingDown className="w-3 h-3" />
+                  ) : (
+                    <Minus className="w-3 h-3" />
+                  )}
                   {item.delta ?? (item.trend === "up" ? "Up" : item.trend === "down" ? "Down" : "Flat")}
                 </span>
               )}
