@@ -226,3 +226,27 @@ body {
 .leaflet-container {
   border-radius: 1rem;
 }
+
+/* ── 2026 Native Circular View Transition Theme Animation ────────────── */
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  display: block;
+  height: 100%;
+  overflow: clip;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 999999;
+}
+
+
