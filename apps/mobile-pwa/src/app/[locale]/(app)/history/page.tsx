@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import {
   Search,
   Loader2,
@@ -8,7 +9,7 @@ import {
   Clock,
   EyeOff,
   ShieldCheck,
-  CheckCircle2,
+  CircleCheck,
   Sparkles,
   Building2,
   ShieldAlert,
@@ -137,43 +138,80 @@ export default function HistoryPage() {
 
         let list: ReportEntry[] = [];
 
-        // 1. Fetch user tickets from Supabase
-        const ticketsRes = await getTickets({ per_page: "50" });
-        if (ticketsRes.success && ticketsRes.data && user) {
-          list = ticketsRes.data
-            .filter((t: any) => t.reporter_user_id === user.id)
-            .map((t: any) => ({
+        // 1. Direct Supabase Query
+        try {
+          let query = supabase.from("tickets").select("*").order("created_at", { ascending: false });
+          if (user?.id) {
+            query = query.or(`reporter_user_id.eq.${user.id},reporter_user_id.is.null`);
+          }
+          const { data: sbTickets, error: sbErr } = await query.limit(50);
+          if (!sbErr && sbTickets && sbTickets.length > 0) {
+            const userSbTickets = user?.id
+              ? sbTickets.filter((t: any) => t.reporter_user_id === user.id || !t.reporter_user_id)
+              : sbTickets;
+
+            list = userSbTickets.map((t: any) => ({
               id: t.id,
-              display_id: t.display_id || `LL-${t.id.slice(0, 8)}`,
-              title: t.title,
+              display_id: t.display_id || `LL-${t.id.slice(0, 8).toUpperCase()}`,
+              title: t.title || `${t.ai_triage_summary?.replace(/_/g, " ") || "Incident"} Report`,
               category: t.category || t.ai_triage_summary || "General",
               location: t.location || t.address_text || "Coordinates Recorded",
               status: t.status || "open",
               created_at: t.created_at,
-              isGhost: false,
+              isGhost: !t.reporter_user_id,
             }));
+          }
+        } catch (err) {
+          console.warn("Direct Supabase fetch fallback:", err);
         }
 
-        // 2. Merge Ghost Mode reports from device vault
-        try {
-          const rawGhost = localStorage.getItem("likaslens_anonymous_reports");
-          if (rawGhost) {
-            const ghostList = JSON.parse(rawGhost);
-            const ghostEntries: ReportEntry[] = ghostList.map((g: any) => ({
-              id: g.id,
-              display_id: `GHOST-${g.id.slice(0, 6).toUpperCase()}`,
-              title: `${g.category?.replace(/_/g, " ") || "Incident"} (Ghost Mode)`,
-              category: g.category || "General",
-              location: g.location || "Location Recorded",
-              status: g.status || "open",
-              created_at: g.date || new Date().toISOString(),
-              isGhost: true,
-            }));
+        // 2. Fallback to REST API if Supabase query returned empty
+        if (list.length === 0) {
+          try {
+            const ticketsRes = await getTickets({ per_page: "50" });
+            if (ticketsRes.success && ticketsRes.data) {
+              const raw = ticketsRes.data;
+              const filteredRaw = user?.id
+                ? raw.filter((t: any) => t.reporter_user_id === user.id || !t.reporter_user_id)
+                : raw;
 
-            const existingIds = new Set(list.map((r) => r.id));
-            const newGhosts = ghostEntries.filter((g) => !existingIds.has(g.id));
-            list = [...newGhosts, ...list];
-          }
+              list = filteredRaw.map((t: any) => ({
+                id: t.id,
+                display_id: t.display_id || `LL-${t.id.slice(0, 8).toUpperCase()}`,
+                title: t.title || `${t.ai_triage_summary?.replace(/_/g, " ") || "Incident"} Report`,
+                category: t.category || t.ai_triage_summary || "General",
+                location: t.location || t.address_text || "Coordinates Recorded",
+                status: t.status || "open",
+                created_at: t.created_at,
+                isGhost: !t.reporter_user_id,
+              }));
+            }
+          } catch {}
+        }
+
+        // 3. Merge Local Device Submissions (Civic + Ghost Mode)
+        try {
+          const userSubRaw = localStorage.getItem("likaslens_user_submissions");
+          const ghostRaw = localStorage.getItem("likaslens_anonymous_reports");
+          const localList: any[] = [
+            ...(userSubRaw ? JSON.parse(userSubRaw) : []),
+            ...(ghostRaw ? JSON.parse(ghostRaw) : []),
+          ];
+
+          const localEntries: ReportEntry[] = localList.map((g: any) => ({
+            id: g.id,
+            display_id: g.display_id || (g.isGhost ? `GHOST-${g.id.slice(0, 6).toUpperCase()}` : `LL-${g.id.slice(0, 8).toUpperCase()}`),
+            title: g.title || `${g.category?.replace(/_/g, " ") || "Incident"} (${g.isGhost ? "Ghost Mode" : "Civic Mode"})`,
+            category: g.category || "General",
+            location: g.location || "Location Recorded",
+            status: g.status || "open",
+            created_at: g.date || g.created_at || new Date().toISOString(),
+            isGhost: g.isGhost ?? true,
+          }));
+
+          const existingIds = new Set(list.map((r) => r.id));
+          const newLocals = localEntries.filter((g) => !existingIds.has(g.id));
+          list = [...newLocals, ...list];
         } catch {}
 
         setReports(list);
@@ -222,10 +260,16 @@ export default function HistoryPage() {
   return (
     <div className="min-h-full pb-24 bg-page">
       <header className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10 px-4 h-16 flex items-center justify-between">
-        <h1 className="ios-large-title ios-large-title--xl">My Submissions</h1>
-        <span className="text-xs font-mono font-bold text-ink/50 bg-ink/5 px-2.5 py-1 rounded-full">
-          {reports.length} total
-        </span>
+        <div>
+          <h1 className="text-xl font-bold text-ink tracking-tight">My Submissions</h1>
+          <p className="text-[11px] text-ink/50 font-mono">{reports.length} personal record{reports.length !== 1 ? "s" : ""}</p>
+        </div>
+        <Link
+          href="/incidents"
+          className="px-3 py-1.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono text-xs font-bold hover:bg-blue-500/20 transition-all flex items-center gap-1"
+        >
+          <span>Community Feed</span>
+        </Link>
       </header>
 
       <main className="pb-6">

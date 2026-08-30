@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { BarChart3, TrendingUp, Users, Loader2 } from "lucide-react";
+import { BarChart3, TrendingUp, Users, Loader2, Clock, Activity } from "lucide-react";
 import { laravelGet, showToast, Skeleton, AnimatedCounter, RevealSection, PulseBadge } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse } from "@likaslens/shared";
 import { AqiGauge } from "@/components/charts/aqi-gauge";
@@ -29,7 +29,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000);
+    const interval = setInterval(fetchData, 30 * 1000);
     return () => clearInterval(interval);
   }, [fetchData]);
 
@@ -91,6 +91,36 @@ export default function AnalyticsPage() {
           </div>
         </RevealSection>
 
+        {/* Additional KPI Cards */}
+        <RevealSection stagger={0.15}>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="ios-grouped-list p-4">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-2">
+                <Clock className="w-5 h-5 text-blue-600" />
+              </div>
+              <span className="text-[10px] font-bold text-ink/40 uppercase tracking-wider">Avg Response</span>
+              <span className="text-3xl font-black text-blue-600 tracking-tighter tabular-nums mt-1 block">
+                {stats?.avg_response_minutes != null ? (
+                  <><AnimatedCounter value={stats.avg_response_minutes} /><span className="text-lg">m</span></>
+                ) : "—"}
+              </span>
+              <span className="text-[9px] font-mono text-ink/40">vs 30m SLA</span>
+            </div>
+            <div className="ios-grouped-list p-4">
+              <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-2">
+                <Activity className="w-5 h-5 text-purple-600" />
+              </div>
+              <span className="text-[10px] font-bold text-ink/40 uppercase tracking-wider">System Load</span>
+              <span className="text-3xl font-black text-purple-600 tracking-tighter tabular-nums mt-1 block">
+                {stats?.active_incidents != null ? (
+                  <><AnimatedCounter value={stats.active_incidents} /><span className="text-lg">%</span></>
+                ) : "—"}
+              </span>
+              <span className="text-[9px] font-mono text-ink/40">Active cases</span>
+            </div>
+          </div>
+        </RevealSection>
+
         {/* Active Citizens */}
         <RevealSection>
           <div className="bg-gradient-to-br from-green to-accent p-5 rounded-[2rem] text-page shadow-lg relative overflow-hidden">
@@ -141,7 +171,7 @@ export default function AnalyticsPage() {
         {lastUpdated && (
           <div className="text-center py-2">
             <span className="text-[10px] text-ink/30 font-mono">
-              Updated {lastUpdated.toLocaleTimeString()}
+              Auto-refreshes every 30s - Updated {lastUpdated.toLocaleTimeString()}
             </span>
           </div>
         )}

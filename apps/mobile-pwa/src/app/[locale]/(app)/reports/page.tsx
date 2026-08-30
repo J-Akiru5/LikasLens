@@ -200,6 +200,44 @@ export default function ReportsAnalyticsPage() {
         {/* Violation Breakdown */}
         <ViolationDonut />
 
+        {/* Incident Types Chart */}
+        <div className="ios-grouped-list p-4">
+          <p className="text-[10px] font-bold text-ink/40 uppercase tracking-wider mb-3">Incident Types</p>
+          {(() => {
+            const typeBreakdown = Object.entries(
+              tickets.reduce((acc, t) => {
+                const type = (t.category || "Unknown").replace(/_/g, " ");
+                acc[type] = (acc[type] || 0) + 1;
+                return acc;
+              }, {} as Record<string, number>)
+            )
+              .map(([type, count]) => ({ type, count }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 8);
+            const maxTypeCount = Math.max(...typeBreakdown.map((t) => t.count), 1);
+            return typeBreakdown.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-ink/30">
+                <PieChart className="w-8 h-8 mb-2 opacity-50" strokeWidth={1.5} />
+                <p className="text-xs font-medium">No type data yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {typeBreakdown.map(({ type, count }) => (
+                  <div key={type}>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-ink/60 font-medium">{type}</span>
+                      <span className="font-mono text-ink/40">{count} ({totalCount > 0 ? Math.round((count / totalCount) * 100) : 0}%)</span>
+                    </div>
+                    <div className="h-2 bg-ink/10 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500/50 rounded-full" style={{ width: `${(count / maxTypeCount) * 100}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+
         {/* Status Breakdown */}
         <div className="ios-grouped-list p-4">
           <p className="text-[10px] font-bold text-ink/40 uppercase tracking-wider mb-3">By Status</p>

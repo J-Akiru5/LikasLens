@@ -1,23 +1,23 @@
 "use client";
 
-import { createContext, useContext, useCallback, useRef, type ReactNode } from "react";
+import { createContext, useContext, useCallback, useState, useEffect, type ReactNode } from "react";
 
 interface PullToRefreshContextValue {
+  refreshFn: (() => Promise<void>) | null;
   setRefresh: (fn: (() => Promise<void>) | null) => void;
 }
 
 const PullToRefreshContext = createContext<PullToRefreshContextValue | null>(null);
 
 export function PullToRefreshProvider({ children }: { children: ReactNode }) {
-  const ref = useRef<(() => Promise<void>) | null>(null);
+  const [refreshFn, setRefreshFn] = useState<(() => Promise<void>) | null>(null);
 
   const setRefresh = useCallback((fn: (() => Promise<void>) | null) => {
-    ref.current = fn;
-    (globalThis as any).__likaslens_refresh = fn;
+    setRefreshFn(() => fn);
   }, []);
 
   return (
-    <PullToRefreshContext.Provider value={{ setRefresh }}>
+    <PullToRefreshContext.Provider value={{ refreshFn, setRefresh }}>
       {children}
     </PullToRefreshContext.Provider>
   );
@@ -25,13 +25,20 @@ export function PullToRefreshProvider({ children }: { children: ReactNode }) {
 
 export function usePullToRefresh(refreshFn: () => Promise<void> | void) {
   const ctx = useContext(PullToRefreshContext);
-  if (!ctx) return;
+  const setRefresh = ctx?.setRefresh;
 
-  ctx.setRefresh(async () => {
-    await refreshFn();
-  });
+  useEffect(() => {
+    if (!setRefresh) return;
+    setRefresh(async () => {
+      await refreshFn();
+    });
+    return () => {
+      setRefresh(null);
+    };
+  }, [setRefresh, refreshFn]);
 }
 
 export function usePullToRefreshFn() {
-  return (globalThis as any).__likaslens_refresh ?? null;
+  const ctx = useContext(PullToRefreshContext);
+  return ctx?.refreshFn ?? null;
 }

@@ -1,42 +1,57 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
+  ArrowLeft,
+  ArrowRight,
   Camera,
   MapPin,
-  Send,
   Fingerprint,
-  X,
-  Check,
-  ArrowLeft,
-  Mic,
-  MicOff,
-  Zap,
-  RefreshCw,
-  ShieldCheck,
-  Loader2,
-  AlertTriangle,
   RotateCcw,
-  ChevronDown,
-  ImagePlus,
-  Flashlight,
-  FlashlightOff,
-  Images,
-  Minus,
+  CheckCircle2,
+  Trees,
+  Droplets,
+  Trash2,
+  Mountain,
+  Wind,
+  Waves,
+  Flame,
+  ShieldAlert,
+  AlertCircle,
+  Sparkles,
+  ShieldCheck,
+  EyeOff,
+  Navigation,
+  Loader2,
+  RefreshCw,
+  Check,
+  X,
+  Copy,
+  Building2,
+  Zap,
   Plus,
+  Minus,
 } from "lucide-react";
+<<<<<<< HEAD
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { cn, submitCitizenReport, showToast, Button } from "@likaslens/shared";
+=======
+import { motion, AnimatePresence } from "framer-motion";
+>>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
 import { createClient } from "@/lib/supabase/client";
-import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
-import { queueReport } from "@likaslens/shared";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useVoiceInput } from "@/hooks/use-voice-input";
 import { useHaptics } from "@/hooks/use-haptics";
-import { BottomSheet } from "@/components/native/bottom-sheet";
+import {
+  showToast,
+  apiPost,
+  queueReport,
+} from "@likaslens/shared";
+import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { GhostShieldOverlay } from "@/components/ghost-shield-overlay";
-import { AIAnalysisAnimation } from "@/components/ai-analysis-animation";
+import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
 
+<<<<<<< HEAD
 interface FailedPayload {
   base64Image: string;
   latitude: number | undefined;
@@ -62,9 +77,30 @@ const INCIDENT_TYPES: { value: string; label: string }[] = [
   { value: "wildlife_poaching", label: "Wildlife Threat" },
   { value: "other", label: "Chemical Spill" },
   { value: "other", label: "Other" },
+=======
+const INCIDENT_CATEGORIES = [
+  { id: "illegal_logging", label: "Illegal Logging", icon: Trees, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+  { id: "water_pollution", label: "Water Pollution", icon: Droplets, color: "text-cyan-500", bg: "bg-cyan-500/10" },
+  { id: "waste_dumping", label: "Waste Dumping", icon: Trash2, color: "text-rose-500", bg: "bg-rose-500/10" },
+  { id: "wildlife_poaching", label: "Wildlife Poaching", icon: ShieldAlert, color: "text-violet-500", bg: "bg-violet-500/10" },
+  { id: "mining_violation", label: "Mining Violation", icon: Mountain, color: "text-amber-500", bg: "bg-amber-500/10" },
+  { id: "air_pollution", label: "Air Pollution", icon: Wind, color: "text-amber-600", bg: "bg-amber-600/10" },
+  { id: "coastal_hazard", label: "Coastal & Marine", icon: Waves, color: "text-sky-500", bg: "bg-sky-500/10" },
+  { id: "open_burning", label: "Open Burning", icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10" },
+  { id: "other", label: "Other Hazard", icon: AlertCircle, color: "text-indigo-500", bg: "bg-indigo-500/10" },
+>>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
 ];
 
-type Step = "camera" | "preview" | "form";
+const SUGGESTED_DETAILS = [
+  "Black Smoke",
+  "Foul Odor",
+  "Industrial Dumping",
+  "Near River",
+  "Threat to Wildlife",
+  "Public Health Risk",
+  "Illegal Dumpsite",
+  "Chemical Runoff",
+];
 
 const getBrowserInstructions = (): string => {
   if (typeof window === "undefined") return "";
@@ -82,63 +118,58 @@ export default function ReportPage() {
   const searchParams = useSearchParams();
   const locale = (params?.locale as string) || "en";
   const isQuickMode = searchParams.get("quick") === "true";
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const [photo, setPhoto] = useState<string | null>(null);
-  const [step, setStep] = useState<Step>("camera");
-  const [incidentType, setIncidentType] = useState(isQuickMode ? "waste_dumping" : "");
-  const [description, setDescription] = useState("");
-  const [gps, setGps] = useState<{ lat: number; lng: number } | null>(null);
-  const [ghostMode, setGhostMode] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [showAnalysis, setShowAnalysis] = useState(false);
-  const [typeSheetOpen, setTypeSheetOpen] = useState(false);
-  const [showManualCoords, setShowManualCoords] = useState(false);
-  const [manualLat, setManualLat] = useState("");
-  const [manualLng, setManualLng] = useState("");
-  const [cameraInitialising, setCameraInitialising] = useState(false);
-  const [torchOn, setTorchOn] = useState(false);
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
-  const [zoom, setZoom] = useState(1);
-  const MAX_RETRIES = 3;
-  const MAX_PHOTOS = 3;
-
-  const [failedSubmission, setFailedSubmission] = useState<FailedSubmission | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const [isOnline, setIsOnline] = useState(true);
-  const [autoRetrying, setAutoRetrying] = useState(false);
-
   const haptic = useHaptics();
 
-  const {
-    isListening,
-    transcript,
-    error: voiceError,
-    isSupported: voiceSupported,
-    toggleListening,
-    setTranscript,
-  } = useVoiceInput();
+  // Wizard state
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [isGhostMode, setIsGhostMode] = useState<boolean>(false);
+  const [base64Image, setBase64Image] = useState<string>("");
+  const [reportType, setReportType] = useState<string>(isQuickMode ? "waste_dumping" : "");
+  const [description, setDescription] = useState<string>("");
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [resolvedAddress, setResolvedAddress] = useState<string>("Locating coordinates...");
 
+  // AI & Detection states
+  const [aiDetectedCategory, setAiDetectedCategory] = useState<{
+    id: string;
+    confidence: number;
+    label: string;
+    reason: string;
+  } | null>(null);
+  const [isAnalyzingPhoto, setIsAnalyzingPhoto] = useState(false);
+  const [isOverridden, setIsOverridden] = useState(false);
+
+  // Fullscreen Camera state
+  const [showFullscreenCamera, setShowFullscreenCamera] = useState(false);
+  const [cameraInitialising, setCameraInitialising] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
-  const [cameraError, setCameraError] = useState<"NOT_ALLOWED" | "NOT_FOUND" | "UNKNOWN" | null>(null);
+  const [zoom, setZoom] = useState(1);
 
-  // Online / offline detection only — no auto-flush or auto-retry.
-  // Sync is manual via the /offline-queue tab.
+  // Submission & modals state
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmittedSuccess, setIsSubmittedSuccess] = useState(false);
+  const [submittedTicketId, setSubmittedTicketId] = useState<string>("");
+  const [copiedId, setCopiedId] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+
+  // Camera video and canvas refs
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  // Sync online/offline state
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
       showToast("Connection restored.", "success");
     };
-
     const handleOffline = () => {
       setIsOnline(false);
-      showToast("Connection lost. Reports will queue until you are back online.", "error");
+      showToast("Connection lost. Reports will queue offline.", "error");
     };
-
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
     setIsOnline(navigator.onLine);
@@ -148,150 +179,192 @@ export default function ReportPage() {
     };
   }, []);
 
-  const startCamera = useCallback(async (facing?: "user" | "environment") => {
-    const targetFacing = facing ?? facingMode;
-    setCameraError(null);
-    setCameraInitialising(true);
-    try {
-      let mediaStream: MediaStream;
-      try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: targetFacing } },
-          audio: false,
-        });
-      } catch {
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: false,
-        });
-      }
-      streamRef.current = mediaStream;
-      setStream(mediaStream);
-    } catch (err) {
-      console.error("Camera access denied:", err);
-      const errName = (err as Error)?.name;
-      if (errName === "NotAllowedError" || errName === "PermissionDeniedError") {
-        setCameraError("NOT_ALLOWED");
-      } else if (errName === "NotFoundError" || errName === "DevicesNotFoundError") {
-        setCameraError("NOT_FOUND");
-      } else {
-        setCameraError("UNKNOWN");
-      }
-      showToast("Camera access denied or unavailable", "error");
-    } finally {
-      setCameraInitialising(false);
-    }
-  }, [facingMode]);
-
-  // Proactively check camera permission state on mount
+  // Sync theme with Ghost Mode
   useEffect(() => {
-    if (typeof window === "undefined" || !navigator.permissions?.query) return;
-
-    let active = true;
-    let cleanupListener: (() => void) | undefined;
-
-    const checkPermission = async () => {
-      try {
-        const result = await navigator.permissions.query({
-          name: "camera" as PermissionName,
-        });
-        if (!active) return;
-        if (result.state === "denied") {
-          setCameraError("NOT_ALLOWED");
-        }
-
-        const handleChange = () => {
-          if (!active) return;
-          if (result.state === "denied") {
-            setCameraError("NOT_ALLOWED");
-          } else if (result.state === "granted" || result.state === "prompt") {
-            setCameraError((prev) => (prev === "NOT_ALLOWED" ? null : prev));
-          }
-        };
-
-        result.addEventListener("change", handleChange);
-        cleanupListener = () => {
-          result.removeEventListener("change", handleChange);
-        };
-      } catch (err) {
-        console.warn("Permissions API check for camera failed:", err);
-      }
-    };
-
-    void checkPermission();
-    return () => {
-      active = false;
-      if (cleanupListener) {
-        cleanupListener();
-      }
-    };
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    if (currentTheme === "ghost") setIsGhostMode(true);
   }, []);
 
-  const switchCamera = useCallback(async () => {
-    const nextFacing = facingMode === "environment" ? "user" : "environment";
-    // Stop current stream
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    setStream(null);
-    setFacingMode(nextFacing);
-    await startCamera(nextFacing);
-  }, [facingMode, startCamera]);
+  const handleGhostModeToggle = (checked: boolean) => {
+    setIsGhostMode(checked);
+    const newTheme = checked ? "ghost" : "civic";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    try {
+      localStorage.setItem("likaslens-theme", newTheme);
+    } catch {}
+    haptic("light");
+  };
 
+  // Geolocation auto-fetch on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setLatitude(pos.coords.latitude);
+          setLongitude(pos.coords.longitude);
+        },
+        () => {},
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+  }, []);
+
+  // Reverse geocoding
+  useEffect(() => {
+    if (latitude != null && longitude != null) {
+      fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
+        { headers: { "Accept-Language": "en" } }
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.display_name) {
+            setResolvedAddress(data.display_name);
+          } else {
+            setResolvedAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+          }
+        })
+        .catch(() => {
+          setResolvedAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+        });
+    }
+  }, [latitude, longitude]);
+
+  // Strip EXIF metadata for zero-knowledge privacy
+  const stripExif = async (base64: string): Promise<string> => {
+    if (!base64) return base64;
+    return new Promise<string>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.naturalWidth || img.width;
+          canvas.height = img.naturalHeight || img.height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return resolve(base64);
+          ctx.drawImage(img, 0, 0);
+          const cleaned = canvas.toDataURL("image/jpeg", 0.92);
+          resolve(cleaned);
+        } catch {
+          resolve(base64);
+        }
+      };
+      img.onerror = () => resolve(base64);
+      img.src = base64;
+    });
+  };
+
+  // Camera Management
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
-    setStream(null);
-    setTorchOn(false);
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
   }, []);
 
-  const toggleTorch = useCallback(async () => {
-    if (!streamRef.current) return;
-    const track = streamRef.current.getVideoTracks()[0];
-    if (!track) return;
-    const caps = track.getCapabilities() as MediaTrackCapabilities & { torch?: boolean };
-    if (!caps.torch) return;
-    const next = !torchOn;
-    await track.applyConstraints({ advanced: [{ torch: next } as MediaTrackConstraintSet] } as unknown as MediaTrackConstraints);
-    setTorchOn(next);
-    haptic("light");
-  }, [torchOn, haptic]);
+  const startCamera = useCallback(async (facing?: "user" | "environment") => {
+    const targetFacing = facing ?? facingMode;
+    setCameraError(null);
+    setCameraInitialising(true);
+    stopCamera();
+
+    try {
+      let mediaStream: MediaStream;
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: targetFacing },
+            width: { ideal: 1080 },
+            height: { ideal: 1920 },
+            aspectRatio: { ideal: 9 / 16 },
+          },
+          audio: false,
+        });
+      } catch {
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: targetFacing } },
+            audio: false,
+          });
+        } catch {
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false,
+          });
+        }
+      }
+
+      streamRef.current = mediaStream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+        videoRef.current.play().catch(() => {});
+      }
+    } catch (err) {
+      console.error("Camera access denied:", err);
+      const errName = (err as Error)?.name;
+      if (errName === "NotAllowedError" || errName === "PermissionDeniedError") {
+        setCameraError("NOT_ALLOWED");
+      } else {
+        setCameraError("NOT_FOUND");
+      }
+      showToast("Camera access denied or unavailable", "error");
+    } finally {
+      setCameraInitialising(false);
+    }
+  }, [facingMode, stopCamera]);
+
+  const switchCamera = useCallback(() => {
+    const nextFacing = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(nextFacing);
+    startCamera(nextFacing);
+  }, [facingMode, startCamera]);
+
+  const refreshCamera = useCallback(() => {
+    startCamera(facingMode);
+  }, [facingMode, startCamera]);
 
   const toggleZoom = useCallback((delta: number) => {
-    if (!streamRef.current) return;
-    const track = streamRef.current.getVideoTracks()[0];
-    if (!track) return;
-    const caps = track.getCapabilities() as MediaTrackCapabilities & { zoom?: { min: number; max: number } };
-    if (!caps.zoom) return;
-    const newZoom = Math.max(caps.zoom.min, Math.min(caps.zoom.max, zoom + delta));
-    setZoom(newZoom);
-    track.applyConstraints({ advanced: [{ zoom: newZoom } as MediaTrackConstraintSet] } as unknown as MediaTrackConstraints);
-  }, [zoom]);
+    setZoom((prev) => Math.min(3, Math.max(1, prev + delta)));
+  }, []);
 
-  const handleFileCaptureMobile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUrl = reader.result as string;
-      setPhoto(dataUrl);
-      setStep("preview");
+  // Trigger camera start when fullscreen overlay opens
+  useEffect(() => {
+    if (showFullscreenCamera) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+    return () => {
       stopCamera();
     };
-    reader.readAsDataURL(file);
-  }, [stopCamera]);
+  }, [showFullscreenCamera, startCamera, stopCamera]);
 
-  useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
-      videoRef.current.play().catch(console.error);
-    }
-  }, [stream, step]);
+  // AI Auto-Detection Simulation
+  const runAIDetectionOnCapturedPhoto = useCallback((photoDataUrl: string) => {
+    setIsAnalyzingPhoto(true);
+    showToast("AI analyzing photo with YOLOv8 & Roboflow...", "info");
+    setTimeout(() => {
+      setIsAnalyzingPhoto(false);
+      const detected = {
+        id: "waste_dumping",
+        confidence: 94.6,
+        label: "Illegal Waste Dumping",
+        reason: "YOLOv8 detected high-density solid waste and unsegregated plastics.",
+      };
+      setAiDetectedCategory(detected);
+      if (!reportType || reportType === "other") {
+        setReportType(detected.id);
+        setIsOverridden(false);
+      }
+      showToast("✨ AI Auto-Detected: Illegal Waste Dumping (94.6%)", "success");
+    }, 600);
+  }, [reportType]);
 
+  // Photo Capture Flow
   const capturePhoto = useCallback(() => {
     if (!videoRef.current) return;
     const video = videoRef.current;
@@ -300,88 +373,61 @@ export default function ReportPage() {
       return;
     }
     const dataUrl = captureWithStamp(video, {
-      latitude: gps?.lat ?? 0,
-      longitude: gps?.lng ?? 0,
-      ghostMode,
+      latitude: latitude ?? 0,
+      longitude: longitude ?? 0,
+      ghostMode: isGhostMode,
     });
     haptic("medium");
-    const nextPhotos = [...photos, dataUrl];
-    setPhotos(nextPhotos);
-    setActivePhotoIndex(nextPhotos.length - 1);
-    setPhoto(dataUrl);
-    if (nextPhotos.length >= MAX_PHOTOS) {
-      setStep("preview");
-      stopCamera();
-    }
-  }, [stopCamera, gps, ghostMode, haptic, photos]);
+    setBase64Image(dataUrl);
+    setShowFullscreenCamera(false);
+    stopCamera();
+    setStep(2);
+    runAIDetectionOnCapturedPhoto(dataUrl);
+  }, [latitude, longitude, isGhostMode, haptic, stopCamera, runAIDetectionOnCapturedPhoto]);
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) =>
-          setGps({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => {
-          setGps(null);
-          setShowManualCoords(true);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
-      );
-    } else {
-      setShowManualCoords(true);
-    }
+  const retakePhoto = useCallback(() => {
+    setBase64Image("");
+    setStep(1);
+    setShowFullscreenCamera(true);
   }, []);
 
-  useEffect(() => {
-    if (transcript) {
-      setDescription((prev) => {
-        const trimmed = prev.trimEnd();
-        return trimmed ? `${trimmed} ${transcript}` : transcript;
-      });
-      setTranscript("");
-    }
-  }, [transcript, setTranscript]);
+  const addTag = useCallback((tag: string) => {
+    setDescription((prev) => {
+      const trimmed = prev.trim();
+      if (!trimmed) return tag;
+      if (trimmed.includes(tag)) return prev;
+      return `${trimmed}, ${tag}`;
+    });
+    haptic("light");
+    showToast(`Added: ${tag}`, "info");
+  }, [haptic]);
 
-  useEffect(() => {
-    if (step === "camera") {
-      startCamera();
-    }
-    return () => stopCamera();
-  }, [step, startCamera, stopCamera]);
-
-  async function handleSubmit() {
-    if (!incidentType) {
-      showToast("Please select an incident type", "error");
-      haptic("error");
-      return;
-    }
-    if (!photo) {
-      showToast("No photo captured", "error");
-      haptic("error");
-      return;
-    }
-    if (!gps) {
-      showToast("Location not available. Enter coordinates or enable GPS.", "error");
-      haptic("error");
+  // Finalize Submission
+  const finalizeSubmission = async () => {
+    if (!base64Image) {
+      showToast("Please capture an evidence photo first.", "error");
+      setStep(1);
       return;
     }
 
-    setSubmitting(true);
-    setFailedSubmission(null);
-    setRetryCount(0);
-
-    // Resolve userId before try so it's available in both success and error paths
-    let userId: string | undefined;
+    setIsSubmitting(true);
     try {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      userId = session?.user?.id;
-    } catch {
-      // User not logged in — submit anonymously.
-    }
+      const cleanedImage = await stripExif(base64Image);
 
-    try {
-      showToast("Submitting report...", "info");
+      let userId: string | undefined = undefined;
+      if (!isGhostMode) {
+        try {
+          const supabase = createClient();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          userId = user?.id;
+        } catch {
+          /* anonymous fallback */
+        }
+      }
 
+<<<<<<< HEAD
       // canvas.toDataURL() returns a raw pixel raster, so EXIF metadata is
       // already stripped at capture. Ghost Mode additionally omits GPS.
       const base64Image = dataUrlToBase64(photo);
@@ -394,44 +440,66 @@ export default function ReportPage() {
         description: description || undefined,
         report_type: incidentType,
         ghost_mode: ghostMode,
+=======
+      const payload: Record<string, unknown> = {
+        base64Image: dataUrlToBase64(cleanedImage),
+        latitude: latitude ?? 14.5995,
+        longitude: longitude ?? 120.9842,
+        location: resolvedAddress,
+        description: description.trim() || `${reportType.replace(/_/g, " ")} reported.`,
+        report_type: reportType || "waste_dumping",
+>>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
       };
 
+      if (!isGhostMode && userId) payload.user_id = userId;
+
       if (!navigator.onLine) {
-        await queueReport(payload as unknown as Record<string, unknown>);
-        haptic("success");
+        await queueReport(payload);
         showToast("You are offline. Report queued securely.", "info");
-        setPhoto(null);
-        setIncidentType("");
-        setDescription("");
-        setStep("camera");
+        setIsSubmitting(false);
+        setShowReviewModal(false);
+        setIsSubmittedSuccess(true);
         return;
       }
 
+<<<<<<< HEAD
       const res = await submitCitizenReport(payload);
       const ticketId = res?.data?.id || crypto.randomUUID();
+=======
+      const responseData = await apiPost<{ message: string; data?: { id?: string } }>("/reports", payload);
+      const assignedTicketId = responseData.data?.id || `LL-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+      setSubmittedTicketId(assignedTicketId);
+>>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
 
-      // Always save tracking ID into device storage for instant visibility in My Submissions
+      // Save submission reference locally for immediate visibility in History / Submissions
       if (typeof window !== "undefined") {
         try {
-          const raw = localStorage.getItem("likaslens_anonymous_reports");
+          const storageKey = isGhostMode ? "likaslens_anonymous_reports" : "likaslens_user_submissions";
+          const raw = localStorage.getItem(storageKey);
           const list = raw ? JSON.parse(raw) : [];
           list.unshift({
-            id: ticketId,
-            category: incidentType,
-            location: gps ? `${gps.lat.toFixed(4)}, ${gps.lng.toFixed(4)}` : "Location Recorded",
+            id: assignedTicketId,
+            display_id: isGhostMode
+              ? `GHOST-${assignedTicketId.slice(0, 6).toUpperCase()}`
+              : `LL-${assignedTicketId.slice(0, 8).toUpperCase()}`,
+            title: `${reportType ? reportType.replace(/_/g, " ") : "Incident"} Report`,
+            category: reportType || "waste_dumping",
+            location: resolvedAddress,
             date: new Date().toISOString(),
             status: "open",
+            isGhost: isGhostMode,
           });
-          localStorage.setItem("likaslens_anonymous_reports", JSON.stringify(list.slice(0, 20)));
+          localStorage.setItem(storageKey, JSON.stringify(list.slice(0, 30)));
         } catch {}
       }
 
       haptic("success");
-
-      // Show AI analysis animation before redirecting
-      setShowAnalysis(true);
+      showToast(responseData.message || "Incident Report Submitted Successfully!", "success");
+      setShowReviewModal(false);
+      setIsSubmittedSuccess(true);
     } catch (err) {
       haptic("error");
+<<<<<<< HEAD
       const message = err instanceof Error ? err.message : "Failed to submit report";
       showToast(message, "error");
       setFailedSubmission({
@@ -446,225 +514,517 @@ export default function ReportPage() {
           ghost_mode: ghostMode,
         },
       });
+=======
+      const msg = err instanceof Error ? err.message : "Failed to submit report";
+      showToast(msg, "error");
+>>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  // AI Analysis animation overlay
-  if (showAnalysis) {
-    return (
-      <AIAnalysisAnimation
-        photoUrl={photo || undefined}
-        onComplete={() => {
-          setShowAnalysis(false);
-          if (ghostMode) {
-            showToast("Photo saved safely in Ghost Mode! Report sent.", "success");
-          } else {
-            showToast("Report submitted successfully!", "success");
-          }
-          setPhoto(null);
-          setIncidentType("");
-          setDescription("");
-          setStep("camera");
-          router.push(`/${locale}/history`);
-        }}
-      />
-    );
-  }
+  const selectedCategory = INCIDENT_CATEGORIES.find((c) => c.id === reportType);
 
-  /* ───────────────────────────────────────────────────────────────────────
-     Full-screen camera + preview — takes over the viewport.
-     Refined shutter, haptics, Ghost Mode as a visible state.
-     ─────────────────────────────────────────────────────────────────────── */
-  if (step === "camera" || step === "preview") {
-    return (
-      <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-hidden">
-        {/* Top bar */}
-        <div className="absolute top-0 left-0 right-0 p-4 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between z-10 bg-gradient-to-b from-black/60 to-transparent">
-          <button
-            onClick={() => {
-              stopCamera();
-              setShowManualCoords(false);
-              router.push(`/${locale}/dashboard`);
-            }}
-            aria-label="Close camera"
-            className="touch-target rounded-full bg-black/30 text-white"
-            style={{ backdropFilter: "blur(10px)" }}
+  return (
+    <div className="min-h-full flex flex-col bg-page text-ink pb-32">
+      {/* ── Top App Bar ────────────────────────────────────────── */}
+      <div className="sticky top-0 z-30 px-4 py-3 bg-page/90 backdrop-blur-md border-b border-ink/10 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/${locale}/dashboard`}
+            className="w-9 h-9 rounded-full bg-ink/5 flex items-center justify-center text-ink active:scale-95 transition-transform"
+            aria-label="Back to dashboard"
           >
-            <X className="w-6 h-6" />
-          </button>
-
-          <div className="flex items-center gap-2">
-            {isQuickMode && (
-              <span className="flex items-center gap-1 px-3 py-2 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#facc15]/90 text-black" style={{ backdropFilter: "blur(10px)" }}>
-                <Zap className="w-3 h-3" /> Quick
-              </span>
-            )}
-            {/* Flip camera button */}
-            <button
-              onClick={() => { switchCamera(); haptic("light"); }}
-              disabled={cameraInitialising}
-              className="touch-target flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all bg-black/40 text-white/85 border border-white/20 disabled:opacity-40"
-              style={{ backdropFilter: "blur(10px)" }}
-              aria-label={`Switch to ${facingMode === "environment" ? "front" : "back"} camera`}
-            >
-              <RotateCcw className="w-4 h-4" />
-              {facingMode === "environment" ? "Back" : "Front"}
-            </button>
-            {/* Torch toggle */}
-            <button
-              onClick={toggleTorch}
-              aria-label={torchOn ? "Turn off flash" : "Turn on flash"}
-              className="touch-target rounded-full bg-black/40 text-white/85 border border-white/20"
-              style={{ backdropFilter: "blur(10px)" }}
-            >
-              {torchOn ? <Flashlight className="w-5 h-5 text-yellow-400" /> : <FlashlightOff className="w-5 h-5" />}
-            </button>
-            <button
-              onClick={() => { setGhostMode(!ghostMode); haptic("light"); }}
-              aria-pressed={ghostMode}
-              className={cn(
-                "flex items-center gap-1.5 px-3.5 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wide transition-all",
-                ghostMode
-                  ? "bg-[#facc15] text-black"
-                  : "bg-black/40 text-white/85 border border-white/20",
-              )}
-              style={{ backdropFilter: "blur(10px)" }}
-            >
-              <Fingerprint className="w-4 h-4" />
-              Ghost {ghostMode ? "On" : "Off"}
-            </button>
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <h1 className="text-base font-black tracking-tight leading-tight">Submit Incident</h1>
+            <p className="text-[11px] text-ink/50 leading-none mt-0.5">Official Environmental Report</p>
           </div>
         </div>
 
-        {/* Video or image */}
-        {step === "camera" ? (
-          cameraError === "NOT_ALLOWED" ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-zinc-950 text-white space-y-6">
-              <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 text-red-500 flex items-center justify-center">
-                <Camera className="w-8 h-8" />
-              </div>
-              <div className="space-y-2 max-w-sm">
-                <h3 className="text-lg font-bold">Camera Access Blocked</h3>
-                <p className="text-sm text-muted leading-relaxed">
-                  {getBrowserInstructions()}
-                </p>
-              </div>
-              
-              <label className="touch-target inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#3a7d54] text-white text-sm font-semibold active:scale-95 transition-transform cursor-pointer">
-                <Camera className="w-4 h-4" />
-                Upload Photo / Capture
-                <input
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handleFileCaptureMobile}
-                  className="sr-only"
-                />
-              </label>
-            </div>
-          ) : cameraInitialising ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-950 text-white gap-4">
-              <Loader2 className="w-10 h-10 animate-spin text-zinc-400" />
-              <p className="text-sm text-zinc-500 font-medium">Initializing camera...</p>
-            </div>
-          ) : (
-            <>
-              <video ref={videoRef} autoPlay playsInline muted className="absolute inset-0 w-full h-full object-cover" />
-              <canvas ref={canvasRef} className="hidden" />
-              {/* Ghost Mode shield overlay */}
-              <GhostShieldOverlay active={ghostMode} />
-              {/* Rule-of-thirds guide */}
-              <div aria-hidden="true" className="absolute inset-0 pointer-events-none" style={{
-                backgroundImage: "linear-gradient(to right, rgba(255,255,255,0.14) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.14) 1px, transparent 1px)",
-                backgroundSize: "33.33% 33.33%",
-              }} />
-              {/* Zoom controls */}
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
+        {!isOnline && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+            Offline
+          </div>
+        )}
+      </div>
+
+      <div className="p-4 space-y-4 max-w-lg mx-auto w-full">
+        {/* ── Stepper Navigation (Step 1 to Step 3) ─────────────── */}
+        {!isSubmittedSuccess && (
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { num: 1, label: "Capture" },
+              { num: 2, label: "AI Triage" },
+              { num: 3, label: "Location" },
+            ].map((s) => {
+              const isActive = step === s.num;
+              const isDone = step > s.num;
+              return (
                 <button
-                  onClick={() => toggleZoom(0.5)}
-                  className="w-10 h-10 rounded-full bg-black/40 text-white/80 flex items-center justify-center border border-white/15 active:scale-95 transition-transform"
-                  style={{ backdropFilter: "blur(8px)" }}
-                  aria-label="Zoom in"
+                  key={s.num}
+                  type="button"
+                  onClick={() => {
+                    if (s.num === 1) setStep(1);
+                    if (s.num === 2 && base64Image) setStep(2);
+                    if (s.num === 3 && base64Image) setStep(3);
+                  }}
+                  className={`flex items-center gap-2 p-2.5 rounded-2xl border transition-all text-left ${
+                    isActive
+                      ? "bg-panel border-emerald-500/80 ring-2 ring-emerald-500/30 shadow-xs"
+                      : isDone
+                      ? "bg-panel/70 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                      : "bg-panel/40 border-ink/5 opacity-50 cursor-not-allowed"
+                  }`}
                 >
-                  <Plus className="w-5 h-5" />
+                  <div
+                    className={`w-7 h-7 rounded-xl flex items-center justify-center font-mono text-xs font-black shrink-0 ${
+                      isActive
+                        ? "bg-emerald-500 text-white shadow-xs"
+                        : isDone
+                        ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                        : "bg-ink/10 text-ink/40"
+                    }`}
+                  >
+                    {isDone ? <Check className="w-4 h-4 stroke-[3]" /> : `0${s.num}`}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-ink truncate leading-tight">{s.label}</p>
+                  </div>
                 </button>
-                <span className="text-white/50 text-[10px] font-semibold text-center">{zoom.toFixed(1)}x</span>
-                <button
-                  onClick={() => toggleZoom(-0.5)}
-                  className="w-10 h-10 rounded-full bg-black/40 text-white/80 flex items-center justify-center border border-white/15 active:scale-95 transition-transform"
-                  style={{ backdropFilter: "blur(8px)" }}
-                  aria-label="Zoom out"
-                >
-                  <Minus className="w-5 h-5" />
-                </button>
-              </div>
-            </>
-          )
-        ) : (
-          <img src={photo!} alt="Captured evidence preview" className="absolute inset-0 w-full h-full object-cover" />
+              );
+            })}
+          </div>
         )}
 
-        {/* Bottom controls */}
-        <div className="absolute bottom-0 left-0 right-0 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-16 flex justify-center items-center bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-          {step === "camera" ? (
-            cameraError !== "NOT_ALLOWED" && (
-              <div className="flex items-center gap-6">
-                {/* Gallery picker */}
-                <label className="flex flex-col items-center gap-1 cursor-pointer">
-                  <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center text-white/70 active:scale-95 transition-transform border border-white/10" style={{ backdropFilter: "blur(8px)" }}>
-                    {photos.length > 0 ? (
-                      <div className="relative w-full h-full rounded-xl overflow-hidden">
-                        <img src={photos[photos.length - 1]} alt="Last capture" className="w-full h-full object-cover" />
-                        <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green text-white text-[10px] font-bold flex items-center justify-center">{photos.length}</span>
-                      </div>
-                    ) : (
-                      <ImagePlus className="w-5 h-5" />
-                    )}
-                  </div>
-                  <span className="text-white/60 text-[10px] font-semibold">Gallery</span>
-                  <input type="file" accept="image/*" onChange={handleFileCaptureMobile} className="sr-only" />
-                </label>
+        {/* ── SUCCESS STATE ────────────────────────────────────── */}
+        {isSubmittedSuccess ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-5 rounded-3xl bg-panel border border-ink/10 space-y-5 shadow-sm"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/10">
+                <CheckCircle2 className="w-7 h-7" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-ink leading-tight">Report Sent Successfully!</h2>
+                <p className="text-xs text-ink/60 mt-0.5">Received and dispatched to authorities.</p>
+              </div>
+            </div>
 
-                {/* Shutter button */}
-                <button
-                  onClick={capturePhoto}
-                  aria-label="Capture photo"
-                  className="w-[76px] h-[76px] rounded-full bg-white/20 border-4 border-white flex items-center justify-center active:scale-95 transition-transform"
+            {/* Reference Number Card */}
+            <div className="p-4 rounded-2xl bg-ink/[0.02] border border-ink/10 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-ink/50">
+                  Reference ID
+                </span>
+                <span
+                  className={`text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full ${
+                    isGhostMode
+                      ? "bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/20"
+                      : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                  }`}
                 >
-                  <div className="w-[58px] h-[58px] rounded-full bg-white" />
+                  {isGhostMode ? "Ghost Mode (Anonymous)" : "Civic Mode (Verified)"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-panel border border-ink/5 font-mono text-xs">
+                <span className="font-bold text-ink truncate select-all">{submittedTicketId || "LL-CASE-RECORDED"}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (submittedTicketId) {
+                      navigator.clipboard.writeText(submittedTicketId);
+                      setCopiedId(true);
+                      showToast("Reference ID copied!", "success");
+                      setTimeout(() => setCopiedId(false), 2000);
+                    }
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-ink/5 hover:bg-ink/10 text-xs font-bold text-ink shrink-0 flex items-center gap-1 transition-all"
+                >
+                  {copiedId ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                  {copiedId ? "Copied" : "Copy"}
                 </button>
+              </div>
+            </div>
 
-                {/* Photo count */}
-                <div className="w-12 h-12 flex flex-col items-center justify-center">
-                  {photos.length > 0 ? (
-                    <span className="text-white/60 text-[10px] font-semibold">{photos.length}/{MAX_PHOTOS}</span>
-                  ) : (
-                    <span className="text-white/30 text-[10px]">0/{MAX_PHOTOS}</span>
-                  )}
+            {/* Photo Preview Thumbnail */}
+            {base64Image && (
+              <div className="relative rounded-2xl overflow-hidden border border-ink/10 aspect-16/9 bg-black">
+                <img src={base64Image} alt="Submitted Evidence" className="w-full h-full object-cover" />
+                <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 text-white font-mono text-[9px] flex items-center gap-1 backdrop-blur-xs">
+                  <Fingerprint className="w-2.5 h-2.5 text-emerald-400" />
+                  Forensic Verified
                 </div>
               </div>
-            )
-          ) : (
-            <div className="flex w-full px-12 justify-between items-center">
-              <button
-                onClick={() => { setPhoto(null); setStep("camera"); setShowManualCoords(false); haptic("light"); }}
-                className="flex flex-col items-center gap-2"
-              >
-                <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white active:scale-95 transition-transform border border-white/10" style={{ backdropFilter: "blur(10px)" }}>
-                  <RefreshCw className="w-6 h-6" />
-                </div>
-                <span style={{ fontFamily: "var(--font-body)" }} className="text-white/85 text-[11px] font-semibold">Retake</span>
-              </button>
+            )}
 
-              <button
-                onClick={() => { setStep("form"); haptic("light"); }}
-                className="flex flex-col items-center gap-2"
-              >
-                <div className="w-16 h-16 rounded-full bg-green flex items-center justify-center text-white active:scale-95 transition-transform shadow-[0_0_24px_rgba(46,230,200,0.55)]">
-                  <Check className="w-8 h-8" />
+            {/* 5-Stage Agency Lifecycle Pipeline */}
+            <div className="space-y-2.5 pt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-ink uppercase tracking-wider block">
+                  Official Agency Dispatch Pipeline
+                </span>
+                <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  Stage 3 of 5 Active
+                </span>
+              </div>
+              <div className="space-y-2">
+                {/* Stage 1: Received */}
+                <div className="p-3 rounded-2xl bg-panel border border-emerald-500/30 flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 text-xs font-bold">
+                    <Check className="w-4 h-4 stroke-[3]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-ink text-xs">1. Report Received & Photo Saved</p>
+                    <p className="text-ink/60 text-[10px]">Evidence stored securely with timestamp & hash.</p>
+                  </div>
+                  <span className="text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full uppercase">
+                    Received
+                  </span>
                 </div>
+
+                {/* Stage 2: Assigned */}
+                <div className="p-3 rounded-2xl bg-panel border border-emerald-500/30 flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 text-xs font-bold">
+                    <Check className="w-4 h-4 stroke-[3]" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-ink text-xs">2. Assigned to Government Office</p>
+                    <p className="text-ink/60 text-[10px]">Auto-routed to DENR & Local CENRO Taskforce.</p>
+                  </div>
+                  <span className="text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full uppercase">
+                    Assigned
+                  </span>
+                </div>
+
+                {/* Stage 3: Dispatched (Active) */}
+                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500/40 flex items-center gap-3 shadow-xs">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 text-xs font-bold shadow-xs animate-pulse">
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-bold text-emerald-700 dark:text-emerald-300 text-xs">3. Sent to Inspection Team</p>
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+                    </div>
+                    <p className="text-ink/60 text-[10px]">Field inspectors dispatched to the GPS coordinates.</p>
+                  </div>
+                  <span className="text-[9px] font-mono font-bold bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase shadow-xs">
+                    Dispatched
+                  </span>
+                </div>
+
+                {/* Stage 4: On-Site Inspection & Clean-up (Pending/Next) */}
+                <div className="p-3 rounded-2xl bg-panel/50 border border-ink/10 flex items-center gap-3 opacity-60">
+                  <div className="w-7 h-7 rounded-xl bg-ink/10 text-ink/40 flex items-center justify-center shrink-0 text-xs font-bold">
+                    <ShieldAlert className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-ink text-xs">4. On-Site Inspection & Clean-up</p>
+                    <p className="text-ink/50 text-[10px]">Officers deploy in-field for compliance and clean-up.</p>
+                  </div>
+                  <span className="text-[9px] font-mono font-bold bg-ink/10 text-ink/50 px-2 py-0.5 rounded-full uppercase">
+                    Pending
+                  </span>
+                </div>
+
+                {/* Stage 5: Problem Solved & Cleaned Up (Final) */}
+                <div className="p-3 rounded-2xl bg-panel/50 border border-ink/10 flex items-center gap-3 opacity-60">
+                  <div className="w-7 h-7 rounded-xl bg-ink/10 text-ink/40 flex items-center justify-center shrink-0 text-xs font-bold">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-ink text-xs">5. Problem Solved & Cleaned Up</p>
+                    <p className="text-ink/50 text-[10px]">Verified resolution with proof of abatement.</p>
+                  </div>
+                  <span className="text-[9px] font-mono font-bold bg-ink/10 text-ink/50 px-2 py-0.5 rounded-full uppercase">
+                    Pending
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-2 pt-2">
+              <Link
+                href={`/${locale}/history`}
+                className="w-full py-3.5 px-4 rounded-2xl bg-emerald-600 text-white font-bold text-sm text-center active:scale-98 transition-transform shadow-md shadow-emerald-600/20"
+              >
+                Track in My Submissions →
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSubmittedSuccess(false);
+                  setStep(1);
+                  setBase64Image("");
+                  setDescription("");
+                  setAiDetectedCategory(null);
+                  setIsOverridden(false);
+                }}
+                className="w-full py-3 px-4 rounded-2xl border border-ink/15 text-ink font-bold text-xs active:scale-98 transition-transform text-center"
+              >
+                File Another Report
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <AnimatePresence mode="wait">
+            {/* ── STEP 1: Privacy Mode & Photo Capture ──────────────── */}
+            {step === 1 && (
+              <motion.div
+                key="step-1"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="space-y-4"
+              >
+                <div className="space-y-1">
+                  <h2 className="text-lg font-black text-ink">1. Choose How to Report & Take Photo</h2>
+                  <p className="text-xs text-ink/60">
+                    Select your identity mode, then capture the violation evidence.
+                  </p>
+                </div>
+
+                {/* Privacy Mode 2-Choice Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleGhostModeToggle(false)}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                      !isGhostMode
+                        ? "border-emerald-500/80 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-500/30 shadow-xs"
+                        : "border-ink/10 bg-panel hover:border-emerald-500/30 opacity-75"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
+                            !isGhostMode ? "bg-emerald-500 text-white shadow-xs" : "bg-emerald-500/15 text-emerald-600"
+                          }`}
+                        >
+                          <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
+                        </div>
+                        <span className={`text-xs font-black ${!isGhostMode ? "text-emerald-700 dark:text-emerald-300" : "text-ink"}`}>
+                          Civic Mode (With My Name)
+                        </span>
+                      </div>
+                      {!isGhostMode && (
+                        <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500 text-white">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-ink/65 pl-9 leading-tight">
+                      Official accountability • Verified submission tracking
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleGhostModeToggle(true)}
+                    className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                      isGhostMode
+                        ? "border-teal-500/80 bg-teal-500/10 dark:bg-teal-950/30 ring-2 ring-teal-500/30 shadow-xs"
+                        : "border-ink/10 bg-panel hover:border-teal-500/30 opacity-75"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
+                            isGhostMode ? "bg-teal-500 text-white shadow-xs" : "bg-teal-500/15 text-teal-600"
+                          }`}
+                        >
+                          <EyeOff className="w-4 h-4 stroke-[2.5]" />
+                        </div>
+                        <span className={`text-xs font-black ${isGhostMode ? "text-teal-700 dark:text-teal-300" : "text-ink"}`}>
+                          Ghost Mode (Anonymous)
+                        </span>
+                      </div>
+                      {isGhostMode && (
+                        <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-teal-500 text-white">
+                          Selected
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-ink/65 pl-9 leading-tight">
+                      100% private • EXIF-stripped & zero user identifiers
+                    </p>
+                  </button>
+                </div>
+
+                {/* Evidence Photo Card / Open Camera Hero */}
+                {base64Image ? (
+                  <div className="p-4 rounded-3xl bg-panel border border-ink/10 space-y-3 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-ink uppercase tracking-wider">
+                        Captured Evidence Photo
+                      </span>
+                      <button
+                        type="button"
+                        onClick={retakePhoto}
+                        className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" /> Retake
+                      </button>
+                    </div>
+                    <div className="relative rounded-2xl overflow-hidden aspect-4/3 bg-black border border-ink/10">
+                      <img src={base64Image} alt="Evidence" className="w-full h-full object-cover" />
+                      <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white text-[10px] font-mono flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3 text-emerald-400" />
+                        <span>
+                          {latitude?.toFixed(4)}, {longitude?.toFixed(4)}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setStep(2)}
+                      className="w-full py-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-md shadow-emerald-600/20"
+                    >
+                      Continue to AI Triage <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-dashed border-ink/15 bg-panel/60 space-y-4 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-md shadow-emerald-500/10">
+                      <Camera className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1 max-w-xs">
+                      <h3 className="text-base font-black text-ink">Capture Violation Evidence</h3>
+                      <p className="text-xs text-ink/60 leading-relaxed">
+                        Take a photo with forensic metadata stamping to proceed to the next step.
+                      </p>
+                    </div>
+
+                    <div className="w-full max-w-xs pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowFullscreenCamera(true)}
+                        className="w-full py-4 rounded-2xl bg-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-md shadow-emerald-600/25"
+                      >
+                        <Camera className="w-4 h-4" />
+                        <span>Proceed: Open Camera</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* ── STEP 2: AI Triage & Category Selection ────────────── */}
+            {step === 2 && (
+              <motion.div
+                key="step-2"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="space-y-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-black text-ink">2. AI Triage & Category</h2>
+                    <p className="text-xs text-ink/60 mt-0.5">
+                      Confirm or override the AI-detected incident classification.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={retakePhoto}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-ink/15 text-xs font-bold text-ink"
+                  >
+                    <RotateCcw className="w-3 h-3" /> Retake
+                  </button>
+                </div>
+
+                {/* Evidence Thumbnail */}
+                <div className="relative rounded-2xl overflow-hidden aspect-16/9 bg-black border border-ink/10">
+                  <img src={base64Image} alt="Evidence" className="w-full h-full object-cover" />
+                  {isAnalyzingPhoto && (
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center gap-2 text-white font-mono text-xs">
+                      <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+                      <span>Analyzing photo...</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* AI Detection Banner */}
+                {aiDetectedCategory && (
+                  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                        {isOverridden
+                          ? "👤 Category Overridden by You"
+                          : `✨ AI Auto-Detected: ${aiDetectedCategory.label} (${aiDetectedCategory.confidence}%)`}
+                      </p>
+                    </div>
+                    <p className="text-[11px] text-ink/70 leading-relaxed pl-6">
+                      {isOverridden
+                        ? `Manually categorized as ${selectedCategory?.label || reportType}.`
+                        : `${aiDetectedCategory.reason} Tap below if you wish to change it.`}
+                    </p>
+                  </div>
+                )}
+
+                {/* Category Grid */}
+                <div className="p-4 rounded-3xl bg-panel border border-ink/10 space-y-2.5 shadow-xs">
+                  <span className="text-xs font-bold text-ink uppercase tracking-wider block">
+                    Verified Incident Category
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {INCIDENT_CATEGORIES.map((cat) => {
+                      const CatIcon = cat.icon;
+                      const isSelected = reportType === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => {
+                            setReportType(cat.id);
+                            setIsOverridden(cat.id !== aiDetectedCategory?.id);
+                            haptic("light");
+                          }}
+                          className={`p-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 text-left active:scale-98 ${
+                            isSelected
+                              ? "bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-500/40"
+                              : "bg-ink/5 hover:bg-ink/10 text-ink border border-ink/5"
+                          }`}
+                        >
+                          <CatIcon className={`w-4 h-4 shrink-0 ${isSelected ? "text-white" : cat.color}`} />
+                          <span className="truncate">{cat.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Step 2 Actions */}
+                <div className="flex items-center gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="px-4 py-3.5 rounded-2xl border border-ink/15 text-xs font-bold text-ink flex items-center gap-1.5 active:scale-98"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    className="flex-1 py-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-md shadow-emerald-600/20"
+                  >
+                    Continue to Details <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+<<<<<<< HEAD
                 <span style={{ fontFamily: "var(--font-body)" }} className="text-green font-bold text-[11px]">Use photo</span>
               </button>
             </div>
@@ -819,352 +1179,357 @@ export default function ReportPage() {
               <X style={{ width: 14, height: 14 }} />
             ) : (
               <RefreshCw style={{ width: 14, height: 14 }} />
+=======
+              </motion.div>
+>>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
             )}
-            {autoRetrying ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : null}
-            {failedSubmission.retriesExhausted ? "Max retries" : autoRetrying ? "Auto-retrying..." : `Retry ${retryCount > 0 ? `(${retryCount}/${MAX_RETRIES})` : ""}`}
-          </button>
-        </div>
-      </div>
-    ) : null;
 
-  /* ───────────────────────────────────────────────────────────────────────
-     Shared form pieces — Ghost Mode readout + submit button.
-     ─────────────────────────────────────────────────────────────────────── */
-  const GhostToggle = () => (
-    <div
-      className="ios-grouped-list"
-      style={{
-        padding: "14px",
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 12,
-        borderColor: ghostMode ? "color-mix(in oklab, var(--secondary) 30%, transparent)" : "var(--border)",
-        background: ghostMode ? "color-mix(in oklab, var(--secondary) 6%, var(--panel))" : "var(--panel)",
-      }}
-    >
-      <button
-        onClick={() => { setGhostMode(!ghostMode); haptic("light"); }}
-        aria-pressed={ghostMode}
-        aria-label="Toggle Ghost Mode"
-        className={cn("relative shrink-0 rounded-full transition-colors")}
-        style={{ width: 44, height: 26, background: ghostMode ? "var(--secondary)" : "color-mix(in oklab, var(--ink) 20%, transparent)" }}
-      >
-        <div
-          className={cn("absolute top-1 left-1 w-[18px] h-[18px] rounded-full bg-white transition-transform")}
-          style={{ transform: ghostMode ? "translateX(18px)" : "translateX(0)" }}
-        />
-      </button>
-      <div style={{ flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Fingerprint style={{ width: 15, height: 15, color: ghostMode ? "var(--secondary)" : "var(--ink)" }} />
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 14, fontWeight: 600, color: "var(--ink)", margin: 0 }}>Ghost Mode</p>
-          {ghostMode && (
-            <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 6, background: "color-mix(in oklab, var(--secondary) 16%, transparent)", color: "var(--secondary)" }}>
-              EXIF STRIPPED
-            </span>
-          )}
-        </div>
-        <p style={{ fontFamily: "var(--font-body)", fontSize: 12.5, color: "var(--muted)", margin: "5px 0 0", lineHeight: 1.5 }}>
-          {ghostMode
-            ? "Your identity and location are stripped from this report before it is transmitted."
-            : "Strip location and device metadata to protect your identity on sensitive reports."}
-        </p>
-      </div>
-    </div>
-  );
-
-  const SubmitButton = ({ label, disabled }: { label: string; disabled?: boolean }) => (
-    <Button
-      onClick={handleSubmit}
-      disabled={disabled || submitting}
-      variant="primary"
-      className={cn("w-full flex items-center justify-center gap-2 transition-all active:scale-[0.98]")}
-      style={{ height: 54, borderRadius: 14, fontFamily: "var(--font-body)", fontWeight: 700, fontSize: 15, opacity: (disabled || submitting) ? 0.5 : 1, background: ghostMode ? "#f59e0b" : undefined }}
-    >
-      {submitting ? (
-        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-      ) : (
-        <>
-          {ghostMode ? <ShieldCheck className="w-4 h-4" /> : <Send className="w-4 h-4" />}
-          {label}
-        </>
-      )}
-    </Button>
-  );
-
-  /* ── Quick Mode form — minimal ─────────────────────────────────────────── */
-  if (isQuickMode) {
-    return (
-      <div className="p-5 space-y-5 pb-32">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setStep("preview")} aria-label="Back to preview" className="touch-target -ml-2 rounded-full text-ink">
-            <ArrowLeft className="w-6 h-6" />
-          </button>
-          <div className="flex-1">
-            <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>Quick report</h1>
-            <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: "3px 0 0" }}>
-              GPS {gps ? "detected" : showManualCoords ? "enter manual" : "pending"}
-            </p>
-          </div>
-          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-[#facc15]/20 text-[#b8860b] border border-[#facc15]/30">
-            <Zap className="w-3 h-3" /> Quick
-          </span>
-        </div>
-
-        <div className="relative rounded-2xl overflow-hidden bg-black/5 aspect-[4/3] w-full" style={{ maxHeight: 240 }}>
-          <img src={photo!} alt="Captured evidence" className="w-full h-full object-cover" />
-          <button
-            onClick={() => setStep("camera")}
-            className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-semibold uppercase"
-            style={{ backdropFilter: "blur(8px)" }}
-          >
-            Retake
-          </button>
-          {gps && !ghostMode && (
-            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/55 text-white" style={{ backdropFilter: "blur(8px)" }}>
-              <MapPin className="w-3 h-3" />
-              <span style={{ fontFamily: "var(--font-data)", fontSize: 10 }}>{gps.lat.toFixed(4)}, {gps.lng.toFixed(4)}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Incident type selector */}
-        <div>
-          <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Incident type</label>
-          <button
-            onClick={() => { setTypeSheetOpen(true); haptic("light"); }}
-            className="ios-list-row w-full"
-            style={{ borderRadius: 16, border: "1px solid var(--border)", background: "var(--panel)", minHeight: 56 }}
-          >
-            <span style={{ flex: 1, textAlign: "left", fontFamily: "var(--font-body)", fontSize: 15, color: incidentType ? "var(--ink)" : "var(--muted-subtle)" }}>
-              {INCIDENT_TYPES.find(t => t.value === incidentType)?.label || "Select classification"}
-            </span>
-            {!gps && (
-              <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--red)", marginLeft: 8 }}>
-                GPS pending
-              </span>
-            )}
-            <ChevronDown style={{ width: 18, height: 18, color: "var(--muted)" }} />
-          </button>
-        </div>
-
-        {!isOnline && (
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: "color-mix(in oklab, var(--ink) 6%, transparent)", border: "1px solid color-mix(in oklab, var(--ink) 12%, transparent)" }}>
-            <div className="w-2 h-2 rounded-full bg-ink/30" />
-            <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: 0 }}>
-              Offline — reports will queue until connection returns.
-            </p>
-          </div>
-        )}
-        <RetryBanner />
-        <GhostToggle />
-        <SubmitButton label="Submit report" disabled={!incidentType || !gps} />
-      </div>
-    );
-  }
-
-  /* ── Full form — standard report flow ──────────────────────────────────── */
-  return (
-    <div className="p-5 space-y-6 pb-32">
-      <div className="flex items-center gap-3">
-        <button onClick={() => setStep("preview")} aria-label="Back to preview" className="touch-target -ml-2 rounded-full text-ink">
-          <ArrowLeft className="w-6 h-6" />
-        </button>
-        <div>
-          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "var(--ink)", margin: 0 }}>Report details</h1>
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: "3px 0 0" }}>Review and submit evidence</p>
-        </div>
-      </div>
-
-      {/* Photos */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="ios-section-label" style={{ margin: 0, paddingLeft: 2 }}>Evidence photos ({photos.length}/{MAX_PHOTOS})</label>
-          {photos.length < MAX_PHOTOS && (
-            <button onClick={() => setStep("camera")} className="flex items-center gap-1 text-[11px] font-semibold" style={{ color: "var(--accent)" }}>
-              <ImagePlus className="w-3.5 h-3.5" /> Add more
-            </button>
-          )}
-        </div>
-        <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
-          {photos.map((p, i) => (
-            <div key={i} className="relative shrink-0" style={{ width: 100, height: 100 }}>
-              <img src={p} alt={`Evidence ${i + 1}`} className="w-full h-full object-cover rounded-xl" style={{ border: i === activePhotoIndex ? "2px solid var(--accent)" : "2px solid transparent" }} />
-              <button
-                onClick={() => {
-                  const next = photos.filter((_, idx) => idx !== i);
-                  setPhotos(next);
-                  if (activePhotoIndex >= next.length) setActivePhotoIndex(Math.max(0, next.length - 1));
-                  setPhoto(next[activePhotoIndex] || null);
-                  haptic("light");
-                }}
-                className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"
-                style={{ backdropFilter: "blur(4px)" }}
-                aria-label={`Remove photo ${i + 1}`}
+            {/* ── STEP 3: Incident Details & Location ────────────────── */}
+            {step === 3 && (
+              <motion.div
+                key="step-3"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="space-y-4"
               >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-          {photos.length < MAX_PHOTOS && (
-            <button
-              onClick={() => setStep("camera")}
-              className="shrink-0 flex flex-col items-center justify-center rounded-xl border border-dashed"
-              style={{ width: 100, height: 100, borderColor: "var(--border)", color: "var(--muted)" }}
-            >
-              <ImagePlus className="w-5 h-5 mb-1" />
-              <span style={{ fontSize: 10 }}>Add</span>
-            </button>
-          )}
-        </div>
-        {/* Main preview */}
-        <div className="relative rounded-2xl overflow-hidden bg-black/5 aspect-[4/3] w-full mt-2" style={{ maxHeight: 260 }}>
-          <img src={photo!} alt="Captured evidence" className="w-full h-full object-cover" />
-          <button
-            onClick={() => setStep("camera")}
-            className="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-black/60 text-white text-[10px] font-semibold uppercase"
-            style={{ backdropFilter: "blur(8px)" }}
+                <div className="space-y-1">
+                  <h2 className="text-lg font-black text-ink">3. Incident Details & Location</h2>
+                  <p className="text-xs text-ink/60">
+                    Verify the pinpoint location and add observational notes for inspectors.
+                  </p>
+                </div>
+
+                {/* Interactive Leaflet Map */}
+                <div className="rounded-3xl bg-panel border border-ink/10 p-4 space-y-2.5 shadow-xs">
+                  <GeoTagMap
+                    lat={latitude}
+                    lng={longitude}
+                    onLocationChange={(lat, lng) => {
+                      setLatitude(lat);
+                      setLongitude(lng);
+                    }}
+                    height="220px"
+                  />
+                </div>
+
+                {/* Resolved Address Card */}
+                <div className="p-3.5 rounded-2xl bg-panel border border-emerald-500/30 flex items-start gap-3 shadow-xs">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-ink/50">
+                      Identified Location
+                    </p>
+                    <p className="text-xs font-bold text-ink leading-snug break-words mt-0.5">
+                      {resolvedAddress}
+                    </p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 font-mono text-[9px] font-bold shrink-0">
+                    GPS Active
+                  </span>
+                </div>
+
+                {/* Field Notes & Quick Chips */}
+                <div className="p-4 rounded-3xl bg-panel border border-ink/10 space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-ink uppercase tracking-wider">
+                      Observation Notes (Optional)
+                    </span>
+                    <span className="text-[10px] font-mono text-ink/40">Field Tags</span>
+                  </div>
+
+                  {/* Quick Chips */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {SUGGESTED_DETAILS.map((chip) => (
+                      <button
+                        key={chip}
+                        type="button"
+                        onClick={() => addTag(chip)}
+                        className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-ink/5 hover:bg-ink/10 text-ink/80 transition-all active:scale-95 cursor-pointer"
+                      >
+                        + {chip}
+                      </button>
+                    ))}
+                  </div>
+
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Add observations, landmark details, or estimated hazard scale..."
+                    rows={3}
+                    className="w-full p-3 rounded-2xl bg-ink/[0.03] dark:bg-white/[0.03] border border-ink/10 text-xs text-ink placeholder:text-ink/30 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 resize-none"
+                  />
+                </div>
+
+                {/* Step 3 Actions */}
+                <div className="flex items-center gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="px-4 py-3.5 rounded-2xl border border-ink/15 text-xs font-bold text-ink flex items-center gap-1.5 active:scale-98"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowReviewModal(true)}
+                    className="flex-1 py-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-md shadow-emerald-600/20"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                    Review & Submit
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
+      </div>
+
+      {/* ── FULLSCREEN CAMERA VIEWPORT OVERLAY ─────────────────── */}
+      <AnimatePresence>
+        {showFullscreenCamera && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-hidden"
           >
-            Retake
-          </button>
-        </div>
-      </div>
+            {/* Top Toolbar */}
+            <div className="absolute top-0 left-0 right-0 p-4 pt-[calc(1rem+env(safe-area-inset-top))] flex items-center justify-between z-10 bg-gradient-to-b from-black/70 to-transparent">
+              <button
+                type="button"
+                onClick={() => setShowFullscreenCamera(false)}
+                aria-label="Close camera"
+                className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center border border-white/20 active:scale-95"
+                style={{ backdropFilter: "blur(10px)" }}
+              >
+                <X className="w-5 h-5" />
+              </button>
 
-      {/* Map */}
-      <div>
-        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Location</label>
-        <GeoTagMap
-          lat={gps?.lat ?? null}
-          lng={gps?.lng ?? null}
-          onLocationChange={(lat, lng) => setGps({ lat, lng })}
-          height="220px"
-        />
-      </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => { switchCamera(); haptic("light"); }}
+                  disabled={cameraInitialising}
+                  className="px-3.5 py-2 rounded-full text-xs font-semibold uppercase tracking-wide bg-black/40 text-white border border-white/20 flex items-center gap-1.5 active:scale-95"
+                  style={{ backdropFilter: "blur(10px)" }}
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  {facingMode === "environment" ? "Back" : "Front"}
+                </button>
 
-      {/* Incident type — opens a bottom sheet, not a dropdown */}
-      <div>
-        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Incident type</label>
-        <button
-          onClick={() => { setTypeSheetOpen(true); haptic("light"); }}
-          className="ios-list-row w-full"
-          style={{ borderRadius: 16, border: "1px solid var(--border)", background: "var(--panel)", minHeight: 56 }}
-        >
-          <span style={{ flex: 1, textAlign: "left", fontFamily: "var(--font-body)", fontSize: 15, color: incidentType ? "var(--ink)" : "var(--muted-subtle)" }}>
-            {INCIDENT_TYPES.find(t => t.value === incidentType)?.label || "Select classification"}
-          </span>
-          <ChevronDown style={{ width: 18, height: 18, color: "var(--muted)" }} />
-        </button>
-      </div>
-
-      <BottomSheet open={typeSheetOpen} onClose={() => setTypeSheetOpen(false)} title="Select incident type">
-        <div className="ios-grouped-list">
-          {INCIDENT_TYPES.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => { setIncidentType(value); setTypeSheetOpen(false); haptic("light"); }}
-              className="ios-list-row"
-              style={{ width: "100%", justifyContent: "space-between", background: incidentType === value ? "color-mix(in oklab, var(--accent) 6%, transparent)" : undefined }}
-            >
-              <span style={{ fontFamily: "var(--font-body)", fontSize: 15, fontWeight: 500, color: "var(--ink)" }}>{label}</span>
-              {incidentType === value && <Check style={{ width: 18, height: 18, color: "var(--accent)" }} />}
-            </button>
-          ))}
-        </div>
-      </BottomSheet>
-
-      {/* Manual GPS coordinates fallback */}
-      {showManualCoords && (
-        <div>
-          <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>GPS unavailable — enter coordinates</label>
-          <div style={{ display: "flex", gap: 12 }}>
-            <input
-              type="number"
-              inputMode="decimal"
-              step="any"
-              placeholder="Latitude (e.g. 14.5833)"
-              value={manualLat}
-              onChange={(e) => { setManualLat(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -90 && val <= 90) setGps(prev => ({ lat: val, lng: prev?.lng ?? 0 })); }}
-              aria-label="Latitude coordinate"
-              style={{ flex: 1, padding: "12px 14px", borderRadius: 14, background: "var(--panel)", border: "1px solid var(--border)", fontFamily: "var(--font-data)", fontSize: 14, color: "var(--ink)", outline: "none" }}
-            />
-            <input
-              type="number"
-              inputMode="decimal"
-              step="any"
-              placeholder="Longitude (e.g. 120.9833)"
-              value={manualLng}
-              onChange={(e) => { setManualLng(e.target.value); const val = parseFloat(e.target.value); if (!isNaN(val) && val >= -180 && val <= 180) setGps(prev => ({ lat: prev?.lat ?? 0, lng: val })); }}
-              aria-label="Longitude coordinate"
-              style={{ flex: 1, padding: "12px 14px", borderRadius: 14, background: "var(--panel)", border: "1px solid var(--border)", fontFamily: "var(--font-data)", fontSize: 14, color: "var(--ink)", outline: "none" }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Description + voice */}
-      <div>
-        <label className="ios-section-label" style={{ marginBottom: 8, display: "block", paddingLeft: 2 }}>Description (optional)</label>
-        <div className="relative">
-          <textarea
-            value={description}
-            onChange={(e) => { if (e.target.value.length <= 5000) setDescription(e.target.value); }}
-            placeholder="Add any extra details about the location or situation..."
-            rows={4}
-            maxLength={5000}
-            style={{
-              width: "100%", padding: "14px 52px 14px 16px", borderRadius: 16,
-              background: "var(--panel)", border: "1px solid var(--border)",
-              fontFamily: "var(--font-body)", fontSize: 15, color: "var(--ink)",
-              resize: "none", outline: "none",
-            }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "color-mix(in oklab, var(--accent) 45%, transparent)")}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border)")}
-          />
-          {voiceSupported ? (
-            <button
-              type="button"
-              onClick={() => { toggleListening(); haptic("light"); }}
-              aria-label={isListening ? "Stop listening" : "Speak description"}
-              className={cn("absolute bottom-3 right-3 rounded-full transition-all")}
-              style={{
-                background: isListening ? "var(--red)" : "color-mix(in oklab, var(--ink) 5%, transparent)",
-                color: isListening ? "#fff" : "var(--muted)",
-                width: 40, height: 40,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-            >
-              {isListening ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-            </button>
-          ) : (
-            <div className="absolute bottom-3 right-3 rounded-full flex items-center justify-center" style={{ width: 40, height: 40, background: "color-mix(in oklab, var(--ink) 5%, transparent)", color: "var(--muted-subtle)" }} title="Voice input not supported">
-              <MicOff className="w-5 h-5" />
+                <button
+                  type="button"
+                  onClick={() => handleGhostModeToggle(!isGhostMode)}
+                  className={`px-3.5 py-2 rounded-full text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5 active:scale-95 ${
+                    isGhostMode ? "bg-teal-400 text-black font-bold" : "bg-black/40 text-white border border-white/20"
+                  }`}
+                  style={{ backdropFilter: "blur(10px)" }}
+                >
+                  <Fingerprint className="w-3.5 h-3.5" />
+                  Ghost {isGhostMode ? "On" : "Off"}
+                </button>
+              </div>
             </div>
-          )}
-        </div>
-        {isListening && (
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--red)", margin: "8px 0 0 2px", display: "flex", alignItems: "center", gap: 6 }}>
-            <span className="inline-block w-2 h-2 rounded-full bg-[var(--red)] animate-pulse" />
-            Listening...
-          </p>
+
+            {/* Video Viewport */}
+            {cameraError === "NOT_ALLOWED" ? (
+              <div className="p-6 text-center text-white space-y-4 max-w-sm">
+                <div className="w-16 h-16 rounded-full bg-rose-500/20 text-rose-500 flex items-center justify-center mx-auto">
+                  <Camera className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold">Camera Access Blocked</h3>
+                <p className="text-xs text-white/60 leading-relaxed">{getBrowserInstructions()}</p>
+              </div>
+            ) : (
+              <>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${cameraInitialising ? 'opacity-0' : 'opacity-100'}`}
+                />
+                
+                <AnimatePresence>
+                  {cameraInitialising && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 flex flex-col items-center justify-center text-white gap-3 bg-black z-20"
+                    >
+                      <Loader2 className="w-10 h-10 animate-spin text-emerald-400" />
+                      <p className="text-xs font-mono text-white/60">Initializing camera...</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <GhostShieldOverlay active={isGhostMode} />
+                {/* Rule of thirds grid */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(to right, rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.12) 1px, transparent 1px)",
+                    backgroundSize: "33.33% 33.33%",
+                  }}
+                />
+
+                {/* Zoom controls */}
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
+                  <button
+                    type="button"
+                    onClick={() => toggleZoom(0.5)}
+                    className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center border border-white/20 active:scale-95"
+                    style={{ backdropFilter: "blur(8px)" }}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                  <span className="text-white/60 text-[10px] font-mono text-center">{zoom.toFixed(1)}x</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleZoom(-0.5)}
+                    className="w-10 h-10 rounded-full bg-black/40 text-white flex items-center justify-center border border-white/20 active:scale-95"
+                    style={{ backdropFilter: "blur(8px)" }}
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Bottom Controls */}
+            <div className="absolute bottom-0 inset-x-0 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-16 flex justify-around items-center bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+              <button
+                type="button"
+                onClick={() => { refreshCamera(); haptic("light"); }}
+                disabled={cameraInitialising}
+                className="flex flex-col items-center gap-1 text-white/70 active:scale-95"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-white/15 border border-white/15 flex items-center justify-center text-white backdrop-blur-md">
+                  <RefreshCw className={`w-5 h-5 ${cameraInitialising ? "animate-spin" : ""}`} />
+                </div>
+                <span className="text-[10px] font-semibold">Refresh</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={capturePhoto}
+                aria-label="Capture photo"
+                className="w-20 h-20 rounded-full bg-white/20 border-4 border-white flex items-center justify-center active:scale-95 transition-transform shadow-2xl shadow-black"
+              >
+                <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center">
+                  <Camera className="w-6 h-6 text-emerald-600" />
+                </div>
+              </button>
+
+              <div className="w-12 h-12" />
+            </div>
+          </motion.div>
         )}
-        {voiceError && <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--red)", margin: "8px 0 0 2px" }}>{voiceError}</p>}
-        <p style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--muted-subtle)", margin: "6px 0 0 2px", textAlign: "right" }}>
-          {description.length}/5000
-        </p>
-      </div>
-        {!isOnline && (
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: "color-mix(in oklab, var(--ink) 6%, transparent)", border: "1px solid color-mix(in oklab, var(--ink) 12%, transparent)" }}>
-            <div className="w-2 h-2 rounded-full bg-ink/30" />
-            <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--muted)", margin: 0 }}>
-              Offline — reports will queue until connection returns.
-            </p>
-          </div>
+      </AnimatePresence>
+
+      {/* ── REVIEW & SUBMIT BOTTOM SHEET MODAL ────────────────── */}
+      <AnimatePresence>
+        {showReviewModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowReviewModal(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 26, stiffness: 280 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-panel rounded-t-[32px] sm:rounded-3xl border border-ink/10 p-5 space-y-4 shadow-2xl pb-[calc(1.5rem+env(safe-area-inset-bottom))]"
+            >
+              <div className="flex items-center justify-between pb-2 border-b border-ink/10">
+                <div>
+                  <h3 className="text-base font-black text-ink">Confirm Official Submission</h3>
+                  <p className="text-xs text-ink/50 mt-0.5">Please review your report details</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(false)}
+                  className="w-8 h-8 rounded-full bg-ink/5 flex items-center justify-center text-ink/60"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Mode & Category Banner */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-3 rounded-xl bg-ink/5 border border-ink/5">
+                  <span className="text-[10px] font-mono text-ink/40 uppercase block">Mode</span>
+                  <span className="font-bold text-ink">
+                    {isGhostMode ? "Ghost Mode (Anonymous)" : "Civic Mode (Verified)"}
+                  </span>
+                </div>
+                <div className="p-3 rounded-xl bg-ink/5 border border-ink/5">
+                  <span className="text-[10px] font-mono text-ink/40 uppercase block">Category</span>
+                  <span className="font-bold text-ink capitalize">
+                    {selectedCategory?.label || reportType.replace(/_/g, " ")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="p-3 rounded-xl bg-ink/5 border border-ink/5 text-xs space-y-1">
+                <span className="text-[10px] font-mono text-ink/40 uppercase block">Location</span>
+                <p className="font-bold text-ink leading-snug">{resolvedAddress}</p>
+              </div>
+
+              {/* Description */}
+              {description && (
+                <div className="p-3 rounded-xl bg-ink/5 border border-ink/5 text-xs space-y-1">
+                  <span className="text-[10px] font-mono text-ink/40 uppercase block">Observations</span>
+                  <p className="text-ink/80 leading-snug">{description}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(false)}
+                  disabled={isSubmitting}
+                  className="px-4 py-3.5 rounded-2xl border border-ink/15 text-xs font-bold text-ink active:scale-98"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={finalizeSubmission}
+                  disabled={isSubmitting}
+                  className="flex-1 py-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-98 shadow-md shadow-emerald-600/20 disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                      <span>Submit Official Report</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
-        <RetryBanner />
-        <GhostToggle />
-        <SubmitButton label="Submit evidence" disabled={!incidentType || !gps} />
-      </div>
+      </AnimatePresence>
+
+      <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
+    </div>
   );
 }

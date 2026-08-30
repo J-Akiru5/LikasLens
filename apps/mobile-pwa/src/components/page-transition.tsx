@@ -31,7 +31,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   return (
-    <div ref={ref} className="min-h-full will-change-[opacity]">
+    <div ref={ref} className="min-h-full h-full will-change-[opacity]">
       {children}
     </div>
   );

@@ -312,6 +312,141 @@ async function routeRequest<T>(
     } as T;
   }
 
+  // ── Reports Heatmap Data ──────────────────────────────────────────────────
+  if (path === "reports/heatmap" && method === "GET") {
+    const sampleSeedTickets = [
+      { id: "595f7636-1e21-4ce0-a535-8e76627f27e5", title: "Oil Spill Near Boracay Shoreline", description: "Vessel discharge detected near coastal marine sanctuary.", urgency_score: 5, category: "water_pollution", status: "investigating", latitude: 11.9674, longitude: 121.9248, address_text: "Station 1, White Beach, Malay, Aklan" },
+      { id: "29d589cb-2c0b-4c1e-a1ab-bd46c70991f8", title: "Mangrove Clearing in Kalibo Wetlands", description: "Unpermitted cutting of mangrove forest along coastal buffer.", urgency_score: 4, category: "deforestation", status: "open", latitude: 11.7240, longitude: 122.3833, address_text: "Kalibo River Estuary, Kalibo, Aklan" },
+      { id: "ad60870c-069f-43a6-954f-d3de52f4c3c1", title: "Numancia Landfill Leachate Contamination", description: "Runoff from open dumpsite reaching agricultural irrigation channels.", urgency_score: 3, category: "illegal_dumping", status: "monitoring", latitude: 11.7058, longitude: 122.3314, address_text: "Municipal Landfill, Numancia, Aklan" },
+      { id: "019efc05-3184-7221-b8ae-1da93cb8e123", title: "Industrial Effluent Discharge in Pasig River", description: "Untreated chemical waste outflow detected near bridge pier.", urgency_score: 5, category: "water_pollution", status: "open", latitude: 14.5900, longitude: 121.0100, address_text: "Guadalupe Nuevo, Makati / Pasig River" },
+      { id: "019efc05-4921-7890-c10a-9fb42da1a456", title: "Illegal Quarrying Activity in Sierra Madre", description: "Heavy machinery excavating mountain slopes without ECC clearance.", urgency_score: 4, category: "deforestation", status: "open", latitude: 14.6500, longitude: 121.2500, address_text: "Sierra Madre Foothills, Tanay, Rizal" },
+      { id: "019efc05-6543-7abc-d123-123456789abc", title: "Open Burning & Smog Accumulation", description: "Continuous agricultural waste combustion causing dense smoke.", urgency_score: 3, category: "air_pollution", status: "open", latitude: 14.6800, longitude: 121.0500, address_text: "Commonwealth Ave, Quezon City" },
+      { id: "019efc05-7890-7def-e456-987654321def", title: "Hazardous Chemical Drum Disposal", description: "Unlabeled chemical containers dumped beside mangrove stream.", urgency_score: 5, category: "hazardous_waste", status: "investigating", latitude: 10.3157, longitude: 123.8854, address_text: "Mandaue Reclamation Area, Cebu" },
+      { id: "019efc05-9999-7fff-b111-aabbccddeeff", title: "Coastal Plastic Accumulation & Dumping", description: "Large solid waste accumulation blocking drainage canal outfall.", urgency_score: 3, category: "illegal_dumping", status: "open", latitude: 7.1907, longitude: 125.4553, address_text: "Davao River Estuary, Davao City" },
+      { id: "019efc05-8888-7aaa-c222-112233445566", title: "Coral Reef Siltation from Mining Runoff", description: "Turbid sediment plume smothering fringing reef ecosystems.", urgency_score: 5, category: "water_pollution", status: "investigating", latitude: 9.8349, longitude: 118.7384, address_text: "Honda Bay, Puerto Princesa, Palawan" },
+    ];
+
+    const PHILIPPINES_REGIONS: [number, number, string][] = [
+      [14.6760, 121.0437, "Quezon City, Metro Manila"],
+      [14.5995, 120.9842, "Manila, Metro Manila"],
+      [14.5764, 121.0851, "Pasig, Metro Manila"],
+      [14.5547, 121.0244, "Makati, Metro Manila"],
+      [14.5176, 121.0509, "Taguig, Metro Manila"],
+      [14.6544, 120.9702, "Caloocan, Metro Manila"],
+      [14.2790, 121.1685, "Calamba, Laguna"],
+      [13.7565, 121.0583, "Batangas City, Batangas"],
+      [10.3157, 123.8854, "Cebu City, Central Visayas"],
+      [7.1907, 125.4553, "Davao City, Davao Region"],
+      [9.8349, 118.7384, "Puerto Princesa, Palawan"],
+      [15.1450, 120.5887, "Angeles City, Pampanga"],
+    ];
+
+    let rawTickets: any[] = [];
+    try {
+      const { data: tickets } = await db()
+        .from("tickets")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (tickets && tickets.length > 0) {
+        rawTickets = tickets;
+      }
+    } catch {
+      // Supabase table query fallback
+    }
+
+    if (!rawTickets.length) {
+      rawTickets = sampleSeedTickets;
+    }
+
+    const filterType = params.get("type");
+
+    const points = rawTickets
+      .map((t: any, i: number) => {
+        let lat = t.latitude ? Number(t.latitude) : null;
+        let lng = t.longitude ? Number(t.longitude) : null;
+
+        if (!lat || !lng || isNaN(lat) || isNaN(lng) || Math.abs(lat) < 0.01) {
+          const locStr = `${t.address_text || ""} ${t.location || ""}`.toLowerCase();
+          const matched = PHILIPPINES_REGIONS.find((r) => locStr.includes(r[2].split(",")[0].toLowerCase()));
+          const fallback = matched || PHILIPPINES_REGIONS[i % PHILIPPINES_REGIONS.length];
+          const jitterLat = (((i * 17) % 23) - 11) * 0.004;
+          const jitterLng = (((i * 19) % 23) - 11) * 0.004;
+          lat = fallback[0] + jitterLat;
+          lng = fallback[1] + jitterLng;
+        }
+
+        const rawScore = Number(t.urgency_score) || 3;
+        const normalizedScore = rawScore > 10 ? Math.min(5, Math.max(1, Math.round(rawScore / 20))) : rawScore;
+        const category = t.category || (t.ai_triage_summary ? "air_pollution" : "illegal_dumping");
+
+        return {
+          id: t.id,
+          title: t.title || "Environmental Incident",
+          description: t.description || undefined,
+          lat,
+          lng,
+          weight: normalizedScore,
+          type: category,
+          urgency_score: normalizedScore,
+          status: t.status || "open",
+          address: t.address_text || t.location || "Metro Manila, Philippines",
+          summary: t.ai_triage_summary || t.description || undefined,
+          created_at: t.created_at,
+        };
+      })
+      .filter((p) => {
+        if (!filterType) return true;
+        return p.type === filterType;
+      });
+
+    const clusters = points.length > 0
+      ? [
+          {
+            center_lat: points[0].lat,
+            center_lng: points[0].lng,
+            count: Math.min(points.length, 18),
+            location: "Metro Manila & Luzon Corridor",
+            dominant_type: points[0].type,
+          },
+        ]
+      : [];
+
+    const hot_zones = points.length > 2
+      ? [
+          {
+            bounds: { south: 14.35, west: 120.85, north: 14.75, east: 121.15 },
+            report_count: points.length,
+            dominant_type: "illegal_dumping",
+            urgency: "HIGH",
+            location: "National Capital Region High-Density Zone",
+          },
+        ]
+      : [];
+
+    return {
+      success: true,
+      data: {
+        points,
+        clusters,
+        hot_zones,
+      },
+    } as T;
+  }
+
+  if (path === "reports/heatmap/violation-types" && method === "GET") {
+    return {
+      success: true,
+      data: [
+        { code: "illegal_dumping", name: "Illegal Dumping" },
+        { code: "air_pollution", name: "Air Pollution" },
+        { code: "water_pollution", name: "Water Pollution" },
+        { code: "deforestation", name: "Illegal Logging" },
+        { code: "hazardous_waste", name: "Hazardous Waste" },
+      ],
+    } as T;
+  }
+
   // ── AI Triage Pre-check ───────────────────────────────────────────────────
   if (path === "reports/triage" && method === "POST") {
     return {
