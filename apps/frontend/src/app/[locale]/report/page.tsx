@@ -44,8 +44,8 @@ import {
   ToastContainer,
   showToast,
   notifyThemeColor,
-  submitReport,
-  triageReport,
+  submitCitizenReport,
+  triageCitizenReport,
   queueReport,
 } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
@@ -409,7 +409,7 @@ export default function ReportPage() {
       return;
     }
 
-    const responseData = await submitReport(payload as any);
+    const responseData = await submitCitizenReport(payload as any);
     const assignedTicketId = responseData.data?.id || crypto.randomUUID();
     setSubmittedTicketId(assignedTicketId);
 
@@ -449,7 +449,7 @@ export default function ReportPage() {
       if (!isGhostMode && navigator.onLine) {
         setIsTriaging(true);
         try {
-          const triageData = await triageReport(cleanedImage);
+          const triageData = await triageCitizenReport(cleanedImage);
           if (triageData.has_concern) {
             setTriageIndicators(
               triageData.indicators

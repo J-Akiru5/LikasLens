@@ -30,8 +30,6 @@ export {
   apiPut,
   apiDelete,
   apiPatch,
-  submitReport,
-  triageReport,
 } from "./api/client";
 export type { ReportPayload, ReportResult, TriageResult } from "./api/client";
 export * from "./lib/offline-queue";

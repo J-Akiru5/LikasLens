@@ -14,7 +14,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import { showToast, EmptyState, submitReport } from "@likaslens/shared";
+import { showToast, EmptyState, submitCitizenReport } from "@likaslens/shared";
 import {
   getAllQueued,
   removeQueued,
@@ -105,7 +105,7 @@ export default function OfflineQueuePage() {
 
     try {
       const postFn = (payload: Record<string, unknown>) =>
-        submitReport(payload as any);
+        submitCitizenReport(payload as any);
       const result = await syncBatch(postFn, BATCH_SIZE);
       setProgress(result);
 
