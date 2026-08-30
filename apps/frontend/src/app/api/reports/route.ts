@@ -25,6 +25,18 @@ export async function POST(req: Request) {
     const userId = body.user_id ? String(body.user_id) : null;
     const reportType = body.report_type ? String(body.report_type) : undefined;
 
+    let validUserId: string | null = null;
+    if (userId) {
+      const { data: userRecord } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle();
+      if (userRecord?.id) {
+        validUserId = userRecord.id;
+      }
+    }
+
     const ticketPayload: Record<string, unknown> = {
       id: crypto.randomUUID(),
       title,
@@ -33,17 +45,29 @@ export async function POST(req: Request) {
       longitude,
       address_text: location,
       status: "open",
-      reporter_user_id: userId || null,
+      reporter_user_id: validUserId,
       ai_triage_summary: reportType || "Unclassified",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    const { data: ticket, error: ticketErr } = await supabase
+    let { data: ticket, error: ticketErr } = await supabase
       .from("tickets")
       .insert(ticketPayload)
       .select()
       .single();
+
+    // Fallback if foreign key constraint fails
+    if (ticketErr && ticketErr.code === "23503") {
+      console.warn("[api/reports] User FK constraint failed, falling back to anonymous ticket:", ticketErr.message);
+      const fallbackResult = await supabase
+        .from("tickets")
+        .insert({ ...ticketPayload, reporter_user_id: null })
+        .select()
+        .single();
+      ticket = fallbackResult.data;
+      ticketErr = fallbackResult.error;
+    }
 
     if (ticketErr) {
       console.error("[api/reports] Ticket insert error:", ticketErr);

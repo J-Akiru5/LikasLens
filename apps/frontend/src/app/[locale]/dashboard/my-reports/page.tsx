@@ -116,71 +116,69 @@ export default function MyReportsPage() {
 
   const getStageIdx = (status: string) => {
     const statusOrder: Record<string, number> = {
-      open: 1,
-      in_review: 2,
+      open: 3,           // When submitted: Stage 1 (Received) & Stage 2 (Assigned) are completed; Stage 3 (Sent to Inspection Team) is Active!
+      in_review: 3,
       assigned: 3,
-      investigating: 4,
-      resolved: 5,
+      investigating: 4,  // Inspectors on site
+      in_progress: 4,
+      resolved: 5,       // Solved & Cleaned up
       closed: 5,
     };
-    return statusOrder[status] || 1;
+    return statusOrder[status] || 3;
   };
 
-  // 100% Plain English, No Confusing Jargon
+  // 100% Plain English, Unified 5-Stage Life Cycle
   const STAGES = [
-    { step: 1, short: "1. Received", title: "Report Received", desc: "Photo and location saved safely in the system." },
-    { step: 2, short: "2. Checking", title: "Checking Environmental Rules", desc: "Checking what environmental law applies to this report." },
-    { step: 3, short: "3. Sent", title: "Sent to Government Office", desc: "Assigned to DENR and City Environment inspectors." },
-    { step: 4, short: "4. On Site", title: "Inspectors at the Location", desc: "Field officers are on-site investigating and cleaning up." },
-    { step: 5, short: "5. Solved", title: "Problem Solved & Cleaned Up", desc: "The issue has been completely fixed by authorities." },
+    { step: 1, short: "1. Received", title: "Report Received & Photo Saved", desc: "Your photo and report details are safely saved in the system." },
+    { step: 2, short: "2. Assigned", title: "Assigned to Government Office", desc: "Assigned to DENR & City Environment Office (CENRO) under Clean Air & Waste Management laws." },
+    { step: 3, short: "3. Dispatched", title: "Sent to Inspection Team", desc: "Local inspectors have been notified and dispatched to check the area." },
+    { step: 4, short: "4. On Site", title: "On-Site Inspection & Clean-up", desc: "Government team visits the location to inspect and resolve the issue." },
+    { step: 5, short: "5. Solved", title: "Problem Solved & Cleaned Up", desc: "The issue has been completely fixed and verified by authorities." },
   ];
 
-  const getStatusMeta = (status: string) => {
+  const getStatusMeta = (status: string, category?: string) => {
+    const isWater = category?.toLowerCase().includes("water") || category?.toLowerCase().includes("river") || category?.toLowerCase().includes("ocean");
+    const isAir = category?.toLowerCase().includes("air") || category?.toLowerCase().includes("smoke") || category?.toLowerCase().includes("burn");
+    const lawName = isWater
+      ? "Clean Water Act (RA 9275)"
+      : isAir
+      ? "Clean Air Act (RA 8749)"
+      : "Solid Waste Management Act (RA 9003)";
+
     switch (status) {
       case "resolved":
       case "closed":
         return {
-          title: "Problem Fixed & Completed",
+          title: "Problem Solved & Cleaned Up",
           body: "Great news! Your report has been resolved by the government taskforce and the area is cleaned up. Thank you for protecting our environment!",
-          badge: "Cleaned Up & Resolved",
+          badge: "Problem Solved",
           pillBg: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
           dotBg: "bg-emerald-500",
-          lawName: "Clean Air & Solid Waste Management Act",
+          lawName,
           agency: "DENR & City Environment Office (CENRO)",
           expectedTime: "Completed & Verified",
         };
       case "investigating":
-      case "assigned":
+      case "in_progress":
         return {
           title: "Inspectors Are on the Way",
-          body: "The DENR and local environment taskforce have been dispatched. Government inspectors are on-site right now to check the issue and clean up.",
+          body: "The DENR and local environment taskforce are currently investigating on-site to inspect the violation and coordinate clean-up.",
           badge: "Inspectors On Site",
           pillBg: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
           dotBg: "bg-blue-500 animate-pulse",
-          lawName: "Republic Act 9003 (Solid Waste Management)",
-          agency: "Local City Environment Office (CENRO)",
+          lawName,
+          agency: "DENR & City Environment Office (CENRO)",
           expectedTime: "Action in Progress (Today)",
-        };
-      case "in_review":
-        return {
-          title: "Checking Rules & Assigning Officers",
-          body: "We verified your photo and matched what environmental law was broken. This is now queued for direct officer dispatch.",
-          badge: "Under Review",
-          pillBg: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
-          dotBg: "bg-purple-500 animate-pulse",
-          lawName: "Philippine Environmental Law Review",
-          agency: "DENR Environmental Management Bureau (EMB)",
-          expectedTime: "Within 24 Hours",
         };
       default:
         return {
-          title: "Report Received Safely",
-          body: "We received your report and photos! We will update you right here as soon as government inspectors take action.",
-          badge: "Received - In Queue",
-          pillBg: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
-          dotBg: "bg-amber-500 animate-pulse",
-          lawName: "Initial Case Review",
-          agency: "DENR & Local Government Unit",
+          title: "Sent to Inspection Team",
+          body: "We received your report and photos! Your report is assigned to DENR & City Environment Office (CENRO), and inspectors have been notified for site inspection.",
+          badge: "Sent to Inspectors",
+          pillBg: "bg-accent/15 text-accent border-accent/30",
+          dotBg: "bg-accent animate-pulse",
+          lawName,
+          agency: "DENR & City Environment Office (CENRO)",
           expectedTime: "Within 24 to 48 Hours",
         };
     }
@@ -193,8 +191,8 @@ export default function MyReportsPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const modalMeta = modalReport ? getStatusMeta(modalReport.status) : null;
-  const modalStageIdx = modalReport ? getStageIdx(modalReport.status) : 1;
+  const modalMeta = modalReport ? getStatusMeta(modalReport.status, modalReport.category || modalReport.title) : null;
+  const modalStageIdx = modalReport ? getStageIdx(modalReport.status) : 3;
 
   return (
     <DashboardLayoutWrapper
@@ -296,7 +294,7 @@ export default function MyReportsPage() {
           <div className="space-y-4">
             {filteredReports.map((report) => {
               const isGhost = report.title?.includes("Ghost Mode") || !report.reporter;
-              const meta = getStatusMeta(report.status);
+              const meta = getStatusMeta(report.status, report.category || report.title);
               const currentStageIdx = getStageIdx(report.status);
 
               return (

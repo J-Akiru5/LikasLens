@@ -14,8 +14,23 @@ import {
   formatNumber,
 } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse, ActivityFeedItem } from "@likaslens/shared";
-import { Camera, ChevronRight, Activity, Scale, WifiOff, RefreshCw, Sparkles, MessageCircleQuestion } from "lucide-react";
-import { LargeTitle } from "@/components/native/large-title";
+import {
+  Camera,
+  ChevronRight,
+  Activity,
+  Scale,
+  WifiOff,
+  RefreshCw,
+  Sparkles,
+  MessageCircleQuestion,
+  FileText,
+  Map,
+  ShieldCheck,
+  EyeOff,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
 import { getQueueCount } from "@likaslens/shared";
@@ -35,6 +50,7 @@ export default function DashboardPage() {
   const haptic = useHaptics();
 
   const [userName, setUserName] = useState("Citizen");
+  const [isGhost, setIsGhost] = useState(false);
 
   const params = useParams<{ locale: string }>();
   const locale = params?.locale || "en";
@@ -47,16 +63,21 @@ export default function DashboardPage() {
       greeting: hour < 12 ? "Good morning," : hour < 18 ? "Good afternoon," : "Good evening,",
       dateStr: formatDate(date, "long", locale).toUpperCase(),
     });
+
+    const theme = document.documentElement.getAttribute("data-theme");
+    setIsGhost(theme === "ghost");
   }, [locale]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsRes, feedRes, userRes] = await Promise.all([
+      const supabase = createClient();
+      const [statsRes, feedRes, authRes] = await Promise.all([
         laravelGet<ApiResponse<DashboardStats>>("/dashboard/stats").catch(() => null),
         getDashboardFeed().catch(() => null),
-        laravelGet<any>("/user").catch(() => null),
+        supabase.auth.getUser().catch(() => ({ data: { user: null } })),
       ]);
+
       setStats(statsRes?.data ?? null);
       setFeed(feedRes?.data ?? []);
 
@@ -66,11 +87,18 @@ export default function DashboardPage() {
         setQueueCount(count);
       } catch {}
 
-      const user = userRes?.data || userRes;
-      if (user?.name) {
-        setUserName(user.name.split(" ")[0]);
-      } else if (user?.first_name) {
-        setUserName(user.first_name);
+      const authUser = authRes?.data?.user;
+      if (authUser) {
+        const rawName =
+          authUser.user_metadata?.full_name ||
+          authUser.user_metadata?.name ||
+          authUser.user_metadata?.first_name ||
+          (authUser.email ? authUser.email.split("@")[0] : "");
+
+        if (rawName) {
+          const first = rawName.split(" ")[0];
+          setUserName(first.charAt(0).toUpperCase() + first.slice(1));
+        }
       }
     } catch (err) {
       console.error("Failed to load dashboard:", err);
@@ -118,16 +146,23 @@ export default function DashboardPage() {
 
   return (
     <div className="pb-28">
-      <div className="px-5 pb-2 pt-1 flex justify-between items-end">
+      {/* ── Top Header Bar ── */}
+      <div className="px-5 pb-3 pt-2 flex justify-between items-end">
         <div>
-          <p className="text-[10px] font-bold text-muted tracking-widest uppercase mb-1 min-h-[15px]">
-            {timeState.dateStr}
-          </p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold text-muted tracking-widest uppercase">
+              {timeState.dateStr}
+            </span>
+            <span className="text-[10px] font-mono px-2 py-0.2 rounded-full font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Verified
+            </span>
+          </div>
           <h1
-            className="text-[24px] font-medium tracking-tight text-ink m-0"
-            style={{ letterSpacing: "-0.02em", whiteSpace: "nowrap" }}
+            className="text-[26px] font-black tracking-tight text-ink m-0 leading-none"
+            style={{ letterSpacing: "-0.02em" }}
           >
-            {timeState.greeting} <strong className="font-bold">{userName}!</strong>
+            {timeState.greeting} <strong className="text-emerald-600 dark:text-emerald-400">{userName}!</strong>
           </h1>
         </div>
       </div>
@@ -214,38 +249,106 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="px-5">
-        {/* ── My Impact — grouped inset card, mono on numbers only ─────────── */}
-        <section style={{ marginBottom: 24 }}>
-          <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
-            <h2 className="ios-section-label">My impact</h2>
+      <div className="px-5 space-y-6">
+        {/* ── Quick Toolkit 4-Tile Grid (What Citizens & Government Need) ── */}
+        <section>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <Link
-              href={`/${locale}/impact`}
-              className="flex items-center gap-0.5"
-              style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
+              href={`/${locale}/report`}
+              className="p-3.5 rounded-2xl bg-panel border border-emerald-500/20 shadow-xs hover:border-emerald-500/40 active:scale-[0.98] transition-all flex flex-col justify-between h-24 group"
             >
-              Details <ChevronRight style={{ width: 14, height: 14 }} />
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Camera className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold uppercase">Quick</span>
+              </div>
+              <div>
+                <p className="font-bold text-xs text-ink group-hover:text-emerald-600 transition-colors">File Report</p>
+                <p className="text-[10px] text-ink/50 leading-tight">Take photo & tag GPS</p>
+              </div>
+            </Link>
+
+            <Link
+              href={`/${locale}/history`}
+              className="p-3.5 rounded-2xl bg-panel border border-ink/[0.08] dark:border-white/10 shadow-xs hover:border-accent/40 active:scale-[0.98] transition-all flex flex-col justify-between h-24 group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-mono text-accent font-bold uppercase">Live</span>
+              </div>
+              <div>
+                <p className="font-bold text-xs text-ink group-hover:text-accent transition-colors">My Submissions</p>
+                <p className="text-[10px] text-ink/50 leading-tight">5-stage live tracker</p>
+              </div>
+            </Link>
+
+            <Link
+              href={`/${locale}/map`}
+              className="p-3.5 rounded-2xl bg-panel border border-ink/[0.08] dark:border-white/10 shadow-xs hover:border-blue-500/40 active:scale-[0.98] transition-all flex flex-col justify-between h-24 group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <Map className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 font-bold uppercase">GPS</span>
+              </div>
+              <div>
+                <p className="font-bold text-xs text-ink group-hover:text-blue-600 transition-colors">Hazard Map</p>
+                <p className="text-[10px] text-ink/50 leading-tight">Community pinpoints</p>
+              </div>
+            </Link>
+
+            <Link
+              href={`/${locale}/laws`}
+              className="p-3.5 rounded-2xl bg-panel border border-ink/[0.08] dark:border-white/10 shadow-xs hover:border-purple-500/40 active:scale-[0.98] transition-all flex flex-col justify-between h-24 group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                  <Scale className="w-4 h-4" />
+                </div>
+                <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400 font-bold uppercase">Laws</span>
+              </div>
+              <div>
+                <p className="font-bold text-xs text-ink group-hover:text-purple-600 transition-colors">Legal Penalties</p>
+                <p className="text-[10px] text-ink/50 leading-tight">RA 9003 & Clean Air</p>
+              </div>
             </Link>
           </div>
-          <div className="ios-grouped-list" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", padding: 0 }}>
-            {[
-              { label: "Reports", value: totalReports, color: "var(--ink)" },
-              { label: "Resolved", value: resolvedToday, color: "var(--green)" },
-              { label: "Active", value: activeIncidents, color: "var(--accent)" },
-            ].map(({ label, value, color }) => (
-              <div key={label} style={{ padding: "12px 14px", borderRight: label !== "Active" ? "1px solid var(--border)" : "none" }}>
-                <p className="ios-stat-num" style={{ color }}>
-                  {formatNumber(value)}
-                </p>
-                <p className="ios-stat-label">{label}</p>
-              </div>
-            ))}
+        </section>
+
+        {/* ── My Impact Overview (Widget Card) ── */}
+        <section>
+          <div className="flex items-center justify-between mb-2 px-0.5">
+            <h2 className="text-xs font-bold text-ink/60 uppercase tracking-wider font-mono">Community Impact</h2>
+            <Link
+              href={`/${locale}/impact`}
+              className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5"
+            >
+              View Analytics <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 gap-2.5 p-3 rounded-2xl bg-panel border border-ink/[0.08] dark:border-white/10 shadow-xs">
+            <div className="p-3 rounded-xl bg-ink/[0.02] border border-ink/5 text-center">
+              <p className="text-xl font-black text-ink">{formatNumber(totalReports)}</p>
+              <p className="text-[10px] font-mono text-ink/50 uppercase mt-0.5">Total Reports</p>
+            </div>
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+              <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">{formatNumber(resolvedToday)}</p>
+              <p className="text-[10px] font-mono text-emerald-700 dark:text-emerald-300 uppercase mt-0.5 font-bold">Resolved</p>
+            </div>
+            <div className="p-3 rounded-xl bg-accent/10 border border-accent/20 text-center">
+              <p className="text-xl font-black text-accent">{formatNumber(activeIncidents)}</p>
+              <p className="text-[10px] font-mono text-accent uppercase mt-0.5 font-bold">Active Cases</p>
+            </div>
           </div>
         </section>
 
         {/* ── Offline Queue banner — show if there are queued reports ──────── */}
         {queueCount > 0 && (
-          <section style={{ marginBottom: 24 }}>
+          <section>
             <Link
               href={`/${locale}/offline-queue`}
               className="flex items-center justify-between p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 transition-transform active:scale-[0.99]"
@@ -268,14 +371,13 @@ export default function DashboardPage() {
 
         {/* ── Recent Activity — Activity feed list ─────────────────────────── */}
         <section>
-          <div className="flex items-center justify-between" style={{ marginBottom: 8, padding: "0 2px" }}>
-            <h2 className="ios-section-label">Recent Activity</h2>
+          <div className="flex items-center justify-between mb-2 px-0.5">
+            <h2 className="text-xs font-bold text-ink/60 uppercase tracking-wider font-mono">Recent Activity</h2>
             <Link
               href={`/${locale}/incidents`}
-              className="flex items-center gap-0.5"
-              style={{ fontFamily: "var(--font-body)", fontSize: 13, fontWeight: 600, color: "var(--accent)" }}
+              className="text-xs font-bold text-accent flex items-center gap-0.5"
             >
-              View all <ChevronRight style={{ width: 14, height: 14 }} />
+              All Incidents <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -285,25 +387,27 @@ export default function DashboardPage() {
               description="Reports you submit or verify will appear in your live feed."
             />
           ) : (
-            <div className="ios-grouped-list">
+            <div className="rounded-2xl bg-panel border border-ink/[0.08] dark:border-white/10 shadow-xs divide-y divide-ink/5 overflow-hidden">
               {feed.slice(0, 5).map((item, idx) => (
                 <div
                   key={item.id || idx}
-                  className="p-3.5 flex items-start gap-3 border-b border-ink/5 last:border-b-0"
+                  className="p-3.5 flex items-start gap-3 hover:bg-ink/[0.01] transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-ink/5 flex items-center justify-center shrink-0 mt-0.5">
-                    <Activity className="w-4 h-4 text-accent" />
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <Activity className="w-4 h-4" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-bold text-ink truncate leading-tight">
-                      {item.title || "Evidentiary Update"}
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-bold text-ink truncate leading-tight">
+                        {item.title || "Environmental Update"}
+                      </p>
+                      <span className="text-[10px] font-mono text-ink/40 shrink-0">
+                        {item.time || "Recently"}
+                      </span>
                     </div>
                     <p className="text-[11px] text-ink/60 mt-0.5 line-clamp-1 leading-snug">
                       {item.description || "Field evidence update"}
                     </p>
-                    <div className="text-[10px] font-mono text-ink/40 mt-1">
-                      {item.time || "Recently"}
-                    </div>
                   </div>
                 </div>
               ))}

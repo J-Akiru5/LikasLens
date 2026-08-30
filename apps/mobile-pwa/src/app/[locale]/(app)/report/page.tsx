@@ -408,8 +408,8 @@ export default function ReportPage() {
       const res = await apiPost<{ message?: string; data?: { id?: string } }>("/reports", payload);
       const ticketId = res?.data?.id || crypto.randomUUID();
 
-      // If Ghost Mode, save tracking ID into device vault
-      if (typeof window !== "undefined" && ghostMode) {
+      // Always save tracking ID into device storage for instant visibility in My Submissions
+      if (typeof window !== "undefined") {
         try {
           const raw = localStorage.getItem("likaslens_anonymous_reports");
           const list = raw ? JSON.parse(raw) : [];
@@ -456,7 +456,7 @@ export default function ReportPage() {
         onComplete={() => {
           setShowAnalysis(false);
           if (ghostMode) {
-            showToast("Metadata stripped for your safety. Report submitted!", "success");
+            showToast("Photo saved safely in Ghost Mode! Report sent.", "success");
           } else {
             showToast("Report submitted successfully!", "success");
           }
@@ -464,7 +464,7 @@ export default function ReportPage() {
           setIncidentType("");
           setDescription("");
           setStep("camera");
-          router.push(`/${locale}/dashboard`);
+          router.push(`/${locale}/history`);
         }}
       />
     );
