@@ -2,13 +2,18 @@
 
 import { useEffect, useState } from "react";
 import {
-  getTickets,
+  getAnalyticsSummary,
+  getAnalyticsCategories,
   getBiasRegister,
   EmptyState,
   Skeleton,
   showToast,
 } from "@likaslens/shared";
-import type { Ticket, BiasRiskEntry } from "@likaslens/shared";
+import type {
+  AnalyticsSummary,
+  AnalyticsCategories,
+  BiasRiskEntry,
+} from "@likaslens/shared";
 import {
   BarChart3,
   TrendingUp,
@@ -131,21 +136,35 @@ function AnalyticsSkeleton() {
 }
 
 export default function AnalyticsPage() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [summary, setSummary] = useState<AnalyticsSummary | null>(null);
+  const [categories, setCategories] = useState<AnalyticsCategories | null>(null);
   const [biasRisks, setBiasRisks] = useState<BiasRiskEntry[]>([]);
-  const [ticketsLoading, setTicketsLoading] = useState(true);
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [catsLoading, setCatsLoading] = useState(true);
   const [biasLoading, setBiasLoading] = useState(true);
 
   useEffect(() => {
-    getTickets({ per_page: "100" })
+    getAnalyticsSummary()
       .then((res) => {
-        if (res.success) setTickets(res.data);
+        if (res.success && res.data) setSummary(res.data);
       })
       .catch((err) => {
-        console.error("Failed to load tickets:", err);
-        showToast("Failed to load ticket data", "error");
+        console.error("Failed to load analytics summary:", err);
+        showToast("Failed to load analytics summary", "error");
       })
-      .finally(() => setTicketsLoading(false));
+      .finally(() => setSummaryLoading(false));
+  }, []);
+
+  useEffect(() => {
+    getAnalyticsCategories()
+      .then((res) => {
+        if (res.success && res.data) setCategories(res.data);
+      })
+      .catch((err) => {
+        console.error("Failed to load analytics categories:", err);
+        showToast("Failed to load category data", "error");
+      })
+      .finally(() => setCatsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -160,26 +179,22 @@ export default function AnalyticsPage() {
       .finally(() => setBiasLoading(false));
   }, []);
 
-  const loading = ticketsLoading;
+  const loading = summaryLoading || catsLoading;
 
   if (loading) return <AnalyticsSkeleton />;
 
-  const statusCounts: Record<string, number> = {};
-  tickets.forEach((t) => {
-    statusCounts[t.status] = (statusCounts[t.status] || 0) + 1;
-  });
+  const totalTickets = summary?.total_reports ?? 0;
+  const resolutionRate = summary?.resolution_rate ?? 0;
+  const statusCounts = summary?.status_counts ?? [];
+  const categoryCounts = categories?.categories ?? [];
 
-  const totalTickets = tickets.length;
-  const resolvedTickets = tickets.filter(
-    (t) => t.status === "resolved" || t.status === "closed"
-  ).length;
-  const pendingTickets = totalTickets - resolvedTickets;
-  const resolutionRate =
-    totalTickets > 0 ? Math.round((resolvedTickets / totalTickets) * 100) : 0;
+  const pendingCount = statusCounts
+    .filter((s) => !["resolved", "verified", "closed"].includes(s.status))
+    .reduce((sum, s) => sum + s.count, 0);
 
   const kpis = [
     {
-      label: "Total Tickets",
+      label: "Total Reports",
       value: totalTickets,
       suffix: "",
       icon: BarChart3,
@@ -202,7 +217,7 @@ export default function AnalyticsPage() {
     },
     {
       label: "Pending",
-      value: pendingTickets,
+      value: pendingCount,
       suffix: "",
       icon: TrendingDown,
       iconBg: "bg-amber/10",
@@ -278,12 +293,12 @@ export default function AnalyticsPage() {
 
       {/* Tickets section */}
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* Tickets by Status */}
+        {/* Tickets by Status — from server-side aggregation */}
         <div className="bg-panel rounded-3xl p-4 sm:p-6 border border-ink/5">
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-6">
-            Tickets by Status
+            Reports by Status
           </h3>
-          {Object.keys(statusCounts).length === 0 ? (
+          {statusCounts.length === 0 ? (
             <EmptyState
               icon={BarChart3}
               title="No ticket data yet"
@@ -291,69 +306,60 @@ export default function AnalyticsPage() {
             />
           ) : (
             <div className="space-y-4">
-              {Object.entries(statusCounts).map(([status, count]) => {
-                const pct =
-                  totalTickets > 0
-                    ? Math.round((count / totalTickets) * 100)
-                    : 0;
-                return (
-                  <div key={status}>
-                    <div className="flex justify-between font-mono text-sm mb-2">
-                      <span className="text-ink/70">{status}</span>
-                      <span className="text-ink/40">
-                        {count} ({pct}%)
-                      </span>
-                    </div>
-                    <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-green rounded-full transition-all duration-500"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
+              {statusCounts.map((sc) => (
+                <div key={sc.status}>
+                  <div className="flex justify-between font-mono text-sm mb-2">
+                    <span className="text-ink/70">{sc.status}</span>
+                    <span className="text-ink/40">
+                      {sc.count} ({sc.percentage}%)
+                    </span>
                   </div>
-                );
-              })}
+                  <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-green rounded-full transition-all duration-500"
+                      style={{ width: `${sc.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Ticket List */}
+        {/* Category Distribution — from server-side aggregation */}
         <div className="bg-panel rounded-3xl p-4 sm:p-6 border border-ink/5">
           <h3 className="font-semibold tracking-tight text-xl text-ink mb-6">
-            Recent Tickets
+            Reports by Category
           </h3>
-          {tickets.length === 0 ? (
+          {categoryCounts.length === 0 ? (
             <EmptyState
               icon={TrendingUp}
-              title="No tickets yet"
-              description="Submitted tickets will appear here once citizens submit reports."
+              title="No category data yet"
+              description="Category breakdown will appear once triaged reports are processed."
             />
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {tickets.map((ticket) => (
+              {categoryCounts.map((cat) => (
                 <div
-                  key={ticket.id}
+                  key={cat.category}
                   className="flex items-center justify-between p-3 rounded-xl border border-ink/5 hover:bg-ink/[0.02] transition-colors"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-sm text-ink truncate">
-                      {ticket.title}
+                      {cat.category.replace(/_/g, " ")}
                     </p>
                     <p className="font-mono text-xs text-muted">
-                      {ticket.location}
+                      avg confidence: {(cat.avg_confidence * 100).toFixed(0)}%
                     </p>
                   </div>
-                  <span
-                    className={`ml-2 shrink-0 rounded-full px-2.5 py-1 text-[10px] font-mono uppercase tracking-widest font-bold ${
-                      ticket.status === "open"
-                        ? "bg-amber/10 text-amber"
-                        : ticket.status === "resolved"
-                          ? "bg-green/10 text-green"
-                          : "bg-ink/[0.04] text-ink/60"
-                    }`}
-                  >
-                    {ticket.status}
-                  </span>
+                  <div className="ml-2 shrink-0 text-right">
+                    <span className="font-mono text-sm font-bold text-ink">
+                      {cat.count}
+                    </span>
+                    <span className="font-mono text-xs text-ink/40 ml-1">
+                      ({cat.percentage}%)
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

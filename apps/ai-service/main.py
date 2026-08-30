@@ -560,18 +560,20 @@ async def chat_proxy(payload: dict):
 # ---------------------------------------------------------------------------
 
 try:
-    from routers.auth    import router as auth_router
-    from routers.reports import router as reports_router
-    from routers.tickets import router as tickets_router
-    from routers.public  import router as public_router
-    from routers.liksi   import router as liksi_router
+    from routers.auth     import router as auth_router
+    from routers.reports  import router as reports_router
+    from routers.tickets  import router as tickets_router
+    from routers.public   import router as public_router
+    from routers.liksi    import router as liksi_router
+    from routers.analytics import router as analytics_router
 
     app.include_router(auth_router)
     app.include_router(reports_router)
     app.include_router(tickets_router)
     app.include_router(public_router)
     app.include_router(liksi_router)
-    logger.info("Business API routers loaded: auth, reports, tickets, public, liksi")
+    app.include_router(analytics_router)
+    logger.info("Business API routers loaded: auth, reports, tickets, public, liksi, analytics")
 except ImportError as exc:
     logger.warning("Business API routers not loaded (DB deps may be missing): %s", exc)
 

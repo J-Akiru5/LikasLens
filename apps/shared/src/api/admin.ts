@@ -329,15 +329,6 @@ export interface PredictionMeta {
   generated_at: string;
 }
 
-export function getAdminPredictions(params?: Record<string, string>) {
-  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-  return laravelGet<{
-    success: boolean;
-    data: HotspotPrediction[];
-    meta: PredictionMeta;
-  }>(`/admin/predictions${qs}`);
-}
-
 // Admin: Triage
 export function getTriageQueue(params?: Record<string, string>) {
   const qs = params ? "?" + new URLSearchParams(params).toString() : "";
@@ -550,6 +541,97 @@ export function getUserRedemptions() {
 // Analytics
 export function getAnalyticsDashboard() {
   return laravelGet<ApiResponse<AnalyticsDashboardData>>("/analytics/dashboard");
+}
+
+// ── AI Service Analytics (Phase 1) ─────────────────────────────────────
+export interface AnalyticsMeta {
+  total_reports_analyzed: number;
+  window_days: number;
+  generated_at: string;
+}
+
+export interface StatusCount {
+  status: string;
+  count: number;
+  percentage: number;
+}
+
+export interface AnalyticsSummary {
+  total_reports: number;
+  status_counts: StatusCount[];
+  resolution_rate: number;
+  median_time_to_resolution_hours: number | null;
+  ghost_mode_count: number;
+  ghost_mode_percentage: number;
+  meta: AnalyticsMeta;
+}
+
+export interface CategoryCount {
+  category: string;
+  count: number;
+  percentage: number;
+  avg_confidence: number;
+}
+
+export interface SeverityBreakdown {
+  severity: string;
+  count: number;
+  percentage: number;
+}
+
+export interface AnalyticsCategories {
+  categories: CategoryCount[];
+  severity_distribution: SeverityBreakdown[];
+  meta: AnalyticsMeta;
+}
+
+export interface DailyCount {
+  date: string;
+  count: number;
+}
+
+export interface GrowthRate {
+  current_period: number;
+  previous_period: number;
+  growth_rate: number;
+}
+
+export interface CategoryTrend {
+  category: string;
+  daily_counts: DailyCount[];
+  growth_rate: GrowthRate;
+}
+
+export interface AnalyticsTrends {
+  overall_daily: DailyCount[];
+  overall_growth: GrowthRate;
+  by_category: CategoryTrend[];
+  meta: AnalyticsMeta;
+}
+
+export function getAnalyticsSummary(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<AnalyticsSummary>>(`/analytics/summary${qs}`);
+}
+
+export function getAnalyticsCategories(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<AnalyticsCategories>>(`/analytics/categories${qs}`);
+}
+
+export function getAnalyticsTrends(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<ApiResponse<AnalyticsTrends>>(`/analytics/trends${qs}`);
+}
+
+// Repoint predictions to the new AI gateway proxy route
+export function getAdminPredictions(params?: Record<string, string>) {
+  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
+  return laravelGet<{
+    success: boolean;
+    data: HotspotPrediction[];
+    meta: PredictionMeta;
+  }>(`/ai/predictions${qs}`);
 }
 
 // Public Impact

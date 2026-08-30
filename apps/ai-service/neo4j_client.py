@@ -205,6 +205,7 @@ async def route_incident(
     incident_id: str,
     violation_code: str,
     ngo_id: str | None = None,
+    severity: str | None = None,
 ) -> dict[str, Any]:
     """Execute a full incident routing transaction in Neo4j.
 
@@ -256,9 +257,9 @@ async def route_incident(
         # Create/upsert Incident
         (
             "MERGE (i:Incident {id: $incident_id}) "
-            "ON CREATE SET i.status = 'open', i.createdAt = datetime(), i.source = 'app' "
+            "ON CREATE SET i.status = 'open', i.createdAt = datetime(), i.source = 'app', i.severity = $severity "
             "RETURN i",
-            {"incident_id": safe_incident},
+            {"incident_id": safe_incident, "severity": severity or "low"},
         ),
         # Create REPORTED edge
         (

@@ -66,6 +66,8 @@ class Ticket(Base):
     ai_analysis_raw: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
     ai_recommended_office: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
     routing_source: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    category: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    severity: Mapped[str] = mapped_column(String(20), default="low")
     urgency_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Phase 1 Analytics Foundation Report</title>
+<style>
+  :root { --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --border: #e7e5e4; --accent: #2563eb; --green: #16a34a; --amber: #d97706; --red: #dc2626; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1c1917; --fg: #e7e5e4; --muted: #a8a29e; --border: #44403c; --accent: #60a5fa; --green: #4ade80; --amber: #fbbf24; --red: #f87171; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+  h2 { font-size: 1.25rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+  p, li { font-size: 0.9rem; color: var(--fg); margin-bottom: 0.5rem; }
+  ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.3rem; }
+  code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.82rem; background: var(--border); padding: 0.15rem 0.4rem; border-radius: 4px; }
+  pre { background: var(--border); padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; margin: 1rem 0; line-height: 1.5; }
+  .card { border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card h3 { margin-top: 0; }
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-red { background: #fecaca; color: #991b1b; }
+  .badge-blue { background: #dbeafe; color: #1e40af; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .kpi { text-align: center; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; }
+  .kpi-value { font-size: 2rem; font-weight: 700; }
+  .kpi-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .file-tree { font-family: monospace; font-size: 0.82rem; line-height: 1.8; background: var(--border); padding: 1rem; border-radius: 8px; }
+  .file-tree .new { color: var(--green); font-weight: 600; }
+  .file-tree .mod { color: var(--amber); font-weight: 600; }
+  .section-divider { border: none; border-top: 2px solid var(--border); margin: 2.5rem 0; }
+  .callout { background: #eff6ff; border-left: 4px solid var(--accent); padding: 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; font-size: 0.85rem; }
+  .callout-warn { background: #fefce8; border-left-color: var(--amber); }
+  .callout-success { background: #f0fdf4; border-left-color: var(--green); }
+</style>
+</head>
+<body>
+
+<h1>LikasLens — Phase 1 Analytics Foundation</h1>
+<p class="subtitle">Implementation Report · August 30, 2026 · Branch: <code>feat/analytics-phase-1</code> off <code>development</code></p>
+
+<hr class="section-divider">
+
+<h2>1. Executive Summary</h2>
+<p>This report documents the Phase 1 analytics foundation built for the IPOPHIL SRT Final Judging (Sep 3, 2026). The work transforms LikasLens from a system that "collects environmental reports" into one that "turns reports into measurable indicators for LGU decision-making" — real server-side analytics, not client-side aggregation over a paginated fetch.</p>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--accent)">15</div>
+    <div class="kpi-label">Files Changed/Added</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">4</div>
+    <div class="kpi-label">New API Endpoints</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--amber)">~200</div>
+    <div class="kpi-label">Demo Tickets (90 days)</div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<h2>2. Decisions Applied</h2>
+
+<table>
+  <tr><th>ID</th><th>Decision</th><th>Choice</th><th>Rationale</th></tr>
+  <tr>
+    <td><strong>D1</strong></td>
+    <td>Schema migration</td>
+    <td><span class="badge badge-blue">Direct migration</span></td>
+    <td>Add <code>category VARCHAR</code> + <code>severity VARCHAR</code> to <code>tickets</code> via Alembic. Backfill from <code>ai_analysis_raw</code>. Clean, correct, makes every downstream query trivial.</td>
+  </tr>
+  <tr>
+    <td><strong>D1b</strong></td>
+    <td>Neo4j fix</td>
+    <td><span class="badge badge-blue">Case/vocabulary fix</span></td>
+    <td>Fixed <code>violation_code</code> mismatch: triage sent <code>"ILLEGAL_DUMPING"</code> but Neo4j ViolationType nodes use <code>"SWM-ILLEGAL-DUMPING"</code>. Added mapping table + severity property on Incident node.</td>
+  </tr>
+  <tr>
+    <td><strong>D2</strong></td>
+    <td>Dead predictions page</td>
+    <td><span class="badge badge-green">Implement</span></td>
+    <td>Grid-cell hotspot detection via <code>fuzz_location</code> as bucketing key. Proxy route via Next.js API route pattern. No barangay attribution.</td>
+  </tr>
+  <tr>
+    <td><strong>D3</strong></td>
+    <td>Severity derivation</td>
+    <td><span class="badge badge-green">Derive from indicators</span></td>
+    <td>Read severity from ALL indicators in <code>image_analysis.py</code> indicator map (not just indicators[0]). Aggregate worst severity across all detections. Persist to new <code>severity</code> column.</td>
+  </tr>
+</table>
+
+<hr class="section-divider">
+
+<h2>3. Files Changed</h2>
+
+<div class="file-tree">
+<strong>apps/ai-service/</strong><br>
+├── <span class="new">analytics/__init__.py</span> — Module init<br>
+├── <span class="new">analytics/schemas.py</span> — Pydantic response models<br>
+├── <span class="new">analytics/aggregations.py</span> — Summary + category SQL aggregates<br>
+├── <span class="new">analytics/trends.py</span> — Daily series + growth rate<br>
+├── <span class="new">analytics/hotspots.py</span> — Grid-cell hotspot detection<br>
+├── <span class="new">routers/analytics.py</span> — /api/v1/analytics/* endpoints<br>
+├── <span class="new">db/migrations/versions/002_add_category_severity.py</span> — Schema migration<br>
+├── <span class="mod">db/models.py</span> — Added category, severity columns to Ticket<br>
+├── <span class="mod">services/triage_service.py</span> — Severity derivation + category mapping<br>
+├── <span class="mod">neo4j_client.py</code> — Added severity param, fixed ViolationType code<br>
+├── <span class="mod">main.py</span> — Mounted analytics router<br>
+└── <span class="mod">seed_demo.py</span> — Rewritten: ~200 Iloilo tickets, 90 days<br>
+
+<strong>apps/admin-portal/</strong><br>
+├── <span class="new">src/app/api/v1/ai/predictions/route.ts</span> — AI gateway proxy for hotspots<br>
+└── <span class="mod">src/app/[locale]/(dashboard)/analytics/page.tsx</span> — Rewired to server-side endpoints<br>
+
+<strong>apps/shared/</strong><br>
+└── <span class="mod">src/api/admin.ts</span> — Added analytics types + functions, repointed predictions<br>
+</div>
+
+<hr class="section-divider">
+
+<h2>4. Schema Changes (D1)</h2>
+
+<h3>Migration: <code>002_add_category_severity</code></h3>
+
+<table>
+  <tr><th>Column</th><th>Type</th><th>Nullable</th><th>Default</th><th>Source</th></tr>
+  <tr>
+    <td><code>category</code></td>
+    <td><code>VARCHAR(100)</code></td>
+    <td>Yes (initially)</td>
+    <td>NULL</td>
+    <td>Backfilled from <code>ai_analysis_raw->'environmental_assessment'->'indicators'->0->>'type'</code></td>
+  </tr>
+  <tr>
+    <td><code>severity</code></td>
+    <td><code>VARCHAR(20)</code></td>
+    <td>No (after backfill)</td>
+    <td><code>'low'</code></td>
+    <td>Backfilled from <code>ai_analysis_raw</code> indicators — worst severity across all indicators</td>
+  </tr>
+</table>
+
+<p><strong>Backfill logic:</strong> Category extracted from JSONB path <code>ai_analysis_raw->'environmental_assessment'->'indicators'->0->>'type'</code>, with fallback to parsing <code>ai_triage_summary</code> text. Severity computed as MAX across all indicator severities (critical=5, high=4, medium=3, low=2, info=1).</p>
+
+<p><strong>Index:</strong> <code>ix_tickets_category</code> on <code>category</code> for analytics GROUP BY performance.</p>
+
+<h3>Triage Service Changes (D3)</h3>
+<p><code>triage_service.py</code> now:</p>
+<ul>
+  <li>Iterates <strong>ALL</strong> indicators (not just <code>indicators[0]</code>)</li>
+  <li>Derives severity as the worst/highest across all detections</li>
+  <li>Persists both <code>category</code> and <code>severity</code> to the ticket on every triage</li>
+  <li>Uses a mapping table to convert category vocabulary to correct Neo4j ViolationType codes</li>
+</ul>
+
+<div class="callout callout-success">
+  <strong>Constraint satisfied:</strong> Nothing labelled "severity" is actually <code>ai_confidence</code>. The <code>urgency_score</code> column still stores confidence (renamed labels in UI), but the new <code>severity</code> column carries the real indicator-derived severity.
+</div>
+
+<hr class="section-divider">
+
+<h2>5. Neo4j Fix (D1b)</h2>
+
+<h3>Problem</h3>
+<p><code>triage_service.py</code> sent <code>category.upper().replace(" ", "_")</code> (e.g. <code>"ILLEGAL_DUMPING"</code>) to <code>route_incident()</code>. But seeded <code>ViolationType</code> nodes use different codes (e.g. <code>"SWM-ILLEGAL-DUMPING"</code>). The <code>MERGE (v:ViolationType {code: $violation_code})</code> query silently created orphan nodes every time.</p>
+
+<h3>Fix</h3>
+<p>Added <code>CATEGORY_TO_VIOLATION_CODE</code> mapping in <code>triage_service.py</code>:</p>
+<table>
+  <tr><th>Category</th><th>ViolationType Code</th></tr>
+  <tr><td><code>illegal_dumping</code></td><td><code>SWM-ILLEGAL-DUMPING</code></td></tr>
+  <tr><td><code>solid_waste</code></td><td><code>SWM-ILLEGAL-DUMPING</code></td></tr>
+  <tr><td><code>water_pollution</code></td><td><code>WATER-UNAUTHORIZED-DISCHARGE</code></td></tr>
+  <tr><td><code>air_pollution</code></td><td><code>AIR-EMISSION-VIOLATION</code></td></tr>
+  <tr><td><code>deforestation</code></td><td><code>ILLEGAL-LOGGING</code></td></tr>
+  <tr><td><code>illegal_burning</code></td><td><code>OPEN-BURNING</code></td></tr>
+  <tr><td><code>sewage_discharge</code></td><td><code>WATER-UNAUTHORIZED-DISCHARGE</code></td></tr>
+  <tr><td><code>chemical_spill</code></td><td><code>HAZWASTE-HANDLING</code></td></tr>
+  <tr><td><code>noise_pollution</code></td><td><code>NOISE-POLLUTION</code></td></tr>
+</table>
+
+<p><code>route_incident()</code> also now accepts a <code>severity</code> parameter and sets <code>i.severity</code> on Incident node creation.</p>
+
+<div class="callout callout-warn">
+  <strong>Verification required:</strong> This fix must be confirmed against a real Neo4j Aura query (not just "no error thrown") before calling it done. Run <code>MATCH (n:ViolationType) RETURN n.code</code> to confirm codes match, then trigger a triage and verify the <code>CLASSIFIED_AS</code> edge forms to an existing node.
+</div>
+
+<hr class="section-divider">
+
+<h2>6. Seed Data (Task 1)</h2>
+
+<p><code>seed_demo.py</code> rewritten from 5 Metro Manila tickets to ~200 Iloilo/Western Visayas tickets over 90 days.</p>
+
+<table>
+  <tr><th>Property</th><th>Before</th><th>After</th></tr>
+  <tr><td>Ticket count</td><td>5</td><td>~200</td></tr>
+  <tr><td>History</td><td>5 days</td><td>90 days</td></tr>
+  <tr><td>Location</td><td>Metro Manila</td><td>Iloilo / Western Visayas</td></tr>
+  <tr><td>Categories</td><td>Hardcoded strings</td><td>9 categories from POSTGRESQL_ROUTING_RULES</td></tr>
+  <tr><td>Severities</td><td>Not present</td><td>Derived from indicator map</td></tr>
+  <tr><td>ai_analysis_raw</td><td>Not populated</td><td>Structurally realistic JSONB blobs</td></tr>
+  <tr><td>Ghost mode</td><td>2 tickets</td><td>~18% of tickets, coordinates fuzzed via <code>fuzz_location()</code></td></tr>
+  <tr><td>Idempotent</td><td>No</td><td>Yes — clears prior demo rows before inserting</td></tr>
+</table>
+
+<h3>Deliberate Patterns</h3>
+<ul>
+  <li><strong>Rising illegal_dumping in Dingle:</strong> Dingle gets ~25% of all tickets; 60% of recent Dingle tickets are illegal_dumping</li>
+  <li><strong>Air pollution in decline:</strong> Fewer air_pollution tickets in the last 30 days (replaced by solid_waste, noise_pollution)</li>
+  <li><strong>Realistic status split:</strong> 12% open, 15% investigating, 8% monitoring, 30% resolved, 20% verified, 15% closed</li>
+  <li><strong>Non-uniform time distribution:</strong> 55% of tickets in recent 30 days (simulates growing adoption)</li>
+</ul>
+
+<hr class="section-divider">
+
+<h2>7. Analytics Endpoints (Task 2)</h2>
+
+<p>New module at <code>apps/ai-service/analytics/</code> with 4 endpoints under <code>/api/v1/analytics</code>:</p>
+
+<table>
+  <tr><th>Endpoint</th><th>Returns</th><th>Auth</th></tr>
+  <tr>
+    <td><code>GET /summary</code></td>
+    <td>Total reports, status counts, resolution rate, median time-to-resolution, ghost mode aggregate</td>
+    <td><code>require_lgu_role</code></td>
+  </tr>
+  <tr>
+    <td><code>GET /categories</code></td>
+    <td>Category distribution + share, severity distribution, avg confidence per category</td>
+    <td><code>require_lgu_role</code></td>
+  </tr>
+  <tr>
+    <td><code>GET /trends?days=30</code></td>
+    <td>Daily counts series, period-over-period growth rate (overall + per-category)</td>
+    <td><code>require_lgu_role</code></td>
+  </tr>
+  <tr>
+    <td><code>GET /hotspots</code></td>
+    <td>Grid-cell concentration (0.01° ~1km), min cell size 5, dominant category + severity breakdown</td>
+    <td><code>require_lgu_role</code></td>
+  </tr>
+</table>
+
+<h3>Ghost-Mode Safety Rules (Applied)</h3>
+<ul>
+  <li>Never SELECT, GROUP BY, or return <code>IDENTITY_FIELDS</code> (reporter_user_id, reporter_email, reporter_phone, reporter_ip, ghost_mode)</li>
+  <li>Minimum cell size floor of 5 on all location-scoped aggregates (hotspots)</li>
+  <li>Ghost mode count reported as aggregate only — never per-record</li>
+  <li>Grid cells use same <code>fuzz_location()</code> as ghost mode — ghost and non-ghost reports land in same coordinate space</li>
+</ul>
+
+<h3>Every Response Includes Meta Block</h3>
+<pre>{
+  "total_reports_analyzed": 200,
+  "window_days": 30,
+  "generated_at": "2026-08-30T08:15:00+00:00"
+}</pre>
+
+<hr class="section-divider">
+
+<h2>8. Frontend Rewiring (Task 3)</h2>
+
+<h3>Admin Analytics Page</h3>
+<p><code>apps/admin-portal/.../analytics/page.tsx</code> rewritten to consume server-side endpoints:</p>
+<ul>
+  <li>Replaced <code>getTickets({ per_page: "100" })</code> with <code>getAnalyticsSummary()</code> + <code>getAnalyticsCategories()</code></li>
+  <li>Deleted client-side <code>statusCounts</code> / <code>resolutionRate</code> computation — no more silent wrong numbers beyond 100 records</li>
+  <li>Kept existing visual components and layout — data-source swap, not redesign</li>
+  <li>Added category distribution section alongside status distribution</li>
+</ul>
+
+<h3>Predictions Proxy</h3>
+<p><code>apps/admin-portal/.../api/v1/ai/predictions/route.ts</code> — new Next.js API route that:</p>
+<ul>
+  <li>Proxies to AI service <code>/api/v1/analytics/hotspots</code></li>
+  <li>Transforms grid-cell hotspots into <code>HotspotPrediction</code> contract (lat, lng, location_name, predicted_risk, dominant_type, confidence, based_on_reports, trend)</li>
+  <li>Uses same AIGateway pattern (RENDER_AI_URL, AI_SERVICE_API_KEY)</li>
+</ul>
+
+<p><code>getAdminPredictions()</code> in <code>apps/shared/src/api/admin.ts</code> repointed from dead <code>/admin/predictions</code> to new <code>/ai/predictions</code>.</p>
+
+<hr class="section-divider">
+
+<h2>9. API Client Additions</h2>
+
+<p>New types and functions in <code>apps/shared/src/api/admin.ts</code>:</p>
+<table>
+  <tr><th>Export</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>AnalyticsSummary</code></td><td>Interface</td><td>Summary response type with meta block</td></tr>
+  <tr><td><code>AnalyticsCategories</code></td><td>Interface</td><td>Category distribution response type</td></tr>
+  <tr><td><code>AnalyticsTrends</code></td><td>Interface</td><td>Trends response type with growth rates</td></tr>
+  <tr><td><code>getAnalyticsSummary()</code></td><td>Function</td><td>GET /analytics/summary</td></tr>
+  <tr><td><code>getAnalyticsCategories()</code></td><td>Function</td><td>GET /analytics/categories</td></tr>
+  <tr><td><code>getAnalyticsTrends()</code></td><td>Function</td><td>GET /analytics/trends</td></tr>
+</table>
+
+<hr class="section-divider">
+
+<h2>10. Constraints Satisfied</h2>
+
+<table>
+  <tr><th>Constraint</th><th>Status</th></tr>
+  <tr><td>No pandas/seaborn/matplotlib in requirements.txt</td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td>No new microservice, queue, or scheduled job</td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td>Neo4j not touched (except case fix)</td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td>JWT/auth module not touched</td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td>Triage pipeline not broken (only extended)</td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td>Nothing labelled "severity" is ai_confidence</td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td>No identity fields in analytics responses</td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td>Minimum cell size floor of 5 on location aggregates</td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td>All aggregations in SQL (not pandas)</td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td>Every response has meta block</td><td><span class="badge badge-green">PASS</span></td></tr>
+</table>
+
+<hr class="section-divider">
+
+<h2>11. Verification Notes</h2>
+
+<div class="callout callout-warn">
+  <strong>Pre-merge verification checklist:</strong>
+  <ul style="margin-top: 0.5rem;">
+    <li>Run <code>cd apps/ai-service && alembic upgrade head</code> to apply migration</li>
+    <li>Run <code>python seed_demo.py</code> — verify ~200 tickets with correct categories + severities</li>
+    <li>Query DB directly: <code>SELECT category, severity, count(*) FROM tickets GROUP BY category, severity ORDER BY count DESC</code></li>
+    <li>Start AI service, hit <code>GET /api/v1/analytics/summary</code> with valid JWT — verify numbers match DB query</li>
+    <li>Hit <code>GET /api/v1/analytics/categories</code> — verify category distribution matches</li>
+    <li>Hit <code>GET /api/v1/analytics/trends?days=30</code> — verify daily counts + growth rate</li>
+    <li>Hit <code>GET /api/v1/analytics/hotspots</code> — verify grid cells have min 5 reports</li>
+    <li>Neo4j: run <code>MATCH (n:ViolationType) RETURN n.code</code> to confirm codes exist</li>
+    <li>Trigger a triage, verify <code>CLASSIFIED_AS</code> edge forms to existing ViolationType node</li>
+    <li>Admin portal: load analytics page, verify data comes from API (not client-side aggregation)</li>
+    <li>Admin portal: load predictions page, verify hotspot data appears (not empty state)</li>
+  </ul>
+</div>
+
+<hr class="section-divider">
+
+<h2>12. What's NOT in Scope (Confirmed)</h2>
+<ul>
+  <li>Predictive / forecasting models — trend direction only, not prediction</li>
+  <li>PRISM prescriptive layer (Level 4) — architecture shown as designed-for, not demo-dependent</li>
+  <li>Neo4j graph analytics — existing routing left untouched beyond case fix</li>
+  <li>New infrastructure — no queue, warehouse, or scheduled jobs</li>
+  <li>Barongay attribution — requires PSGC polygons + point-in-polygon, conflicts with ghost mode</li>
+  <li>Citizen node or REPORTED edge changes — separate, larger issue</li>
+</ul>
+
+<hr class="section-divider">
+
+<p style="text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 2rem;">
+  Generated by LikasLens Analytics Foundation implementation · August 30, 2026
+</p>
+
+</body>
+</html>
