@@ -44,7 +44,8 @@ import {
   ToastContainer,
   showToast,
   notifyThemeColor,
-  apiPost,
+  submitReport,
+  triageReport,
   queueReport,
 } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
@@ -393,6 +394,7 @@ export default function ReportPage() {
       location: resolvedAddress,
       description: description.trim() || `${reportType.replace(/_/g, " ")} reported.`,
       report_type: reportType,
+      ghost_mode: isGhostMode,
     };
 
     // Only include user_id if we have a valid UUID — null FK refs cause constraint violations
@@ -407,7 +409,7 @@ export default function ReportPage() {
       return;
     }
 
-    const responseData = await apiPost<{ message: string; data?: { id?: string } }>("/reports", payload);
+    const responseData = await submitReport(payload as any);
     const assignedTicketId = responseData.data?.id || crypto.randomUUID();
     setSubmittedTicketId(assignedTicketId);
 
@@ -447,10 +449,7 @@ export default function ReportPage() {
       if (!isGhostMode && navigator.onLine) {
         setIsTriaging(true);
         try {
-          const triageData = await apiPost<{
-            has_concern: boolean;
-            indicators: Array<{ label?: string; type?: string }>;
-          }>("/reports/triage", { base64Image: cleanedImage });
+          const triageData = await triageReport(cleanedImage);
           if (triageData.has_concern) {
             setTriageIndicators(
               triageData.indicators

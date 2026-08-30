@@ -352,6 +352,7 @@ async function routeRequest<T>(
     const reportType = b.report_type ? String(b.report_type) : undefined;
 
     // Insert into tickets table (the core table for all incidents)
+    // Tag as direct fallback so downstream code can identify and reprocess
     const ticketPayload: Record<string, unknown> = {
       id: crypto.randomUUID(),
       title,
@@ -362,6 +363,8 @@ async function routeRequest<T>(
       status: "open",
       reporter_user_id: userId || null,
       ai_triage_summary: reportType || "Unclassified",
+      submission_path: "direct_fallback",
+      needs_ai_reanalysis: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -1153,6 +1156,118 @@ export function laravelPatch<T>(
 
 export function laravelDelete<T>(endpoint: string, _token?: string): Promise<T> {
   return laravelFetch<T>(endpoint, { method: "DELETE" }, 10000, _token);
+}
+
+// ── Report submission types ────────────────────────────────────────────────
+
+export interface ReportPayload {
+  base64Image: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  location?: string;
+  description?: string;
+  report_type?: string;
+  user_id?: string;
+  ghost_mode?: boolean;
+}
+
+export interface ReportResult {
+  success: boolean;
+  message?: string;
+  ticket_id?: string;
+  submission_path: "ai_service" | "direct_fallback";
+  needs_ai_reanalysis?: boolean;
+  ai_analysis?: Record<string, unknown>;
+  data?: { id?: string };
+}
+
+export interface TriageResult {
+  success: boolean;
+  has_concern: boolean;
+  indicators: Array<{ label?: string; type?: string }>;
+  confidence?: number;
+}
+
+// ── Submit report via AI service proxy ─────────────────────────────────────
+// Calls /api/v1/ai/reports (Next.js proxy → AI service).
+// On network/timeout/5xx failure, falls back to direct Supabase insert
+// with submission_path="direct_fallback" and needs_ai_reanalysis=true.
+// 4xx errors propagate as-is (client bug, not transient).
+
+export async function submitReport(payload: ReportPayload): Promise<ReportResult> {
+  if (typeof window !== "undefined" && navigator.onLine) {
+    try {
+      const res = await fetch("/api/v1/ai/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        return {
+          success: true,
+          message: json.message || "Incident Report Submitted Successfully!",
+          ticket_id: json.ticket_id,
+          submission_path: "ai_service",
+          ai_analysis: json.ai_analysis,
+          data: json.data,
+        };
+      }
+
+      // 4xx: client bug — propagate, do NOT fall back
+      if (res.status >= 400 && res.status < 500) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || `Client error ${res.status}`);
+      }
+
+      // 5xx: transient — fall through to fallback
+      console.warn("[submitReport] AI service returned", res.status, "— falling back to direct insert");
+    } catch (e) {
+      // Network failure or timeout — fall through to fallback
+      const msg = e instanceof Error ? e.message : String(e);
+      console.warn("[submitReport] AI service unavailable, using direct fallback:", msg);
+    }
+  }
+
+  // ── Fallback: direct Supabase insert via routeRequest ──────────────────
+  const result = await routeRequest<{ success: boolean; message?: string; data?: { id?: string } }>(
+    "reports",
+    "POST",
+    payload,
+  );
+  return {
+    success: result.success,
+    message: result.message || "Report submitted via fallback.",
+    ticket_id: result.data?.id,
+    submission_path: "direct_fallback",
+    needs_ai_reanalysis: true,
+    data: result.data,
+  };
+}
+
+// ── Triage pre-check via AI service proxy ──────────────────────────────────
+// Calls /api/v1/ai/reports/triage. On failure, returns safe defaults
+// so the submit flow is never blocked by triage.
+
+export async function triageReport(base64Image: string): Promise<TriageResult> {
+  if (typeof window !== "undefined" && navigator.onLine) {
+    try {
+      const res = await fetch("/api/v1/ai/reports/triage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ base64Image }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch (e) {
+      console.warn("[triageReport] AI triage unavailable:", e);
+    }
+  }
+
+  // Safe default — never block submission
+  return { success: true, has_concern: false, indicators: [], confidence: 0 };
 }
 
 // ── Clean Modern API Aliases ────────────────────────────────────────────────

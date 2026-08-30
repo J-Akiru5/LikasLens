@@ -26,7 +26,7 @@ import {
   Plus,
 } from "lucide-react";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { cn, apiPost, showToast, Button } from "@likaslens/shared";
+import { cn, submitReport, showToast, Button } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
 import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
 import { queueReport } from "@likaslens/shared";
@@ -44,6 +44,7 @@ interface FailedPayload {
   user_id: string | undefined;
   description: string | undefined;
   report_type: string;
+  ghost_mode: boolean;
 }
 
 interface FailedSubmission {
@@ -392,6 +393,7 @@ export default function ReportPage() {
         user_id: userId,
         description: description || undefined,
         report_type: incidentType,
+        ghost_mode: ghostMode,
       };
 
       if (!navigator.onLine) {
@@ -405,7 +407,7 @@ export default function ReportPage() {
         return;
       }
 
-      const res = await apiPost<{ message?: string; data?: { id?: string } }>("/reports", payload);
+      const res = await submitReport(payload);
       const ticketId = res?.data?.id || crypto.randomUUID();
 
       // Always save tracking ID into device storage for instant visibility in My Submissions
@@ -441,6 +443,7 @@ export default function ReportPage() {
           user_id: userId,
           description: description || undefined,
           report_type: incidentType,
+          ghost_mode: ghostMode,
         },
       });
     } finally {
@@ -679,7 +682,7 @@ export default function ReportPage() {
     setSubmitting(true);
     setRetryCount(attempt);
     try {
-      await apiPost("/reports", failedSubmission.payload);
+      await submitReport(failedSubmission.payload);
       haptic("success");
       showToast("Report submitted successfully!", "success");
       setFailedSubmission(null);
