@@ -42,7 +42,7 @@ def _get_client() -> genai.Client:
 async def embed_text(text: str) -> list[float]:
     """Generate a vector embedding for the given text using Gemini.
 
-    Uses text-embedding-004 which produces 768-dimensional vectors.
+    Uses gemini-embedding-001 which produces 3072-dimensional vectors.
     """
     client = _get_client()
 

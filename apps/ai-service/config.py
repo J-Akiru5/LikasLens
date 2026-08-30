@@ -91,7 +91,7 @@ class Settings(BaseSettings):
     # ── OpenCode Zen (MiMo-V2.5 Free) ────────────────────────────────────
     opencode_api_key: str = Field(
         default="",
-        description="OpenCode Zen API key for MiMo-V2.5 Free. Used as default provider for hazard-summary generation with automatic Gemini fallback. Falls back cleanly to Gemini-only if unset.",
+        description="OpenCode Zen API key for MiMo-V2.5 Free. Dormant/unused — OPENCODE_API_KEY is unset in all environments; hazard analysis uses Gemini only.",
     )
 
     # ── Neo4j ─────────────────────────────────────────────────────────────

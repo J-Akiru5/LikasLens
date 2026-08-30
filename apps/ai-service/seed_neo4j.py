@@ -94,9 +94,24 @@ async def run_seed(drop: bool = False) -> None:
             # -- Vector embeddings (optional) --
             api_key = settings.google_api_key
             if api_key:
-                print("\nCreating vector index and embedding laws...")
+                print("\nDropping old law_embeddings index (if exists)...")
+                await session.run("DROP INDEX law_embeddings IF EXISTS")
+                print("  Done.")
+
+                print("Creating vector index and embedding laws...")
                 try:
-                    await _embed_laws(session, api_key)
+                    from graph_rag import create_vector_index, embed_law_nodes
+
+                    await create_vector_index(driver)
+
+                    result = await session.run("MATCH (l:Law) RETURN l.code AS code, l.title AS title")
+                    laws = await result.data()
+
+                    if laws:
+                        count = await embed_law_nodes(driver, laws)
+                        print(f"  Embedded {count}/{len(laws)} law nodes.")
+                    else:
+                        print("  No Law nodes found — skipping embedding.")
                     print("  Vector embeddings complete.")
                 except Exception as exc:
                     print(f"  WARNING: Embedding failed ({exc}). Skipping vectors.")
@@ -126,51 +141,6 @@ async def run_seed(drop: bool = False) -> None:
     finally:
         await driver.close()
         print("\nDone.")
-
-
-async def _embed_laws(session, api_key: str) -> None:
-    """Create vector index and embed all Law nodes."""
-    import google.generativeai as genai
-
-    genai.configure(api_key=api_key)
-
-    # Create vector index
-    await session.run("""
-        CREATE VECTOR INDEX law_embeddings IF NOT EXISTS
-        FOR (l:Law)
-        ON (l.embedding)
-        OPTIONS {
-            indexConfig: {
-                `vector.dimensions`: 768,
-                `vector.similarity_function`: 'cosine'
-            }
-        }
-    """)
-
-    # Get all laws
-    result = await session.run("MATCH (l:Law) RETURN l.code AS code, l.title AS title")
-    laws = await result.data()
-
-    print(f"  Embedding {len(laws)} law nodes...")
-
-    for law in laws:
-        text = f"{law['code']}: {law['title']}"
-        try:
-            embed_result = await asyncio.to_thread(
-                genai.embed_content,
-                model="text-embedding-004",
-                content=text,
-                task_type="RETRIEVAL_DOCUMENT",
-            )
-            embedding = embed_result["embedding"]
-
-            await session.run(
-                "MATCH (l:Law {code: $code}) SET l.embedding = $embedding",
-                {"code": law["code"], "embedding": embedding},
-            )
-            print(f"    {law['code']}")
-        except Exception as exc:
-            print(f"    {law['code']} — FAILED: {exc}")
 
 
 # ---------------------------------------------------------------------------
