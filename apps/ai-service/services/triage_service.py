@@ -33,6 +33,25 @@ POSTGRESQL_ROUTING_RULES = {
     "noise_pollution":  "LGU Environment Office",
 }
 
+# Map our category vocabulary to Neo4j ViolationType codes.
+# These match the codes in neo4j_upserts/baseline_rules.py:BASELINE_VIOLATIONS.
+# noise_pollution has no dedicated ViolationType/HazardType in the seeded
+# graph (no PH law in baseline_rules.py is noise-specific) — remapped to
+# AIR-EMISSION-VIOLATION rather than inventing a node with no real
+# enforcement/law backing; LGU Environment Office handles both as nuisance
+# complaints in practice. Revisit if a real noise ordinance is added.
+CATEGORY_TO_VIOLATION_CODE = {
+    "illegal_dumping":  "SWM-ILLEGAL-DUMPING",
+    "solid_waste":      "SWM-ILLEGAL-DUMPING",
+    "water_pollution":  "WATER-UNAUTHORIZED-DISCHARGE",
+    "air_pollution":    "AIR-EMISSION-VIOLATION",
+    "deforestation":    "ILLEGAL-LOGGING",
+    "illegal_burning":  "OPEN-BURNING",
+    "sewage_discharge": "WATER-UNAUTHORIZED-DISCHARGE",
+    "chemical_spill":   "HAZWASTE-HANDLING",
+    "noise_pollution":  "AIR-EMISSION-VIOLATION",
+}
+
 
 def _fallback_route(category: str) -> tuple[str, str]:
     """Fallback routing using PostgreSQL rule-based rules."""
@@ -84,10 +103,14 @@ async def run_triage(base64_image: str, ticket_id: str, db: AsyncSession) -> dic
     recommended_office, routing_source = _fallback_route(category)
     try:
         from neo4j_client import route_incident
+        violation_code = CATEGORY_TO_VIOLATION_CODE.get(
+            category.lower().replace(" ", "_"),
+            category.upper().replace(" ", "_"),
+        )
         neo4j_result = await route_incident(
             citizen_id="system",
             incident_id=ticket_id,
-            violation_code=category.upper().replace(" ", "_"),
+            violation_code=violation_code,
             ngo_id=None,
         )
         if neo4j_result.get("success") and neo4j_result.get("recommended_office"):
