@@ -29,7 +29,7 @@ const NAV_LINKS = [
 
 interface StickyLandingNavProps {
   ghostMode: boolean;
-  onGhostToggle: () => void;
+  onGhostToggle: (e?: React.MouseEvent) => void;
 }
 
 export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavProps) {
@@ -173,7 +173,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
             {/* Ghost/Civic toggle */}
             <button
               suppressHydrationWarning
-              onClick={onGhostToggle}
+              onClick={(e) => onGhostToggle(e)}
               aria-label={ghostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
               aria-pressed={ghostMode}
               className={`relative flex items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${

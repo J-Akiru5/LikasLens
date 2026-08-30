@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { LazyMotion, domAnimation } from "framer-motion";
+import { LazyMotion, domAnimation, AnimatePresence, motion } from "framer-motion";
+import { EyeOff, ShieldCheck } from "lucide-react";
 import { Footer } from "@/components/layout/footer";
 import { StickyLandingNav } from "@/components/layout/sticky-landing-nav";
 import { PartnerCarousel, FaqSection, LanguageSuggestionPopup, notifyThemeColor } from "@likaslens/shared";
@@ -65,6 +66,10 @@ export default function HomeClient() {
   const locale = typeof params?.locale === "string" ? params.locale : "en";
   const [ghostMode, setGhostMode] = useState(false);
 
+  // Stealth Status Toast State
+  const [showStealthToast, setShowStealthToast] = useState(false);
+  const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     const currentTheme = document.documentElement.getAttribute("data-theme");
     if (currentTheme === "ghost" && !ghostMode) {
@@ -100,10 +105,86 @@ export default function HomeClient() {
     notifyThemeColor();
   }, [ghostMode]);
 
-  const toggleGhost = () => setGhostMode(!ghostMode);
+  // Smooth, snappy 120fps Instant Theme Toggle
+  const toggleGhost = () => {
+    const nextIsGhost = !ghostMode;
+    const newTheme = nextIsGhost ? "ghost" : "civic";
+
+    document.documentElement.setAttribute("data-theme", newTheme);
+    try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
+    setGhostMode(nextIsGhost);
+    notifyThemeColor();
+
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    setShowStealthToast(true);
+    toastTimeoutRef.current = setTimeout(() => {
+      setShowStealthToast(false);
+    }, 3200);
+  };
+
+  // Proactive Liksi AI Auto-Trigger on Scroll to the AI Pipeline / Architecture Section (0 API calls)
+  useEffect(() => {
+    let hasTriggered = false;
+    const handleScroll = () => {
+      if (hasTriggered) return;
+      const archEl = document.getElementById("architecture");
+      if (archEl) {
+        const rect = archEl.getBoundingClientRect();
+        // Trigger when the user scrolls into the AI Architecture / Pipeline section
+        if (rect.top <= window.innerHeight * 0.65 && rect.bottom >= 100) {
+          hasTriggered = true;
+          window.dispatchEvent(
+            new CustomEvent("open-liksi-chat", {
+              detail: {
+                instantMessage:
+                  "🌿 Kumusta! I am Liksi, the statutory legal AI engine behind LikasLens. As you can see in this pipeline, I automatically evaluate citizen evidentiary photos against Philippine environmental laws (RA 9003, RA 9275, PD 705) and route them to DENR-EMB & LGUs with guaranteed 24-hr response SLAs. Feel free to ask me any environmental law question!",
+              },
+            })
+          );
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <LazyMotion features={domAnimation}>
+      {/* 2026 Stealth Status Confirmation Toast (Positioned cleanly below navbar, non-technical citizen wording) */}
+      <AnimatePresence>
+        {showStealthToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -12, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.96 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-20 right-4 sm:right-8 z-[9998] flex justify-end pointer-events-none"
+          >
+            <div className="px-4 py-2.5 rounded-2xl bg-panel/95 border border-ink/15 shadow-2xl backdrop-blur-xl flex items-center gap-2.5 max-w-sm pointer-events-auto">
+              <div className="w-6 h-6 rounded-xl bg-teal-500/15 flex items-center justify-center shrink-0">
+                {ghostMode ? (
+                  <EyeOff className="w-3.5 h-3.5 text-teal-500 animate-pulse" />
+                ) : (
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                )}
+              </div>
+              <div className="text-[11px] leading-tight text-ink font-medium">
+                {ghostMode ? (
+                  <>
+                    <span className="font-bold text-teal-600 dark:text-teal-400">Anonymous Mode:</span> Your name, photos, and location are completely private.
+                  </>
+                ) : (
+                  <>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Standard Mode:</span> Normal reporting with your verified account.
+                  </>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <StickyLandingNav ghostMode={ghostMode} onGhostToggle={toggleGhost} />
       <main
         className="relative min-h-dvh"
