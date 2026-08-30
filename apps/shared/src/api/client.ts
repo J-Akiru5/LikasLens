@@ -1196,6 +1196,7 @@ export interface TriageResult {
 
 export async function submitReport(payload: ReportPayload): Promise<ReportResult> {
   if (typeof window !== "undefined" && navigator.onLine) {
+    let isClientBug = false;
     try {
       const res = await fetch("/api/v1/ai/reports", {
         method: "POST",
@@ -1217,6 +1218,7 @@ export async function submitReport(payload: ReportPayload): Promise<ReportResult
 
       // 4xx: client bug — propagate, do NOT fall back
       if (res.status >= 400 && res.status < 500) {
+        isClientBug = true;
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || `Client error ${res.status}`);
       }
@@ -1224,6 +1226,7 @@ export async function submitReport(payload: ReportPayload): Promise<ReportResult
       // 5xx: transient — fall through to fallback
       console.warn("[submitReport] AI service returned", res.status, "— falling back to direct insert");
     } catch (e) {
+      if (isClientBug) throw e; // 4xx: propagate to caller
       // Network failure or timeout — fall through to fallback
       const msg = e instanceof Error ? e.message : String(e);
       console.warn("[submitReport] AI service unavailable, using direct fallback:", msg);
