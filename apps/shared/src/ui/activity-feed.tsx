@@ -6,6 +6,7 @@ import { EmptyFeed } from "./empty-state";
 
 interface FeedItem {
   id: string;
+  display_id?: string;
   type: "Critical" | "Warning" | "Info";
   title: string;
   location: string;
@@ -92,7 +93,7 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
       </div>
 
       {displayed.map((item, idx) => (
-        <div key={item.id} className="relative pl-8 pb-6 group">
+        <div key={`${item.id || item.display_id || 'feed'}-${idx}`} className="relative pl-8 pb-6 group">
           {idx < displayed.length - 1 && (
             <div className="absolute left-[9px] top-4 bottom-[-16px] w-[2px] bg-ink/5 group-hover:bg-accent/20 transition-colors" />
           )}
@@ -103,7 +104,7 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
           <div className="flex items-start justify-between gap-4 bg-panel border border-ink/5 p-4 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:border-ink/10 transition-all duration-300 transform hover:-translate-y-0.5">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-1 rounded-md bg-ink/[0.04] font-mono text-[10px] font-semibold text-ink/50 uppercase tracking-widest">{item.id}</span>
+                <span className="px-2.5 py-1 rounded-md bg-ink/[0.04] font-mono text-[10px] font-semibold text-ink/60 uppercase tracking-widest">{item.id}</span>
                 <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest ${
                   item.type === 'Critical' ? 'bg-red/10 text-red' :
                   item.type === 'Warning' ? 'bg-amber/10 text-amber' :
@@ -111,18 +112,18 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
                 }`}>{item.type}</span>
               </div>
               <h3 className="text-[15px] font-bold text-ink mb-1.5 group-hover:text-accent transition-colors leading-snug">{item.title}</h3>
-              <p className="text-xs font-medium text-ink/50 mb-3 flex items-center gap-1.5">
-                 <MapPin className="w-3.5 h-3.5 opacity-40" />
-                 {item.location}
+              <p className="text-xs font-medium text-ink/60 mb-3 flex items-center gap-1.5">
+                 <MapPin className="w-3.5 h-3.5 text-accent/70 shrink-0" />
+                 <span className="truncate">{item.location || "Metro Manila, Philippines"}</span>
               </p>
               <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 text-[11px] font-bold text-ink/60 bg-ink/5 px-2.5 py-1 rounded-full tracking-wide">
-                  <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Open' ? 'bg-red' : 'bg-green'}`} />
-                  {item.status}
+                <span className="flex items-center gap-1.5 text-[11px] font-bold text-ink/70 bg-ink/5 px-2.5 py-1 rounded-full tracking-wide">
+                  <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Open' || item.status === 'Active' ? 'bg-amber' : 'bg-green'}`} />
+                  {item.status || 'Active'}
                 </span>
               </div>
             </div>
-            <span className="text-[10px] font-bold text-ink/40 shrink-0 uppercase tracking-widest pt-1">{item.time}</span>
+            <span className="text-[10px] font-mono font-semibold text-ink/40 shrink-0 uppercase tracking-wider pt-1">{item.time || 'Recently'}</span>
           </div>
         </div>
       ))}

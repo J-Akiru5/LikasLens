@@ -2,13 +2,10 @@
 
 import { m } from "framer-motion";
 import { Camera, Cpu, Send, Bell, ArrowRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Evidence-board pipeline — with animated connector lines.
-
-   Each node is a distinct artifact in a real ordered flow (Capture → Classify
-   → Route → Notify). Connector lines with flowing dots show the data flow
-   between stages. Staggered scroll-reveal entrance.
    ───────────────────────────────────────────────────────────────────────────── */
 
 const NODES = [
@@ -107,6 +104,47 @@ function PipelineConnector({ vertical = false }: { vertical?: boolean }) {
 }
 
 export function HowItWorksSection() {
+  const t = useTranslations("landing");
+
+  const nodes = [
+    {
+      n: "01",
+      Icon: Camera,
+      tag: t("tagCapture"),
+      title: t("snapPhotoTitle"),
+      body: t("snapPhotoDesc"),
+      artifact: "EVIDENCE FRAME",
+      meta: "IMG · EXIF · GPS · TS",
+    },
+    {
+      n: "02",
+      Icon: Cpu,
+      tag: t("tagClassify"),
+      title: t("aiTriageTitle"),
+      body: t("aiTriageDesc"),
+      artifact: "YOLOv8",
+      meta: "TYPE · MATCH",
+    },
+    {
+      n: "03",
+      Icon: Send,
+      tag: t("tagRoute"),
+      title: t("liveMapTitle"),
+      body: t("liveMapDesc"),
+      artifact: "AGENCY ROUTING",
+      meta: "DENR · EMB · PCG",
+    },
+    {
+      n: "04",
+      Icon: Bell,
+      tag: t("tagNotify"),
+      title: t("publicRecordTitle"),
+      body: t("publicRecordDesc"),
+      artifact: "PUBLIC RECORD",
+      meta: "ID · TIMESTAMP",
+    },
+  ];
+
   return (
     <section id="how-it-works" className="ec-section" style={{ background: "var(--page)" }}>
       {/* Pipeline connector animation keyframes */}
@@ -147,11 +185,10 @@ export function HowItWorksSection() {
               textWrap: "balance" as const,
             }}
           >
-            From a single photo to an open public case.
+            {t("featuresTitle")}
           </h2>
           <p style={{ fontSize: 17, color: "var(--muted)", lineHeight: 1.6, margin: 0, maxWidth: 560 }}>
-            Four steps, none of them manual beyond the first. Every stage leaves
-            a record the public can read back.
+            {t("heroSubtitle")}
           </p>
         </m.div>
 
@@ -163,7 +200,7 @@ export function HowItWorksSection() {
           viewport={{ once: true, margin: "-60px" }}
           className="flex flex-col lg:flex-row lg:items-stretch gap-0"
         >
-          {NODES.map(({ n, Icon, tag, title, body, artifact, meta }, index) => (
+          {nodes.map(({ n, Icon, tag, title, body, artifact, meta }, index) => (
             <div key={n} className="contents">
               {/* Card */}
               <m.article

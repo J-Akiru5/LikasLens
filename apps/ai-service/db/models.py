@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, Float, String, Text, ForeignKey
+from sqlalchemy import Boolean, DateTime, Float, String, Text, ForeignKey, text as sa_text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
@@ -66,6 +66,8 @@ class Ticket(Base):
     ai_analysis_raw: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
     ai_recommended_office: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
     routing_source: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    submission_path: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    needs_ai_reanalysis: Mapped[bool] = mapped_column(Boolean, default=False, server_default=sa_text("false"))
     urgency_score: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

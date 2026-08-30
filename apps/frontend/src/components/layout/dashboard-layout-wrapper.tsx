@@ -18,23 +18,24 @@ import {
   Map as MapIcon,
   EyeOff,
   ShieldCheck,
+  Search,
 } from "lucide-react";
 import { UserNav } from "./user-nav";
 import { AnimatePresence, motion } from "framer-motion";
 
 const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid, exact: true },
-  { href: "/public-record", label: "Public Record", icon: Globe },
+  { href: "/dashboard/my-reports", label: "My Submissions", icon: FileText },
+  { href: "/report", label: "Submit Report", icon: Camera, highlight: true },
   
-  { divider: true, dividerLabel: "Analytics" },
-  { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
+  { divider: true, dividerLabel: "Community Telemetry" },
+  { href: "/dashboard/incidents", label: "Public Incidents", icon: AlertCircle },
+  { href: "/public-record", label: "Public Record", icon: Globe },
   { href: "/dashboard/map", label: "Hazard Map", icon: MapIcon },
   { href: "/dashboard/impact", label: "Impact & ESG", icon: BarChart3 },
   { href: "/dashboard/knowledge-graph", label: "Graph Explorer", icon: Network },
-  { href: "/dashboard/reports", label: "Reports", icon: FileText },
   
   { divider: true, dividerLabel: "Quick Access" },
-  { href: "/report", label: "Submit Report", icon: Camera },
   { href: "/offline-queue", label: "Offline Queue", icon: WifiOff },
   { href: "/laws", label: "Laws Database", icon: Scale },
   { href: "/profile", label: "Citizen Profile", icon: User },

@@ -298,83 +298,69 @@ export default function LawsPage() {
   };
 
   return (
-    <DashboardLayoutWrapper showBranding>
-      <div className="space-y-6">
-        {/* Top Header & Search Bar (Matching Incidents page layout & width) */}
-        <div className="bento-grid">
-          <div className="span-12">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-ink/10 pb-5">
-              <div>
-                <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink">
-                  Philippine Environmental Laws
-                </h1>
-                <p className="font-mono text-xs text-ink/50 mt-1">
-                  Statutory Jurisprudence & Enforcement Mandates
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                {/* Wider Search Bar Matching Incidents Page */}
-                <div className="relative w-72 sm:w-80 md:w-96">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40" />
-                  <input
-                    type="text"
-                    inputMode="search"
-                    placeholder="Search statute, code, keyword, agency..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-panel/80 border border-ink/10 text-ink placeholder:text-ink/35 focus:outline-none focus:border-accent/40 focus:ring-2 focus:ring-accent/10 rounded-xl shadow-sm transition-all"
-                  />
-                </div>
-
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`p-2.5 border transition-colors rounded-xl shadow-sm cursor-pointer ${
-                    showFilters || selectedCategory !== "All Categories"
-                      ? "bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400"
-                      : "bg-panel border-ink/10 text-ink/50 hover:text-ink"
-                  }`}
-                  title="Filter categories"
-                >
-                  <Filter className="w-4 h-4" />
-                </button>
-
-                {hasActiveFilters && (
-                  <button
-                    onClick={clearFilters}
-                    className="p-2.5 border border-ink/10 text-ink/40 hover:text-ink transition-colors rounded-xl bg-panel shadow-sm cursor-pointer"
-                    title="Clear all filters"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            </div>
+    <DashboardLayoutWrapper
+      pageTitle="Environmental Laws"
+      pageSubtitle="Philippine statutory jurisprudence and environmental enforcement mandates."
+    >
+      <div className="space-y-4">
+        {/* Top Row: Search Input */}
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/40" />
+            <input
+              type="text"
+              inputMode="search"
+              placeholder="Search statute title, RA number, keywords, or issuing agency (e.g. RA 9003, Clean Water, DENR)..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-panel/90 border border-ink/10 text-ink placeholder:text-ink/35 focus:outline-none focus:border-accent/40 focus:ring-2 focus:ring-accent/10 rounded-xl shadow-xs transition-all"
+            />
           </div>
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="px-3.5 py-2.5 border border-ink/10 text-ink/60 hover:text-ink transition-colors rounded-xl bg-panel shadow-xs shrink-0 cursor-pointer text-xs font-bold flex items-center gap-1.5"
+              title="Clear filters"
+            >
+              <X className="w-3.5 h-3.5" />
+              Clear Filters
+            </button>
+          )}
         </div>
 
-        {/* Category Pills Bar */}
-        {showFilters && (
-          <div className="bento-grid animate-fade-in">
-            <div className="span-12">
-              <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`font-mono text-xs px-3.5 py-1.5 border transition-all rounded-xl cursor-pointer ${
-                      selectedCategory === cat
-                        ? "border-teal-500/40 bg-teal-500/10 text-teal-600 dark:text-teal-400 font-semibold shadow-xs"
-                        : "border-ink/10 text-ink/60 hover:text-ink bg-panel"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Row Below: Naturally Wrapping Category Filter Pills (No Scrollbar, All Visible) */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-ink/10 pb-4">
+          {CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            const count =
+              cat === "All Categories"
+                ? laws.length
+                : laws.filter((l) => l.category?.toLowerCase() === cat.toLowerCase()).length;
+
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  isSelected
+                    ? "bg-accent text-page shadow-xs"
+                    : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
+                }`}
+              >
+                <span>{cat}</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
+                    isSelected
+                      ? "bg-page/20 text-page border border-page/30 shadow-xs"
+                      : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
 
         {/* Counter Summary */}
         <div className="bento-grid">

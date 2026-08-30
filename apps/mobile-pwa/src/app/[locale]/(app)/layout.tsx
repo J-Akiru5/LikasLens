@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { MobileLayout, RouteProgress, notifyThemeColor, LiksiChat } from "@likaslens/shared";
+import { MobileLayout, RouteProgress, notifyThemeColor, LiksiChat, cn } from "@likaslens/shared";
 import { LayoutDashboard, Camera, User, Globe, ShieldCheck, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PageTransition } from "@/components/page-transition";
@@ -13,9 +13,9 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const BOTTOM_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/report", label: "Report", icon: Camera, isPrimary: true },
   { href: "/incidents", label: "Records", icon: Globe },
   { href: "/profile", label: "Profile", icon: User },
+  { href: "/report", label: "Report", icon: Camera, isPrimary: true },
 ];
 
 const MAIN_ROUTES = BOTTOM_NAV_ITEMS.map((item) => item.href);
@@ -101,65 +101,73 @@ function AppLayoutInner({
     } catch {}
     notifyThemeColor();
 
-    // Show stealth toast confirmation pill
+    // Show temporary mode indicator toast
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     setShowStealthToast(true);
     toastTimeoutRef.current = setTimeout(() => {
       setShowStealthToast(false);
-    }, 3200);
-
-    // End wave animation
-    setTimeout(() => {
-      setWaveState(null);
-    }, 600);
+    }, 2800);
   };
 
-  const locale = pathname.split("/")[1] || "en";
-  const localePrefix = pathname.split("/")[1] ? `/${pathname.split("/")[1]}` : "";
-  const backHref = isMainRoute ? undefined : `${localePrefix}/profile`;
+  const pathParts = pathname.split("/");
+  const locale = (pathParts[1] as string) || "en";
+
+  // Determine contextual back button
+  let backHref: string | undefined;
+  if (!isMainRoute) {
+    if (cleanPath.startsWith("/profile/")) backHref = `/${locale}/profile`;
+    else if (cleanPath.startsWith("/incidents/")) backHref = `/${locale}/incidents`;
+    else backHref = `/${locale}/dashboard`;
+  }
 
   return (
     <>
-      {/* 2026 Circular Expanding Radar Cloaking Wave Overlay */}
+      {/* 2026 Expanding Cloaking Wave Ring */}
       {waveState?.active && (
         <div
-          className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden"
-          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-[9999] overflow-hidden"
+          onAnimationEnd={() => setWaveState(null)}
         >
           <div
-            className={`w-[250vmax] h-[250vmax] rounded-full absolute -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out ${
+            className={cn(
+              "absolute rounded-full animate-radar-cloak",
               waveState.isGhost
-                ? "bg-[#0b1329]/95 shadow-[0_0_120px_rgba(46,230,200,0.3)_inset]"
-                : "bg-[#f8fafc]/95 shadow-[0_0_120px_rgba(74,124,89,0.3)_inset]"
-            }`}
+                ? "border-2 border-teal-400 bg-teal-500/10 shadow-[0_0_80px_rgba(20,184,166,0.3)]"
+                : "border-2 border-emerald-400 bg-emerald-500/10 shadow-[0_0_80px_rgba(16,185,129,0.3)]"
+            )}
             style={{
               left: waveState.x,
               top: waveState.y,
-              animation: "waveExpand 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+              transform: "translate(-50%, -50%)",
             }}
           />
         </div>
       )}
 
-      {/* 2026 Stealth Status Confirmation Toast (Below header, plain non-technical wording) */}
+      {/* Floating Mode Status Pill */}
       <AnimatePresence>
         {showStealthToast && (
           <motion.div
-            initial={{ opacity: 0, y: -12, scale: 0.96 }}
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -12, scale: 0.96 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed top-20 inset-x-4 z-[9998] flex justify-center pointer-events-none"
+            className="fixed top-18 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none"
           >
-            <div className="px-4 py-2.5 rounded-2xl bg-panel/95 border border-ink/15 shadow-2xl backdrop-blur-xl flex items-center gap-2.5 max-w-sm pointer-events-auto">
-              <div className="w-6 h-6 rounded-xl bg-teal-500/15 flex items-center justify-center shrink-0">
-                {isGhostMode ? (
-                  <EyeOff className="w-3.5 h-3.5 text-teal-500 animate-pulse" />
-                ) : (
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                )}
-              </div>
-              <div className="text-[11px] leading-tight text-ink font-medium">
+            <div
+              className={cn(
+                "px-4 py-2 rounded-2xl shadow-xl border backdrop-blur-xl flex items-center gap-2.5 text-xs font-mono transition-colors",
+                isGhostMode
+                  ? "bg-[#0b1311]/90 border-teal-500/40 text-teal-300 shadow-teal-950/40"
+                  : "bg-panel/90 border-emerald-500/30 text-ink shadow-black/10"
+              )}
+            >
+              {isGhostMode ? (
+                <EyeOff className="w-4 h-4 text-teal-400 shrink-0" />
+              ) : (
+                <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+              )}
+              <div className="leading-tight">
                 {isGhostMode ? (
                   <>
                     <span className="font-bold text-teal-600 dark:text-teal-400">Anonymous Mode:</span> Your name, photos, and location are completely private.
@@ -186,17 +194,17 @@ function AppLayoutInner({
         <div ref={swipeRef} className="h-full">
           <PageTransition>{children}</PageTransition>
         </div>
-
-        {/* 2026 Liksi AI Assistant Mount (Above Safe Area Bottom Navigation) */}
-        {mounted && (
-          <LiksiChat
-            persona="citizen"
-            locale={locale}
-            isAuthenticated={isAuthenticated}
-            className="bottom-20 right-4 sm:bottom-6 sm:right-6"
-          />
-        )}
       </MobileLayout>
+
+      {/* 2026 Persistent Floating Liksi Assistant — Fixed on the left side above navigation dock (z-[60]) */}
+      {mounted && (
+        <LiksiChat
+          persona="citizen"
+          locale={locale}
+          isAuthenticated={isAuthenticated}
+          className="bottom-[88px] left-3.5 sm:bottom-6 sm:left-6 z-[60]"
+        />
+      )}
     </>
   );
 }

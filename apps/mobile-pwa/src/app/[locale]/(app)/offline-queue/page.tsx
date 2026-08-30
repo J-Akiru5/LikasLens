@@ -15,7 +15,7 @@ import {
   Loader2,
   ChevronRight,
 } from "lucide-react";
-import { cn, showToast, laravelPost, EmptyState } from "@likaslens/shared";
+import { cn, showToast, submitCitizenReport, EmptyState } from "@likaslens/shared";
 import { useParams, useRouter } from "next/navigation";
 import { useHaptics } from "@/hooks/use-haptics";
 import {
@@ -113,7 +113,7 @@ export default function OfflineQueuePage() {
 
     try {
       const postFn = (payload: Record<string, unknown>) =>
-        laravelPost("/reports", payload);
+        submitCitizenReport(payload as any);
       const result = await syncBatch(postFn, BATCH_SIZE);
       setProgress(result);
 

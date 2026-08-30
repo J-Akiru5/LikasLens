@@ -6,8 +6,6 @@ import { PullToRefresh } from "./pull-to-refresh";
 import { cn } from "../utils";
 import { Leaf, Bell, Fingerprint, Trophy, ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { LiksiChat } from "./chat/liksi-chat";
-
 import { locales } from "../i18n/config";
 import { usePathname } from "next/navigation";
 
@@ -133,7 +131,7 @@ export function MobileLayout({
         </header>
 
       {/* Main Content */}
-      <main className={cn("flex-1 pb-20", onPullToRefresh ? "overflow-hidden" : "overflow-y-auto")}>
+      <main className={cn("flex-1 pb-28", onPullToRefresh ? "overflow-hidden" : "overflow-y-auto")}>
         {onPullToRefresh ? (
           <PullToRefresh onRefresh={onPullToRefresh} className="h-full">
             {children}
@@ -142,9 +140,6 @@ export function MobileLayout({
           children
         )}
       </main>
-
-      {/* Liksi Chatbot */}
-      <LiksiChat className="bottom-[90px] right-4" locale={hasLocale ? pathParts[1] : "en"} />
 
       {/* Bottom Navigation */}
       <BottomNav items={bottomNavItems} />

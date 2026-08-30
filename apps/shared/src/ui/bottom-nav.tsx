@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type LucideIcon } from "lucide-react";
 import { cn } from "../utils";
-
 import { locales } from "../i18n/config";
 
 export interface BottomNavItem {
@@ -59,22 +58,15 @@ export function BottomNav({ items, className }: BottomNavProps) {
         onClick={tapHaptic}
         aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex flex-col items-center justify-center h-full gap-1 px-1 py-1 text-[10px] min-w-[60px] active:scale-95 transition-transform duration-75",
-          isActive ? "text-green font-semibold" : "text-ink/40 hover:text-ink/60 font-medium"
+          "flex-1 flex flex-col items-center justify-center h-full py-1 rounded-2xl transition-all duration-200 active:scale-95",
+          isActive
+            ? "bg-emerald-500/12 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold"
+            : "text-ink/45 hover:text-ink/75 font-medium"
         )}
         style={{ fontFamily: "var(--font-body)", touchAction: "manipulation" }}
       >
-        <div className="relative flex items-center justify-center w-12 h-7 sm:w-14 sm:h-8 mb-0.5">
-          {isActive && (
-            <span
-              aria-hidden="true"
-              className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
-              style={{ background: "var(--accent)" }}
-            />
-          )}
-          <Icon className="w-[22px] h-[22px] relative z-10" strokeWidth={isActive ? 2.4 : 2} />
-        </div>
-        <span className="truncate w-full text-center capitalize">{item.label}</span>
+        <Icon className="w-5 h-5 mb-0.5" strokeWidth={isActive ? 2.5 : 2} />
+        <span className="text-[10px] tracking-tight leading-none truncate">{item.label}</span>
       </Link>
     );
   };
@@ -82,58 +74,32 @@ export function BottomNav({ items, className }: BottomNavProps) {
   return (
     <nav
       className={cn(
-        "lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-ink/10",
-        "pb-[env(safe-area-inset-bottom)]",
+        "lg:hidden fixed bottom-3 sm:bottom-4 left-3 right-3 sm:left-5 sm:right-5 z-40 flex items-center justify-between gap-2.5 max-w-lg mx-auto pointer-events-none pb-[env(safe-area-inset-bottom)]",
         className
       )}
-      // Frosted translucent bar — the native iOS/Android tab-bar look.
-      style={{
-        background: "color-mix(in oklab, var(--page) 78%, transparent)",
-        backdropFilter: "saturate(180%) blur(20px)",
-        WebkitBackdropFilter: "saturate(180%) blur(20px)",
-      }}
     >
-      <div className="flex items-center h-16 relative px-2">
-        {/* Left Items */}
-        <div className="flex-1 flex items-center justify-around h-full">
-          {normalItems.slice(0, Math.ceil(normalItems.length / 2)).map(renderNormalItem)}
-        </div>
-
-        {/* Primary Center Item — raised camera FAB */}
-        {primaryItem && (
-          <div className="relative flex justify-center w-20 h-full shrink-0">
-            <Link
-              href={`${localePrefix}${primaryItem.href === "/" ? "" : primaryItem.href}` || "/"}
-              prefetch={true}
-              scroll={false}
-              onClick={tapHaptic}
-              aria-label={primaryItem.label}
-              className={cn(
-                "absolute -top-6 left-1/2 -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-transform duration-75 active:scale-90",
-                "border-4 border-page"
-              )}
-              style={{
-                background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 100%)",
-                boxShadow: "0 8px 20px -6px color-mix(in oklab, var(--accent) 45%, transparent)",
-                touchAction: "manipulation",
-              }}
-            >
-              <primaryItem.icon className="w-6 h-6 text-white" />
-            </Link>
-            <span
-              className="absolute bottom-1.5 text-[10px] font-semibold capitalize"
-              style={{ fontFamily: "var(--font-body)", color: "color-mix(in oklab, var(--ink) 75%, transparent)" }}
-            >
-              {primaryItem.label}
-            </span>
-          </div>
-        )}
-
-        {/* Right Items */}
-        <div className="flex-1 flex items-center justify-around h-full">
-          {normalItems.slice(Math.ceil(normalItems.length / 2)).map(renderNormalItem)}
-        </div>
+      {/* Left Navigation Island (Dashboard, Records, Profile) */}
+      <div className="pointer-events-auto flex-1 flex items-center justify-around h-[62px] p-1.5 rounded-[26px] bg-panel/92 backdrop-blur-2xl border border-ink/[0.08] dark:border-white/12 shadow-[0_10px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.45)]">
+        {normalItems.map(renderNormalItem)}
       </div>
+
+      {/* Right Detached Camera Action FAB */}
+      {primaryItem && (
+        <Link
+          href={`${localePrefix}${primaryItem.href === "/" ? "" : primaryItem.href}` || "/"}
+          prefetch={true}
+          scroll={false}
+          onClick={tapHaptic}
+          aria-label={primaryItem.label}
+          className="pointer-events-auto shrink-0 flex flex-col items-center justify-center w-[64px] h-[62px] rounded-[24px] bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-500 text-white shadow-[0_10px_25px_rgba(16,185,129,0.35)] active:scale-90 transition-transform duration-150 border border-white/25 gap-0.5"
+          style={{ touchAction: "manipulation" }}
+        >
+          <primaryItem.icon className="w-5 h-5 text-white stroke-[2.4]" />
+          <span className="text-[10px] font-bold tracking-tight text-white/95 leading-none">
+            {primaryItem.label || "Report"}
+          </span>
+        </Link>
+      )}
     </nav>
   );
 }

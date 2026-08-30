@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { LazyMotion, domAnimation, AnimatePresence, motion } from "framer-motion";
 import { EyeOff, ShieldCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Footer } from "@/components/layout/footer";
 import { StickyLandingNav } from "@/components/layout/sticky-landing-nav";
 import { PartnerCarousel, FaqSection, LanguageSuggestionPopup, notifyThemeColor } from "@likaslens/shared";
@@ -149,6 +150,8 @@ export default function HomeClient() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const tLanding = useTranslations("landing");
+
   return (
     <LazyMotion features={domAnimation}>
       {/* 2026 Stealth Status Confirmation Toast (Positioned cleanly below navbar, non-technical citizen wording) */}
@@ -172,11 +175,11 @@ export default function HomeClient() {
               <div className="text-[11px] leading-tight text-ink font-medium">
                 {ghostMode ? (
                   <>
-                    <span className="font-bold text-teal-600 dark:text-teal-400">Anonymous Mode:</span> Your name, photos, and location are completely private.
+                    <span className="font-bold text-teal-600 dark:text-teal-400">{tLanding("stealthAnonymousTitle")}</span> {tLanding("stealthAnonymousDesc")}
                   </>
                 ) : (
                   <>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Standard Mode:</span> Normal reporting with your verified account.
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{tLanding("stealthStandardTitle")}</span> {tLanding("stealthStandardDesc")}
                   </>
                 )}
               </div>
@@ -191,7 +194,7 @@ export default function HomeClient() {
         style={{ background: "var(--page)", color: "var(--ink)" }}
       >
         <HeroSection ghostMode={ghostMode} onGhostToggle={toggleGhost} />
-        <PartnerCarousel />
+        <PartnerCarousel title={tLanding("partnerTitle")} />
         <HowItWorksSection />
         <SectionDivider variant="accent" />
         <GhostModeSection ghostMode={ghostMode} onGhostToggle={toggleGhost} />

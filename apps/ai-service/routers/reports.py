@@ -193,6 +193,7 @@ async def submit_report(
         "ticket_id": str(ticket_id),
         "status": "open",
         "ghost_mode": body.ghost_mode,
+        "submission_path": "ai_service",
         "ai_analysis": ai_result,
         "public_ticket_url": f"/incidents/{ticket_id}",
     }

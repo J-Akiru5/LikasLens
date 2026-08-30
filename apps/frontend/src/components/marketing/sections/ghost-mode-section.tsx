@@ -2,13 +2,10 @@
 
 import { m } from "framer-motion";
 import { Fingerprint, Eye, ShieldCheck, CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Ghost Mode — the signature safety mechanic. Not a cosmetic dark theme.
-
-   The toggle visibly changes the operational context (palette + the artifact
-   on the right flips). Solid surfaces, no glass, mono reserved for the few
-   data tokens that describe the protection state.
    ───────────────────────────────────────────────────────────────────────────── */
 
 const PROTECTIONS = [
@@ -24,6 +21,8 @@ interface GhostModeSectionProps {
 }
 
 export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionProps) {
+  const t = useTranslations("landing");
+
   return (
     <section id="ghost" className="ec-section">
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
@@ -58,7 +57,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                 }}
               >
                 <Fingerprint style={{ width: 15, height: 15 }} aria-hidden="true" />
-                {ghostMode ? "Ghost Mode active" : "Whistleblower protection"}
+                {ghostMode ? t("ghostModeActive") : t("yourSafetyMatters")}
               </span>
 
               <h2
@@ -71,7 +70,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                   textWrap: "balance" as const,
                 }}
               >
-                Report the dangerous ones without exposing who you are.
+                {t("ghostSpotlightTitle1")} {t("ghostSpotlightTitle2")}
               </h2>
 
               <p
@@ -81,36 +80,97 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                   transition: "color 0.5s",
                 }}
               >
-                Illegal logging near syndicate territory. Industrial dumping under
-                surveillance. Ghost Mode is built for these. It strips your
-                identity, scrubs photo EXIF metadata, and transmits the report
-                with no trace back to you.
+                {t("ghostSpotlightDesc")}
               </p>
 
               <button
                 onClick={onGhostToggle}
                 aria-pressed={ghostMode}
-                aria-label={ghostMode ? "Deactivate Ghost Mode" : "Activate Ghost Mode"}
-                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-2 self-start"
+                aria-label={ghostMode ? t("turnOffGhostMode") : t("turnOnGhostMode")}
+                className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] focus-visible:ring-offset-2 self-start cursor-pointer"
                 style={{
                   display: "flex", alignItems: "center", gap: 10,
                   marginTop: 8, padding: "13px 24px", borderRadius: 10,
-                  border: "none", cursor: "pointer", fontFamily: "var(--font-body)",
+                  border: "none", fontFamily: "var(--font-body)",
                   fontSize: 14, fontWeight: 700,
                   background: ghostMode ? "var(--accent-bright)" : "var(--accent)",
                   color: ghostMode ? "var(--hero-bg)" : "#fff",
                   boxShadow: ghostMode
-                    ? "0 8px 22px -10px rgba(250,204,21,0.5)"
+                    ? "0 8px 22px -10px rgba(46,230,200,0.5)"
                     : "0 8px 22px -10px rgba(27,67,50,0.4)",
                   transition: "all 0.3s ease",
                 }}
               >
                 {ghostMode ? (
-                  <><ShieldCheck style={{ width: 16, height: 16 }} aria-hidden="true" /> Deactivate Ghost Mode</>
+                  <><ShieldCheck style={{ width: 16, height: 16 }} aria-hidden="true" /> {t("turnOffGhostMode")}</>
                 ) : (
-                  <><Eye style={{ width: 16, height: 16 }} aria-hidden="true" /> Activate Ghost Mode</>
+                  <><Eye style={{ width: 16, height: 16 }} aria-hidden="true" /> {t("turnOnGhostMode")}</>
                 )}
               </button>
+
+              {/* Stark Reality Whistleblower Context Card with Clickable External Link */}
+              <a
+                href="https://www.globalwitness.org/en/campaigns/environmental-activists/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  marginTop: 12,
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 12,
+                  padding: "16px",
+                  background: ghostMode 
+                    ? "linear-gradient(135deg, rgba(46, 230, 200, 0.12) 0%, rgba(46, 230, 200, 0.02) 100%)" 
+                    : "linear-gradient(135deg, rgba(17, 24, 20, 0.06) 0%, rgba(17, 24, 20, 0.02) 100%)",
+                  clipPath: "polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px)",
+                  borderLeft: ghostMode ? "3px solid #2ee6c8" : "3px solid var(--accent)",
+                  textDecoration: "none",
+                  position: "relative",
+                  transition: "all 0.3s ease",
+                  maxWidth: 480,
+                }}
+                className="hover:-translate-y-0.5 group"
+              >
+                {/* Icon */}
+                <div style={{
+                  width: 28, height: 28, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: ghostMode ? "rgba(46, 230, 200, 0.15)" : "rgba(27, 67, 50, 0.08)",
+                  borderRadius: "50%",
+                  color: ghostMode ? "#2ee6c8" : "var(--accent)",
+                  position: "relative",
+                  zIndex: 1
+                }}>
+                  <ShieldCheck style={{ width: 15, height: 15 }} />
+                </div>
+                
+                {/* Text */}
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <p style={{
+                    margin: 0, fontSize: 12.5, lineHeight: 1.5,
+                    color: ghostMode ? "rgba(240,237,232,0.9)" : "var(--ink)",
+                    fontFamily: "var(--font-body)",
+                    fontWeight: 500
+                  }}>
+                    <strong style={{ color: ghostMode ? "#2ee6c8" : "var(--accent)", fontWeight: 800 }}>{t("starkRealityTitle")} </strong>
+                    {t("starkRealityBody")}
+                  </p>
+                  <p style={{
+                    margin: "6px 0 0", fontSize: 10.5,
+                    color: ghostMode ? "rgba(46,230,200,0.8)" : "var(--accent)",
+                    fontFamily: "var(--font-mono)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                    display: "flex", alignItems: "center", gap: 5,
+                    fontWeight: 700
+                  }}
+                  className="group-hover:underline"
+                  >
+                    <span>{t("readGlobalWitnessReport")}</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </p>
+                </div>
+              </a>
             </div>
 
             {/* Right — operational artifact. Flips with the mode. */}
@@ -160,16 +220,16 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
 
                     <div>
                       <p style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--accent-bright)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 4px" }}>
-                        Identity hidden
+                        {t("identityHidden")}
                       </p>
                       <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "rgba(240,237,232,0.55)", margin: 0 }}>
-                        Location removed · sent over an encrypted tunnel
+                        {t("photoLocationRemoved")}
                       </p>
                     </div>
 
                     {/* Protection checklist — body sans, not mono decoration */}
                     <ul style={{ display: "flex", flexDirection: "column", gap: 8, textAlign: "left", margin: "8px 0 0", padding: 0, listStyle: "none" }}>
-                      {PROTECTIONS.map((item) => (
+                      {[t("protection1"), t("protection2"), t("protection3"), t("protection4")].map((item) => (
                         <li key={item} style={{ display: "flex", alignItems: "center", gap: 9 }}>
                           <CheckCircle style={{ width: 15, height: 15, color: "var(--accent-bright)", flexShrink: 0 }} />
                           <span style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "rgba(240,237,232,0.7)" }}>{item}</span>
@@ -185,10 +245,10 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                     </div>
                     <div>
                       <p style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 4px" }}>
-                        Standard report
+                        {t("normalReport")}
                       </p>
                       <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--muted)", margin: 0 }}>
-                        Identity visible · location attached · public credit
+                        {t("yourNameShown")}
                       </p>
                     </div>
                   </>

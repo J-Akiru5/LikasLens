@@ -3,24 +3,25 @@
 import { useEffect, useState } from "react";
 import { m } from "framer-motion";
 import { Smartphone, Download, Camera } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Install CTA — refine. Keep the phone mockup + steps. Drop the ghost-card
-   pattern (1px border + ≥16px blur shadow) and mono-as-decoration.
+   Install CTA — refine. Keep the phone mockup + steps.
    ───────────────────────────────────────────────────────────────────────────── */
 
 interface InstallCtaSectionProps {
   ghostMode: boolean;
 }
 
-const STEPS = [
-  { n: "1", title: "Download the App", sub: "Get the LikasLens package for Android or iOS." },
-  { n: "2", title: "Install natively", sub: "Install the app directly to your device for offline support." },
-  { n: "3", title: "Start reporting", sub: "LikasLens lands on your home screen with native performance." },
-];
-
 export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
-  // PWA install logic is kept in case we add it back later, but hidden from UI for now.
+  const t = useTranslations("landing");
+
+  const steps = [
+    { n: "1", title: t("installStep1Title"), sub: t("installStep1Desc") },
+    { n: "2", title: t("installStep2Title"), sub: t("installStep2Desc") },
+    { n: "3", title: t("installStep3Title"), sub: t("installStep3Desc") },
+  ];
+
   interface BeforeInstallPromptEvent extends Event {
     prompt: () => void;
     userChoice: Promise<{ outcome: string }>;
@@ -85,7 +86,7 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
                     textWrap: "balance" as const,
                   }}
                 >
-                  Carry the record in your pocket.
+                  {t("installTitle")}
                 </h2>
                 <p
                   style={{
@@ -93,14 +94,12 @@ export function InstallCtaSection({ ghostMode }: InstallCtaSectionProps) {
                     color: ghostMode ? "var(--muted)" : "rgba(255,255,255,0.72)",
                   }}
                 >
-                  Install LikasLens natively. Capture photos instantly,
-                  file reports offline, and receive push notifications when an
-                  agency acts on your case.
+                  {t("installDesc")}
                 </p>
               </div>
 
               <div className="flex flex-col gap-4">
-                {STEPS.map(({ n, title, sub }) => (
+                {steps.map(({ n, title, sub }) => (
                   <div key={n} className="flex items-start gap-4">
                     <span
                       style={{

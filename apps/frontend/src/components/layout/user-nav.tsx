@@ -4,12 +4,14 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { User, LogOut, LayoutGrid, UserCircle2, ChevronDown, Settings } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { showToast, ConfirmModal } from "@likaslens/shared";
 import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 export function UserNav({ invert = false, variant = "header" }: { invert?: boolean; variant?: "header" | "sidebar" } = {}) {
+  const t = useTranslations("nav");
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -79,7 +81,7 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
           onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = invert ? "#ffffff" : "#111814")}
           onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = invert ? "rgba(240,237,232,0.85)" : "rgba(17,24,20,0.75)")}
         >
-          Log In
+          {t("login")}
         </Link>
         <Link
           href="/register"
@@ -96,7 +98,7 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
           onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#40f0d4")}
           onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#2ee6c8")}
         >
-          Sign Up
+          {t("signUp")}
         </Link>
       </div>
     );

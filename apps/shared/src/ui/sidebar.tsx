@@ -24,6 +24,8 @@ export interface NavItem {
   dividerLabel?: string;
   colorDot?: string; // Hex color for the tiny dot indicator
   badge?: string | number; // Badge/count shown next to the label
+  highlight?: boolean; // Highlight as primary action button
+  variant?: "default" | "primary";
 }
 
 interface SidebarProps {
@@ -158,6 +160,7 @@ export function Sidebar({
           const isActive = item.exact
             ? cleanPathname === href || cleanPathname === `${href}/`
             : cleanPathname.startsWith(href);
+          const isPrimary = item.variant === "primary" || item.highlight || item.href === "/report";
 
           return (
             <Link
@@ -177,10 +180,12 @@ export function Sidebar({
               title={isDesktopCollapsed ? item.label : undefined}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex items-center px-3 py-2 text-sm rounded-md transition-all duration-150",
+                "flex items-center px-3 py-2 text-sm rounded-xl transition-all duration-150",
                 isDesktopCollapsed ? "justify-center px-0" : "gap-3",
                 isActive
-                  ? "group relative flex items-center gap-3 px-3 py-2 rounded-lg bg-accent text-page shadow-md shadow-accent/20 transition-all duration-150 ease-out font-medium"
+                  ? "group relative flex items-center gap-3 px-3 py-2 rounded-xl bg-accent text-page shadow-md shadow-accent/20 transition-all duration-150 ease-out font-bold"
+                  : isPrimary
+                  ? "bg-accent/15 hover:bg-accent/25 text-accent border border-accent/30 font-bold shadow-xs hover:scale-[1.02] active:scale-[0.98]"
                   : "text-ink/70 hover:bg-ink/[0.04] hover:text-ink",
               )}
             >
@@ -190,14 +195,25 @@ export function Sidebar({
                   style={{ backgroundColor: item.colorDot }}
                 />
               ) : Icon ? (
-                <Icon className={cn("w-[18px] h-[18px] shrink-0", isActive ? "text-page" : "text-ink/50")} strokeWidth={isActive ? 2.5 : 2} />
+                <Icon
+                  className={cn(
+                    "w-[18px] h-[18px] shrink-0",
+                    isActive ? "text-page" : isPrimary ? "text-accent" : "text-ink/50"
+                  )}
+                  strokeWidth={isActive || isPrimary ? 2.5 : 2}
+                />
               ) : null}
               {!isDesktopCollapsed && (
-                <span className="flex-1 truncate">{item.label}</span>
+                <span className={cn("flex-1 truncate", isPrimary ? "font-bold" : "")}>{item.label}</span>
               )}
               {!isDesktopCollapsed && item.badge != null && (
                 <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold bg-amber/15 text-amber leading-none">
                   {item.badge}
+                </span>
+              )}
+              {!isDesktopCollapsed && isPrimary && !isActive && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-accent text-page shadow-xs">
+                  + File
                 </span>
               )}
             </Link>

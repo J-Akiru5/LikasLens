@@ -33,20 +33,17 @@ import { MobileProfileSkeleton } from "@likaslens/shared";
    ───────────────────────────────────────────────────────────────────────────── */
 
 const ACCOUNT_ITEMS = [
-  { href: "/history", label: "Report history", Icon: History, tint: "var(--accent)" },
+  { href: "/history", label: "My Submissions", Icon: History, tint: "var(--accent)" },
   { href: "/offline-queue", label: "Offline Queue", Icon: WifiOff, tint: "var(--amber)" },
-
-  { href: "/settings", label: "Settings", Icon: Settings, tint: "var(--muted)" },
+  { href: "/settings", label: "Account Settings", Icon: Settings, tint: "var(--muted)" },
 ];
 
 const TOOL_ITEMS = [
-  { href: "/incidents", label: "Incidents", Icon: AlertCircle, tint: "var(--red)" },
-  { href: "/analytics", label: "Analytics", Icon: BarChart3, tint: "var(--accent)" },
-  { href: "/reports", label: "Reports analytics", Icon: FileText, tint: "var(--accent)" },
-  { href: "/impact", label: "Impact", Icon: TrendingUp, tint: "var(--green)" },
-  { href: "/map", label: "Map view", Icon: Map, tint: "#3b82f6" },
-  { href: "/knowledge-graph", label: "Knowledge graph", Icon: Network, tint: "#a78bfa" },
-  { href: "/laws", label: "Laws database", Icon: Scale, tint: "var(--secondary)" },
+  { href: "/incidents", label: "Public Incidents", Icon: AlertCircle, tint: "var(--red)" },
+  { href: "/map", label: "Hazard Map", Icon: Map, tint: "#3b82f6" },
+  { href: "/impact", label: "Impact & ESG", Icon: TrendingUp, tint: "var(--green)" },
+  { href: "/knowledge-graph", label: "Graph Explorer", Icon: Network, tint: "#a78bfa" },
+  { href: "/laws", label: "Laws Database", Icon: Scale, tint: "var(--secondary)" },
 ];
 
 export default function ProfilePage() {
