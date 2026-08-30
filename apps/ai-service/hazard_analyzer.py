@@ -18,6 +18,7 @@ from pydantic import BaseModel, Field
 
 from config import settings
 from neo4j_client import is_configured
+from opencode_client import OpenCodeError, generate_via_opencode
 
 logger = logging.getLogger(__name__)
 
@@ -160,6 +161,27 @@ CRITICAL INSTRUCTIONS:
 4. Write exactly 2 sentences: one describing the violation and applicable law, one naming the agency to route to.
 5. Do NOT add disclaimers, caveats, or information not present in the retrieved context."""
 
+    # ------------------------------------------------------------------
+    # OpenCode Zen (MiMo-V2.5 Free) — default provider for this step.
+    # Free-tier caveat: OpenCode may use request data to improve the model
+    # during the free period. This step only sends a hazard category string
+    # and a coarse place name — no photos, coordinates, or reporter identity.
+    # ------------------------------------------------------------------
+    if settings.opencode_api_key:
+        try:
+            result = await generate_via_opencode(prompt, api_key=settings.opencode_api_key)
+            logger.info(
+                "Hazard summary served by OpenCode Zen for hazard_id=%s",
+                hazard_id,
+            )
+            return result
+        except OpenCodeError as exc:
+            logger.warning(
+                "OpenCode Zen failed for hazard_id=%s (%s), falling back to Gemini",
+                hazard_id,
+                exc,
+            )
+
     last_exc = None
     for attempt in range(3):
         try:
@@ -173,6 +195,10 @@ CRITICAL INSTRUCTIONS:
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Gemini returned an empty response",
                 )
+            logger.info(
+                "Hazard summary served by Gemini for hazard_id=%s",
+                hazard_id,
+            )
             return text.strip()
         except asyncio.TimeoutError:
             last_exc = None

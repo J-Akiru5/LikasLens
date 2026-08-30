@@ -88,6 +88,12 @@ class Settings(BaseSettings):
         description="Google Generative AI (Gemini) API key. Required for chat, hazard analysis, graph RAG.",
     )
 
+    # ── OpenCode Zen (MiMo-V2.5 Free) ────────────────────────────────────
+    opencode_api_key: str = Field(
+        default="",
+        description="OpenCode Zen API key for MiMo-V2.5 Free. Used as default provider for hazard-summary generation with automatic Gemini fallback. Falls back cleanly to Gemini-only if unset.",
+    )
+
     # ── Neo4j ─────────────────────────────────────────────────────────────
     neo4j_uri: str = Field(
         default="",

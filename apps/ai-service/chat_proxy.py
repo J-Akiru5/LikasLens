@@ -2,6 +2,8 @@
 Secure chat proxy for the Liksi chatbot.
 Accepts chat messages from the frontend, calls Gemini 2.5 Flash server-side,
 and returns the response. The API key never leaves the server.
+
+Liksi intentionally stays on Gemini — do not route through OpenCode.
 """
 
 from __future__ import annotations
