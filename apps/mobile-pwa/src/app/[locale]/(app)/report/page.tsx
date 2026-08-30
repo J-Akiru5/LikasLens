@@ -26,7 +26,7 @@ import {
   Plus,
 } from "lucide-react";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { cn, submitReport, showToast, Button } from "@likaslens/shared";
+import { cn, submitCitizenReport, showToast, Button } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
 import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
 import { queueReport } from "@likaslens/shared";
@@ -407,7 +407,7 @@ export default function ReportPage() {
         return;
       }
 
-      const res = await submitReport(payload);
+      const res = await submitCitizenReport(payload);
       const ticketId = res?.data?.id || crypto.randomUUID();
 
       // Always save tracking ID into device storage for instant visibility in My Submissions
@@ -682,7 +682,7 @@ export default function ReportPage() {
     setSubmitting(true);
     setRetryCount(attempt);
     try {
-      await submitReport(failedSubmission.payload);
+      await submitCitizenReport(failedSubmission.payload);
       haptic("success");
       showToast("Report submitted successfully!", "success");
       setFailedSubmission(null);

@@ -1194,7 +1194,7 @@ export interface TriageResult {
 // with submission_path="direct_fallback" and needs_ai_reanalysis=true.
 // 4xx errors propagate as-is (client bug, not transient).
 
-export async function submitReport(payload: ReportPayload): Promise<ReportResult> {
+export async function submitCitizenReport(payload: ReportPayload): Promise<ReportResult> {
   if (typeof window !== "undefined" && navigator.onLine) {
     let isClientBug = false;
     try {
@@ -1224,12 +1224,12 @@ export async function submitReport(payload: ReportPayload): Promise<ReportResult
       }
 
       // 5xx: transient — fall through to fallback
-      console.warn("[submitReport] AI service returned", res.status, "— falling back to direct insert");
+      console.warn("[submitCitizenReport] AI service returned", res.status, "— falling back to direct insert");
     } catch (e) {
       if (isClientBug) throw e; // 4xx: propagate to caller
       // Network failure or timeout — fall through to fallback
       const msg = e instanceof Error ? e.message : String(e);
-      console.warn("[submitReport] AI service unavailable, using direct fallback:", msg);
+      console.warn("[submitCitizenReport] AI service unavailable, using direct fallback:", msg);
     }
   }
 
@@ -1253,7 +1253,7 @@ export async function submitReport(payload: ReportPayload): Promise<ReportResult
 // Calls /api/v1/ai/reports/triage. On failure, returns safe defaults
 // so the submit flow is never blocked by triage.
 
-export async function triageReport(base64Image: string): Promise<TriageResult> {
+export async function triageCitizenReport(base64Image: string): Promise<TriageResult> {
   if (typeof window !== "undefined" && navigator.onLine) {
     try {
       const res = await fetch("/api/v1/ai/reports/triage", {
@@ -1265,7 +1265,7 @@ export async function triageReport(base64Image: string): Promise<TriageResult> {
         return await res.json();
       }
     } catch (e) {
-      console.warn("[triageReport] AI triage unavailable:", e);
+      console.warn("[triageCitizenReport] AI triage unavailable:", e);
     }
   }
 
