@@ -58,8 +58,12 @@ export function HeatmapWidget() {
       const res = await laravelGet<{ success: boolean; data: HeatmapData }>(
         "/reports/heatmap?days=7"
       );
-      if (res.success) {
-        setData(res.data);
+      if (res.success && res.data) {
+        setData({
+          points: Array.isArray(res.data.points) ? res.data.points : [],
+          clusters: Array.isArray(res.data.clusters) ? res.data.clusters : [],
+          hot_zones: Array.isArray(res.data.hot_zones) ? res.data.hot_zones : [],
+        });
       } else {
         setError("Failed to load map data");
       }
@@ -248,16 +252,16 @@ export function HeatmapWidget() {
       </div>
 
       {/* Quick stats footer */}
-      {data && data.points.length > 0 && (
+      {data && Array.isArray(data.points) && data.points.length > 0 && (
         <div className="flex items-center justify-between px-5 py-3 border-t border-ink/5 text-xs text-ink/50">
           <span>
             <strong className="text-ink">{data.points.length}</strong> reports
           </span>
           <span>
-            <strong className="text-ink">{data.clusters.length}</strong> clusters
+            <strong className="text-ink">{data.clusters?.length ?? 0}</strong> clusters
           </span>
           <span>
-            <strong className="text-ink">{data.hot_zones.length}</strong> hot zones
+            <strong className="text-ink">{data.hot_zones?.length ?? 0}</strong> hot zones
           </span>
         </div>
       )}

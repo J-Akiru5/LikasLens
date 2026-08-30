@@ -26,7 +26,7 @@ import {
   Plus,
 } from "lucide-react";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { cn, laravelPost, showToast, Button } from "@likaslens/shared";
+import { cn, submitReport, showToast, Button } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase/client";
 import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
 import { queueReport } from "@likaslens/shared";
@@ -44,6 +44,7 @@ interface FailedPayload {
   user_id: string | undefined;
   description: string | undefined;
   report_type: string;
+  ghost_mode: boolean;
 }
 
 interface FailedSubmission {
@@ -147,15 +148,23 @@ export default function ReportPage() {
     };
   }, []);
 
-const startCamera = useCallback(async (facing?: "user" | "environment") => {
+  const startCamera = useCallback(async (facing?: "user" | "environment") => {
     const targetFacing = facing ?? facingMode;
     setCameraError(null);
     setCameraInitialising(true);
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: targetFacing } },
-        audio: false,
-      });
+      let mediaStream: MediaStream;
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: targetFacing } },
+          audio: false,
+        });
+      } catch {
+        mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
+      }
       streamRef.current = mediaStream;
       setStream(mediaStream);
     } catch (err) {
@@ -286,6 +295,10 @@ const startCamera = useCallback(async (facing?: "user" | "environment") => {
   const capturePhoto = useCallback(() => {
     if (!videoRef.current) return;
     const video = videoRef.current;
+    if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+      showToast("Camera is still initializing, please wait a moment.", "info");
+      return;
+    }
     const dataUrl = captureWithStamp(video, {
       latitude: gps?.lat ?? 0,
       longitude: gps?.lng ?? 0,
@@ -380,6 +393,7 @@ const startCamera = useCallback(async (facing?: "user" | "environment") => {
         user_id: userId,
         description: description || undefined,
         report_type: incidentType,
+        ghost_mode: ghostMode,
       };
 
       if (!navigator.onLine) {
@@ -393,7 +407,24 @@ const startCamera = useCallback(async (facing?: "user" | "environment") => {
         return;
       }
 
-      await laravelPost("/reports", payload);
+      const res = await submitReport(payload);
+      const ticketId = res?.data?.id || crypto.randomUUID();
+
+      // Always save tracking ID into device storage for instant visibility in My Submissions
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem("likaslens_anonymous_reports");
+          const list = raw ? JSON.parse(raw) : [];
+          list.unshift({
+            id: ticketId,
+            category: incidentType,
+            location: gps ? `${gps.lat.toFixed(4)}, ${gps.lng.toFixed(4)}` : "Location Recorded",
+            date: new Date().toISOString(),
+            status: "open",
+          });
+          localStorage.setItem("likaslens_anonymous_reports", JSON.stringify(list.slice(0, 20)));
+        } catch {}
+      }
 
       haptic("success");
 
@@ -412,6 +443,7 @@ const startCamera = useCallback(async (facing?: "user" | "environment") => {
           user_id: userId,
           description: description || undefined,
           report_type: incidentType,
+          ghost_mode: ghostMode,
         },
       });
     } finally {
@@ -427,7 +459,7 @@ const startCamera = useCallback(async (facing?: "user" | "environment") => {
         onComplete={() => {
           setShowAnalysis(false);
           if (ghostMode) {
-            showToast("Metadata stripped for your safety. Report submitted!", "success");
+            showToast("Photo saved safely in Ghost Mode! Report sent.", "success");
           } else {
             showToast("Report submitted successfully!", "success");
           }
@@ -435,7 +467,7 @@ const startCamera = useCallback(async (facing?: "user" | "environment") => {
           setIncidentType("");
           setDescription("");
           setStep("camera");
-          router.push(`/${locale}/dashboard`);
+          router.push(`/${locale}/history`);
         }}
       />
     );
@@ -515,7 +547,7 @@ const startCamera = useCallback(async (facing?: "user" | "environment") => {
               </div>
               <div className="space-y-2 max-w-sm">
                 <h3 className="text-lg font-bold">Camera Access Blocked</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">
+                <p className="text-sm text-muted leading-relaxed">
                   {getBrowserInstructions()}
                 </p>
               </div>
@@ -650,7 +682,7 @@ const startCamera = useCallback(async (facing?: "user" | "environment") => {
     setSubmitting(true);
     setRetryCount(attempt);
     try {
-      await laravelPost("/reports", failedSubmission.payload);
+      await submitReport(failedSubmission.payload);
       haptic("success");
       showToast("Report submitted successfully!", "success");
       setFailedSubmission(null);

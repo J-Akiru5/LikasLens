@@ -64,7 +64,7 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 | **Neuro-Symbolic Routing** | Hybrid GraphRAG pipeline — Neo4j graph traversal for exact law matching + Gemini 2.5 Flash vector search fallback. Outputs violated laws, enforcing agencies, and grounded legal summaries. |
 | **Adaptive Routing Learner** | ML system that learns which LGUs resolve which violation types fastest, continuously optimizing routing decisions based on historical resolution times. |
 | **Ghost Mode (Whistleblower Protection)** | End-to-end anonymous reporting: EXIF metadata stripped at capture → GPS fuzzed via barangay centroids → submitted as anonymous ghost user → zero identifiable data stored. Toggle per-report. |
-| **Blockchain Evidence Hashing** | SHA-256 evidence hashing with on-chain transaction recording for tamper-proof evidentiary chain of custody. |
+| **Cryptographic Evidence Hashing** | SHA-256 evidence hashing with append-only audit trail and Supabase Vault storage for tamper-proof evidentiary chain of custody. |
 | **Report Chaining & Corroboration** | GPS-proximity clustering links related reports into chains. Community corroboration (>50m distance, different user) auto-escalates priority. Anti-Sybil 5m geofence blocks spam. |
 | **Public Impact Dashboard** | Real-time aggregated stats: total reports, resolution rate, reports by type, recently resolved, top barangays. Publicly accessible without login. |
 | **Public Scoreboard** | LGU performance transparency — resolution rates, average response times, SLA compliance, escalation counts. Drives civic accountability. |
@@ -519,7 +519,7 @@ See `docs/GCP_DEPLOYMENT.md` for complete cloud deployment instructions.
 - **Ghost Mode**: Anonymous submission with GPS fuzzing to barangay centroids
 - **Anti-Sybil**: 5m geofence prevents duplicate reports from the same user within 24 hours
 - **Corroboration**: 50m GPS diversity requirement + distinct user requirement
-- **Blockchain**: SHA-256 evidence hashing with on-chain verification
+- **Cryptographic Evidence**: SHA-256 evidence hashing with encrypted Supabase Vault storage
 - **CORS**: Strictly configured per environment
 - **API Keys**: AI service requires `X-API-Key` header in production
 - **Rate Limiting**: Per-IP and per-endpoint throttling (10–60 req/min)

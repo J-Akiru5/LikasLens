@@ -49,8 +49,7 @@ export default function IncidentsPage() {
       {/* Header */}
       <div className="sticky top-0 z-30 bg-page/80 backdrop-blur-md border-b border-ink/10">
         <div className="flex items-center h-16 px-4">
-          <h1 className="ios-large-title ios-large-title--xl">Reported Incidents
-          </h1>
+          <h1 className="ios-large-title ios-large-title--xl">Public Incidents</h1>
         </div>
       </div>
 

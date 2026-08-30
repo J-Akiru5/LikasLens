@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Citizen Submit AI Reconnection — Audit Report</title>
+<style>
+  :root { --bg: #0a0a0f; --card: #12121a; --border: #1e1e2e; --text: #e0e0e0; --muted: #888; --green: #22c55e; --red: #ef4444; --amber: #f59e0b; --blue: #3b82f6; --purple: #a855f7; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace; font-size: 13px; line-height: 1.6; padding: 2rem; }
+  h1 { color: var(--green); font-size: 1.4rem; margin-bottom: 0.5rem; }
+  h2 { color: var(--blue); font-size: 1.1rem; margin: 2rem 0 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+  h3 { color: var(--purple); font-size: 0.95rem; margin: 1.5rem 0 0.3rem; }
+  .meta { color: var(--muted); margin-bottom: 1.5rem; font-size: 0.85rem; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; margin: 0.8rem 0; }
+  .pass { border-left: 3px solid var(--green); }
+  .fail { border-left: 3px solid var(--red); }
+  .warn { border-left: 3px solid var(--amber); }
+  .info { border-left: 3px solid var(--blue); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-right: 0.5rem; }
+  .badge-pass { background: #166534; color: #bbf7d0; }
+  .badge-fail { background: #991b1b; color: #fecaca; }
+  .badge-warn { background: #92400e; color: #fef3c7; }
+  .badge-info { background: #1e3a5f; color: #bfdbfe; }
+  pre { background: #0d1117; border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; margin: 0.5rem 0; }
+  code { color: #c9d1d9; }
+  .kv { display: grid; grid-template-columns: 160px 1fr; gap: 0.2rem 1rem; }
+  .kv dt { color: var(--muted); }
+  .kv dd { color: var(--text); }
+  table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
+  th, td { text-align: left; padding: 0.4rem 0.8rem; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; font-size: 0.8rem; }
+  .arrow { color: var(--green); margin: 0 0.3rem; }
+  .section-divider { border: none; border-top: 1px dashed var(--border); margin: 2rem 0; }
+</style>
+</head>
+<body>
+
+<h1>Citizen Submit AI Reconnection</h1>
+<p class="meta">Branch: <code>feat/jeff/reconnect-submit-pipeline</code> &middot; Date: 2026-08-30 &middot; Based on: <code>f30d4e6</code> (Lou's navbar rewrite)</p>
+
+<hr class="section-divider">
+
+<h2>1. Problems Found</h2>
+
+<div class="card warn">
+  <h3><span class="badge badge-warn">PROBLEM</span> Client.ts intercepted all report submissions</h3>
+  <p><code>routeRequest("reports", "POST", body)</code> at <code>client.ts:325-382</code> inserted directly into Supabase's <code>tickets</code> table, completely bypassing the AI service. No EXIF stripping, no YOLO triage, no Neo4j routing.</p>
+</div>
+
+<div class="card warn">
+  <h3><span class="badge badge-warn">PROBLEM</span> Triage was a hardcoded stub</h3>
+  <p><code>routeRequest("reports/triage", ...)</code> at <code>client.ts:316-322</code> returned <code>{has_concern: false, indicators: []}</code> with zero AI involvement. Citizens never saw pre-submission warnings.</p>
+</div>
+
+<div class="card warn">
+  <h3><span class="badge badge-warn">PROBLEM</span> Ghost mode never reached the server</h3>
+  <p>The report payload never included <code>ghost_mode</code>. The server-side <code>sanitize_report_payload()</code> (which strips identity + fuzzes location) was never invoked for citizen submissions.</p>
+</div>
+
+<hr class="section-divider">
+
+<h2>2. Solution Architecture</h2>
+
+<div class="card info">
+<h3>Data Flow (after fix)</h3>
+<pre><code>Browser ──submitReport()──► /api/v1/ai/reports ──► AI Service (Render)
+    │                              │                       │
+    │  200 OK ◄────────────────────┘                       │
+    │  5xx / network error                                  │
+    │       │                                               │
+    │       ▼                                               ▼
+    │  routeRequest("reports", "POST")           ┌─ EXIF strip
+    │       │                                    ├─ Ghost mode sanitize
+    │       ▼                                    ├─ Supabase Storage upload
+    │  Supabase tickets table                   ├─ YOLO triage
+    │  (submission_path="direct_fallback")      ├─ Neo4j routing
+    │  (needs_ai_reanalysis=true)               └─ Ticket + Evidence persist
+    │
+    │  4xx from AI service
+    │       │
+    │       ▼
+    │  Error thrown to caller (NO fallback)</code></pre>
+</div>
+
+<h2>3. Files Changed</h2>
+
+<table>
+<tr><th>File</th><th>Change</th><th>Lines</th></tr>
+<tr><td><code>apps/shared/src/api/client.ts</code></td><td>Added <code>submitReport()</code>, <code>triageReport()</code>, types, 4xx fix</td><td>+118</td></tr>
+<tr><td><code>apps/shared/src/index.ts</code></td><td>Export new functions + types</td><td>+3</td></tr>
+<tr><td><code>apps/frontend/src/app/[locale]/report/page.tsx</code></td><td><code>apiPost</code> → <code>submitReport</code>/<code>triageReport</code>, added <code>ghost_mode</code></td><td>±11</td></tr>
+<tr><td><code>apps/mobile-pwa/src/app/[locale]/(app)/report/page.tsx</code></td><td><code>apiPost</code> → <code>submitReport</code>, added <code>ghost_mode</code></td><td>±9</td></tr>
+<tr><td><code>apps/frontend/src/app/api/v1/ai/reports/route.ts</code></td><td>NEW: server-side proxy → AI service</td><td>+93</td></tr>
+<tr><td><code>apps/frontend/src/app/api/v1/ai/reports/triage/route.ts</code></td><td>NEW: triage proxy → AI service</td><td>+65</td></tr>
+<tr><td><code>apps/mobile-pwa/src/app/api/v1/ai/reports/route.ts</code></td><td>NEW: same for mobile</td><td>+88</td></tr>
+<tr><td><code>apps/mobile-pwa/src/app/api/v1/ai/reports/triage/route.ts</code></td><td>NEW: same for mobile</td><td>+61</td></tr>
+<tr><td>3× offline-queue pages</td><td><code>laravelPost</code> → <code>submitReport</code></td><td>±4 each</td></tr>
+<tr><td><code>apps/ai-service/routers/reports.py</code></td><td>Added <code>submission_path</code> to response</td><td>+1</td></tr>
+<tr><td><code>apps/ai-service/db/models.py</code></td><td>Added <code>submission_path</code> + <code>needs_ai_reanalysis</code> columns</td><td>±2</td></tr>
+<tr><td><code>apps/ai-service/db/migrations/versions/002_add_submission_path.py</code></td><td>NEW: Alembic migration</td><td>+56</td></tr>
+</table>
+
+<hr class="section-divider">
+
+<h2>4. Migration</h2>
+
+<div class="card pass">
+<h3><span class="badge badge-pass">APPLIED</span> Database columns added via Supabase Dashboard</h3>
+<pre><code>ALTER TABLE tickets ADD COLUMN IF NOT EXISTS submission_path VARCHAR(50);
+ALTER TABLE tickets ADD COLUMN IF NOT EXISTS needs_ai_reanalysis BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE tickets ADD COLUMN IF NOT EXISTS ghost_mode BOOLEAN NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS ix_tickets_needs_ai_reanalysis ON tickets(needs_ai_reanalysis);</code></pre>
+</div>
+
+<div class="card pass">
+<h3><span class="badge badge-pass">VERIFIED</span> REST API column check</h3>
+<pre><code>GET /rest/v1/tickets?select=submission_path,needs_ai_reanalysis,ghost_mode&limit=1
+→ [{"submission_path":null,"needs_ai_reanalysis":false,"ghost_mode":false}]</code></pre>
+</div>
+
+<hr class="section-divider">
+
+<h2>5. Verification Evidence</h2>
+
+<h3>5a. Ghost mode reaches server-side sanitizer</h3>
+
+<div class="card pass">
+<h3><span class="badge badge-pass">VERIFIED</span> Code trace (full chain)</h3>
+<pre><code>Frontend report page.tsx:397    → payload.ghost_mode = isGhostMode
+submitReport() client.ts:1203   → fetch("/api/v1/ai/reports", { body: JSON.stringify(payload) })
+proxy route.ts:64               → ghost_mode: body.ghost_mode ?? false  (forwarded)
+AI service reports.py:118       → sanitize_report_payload(ghost_mode=body.ghost_mode, ...)
+ghost_mode.py:33-38             → if ghost_mode: safe_user_id=None, fuzz_location(lat,lon)</code></pre>
+<p style="margin-top:0.5rem;">The Render deployment (v0.2.0) does not yet have the reports router. Once redeployed, the full chain will execute.</p>
+</div>
+
+<h3>5b. Fallback path inserts with correct audit fields</h3>
+
+<div class="card pass">
+<h3><span class="badge badge-pass">VERIFIED</span> Direct Supabase insert test</h3>
+<p>Simulated what <code>submitReport()</code> does when AI service is unreachable:</p>
+<pre><code>POST /rest/v1/tickets
+{
+  "id": "8dbafeef-6c57-43a5-852a-c5a7acd81d50",
+  "title": "Fallback test — water pollution near river",
+  "submission_path": "direct_fallback",
+  "needs_ai_reanalysis": true,
+  "ghost_mode": true,
+  "ai_triage_summary": "water_pollution"
+}
+
+GET /rest/v1/tickets?id=eq.8dbafeef-6c57-43a5-852a-c5a7acd81d50
+  &select=id,submission_path,needs_ai_reanalysis,ghost_mode,ai_triage_summary
+
+→ [{
+    "id": "8dbafeef-6c57-43a5-852a-c5a7acd81d50",
+    "submission_path": "direct_fallback",     ← VERIFIED in DB
+    "needs_ai_reanalysis": true,              ← VERIFIED in DB
+    "ghost_mode": true,                       ← VERIFIED in DB
+    "ai_triage_summary": "water_pollution"    ← VERIFIED in DB
+  }]</code></pre>
+</div>
+
+<h3>5c. 4xx errors propagate, do NOT trigger fallback</h3>
+
+<div class="card pass">
+<h3><span class="badge badge-pass">VERIFIED</span> Code + test</h3>
+<pre><code>// submitReport() — client.ts:1219-1223
+if (res.status >= 400 && res.status < 500) {
+  isClientBug = true;
+  const err = await res.json().catch(() => ({ detail: res.statusText }));
+  throw new Error(err.detail || `Client error ${res.status}`);
+}
+// ...
+catch (e) {
+  if (isClientBug) throw e;  // ← re-throws, does NOT fall back
+}</code></pre>
+<p style="margin-top:0.5rem;">Tested: AI service returns 404 (reports router not deployed yet). <code>submitReport()</code> throws <code>"Not Found"</code> — no fallback insert occurs.</p>
+</div>
+
+<h3>5d. Offline queue replays through submitReport()</h3>
+
+<div class="card pass">
+<h3><span class="badge badge-pass">VERIFIED</span> Code trace</h3>
+<pre><code>offline-queue page.tsx:115       → postFn = (payload) => submitReport(payload as any)
+syncBatch() offline-queue.ts:151 → await postFn(item.payload)
+submitReport() client.ts:1197    → tries AI service → falls back to routeRequest("reports")
+routeRequest() client.ts:365-366 → submission_path: "direct_fallback"
+                                   needs_ai_reanalysis: true</code></pre>
+<p style="margin-top:0.5rem;">If network drops during replay, <code>submitReport()</code> catches the error and falls back to direct Supabase insert — queued report still persists.</p>
+</div>
+
+<hr class="section-divider">
+
+<h2>6. What's NOT Done Yet</h2>
+
+<div class="card warn">
+<ul style="margin-left:1rem;">
+<li><strong>AI service not redeployed</strong> — Render deployment (v0.2.0) doesn't have <code>/api/v1/reports</code> or <code>/api/v1/reports/triage</code> routers. Full end-to-end through AI pipeline requires redeployment.</li>
+<li><strong>Neo4j routing not tested end-to-end</strong> — depends on AI service redeployment.</li>
+<li><strong>No browser-level E2E test</strong> — all verification was code-trace + API-level. Real browser submission would confirm the full stack.</li>
+<li><strong>Branch not pushed</strong> — pending your approval.</li>
+</ul>
+</div>
+
+<hr class="section-divider">
+
+<h2>7. Commits</h2>
+
+<pre><code>db7838a  fix: 4xx errors in submitReport should propagate, not trigger fallback
+3bc6d8e  feat(ai-service): add submission_path + needs_ai_reanalysis columns to tickets
+2b35c62  wip: reconnect citizen submit to AI pipeline</code></pre>
+
+<p class="meta" style="margin-top:2rem;">Generated by opencode · LikasLens Ghost Mode design system audit</p>
+</body>
+</html>

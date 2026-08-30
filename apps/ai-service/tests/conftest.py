@@ -23,6 +23,9 @@ def _set_test_env(monkeypatch):
     monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
     monkeypatch.setenv("GOOGLE_API_KEY", "test-gemini-key")
     monkeypatch.setenv("APP_DEBUG", "true")
+    # Reset JWKS client singleton between tests
+    from auth.supabase_jwt import _reset_jwks_client
+    _reset_jwks_client()
 
 
 @pytest.fixture

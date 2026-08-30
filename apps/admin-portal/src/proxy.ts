@@ -12,7 +12,7 @@ const intlMiddleware = createMiddleware({
   localeDetection: true,
 });
 
-export default async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Bypass if Supabase is not configured
@@ -93,6 +93,8 @@ export default async function middleware(request: NextRequest) {
 
   return supabaseResponse;
 }
+
+export default proxy;
 
 export const config = {
   matcher: ["/(en|fil|vi|id|ms|ta|th|km|my|lo)/:path*", "/((?!api|auth|_next|_vercel|.*\\..*).*)"],

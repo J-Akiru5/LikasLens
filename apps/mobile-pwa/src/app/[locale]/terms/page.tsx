@@ -47,8 +47,7 @@ export default function MobileTermsPage() {
               <li className="text-sm text-ink/90">A mobile-optimized reporting interface with photo capture, GPS tagging, and category selection.</li>
               <li className="text-sm text-ink/90">An AI classification pipeline (YOLOv8) that categorizes reports and estimates severity.</li>
               <li className="text-sm text-ink/90">Routing of verified reports to appropriate Local Government Units (LGUs) and national agencies (DENR, DILG, MMDA, etc.).</li>
-              <li className="text-sm text-ink/90">A public Civic Ledger that records the resolution chain for transparency and accountability.</li>
-              <li className="text-sm text-ink/90">A gamified Eco-Credits reward system for active citizen reporters.</li>
+              <li className="text-sm text-ink/90">A public Civic Ledger with immutable audit logs that records the resolution chain for transparency and accountability.</li>
             </ul>
           </Section>
 

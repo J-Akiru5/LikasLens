@@ -7,12 +7,14 @@ import "./globals.css";
 const bodyFont = Geist({
   variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const dataFont = JetBrains_Mono({
   variable: "--font-data",
   subsets: ["latin"],
   weight: ["400", "500", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -59,6 +61,8 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <Script id="theme-initializer" strategy="beforeInteractive">
           {`try {
             var theme = localStorage.getItem('likaslens-theme');

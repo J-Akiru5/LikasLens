@@ -42,7 +42,7 @@ export function LoginClient() {
       {/* Left Panel: Secure Command Center Visuals */}
       <div className="hidden lg:flex lg:w-[55%] relative bg-black items-center justify-center overflow-hidden">
         <Image
-          src="/images/admin_auth_bg.png"
+          src="/images/admin_auth_bg.webp"
           alt="Secure global topography"
           fill
           sizes="(max-width: 1024px) 100vw, 60vw"
@@ -181,7 +181,7 @@ export function LoginClient() {
 
           <div className="mt-12 text-center">
             <Link
-              href="/"
+              href={`/${locale}`}
               className="font-mono text-xs uppercase tracking-widest text-white/30 hover:text-white/70 transition-colors"
             >
               &larr; Return to Public Site

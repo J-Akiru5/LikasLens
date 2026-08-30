@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 function GitHubCatIcon({ className }: { className?: string }) {
   return (
@@ -18,6 +19,7 @@ function GitHubCatIcon({ className }: { className?: string }) {
 }
 
 export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
+  const t = useTranslations("footer");
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -35,7 +37,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
         style={{ opacity: ghostMode ? 0 : 1 }}
       >
         <Image 
-          src="/images/footer-civic-mountain.png" 
+          src="/images/footer-civic-mountain.webp" 
           alt="" 
           fill 
           sizes="100vw"
@@ -58,7 +60,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
         style={{ opacity: ghostMode ? 1 : 0 }}
       >
         <Image 
-          src="/images/footer-ghost-deepsea-v2.png" 
+          src="/images/footer-ghost-deepsea-v2.webp" 
           alt="" 
           fill 
           sizes="100vw"
@@ -103,9 +105,11 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
             </svg>
           </div>
         ) : (
-          <svg viewBox="0 0 1440 100" className="w-full h-[40px] md:h-[80px] block" preserveAspectRatio="none">
-            <path d="M0,0 L1440,0 L1440,50 L1300,20 L1150,70 L950,30 L750,80 L550,20 L350,70 L150,30 L0,50 Z" fill="currentColor" />
-          </svg>
+          <div className="relative w-full h-[30px] md:h-[60px]">
+            <svg viewBox="0 0 1440 80" className="w-full h-full" preserveAspectRatio="none">
+              <path d="M0,0 L1440,0 L1440,20 L1200,45 L960,15 L720,50 L480,25 L240,60 L0,30 Z" fill="currentColor" />
+            </svg>
+          </div>
         )}
       </div>
 
@@ -126,7 +130,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
       `}} />
 
       {/* ═══════════════════════════════════════════════════════════════════
-          PARTICLES: Subtle floating elements (Ghost mode only — bubbles)
+          UNDERWATER BUBBLES (Ghost Mode only)
           ═══════════════════════════════════════════════════════════════════ */}
       {mounted && ghostMode && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-[2]">
@@ -159,7 +163,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
           <div className="flex flex-col gap-5 lg:col-span-2">
             <div className="flex items-center gap-3 group w-fit">
               <img 
-                src="/images/likas-lens-logo.png" 
+                src="/images/likas-lens-logo.webp" 
                 alt="LikasLens Logo" 
                 className="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-500" 
               />
@@ -186,15 +190,13 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 className="font-semibold text-[13px] transition-colors duration-700"
                 style={{ color: ghostMode ? "#2EE6C8" : "#14532d" }}
               >
-                {ghostMode ? "Ghost Mode (Deep Sea)" : "Civic Mode (Mountain)"}
+                {ghostMode ? t("ghostTitle") : t("civicTitle")}
               </p>
               <p 
                 className="mt-1.5 leading-relaxed text-xs transition-colors duration-700"
                 style={{ color: ghostMode ? "rgba(255,255,255,0.75)" : "rgba(27,67,50,0.85)" }}
               >
-                {ghostMode 
-                  ? "Submerged deep-data surveillance, operating beneath the surface to uncover hidden anomalies securely."
-                  : "Surface-level visibility, representing transparent civic participation and community awareness."}
+                {ghostMode ? t("ghostDesc") : t("civicDesc")}
               </p>
             </div>
 
@@ -223,12 +225,12 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 className="font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-1 transition-colors duration-700"
                 style={{ color: ghostMode ? "rgba(46,230,200,0.6)" : "rgba(27,67,50,0.5)" }}
               >
-                Platform
+                {t("platform")}
               </h3>
               {[
-                { href: "/#architecture", label: "Features" },
-                { href: "/public-record", label: "Public Records" },
-                { href: "/changelog", label: "Changelog" },
+                { href: "/#architecture", label: t("features") },
+                { href: "/public-record", label: t("publicRecords") },
+                { href: "/changelog", label: t("changelog") },
               ].map(link => (
                 <Link 
                   key={link.href}
@@ -244,7 +246,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 className="text-sm font-medium hover:text-accent hover:translate-x-1 transition-all w-fit flex flex-wrap items-center gap-2"
                 style={{ color: ghostMode ? "#ffffff" : "#1B4332" }}
               >
-                Citizen Portal 
+                {t("citizenPortal")} 
                 <span className="px-1.5 py-0.5 rounded bg-accent/20 text-accent-bright text-[9px] font-bold uppercase tracking-wider">Beta</span>
               </Link>
             </div>
@@ -254,12 +256,12 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
                 className="font-mono text-[10px] uppercase tracking-[0.2em] font-bold mb-1 transition-colors duration-700"
                 style={{ color: ghostMode ? "rgba(46,230,200,0.6)" : "rgba(27,67,50,0.5)" }}
               >
-                Legal
+                {t("legal")}
               </h3>
               {[
-                { href: "/privacy", label: "Privacy Policy" },
-                { href: "/terms", label: "Terms of Service" },
-                { href: "/contact", label: "Contact Us" },
+                { href: "/privacy", label: t("privacyPolicy") },
+                { href: "/terms", label: t("termsOfService") },
+                { href: "/contact", label: t("contactUs") },
               ].map(link => (
                 <Link 
                   key={link.href}
@@ -300,7 +302,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
             className="font-mono text-[10px] sm:text-xs tracking-wider transition-colors duration-700"
             style={{ color: ghostMode ? "rgba(255,255,255,0.5)" : "rgba(27,67,50,0.5)" }}
           >
-            &copy; {new Date().getFullYear()} LIKASLENS. ALL RIGHTS RESERVED.
+            &copy; {new Date().getFullYear()} LIKASLENS. {t("allRightsReserved")}
           </p>
           <div 
             className="flex items-center gap-2.5 px-3 py-1.5 rounded-full border backdrop-blur-sm transition-all duration-700"

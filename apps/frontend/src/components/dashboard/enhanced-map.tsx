@@ -1,90 +1,49 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Map, { useMap, useControl } from "react-map-gl/maplibre";
-import type { Map as MaplibreMap } from "maplibre-gl";
+import Map, { useControl, type MapRef } from "react-map-gl/maplibre";
 import { MapboxOverlay } from "@deck.gl/mapbox";
-import { HexagonLayer } from "@deck.gl/aggregation-layers";
 import { HeatmapLayer } from "@deck.gl/aggregation-layers";
 import { ScatterplotLayer } from "@deck.gl/layers";
 import {
   Layers,
-  Grid3X3,
-  Filter,
+  MapPin,
   Loader2,
   AlertTriangle,
   Flame,
-  Satellite,
-  Play,
-  Pause,
   ChevronDown,
   Check,
+  RefreshCw,
+  X,
+  ExternalLink,
+  Clock,
+  Navigation,
+  Shield,
 } from "lucide-react";
+import Link from "next/link";
 import { laravelGet } from "@likaslens/shared";
 
 // ── Constants ────────────────────────────────────────────────────────────
 
-const FAST_LIGHT_MAP = {
-  version: 8,
-  sources: {
-    "carto-light": {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-      ],
-      tileSize: 256,
-      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
-    }
-  },
-  layers: [
-    {
-      id: "carto-light-layer",
-      type: "raster",
-      source: "carto-light",
-      minzoom: 0,
-      maxzoom: 20
-    }
-  ]
-};
-
-const FAST_DARK_MAP = {
-  version: 8,
-  sources: {
-    "carto-dark": {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-        "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-      ],
-      tileSize: 256,
-      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
-    }
-  },
-  layers: [
-    {
-      id: "carto-dark-layer",
-      type: "raster",
-      source: "carto-dark",
-      minzoom: 0,
-      maxzoom: 20
-    }
-  ]
-};
+const VECTOR_LIGHT = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+const VECTOR_DARK  = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
 interface HeatmapPoint {
+  id?: string;
+  title?: string;
+  description?: string;
   lat: number;
   lng: number;
   weight: number;
-  type: string;
+  type?: string;
   urgency_score: number | null;
+  status?: string;
+  address?: string;
+  summary?: string;
+  created_at?: string;
 }
 
 interface Cluster {
@@ -114,15 +73,15 @@ interface ViolationType {
   name: string;
 }
 
-type ViewMode = "hexagon" | "heatmap" | "points";
+type ViewMode = "heatmap" | "points";
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
-const URGENCY_COLORS: Record<string, [number, number, number]> = {
-  critical: [220, 38, 38],
-  high: [239, 68, 68],
-  medium: [245, 158, 11],
-  low: [59, 130, 246],
+const URGENCY_HEX: Record<string, string> = {
+  critical: "#9f1239", // Deep Ruby
+  high:     "#ef4444", // Crimson
+  medium:   "#f97316", // Orange
+  low:      "#0ea5e9", // Sky Blue
 };
 
 function urgencyFromScore(score: number | null): string {
@@ -133,138 +92,30 @@ function urgencyFromScore(score: number | null): string {
   return "low";
 }
 
-// ── Satellite Tile Layer ───────────────────────────────────────────────
-
-function SatelliteLayer({
-  date,
-  visible,
-}: {
-  date: string;
-  visible: boolean;
-}) {
-  const { map: mapRef } = useMap();
-  const sourceId = "gibs-satellite";
-  const layerId = "gibs-satellite-layer";
-
-  useEffect(() => {
-    if (!mapRef) return;
-    const map = mapRef as unknown as MaplibreMap;
-
-    if (!visible) {
-      if (map.getLayer(layerId)) map.removeLayer(layerId);
-      if (map.getSource(sourceId)) map.removeSource(sourceId);
-      return;
-    }
-
-    if (!map.getSource(sourceId)) {
-      map.addSource(sourceId, {
-        type: "raster",
-        tiles: [
-          `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${date}/250m/{z}/{y}/{x}.jpg`,
-        ],
-        tileSize: 256,
-        attribution: "NASA GIBS",
-        maxzoom: 8,
-      });
-      map.addLayer(
-        {
-          id: layerId,
-          type: "raster",
-          source: sourceId,
-          paint: {
-            "raster-opacity": 0.55,
-            "raster-fade-duration": 300,
-          },
-        },
-        "waterway"
-      );
-    } else {
-      // Update tiles URL when date changes — remove & re-add source
-      map.removeLayer(layerId);
-      map.removeSource(sourceId);
-      map.addSource(sourceId, {
-        type: "raster",
-        tiles: [
-          `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${date}/250m/{z}/{y}/{x}.jpg`,
-        ],
-        tileSize: 256,
-        attribution: "NASA GIBS",
-        maxzoom: 8,
-      });
-      map.addLayer(
-        {
-          id: layerId,
-          type: "raster",
-          source: sourceId,
-          paint: {
-            "raster-opacity": 0.55,
-            "raster-fade-duration": 300,
-          },
-        },
-        "waterway"
-      );
-    }
-
-    return () => {
-      if (map.getLayer(layerId)) map.removeLayer(layerId);
-      if (map.getSource(sourceId)) map.removeSource(sourceId);
-    };
-  }, [mapRef, date, visible]);
-
-  return null;
-}
-
-// ── DeckGL Overlay ─────────────────────────────────────────────────────
+// ── DeckGL Overlay (heatmap + scatter pins via GPU) ─────────────────────
 
 function DeckGLOverlay({
   data,
   viewMode,
   isGhost,
+  onHover,
+  onClick,
 }: {
   data: HeatmapPoint[];
   viewMode: ViewMode;
   isGhost: boolean;
+  onHover: (info: { x: number; y: number; object: HeatmapPoint | null } | null) => void;
+  onClick: (point: HeatmapPoint) => void;
 }) {
   const layers = useMemo(() => {
     if (!data.length) return [];
 
     const points = data.map((p) => ({
+      ...p,
       position: [p.lng, p.lat] as [number, number],
-      weight: p.weight,
-      type: p.type,
-      urgency: urgencyFromScore(p.urgency_score),
       urgency_score: p.urgency_score ?? 1,
+      urgency: urgencyFromScore(p.urgency_score),
     }));
-
-    if (viewMode === "hexagon") {
-      return [
-        new HexagonLayer({
-          id: "hexagon",
-          data: points,
-          getPosition: (d: (typeof points)[0]) => d.position,
-          getElevationWeight: (d: (typeof points)[0]) => d.weight,
-          getColorWeight: (d: (typeof points)[0]) => d.urgency_score,
-          colorAggregation: 'MAX',
-          elevationScale: 30,
-          extruded: true,
-          radius: 2000,
-          coverage: 0.92,
-          colorRange: [
-            [147, 197, 253], // Very Low (Light Blue)
-            [59, 130, 246],  // Low (Blue)
-            [251, 191, 36],  // Medium-Low (Yellow/Amber)
-            [245, 158, 11],  // Medium (Orange/Amber)
-            [239, 68, 68],   // High (Light Red)
-            [220, 38, 38],   // Critical (Deep Red)
-          ],
-          opacity: 0.9,
-          pickable: true,
-          autoHighlight: true,
-          highlightColor: isGhost ? [255, 255, 255, 80] : [0, 0, 0, 80],
-          parameters: { depthTest: false },
-        }),
-      ];
-    }
 
     if (viewMode === "heatmap") {
       return [
@@ -272,52 +123,90 @@ function DeckGLOverlay({
           id: "heatmap",
           data: points,
           getPosition: (d: (typeof points)[0]) => d.position,
-          getWeight: (d: (typeof points)[0]) => d.urgency_score * 2, // Boost critical heat
-          radiusPixels: 55,
+          getWeight: (d: (typeof points)[0]) => (d.urgency_score ?? 1) * 2,
+          radiusPixels: 38,
           intensity: 1.2,
           threshold: 0.05,
           colorRange: [
-            [147, 197, 253], // Very Low (Light Blue)
-            [59, 130, 246],  // Low (Blue)
-            [251, 191, 36],  // Medium-Low (Yellow/Amber)
-            [245, 158, 11],  // Medium (Orange/Amber)
-            [239, 68, 68],   // High (Light Red)
-            [220, 38, 38],   // Critical (Deep Red)
+            [45, 212, 191],
+            [14, 165, 233],
+            [59, 130, 246],
+            [249, 115, 22],
+            [239, 68, 68],
+            [159, 18, 57],
           ],
-          opacity: 0.85,
+          opacity: 0.88,
+        }),
+        // Transparent picking layer over heatmap hotspots
+        new ScatterplotLayer({
+          id: "heatmap-picker",
+          data: points,
+          getPosition: (d: (typeof points)[0]) => d.position,
+          getRadius: 18000,
+          getFillColor: [0, 0, 0, 0],
+          stroked: false,
+          radiusMinPixels: 22,
+          radiusMaxPixels: 50,
+          pickable: true,
+          onHover: (info) => {
+            if (info.object) {
+              onHover({ x: info.x, y: info.y, object: info.object as HeatmapPoint });
+            } else {
+              onHover(null);
+            }
+          },
+          onClick: (info) => {
+            if (info.object) {
+              onClick(info.object as HeatmapPoint);
+            }
+          },
+          parameters: { depthTest: false },
         }),
       ];
     }
 
+    // Scatter Pins mode — GPU ScatterplotLayer with interactive picking
+    const PIN_COLORS: Record<string, [number, number, number, number]> = {
+      critical: [159, 18,  57,  240], // Deep Ruby
+      high:     [239, 68,  68,  240], // Crimson
+      medium:   [249, 115, 22,  240], // Orange
+      low:      [14,  165, 233, 240], // Sky Blue
+    };
+
     return [
       new ScatterplotLayer({
-        id: "scatter",
+        id: "scatter-pins",
         data: points,
         getPosition: (d: (typeof points)[0]) => d.position,
-        getRadius: 80,
-        getFillColor: (d: (typeof points)[0]) => {
-          const c = URGENCY_COLORS[d.urgency] ?? [59, 130, 246];
-          return [...c, 230];
-        },
+        getRadius: 5000,
+        getFillColor: (d: (typeof points)[0]) =>
+          PIN_COLORS[d.urgency] ?? [107, 114, 128, 230],
         stroked: true,
-        getLineColor: [255, 255, 255, 200],
+        getLineColor: [255, 255, 255, 230],
         lineWidthMinPixels: 2,
-        radiusMinPixels: 5,
-        radiusMaxPixels: 15,
+        radiusMinPixels: 8,
+        radiusMaxPixels: 18,
         pickable: true,
         autoHighlight: true,
-        highlightColor: isGhost ? [255, 255, 255, 100] : [0, 0, 0, 80],
+        highlightColor: isGhost ? [255, 255, 255, 120] : [255, 255, 255, 120],
+        onHover: (info) => {
+          if (info.object) {
+            onHover({ x: info.x, y: info.y, object: info.object as HeatmapPoint });
+          } else {
+            onHover(null);
+          }
+        },
+        onClick: (info) => {
+          if (info.object) {
+            onClick(info.object as HeatmapPoint);
+          }
+        },
         parameters: { depthTest: false },
       }),
     ];
-  }, [data, viewMode, isGhost]);
+  }, [data, viewMode, isGhost, onHover, onClick]);
 
-  const overlay = useControl(
-    () =>
-      new MapboxOverlay({
-        interleaved: true,
-      })
-  );
+  const overlay = useControl(() => new MapboxOverlay({ interleaved: false }));
 
   useEffect(() => {
     overlay.setProps({ layers });
@@ -339,6 +228,7 @@ export function EnhancedMap({
   showFilters = true,
   height = "70vh",
 }: EnhancedMapProps) {
+  const mapRef = useRef<MapRef>(null);
   const [data, setData] = useState<HeatmapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -346,12 +236,9 @@ export function EnhancedMap({
   const [selectedType, setSelectedType] = useState<string>("");
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [violationTypes, setViolationTypes] = useState<ViolationType[]>([]);
-  const [showSatellite, setShowSatellite] = useState(false);
-  const [satelliteDate, setSatelliteDate] = useState(() =>
-    new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0]
-  );
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isGhost, setIsGhost] = useState(false);
+  const [hoverInfo, setHoverInfo] = useState<{ x: number; y: number; object: HeatmapPoint | null } | null>(null);
+  const [selectedPoint, setSelectedPoint] = useState<HeatmapPoint | null>(null);
 
   useEffect(() => {
     const theme = document.documentElement.getAttribute("data-theme");
@@ -373,19 +260,24 @@ export function EnhancedMap({
       .catch(() => {});
   }, []);
 
-  // Fetch heatmap data
-  const fetchData = useCallback(async () => {
+  // Fetch heatmap data — pass force=true to bypass the 5-min cache
+  const fetchData = useCallback(async (force = false) => {
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams();
       params.set("days", String(days));
       if (selectedType) params.set("type", selectedType);
+      if (force) params.set("_bust", "1"); // cache-bust on manual refresh
       const res = await laravelGet<{ success: boolean; data: HeatmapData }>(
         `/reports/heatmap?${params.toString()}`
       );
-      if (res.success) {
-        setData(res.data);
+      if (res.success && res.data) {
+        setData({
+          points: Array.isArray(res.data.points) ? res.data.points : [],
+          clusters: Array.isArray(res.data.clusters) ? res.data.clusters : [],
+          hot_zones: Array.isArray(res.data.hot_zones) ? res.data.hot_zones : [],
+        });
       } else {
         setError("Failed to load map data");
       }
@@ -400,22 +292,19 @@ export function EnhancedMap({
     fetchData();
   }, [fetchData]);
 
-  // Time-lapse playback
-  useEffect(() => {
-    if (!isPlaying) return;
-    const interval = setInterval(() => {
-      setSatelliteDate((prev) => {
-        const d = new Date(prev);
-        d.setDate(d.getDate() + 7);
-        if (d > new Date()) {
-          setIsPlaying(false);
-          return new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0];
-        }
-        return d.toISOString().split("T")[0];
+  // Handle click on point or cluster for smooth flyTo zoom
+  const handlePointClick = useCallback((point: HeatmapPoint) => {
+    setSelectedPoint(point);
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [point.lng, point.lat],
+        zoom: 11,
+        duration: 900,
+        essential: true,
       });
-    }, 800);
-    return () => clearInterval(interval);
-  }, [isPlaying]);
+    }
+  }, []);
+
 
   return (
     <div className="space-y-4">
@@ -426,8 +315,7 @@ export function EnhancedMap({
           <div className="flex rounded-xl bg-ink/[0.04] p-1">
             {[
               { mode: "heatmap" as const, icon: Layers, label: "Heatmap" },
-              { mode: "hexagon" as const, icon: Grid3X3, label: "Hexagon" },
-              { mode: "points" as const, icon: Filter, label: "Points" },
+              { mode: "points" as const, icon: MapPin, label: "Scatter Pins" },
             ].map(({ mode, icon: Icon, label }) => (
               <button
                 key={mode}
@@ -505,48 +393,12 @@ export function EnhancedMap({
             </AnimatePresence>
           </div>
 
-          {/* Satellite toggle */}
+          {/* Refresh — busts the server cache and fetches live data */}
           <button
-            onClick={() => setShowSatellite(!showSatellite)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
-              showSatellite
-                ? "bg-accent/10 text-accent border border-accent/30"
-                : "text-ink/50 hover:text-ink/80 border border-ink/10"
-            }`}
-          >
-            <Satellite className="w-3.5 h-3.5" />
-            Satellite
-          </button>
-
-          {/* Time-lapse controls */}
-          {showSatellite && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="w-7 h-7 rounded-lg bg-ink/[0.04] border border-ink/10 flex items-center justify-center text-ink/60 hover:text-ink transition-colors"
-              >
-                {isPlaying ? (
-                  <Pause className="w-3 h-3" />
-                ) : (
-                  <Play className="w-3 h-3" />
-                )}
-              </button>
-              <input
-                type="date"
-                value={satelliteDate}
-                onChange={(e) => setSatelliteDate(e.target.value)}
-                min="2020-01-01"
-                max={new Date().toISOString().split("T")[0]}
-                className="bg-panel border border-ink/10 rounded-xl px-2 py-1 text-xs text-ink font-mono focus:outline-none focus:ring-2 focus:ring-accent/30"
-              />
-            </div>
-          )}
-
-          {/* Refresh */}
-          <button
-            onClick={fetchData}
+            onClick={() => fetchData(true)}
             disabled={loading}
             className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium text-ink/60 hover:text-ink hover:bg-ink/[0.04] transition-colors disabled:opacity-50"
+            title="Force refresh — fetches latest data from database"
           >
             {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
             Refresh
@@ -598,7 +450,7 @@ export function EnhancedMap({
               </div>
               <p className="text-sm text-ink/70">{error}</p>
               <button
-                onClick={fetchData}
+                onClick={() => fetchData()}
                 className="text-sm text-accent font-medium hover:underline"
               >
                 Try again
@@ -609,23 +461,140 @@ export function EnhancedMap({
 
         <div style={{ height, width: "100%" }}>
           <Map
+            ref={mapRef}
             initialViewState={{
               latitude: 10.5,
               longitude: 122.96,
               zoom: 6,
             }}
             style={{ width: "100%", height: "100%" }}
-            mapStyle={isGhost ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json" : "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json"}
+            mapStyle={isGhost ? VECTOR_DARK : VECTOR_LIGHT}
             attributionControl={false}
+            reuseMaps
           >
-            {/* NASA GIBS Satellite overlay */}
-            <SatelliteLayer date={satelliteDate} visible={showSatellite} />
-
-            {/* deck.gl data overlay */}
+            {/* deck.gl overlay — always mounted for instant GPU rendering in both modes */}
             {data && (
-              <DeckGLOverlay data={data.points} viewMode={viewMode} isGhost={isGhost} />
+              <DeckGLOverlay
+                data={data.points}
+                viewMode={viewMode}
+                isGhost={isGhost}
+                onHover={setHoverInfo}
+                onClick={handlePointClick}
+              />
             )}
           </Map>
+
+          {/* Interactive Hover Tooltip (Offset to side of cursor so point & cursor remain visible) */}
+          {hoverInfo && hoverInfo.object && !selectedPoint && (
+            <div
+              className="pointer-events-none absolute z-30 transition-all duration-75 ease-out"
+              style={{
+                left: hoverInfo.x + 28,
+                top: Math.max(16, hoverInfo.y - 36),
+              }}
+            >
+              <div className="bg-panel/95 backdrop-blur-md border border-ink/10 rounded-xl px-3.5 py-2.5 shadow-xl text-xs flex flex-col gap-1 min-w-[180px] max-w-[250px]">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-semibold text-ink truncate">
+                    {hoverInfo.object.title || hoverInfo.object.type || "Environmental Incident"}
+                  </span>
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ background: URGENCY_HEX[urgencyFromScore(hoverInfo.object.urgency_score)] }}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-ink/60">
+                  <span className="capitalize">{urgencyFromScore(hoverInfo.object.urgency_score)} Urgency</span>
+                  {hoverInfo.object.status && (
+                    <span className="uppercase text-[10px] tracking-wider px-1.5 py-0.5 rounded bg-ink/[0.06] font-mono">
+                      {hoverInfo.object.status}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] text-accent font-medium mt-0.5 flex items-center gap-1">
+                  <span>{viewMode === "points" ? "Click to inspect incident" : "Click to zoom into hotspot"}</span>
+                  <span>→</span>
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Interactive Click Detail Card / Inspector */}
+          <AnimatePresence>
+            {selectedPoint && (
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                className="absolute bottom-4 right-4 z-40 max-w-sm w-full bg-panel/95 backdrop-blur-md border border-ink/10 shadow-2xl rounded-2xl p-4 text-ink flex flex-col gap-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-3 h-3 rounded-full shrink-0"
+                      style={{ background: URGENCY_HEX[urgencyFromScore(selectedPoint.urgency_score)] }}
+                    />
+                    <span className="text-xs font-bold uppercase tracking-wider text-ink/70">
+                      {urgencyFromScore(selectedPoint.urgency_score)} Severity
+                    </span>
+                    {selectedPoint.status && (
+                      <span className="uppercase text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full bg-ink/[0.06] text-ink/70">
+                        {selectedPoint.status}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setSelectedPoint(null)}
+                    className="w-6 h-6 rounded-lg bg-ink/[0.04] hover:bg-ink/10 flex items-center justify-center text-ink/60 transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-bold text-ink leading-tight">
+                    {selectedPoint.title || selectedPoint.type || "Environmental Incident"}
+                  </h4>
+                  {selectedPoint.description && (
+                    <p className="text-xs text-ink/70 mt-1 line-clamp-3 leading-relaxed">
+                      {selectedPoint.description}
+                    </p>
+                  )}
+                </div>
+
+                {selectedPoint.summary && (
+                  <div className="bg-accent/[0.06] border border-accent/15 rounded-xl p-2.5 text-xs text-ink/80 flex items-start gap-2">
+                    <Shield className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                    <span className="text-[11px] leading-relaxed line-clamp-2">
+                      {selectedPoint.summary}
+                    </span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2 text-[11px] bg-ink/[0.03] rounded-xl p-2.5">
+                  <div className="flex items-center gap-1.5 text-ink/70 truncate">
+                    <Navigation className="w-3 h-3 text-ink/40 shrink-0" />
+                    <span className="truncate">{selectedPoint.lat.toFixed(4)}, {selectedPoint.lng.toFixed(4)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-ink/70 truncate">
+                    <Clock className="w-3 h-3 text-ink/40 shrink-0" />
+                    <span className="truncate">{selectedPoint.created_at ? new Date(selectedPoint.created_at).toLocaleDateString() : "Recent"}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <Link
+                    href={selectedPoint.id ? `/public-record` : "/public-record"}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-accent text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    <span>View Public Record</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* No data overlay */}
@@ -643,18 +612,18 @@ export function EnhancedMap({
       </div>
 
       {/* Stats summary */}
-      {data && data.points.length > 0 && (
+      {data && Array.isArray(data.points) && data.points.length > 0 && (
         <div className="flex flex-wrap gap-6 text-xs text-ink/60">
           <span>
             <strong className="text-ink">{data.points.length}</strong> total reports
           </span>
           <span>
-            <strong className="text-ink">{data.clusters.length}</strong> cluster
-            {data.clusters.length !== 1 ? "s" : ""}
+            <strong className="text-ink">{data.clusters?.length ?? 0}</strong> cluster
+            {(data.clusters?.length ?? 0) !== 1 ? "s" : ""}
           </span>
           <span>
-            <strong className="text-ink">{data.hot_zones.length}</strong> hot zone
-            {data.hot_zones.length !== 1 ? "s" : ""}
+            <strong className="text-ink">{data.hot_zones?.length ?? 0}</strong> hot zone
+            {(data.hot_zones?.length ?? 0) !== 1 ? "s" : ""}
           </span>
         </div>
       )}

@@ -6,8 +6,6 @@ import { PullToRefresh } from "./pull-to-refresh";
 import { cn } from "../utils";
 import { Leaf, Bell, Fingerprint, Trophy, ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { LiksiChat } from "./chat/liksi-chat";
-
 import { locales } from "../i18n/config";
 import { usePathname } from "next/navigation";
 
@@ -64,7 +62,7 @@ export function MobileLayout({
           </Link>
         ) : isDashboard ? (
           <Link href={`${localePrefix}/dashboard` || "/"} className="flex items-center gap-2 text-ink">
-            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
+            <img src="/images/likas-lens-logo.webp" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
             <span className="flex items-center mt-0.5" style={{ fontFamily: "var(--font-heading)", letterSpacing: "0.16em", fontSize: 17 }}>
               <span style={{ fontWeight: 500 }}>LIK</span>
               <span style={{ fontWeight: 700, color: "var(--accent)", margin: "0 1px" }}>Λ</span>
@@ -133,7 +131,7 @@ export function MobileLayout({
         </header>
 
       {/* Main Content */}
-      <main className={cn("flex-1 pb-20", onPullToRefresh ? "overflow-hidden" : "overflow-y-auto")}>
+      <main className={cn("flex-1 pb-28", onPullToRefresh ? "overflow-hidden" : "overflow-y-auto")}>
         {onPullToRefresh ? (
           <PullToRefresh onRefresh={onPullToRefresh} className="h-full">
             {children}
@@ -142,9 +140,6 @@ export function MobileLayout({
           children
         )}
       </main>
-
-      {/* Liksi Chatbot */}
-      <LiksiChat className="bottom-[90px] right-4" locale={hasLocale ? pathParts[1] : "en"} />
 
       {/* Bottom Navigation */}
       <BottomNav items={bottomNavItems} />

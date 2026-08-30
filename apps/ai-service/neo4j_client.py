@@ -8,11 +8,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 import re
 from typing import Any
 
 from neo4j import AsyncGraphDatabase, AsyncDriver
+
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -36,9 +37,9 @@ def _sanitize_id(value: str, field_name: str = "id") -> str:
 def get_connection_params() -> dict[str, str]:
     """Read Neo4j connection parameters from environment."""
     return {
-        "uri": os.getenv("NEO4J_URI", ""),
-        "user": os.getenv("NEO4J_USER", ""),
-        "password": os.getenv("NEO4J_PASSWORD", ""),
+        "uri": settings.neo4j_uri,
+        "user": settings.neo4j_user,
+        "password": settings.neo4j_password,
     }
 
 
@@ -266,11 +267,16 @@ async def route_incident(
             "RETURN c, i",
             {"citizen_id": safe_citizen, "incident_id": safe_incident},
         ),
-        # Create CLASSIFIED_AS edge
+        # Create CLASSIFIED_AS edge, then look up the enforcing agency for
+        # this violation via ViolationType <- HazardType -[:VIOLATES]-> Law
+        # -[:ENFORCED_BY]-> Agency (no separate query needed — reuses the
+        # already-matched ViolationType node).
         (
             "MATCH (i:Incident {id: $incident_id}), (v:ViolationType {code: $violation_code}) "
             "MERGE (i)-[:CLASSIFIED_AS {createdAt: datetime(), source: 'ai', confidence: 0.85}]->(v) "
-            "RETURN i, v",
+            "WITH i, v "
+            "OPTIONAL MATCH (v)<-[:CLASSIFIED_AS]-(:HazardType)-[:VIOLATES]->(:Law)-[:ENFORCED_BY]->(a:Agency) "
+            "RETURN i, v, collect(DISTINCT a.name) AS agencies",
             {"incident_id": safe_incident, "violation_code": safe_violation},
         ),
     ]
@@ -285,11 +291,17 @@ async def route_incident(
             {"incident_id": safe_incident, "ngo_id": safe_ngo},
         ))
 
+    CLASSIFIED_AS_QUERY_INDEX = 3  # Citizen, Incident, REPORTED, CLASSIFIED_AS
+
     results = []
-    for query, params in queries:
+    recommended_office = None
+    for index, (query, params) in enumerate(queries):
         try:
             result = await execute_query(query, params)
             results.append(result)
+            if index == CLASSIFIED_AS_QUERY_INDEX and result:
+                agencies = result[0].get("agencies") or []
+                recommended_office = next((a for a in agencies if a), None)
         except Exception as exc:
             logger.error("Routing query failed: %s", exc)
             return {
@@ -304,6 +316,7 @@ async def route_incident(
         "results": results,
         "routing_method": routing_method,
         "learned_lgu": learned_lgu,
+        "recommended_office": recommended_office,
     }
 
 

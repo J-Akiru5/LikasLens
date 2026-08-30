@@ -10,14 +10,16 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 from typing import Any
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
 
+from config import settings
 from neo4j_client import is_configured
+from opencode_client import OpenCodeError, generate_via_opencode
 
 logger = logging.getLogger(__name__)
 
@@ -97,22 +99,21 @@ async def retrieve_legal_context(
 
 
 # ---------------------------------------------------------------------------
-# Neural layer -- Gemini 2.5 Flash
+# Neural layer -- Gemini 3.6 Flash
 # ---------------------------------------------------------------------------
 
-_gemini_model: genai.GenerativeModel | None = None
+_client: genai.Client | None = None
 
 
-def _get_gemini_model() -> genai.GenerativeModel:
-    """Lazy-initialise the Gemini model (thread-safe for FastAPI workers)."""
-    global _gemini_model
-    if _gemini_model is None:
-        api_key = os.getenv("GOOGLE_API_KEY")
+def _get_client() -> genai.Client:
+    """Lazy-initialise the Gemini client (thread-safe for FastAPI workers)."""
+    global _client
+    if _client is None:
+        api_key = settings.google_api_key
         if not api_key:
             raise RuntimeError("GOOGLE_API_KEY environment variable not set")
-        genai.configure(api_key=api_key)
-        _gemini_model = genai.GenerativeModel("gemini-2.5-flash")
-    return _gemini_model
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 
 async def generate_grounded_report(
@@ -122,7 +123,7 @@ async def generate_grounded_report(
     agencies: list[str],
     retrieval_method: str,
 ) -> str:
-    """Generate a formal, grounded incident report via Gemini 2.5 Flash.
+    """Generate a formal, grounded incident report via Gemini 3.6 Flash.
 
     The prompt strictly governs Gemini to only use the provided legal context.
     If no laws were found, returns a manual review escalation message.
@@ -135,7 +136,7 @@ async def generate_grounded_report(
             f"Escalated to regional supervisor for manual review."
         )
 
-    model = _get_gemini_model()
+    client = _get_client()
 
     laws_str = "\n".join(f"- {law}" for law in laws)
     agencies_str = ", ".join(agencies) if agencies else "no enforcing agencies mapped"
@@ -160,11 +161,35 @@ CRITICAL INSTRUCTIONS:
 4. Write exactly 2 sentences: one describing the violation and applicable law, one naming the agency to route to.
 5. Do NOT add disclaimers, caveats, or information not present in the retrieved context."""
 
+    # ------------------------------------------------------------------
+    # OpenCode Zen (MiMo-V2.5 Free) — default provider for this step.
+    # Free-tier caveat: OpenCode may use request data to improve the model
+    # during the free period. This step only sends a hazard category string
+    # and a coarse place name — no photos, coordinates, or reporter identity.
+    # ------------------------------------------------------------------
+    if settings.opencode_api_key:
+        try:
+            result = await generate_via_opencode(prompt, api_key=settings.opencode_api_key)
+            logger.info(
+                "Hazard summary served by OpenCode Zen for hazard_id=%s",
+                hazard_id,
+            )
+            return result
+        except OpenCodeError as exc:
+            logger.warning(
+                "OpenCode Zen failed for hazard_id=%s (%s), falling back to Gemini",
+                hazard_id,
+                exc,
+            )
+
     last_exc = None
     for attempt in range(3):
         try:
             response = await asyncio.wait_for(
-                asyncio.to_thread(model.generate_content, prompt),
+                client.aio.models.generate_content(
+                    model="gemini-3.6-flash",
+                    contents=prompt,
+                ),
                 timeout=GEMINI_TIMEOUT_SECONDS,
             )
             text = response.text
@@ -173,6 +198,10 @@ CRITICAL INSTRUCTIONS:
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Gemini returned an empty response",
                 )
+            logger.info(
+                "Hazard summary served by Gemini for hazard_id=%s",
+                hazard_id,
+            )
             return text.strip()
         except asyncio.TimeoutError:
             last_exc = None

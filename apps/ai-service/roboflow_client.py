@@ -8,11 +8,12 @@ Calls the Roboflow Serverless API at https://serverless.roboflow.com/{model_id}
 from __future__ import annotations
 
 import logging
-import os
 import time
 from typing import Any
 
 import requests
+
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +25,9 @@ _BACKOFF_BASE = 1.0  # seconds
 
 
 def _get_config() -> tuple[str, str]:
-    """Return (api_key, model_id) from env vars. Raises if not configured."""
-    api_key = os.getenv("ROBOFLOW_API_KEY", "").strip()
-    model_id = os.getenv("ROBOFLOW_MODEL_ID", "").strip()
+    """Return (api_key, model_id) from config. Raises if not configured."""
+    api_key = settings.roboflow_api_key
+    model_id = settings.roboflow_model_id
     if not api_key:
         raise ValueError("ROBOFLOW_API_KEY is not set in environment")
     if not model_id:
@@ -36,9 +37,7 @@ def _get_config() -> tuple[str, str]:
 
 def is_configured() -> bool:
     """Return True if both ROBOFLOW_API_KEY and ROBOFLOW_MODEL_ID are set."""
-    return bool(os.getenv("ROBOFLOW_API_KEY", "").strip()) and bool(
-        os.getenv("ROBOFLOW_MODEL_ID", "").strip()
-    )
+    return settings.roboflow_configured
 
 
 def health_check() -> dict[str, Any]:

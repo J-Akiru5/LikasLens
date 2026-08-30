@@ -12,7 +12,7 @@ const intlMiddleware = createMiddleware({
   localeDetection: true,
 });
 
-export default async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if this is a public route (uses exact path matching to avoid false positives)
@@ -114,6 +114,8 @@ export default async function middleware(request: NextRequest) {
 
   return supabaseResponse;
 }
+
+export default proxy;
 
 export const config = {
   matcher: ["/(en|fil|vi|id|ms|ta|th|km|my|lo)/:path*", "/((?!api|auth|_next|_vercel|.*\\..*).*)"],

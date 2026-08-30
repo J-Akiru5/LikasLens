@@ -116,7 +116,7 @@ export function AppHeader({
           </h1>
         ) : showBranding ? (
           <Link href="/" className="flex items-center gap-2 text-ink lg:hidden">
-            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
+            <img src="/images/likas-lens-logo.webp" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
             <span className="font-heading tracking-[0.2em] text-lg flex items-center mt-0.5">
               <span className="font-medium">LIK</span>
               <span className="font-semibold mx-[1px]">Λ</span>
@@ -153,17 +153,17 @@ export function AppHeader({
                 aria-label={isGhostMode ? "Switch to Civic mode" : "Switch to Ghost mode"}
                 aria-pressed={isGhostMode}
                 className={cn(
-                  "relative flex items-center h-8 w-[88px] rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
+                  "relative flex items-center h-8 min-w-[94px] max-w-[120px] rounded-full transition-all duration-300 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2",
                   isGhostMode
-                    ? "bg-secondary/10 border border-secondary/20 shadow-inner"
+                    ? "bg-secondary/15 border border-secondary/30 shadow-inner"
                     : "bg-ink/5 border border-ink/10 hover:bg-ink/10 shadow-inner"
                 )}
                 title="Toggle Ghost Mode"
               >
                 <div
                   className={cn(
-                    "absolute top-1 left-1 w-6 h-6 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 flex items-center justify-center z-10",
-                    isGhostMode ? "bg-secondary translate-x-14" : "bg-page translate-x-0"
+                    "absolute top-1 w-6 h-6 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 flex items-center justify-center z-10",
+                    isGhostMode ? "right-1 bg-secondary" : "left-1 bg-page"
                   )}
                 >
                   {isGhostMode ? (
@@ -173,13 +173,16 @@ export function AppHeader({
                   )}
                 </div>
                 
-                <div className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none text-[10px] font-mono font-bold tracking-widest uppercase">
-                  <span className={cn("transition-opacity duration-300", isGhostMode ? "opacity-100 text-ink" : "opacity-0")}>
-                    Ghost
-                  </span>
-                  <span className={cn("transition-opacity duration-300", isGhostMode ? "opacity-0" : "opacity-100 text-ink/50")}>
-                    Civic
-                  </span>
+                <div className="w-full flex items-center pointer-events-none text-[10px] font-mono font-bold tracking-wider uppercase">
+                  {isGhostMode ? (
+                    <span className="pl-3 pr-8 text-[#2ee6c8] truncate">
+                      Ghost
+                    </span>
+                  ) : (
+                    <span className="pl-8 pr-3 text-right w-full text-ink/70 truncate">
+                      Civic
+                    </span>
+                  )}
                 </div>
               </button>
             )}

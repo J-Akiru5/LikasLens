@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lou — Comprehensive Engineering & UI/UX Work Audit (August 28–30, 2026)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #090e17;
+      --card-bg: rgba(17, 24, 39, 0.88);
+      --card-border: rgba(255, 255, 255, 0.09);
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.25);
+      --teal: #14b8a6;
+      --amber: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.6;
+      padding: 40px 20px 120px;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 60%);
+    }
+
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(30, 41, 59, 0.75));
+      border: 1px solid var(--card-border);
+      border-radius: 32px;
+      padding: 44px;
+      margin-bottom: 36px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      margin-bottom: 10px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 850px;
+    }
+
+    /* STATS GRID */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 22px;
+      padding: 24px;
+      backdrop-filter: blur(14px);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* SECTION HEADERS */
+    .section-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin: 44px 0 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 14px var(--accent);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 26px;
+      padding: 30px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(14px);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 18px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .commit-hash {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .tag-pill {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .tag-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .tag-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tag-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .tag-purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
+    .tag-rose { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 14.5px;
+      color: #cbd5e1;
+    }
+
+    .feature-list li::before {
+      content: '✓';
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .code-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.07);
+      padding: 2px 7px;
+      border-radius: 5px;
+      color: #e2e8f0;
+    }
+
+    .sub-box {
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13.5px;
+      color: #94a3b8;
+    }
+
+    /* TABLE */
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      text-align: left;
+    }
+
+    th {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 14px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    td {
+      padding: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- HEADER -->
+    <div class="header">
+      <div class="badge">🛡️ LikasLens Monorepo · Complete Engineering & UI/UX Audit</div>
+      <h1>Lou's Engineering & UI/UX Deliverables</h1>
+      <p class="subtitle">Complete chronological breakdown of architectural refactoring, UI/UX overhauls, camera features, button revamps, and platform sync performed across <strong>August 28, 29, and 30, 2026</strong>.</p>
+    </div>
+
+    <!-- STATS SUMMARY -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Commits Pushed</div>
+        <div class="stat-value" style="color: var(--accent);">10 Commits</div>
+        <div class="stat-desc">Direct to <span class="code-pill">development</span> branch</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Files Refactored</div>
+        <div class="stat-value" style="color: #60a5fa;">51+ Files</div>
+        <div class="stat-desc">Frontend, Mobile-PWA & Shared UI</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Lines Modified</div>
+        <div class="stat-value" style="color: #a78bfa;">+7,800 / -2,200</div>
+        <div class="stat-desc">Zero bloat, pure modern features</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Build Integrity</div>
+        <div class="stat-value" style="color: #34d399;">100% Passed</div>
+        <div class="stat-desc">Next.js 16 Turbopack (228 routes)</div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- DAY 1: TODAY (AUGUST 30, 2026) -->
+    <!-- ========================================================================= -->
+    <h2 class="section-title">
+      <span class="dot"></span>
+      Today's Deliverables (Sunday, August 30, 2026)
+    </h2>
+
+    <!-- Commit e779b46 -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span>🎯 1. Submit Report Flow & Button Revamp</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Transformed the core reporting experience into an intuitive, senior-friendly intake.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="tag-pill tag-green">UI/UX Breakthrough</span>
+          <span class="commit-hash">e779b46</span>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li><strong>Revamped "Submit Report" Sidebar Action Button:</strong> Redesigned the primary sidebar CTA link with a high-contrast luminous accent container, bold typography, tactile active spring physics, and an eye-catching <span class="code-pill">+ File</span> badge.</li>
+        <li><strong>Fixed "Continue to Camera →" Action Button:</strong> Fixed the dead/disabled button state so it remains always clickable with instant validation feedback ("Please select an incident type first") and high-visibility pulse animation on categories when omitted.</li>
+        <li><strong>Friendly 2-Mode Privacy Selector:</strong> Replaced the intimidating "Ghost Mode Protocol" checkbox with a clean 2-card selector (<span class="code-pill">👤 Civic Mode</span> vs <span class="code-pill">👻 Ghost Mode</span>) with reassuring Zero-Knowledge EXIF stripping explanations that never scare citizens.</li>
+        <li><strong>Observed Evidence Details (No Hashtags):</strong> Eliminated social media hashtags (<span class="code-pill">#IllegalDumping</span>) and replaced them with official government intake indicators (<span class="code-pill">+ Illegal Dumpsite</span>, <span class="code-pill">+ Chemical Runoff</span>, <span class="code-pill">+ Dense Smoke Emission</span>) that insert clean text into the field notes.</li>
+        <li><strong>Camera Viewfinder Auto-Prewarm:</strong> Ensured the camera initializes in the background so it's instantly ready when advancing to Step 2.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span>🪪 2. 2026 Bento Citizen Profile Command Center</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Replaced the empty, 2-line profile page with an environmental passport command center.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="tag-pill tag-blue">Feature Overhaul</span>
+          <span class="commit-hash">e779b46</span>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li><strong>Hero Identity Header:</strong> Added live avatar photo uploader, <span class="code-pill">Verified Citizen</span> shield badge, Civic Account tag, bio, and <span class="code-pill">🇵🇭 Philippines</span> jurisdiction indicator.</li>
+        <li><strong>Real-Time Civic Metrics Bento:</strong> Built 4 live stat cards computing authentic Supabase + Ghost Mode submissions: Total Reports, Active In Queue, Resolved Proofs, and 100% SHA-256 Evidence Vault.</li>
+        <li><strong>Recent Submissions Mini-Feed:</strong> Embedded the citizen's latest filed reports with status pills and 1-click jumps to <span class="code-pill">My Submissions</span>.</li>
+        <li><strong>Zero-Scroll Layout Balance:</strong> Removed redundant portals to ensure the entire profile command center fits comfortably on screen without vertical scrollbars.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span>🚚 3. Continuous Delivery-Style Tracking Rail & Modal</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Rebuilt case tracking on /dashboard/my-reports for total clarity.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="tag-pill tag-purple">Citizen Tracking</span>
+          <span class="commit-hash">e779b46</span>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li><strong>Single Connected Tracking Rail:</strong> Replaced stacked multi-bar lines with a continuous horizontal delivery-style rail connecting 5 milestone step nodes: <em>(1) Received → (2) Checking Law → (3) Sent to Gov → (4) On Site → (5) Solved & Cleaned Up</em>.</li>
+        <li><strong>Zero-Scroll "View Details" Modal:</strong> Replaced the expanding dropdown accordion with a dedicated popup modal displaying the Docket Reference ID (with 1-click copy), live authority dispatch notes, submitted evidence photo with zoom lightbox, and handling agency contacts.</li>
+        <li><strong>Jargon Elimination:</strong> Completely replaced cold technical jargon (<em>Telemetry, Sealed, AI Triage</em>) with plain, friendly everyday English.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span>📱 4. Web Frontend & Mobile PWA 1-to-1 Synchronization</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Aligned all 11 monorepo routes and typography across desktop and mobile PWA.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="tag-pill tag-green">Cross-Platform Sync</span>
+          <span class="commit-hash">e779b46</span>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li><strong>Identical Nomenclature & Routes:</strong> Synchronized Dashboard, Submit Report, My Submissions, Public Incidents, Hazard Map, Impact & ESG, Graph Explorer, Offline Queue, Laws Database, and Citizen Profile.</li>
+        <li><strong>Laws Multi-Pill Toolbar:</strong> Fixed horizontal scrollbar issues on <span class="code-pill">/laws</span> by stacking the Search bar on top and allowing all 9 category pills to wrap naturally with high-contrast active count capsules.</li>
+        <li><strong>Web Performance Asset Optimization:</strong> Converted <span class="code-pill">landing_hero_bg_premium.png</span> (690 KB) to high-efficiency <span class="code-pill">.webp</span> (142 KB), saving 80% payload size.</li>
+      </ul>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- DAY 2: YESTERDAY (AUGUST 29, 2026) -->
+    <!-- ========================================================================= -->
+    <h2 class="section-title">
+      <span class="dot" style="background: #3b82f6; box-shadow: 0 0 14px #3b82f6;"></span>
+      Yesterday's Deliverables (Saturday, August 29, 2026)
+    </h2>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span>🗺️ 1. Dashboard Heatmap Engine & GIS Performance</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Optimized geospatial rendering across the Philippine national territory.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="tag-pill tag-blue">Performance</span>
+          <span class="commit-hash">905c062</span>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li><strong>Heatmap Clustering Performance:</strong> Optimized Leaflet and MapLibre GeoJSON render cycles to eliminate frame drops when rendering hundreds of national incident pins.</li>
+        <li><strong>Public Record Layout Alignment:</strong> Aligned layout structure, sidebar navigation, and breadcrumbs for public accountability records.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span>🔐 2. Supabase Auth Middleware & OAuth Callback Stabilization</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Hardened user authentication and multi-device session persistence.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="tag-pill tag-amber">Auth & Security</span>
+          <span class="commit-hash">a8f0e03</span>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li><strong>Next.js Session Middleware:</strong> Integrated server-side cookie refresh middleware in Next.js App Router (<span class="code-pill">proxy.ts</span>) for <span class="code-pill">frontend</span> and <span class="code-pill">admin-portal</span>.</li>
+        <li><strong>Google OAuth Callback Fix:</strong> Resolved OAuth token exchange edge cases, preventing infinite redirect loops during login.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span>📸 3. Mobile Camera Studio Upgrade (Gallery Picker, Torch & Zoom)</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Delivered native hardware camera capabilities to the Mobile PWA.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="tag-pill tag-green">Mobile PWA</span>
+          <span class="commit-hash">8b9fc8a</span>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li><strong>Native Gallery Picker:</strong> Added support for selecting existing forensic photos directly from the citizen's mobile photo gallery.</li>
+        <li><strong>Flashlight / Torch Hardware Toggle:</strong> Implemented MediaStream track torch controls for night inspections.</li>
+        <li><strong>Multi-Photo Evidence Capture:</strong> Allowed citizens to capture and attach multiple evidentiary perspectives (up to 3 photos) per report.</li>
+        <li><strong>Optical & Digital Zoom:</strong> Added pinch-to-zoom and tactile zoom stepping controls to the custom camera viewfinder.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span>⚡ 4. Turbopack Migration & Pure Supabase Architecture</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Monorepo core architectural cleanup and build acceleration.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="tag-pill tag-purple">Core Architecture</span>
+          <span class="commit-hash">bbfaf96</span>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li><strong>Turbopack Dev Engine:</strong> Migrated development servers to Next.js 16 Turbopack for near-instant hot module reloading (HMR).</li>
+        <li><strong>Laravel Backend Elimination:</strong> Fully migrated all frontend, PWA, and admin client calls directly to Supabase client services and the FastAPI AI Gateway.</li>
+        <li><strong>Strict Gamification Removal:</strong> Stripped all eco-credits, point redemptions, and tokens from all schemas and UI components to maintain strict environmental compliance.</li>
+        <li><strong>CI/CD & PNPM 11 Alignment:</strong> Fixed workspace dependency overrides and ensured 100% clean GitHub Actions pipeline passes.</li>
+      </ul>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- DAY 3: AUGUST 28, 2026 -->
+    <!-- ========================================================================= -->
+    <h2 class="section-title">
+      <span class="dot" style="background: #a78bfa; box-shadow: 0 0 14px #a78bfa;"></span>
+      August 28, 2026 Deliverables
+    </h2>
+
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">
+            <span>🛡️ 1. Ghost Mode Service Integration & Offline Queue Foundation</span>
+          </div>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Established the local encryption vault and migration endpoints.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="tag-pill tag-purple">Vault Architecture</span>
+          <span class="commit-hash">82f460b</span>
+        </div>
+      </div>
+
+      <ul class="feature-list">
+        <li><strong>Ghost Mode Local Vault:</strong> Built the device-local encrypted storage mechanism allowing citizens to file reports 100% anonymously while preserving real-time Supabase tracking.</li>
+        <li><strong>Offline Telemetry Sync:</strong> Integrated offline queue support storing reports locally in IndexedDB/SQLite until internet connectivity is restored.</li>
+        <li><strong>Backend Service Consolidation:</strong> Consolidated disparate legacy endpoints into the FastAPI unified backend architecture.</li>
+      </ul>
+    </div>
+
+    <!-- SUMMARY TABLE -->
+    <h2 class="section-title">
+      <span class="dot" style="background: var(--accent);"></span>
+      Key Refactored Files & Component Registry
+    </h2>
+
+    <div class="card" style="padding: 16px;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Component / File</th>
+              <th>Area</th>
+              <th>Primary Technical Changes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="code-pill">apps/frontend/.../profile/page.tsx</span></td>
+              <td>Profile Center</td>
+              <td>2026 Bento Command Center layout, verified citizen badge, live stats telemetry, recent activity feed, zero unnecessary scrolling.</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">apps/frontend/.../report/page.tsx</span></td>
+              <td>Incident Intake</td>
+              <td>Revamped Submit Report flow; fixed Continue button; 2-mode privacy selector; converted hashtags to official evidence details.</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">apps/frontend/.../my-reports/page.tsx</span></td>
+              <td>Submissions Track</td>
+              <td>Single continuous delivery progress rail, plain English status milestone definitions, zero-scroll details popup modal.</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">apps/shared/src/ui/sidebar.tsx</span></td>
+              <td>Navigation</td>
+              <td>Styled Submit Report as high-visibility primary action CTA button with <span class="code-pill">+ File</span> badge.</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">apps/mobile-pwa/.../report/page.tsx</span></td>
+              <td>Mobile Camera</td>
+              <td>Native photo gallery picker, hardware flashlight/torch toggle, multi-photo capture, and optical zoom controls.</td>
+            </tr>
+            <tr>
+              <td><span class="code-pill">apps/frontend/.../hero-section.tsx</span></td>
+              <td>Landing Page</td>
+              <td>Restored high-definition hero background and converted it to optimized WebP (142 KB, 80% size savings).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

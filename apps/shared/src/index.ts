@@ -18,5 +18,20 @@ export {
   setLocaleCookie,
 } from "./i18n/language-suggestion";
 export { LanguageSuggestionPopup } from "./ui/language-suggestion-popup";
-export { laravelFetch, laravelGet, laravelPost, laravelPut, laravelDelete, laravelPatch } from "./api/client";
+export {
+  laravelFetch,
+  laravelGet,
+  laravelPost,
+  laravelPut,
+  laravelDelete,
+  laravelPatch,
+  apiGet,
+  apiPost,
+  apiPut,
+  apiDelete,
+  apiPatch,
+  submitReport,
+  triageReport,
+} from "./api/client";
+export type { ReportPayload, ReportResult, TriageResult } from "./api/client";
 export * from "./lib/offline-queue";

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lou — Mobile Liksi Chat — Task Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0D12;--bg-2:#0E1219;--bg-3:#131924;--line:#1E2733;--line-2:#2A3646;
+  --fg:#E6EDF6;--fg-2:#9FB0C4;--fg-3:#65788E;
+  --cy:#22D3EE;--vi:#8B7BFF;--ok:#34D399;--warn:#FBBF24;--bad:#F87171;
+  --mono:'JetBrains Mono',ui-monospace,monospace;--sans:'Inter',system-ui,sans-serif;
+  --pad:clamp(20px,5vw,80px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{width:100%;padding:0 var(--pad)}
+.prose{max-width:740px}.wide{max-width:1100px}
+h1,h2,h3,h4{line-height:1.2;letter-spacing:-.02em;margin:0}
+h2{font-size:clamp(22px,3.8vw,30px);margin:0 0 6px}
+h3{font-size:clamp(17px,2.4vw,20px);margin:30px 0 10px}
+h4{font-size:13px;margin:16px 0 8px;font-family:var(--mono);color:var(--cy);text-transform:uppercase;letter-spacing:.08em}
+p{margin:0 0 14px;color:var(--fg-2)}
+strong{color:var(--fg);font-weight:600}
+code{font-family:var(--mono);font-size:.85em;background:var(--bg-3);border:1px solid var(--line);padding:1px 6px;border-radius:5px;color:var(--cy);word-break:break-word}
+section{padding:44px 0;border-top:1px solid var(--line)}
+.sec-tag{font-family:var(--mono);font-size:11.5px;color:var(--vi);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px}
+
+.term{border-bottom:1px solid var(--line);background:#080A0E;padding:9px var(--pad);display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--fg-3)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.hero{background:linear-gradient(160deg,#0E1219,#0A0D12 60%);border-bottom:1px solid var(--line)}
+.hero-in{padding:44px 0 48px}
+h1{font-size:clamp(26px,5.6vw,42px)}
+.kick{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--cy);margin-bottom:14px}
+.sub{font-size:clamp(15px,2.2vw,17px);color:var(--fg-2);margin-top:14px;max-width:680px}
+
+.gp{margin-top:26px;max-width:680px}
+.gp-bar{height:12px;background:var(--bg-3);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.gp-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cy),var(--vi));transition:width .35s ease}
+.gp-meta{display:flex;justify-content:space-between;margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--fg-3);gap:12px;flex-wrap:wrap}
+.gp-meta b{color:var(--cy);font-weight:700}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:24px 0}
+.stat{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat .n{font-family:var(--mono);font-size:clamp(20px,3.2vw,26px);font-weight:700;color:var(--cy);line-height:1}
+.stat .n.v{color:var(--vi)}.stat .n.g{color:var(--ok)}.stat .n.b{color:var(--bad)}
+.stat .l{font-size:12.5px;color:var(--fg-3);margin-top:7px;line-height:1.4}
+
+.call{border-left:3px solid var(--cy);background:var(--bg-2);border-radius:0 10px 10px 0;padding:16px 20px;margin:20px 0}
+.call.w{border-color:var(--warn)}.call.b{border-color:var(--bad)}.call.g{border-color:var(--ok)}.call.v{border-color:var(--vi)}
+.call h4{margin-top:0}.call.w h4{color:var(--warn)}.call.b h4{color:var(--bad)}.call.g h4{color:var(--ok)}.call.v h4{color:var(--vi)}
+.call p:last-child{margin-bottom:0}
+
+.flow{display:flex;align-items:center;gap:0;margin:22px 0;overflow-x:auto;padding-bottom:4px}
+.flow-step{flex:1 0 130px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:14px 12px;min-width:130px}
+.flow-step .t{font-family:var(--mono);font-size:10px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.06em}
+.flow-step .n{font-weight:700;font-size:13.5px;margin-top:5px}
+.flow-step.bad{border-color:rgba(248,113,113,.5)}
+.flow-step.good{border-color:rgba(52,211,153,.5)}
+.flow-arrow{flex:none;width:28px;text-align:center;color:var(--fg-3);font-family:var(--mono)}
+@media(max-width:640px){.flow{flex-direction:column}.flow-arrow{width:auto;height:22px;transform:rotate(90deg)}}
+
+.phase{background:var(--bg-2);border:1px solid var(--line);border-radius:16px;margin:20px 0;overflow:hidden}
+.phase-h{padding:18px 20px;border-bottom:1px solid var(--line);background:var(--bg-3)}
+.phase-t{font-size:clamp(17px,2.4vw,20px);font-weight:600;margin:0;letter-spacing:-.02em}
+.phase-body{padding:18px 20px}
+.dod{background:var(--bg);border:1px dashed var(--line-2);border-radius:10px;padding:14px 16px;margin-top:14px}
+.dod .h{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ok);margin-bottom:7px}
+.dod p{margin:0;font-size:14px}
+
+ul.ck{list-style:none;padding:0;margin:14px 0 0}
+ul.ck li{border-top:1px solid var(--line)}
+ul.ck li:first-child{border-top:none}
+ul.ck label{display:flex;gap:12px;align-items:flex-start;padding:11px 2px;min-height:42px;cursor:pointer;font-size:14.5px;color:var(--fg-2)}
+ul.ck input{margin-top:4px;width:17px;height:17px;accent-color:var(--cy);flex:none;cursor:pointer}
+ul.ck input:checked + span{color:var(--fg-3);text-decoration:line-through}
+
+.grid{display:grid;gap:14px;margin:20px 0}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h4{margin-top:0}.card p{font-size:13.5px;margin-bottom:0}
+
+.tw{overflow-x:auto;margin:18px 0;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:13.5px}
+th{background:var(--bg-3);text-align:left;padding:10px 13px;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3);border-bottom:1px solid var(--line)}
+td{padding:10px 13px;border-bottom:1px solid var(--line);color:var(--fg-2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+
+footer{padding:30px 0 50px;border-top:1px solid var(--line);color:var(--fg-3);font-family:var(--mono);font-size:11.5px}
+.reset{background:none;border:1px solid var(--line-2);color:var(--fg-3);font-family:var(--mono);font-size:11px;padding:7px 13px;border-radius:6px;cursor:pointer;margin-top:16px}
+.reset:hover{border-color:var(--bad);color:var(--bad)}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="term">
+    <span class="dot" style="background:#F87171"></span><span class="dot" style="background:#FBBF24"></span><span class="dot" style="background:#34D399"></span>
+    <span style="margin-left:8px">syntaxure ~ /likaslens — lou --task=mobile-liksi-chat --branch=feature/lou/mobile-liksi-chat</span>
+  </div>
+  <div class="wrap hero-in">
+    <div class="prose">
+      <div class="kick">Lou — One Task, Scoped</div>
+      <h1>Give mobile-pwa the Liksi chat it's supposed to already have.</h1>
+      <p class="sub">Frontend and admin-portal both mount a real, API-backed Liksi. Mobile-pwa — the app citizens actually carry in the field — shows four hardcoded strings on a loop. This closes that gap. Nothing here touches what Mimo's working on.</p>
+      <div class="gp">
+        <div class="gp-bar"><div class="gp-fill" id="gfill"></div></div>
+        <div class="gp-meta">
+          <span id="gpct">0% complete</span>
+          <span id="gcount">0 / 0 steps</span>
+          <span>Est: <b>1–2 days</b> · Freeze: <b>Aug 31</b></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="tldr">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">TL;DR</div>
+  <h2>Why this, why now</h2>
+  <p>This was independently flagged <strong>CRITICAL</strong> in yesterday's codebase-vs-pitch audit: mobile-pwa's Liksi is a decorative banner, not a chatbot, and it's the one app judges are most likely to actually pick up and touch. The fix is cheap because the real work already exists elsewhere in the monorepo — this is wiring, not building.</p>
+</div>
+<div class="wide">
+<div class="stats">
+  <div class="stat"><div class="n g">2</div><div class="l">Other apps that already have this working (frontend, admin-portal)</div></div>
+  <div class="stat"><div class="n">1</div><div class="l">Component to reuse — <code>LiksiChat</code>, already built</div></div>
+  <div class="stat"><div class="n v">1</div><div class="l">Real open question — auth state in mobile-pwa (§ below)</div></div>
+  <div class="stat"><div class="n b">0</div><div class="l">Files this shares with Mimo's branch</div></div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="gap">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">01 — the actual gap</div>
+  <h2>What's there now vs. what frontend already has</h2>
+  <p>Confirmed directly in the code, not from the audit doc alone: <code>apps/mobile-pwa/src/app/[locale]/(app)/dashboard/page.tsx</code>, lines ~31–38 and ~127–181. A hardcoded <code>chatMessages</code> array rotates through four strings ("Welcome back! I'm Liksi..." etc.) inside a styled banner with the Liksi mascot gif. No input field, no API call, nothing a citizen can actually talk to.</p>
+</div>
+<div class="wide">
+<div class="flow">
+  <div class="flow-step bad"><div class="t">mobile-pwa today</div><div class="n">4 hardcoded strings, looped</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step good"><div class="t">frontend (reference)</div><div class="n">LiksiChat, real Gemini replies</div></div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step good"><div class="t">target</div><div class="n">mobile-pwa gets the same</div></div>
+</div>
+<div class="call v">
+  <h4>The reference pattern to mirror</h4>
+  <p><code>apps/frontend/src/components/layout/locale-layout-client.tsx</code> mounts it as:<br>
+  <code>&lt;LiksiChat persona="citizen" locale={locale} isAuthenticated={isAuthenticated} /&gt;</code><br>
+  The component itself lives at <code>apps/shared/src/ui/chat/liksi-chat.tsx</code> — import it from <code>@likaslens/shared</code>. Do not fork it or copy its internals into mobile-pwa.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="watch">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">02 — the one real unknown</div>
+  <h2>This isn't a one-line copy-paste, and here's exactly why</h2>
+  <p>I checked <code>apps/mobile-pwa/src/app/[locale]/(app)/layout.tsx</code> directly — it has no <code>isAuthenticated</code> or <code>locale</code> value already wired the way frontend's layout does. <code>locale</code> is easy: it's already being derived from the URL path a few lines up (<code>pathname.split("/")[1]</code>) for routing — reuse that, don't reinvent it. <code>isAuthenticated</code> is the real unknown: the layout already imports <code>createClient</code> from <code>@/lib/supabase/client</code> but never calls it. There's also an existing <code>apps/mobile-pwa/src/app/[locale]/auth</code> directory that almost certainly already knows how to check session state — look there first before writing new auth-detection logic from scratch.</p>
+</div>
+<div class="wide">
+<div class="grid g2">
+  <div class="card"><h4>Do this</h4><p>Check how <code>apps/mobile-pwa/src/app/[locale]/auth</code> determines session state today, and reuse that mechanism (or the already-imported <code>createClient</code>) to compute a real <code>isAuthenticated</code> boolean for the layout.</p></div>
+  <div class="card"><h4>Don't do this</h4><p>Don't hardcode <code>isAuthenticated={false}</code> just to ship faster — LGU officers may also use mobile-pwa, and a citizen-only chat would silently regress LGU functionality nobody would notice until a demo.</p></div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="steps">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">03 — the work</div>
+  <h2>Checklist</h2>
+  <p>One phase, one branch, no ambiguity about ownership. Check items off as you go — state is saved in this browser.</p>
+</div>
+<div class="wide">
+<div class="phase">
+  <div class="phase-h"><div class="phase-t">feature/lou/mobile-liksi-chat</div></div>
+  <div class="phase-body">
+    <ul class="ck">
+      <li><label><input type="checkbox"><span>Resolve the auth-state question in § 02 before writing the new layout code — this decides whether the fix is trivial or needs a small new hook</span></label></li>
+      <li><label><input type="checkbox"><span>Import <code>LiksiChat</code> from <code>@likaslens/shared</code> into <code>apps/mobile-pwa/src/app/[locale]/(app)/layout.tsx</code>, passing real <code>locale</code> and <code>isAuthenticated</code></span></label></li>
+      <li><label><input type="checkbox"><span>Remove the hardcoded <code>chatMessages</code> array and banner JSX from <code>dashboard/page.tsx</code> (lines ~31–38, ~127–181) — consider keeping the mascot gif as a visual entry point into the real chat rather than discarding the art, your call</span></label></li>
+      <li><label><input type="checkbox"><span>Confirm a real message sent in mobile-pwa gets a real Gemini-backed reply — not a mock, not a hardcoded string</span></label></li>
+      <li><label><input type="checkbox"><span>Test opening the chat while the PWA is offline — confirm it fails gracefully (friendly unavailable state), doesn't crash the offline queue or service worker</span></label></li>
+      <li><label><input type="checkbox"><span>Test as both an unauthenticated citizen and an authenticated LGU-officer session, if you can get a test LGU account — confirm both personas render sensibly</span></label></li>
+      <li><label><input type="checkbox"><span>Walk the rest of the dashboard page to confirm removing the banner didn't leave a layout gap or broken spacing</span></label></li>
+      <li><label><input type="checkbox"><span>Push to <code>feature/lou/mobile-liksi-chat</code> off <code>development</code> — do not merge, do not open a PR yet</span></label></li>
+    </ul>
+    <div class="dod"><div class="h">Done means</div><p>Open mobile-pwa, tap into the Liksi surface, type a real question, get a real Gemini-backed answer — the same experience frontend already gives, just on the app citizens actually carry.</p></div>
+  </div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="rules">
+<div class="wrap">
+<div class="prose">
+  <div class="sec-tag">04 — boundaries</div>
+  <h2>What not to touch, and why</h2>
+</div>
+<div class="wide">
+<div class="tw">
+<table>
+<thead><tr><th>File / area</th><th>Why it's off-limits here</th></tr></thead>
+<tbody>
+<tr><td><code>apps/shared/src/hooks/useGeminiChat.ts</code></td><td>Mimo's still-unmerged branch is actively changing this file (removing <code>system_prompt</code>, adding <code>locale</code>). Consume it as-is on <code>development</code> — once that branch merges, mobile-pwa inherits the fix automatically with zero extra work from you.</td></tr>
+<tr><td><code>apps/shared/src/ui/chat/liksi-chat.tsx</code></td><td>Same reasoning — import it, don't fork it.</td></tr>
+<tr><td><code>apps/ai-service/</code> (anything)</td><td>Not this task. Backend/auth work is Mimo's lane right now.</td></tr>
+<tr><td><code>apps/frontend/</code> (anything)</td><td>Already working — this task is mobile-pwa only.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+
+<footer>
+<div class="wrap"><div class="prose">
+  LikasLens — Lou's task tracker · scoped from the Aug 29 review session · <code>J-Akiru5/LikasLens@development</code>
+  <br><button class="reset" id="reset">reset tracker state</button>
+</div></div>
+</footer>
+
+<script>
+(function(){
+  var KEY='lou-mobile-liksi-v1';
+  var all=Array.prototype.slice.call(document.querySelectorAll('ul.ck input[type=checkbox]'));
+  all.forEach(function(b,i){b.dataset.gid='t'+i;});
+  var saved={};
+  try{saved=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){saved={};}
+  function save(){
+    var s={};
+    all.forEach(function(b){ if(b.checked) s[b.dataset.gid]=1; });
+    localStorage.setItem(KEY,JSON.stringify(s));
+  }
+  function update(){
+    var done=0;
+    all.forEach(function(b){ if(b.checked) done++; });
+    var pct=all.length?Math.round(100*done/all.length):0;
+    document.getElementById('gfill').style.width=pct+'%';
+    document.getElementById('gpct').textContent=pct+'% complete';
+    document.getElementById('gcount').textContent=done+' / '+all.length+' steps';
+  }
+  all.forEach(function(b){
+    b.checked=!!saved[b.dataset.gid];
+    b.addEventListener('change',function(){save();update();});
+  });
+  document.getElementById('reset').addEventListener('click',function(){
+    if(!confirm('Clear all checked items?'))return;
+    localStorage.removeItem(KEY);
+    all.forEach(function(b){b.checked=false;});
+    update();
+  });
+  update();
+})();
+</script>
+</body>
+</html>

@@ -128,7 +128,7 @@ interface ReportFromBackend {
   reporter?: { name?: string } | string | null;
   is_ghost?: boolean;
   hash?: string;
-  blockchain_anchor?: string | null;
+
 }
 
 function formatHumanDate(iso?: string | null): string {
@@ -204,7 +204,7 @@ function CertificateDocument({
     ? `${report.latitude.toFixed(4)}, ${report.longitude.toFixed(4)}`
     : "Not disclosed");
   const reporterName = report.is_ghost ? "Anonymous (Ghost Mode)" : getReporterName(report.reporter);
-  const anchor = report.blockchain_anchor || hash;
+  const anchor = hash;
 
   return React.createElement(
     Document,
@@ -232,7 +232,7 @@ function CertificateDocument({
       React.createElement(
         Text,
         { style: styles.intro },
-        "This document certifies that the following environmental report was recorded in the LikasLens Civic Ledger and is anchored to a hash-chained immutable record. The verification hash below is the canonical identifier for this report."
+        "This document certifies that the following environmental report was recorded in the LikasLens Civic Ledger with an immutable audit trail. The verification hash below is the canonical identifier for this report."
       ),
 
       gridRow("Report ID", report.display_id || report.id || "—"),
@@ -253,7 +253,7 @@ function CertificateDocument({
           { style: { flex: 1, paddingRight: 16 } },
           React.createElement(Text, { style: styles.footerText }, "Issued by: LikasLens Civic Ledger"),
           React.createElement(Text, { style: styles.footerText }, `Issued on: ${issuedAt}`),
-          React.createElement(Text, { style: styles.footerText }, `Blockchain anchor: ${anchor}`),
+          React.createElement(Text, { style: styles.footerText }, `Audit trail anchor: ${anchor}`),
           React.createElement(Text, { style: styles.footerText }, `Document hash: ${documentHash}`),
           React.createElement(Text, { style: { ...styles.footerText, marginTop: 6 } }, "Verify the hash at:"),
           React.createElement(Text, { style: styles.hash }, `https://likaslens.example/verify/${hash}`),

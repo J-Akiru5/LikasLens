@@ -37,6 +37,20 @@ const nextConfig: NextConfig = {
         { key: "Content-Type", value: "application/octet-stream" },
       ],
     },
+    {
+      // Cache static images with stale-while-revalidate
+      source: "/images/(.*)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+      ],
+    },
+    {
+      // Cache PWA icons immutably
+      source: "/icons/(.*)",
+      headers: [
+        { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+      ],
+    },
   ],
   webpack: (config, { isServer }) => {
     // Handle WASM files for ONNX Runtime Web
