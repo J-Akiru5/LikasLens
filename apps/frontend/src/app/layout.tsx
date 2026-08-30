@@ -13,6 +13,7 @@ const displayFont = Bricolage_Grotesque({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["600", "700", "800"],
+  display: "swap",
 });
 
 // Warm humanist sans, designed for civic / government readability. Replaces the
@@ -21,6 +22,7 @@ const bodyFont = Public_Sans({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 // Already-committed data face. Reserved STRICTLY for real data (IDs, coords,
@@ -29,6 +31,7 @@ const dataFont = JetBrains_Mono({
   variable: "--font-data",
   subsets: ["latin"],
   weight: ["400", "500", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -90,10 +93,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [
-      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+      { url: "/icons/icon-192x192.webp", sizes: "192x192", type: "image/webp" },
+      { url: "/icons/icon-512x512.webp", sizes: "512x512", type: "image/webp" },
     ],
-    apple: "/icons/apple-touch-icon.png",
+    apple: "/icons/apple-touch-icon.webp",
   },
 
   appleWebApp: {
@@ -124,7 +127,10 @@ export default async function RootLayout({
       data-theme="civic"
       suppressHydrationWarning
     >
-      <head />
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body className="min-h-full flex flex-col">
         <ThemeInitializer />
         <a

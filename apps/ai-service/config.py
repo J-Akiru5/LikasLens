@@ -13,7 +13,6 @@ Classification:
 from __future__ import annotations
 
 import logging
-import sys
 from typing import Literal
 
 from pydantic import Field, field_validator
@@ -52,9 +51,17 @@ class Settings(BaseSettings):
     )
 
     # ── Supabase Auth ─────────────────────────────────────────────────────
+    supabase_url: str = Field(
+        default="",
+        description="Supabase project URL (e.g. https://xxxx.supabase.co). Required for JWKS-based ES256 verification.",
+    )
     supabase_jwt_secret: str = Field(
         default="",
-        description="Supabase JWT secret for verifying access tokens. Required for auth.",
+        description="Supabase JWT secret for legacy HS256 verification. Optional — ES256 via JWKS is preferred.",
+    )
+    jwks_cache_ttl_seconds: int = Field(
+        default=3600,
+        description="How long to cache Supabase JWKS keys (seconds). Default 1 hour.",
     )
 
     # ── Supabase Storage ──────────────────────────────────────────────────
@@ -79,6 +86,12 @@ class Settings(BaseSettings):
     google_api_key: str = Field(
         default="",
         description="Google Generative AI (Gemini) API key. Required for chat, hazard analysis, graph RAG.",
+    )
+
+    # ── OpenCode Zen (MiMo-V2.5 Free) ────────────────────────────────────
+    opencode_api_key: str = Field(
+        default="",
+        description="OpenCode Zen API key for MiMo-V2.5 Free. Dormant/unused — OPENCODE_API_KEY is unset in all environments; hazard analysis uses Gemini only.",
     )
 
     # ── Neo4j ─────────────────────────────────────────────────────────────
@@ -159,7 +172,7 @@ class Settings(BaseSettings):
 
     @property
     def roboflow_configured(self) -> bool:
-        return bool(self.roboflow_api_key and self.roboflow_model_id)
+        return bool(self.roboflow_api_key.strip() and self.roboflow_model_id.strip())
 
     @property
     def gemini_configured(self) -> bool:
@@ -171,7 +184,17 @@ class Settings(BaseSettings):
 
     @property
     def auth_configured(self) -> bool:
-        return bool(self.supabase_jwt_secret)
+        """Auth is configured if either SUPABASE_URL (ES256 JWKS) or SUPABASE_JWT_SECRET (legacy HS256) is set."""
+        return bool(self.supabase_url or self.supabase_jwt_secret)
+
+    @property
+    def auth_mode(self) -> str:
+        """Return the active auth verification mode."""
+        if self.supabase_url:
+            return "es256_jwks"
+        if self.supabase_jwt_secret:
+            return "hs256_legacy"
+        return "none"
 
     # ── Validation ────────────────────────────────────────────────────────
 
@@ -180,15 +203,13 @@ class Settings(BaseSettings):
         warnings = []
 
         if self.is_production:
-            # Required checks in production
             if not self.database_url:
                 warnings.append("CRITICAL: DATABASE_URL not set — database operations will fail")
-            if not self.supabase_jwt_secret:
-                warnings.append("CRITICAL: SUPABASE_JWT_SECRET not set — auth verification will fail")
+            if not self.supabase_url and not self.supabase_jwt_secret:
+                warnings.append("CRITICAL: Neither SUPABASE_URL nor SUPABASE_JWT_SECRET set — auth verification will fail")
             if not self.ai_service_api_key:
                 warnings.append("WARNING: AI_SERVICE_API_KEY not set — running with API key auth DISABLED")
         else:
-            # Development-mode checks
             if not self.database_url:
                 warnings.append("DATABASE_URL not set — using in-memory/dummy database")
 
@@ -212,7 +233,7 @@ class Settings(BaseSettings):
             f"[config]   Service port:      {self.ai_service_port}",
             f"[config]   API key auth:      {'ENABLED' if self.ai_service_api_key else 'DISABLED (dev mode)'}",
             f"[config]   Database:          {'✓ configured' if self.database_configured else '✗ not configured'}",
-            f"[config]   Supabase Auth:     {'✓ configured' if self.auth_configured else '✗ not configured'}",
+            f"[config]   Supabase Auth:     {'✓ configured (' + self.auth_mode + ')' if self.auth_configured else '✗ not configured'}",
             f"[config]   Supabase Storage:  {'✓ configured' if self.storage_configured else '✗ not configured'}",
             f"[config]   Gemini AI:         {'✓ configured' if self.gemini_configured else '✗ not configured (GOOGLE_API_KEY missing)'}",
             f"[config]   Neo4j:             {'✓ configured' if self.neo4j_configured else '✗ not configured'}",
@@ -232,7 +253,6 @@ class Settings(BaseSettings):
 
     def health_config(self) -> dict:
         """Return config status for /health/config endpoint. Never returns secret values."""
-
         def _status(configured: bool, required_fields: list[str], missing_fields: list[str]) -> str:
             if configured:
                 return "configured"
@@ -251,9 +271,17 @@ class Settings(BaseSettings):
             "supabase_auth": {
                 "status": _status(
                     self.auth_configured,
-                    ["SUPABASE_JWT_SECRET"],
-                    ["SUPABASE_JWT_SECRET"] if not self.auth_configured else [],
+                    ["SUPABASE_URL (preferred) or SUPABASE_JWT_SECRET (legacy)"],
+                    (
+                        [k for k, v in [
+                            ("SUPABASE_URL", self.supabase_url),
+                            ("SUPABASE_JWT_SECRET", self.supabase_jwt_secret),
+                        ] if not v]
+                        if not self.auth_configured
+                        else []
+                    ),
                 ),
+                "mode": self.auth_mode,
             },
             "supabase_storage": {
                 "status": _status(

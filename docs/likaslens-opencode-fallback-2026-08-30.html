@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — google-genai SDK Migration Report</title>
+<style>
+  :root { --bg: #fafaf9; --fg: #1c1917; --muted: #78716c; --border: #e7e5e4; --accent: #2563eb; --green: #16a34a; --amber: #d97706; --red: #dc2626; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1c1917; --fg: #e7e5e4; --muted: #a8a29e; --border: #44403c; --accent: #60a5fa; --green: #4ade80; --amber: #fbbf24; --red: #f87171; } }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+  h2 { font-size: 1.25rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+  p, li { font-size: 0.9rem; color: var(--fg); margin-bottom: 0.5rem; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.3rem; }
+  code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.82rem; background: var(--border); padding: 0.15rem 0.4rem; border-radius: 4px; }
+  pre { background: var(--border); padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.82rem; margin: 1rem 0; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-red { background: #fecaca; color: #991b1b; }
+  .callout { background: #eff6ff; border-left: 4px solid var(--accent); padding: 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; font-size: 0.85rem; }
+  .callout-warn { background: #fefce8; border-left-color: var(--amber); }
+  .callout-success { background: #f0fdf4; border-left-color: var(--green); }
+  .callout-fail { background: #fef2f2; border-left-color: var(--red); }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .kpi { text-align: center; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; }
+  .kpi-value { font-size: 2rem; font-weight: 700; }
+  .kpi-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .file-tree { font-family: monospace; font-size: 0.82rem; line-height: 1.8; background: var(--border); padding: 1rem; border-radius: 8px; }
+  .file-tree .new { color: var(--green); font-weight: 600; }
+  .file-tree .mod { color: var(--amber); font-weight: 600; }
+  .section-divider { border: none; border-top: 2px solid var(--border); margin: 2.5rem 0; }
+  .evidence { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 0.75rem 1rem; border-radius: 8px; margin: 0.75rem 0; font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<h1>LikasLens — google-genai SDK Migration</h1>
+<p class="subtitle">Implementation Report · August 30, 2026 · Branch: <code>feat/opencode-hazard-fallback</code></p>
+
+<hr class="section-divider">
+
+<h2>1. Summary</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">3/3</div>
+    <div class="kpi-label">Call Sites Migrated</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--accent)">1.67.0</div>
+    <div class="kpi-label">google-genai Version</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">&lt;15s</div>
+    <div class="kpi-label">All Calls Under Bound</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--muted)">0</div>
+    <div class="kpi-label">OpenCode Calls Made</div>
+  </div>
+</div>
+
+<div class="callout callout-success">
+  <strong>Root cause of earlier hangs confirmed:</strong> The deprecated <code>google-generativeai</code> SDK was not correctly handling calls to the July-2026 model <code>gemini-3.6-flash</code>. Migrating to <code>google-genai</code> (GA since Gemini 2.0) resolved all hangs.
+</div>
+
+<hr class="section-divider">
+
+<h2>2. SDK Surface Changes (Verified, Not Guessed)</h2>
+
+<table>
+  <tr><th>Concern</th><th>Old SDK (<code>google-generativeai</code>)</th><th>New SDK (<code>google-genai</code>)</th></tr>
+  <tr>
+    <td>Client init</td>
+    <td><code>genai.configure(api_key=...)</code></td>
+    <td><code>client = genai.Client(api_key=...)</code></td>
+  </tr>
+  <tr>
+    <td>Generate content</td>
+    <td><code>model.generate_content(contents)</code></td>
+    <td><code>client.models.generate_content(model=..., contents=..., config=...)</code></td>
+  </tr>
+  <tr>
+    <td>System instruction</td>
+    <td>Passed to <code>GenerativeModel(system_instruction=...)</code></td>
+    <td>Passed as <code>types.GenerateContentConfig(system_instruction=...)</code></td>
+  </tr>
+  <tr>
+    <td>Async generate</td>
+    <td><code>asyncio.to_thread(model.generate_content, ...)</code></td>
+    <td><code>client.aio.models.generate_content(...)</code> (native async)</td>
+  </tr>
+  <tr>
+    <td>Embed content</td>
+    <td><code>genai.embed_content(model=..., content=..., task_type=...)</code></td>
+    <td><code>client.models.embed_content(model=..., contents=..., config=types.EmbedContentConfig(task_type=...))</code></td>
+  </tr>
+  <tr>
+    <td>Embedding vector</td>
+    <td><code>result["embedding"]</code></td>
+    <td><code>result.embeddings[0].values</code></td>
+  </tr>
+  <tr>
+    <td>Embedding model</td>
+    <td><code>text-embedding-004</code> (768 dims)</td>
+    <td><code>gemini-embedding-001</code> (3072 dims)</td>
+  </tr>
+  <tr>
+    <td>Error class</td>
+    <td><code>google.api_core.exceptions.ResourceExhausted</code></td>
+    <td><code>google.genai.errors.ClientError</code></td>
+  </tr>
+</table>
+
+<hr class="section-divider">
+
+<h2>3. Files Changed</h2>
+
+<div class="file-tree">
+<strong>apps/ai-service/</strong><br>
+├── <span class="mod">requirements.txt</span> — <code>google-generativeai</code> → <code>google-genai>=1.0.0,&lt;2.0.0</code><br>
+├── <span class="mod">graph_rag.py</span> — New client pattern, <code>gemini-embedding-001</code>, <code>.values</code> accessor<br>
+├── <span class="mod">chat_proxy.py</span> — New client pattern, native async, config-based system_instruction<br>
+└── <span class="mod">hazard_analyzer.py</span> — New client pattern, native async
+</div>
+
+<hr class="section-divider">
+
+<h2>4. Live Verification Evidence</h2>
+
+<h3>Test 1: Embedding (<code>graph_rag.embed_text</code>)</h3>
+<div class="evidence">EMBED OK in 1379ms, dims=3072, first3=[0.0029955786, 0.0043740813, -0.003291385]</div>
+<p>Model: <code>gemini-embedding-001</code>, task_type: RETRIEVAL_DOCUMENT. 3072-dimensional vectors (up from 768 with old model). Under 15s bound.</p>
+
+<h3>Test 2: Liksi Chat (<code>chat_proxy.generate_chat_reply</code>)</h3>
+<div class="evidence">CHAT OK in 2918ms
+REPLY: Iloilo</div>
+<p>Model: <code>gemini-3.6-flash</code>, with system_instruction via config. Retry/backoff logic preserved. Under 15s bound.</p>
+
+<h3>Test 3: Hazard Summary (<code>hazard_analyzer.generate_grounded_report</code>)</h3>
+<div class="evidence">HAZARD OK in 8822ms
+REPLY: The open burning incident detected in Iloilo City constitutes a violation of PD 1152 -
+Philippine Clean Air Act of 1999 and RA 9003 - Ecological Solid Waste Management Act. This ticket
+must be routed to the Department of Environment and Natural Resources (DENR) and the Local
+Government Unit for appropriate legal enforcement.</div>
+<p>Model: <code>gemini-3.6-flash</code>. OpenCode path correctly skipped (OPENCODE_API_KEY unset). Output matches 2-sentence + agency format. Under 15s bound.</p>
+
+<hr class="section-divider">
+
+<h2>5. OpenCode Status</h2>
+
+<div class="callout callout-warn">
+  <strong>OPENCODE_API_KEY is unset in <code>.env</code>.</strong> The OpenCode try/fallback path in <code>hazard_analyzer.py</code> is dormant — it no-ops cleanly when the key is empty. No OpenCode calls were made during any of the three tests above. The code paths remain in place for future re-enablement.
+</div>
+
+<p><strong>Render status:</strong> I cannot verify Render's environment variables from this position. Jeff should confirm that <code>OPENCODE_API_KEY</code> is also unset on Render, since the <code>.env</code> file is not deployed there — environment variables are set separately in the Render dashboard.</p>
+
+<hr class="section-divider">
+
+<h2>6. What Didn't Change</h2>
+
+<ul>
+  <li><strong>Prompt content:</strong> Identical text sent to Gemini — no rewrites</li>
+  <li><strong>Retry/backoff logic:</strong> 3 attempts, exponential backoff (1s, 2s) — preserved in both chat and hazard paths</li>
+  <li><strong>Output format:</strong> 2-sentence + agency contract for hazard summary — unchanged</li>
+  <li><strong>Timeout:</strong> 30s <code>asyncio.wait_for</code> wrapper — preserved</li>
+  <li><strong>OpenCode code paths:</strong> Dormant, not deleted</li>
+  <li><strong>No new routes or dependencies:</strong> SDK swap only</li>
+</ul>
+
+<hr class="section-divider">
+
+<h2>7. Deployment Notes</h2>
+
+<ol>
+  <li>Merge <code>feat/opencode-hazard-fallback</code> → <code>development</code></li>
+  <li>Deploy to Render — the new <code>google-genai</code> package will be installed from <code>requirements.txt</code></li>
+  <li>Verify Render logs show successful Gemini calls with <code>gemini-3.6-flash</code></li>
+  <li>Confirm <code>OPENCODE_API_KEY</code> is unset in Render dashboard</li>
+</ol>
+
+<hr class="section-divider">
+
+<p style="text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 2rem;">
+  Generated by LikasLens google-genai SDK migration · August 30, 2026
+</p>
+
+</body>
+</html>

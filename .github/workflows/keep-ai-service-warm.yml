@@ -1,0 +1,25 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Keep AI Service Warm — prevents Render free-tier spin-down
+# Pings /health every 10 minutes via cron. Also supports manual dispatch.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Keep AI Service Warm
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"  # every 10 minutes — under Render's ~15-min spin-down
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  ping:
+    name: 🩺 Ping AI Service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /health endpoint
+        run: |
+          STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://likaslens-ai-service.onrender.com/health || true)
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ AI service responded with HTTP $STATUS"
+          else
+            echo "⚠️ AI service returned HTTP $STATUS (may be cold-starting)"
+          fi

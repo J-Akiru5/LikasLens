@@ -5,21 +5,18 @@ Neuro-symbolic processing microservice using FastAPI, YOLOv8, and Google Generat
 
 import asyncio
 import logging
-import os
 import time
 import uuid
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
-from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from config import settings
 from neo4j_bootstrap import build_bootstrap_queries
 from graph_topology import build_seed_edges, build_seed_vertices, get_topology_config
-
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -35,15 +32,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown events."""
     logger.info("LikasLens AI Service starting...")
 
-    # API key startup check
-    api_key = os.getenv("AI_SERVICE_API_KEY")
-    if api_key:
-        logger.info("AI_SERVICE_API_KEY is set — API key authentication is ENABLED")
-    else:
-        logger.warning(
-            "AI_SERVICE_API_KEY is NOT set — running in DEVELOPMENT MODE with "
-            "authentication DISABLED. Set AI_SERVICE_API_KEY in production!"
-        )
+    settings.log_config_summary()
 
     try:
         from image_analysis import load_coco_model, load_env_model
@@ -52,16 +41,6 @@ async def lifespan(app: FastAPI):
         logger.info("YOLO models preloaded")
     except Exception as exc:
         logger.warning("YOLO model preload failed (will load on first request): %s", exc)
-
-    # Roboflow config check
-    from roboflow_client import is_configured
-    if is_configured():
-        logger.info(
-            "Roboflow integration ENABLED — model: %s",
-            os.getenv("ROBOFLOW_MODEL_ID"),
-        )
-    else:
-        logger.info("Roboflow integration DISABLED (ROBOFLOW_API_KEY or ROBOFLOW_MODEL_ID not set)")
 
     yield
 
@@ -91,7 +70,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
         content={
             "success": False,
             "error": "Internal server error",
-            "detail": str(exc) if os.getenv("APP_DEBUG", "").lower() == "true" else None,
+            "detail": str(exc) if settings.app_debug else None,
         },
     )
 
@@ -116,22 +95,9 @@ async def runtime_error_handler(request: Request, exc: RuntimeError) -> JSONResp
 # CORS — environment-driven
 # ---------------------------------------------------------------------------
 
-def _parse_cors_origins() -> list[str]:
-    """Parse CORS origins from env var, falling back to localhost defaults."""
-    env_origins = os.getenv("CORS_ORIGINS", "")
-    if env_origins:
-        return [o.strip() for o in env_origins.split(",") if o.strip()]
-    return [
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "http://localhost:3002",
-        "http://localhost:8000",
-    ]
-
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_parse_cors_origins(),
+    allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -143,17 +109,16 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 def verify_api_key(request: Request):
-    """Validate X-API-Key header against the AI_SERVICE_API_KEY env var.
+    """Validate X-API-Key header against the configured API key.
 
     - If AI_SERVICE_API_KEY is not set, all requests are allowed (development mode).
     - If set, requests must include a matching X-API-Key header or receive 401.
     """
-    expected_key = os.getenv("AI_SERVICE_API_KEY")
-    if not expected_key:
+    if not settings.ai_service_api_key:
         return  # dev mode — no key configured, allow all
 
     provided_key = request.headers.get("X-API-Key")
-    if provided_key != expected_key:
+    if provided_key != settings.ai_service_api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid API key. Provide a valid X-API-Key header.",
@@ -618,8 +583,14 @@ async def health_models():
     return {
         "yolo_coco": bool(_COCO_MODEL_NAME),
         "yolo_env": bool(_ENV_MODEL_NAME),
-        "gemini_available": bool(os.getenv("GOOGLE_API_KEY")),
+        "gemini_available": settings.gemini_configured,
     }
+
+
+@app.get("/health/config")
+async def health_config():
+    """Return per-integration config status. Never returns secret values."""
+    return settings.health_config()
 
 
 if __name__ == "__main__":
@@ -628,5 +599,5 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=int(os.getenv("AI_SERVICE_PORT", 8001)),
+        port=settings.ai_service_port,
     )

@@ -6,7 +6,7 @@ export default function JsonLd({ locale }: { locale: string }) {
     "@type": "Organization",
     name: "LikasLens",
     url: baseUrl,
-    logo: `${baseUrl}/icons/icon-512x512.png`,
+    logo: `${baseUrl}/icons/icon-512x512.webp`,
     description:
       "AI-powered civic reporting platform protecting Philippine nature.",
     sameAs: [],

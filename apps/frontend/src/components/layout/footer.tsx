@@ -35,7 +35,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
         style={{ opacity: ghostMode ? 0 : 1 }}
       >
         <Image 
-          src="/images/footer-civic-mountain.png" 
+          src="/images/footer-civic-mountain.webp" 
           alt="" 
           fill 
           sizes="100vw"
@@ -58,7 +58,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
         style={{ opacity: ghostMode ? 1 : 0 }}
       >
         <Image 
-          src="/images/footer-ghost-deepsea-v2.png" 
+          src="/images/footer-ghost-deepsea-v2.webp" 
           alt="" 
           fill 
           sizes="100vw"
@@ -159,7 +159,7 @@ export function Footer({ ghostMode = false }: { ghostMode?: boolean }) {
           <div className="flex flex-col gap-5 lg:col-span-2">
             <div className="flex items-center gap-3 group w-fit">
               <img 
-                src="/images/likas-lens-logo.png" 
+                src="/images/likas-lens-logo.webp" 
                 alt="LikasLens Logo" 
                 className="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-500" 
               />

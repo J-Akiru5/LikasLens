@@ -64,7 +64,7 @@ export function MobileLayout({
           </Link>
         ) : isDashboard ? (
           <Link href={`${localePrefix}/dashboard` || "/"} className="flex items-center gap-2 text-ink">
-            <img src="/images/likas-lens-logo.png" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
+            <img src="/images/likas-lens-logo.webp" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
             <span className="flex items-center mt-0.5" style={{ fontFamily: "var(--font-heading)", letterSpacing: "0.16em", fontSize: 17 }}>
               <span style={{ fontWeight: 500 }}>LIK</span>
               <span style={{ fontWeight: 700, color: "var(--accent)", margin: "0 1px" }}>Λ</span>

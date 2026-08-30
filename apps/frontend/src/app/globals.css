@@ -192,6 +192,12 @@ body {
   color: var(--accent);
 }
 
+/* -- Focus visible (WCAG 2.4.7) ------------------------------------------------ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* -- Reduced motion (PRODUCT.md: this is a field tool, not a showcase) ------------ */
 @media (prefers-reduced-motion: reduce) {
   .ec-scanline { animation: none; opacity: 0.5; }
@@ -220,3 +226,27 @@ body {
 .leaflet-container {
   border-radius: 1rem;
 }
+
+/* ── 2026 Native Circular View Transition Theme Animation ────────────── */
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  display: block;
+  height: 100%;
+  overflow: clip;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 999999;
+}
+
+

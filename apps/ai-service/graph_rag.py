@@ -9,50 +9,50 @@ preventing hallucinations about environmental laws.
 
 from __future__ import annotations
 
-import asyncio
 import logging
-import os
 from typing import Any
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
+
+from config import settings
 
 logger = logging.getLogger(__name__)
 
-EMBEDDING_MODEL = "text-embedding-004"
-EMBEDDING_DIMENSION = 768
+EMBEDDING_MODEL = "gemini-embedding-001"
+EMBEDDING_DIMENSION = 3072
 VECTOR_INDEX_NAME = "law_embeddings"
 VECTOR_INDEX_LABEL = "Law"
 VECTOR_INDEX_PROPERTY = "embedding"
 
-_gemini_configured = False
+_client: genai.Client | None = None
 
 
-def _ensure_gemini_configured() -> None:
-    """Lazy-configure the Gemini API."""
-    global _gemini_configured
-    if not _gemini_configured:
-        api_key = os.getenv("GOOGLE_API_KEY")
+def _get_client() -> genai.Client:
+    """Lazy-initialise the Gemini client (thread-safe for FastAPI workers)."""
+    global _client
+    if _client is None:
+        api_key = settings.google_api_key
         if not api_key:
             raise RuntimeError("GOOGLE_API_KEY environment variable not set")
-        genai.configure(api_key=api_key)
-        _gemini_configured = True
+        _client = genai.Client(api_key=api_key)
+    return _client
 
 
 async def embed_text(text: str) -> list[float]:
     """Generate a vector embedding for the given text using Gemini.
 
-    Uses text-embedding-004 which produces 768-dimensional vectors.
+    Uses gemini-embedding-001 which produces 3072-dimensional vectors.
     """
-    _ensure_gemini_configured()
+    client = _get_client()
 
     try:
-        result = await asyncio.to_thread(
-            genai.embed_content,
+        result = await client.aio.models.embed_content(
             model=EMBEDDING_MODEL,
-            content=text,
-            task_type="RETRIEVAL_DOCUMENT",
+            contents=text,
+            config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT"),
         )
-        return result["embedding"]
+        return result.embeddings[0].values
     except Exception as exc:
         logger.error("Gemini embedding failed: %s", exc)
         raise RuntimeError(f"Embedding generation failed: {exc}") from exc
@@ -63,16 +63,15 @@ async def embed_query(query: str) -> list[float]:
 
     Uses RETRIEVAL_QUERY task type for search-optimized embeddings.
     """
-    _ensure_gemini_configured()
+    client = _get_client()
 
     try:
-        result = await asyncio.to_thread(
-            genai.embed_content,
+        result = await client.aio.models.embed_content(
             model=EMBEDDING_MODEL,
-            content=query,
-            task_type="RETRIEVAL_QUERY",
+            contents=query,
+            config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY"),
         )
-        return result["embedding"]
+        return result.embeddings[0].values
     except Exception as exc:
         logger.error("Gemini query embedding failed: %s", exc)
         raise RuntimeError(f"Query embedding failed: {exc}") from exc

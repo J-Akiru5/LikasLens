@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { m } from "framer-motion";
 import { CheckCircle2, MapPin } from "lucide-react";
-import { laravelGet, EmptyState } from "@likaslens/shared";
+import { laravelGet, EmptyState, formatDate } from "@likaslens/shared";
 import type { PublicImpactData } from "@likaslens/shared";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -140,7 +140,7 @@ export function ImpactSection() {
             style={{ borderRadius: "20px", minHeight: 260, position: "relative", border: "1px solid var(--border)", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)", overflow: "hidden" }}
           >
             <Image
-              src="/images/impact_ridge_to_reef_3d.png"
+              src="/images/impact_ridge_to_reef_3d.webp"
               alt="A river winding through forested Philippine highlands"
               fill
               sizes="(min-width: 1024px) 40vw, 100vw"
@@ -217,7 +217,7 @@ export function ImpactSection() {
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)" }}>
                           <MapPin style={{ width: 10, height: 10 }} /> {item.location}
                         </span>
-                        <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)" }}>{item.date}</span>
+                        <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)" }}>{formatDate(item.date, "short")}</span>
                       </div>
                     </div>
                   </div>

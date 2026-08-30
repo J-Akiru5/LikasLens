@@ -96,7 +96,7 @@ const NODE_CONFIG = {
     glow: "rgba(167,139,250,0.35)",
     ring: "#a78bfa",
     bg: "rgba(167,139,250,0.12)",
-    label: "Blockchain Proof",
+    label: "Audit Trail",
     radius: 24,
   },
 } as const;
@@ -179,13 +179,13 @@ function makeNodes(incident: Partial<GraphNode>, ai: Partial<GraphNode>, law: Pa
     { id: "ai", type: "ai", x: 340, y: 100, vx: 0, vy: 0, code: "AI_ENGINE", ...ai } as GraphNode,
     { id: "law", type: "law", x: 500, y: 220, vx: 0, vy: 0, code: "STATUTE", ...law } as GraphNode,
     { id: "agency", type: "agency", x: 500, y: 380, vx: 0, vy: 0, code: "AGENCY", ...agency } as GraphNode,
-    { id: "proof", type: "proof", x: 180, y: 380, vx: 0, vy: 0, code: "BLOCKCHAIN", ...proof } as GraphNode,
+    { id: "proof", type: "proof", x: 180, y: 380, vx: 0, vy: 0, code: "AUDIT_LOG", ...proof } as GraphNode,
   ];
 }
 
 const BASE_LINKS: GraphLink[] = [
   { source: "inc", target: "ai", label: "Analyzed By" },
-  { source: "inc", target: "proof", label: "Sealed On-Chain" },
+  { source: "inc", target: "proof", label: "Forensic Audit" },
   { source: "inc", target: "law", label: "Violates" },
   { source: "law", target: "agency", label: "Enforced By" },
   { source: "ai", target: "agency", label: "Routes To" },
@@ -200,10 +200,10 @@ const PRESETS: Preset[] = [
     cypherQuery: "MATCH (h:HazardType {code: 'SOLID_WASTE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Trash Heap — Brgy. 143", sublabel: "Manila, NCR", details: "Illegal dumping site (~4×5m) blocking pedestrian walkway. Classified via YOLOv8 vision pipeline.", meta: { Type: "Solid Waste", Confidence: "94.2%", GPS: "14.5995°N 120.9842°E", Status: "Active" } },
-      { label: "YOLOv8 Classifier", sublabel: "FastAPI AI-Service", details: "Computer vision model running on LikasLens AI microservice. Detects 47 environmental violation classes.", meta: { Model: "YOLOv8-Env-v2", Accuracy: "94.2%", Latency: "~120ms", Framework: "FastAPI / Python 3.12" } },
+      { label: "YOLOv8 + Liksi AI", sublabel: "FastAPI AI-Service", details: "Computer vision model and Liksi AI engine running on LikasLens AI microservice. Detects environmental violation classes.", meta: { Model: "YOLOv8n-Env", Accuracy: "94.2%", Latency: "~120ms", Framework: "FastAPI / Python 3.12" } },
       { label: "Republic Act 9003", sublabel: "Ecological Solid Waste Mgmt.", details: "RA 9003 Section 48 — Prohibited Acts. Fines up to ₱300,000 and 6 years imprisonment.", meta: { Statute: "RA 9003", Section: "Sec. 48", Max_Fine: "₱300,000", Imprisonment: "Up to 6 years" } },
       { label: "CENRO Task Force", sublabel: "City Environment & NR Office", details: "Specialized enforcement unit. SLA: 24-hour field response. Coordinates with MMDA for Metro Manila.", meta: { Unit: "CENRO Enforcement", SLA: "24 Hours", Jurisdiction: "Metro Manila", Contact: "CENRO-Manila" } },
-      { label: "Polygon Mainnet", sublabel: "Block #4,829,188", details: "Tamper-proof SHA-256 evidence hash committed to Polygon blockchain. Permanently verifiable by courts.", meta: { Network: "Polygon (MATIC)", Block: "#4,829,188", Gas: "0.0012 MATIC ≈ $0.001", Verifiable: "polygonscan.com" } }
+      { label: "Supabase Vault + SHA-256", sublabel: "EXIF-Stripped Evidence", details: "EXIF metadata stripped via Pillow, raw evidentiary photo persisted in Supabase S3 storage with SHA-256 checksum.", meta: { Storage: "Supabase Vault", Checksum: "SHA-256", EXIF_Stripping: "Automated", Status: "Verified" } }
     ),
     links: BASE_LINKS,
   },
@@ -215,10 +215,10 @@ const PRESETS: Preset[] = [
     cypherQuery: "MATCH (h:HazardType {code: 'DEFORESTATION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Canopy Loss — Mt. Apo Buffer", sublabel: "Davao del Sur", details: "Satellite imagery + citizen reports confirm commercial chain-sawing in protected forest buffer zone.", meta: { Type: "Illegal Logging", Area_Lost: "~3.2 hectares", Sat_Source: "Sentinel-2", Status: "Active" } },
-      { label: "Forestry Sentinel AI", sublabel: "Multispectral Analysis", details: "NDVI change-detection model comparing bi-weekly satellite bands to baseline forest coverage.", meta: { Model: "NDVI-ChangeNet", Bands: "B04,B08 (NIR)", Change: "-12% NDVI", Confidence: "91.0%" } },
+      { label: "Forestry Sentinel AI", sublabel: "FastAPI Inference Engine", details: "NDVI change-detection model and YOLO classifier running on LikasLens AI microservice.", meta: { Model: "NDVI-ChangeNet", Framework: "Python 3.12 / FastAPI", Change: "-12% NDVI", Confidence: "91.0%" } },
       { label: "P.D. 705 — Forestry Code", sublabel: "Revised Forestry Code", details: "Presidential Decree 705. Prohibits cutting, gathering, removing timber in forest lands without license.", meta: { Statute: "P.D. 705", Jurisdiction: "All forest lands", Max_Fine: "₱500,000", Imprisonment: "Up to 20 years" } },
       { label: "DENR — Forest Police", sublabel: "Dept. of Env. & Natural Res.", details: "Forest rangers with arrest authority. Deployed with GPS coordinates for field intercept operations.", meta: { Unit: "DENR Forest Rangers", Response: "Field Intercept", Alert: "SMS + Radio Broadcast", Priority: "CRITICAL" } },
-      { label: "Sepolia Testnet", sublabel: "TX: 0x9f1a...8e2c", details: "Evidence timestamp and AI classification hash anchored to Ethereum Sepolia for demo. Mainnet-ready.", meta: { Network: "Ethereum Sepolia", TX: "0x9f1a...8e2c", Block: "#921,029", Status: "Confirmed" } }
+      { label: "Forensic Audit Log", sublabel: "SHA-256 Timeline Record", details: "Evidence timestamp, location fuzzing, and AI triage classification recorded in tamper-evident timeline.", meta: { Method: "Forensic SHA-256 Hash", Privacy: "Ghost Mode Fuzzed", Status: "Verified" } }
     ),
     links: BASE_LINKS,
   },
@@ -230,10 +230,10 @@ const PRESETS: Preset[] = [
     cypherQuery: "MATCH (h:HazardType {code: 'WATER_POLLUTION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Toxic Runoff — Laguna Lake", sublabel: "Laguna de Bay Watershed", details: "Elevated chemical COD levels and visible discoloration detected near industrial discharge pipe #7.", meta: { Type: "Chemical Discharge", pH_Level: "4.2 (Acidic)", COD: "380 mg/L (3× limit)", Status: "Active Spill" } },
-      { label: "Water Sentinel AI", sublabel: "Spectral Analysis Engine", details: "Analyzes photo color histograms and user-reported parameters against baseline water quality profiles.", meta: { Model: "WaterSpec-v1.3", Indicators: "Color, pH, COD", Confidence: "88.5%", Engine: "FastAPI" } },
+      { label: "Water Sentinel AI", sublabel: "FastAPI Analysis Engine", details: "Analyzes photo color histograms and user-reported parameters against baseline water quality profiles.", meta: { Model: "WaterSpec-v1.3", Indicators: "Color, pH, COD", Confidence: "88.5%", Engine: "FastAPI / Python 3.12" } },
       { label: "Republic Act 9275", sublabel: "Clean Water Act of 2004", details: "RA 9275 Section 27 — Prohibited Acts. Discharge of pollutants into water bodies is a criminal offense.", meta: { Statute: "RA 9275", Section: "Sec. 27", Max_Fine: "₱200,000/day", Imprisonment: "Up to 12 years" } },
       { label: "DENR-EMB & LLDA", sublabel: "Laguna Lake Dev. Authority", details: "LLDA environmental compliance officers and EMB joint inspection team. Water sampling authority.", meta: { Unit: "LLDA + EMB-R4A", Action: "Joint Inspection", Response: "Same-day sampling", Penalty: "Cease & Desist" } },
-      { label: "Arbitrum One", sublabel: "TX: 0x3b8c...c2f1", details: "Audit-grade evidence sealed on Arbitrum L2 for low-cost, high-throughput legal evidence storage.", meta: { Network: "Arbitrum One (ETH L2)", TX: "0x3b8c...c2f1", Gas: "0.00008 ETH", Status: "Finalized" } }
+      { label: "Supabase Evidence Vault", sublabel: "SHA-256 Forensic Hash", details: "Audit-grade evidence stored in encrypted Supabase Storage with SHA-256 tamper-evident checksum.", meta: { Storage: "Supabase S3 Vault", Hash: "SHA-256 Checksum", EXIF_Stripping: "Automated (Pillow)", Status: "Verified" } }
     ),
     links: BASE_LINKS,
   },
@@ -248,7 +248,7 @@ const PRESETS: Preset[] = [
       { label: "Marine Audio-Visual AI", sublabel: "WaveformNet Classifier", details: "Audio pattern matching model trained on documented underwater explosion frequencies from 12 hydrophone stations.", meta: { Model: "WaveformNet-v2", Accuracy: "95.4%", Signal: "87–120 Hz blast", Latency: "<2s detection" } },
       { label: "Republic Act 8550", sublabel: "Philippine Fisheries Code", details: "RA 8550 Sections 88–92. Dynamite fishing classified as a grave offense. Mandatory imprisonment.", meta: { Statute: "RA 8550", Section: "Sec. 88–92", Classification: "Grave Offense", Imprisonment: "20 yrs mandatory" } },
       { label: "BFAR + PCG — Maritime", sublabel: "Bureau of Fisheries & Coast Guard", details: "Philippine Coast Guard Patrol Boat 3 intercepting vessel. BFAR monitors and files charges.", meta: { Unit: "BFAR + PCG Tawi-Tawi", Vessel: "PCG Patrol Boat #3", Response: "Maritime Intercept", ETA: "~18 minutes" } },
-      { label: "Hedera Hashgraph", sublabel: "Consensus #HCS-0.0.491124", details: "Enterprise-grade Hedera consensus service. Provides court-admissible timestamp proof with Byzantine fault tolerance.", meta: { Network: "Hedera Hashgraph (HCS)", Topic: "0.0.491124", Consensus: "BFT Guaranteed", Cost: "0.0001 HBAR" } }
+      { label: "Digital Forensic Audit Trail", sublabel: "Digital Chain of Custody", details: "Zero-knowledge ghost mode protection with tamper-evident event timeline and forensic timestamping.", meta: { Method: "SHA-256 Audit Log", Timestamp: "UTC Authority", Privacy: "Ghost Mode Fuzzed", Status: "Verified" } }
     ),
     links: BASE_LINKS,
   },

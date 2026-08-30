@@ -242,7 +242,7 @@ export default function ImpactPage() {
           }}
         >
           <img
-            src="/images/likas-lens-logo.png"
+            src="/images/likas-lens-logo.webp"
             alt="LikasLens Logo"
             style={{ width: 32, height: 32, objectFit: "contain" }}
           />

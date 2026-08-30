@@ -10,7 +10,7 @@ const intlMiddleware = createMiddleware({
   localeDetection: true,
 });
 
-export default async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Bypass for API routes, static files, etc.
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -51,6 +51,8 @@ export default async function middleware(request: NextRequest) {
 
   return supabaseResponse;
 }
+
+export default proxy;
 
 export const config = {
   matcher: ["/((?!api|auth|_next|_vercel|.*\\..*).*)"],

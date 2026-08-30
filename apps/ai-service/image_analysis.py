@@ -12,7 +12,6 @@ from __future__ import annotations
 import base64
 import json
 import logging
-import os
 import time
 from datetime import datetime, timezone
 from io import BytesIO
@@ -22,6 +21,8 @@ from typing import Any
 import numpy as np
 from PIL import Image, UnidentifiedImageError
 from ultralytics import YOLO
+
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +146,7 @@ ENV_MODEL_CLASS_MAP: dict[str, dict[str, Any]] = {
 
 def get_coco_model_path() -> str:
     """Return path to COCO YOLO model."""
-    custom = os.getenv("YOLO_MODEL_PATH", "")
+    custom = settings.yolo_model_path
     if custom and Path(custom).exists():
         return custom
     return "yolov8n.pt"
@@ -153,7 +154,7 @@ def get_coco_model_path() -> str:
 
 def get_env_model_path() -> str | None:
     """Return path to environmental model, or None if not configured."""
-    path = os.getenv("ENV_MODEL_PATH", "")
+    path = settings.env_model_path
     if path and Path(path).exists():
         return path
     return None
@@ -481,7 +482,7 @@ def _record_metrics(
     Disabled by default to keep the inference hot path free of filesystem I/O.
     See INFERENCE_METRICS.md for the schema and how to run eval_metrics.py.
     """
-    log_path = os.getenv("LIKASLENS_METRICS_LOG", "").strip()
+    log_path = settings.likaslens_metrics_log
     if not log_path:
         return
     try:

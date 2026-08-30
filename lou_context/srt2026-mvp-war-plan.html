@@ -1,0 +1,2469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LikasLens — SRT 2026 MVP War Plan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-void:       #050a0e;
+      --bg-deep:       #080f14;
+      --bg-card:       #0c1620;
+      --bg-card-hover: #101e2e;
+      --bg-panel:      #0a1420;
+
+      --border:        rgba(30, 180, 100, 0.12);
+      --border-bright: rgba(30, 180, 100, 0.35);
+
+      --green-dim:     #1a7a4a;
+      --green-mid:     #1eb464;
+      --green-bright:  #22d672;
+      --green-glow:    rgba(34, 214, 114, 0.15);
+      --green-glow-lg: rgba(34, 214, 114, 0.06);
+
+      --amber:         #f59e0b;
+      --amber-dim:     rgba(245,158,11,0.15);
+      --red-hot:       #ef4444;
+      --red-dim:       rgba(239,68,68,0.15);
+      --blue-ice:      #38bdf8;
+      --blue-dim:      rgba(56,189,248,0.12);
+      --purple:        #a78bfa;
+      --purple-dim:    rgba(167,139,250,0.12);
+
+      --text-primary:  #e8f5ee;
+      --text-secondary:#8fb3a0;
+      --text-muted:    #4a6a58;
+      --text-code:     #22d672;
+
+      --font-sans: 'Space Grotesk', 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-void);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--green-dim); border-radius: 3px; }
+
+    /* ── BACKGROUND GRID ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(30,180,100,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30,180,100,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      padding: 80px 32px;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      width: 900px;
+      height: 600px;
+      background: radial-gradient(ellipse at center,
+        rgba(34,214,114,0.12) 0%,
+        rgba(34,214,114,0.04) 40%,
+        transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--green-bright);
+      border: 1px solid var(--border-bright);
+      padding: 6px 16px;
+      border-radius: 100px;
+      background: rgba(34,214,114,0.05);
+      margin-bottom: 28px;
+    }
+
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px;
+      background: var(--green-bright);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .hero-title {
+      font-size: clamp(52px, 8vw, 96px);
+      font-weight: 900;
+      letter-spacing: -3px;
+      line-height: 1;
+      background: linear-gradient(135deg, #e8f5ee 0%, var(--green-bright) 45%, #1eb464 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(16px, 2.5vw, 22px);
+      font-weight: 400;
+      color: var(--text-secondary);
+      max-width: 620px;
+      margin: 16px auto 40px;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-meta-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hero-meta-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .hero-meta-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .hero-meta-divider {
+      width: 1px;
+      height: 40px;
+      background: var(--border);
+      align-self: center;
+    }
+
+    /* ── SECTION LABELS ── */
+    .section { padding: 80px 0; }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--green-dim);
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .section-title span { color: var(--green-bright); }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 540px;
+      margin-bottom: 48px;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg,
+        transparent, var(--border-bright), transparent);
+      margin: 0;
+    }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(34,214,114,0.3), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--border-bright);
+      box-shadow: 0 0 32px var(--green-glow);
+    }
+
+    .card:hover::before { opacity: 1; }
+
+    /* ── NORTH STAR FLOW ── */
+    .flow-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-top: 40px;
+    }
+
+    .flow-diagram {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+    }
+
+    .flow-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green-bright);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .flow-node {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      position: relative;
+    }
+
+    .flow-node:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 40px;
+      width: 2px;
+      height: calc(100% + 8px);
+      background: linear-gradient(180deg, var(--green-dim), transparent);
+    }
+
+    .flow-node + .flow-node { margin-top: 8px; }
+
+    .flow-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .flow-icon.green  { background: rgba(34,214,114,0.1); border-color: var(--green-dim); }
+    .flow-icon.amber  { background: rgba(245,158,11,0.1);  border-color: rgba(245,158,11,0.3); }
+    .flow-icon.red    { background: rgba(239,68,68,0.1);   border-color: rgba(239,68,68,0.3); }
+    .flow-icon.blue   { background: rgba(56,189,248,0.1);  border-color: rgba(56,189,248,0.3); }
+    .flow-icon.purple { background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.3); }
+
+    .flow-content { flex: 1; padding-bottom: 20px; }
+
+    .flow-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    .flow-detail {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 3px;
+      line-height: 1.5;
+    }
+
+    .flow-branch {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .flow-pill {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .flow-pill.yes  { border-color: var(--green-dim); color: var(--green-bright); }
+    .flow-pill.no   { border-color: rgba(239,68,68,0.3); color: var(--red-hot); }
+
+    /* ── PRIORITY GRID ── */
+    .priority-section { margin-bottom: 60px; }
+
+    .priority-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .priority-badge {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 8px;
+      letter-spacing: 1px;
+    }
+
+    .badge-p0 {
+      background: var(--red-dim);
+      color: var(--red-hot);
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+
+    .badge-p1 {
+      background: var(--amber-dim);
+      color: var(--amber);
+      border: 1px solid rgba(245,158,11,0.3);
+    }
+
+    .badge-p2 {
+      background: var(--blue-dim);
+      color: var(--blue-ice);
+      border: 1px solid rgba(56,189,248,0.3);
+    }
+
+    .badge-blocked {
+      background: rgba(60,60,70,0.5);
+      color: #6b7280;
+      border: 1px solid rgba(107,114,128,0.3);
+    }
+
+    .priority-title-text {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .priority-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-left: auto;
+      text-align: right;
+      max-width: 300px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      transition: all 0.25s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--green-glow-lg);
+    }
+
+    .feature-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .feature-icon {
+      font-size: 22px;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-panel);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .feature-owner {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+
+    .owner-lou    { background: rgba(56,189,248,0.12); color: var(--blue-ice);  border: 1px solid rgba(56,189,248,0.25); }
+    .owner-jeff   { background: var(--purple-dim);     color: var(--purple);    border: 1px solid rgba(167,139,250,0.25); }
+    .owner-both   { background: rgba(34,214,114,0.08); color: var(--green-mid); border: 1px solid var(--border-bright); }
+
+    .feature-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    .feature-list {
+      list-style: none;
+    }
+
+    .feature-list li {
+      font-size: 13px;
+      color: var(--text-secondary);
+      padding: 4px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .feature-list li::before {
+      content: '→';
+      color: var(--green-mid);
+      font-family: var(--font-mono);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .guardrail {
+      background: var(--red-dim);
+      border: 1px solid rgba(239,68,68,0.25);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #fca5a5;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    /* ── ARCHITECTURE DIAGRAM ── */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .arch-service {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .arch-service::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .arch-service.frontend::before  { background: linear-gradient(90deg, transparent, var(--blue-ice), transparent); }
+    .arch-service.backend::before   { background: linear-gradient(90deg, transparent, var(--purple), transparent); }
+    .arch-service.ai::before        { background: linear-gradient(90deg, transparent, var(--green-bright), transparent); }
+
+    .arch-emoji { font-size: 36px; display: block; margin-bottom: 12px; }
+
+    .arch-service-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .arch-service-tech {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .arch-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .arch-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    /* ── PIPELINE ── */
+    .pipeline {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .pipeline-step {
+      flex: 1;
+      padding: 24px 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .pipeline-step:not(:last-child)::after {
+      content: '→';
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-mono);
+      color: var(--green-mid);
+      font-size: 18px;
+      z-index: 1;
+    }
+
+    .pipeline-step + .pipeline-step {
+      border-left: 1px solid var(--border);
+    }
+
+    .pipeline-icon { font-size: 28px; display: block; margin-bottom: 8px; }
+
+    .pipeline-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.3px;
+    }
+
+    .pipeline-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-family: var(--font-mono);
+    }
+
+    /* ── DAY CARDS ── */
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .day-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.25s;
+    }
+
+    .day-card:hover {
+      border-color: var(--border-bright);
+      box-shadow: 0 0 48px var(--green-glow-lg);
+    }
+
+    .day-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .day-number {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .day-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      margin-top: 4px;
+    }
+
+    .day-status {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .status-active {
+      background: var(--red-dim);
+      color: var(--red-hot);
+      border: 1px solid rgba(239,68,68,0.25);
+    }
+
+    .status-next { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.25); }
+    .status-final { background: var(--blue-dim); color: var(--blue-ice); border: 1px solid rgba(56,189,248,0.25); }
+
+    .day-body { padding: 20px 24px; }
+
+    .day-section-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .day-section-title.lou { color: var(--blue-ice); }
+    .day-section-title.lou::before { content: ''; display: block; width: 10px; height: 1px; background: var(--blue-ice); }
+    .day-section-title.jeff { color: var(--purple); }
+    .day-section-title.jeff::before { content: ''; display: block; width: 10px; height: 1px; background: var(--purple); }
+
+    .task-list { list-style: none; }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 5px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid rgba(30,180,100,0.04);
+    }
+
+    .task-check {
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--border-bright);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      background: var(--bg-panel);
+    }
+
+    .task-priority {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .tp-p0 { background: var(--red-dim); color: var(--red-hot); }
+    .tp-p1 { background: var(--amber-dim); color: var(--amber); }
+
+    .day-checkpoint {
+      margin-top: 20px;
+      padding: 14px 16px;
+      background: rgba(34,214,114,0.06);
+      border: 1px solid var(--border-bright);
+      border-radius: 10px;
+    }
+
+    .checkpoint-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--green-bright);
+      margin-bottom: 8px;
+    }
+
+    .checkpoint-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .checkpoint-step {
+      font-size: 11px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .checkpoint-step::before {
+      content: '✓';
+      color: var(--green-bright);
+      font-size: 10px;
+    }
+
+    /* ── LIKSI SECTION ── */
+    .liksi-hero {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .liksi-visual {
+      background: radial-gradient(ellipse at center,
+        rgba(34,214,114,0.08) 0%, transparent 70%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px;
+      border-right: 1px solid var(--border);
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .liksi-model-placeholder {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      border: 2px solid var(--border-bright);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      background: radial-gradient(circle at 40% 35%,
+        rgba(34,214,114,0.15), rgba(34,214,114,0.03));
+      box-shadow:
+        0 0 60px rgba(34,214,114,0.1),
+        inset 0 0 40px rgba(34,214,114,0.05);
+      animation: float 4s ease-in-out infinite;
+      position: relative;
+    }
+
+    .liksi-model-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      border: 1px solid rgba(34,214,114,0.15);
+    }
+
+    .liksi-model-placeholder::after {
+      content: '';
+      position: absolute;
+      inset: -24px;
+      border-radius: 50%;
+      border: 1px solid rgba(34,214,114,0.07);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .liksi-model-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green-mid);
+      text-align: center;
+    }
+
+    .liksi-content {
+      padding: 48px 40px;
+    }
+
+    .liksi-name {
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--text-primary), var(--green-bright));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .liksi-tagline {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .context-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .context-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .context-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .context-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .context-action {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    /* ── BRANCH DIAGRAM ── */
+    .branch-diagram {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      margin-top: 40px;
+      font-family: var(--font-mono);
+    }
+
+    .branch-line {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.9;
+    }
+
+    .branch-main   { color: var(--green-bright); font-weight: 700; }
+    .branch-stage  { color: var(--amber); }
+    .branch-feat   { color: var(--blue-ice); }
+    .branch-note   { color: var(--text-muted); font-style: italic; }
+
+    /* ── GUARDRAIL PANELS ── */
+    .guardrail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .guardrail-panel {
+      border-radius: 16px;
+      padding: 28px;
+      border: 1px solid;
+    }
+
+    .guardrail-panel.lou {
+      background: rgba(56,189,248,0.04);
+      border-color: rgba(56,189,248,0.2);
+    }
+
+    .guardrail-panel.jeff {
+      background: rgba(167,139,250,0.04);
+      border-color: rgba(167,139,250,0.2);
+    }
+
+    .guardrail-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid;
+    }
+
+    .guardrail-panel.lou .guardrail-panel-header { border-color: rgba(56,189,248,0.15); }
+    .guardrail-panel.jeff .guardrail-panel-header { border-color: rgba(167,139,250,0.15); }
+
+    .guardrail-panel-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .guardrail-panel.lou .guardrail-panel-avatar  { background: rgba(56,189,248,0.1); }
+    .guardrail-panel.jeff .guardrail-panel-avatar { background: rgba(167,139,250,0.1); }
+
+    .guardrail-panel-name {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .guardrail-panel.lou  .guardrail-panel-name { color: var(--blue-ice); }
+    .guardrail-panel.jeff .guardrail-panel-name { color: var(--purple); }
+
+    .guardrail-panel-role {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      letter-spacing: 1px;
+    }
+
+    .do-list, .dont-list { list-style: none; margin-bottom: 16px; }
+
+    .do-list li, .dont-list li {
+      font-size: 13px;
+      padding: 5px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: var(--text-secondary);
+    }
+
+    .do-list li::before   { content: '✓'; color: var(--green-bright); flex-shrink: 0; margin-top: 1px; font-weight: 700; }
+    .dont-list li::before { content: '✗'; color: var(--red-hot);       flex-shrink: 0; margin-top: 1px; font-weight: 700; }
+
+    .guardrail-motto {
+      font-size: 13px;
+      font-style: italic;
+      padding: 12px 16px;
+      border-radius: 8px;
+      line-height: 1.5;
+    }
+
+    .guardrail-panel.lou  .guardrail-motto { background: rgba(56,189,248,0.06); color: var(--blue-ice); }
+    .guardrail-panel.jeff .guardrail-motto { background: rgba(167,139,250,0.06); color: var(--purple); }
+
+    /* ── UNDER DEVELOPMENT ── */
+    .blocked-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .blocked-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      background: rgba(40,40,50,0.6);
+      border: 1px solid rgba(107,114,128,0.2);
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .blocked-tag::before {
+      content: '⊘';
+      color: rgba(107,114,128,0.5);
+      font-size: 14px;
+    }
+
+    /* ── SENTENCE OF TRUTH ── */
+    .truth-panel {
+      background: linear-gradient(135deg,
+        rgba(34,214,114,0.06) 0%,
+        rgba(34,214,114,0.02) 100%);
+      border: 1px solid var(--border-bright);
+      border-radius: 20px;
+      padding: 48px;
+      text-align: center;
+      margin-top: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .truth-panel::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 20%; right: 20%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--green-bright), transparent);
+    }
+
+    .truth-quote {
+      font-size: clamp(16px, 2.5vw, 22px);
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto 24px;
+    }
+
+    .truth-quote strong { color: var(--green-bright); }
+
+    .truth-credit {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    /* ── NAV ── */
+    .top-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(5,10,14,0.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-brand {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--green-bright);
+      letter-spacing: -0.5px;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .nav-link {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: var(--bg-card);
+    }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--bg-void);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--green-bright);
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    .code-dim { color: var(--text-muted); }
+    .code-amber { color: var(--amber); }
+    .code-blue  { color: var(--blue-ice); }
+    .code-red   { color: var(--red-hot); }
+    .code-purple { color: var(--purple); }
+
+    /* ── STAT STRIP ── */
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 60px;
+    }
+
+    .stat-item {
+      background: var(--bg-card);
+      padding: 24px 28px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      color: var(--green-bright);
+      display: block;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ── LGU MOCKUP ── */
+    .lgu-mockup {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-top: 24px;
+    }
+
+    .lgu-mockup-bar {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mockup-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .mockup-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    .lgu-mockup-body {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .incident-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .incident-photo {
+      height: 140px;
+      background: linear-gradient(135deg,
+        rgba(34,214,114,0.1), rgba(56,189,248,0.05));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .incident-info {
+      padding: 16px;
+    }
+
+    .incident-type {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .incident-conf {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--green-bright);
+      margin-bottom: 10px;
+    }
+
+    .incident-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .incident-meta-row {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .action-column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 140px;
+    }
+
+    .action-btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+    }
+
+    .action-btn.primary {
+      background: var(--green-mid);
+      color: var(--bg-void);
+    }
+
+    .action-btn.secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .flow-container    { grid-template-columns: 1fr; }
+      .arch-grid         { grid-template-columns: 1fr; }
+      .days-grid         { grid-template-columns: 1fr; }
+      .liksi-hero        { grid-template-columns: 1fr; }
+      .guardrail-grid    { grid-template-columns: 1fr; }
+      .stat-strip        { grid-template-columns: 1fr 1fr; }
+      .lgu-mockup-body   { grid-template-columns: 1fr; }
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .footer-text {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .footer-text span { color: var(--green-mid); }
+
+    /* ── UTIL ── */
+    .mt-4  { margin-top: 16px; }
+    .mt-6  { margin-top: 24px; }
+    .mt-8  { margin-top: 32px; }
+    .mb-4  { margin-bottom: 16px; }
+    .mb-6  { margin-bottom: 24px; }
+    .text-green { color: var(--green-bright); }
+    .text-muted { color: var(--text-muted); }
+    .font-mono  { font-family: var(--font-mono); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════ NAV ══════════════════════════════════════ -->
+<nav class="top-nav">
+  <div class="nav-inner">
+    <a href="#top" class="nav-brand">🌿 LikasLens</a>
+    <nav class="nav-links">
+      <a href="#north-star" class="nav-link">North Star</a>
+      <a href="#priorities" class="nav-link">Priorities</a>
+      <a href="#architecture" class="nav-link">Architecture</a>
+      <a href="#liksi" class="nav-link">Liksi</a>
+      <a href="#battle-plan" class="nav-link">Battle Plan</a>
+      <a href="#guardrails" class="nav-link">Guardrails</a>
+    </nav>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════ HERO ══════════════════════════════════════ -->
+<section class="hero" id="top">
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow">
+    <span class="dot"></span>
+    SRT 2026 — MVP WAR PLAN
+  </div>
+  <h1 class="hero-title">LikasLens</h1>
+  <p class="hero-subtitle">
+    Environmental incident intelligence — from citizen evidence to verified government action, powered by real AI.
+  </p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Competition</span>
+      <span class="hero-meta-value">SRT 2026</span>
+    </div>
+    <div class="hero-meta-divider"></div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Timeline</span>
+      <span class="hero-meta-value">3-Day Sprint</span>
+    </div>
+    <div class="hero-meta-divider"></div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">AI Engine</span>
+      <span class="hero-meta-value">YOLOv8 + Gemini</span>
+    </div>
+    <div class="hero-meta-divider"></div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">Team Lead</span>
+      <span class="hero-meta-value">Jeff + Lou</span>
+    </div>
+    <div class="hero-meta-divider"></div>
+    <div class="hero-meta-item">
+      <span class="hero-meta-label">AI Companion</span>
+      <span class="hero-meta-value">Liksi 🌿</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════ STATS ══════════════════════════════════════ -->
+<div class="wrap" style="padding-top: 60px;">
+  <div class="stat-strip">
+    <div class="stat-item">
+      <span class="stat-value">5</span>
+      <span class="stat-label">P0 Features</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">1</span>
+      <span class="stat-label">Core Demo Loop</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">3</span>
+      <span class="stat-label">Days to Ship</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">0</span>
+      <span class="stat-label">Scope Creep Allowed</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ NORTH STAR ══════════════════════════════════════ -->
+<section class="section" id="north-star">
+  <div class="wrap">
+    <div class="section-label">Section 01</div>
+    <h2 class="section-title">The <span>North Star</span></h2>
+    <p class="section-desc">
+      One complete loop. Everything built in this sprint must serve this single flow or it does not get built.
+    </p>
+
+    <div class="flow-container">
+      <!-- Main System Flow -->
+      <div class="flow-diagram">
+        <div class="flow-title">SYSTEM FLOW</div>
+
+        <div class="flow-node">
+          <div class="flow-icon blue">👤</div>
+          <div class="flow-content">
+            <div class="flow-label">CITIZEN</div>
+            <div class="flow-detail">Mobile or web, any device</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon green">📸</div>
+          <div class="flow-content">
+            <div class="flow-label">REPORT INCIDENT</div>
+            <div class="flow-detail">Photo + Location + Details</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon amber">👻</div>
+          <div class="flow-content">
+            <div class="flow-label">GHOST MODE?</div>
+            <div class="flow-branch">
+              <span class="flow-pill yes">YES → Strip identity</span>
+              <span class="flow-pill no">NO → Standard metadata</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon green">🧠</div>
+          <div class="flow-content">
+            <div class="flow-label">AI ANALYSIS</div>
+            <div class="flow-detail">Local YOLOv8 → Cloud Gemini → Structured JSON</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon purple">🔀</div>
+          <div class="flow-content">
+            <div class="flow-label">ROUTING INTELLIGENCE</div>
+            <div class="flow-detail">Neo4j graph → PostgreSQL fallback</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon amber">🏛</div>
+          <div class="flow-content">
+            <div class="flow-label">LGU COMMAND CENTER</div>
+            <div class="flow-detail">Human review → Verify → Assign/Act</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon green">📢</div>
+          <div class="flow-content">
+            <div class="flow-label">STATUS UPDATE</div>
+            <div class="flow-detail">LGU action recorded and surfaced</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon blue">🌐</div>
+          <div class="flow-content">
+            <div class="flow-label">PUBLIC RECORD</div>
+            <div class="flow-detail">Level 1 transparency feed — zero Ghost identity exposure</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liksi Integration -->
+      <div class="flow-diagram">
+        <div class="flow-title">LIKSI SITS HERE</div>
+
+        <div class="flow-node">
+          <div class="flow-icon blue">👤</div>
+          <div class="flow-content">
+            <div class="flow-label">CITIZEN</div>
+            <div class="flow-detail">Environmental questions, reporting guidance</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon green">🌿</div>
+          <div class="flow-content">
+            <div class="flow-label">LIKSI</div>
+            <div class="flow-detail">AI Environmental Companion — context-aware</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon green">💡</div>
+          <div class="flow-content">
+            <div class="flow-label">UNDERSTANDING & GUIDANCE</div>
+            <div class="flow-detail">Clear answers, reporting assistance, incident context</div>
+          </div>
+        </div>
+
+        <div style="height: 32px; border-left: 2px dashed var(--border); margin-left: 19px; margin-top: 8px;"></div>
+
+        <div class="flow-node">
+          <div class="flow-icon amber">🏛</div>
+          <div class="flow-content">
+            <div class="flow-label">LGU OFFICER</div>
+            <div class="flow-detail">Needs decision support on complex incidents</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon green">🌿</div>
+          <div class="flow-content">
+            <div class="flow-label">LIKSI</div>
+            <div class="flow-detail">Same AI, different context prompt</div>
+          </div>
+        </div>
+
+        <div class="flow-node">
+          <div class="flow-icon purple">📋</div>
+          <div class="flow-content">
+            <div class="flow-label">INCIDENT INTELLIGENCE</div>
+            <div class="flow-detail">Summaries, routing explanations, next-step suggestions</div>
+          </div>
+        </div>
+
+        <div class="mt-6" style="padding: 16px; background: rgba(34,214,114,0.05); border: 1px solid var(--border-bright); border-radius: 10px;">
+          <div class="font-mono" style="font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">Provider</div>
+          <div style="font-size: 20px; font-weight: 800; color: var(--green-bright);">Google Gemini</div>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Same foundation. Two contexts. One personality.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════ PRIORITIES ══════════════════════════════════════ -->
+<section class="section" id="priorities">
+  <div class="wrap">
+    <div class="section-label">Section 02</div>
+    <h2 class="section-title">Priority <span>Framework</span></h2>
+    <p class="section-desc">
+      Ruthlessly prioritized. If it doesn't serve the demo loop, it waits.
+    </p>
+
+    <!-- ── P0 ── -->
+    <div class="priority-section">
+      <div class="priority-header">
+        <div class="priority-badge badge-p0">🔴 P0</div>
+        <div class="priority-title-text">SHIP OR DIE</div>
+        <div class="priority-desc">These are the only things allowed to block the MVP.</div>
+      </div>
+
+      <div class="feature-grid">
+
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <div class="feature-icon">📸</div>
+            <div>
+              <div class="feature-name">Citizen Reporting UI</div>
+            </div>
+            <div class="feature-owner owner-lou">Lou</div>
+          </div>
+          <ul class="feature-list">
+            <li>Preserve existing polished reporting UI</li>
+            <li>Simplified, fast flow — no bloat</li>
+            <li>Photo upload with evidence capture</li>
+            <li>Location picker (GPS + manual)</li>
+            <li>Basic incident description field</li>
+            <li>Standard / Ghost Mode selector</li>
+            <li>Clear submission progress state</li>
+          </ul>
+          <div class="guardrail">
+            ⛔ Hard boundary: No reward points, gamification, scoreboards, achievements, or social mechanics.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <div class="feature-icon">👻</div>
+            <div>
+              <div class="feature-name">Ghost Mode</div>
+            </div>
+            <div class="feature-owner owner-both">Both</div>
+          </div>
+          <ul class="feature-list">
+            <li>Uses the same report flow — no secondary workflow</li>
+            <li>Clear Ghost Mode activation trigger</li>
+            <li>Strong visual privacy state ("Your identity will not be attached")</li>
+            <li>Reporter identity separation on payload</li>
+            <li>Public/LGU payload excludes identifying info</li>
+            <li>Backend enforcement (Jeff)</li>
+          </ul>
+          <div class="guardrail">
+            ⛔ Must not create a confusing secondary workflow. Same flow, different trust level.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <div class="feature-icon">🧠</div>
+            <div>
+              <div class="feature-name">Real AI Analysis</div>
+            </div>
+            <div class="feature-owner owner-jeff">Jeff</div>
+          </div>
+          <ul class="feature-list">
+            <li>Local YOLOv8 inference — first pass</li>
+            <li>Cloud Gemini — deep analysis</li>
+            <li>Frontend agnostic: never expose which model is thinking</li>
+            <li>Structured JSON output with category, severity, confidence</li>
+            <li>Clean analysis state display for Lou to consume</li>
+          </ul>
+          <div class="code-block">
+Analyzing evidence...
+
+<span class="code-dim">✓</span> Environmental incident detected
+<span class="code-dim">✓</span> Category identified
+<span class="code-dim">✓</span> Severity assessed
+<span class="code-dim">✓</span> Responsible office recommended
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <div class="feature-icon">🔀</div>
+            <div>
+              <div class="feature-name">Routing Intelligence</div>
+            </div>
+            <div class="feature-owner owner-jeff">Jeff</div>
+          </div>
+          <ul class="feature-list">
+            <li>Neo4j graph recommendation — primary path</li>
+            <li>PostgreSQL rule fallback — always resolves</li>
+            <li>Output is always a "Recommended routing", never a mandate</li>
+            <li>LGU officer can Accept, Reassign, or Reject</li>
+            <li>Human-in-the-loop proven at every step</li>
+          </ul>
+          <div class="guardrail">
+            ⚠️ The AI does not have final authority. Always surface as recommendation, not decision.
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <div class="feature-icon">🏛</div>
+            <div>
+              <div class="feature-name">LGU Command Center</div>
+            </div>
+            <div class="feature-owner owner-lou">Lou</div>
+          </div>
+          <ul class="feature-list">
+            <li>A fool-proof action center — not an enterprise dashboard</li>
+            <li>Primary screen answers: What? Where? AI says? What do I do?</li>
+            <li>No dense tables as primary experience</li>
+            <li>Large readable typography, clear visual hierarchy</li>
+            <li>Action flow: NEW → REVIEW → VERIFY → ACTION TAKEN → RESOLVED</li>
+          </ul>
+
+          <!-- LGU Mockup -->
+          <div class="lgu-mockup mt-4">
+            <div class="lgu-mockup-bar">
+              <div class="mockup-dot" style="background:#ef4444"></div>
+              <div class="mockup-dot" style="background:#f59e0b"></div>
+              <div class="mockup-dot" style="background:#22d672"></div>
+              <span class="mockup-title">LGU Command Center — New Incident</span>
+            </div>
+            <div class="lgu-mockup-body">
+              <div class="incident-card">
+                <div class="incident-photo">🏭</div>
+                <div class="incident-info">
+                  <div class="incident-type">Illegal Waste Disposal</div>
+                  <div class="incident-conf">AI Confidence: High (94%)</div>
+                  <div class="incident-meta">
+                    <div class="incident-meta-row">📍 Brgy. Malibay, Pasay City</div>
+                    <div class="incident-meta-row">🏛 Recommended: LGU Environment Office</div>
+                    <div class="incident-meta-row" style="color:var(--text-muted);">🕐 Submitted 14 min ago</div>
+                  </div>
+                </div>
+              </div>
+              <div class="action-column">
+                <div style="font-size:10px;font-family:var(--font-mono);color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Actions</div>
+                <div class="action-btn primary">Review & Act</div>
+                <div class="action-btn secondary">Reassign</div>
+                <div class="action-btn secondary" style="color:var(--red-hot);border-color:rgba(239,68,68,0.3)">Mark Invalid</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <div class="feature-icon">🌐</div>
+            <div>
+              <div class="feature-name">Public Record — Level 1</div>
+            </div>
+            <div class="feature-owner owner-lou">Lou</div>
+          </div>
+          <ul class="feature-list">
+            <li>Clean public feed — incident, image, category, location, status, timestamp</li>
+            <li>Ghost Mode reports: zero identity exposure, always</li>
+            <li>No advanced analytics</li>
+            <li>No nationwide search</li>
+            <li>No map intelligence platform</li>
+            <li>No complex filtering beyond basics</li>
+          </ul>
+          <div class="guardrail">
+            ⚠️ Transparency does not mean complexity. Keep it readable by a barangay official.
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── P1 ── -->
+    <div class="priority-section">
+      <div class="priority-header">
+        <div class="priority-badge badge-p1">🟠 P1</div>
+        <div class="priority-title-text">IMPORTANT — ONLY AFTER P0</div>
+        <div class="priority-desc">If P0 is stable, these ship in Day 2.</div>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-card-header">
+            <div class="feature-icon">🌿</div>
+            <div>
+              <div class="feature-name">Liksi — AI Environmental Companion</div>
+            </div>
+            <div class="feature-owner owner-both">Both</div>
+          </div>
+          <ul class="feature-list">
+            <li>Context-aware: Citizen mode vs. LGU mode</li>
+            <li>Not a generic ChatGPT bubble — environmental reporting only</li>
+            <li>Citizen: "What can I report? Is this relevant? What happens after?"</li>
+            <li>LGU: "Summarize this. Why this office? What's missing?"</li>
+            <li>Powered by Gemini with scoped system prompt</li>
+            <li>3D model as hero/empty state asset (Lou, selectively)</li>
+          </ul>
+          <div class="guardrail">
+            ⚠️ Hard boundary: Liksi is an environmental assistant. Not a general chatbot. The prompt boundary controls cost and behavior.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── P2 ── -->
+    <div class="priority-section">
+      <div class="priority-header">
+        <div class="priority-badge badge-p2">🟡 P2</div>
+        <div class="priority-title-text">ONLY IF EVERYTHING WORKS</div>
+        <div class="priority-desc">Nice-to-have polish if all P0 + P1 are shippable.</div>
+      </div>
+
+      <div class="blocked-grid">
+        <span class="blocked-tag" style="color: var(--blue-ice); border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.04);">Enhanced public incident page</span>
+        <span class="blocked-tag" style="color: var(--blue-ice); border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.04);">Liksi animation refinements</span>
+        <span class="blocked-tag" style="color: var(--blue-ice); border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.04);">Advanced filters</span>
+        <span class="blocked-tag" style="color: var(--blue-ice); border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.04);">Map enhancements</span>
+        <span class="blocked-tag" style="color: var(--blue-ice); border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.04);">Additional admin polish</span>
+        <span class="blocked-tag" style="color: var(--blue-ice); border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.04);">Better empty states</span>
+        <span class="blocked-tag" style="color: var(--blue-ice); border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.04);">Micro-interactions</span>
+        <span class="blocked-tag" style="color: var(--blue-ice); border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.04);">Routing explanations</span>
+        <span class="blocked-tag" style="color: var(--blue-ice); border-color: rgba(56,189,248,0.2); background: rgba(56,189,248,0.04);">Expanded AI insights</span>
+      </div>
+    </div>
+
+    <!-- ── BLOCKED ── -->
+    <div class="priority-section">
+      <div class="priority-header">
+        <div class="priority-badge badge-blocked">⚫ UNDER DEVELOPMENT</div>
+        <div class="priority-title-text">DO NOT BUILD — FLAG IN UI IF EXISTS</div>
+        <div class="priority-desc">If it doesn't help the judge experience the core loop, it doesn't get dev time.</div>
+      </div>
+
+      <div class="blocked-grid">
+        <span class="blocked-tag">Reward system</span>
+        <span class="blocked-tag">Points</span>
+        <span class="blocked-tag">Scoreboards</span>
+        <span class="blocked-tag">Achievements</span>
+        <span class="blocked-tag">Blockchain evidence infra</span>
+        <span class="blocked-tag">Predictive environmental modeling</span>
+        <span class="blocked-tag">Offline synchronization</span>
+        <span class="blocked-tag">ASEAN expansion</span>
+        <span class="blocked-tag">Multi-language</span>
+        <span class="blocked-tag">Facebook Auth</span>
+        <span class="blocked-tag">Advanced public search</span>
+        <span class="blocked-tag">Complex analytics</span>
+        <span class="blocked-tag">Full GIS intelligence suite</span>
+        <span class="blocked-tag">Air-quality platform</span>
+        <span class="blocked-tag">Climate prediction</span>
+        <span class="blocked-tag">Advanced notifications</span>
+        <span class="blocked-tag">Multi-level gov hierarchy</span>
+        <span class="blocked-tag">Automatic enforcement</span>
+        <span class="blocked-tag">Autonomous agency action</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════ ARCHITECTURE ══════════════════════════════════════ -->
+<section class="section" id="architecture">
+  <div class="wrap">
+    <div class="section-label">Section 03</div>
+    <h2 class="section-title">System <span>Architecture</span></h2>
+    <p class="section-desc">
+      Five isolated environments. One contract law: OpenAPI REST only between boundaries.
+    </p>
+
+    <div class="arch-grid">
+      <div class="arch-service frontend">
+        <span class="arch-emoji">🖥</span>
+        <div class="arch-service-name">frontend</div>
+        <div class="arch-service-tech">Next.js 16 (App Router) · TypeScript · Tailwind</div>
+        <div class="arch-tags">
+          <span class="arch-tag">Public website</span>
+          <span class="arch-tag">Full web app</span>
+          <span class="arch-tag">Citizen portal</span>
+          <span class="arch-tag">Public record</span>
+        </div>
+      </div>
+      <div class="arch-service frontend">
+        <span class="arch-emoji">📱</span>
+        <div class="arch-service-name">mobile-pwa</div>
+        <div class="arch-service-tech">Next.js 16 (App Router) · TypeScript · Tailwind</div>
+        <div class="arch-tags">
+          <span class="arch-tag">Installable PWA</span>
+          <span class="arch-tag">Native feel</span>
+          <span class="arch-tag">Report flow</span>
+          <span class="arch-tag">Ghost mode</span>
+        </div>
+      </div>
+      <div class="arch-service frontend">
+        <span class="arch-emoji">🏛</span>
+        <div class="arch-service-name">admin-portal</div>
+        <div class="arch-service-tech">Next.js 16 (App Router) · TypeScript · Tailwind</div>
+        <div class="arch-tags">
+          <span class="arch-tag">Desktop dashboard</span>
+          <span class="arch-tag">LGU command center</span>
+          <span class="arch-tag">Routing actions</span>
+        </div>
+      </div>
+      <div class="arch-service backend">
+        <span class="arch-emoji">⚙️</span>
+        <div class="arch-service-name">backend</div>
+        <div class="arch-service-tech">Laravel 12 · PHP · PostgreSQL</div>
+        <div class="arch-tags">
+          <span class="arch-tag">Core API</span>
+          <span class="arch-tag">Session management</span>
+          <span class="arch-tag">Relational DB</span>
+          <span class="arch-tag">Ghost Mode logic</span>
+          <span class="arch-tag">Routing rules</span>
+        </div>
+      </div>
+      <div class="arch-service ai" style="grid-column: span 2;">
+        <span class="arch-emoji">🤖</span>
+        <div class="arch-service-name">ai-service</div>
+        <div class="arch-service-tech">Python 3.12 · FastAPI · YOLOv8 · Neo4j</div>
+        <div class="arch-tags">
+          <span class="arch-tag">Neuro-symbolic logic</span>
+          <span class="arch-tag">YOLOv8 local inference</span>
+          <span class="arch-tag">Gemini cloud analysis</span>
+          <span class="arch-tag">Neo4j graph routing</span>
+          <span class="arch-tag">Liksi API</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Pipeline -->
+    <div class="mt-8">
+      <div class="section-label">AI Analysis Pipeline</div>
+      <div class="pipeline">
+        <div class="pipeline-step">
+          <span class="pipeline-icon">🖼</span>
+          <div class="pipeline-label">IMAGE INPUT</div>
+          <div class="pipeline-sub">EXIF stripped</div>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-icon">⚡</span>
+          <div class="pipeline-label">LOCAL YOLO</div>
+          <div class="pipeline-sub">Fast first pass</div>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-icon">☁️</span>
+          <div class="pipeline-label">GEMINI</div>
+          <div class="pipeline-sub">Deep analysis</div>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-icon">📋</span>
+          <div class="pipeline-label">STRUCTURED JSON</div>
+          <div class="pipeline-sub">Category, severity, confidence</div>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-icon">🔀</span>
+          <div class="pipeline-label">ROUTING</div>
+          <div class="pipeline-sub">Neo4j → PostgreSQL</div>
+        </div>
+        <div class="pipeline-step">
+          <span class="pipeline-icon">✋</span>
+          <div class="pipeline-label">LGU REVIEW</div>
+          <div class="pipeline-sub">Human authority</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Branch Strategy -->
+    <div class="mt-8">
+      <div class="section-label">Branch Strategy</div>
+      <div class="branch-diagram">
+        <div class="branch-line">
+<span class="branch-main">main</span>
+<span class="code-dim"> ── Production / stable. Merge only when demo passes.</span>
+<br>│
+<br>└── <span class="branch-stage">staging</span>
+<span class="code-dim"> ── Integration branch. Only branch deployed as preview.</span>
+<br>      │
+<br>      ├── <span class="branch-feat">feature/lou-citizen-reporting</span>
+<br>      ├── <span class="branch-feat">feature/lou-lgu-dashboard</span>
+<br>      ├── <span class="branch-feat">feature/lou-ghost-mode-ux</span>
+<br>      ├── <span class="branch-feat">feature/jeff-ai-pipeline</span>
+<br>      ├── <span class="branch-feat">feature/jeff-routing-intelligence</span>
+<br>      └── <span class="branch-feat">feature/jeff-liksi-api</span>
+<br>
+<br><span class="code-dim">// Personal/reference branches remain untouched</span>
+        </div>
+
+        <div class="mt-6" style="display:grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div style="padding:16px; background: rgba(34,214,114,0.06); border: 1px solid var(--border-bright); border-radius:10px;">
+            <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--green-bright);margin-bottom:8px;">✓ Merge to main when</div>
+            <ul style="list-style:none;font-size:12px;color:var(--text-secondary);display:flex;flex-direction:column;gap:4px;">
+              <li>✓ Core demo works end-to-end</li>
+              <li>✓ No broken routes</li>
+              <li>✓ Environment variables configured</li>
+              <li>✓ Report → Action → Public Record passes</li>
+            </ul>
+          </div>
+          <div style="padding:16px; background: var(--red-dim); border: 1px solid rgba(239,68,68,0.25); border-radius:10px;">
+            <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--red-hot);margin-bottom:8px;">⛔ Nobody develops on</div>
+            <ul style="list-style:none;font-size:12px;color:#fca5a5;display:flex;flex-direction:column;gap:4px;">
+              <li>✗ Direct commits to main</li>
+              <li>✗ Feature branches that don't merge to staging first</li>
+              <li>✗ Hotfixes that skip staging validation</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════ LIKSI ══════════════════════════════════════ -->
+<section class="section" id="liksi">
+  <div class="wrap">
+    <div class="section-label">Section 04</div>
+    <h2 class="section-title">Meet <span>Liksi</span></h2>
+    <p class="section-desc">
+      LikasLens doesn't just collect environmental data. He helps people understand it.
+    </p>
+
+    <div class="liksi-hero">
+      <div class="liksi-visual">
+        <div class="liksi-model-placeholder">🌿</div>
+        <div class="liksi-model-label">
+          Liksi · 3D Model Asset<br>
+          <span style="color:var(--text-muted)">.glb · Three.js · Selective placement</span>
+        </div>
+        <div style="padding:12px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius:10px; text-align:center; max-width:240px;">
+          <div style="font-size:11px;font-family:var(--font-mono);color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">3D Model Integration</div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;">
+            Load the <code style="color:var(--green-bright);font-size:11px;">liksi.glb</code> asset selectively — hero page, assistant empty state. Not on every dashboard page.
+          </div>
+        </div>
+      </div>
+
+      <div class="liksi-content">
+        <div class="liksi-name">Liksi</div>
+        <p class="liksi-tagline">
+          An AI environmental companion with two modes of intelligence — citizen guidance and LGU decision support. Powered by Gemini with a scoped, cost-controlled system prompt.
+        </p>
+
+        <div class="context-cards">
+          <div class="context-card">
+            <div class="context-card-title">
+              <span>👤</span> Citizen Context
+            </div>
+            <div class="context-actions">
+              <span class="context-action">What can I report?</span>
+              <span class="context-action">Is this environmentally relevant?</span>
+              <span class="context-action">How do I submit evidence?</span>
+              <span class="context-action">What happens after I report?</span>
+              <span class="context-action">Where do I find my report status?</span>
+            </div>
+          </div>
+          <div class="context-card">
+            <div class="context-card-title">
+              <span>🏛</span> LGU Officer Context
+            </div>
+            <div class="context-actions">
+              <span class="context-action">Summarize this incident</span>
+              <span class="context-action">Why was this office recommended?</span>
+              <span class="context-action">What information is missing?</span>
+              <span class="context-action">Suggest next steps</span>
+              <span class="context-action">Assess severity level</span>
+            </div>
+          </div>
+          <div class="code-block" style="margin:0">
+USER CONTEXT
+    │
+    ▼
+LIKSI UI  (Lou)
+    │
+    ▼
+Next.js API Route
+    │
+    ▼
+Gemini API  (Jeff)
+    │
+    ├── Citizen Context  →  Reporting guidance
+    └── LGU Context     →  Incident intelligence
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════ BATTLE PLAN ══════════════════════════════════════ -->
+<section class="section" id="battle-plan">
+  <div class="wrap">
+    <div class="section-label">Section 05</div>
+    <h2 class="section-title">The 3-Day <span>Battle Plan</span></h2>
+    <p class="section-desc">
+      Day 1: Make it flow. Day 2: Close the loop. Day 3: Make it judge-proof.
+    </p>
+
+    <div class="days-grid">
+
+      <!-- DAY 1 -->
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Day 01</div>
+            <div class="day-title">Make the Product Flow</div>
+          </div>
+          <div class="day-status status-active">🔴 ACTIVE</div>
+        </div>
+        <div class="day-body">
+
+          <div class="day-section-title lou">Lou — Frontend</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Citizen reporting UI — preserve existing polish, simplify flow
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Ghost Mode UX — activation, visual privacy state
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              LGU incident list — clear, readable, no tables as primary
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              LGU incident detail + action screen
+            </li>
+          </ul>
+
+          <div class="day-section-title jeff">Jeff — Backend/AI</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Supabase schema verification
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Report API contract — OpenAPI first
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              AI analysis endpoint — YOLOv8 + Gemini
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Structured AI response schema
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Routing contract definition
+            </li>
+          </ul>
+
+          <div class="day-checkpoint">
+            <div class="checkpoint-label">⚡ End-of-Day Test</div>
+            <div class="checkpoint-steps">
+              <div class="checkpoint-step">Upload evidence photo</div>
+              <div class="checkpoint-step">AI analyzes and returns structured result</div>
+              <div class="checkpoint-step">Routing resolves to an office</div>
+              <div class="checkpoint-step">LGU can see incident in dashboard</div>
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px;font-style:italic;">Even if ugly internally — this flow must work.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 2 -->
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Day 02</div>
+            <div class="day-title">Close the Loop</div>
+          </div>
+          <div class="day-status status-next">🟠 NEXT</div>
+        </div>
+        <div class="day-body">
+
+          <div class="day-section-title lou">Lou — Frontend</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Human action states — NEW → REVIEW → VERIFY → RESOLVED
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Status update UX — citizen-visible progress
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Public Record Level 1 — clean feed
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p1">P1</span>
+              Liksi interface — context-aware chat UI
+            </li>
+          </ul>
+
+          <div class="day-section-title jeff">Jeff — Backend/AI</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Neo4j recommendation attempt + logging
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              PostgreSQL fallback — always resolves
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              Ghost Mode backend enforcement
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p0">P0</span>
+              LGU action persistence — status writes
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              <span class="task-priority tp-p1">P1</span>
+              Gemini / Liksi API route with context
+            </li>
+          </ul>
+
+          <div class="day-checkpoint">
+            <div class="checkpoint-label">⚡ End-of-Day Test</div>
+            <div class="checkpoint-steps">
+              <div class="checkpoint-step">Report submitted by citizen</div>
+              <div class="checkpoint-step">AI analyzes and routes</div>
+              <div class="checkpoint-step">LGU reviews and takes action</div>
+              <div class="checkpoint-step">Status visible on public record</div>
+            </div>
+            <div style="font-size:11px;color:var(--green-bright);margin-top:8px;font-style:italic;font-weight:700;">At this point: The MVP is shippable.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY 3 -->
+      <div class="day-card">
+        <div class="day-header">
+          <div>
+            <div class="day-number">Day 03</div>
+            <div class="day-title">Integrate & Judge-Proof</div>
+          </div>
+          <div class="day-status status-final">🔵 FINAL</div>
+        </div>
+        <div class="day-body">
+
+          <div class="day-section-title lou">Lou — Polish</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              Polish all critical paths
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              Error states — friendly, not technical
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              Loading states — never show a blank
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              Large readable typography throughout
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              Fool-proof LGU UX — zero confusion
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              Liksi visual integration — 3D model placement
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              Mark unfinished modules "UNDER DEVELOPMENT"
+            </li>
+          </ul>
+
+          <div class="day-section-title jeff">Jeff — Hardening</div>
+          <ul class="task-list">
+            <li class="task-item">
+              <div class="task-check"></div>
+              Failure testing — AI, routing, auth edge cases
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              API fallbacks verified
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              AI response validation (malformed output handling)
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              Demo dataset preparation
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              Environment variables locked for staging
+            </li>
+            <li class="task-item">
+              <div class="task-check"></div>
+              Vercel staging integration
+            </li>
+          </ul>
+
+          <div class="day-checkpoint" style="background:rgba(34,214,114,0.08); border-color: var(--green-bright);">
+            <div class="checkpoint-label" style="color:var(--green-bright);">🏆 Final Pitch Journey</div>
+            <div class="checkpoint-steps">
+              <div class="checkpoint-step" style="color:var(--text-primary)">"I am a citizen." → Report</div>
+              <div class="checkpoint-step" style="color:var(--text-primary)">"The system analyzes." → Show real AI</div>
+              <div class="checkpoint-step" style="color:var(--text-primary)">"The intelligence recommends." → Routing</div>
+              <div class="checkpoint-step" style="color:var(--text-primary)">"But AI doesn't act alone." → LGU officer</div>
+              <div class="checkpoint-step" style="color:var(--text-primary)">"The officer reviews and acts." → Action</div>
+              <div class="checkpoint-step" style="color:var(--text-primary)">"The public sees the result." → Public record</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════ GUARDRAILS ══════════════════════════════════════ -->
+<section class="section" id="guardrails">
+  <div class="wrap">
+    <div class="section-label">Section 06</div>
+    <h2 class="section-title">Team <span>Guardrails</span></h2>
+    <p class="section-desc">
+      Clear ownership. Clear boundaries. No scope creep past Day 1.
+    </p>
+
+    <div class="guardrail-grid">
+
+      <div class="guardrail-panel lou">
+        <div class="guardrail-panel-header">
+          <div class="guardrail-panel-avatar">🖥</div>
+          <div>
+            <div class="guardrail-panel-name">Lou</div>
+            <div class="guardrail-panel-role">Frontend Engineer · UX Owner</div>
+          </div>
+        </div>
+
+        <div style="font-size:12px;font-family:var(--font-mono);color:var(--blue-ice);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">✅ Lou builds</div>
+        <ul class="do-list">
+          <li>UX and UI design implementation</li>
+          <li>API consumption from Jeff's contracts</li>
+          <li>Form states and validation</li>
+          <li>Loading and error feedback</li>
+          <li>Accessibility and responsive layout</li>
+          <li>Fool-proof interaction design</li>
+          <li>Liksi 3D model visual integration</li>
+        </ul>
+
+        <div style="font-size:12px;font-family:var(--font-mono);color:var(--red-hot);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;margin-top:16px;">⛔ Lou does not touch</div>
+        <ul class="dont-list">
+          <li>Neo4j logic or graph queries</li>
+          <li>AI orchestration or model switching</li>
+          <li>YOLOv8 inference configuration</li>
+          <li>Routing algorithms</li>
+          <li>Database architecture or migrations</li>
+          <li>Laravel or PHP code</li>
+          <li>Python service deployment</li>
+        </ul>
+
+        <div class="guardrail-motto">
+          "Make LikasLens feel like a finished product even when the underlying MVP is intentionally narrow."
+        </div>
+      </div>
+
+      <div class="guardrail-panel jeff">
+        <div class="guardrail-panel-header">
+          <div class="guardrail-panel-avatar">⚙️</div>
+          <div>
+            <div class="guardrail-panel-name">Jeff</div>
+            <div class="guardrail-panel-role">Backend · AI Engineer · System Architect</div>
+          </div>
+        </div>
+
+        <div style="font-size:12px;font-family:var(--font-mono);color:var(--purple);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">✅ Jeff builds</div>
+        <ul class="do-list">
+          <li>Laravel API endpoints (OpenAPI-first)</li>
+          <li>Ghost Mode identity separation logic</li>
+          <li>AI analysis pipeline (YOLO + Gemini)</li>
+          <li>Neo4j routing recommendation</li>
+          <li>PostgreSQL routing fallback</li>
+          <li>Liksi Gemini API with context scoping</li>
+          <li>LGU action persistence</li>
+          <li>Staging environment and env vars</li>
+        </ul>
+
+        <div style="font-size:12px;font-family:var(--font-mono);color:var(--red-hot);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;margin-top:16px;">⛔ Jeff does not introduce (after Day 1)</div>
+        <ul class="dont-list">
+          <li>Any new subsystem not in P0 or P1</li>
+          <li>Predictive or forecasting models</li>
+          <li>New database schemas without alignment</li>
+          <li>"Wait, what if we add..." — write it down under UNDER DEVELOPMENT</li>
+        </ul>
+
+        <div class="guardrail-motto">
+          "Jeff does not introduce a new subsystem after Day 1 unless it directly fixes the critical demo flow."
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════════════════════════ TRUTH ══════════════════════════════════════ -->
+<section class="section">
+  <div class="wrap">
+    <div class="truth-panel">
+      <p class="truth-quote">
+        "<strong>LikasLens captures environmental evidence</strong>, analyzes it through resilient AI intelligence, recommends the appropriate response pathway, <strong>keeps humans in control of the action</strong>, and closes the loop through transparent status updates."
+      </p>
+      <div class="truth-credit">The Architecture in One Sentence — SRT 2026</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════ FOOTER ══════════════════════════════════════ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-text">
+      <span>LikasLens</span> · SRT 2026 MVP War Plan · Generated 2026-08-28 · Confidential — Team Only
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
