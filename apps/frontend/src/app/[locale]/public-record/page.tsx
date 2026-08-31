@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Globe, RefreshCw, List, MapIcon } from "lucide-react";
-import { laravelGet, cn, Skeleton } from "@likaslens/shared";
+import { getPublicImpact, cn, Skeleton } from "@likaslens/shared";
 import { PublicRecordFeed } from "@/components/public-record/public-record-feed";
 import { PublicRecordMap } from "@/components/public-record/public-record-map";
 import { LiksiContextCard } from "@/components/chat/liksi-context-card";
@@ -34,7 +34,7 @@ export default function PublicRecordPage() {
     let cancelled = false;
     async function load() {
       try {
-        const res = await laravelGet<any>("/public/impact");
+        const res = await getPublicImpact();
         if (!cancelled && res.success && res.data?.recent_verified) {
           const mapped = res.data.recent_verified.map((r: any, i: number) => ({
             id: r.id || `incident-${i}`,

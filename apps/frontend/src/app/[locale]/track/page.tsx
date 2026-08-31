@@ -24,7 +24,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
-import { apiGet, showToast, formatDate } from "@likaslens/shared";
+import { getSupabaseClient, showToast, formatDate } from "@likaslens/shared";
 
 interface AnonymousReportSaved {
   id: string;
@@ -74,9 +74,10 @@ function TrackContent() {
     if (!ticketId.trim()) return;
     setIsLoading(true);
     try {
-      const res = await apiGet<{ data?: TicketRecord }>(`/tickets/${ticketId.trim()}`);
-      if (res && res.data) {
-        setActiveTicket(res.data);
+      const db = getSupabaseClient();
+      const { data: res, error } = await db.from("tickets").select("*").eq("id", ticketId.trim()).single();
+      if (res) {
+        setActiveTicket(res);
       } else {
         // Fallback demo mock if backend record is still synchronizing
         setActiveTicket({

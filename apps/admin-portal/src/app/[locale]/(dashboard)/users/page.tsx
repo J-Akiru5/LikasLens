@@ -15,8 +15,7 @@ import {
   UserCog,
 } from "lucide-react";
 import {
-  laravelGet,
-  laravelPost,
+  getAdminUsers,
   updateUserRole,
   deleteAdminUser,
   bulkUserRole,
@@ -77,17 +76,14 @@ export default function UsersPage() {
     setError(null);
 
     try {
-      const params = new URLSearchParams({
+      const params: Record<string, string> = {
         page: (page + 1).toString(),
         per_page: PAGE_SIZE.toString(),
-        ...(search && { search }),
-        ...(roleFilter && { role: roleFilter }),
-      });
+      };
+      if (search) params.search = search;
+      if (roleFilter) params.role = roleFilter;
 
-      const result = await laravelGet<{
-        data: UserRow[];
-        meta: { total: number };
-      }>(`/admin/users?${params}`);
+      const result = await getAdminUsers(params);
 
       if (result && (result as { data: UserRow[] }).data) {
         const r = result as { data: UserRow[]; meta: { total: number } };
@@ -98,7 +94,7 @@ export default function UsersPage() {
         setTotal(result.length);
       }
     } catch (err) {
-      console.error("Laravel fetch error:", err);
+      console.error("Fetch users error:", err);
       setError(err instanceof Error ? err.message : "Failed to load users");
       setUsers([]);
     } finally {
@@ -122,7 +118,14 @@ export default function UsersPage() {
     }
     setCreateLoading(true);
     try {
-      await laravelPost("/admin/users", createForm);
+      const { getSupabaseClient } = await import("@likaslens/shared");
+      const db = getSupabaseClient();
+      const { error } = await db.from("users").insert({
+        name: createForm.name,
+        email: createForm.email,
+        role: createForm.role,
+      });
+      if (error) throw error;
       showToast("User created successfully", "success");
       setShowCreate(false);
       setCreateForm({ name: "", email: "", role: "citizen" });

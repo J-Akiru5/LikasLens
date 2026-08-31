@@ -6,7 +6,7 @@ import { MapboxOverlay } from "@deck.gl/mapbox";
 import { HeatmapLayer } from "@deck.gl/aggregation-layers";
 import { Loader2, AlertTriangle, MapPin, Maximize2, Info, X } from "lucide-react";
 import Link from "next/link";
-import { laravelGet } from "@likaslens/shared";
+import { getHeatmap } from "@likaslens/shared";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -165,9 +165,7 @@ export function HeatmapWidget() {
     setLoading(true);
     setError(null);
     try {
-      const res = await laravelGet<{ success: boolean; data: HeatmapData }>(
-        "/reports/heatmap?days=30"
-      );
+        const res = await getHeatmap({ days: "30" });
       if (res.success && res.data) {
         setData({
           points: Array.isArray(res.data.points) ? res.data.points : [],

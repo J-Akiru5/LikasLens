@@ -468,13 +468,13 @@ export default function MyReportsPage() {
                         <ShieldCheck className="w-3.5 h-3.5" /> Identity Protected
                       </span>
                     </div>
-                    {modalReport.image_url ? (
+                    {(modalReport as any).image_url ? (
                       <div
-                        onClick={() => setSelectedPhoto(modalReport.image_url || null)}
+                        onClick={() => setSelectedPhoto((modalReport as any).image_url || null)}
                         className="relative h-44 w-full rounded-xl overflow-hidden bg-black/10 border border-ink/10 cursor-pointer group shadow-inner"
                       >
                         <img
-                          src={modalReport.image_url}
+                          src={(modalReport as any).image_url}
                           alt="Evidence"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />

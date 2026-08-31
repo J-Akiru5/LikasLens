@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Loader2, AlertTriangle, MapPin, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { laravelGet } from "@likaslens/shared";
+import { getHeatmap } from "@likaslens/shared";
 
 interface HeatmapPoint {
   lat: number;
@@ -55,9 +55,7 @@ export function HeatmapWidget() {
     setLoading(true);
     setError(null);
     try {
-      const res = await laravelGet<{ success: boolean; data: HeatmapData }>(
-        "/reports/heatmap?days=7"
-      );
+        const res = await getHeatmap({ days: "7" });
       if (res.success && res.data) {
         setData({
           points: Array.isArray(res.data.points) ? res.data.points : [],

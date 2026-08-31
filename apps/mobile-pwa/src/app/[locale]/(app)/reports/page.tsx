@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { FileText, CheckCircle, AlertCircle, Clock, Loader2, Download, PieChart } from "lucide-react";
-import { laravelGet, getTickets, showToast } from "@likaslens/shared";
+import { getDashboardStats, getTickets, showToast } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
 import { TimeSeriesChart } from "@/components/charts/time-series-chart";
 import { ViolationDonut } from "@/components/charts/violation-donut";
@@ -27,7 +27,7 @@ export default function ReportsAnalyticsPage() {
 
   useEffect(() => {
     Promise.all([
-      laravelGet<any>("/dashboard/stats"),
+      getDashboardStats(),
       getTickets({ per_page: "100" }),
     ])
       .then(([statsRes, ticketsRes]) => {

@@ -69,34 +69,28 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
       <div className="flex items-center gap-3">
         <Link
           href="/login"
+          className="font-mono text-[11px] font-semibold tracking-[0.1em] uppercase transition-colors px-2.5 py-1.5 rounded-lg"
           style={{
-            fontFamily: "monospace",
-            fontSize: 11,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
             color: invert ? "rgba(240,237,232,0.85)" : "rgba(17,24,20,0.75)",
             textDecoration: "none",
-            transition: "color 0.2s",
           }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = invert ? "#ffffff" : "#111814")}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = invert ? "rgba(240,237,232,0.85)" : "rgba(17,24,20,0.75)")}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.color = invert ? "#ffffff" : "#111814";
+            (e.currentTarget as HTMLElement).style.background = invert ? "rgba(255,255,255,0.08)" : "rgba(17,24,20,0.04)";
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.color = invert ? "rgba(240,237,232,0.85)" : "rgba(17,24,20,0.75)";
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+          }}
         >
           {t("login")}
         </Link>
         <Link
           href="/register"
+          className="inline-flex items-center justify-center px-4 py-2 bg-[var(--accent-bright)] text-[#0d1a12] text-xs font-bold rounded-lg shadow-[0_2px_12px_rgba(46,230,200,0.25)] hover:shadow-[0_4px_20px_rgba(46,230,200,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
           style={{
-            padding: "7px 16px",
-            background: "#2ee6c8",
-            color: "#0d1a12",
-            fontSize: 12,
-            fontWeight: 700,
-            borderRadius: 8,
             textDecoration: "none",
-            transition: "background 0.2s",
           }}
-          onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#40f0d4")}
-          onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#2ee6c8")}
         >
           {t("signUp")}
         </Link>

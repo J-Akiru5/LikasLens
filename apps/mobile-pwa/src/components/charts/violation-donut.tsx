@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { laravelGet } from "@likaslens/shared";
+import { getPublicImpact } from "@likaslens/shared";
 
 interface ReportsByType {
   [type: string]: number;
@@ -75,7 +75,7 @@ export function ViolationDonut() {
   useEffect(() => {
     async function fetchImpact() {
       try {
-        const res = await laravelGet<any>("/public/impact");
+          const res = await getPublicImpact();
         if (res?.success && res?.data?.reports_by_type) {
           const entries = Object.entries(res.data.reports_by_type as ReportsByType);
           const totalCount = entries.reduce((sum, [, count]) => sum + count, 0);

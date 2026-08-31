@@ -34,50 +34,20 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-<<<<<<< HEAD
-import { GeoTagMap } from "@/components/maps/geo-tag-map";
-import { cn, submitCitizenReport, showToast, Button } from "@likaslens/shared";
-=======
 import { motion, AnimatePresence } from "framer-motion";
->>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
 import { createClient } from "@/lib/supabase/client";
 import { useHaptics } from "@/hooks/use-haptics";
 import {
+  cn,
+  submitCitizenReport,
   showToast,
-  apiPost,
   queueReport,
+  Button,
 } from "@likaslens/shared";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
 import { GhostShieldOverlay } from "@/components/ghost-shield-overlay";
 import { captureWithStamp, dataUrlToBase64 } from "@/lib/camera-stamp";
 
-<<<<<<< HEAD
-interface FailedPayload {
-  base64Image: string;
-  latitude: number | undefined;
-  longitude: number | undefined;
-  user_id: string | undefined;
-  description: string | undefined;
-  report_type: string;
-  ghost_mode: boolean;
-}
-
-interface FailedSubmission {
-  error: string;
-  payload: FailedPayload;
-  retriesExhausted?: boolean;
-}
-
-const INCIDENT_TYPES: { value: string; label: string }[] = [
-  { value: "waste_dumping", label: "Illegal Dumping" },
-  { value: "water_pollution", label: "Water Pollution" },
-  { value: "air_pollution", label: "Air Pollution" },
-  { value: "illegal_logging", label: "Deforestation" },
-  { value: "other", label: "Noise Pollution" },
-  { value: "wildlife_poaching", label: "Wildlife Threat" },
-  { value: "other", label: "Chemical Spill" },
-  { value: "other", label: "Other" },
-=======
 const INCIDENT_CATEGORIES = [
   { id: "illegal_logging", label: "Illegal Logging", icon: Trees, color: "text-emerald-500", bg: "bg-emerald-500/10" },
   { id: "water_pollution", label: "Water Pollution", icon: Droplets, color: "text-cyan-500", bg: "bg-cyan-500/10" },
@@ -88,7 +58,6 @@ const INCIDENT_CATEGORIES = [
   { id: "coastal_hazard", label: "Coastal & Marine", icon: Waves, color: "text-sky-500", bg: "bg-sky-500/10" },
   { id: "open_burning", label: "Open Burning", icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10" },
   { id: "other", label: "Other Hazard", icon: AlertCircle, color: "text-indigo-500", bg: "bg-indigo-500/10" },
->>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
 ];
 
 const SUGGESTED_DETAILS = [
@@ -427,20 +396,6 @@ export default function ReportPage() {
         }
       }
 
-<<<<<<< HEAD
-      // canvas.toDataURL() returns a raw pixel raster, so EXIF metadata is
-      // already stripped at capture. Ghost Mode additionally omits GPS.
-      const base64Image = dataUrlToBase64(photo);
-
-      const payload: FailedPayload = {
-        base64Image,
-        latitude: gps?.lat,
-        longitude: gps?.lng,
-        user_id: userId,
-        description: description || undefined,
-        report_type: incidentType,
-        ghost_mode: ghostMode,
-=======
       const payload: Record<string, unknown> = {
         base64Image: dataUrlToBase64(cleanedImage),
         latitude: latitude ?? 14.5995,
@@ -448,7 +403,7 @@ export default function ReportPage() {
         location: resolvedAddress,
         description: description.trim() || `${reportType.replace(/_/g, " ")} reported.`,
         report_type: reportType || "waste_dumping",
->>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
+        ghost_mode: isGhostMode,
       };
 
       if (!isGhostMode && userId) payload.user_id = userId;
@@ -462,14 +417,9 @@ export default function ReportPage() {
         return;
       }
 
-<<<<<<< HEAD
-      const res = await submitCitizenReport(payload);
-      const ticketId = res?.data?.id || crypto.randomUUID();
-=======
-      const responseData = await apiPost<{ message: string; data?: { id?: string } }>("/reports", payload);
-      const assignedTicketId = responseData.data?.id || `LL-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
-      setSubmittedTicketId(assignedTicketId);
->>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
+      const res = await submitCitizenReport(payload as never);
+      const ticketId = res?.data?.id || `LL-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+      setSubmittedTicketId(ticketId);
 
       // Save submission reference locally for immediate visibility in History / Submissions
       if (typeof window !== "undefined") {
@@ -478,10 +428,10 @@ export default function ReportPage() {
           const raw = localStorage.getItem(storageKey);
           const list = raw ? JSON.parse(raw) : [];
           list.unshift({
-            id: assignedTicketId,
+            id: ticketId,
             display_id: isGhostMode
-              ? `GHOST-${assignedTicketId.slice(0, 6).toUpperCase()}`
-              : `LL-${assignedTicketId.slice(0, 8).toUpperCase()}`,
+              ? `GHOST-${ticketId.slice(0, 6).toUpperCase()}`
+              : `LL-${ticketId.slice(0, 8).toUpperCase()}`,
             title: `${reportType ? reportType.replace(/_/g, " ") : "Incident"} Report`,
             category: reportType || "waste_dumping",
             location: resolvedAddress,
@@ -494,30 +444,13 @@ export default function ReportPage() {
       }
 
       haptic("success");
-      showToast(responseData.message || "Incident Report Submitted Successfully!", "success");
+      showToast("Incident Report Submitted Successfully!", "success");
       setShowReviewModal(false);
       setIsSubmittedSuccess(true);
     } catch (err) {
       haptic("error");
-<<<<<<< HEAD
-      const message = err instanceof Error ? err.message : "Failed to submit report";
-      showToast(message, "error");
-      setFailedSubmission({
-        error: message,
-        payload: {
-          base64Image: dataUrlToBase64(photo!),
-          latitude: gps?.lat,
-          longitude: gps?.lng,
-          user_id: userId,
-          description: description || undefined,
-          report_type: incidentType,
-          ghost_mode: ghostMode,
-        },
-      });
-=======
       const msg = err instanceof Error ? err.message : "Failed to submit report";
       showToast(msg, "error");
->>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
     } finally {
       setIsSubmitting(false);
     }
@@ -1024,164 +957,7 @@ export default function ReportPage() {
                     Continue to Details <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
-<<<<<<< HEAD
-                <span style={{ fontFamily: "var(--font-body)" }} className="text-green font-bold text-[11px]">Use photo</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  const retrySubmission = useCallback(async () => {
-    if (!failedSubmission) return;
-    if (retryCount >= MAX_RETRIES) return;
-
-    const attempt = retryCount + 1;
-    setSubmitting(true);
-    setRetryCount(attempt);
-    try {
-      await submitCitizenReport(failedSubmission.payload);
-      haptic("success");
-      showToast("Report submitted successfully!", "success");
-      setFailedSubmission(null);
-      setRetryCount(0);
-      setPhoto(null);
-      setIncidentType("");
-      setDescription("");
-      setStep("camera");
-      router.push(`/${locale}/dashboard`);
-    } catch (err) {
-      haptic("error");
-      const msg = err instanceof Error ? err.message : "Request failed";
-      const remaining = MAX_RETRIES - attempt;
-      if (remaining > 0) {
-        showToast(`Attempt ${attempt} of ${MAX_RETRIES} failed. ${remaining} retr${remaining > 1 ? "ies" : "y"} left.`, "error");
-      } else {
-        showToast(`Attempt ${attempt} of ${MAX_RETRIES} — max retries reached. Please try again later.`, "error");
-      }
-      setFailedSubmission((prev) =>
-        prev
-          ? {
-              ...prev,
-              error: `${msg} (attempt ${attempt}/${MAX_RETRIES})`,
-              retriesExhausted: attempt >= MAX_RETRIES,
-            }
-          : null,
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  }, [failedSubmission, retryCount, locale, router]);
-
-  const RetryBanner = () =>
-    failedSubmission ? (
-      <div
-        className="ios-grouped-list"
-        style={{
-          padding: "14px",
-          borderRadius: 16,
-          border: "1px solid color-mix(in oklab, var(--red) 35%, transparent)",
-          background: "color-mix(in oklab, var(--red) 6%, var(--panel))",
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-          <AlertTriangle
-            style={{ width: 18, height: 18, color: "var(--red)", flexShrink: 0, marginTop: 2 }}
-          />
-          <div style={{ flex: 1 }}>
-            <p
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: 13,
-                fontWeight: 600,
-                color: "var(--ink)",
-                margin: 0,
-              }}
-            >
-              Report failed to send
-            </p>
-            <p
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: 12,
-                color: "var(--muted)",
-                margin: "4px 0 0",
-                lineHeight: 1.4,
-              }}
-            >
-              {failedSubmission.error}
-            </p>
-          </div>
-          <button
-            onClick={() => { setFailedSubmission(null); setRetryCount(0); }}
-            aria-label="Dismiss retry"
-            className="touch-target rounded-full"
-            style={{
-              background: "color-mix(in oklab, var(--ink) 8%, transparent)",
-              width: 28,
-              height: 28,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >
-            <X style={{ width: 14, height: 14, color: "var(--muted)" }} />
-          </button>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
-            onClick={() => { setFailedSubmission(null); setRetryCount(0); }}
-            className="touch-target"
-            style={{
-              flex: 1,
-              padding: "10px 0",
-              borderRadius: 12,
-              border: "1px solid var(--border)",
-              background: "transparent",
-              fontFamily: "var(--font-body)",
-              fontSize: 13,
-              fontWeight: 600,
-              color: "var(--muted)",
-            }}
-          >
-            Dismiss
-          </button>            <button
-            onClick={retrySubmission}
-            disabled={submitting || autoRetrying || failedSubmission.retriesExhausted}
-            className="touch-target"
-            style={{
-              flex: 1,
-              padding: "10px 0",
-              borderRadius: 12,
-              border: "none",
-              background: failedSubmission.retriesExhausted ? "color-mix(in oklab, var(--ink) 20%, transparent)" : "var(--red)",
-              fontFamily: "var(--font-body)",
-              fontSize: 13,
-              fontWeight: 700,
-              color: failedSubmission.retriesExhausted ? "var(--muted-subtle)" : "#fff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              opacity: submitting ? 0.5 : 1,
-              cursor: failedSubmission.retriesExhausted ? "not-allowed" : "pointer",
-            }}
-          >
-            {submitting ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : failedSubmission.retriesExhausted ? (
-              <X style={{ width: 14, height: 14 }} />
-            ) : (
-              <RefreshCw style={{ width: 14, height: 14 }} />
-=======
               </motion.div>
->>>>>>> 6597972 (feat(mobile-pwa): revamp 3-step reporting wizard, camera AR stamp, 5-stage dispatch pipeline, and history sync)
             )}
 
             {/* ── STEP 3: Incident Details & Location ────────────────── */}
@@ -1283,7 +1059,7 @@ export default function ReportPage() {
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
+           </AnimatePresence>
         )}
       </div>
 

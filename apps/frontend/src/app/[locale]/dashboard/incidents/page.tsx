@@ -194,7 +194,7 @@ export default function IncidentsPage() {
             <button
               onClick={() => setSelectedStatus("in_review")}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                selectedStatus === "in_review"
+                (selectedStatus as string) === "in_review"
                   ? "bg-accent text-page shadow-xs"
                   : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
               }`}
@@ -202,19 +202,19 @@ export default function IncidentsPage() {
               <span>Under Review</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
-                  selectedStatus === "in_review"
+                  (selectedStatus as string) === "in_review"
                     ? "bg-page/20 text-page border border-page/30 shadow-xs"
                     : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
                 }`}
               >
-                {tickets.filter((t) => t.status === "in_review").length}
+                {tickets.filter((t) => (t.status as string) === "in_review" || t.status === "pending_review").length}
               </span>
             </button>
 
             <button
               onClick={() => setSelectedStatus("investigating")}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                selectedStatus === "investigating" || selectedStatus === "assigned"
+                selectedStatus === "investigating" || (selectedStatus as string) === "assigned"
                   ? "bg-accent text-page shadow-xs"
                   : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
               }`}
@@ -222,12 +222,12 @@ export default function IncidentsPage() {
               <span>Inspectors On Site</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
-                  selectedStatus === "investigating" || selectedStatus === "assigned"
+                  selectedStatus === "investigating" || (selectedStatus as string) === "assigned"
                     ? "bg-page/20 text-page border border-page/30 shadow-xs"
                     : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
                 }`}
               >
-                {tickets.filter((t) => t.status === "investigating" || t.status === "assigned").length}
+                {tickets.filter((t) => t.status === "investigating" || (t.status as string) === "assigned").length}
               </span>
             </button>
 
