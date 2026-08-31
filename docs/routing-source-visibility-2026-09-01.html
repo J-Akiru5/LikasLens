@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Routing Source Visibility & Explain Endpoint Fix</title>
+<style>
+  :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #c9d1d9; --text-dim: #8b949e; --accent: #58a6ff; --green: #3fb950; --red: #f85149; --amber: #d29922; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; color: #f0ede8; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.3rem; color: var(--accent); margin: 2rem 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; color: #f0ede8; margin: 1.25rem 0 0.5rem; }
+  .meta { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-amber { background: rgba(210,153,34,0.15); color: var(--amber); border: 1px solid rgba(210,153,34,0.3); }
+  .badge-red { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
+  pre { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: 'SF Mono', Consolas, monospace; font-size: 0.8rem; overflow-x: auto; margin: 0.75rem 0; white-space: pre-wrap; }
+  .highlight { background: rgba(88,166,255,0.08); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  .warn { background: rgba(210,153,34,0.08); border-left: 3px solid var(--amber); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  .danger { background: rgba(248,81,73,0.08); border-left: 3px solid var(--red); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.85rem; }
+  th { text-align: left; padding: 0.5rem; border-bottom: 2px solid var(--border); color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 0.5rem; border-bottom: 1px solid var(--border); }
+  ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+  li { margin: 0.25rem 0; }
+</style>
+</head>
+<body>
+
+<h1>Routing Source Visibility & Explain Endpoint Fix</h1>
+<p class="meta">September 1, 2026 &nbsp;|&nbsp; Branch: <code>development</code> &nbsp;|&nbsp; Commit: <code>a076a18</code></p>
+
+<hr style="border-color: var(--border);">
+
+<h2>Step 0 — Status Check</h2>
+
+<table>
+  <tr><th>Prompt</th><th>Status on origin/development</th></tr>
+  <tr>
+    <td>#1 (admin ticket-status bypass)</td>
+    <td><span class="badge badge-red">NOT FIXED</span> — 6 bypass sites still present in admin.ts</td>
+  </tr>
+  <tr>
+    <td>#3 (confidence formatting, SLA, RA 9275, routing learner)</td>
+    <td><span class="badge badge-green">LANDED</span> — confidence now renders as <code>(value * 100).toFixed(0)%</code></td>
+  </tr>
+</table>
+
+<p>Part A's confidence badge formatting was adapted to sit alongside prompt #3's already-fixed rendering — no conflict.</p>
+
+<hr style="border-color: var(--border);">
+
+<h2>Part A — Surface routing_source + Recommended Office</h2>
+
+<div class="card">
+  <h3>Problem</h3>
+  <p><code>_ticket_to_dict()</code> already returns <code>ai_recommended_office</code> and <code>routing_source</code> on every ticket fetch — the data is flowing over the wire. But the TypeScript type (<code>TicketDetail</code>) didn't declare them, and the admin panel never rendered them. The biggest visibility gap on the war plan was one missing type declaration and a few lines of JSX.</p>
+
+  <h3>Fix — Type Declaration</h3>
+  <p>Added to <code>TicketDetail</code> in <code>apps/shared/src/types/ticket.ts</code>:</p>
+  <pre>ai_recommended_office?: string | null;
+routing_source?: string | null;</pre>
+
+  <h3>Fix — Panel Rendering</h3>
+  <p>New "Routing" block in <code>incident-detail-panel.tsx</code>, placed after the AI Analysis block, matching its visual style (font-mono uppercase label, rounded card):</p>
+  <ul>
+    <li><strong>Recommended Office</strong> — shown as plain text when present</li>
+    <li><strong>routing_source</strong> — rendered as a distinct badge:
+      <ul>
+        <li><code>"neo4j"</code> → <span style="color: var(--green);">Knowledge Graph</span> badge (green — strongest claim)</li>
+        <li><code>"postgresql_fallback"</code> → Deterministic Fallback badge (neutral)</li>
+        <li>Any other value → rendered as-is (no fabrication)</li>
+        <li><code>null</code>/missing → block not shown</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h3>Fresh Clone Verification</h3>
+  <pre>=== TICKET TYPE: new fields ===
+30:  ai_recommended_office?: string | null;
+31:  routing_source?: string | null;
+
+=== PANEL: routing_source rendered ===
+184:  {(ticket.ai_recommended_office || ticket.routing_source) && (
+190:    {ticket.ai_recommended_office && (
+193:      &lt;span className="font-medium"&gt;{ticket.ai_recommended_office}&lt;/span&gt;
+196:    {ticket.routing_source && (
+199:      {ticket.routing_source === "neo4j" ? (
+201:        Knowledge Graph
+203:      ) : ticket.routing_source === "postgresql_fallback" ? (
+205:        Deterministic Fallback
+209:        {ticket.routing_source}
+
+=== CONFIDENCE FORMAT (prompt #3) ===
+150:  ? `${(ticket.ai_confidence * 100).toFixed(0)}% confidence`</pre>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Part B — Remove Invented Confidence Sub-scores</h2>
+
+<div class="danger">
+  <strong>Correction to earlier report:</strong> A prior status check today claimed the <code>/explain</code> endpoint's invented confidence sub-scores were "confirmed removed." That was wrong — caused by a bad grep pattern, not an actual fix. Verified directly: <code>tickets.py</code>'s <code>explain_ticket()</code> still returned <code>community_corroboration: 0.4</code> and <code>geo_within_known_zone: 0.5</code> — hardcoded constants for every ticket, not computed from anything.
+</div>
+
+<div class="card">
+  <h3>Before</h3>
+  <pre>"confidence_breakdown": {
+    "visual": confidence,
+    "community_corroboration": 0.4,
+    "geo_within_known_zone": 0.5,
+}</pre>
+
+  <h3>After</h3>
+  <pre>"confidence_breakdown": {
+    "visual": confidence,
+}</pre>
+
+  <p>The honest answer is that this endpoint doesn't have community corroboration or geo-zone matching signals yet — not a plausible-sounding placeholder.</p>
+
+  <h3>TypeScript Type Updated</h3>
+  <pre>export interface ConfidenceBreakdown {
+  visual: number;
+}</pre>
+
+  <h3>RA 9275 in explain_ticket()</h3>
+  <p>Confirmed already correct — <code>"RA 9275 (Philippine Clean Water Act)"</code>. The prior session's fix covered this STATUTE_MAP (only one exists in the file). No second occurrence needed.</p>
+
+  <h3>Fresh Clone Verification</h3>
+  <pre>=== BOGUS SUB-SCORES REMOVED ===
+(expect empty)
+$
+=== CONFIDENCE_BREAKDOWN CONTENT ===
+391:  "confidence_breakdown": {
+392-      "visual": confidence,
+393-  },
+
+=== RA 9275 LABEL ===
+378:  "water_pollution": "RA 9275 (Philippine Clean Water Act)",</pre>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Part C — Rule-Chain Explainability (Deferred)</h2>
+
+<div class="warn">
+  <strong>Deferred.</strong> Parts A and B are verified and landed. The optional stretch (wiring up the <code>/explain</code> endpoint with a proxy route and on-demand panel expansion) was not attempted in this pass. Reason: the core value of this prompt — making routing data visible and removing fabricated sub-scores — is complete. The explain endpoint's rule-chain data is already correct on the server side; wiring it to the UI is a separate UI enhancement that can be done safely in a follow-up without risk to the data-integrity fixes in Parts A/B.
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Build Verification</h2>
+
+<table>
+  <tr><th>Check</th><th>Result</th></tr>
+  <tr><td><code>pnpm --filter admin-portal build</code></td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td><code>python -m pytest tests/test_e2e_migration.py::TestTickets</code></td><td><span class="badge badge-green">11/11 PASS</span></td></tr>
+</table>
+
+<h2>Summary</h2>
+
+<table>
+  <tr><th>Part</th><th>What Changed</th><th>Files</th></tr>
+  <tr>
+    <td>A</td>
+    <td>Routing data visible in admin panel — recommended office + routing source badge</td>
+    <td><code>ticket.ts</code>, <code>incident-detail-panel.tsx</code></td>
+  </tr>
+  <tr>
+    <td>B</td>
+    <td>Removed bogus <code>community_corroboration</code> and <code>geo_within_known_zone</code> from explain endpoint; corrected earlier false "fixed" claim</td>
+    <td><code>tickets.py</code>, <code>ticket.ts</code></td>
+  </tr>
+  <tr>
+    <td>C</td>
+    <td>Deferred — rule-chain UI wiring is a follow-up enhancement</td>
+    <td>—</td>
+  </tr>
+</table>
+
+</body>
+</html>
