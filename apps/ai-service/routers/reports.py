@@ -25,6 +25,9 @@ logger = logging.getLogger(__name__)
 
 STORAGE_BUCKET = settings.supabase_storage_bucket
 
+# Anonymous ghost user ID for uploads when reporter identity is hidden
+GHOST_USER_ID = uuid.UUID("019edc0b-862e-722a-b489-c3bb01558a3c")
+
 
 class ReportRequest(BaseModel):
     base64Image: str
@@ -158,6 +161,9 @@ async def submit_report(
     evidence = TicketEvidence(
         id=uuid.uuid4(),
         ticket_id=ticket_id,
+        uploaded_by_user_id=uuid.UUID(reporter_user_id) if reporter_user_id else GHOST_USER_ID,
+        storage_provider="supabase",
+        storage_bucket=STORAGE_BUCKET,
         storage_path=storage_path,
         checksum_sha256=checksum,
         mime_type=mime_type,

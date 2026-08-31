@@ -83,24 +83,29 @@ class Ticket(Base):
 
 
 class TicketEvidence(Base):
-    __tablename__ = "ticket_evidences"
+    __tablename__ = "ticket_evidence"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     ticket_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("tickets.id"), nullable=False)
+    uploaded_by_user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    storage_provider: Mapped[str] = mapped_column(String(50), nullable=False)
+    storage_bucket: Mapped[str] = mapped_column(String(255), nullable=False)
     storage_path: Mapped[str] = mapped_column(String(1000))
-    storage_provider: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     checksum_sha256: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     mime_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     file_size_bytes: Mapped[Optional[int]] = mapped_column(nullable=True)
+    captured_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     exif_removed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     yolo_status: Mapped[str] = mapped_column(String(50), default="pending")
+    yolo_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     ticket: Mapped["Ticket"] = relationship("Ticket", back_populates="evidence")
 
 
 class TicketTimeline(Base):
-    __tablename__ = "ticket_timelines"
+    __tablename__ = "ticket_timeline"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     ticket_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("tickets.id"), nullable=False)
@@ -111,6 +116,7 @@ class TicketTimeline(Base):
     from_status: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     to_status: Mapped[str] = mapped_column(String(50))
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    metadata: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     ticket: Mapped["Ticket"] = relationship("Ticket", back_populates="timeline")
