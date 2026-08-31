@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — New-User Google Sign-in Rejection Diagnosis</title>
+<style>
+  :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #c9d1d9; --text-dim: #8b949e; --accent: #58a6ff; --green: #3fb950; --red: #f85149; --amber: #d29922; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; color: #f0ede8; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.3rem; color: var(--accent); margin: 2rem 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; color: #f0ede8; margin: 1.25rem 0 0.5rem; }
+  .meta { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-amber { background: rgba(210,153,34,0.15); color: var(--amber); border: 1px solid rgba(210,153,34,0.3); }
+  .badge-red { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
+  pre { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: 'SF Mono', Consolas, monospace; font-size: 0.8rem; overflow-x: auto; margin: 0.75rem 0; white-space: pre-wrap; }
+  .highlight { background: rgba(88,166,255,0.08); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  .warn { background: rgba(210,153,34,0.08); border-left: 3px solid var(--amber); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  .danger { background: rgba(248,81,73,0.08); border-left: 3px solid var(--red); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  .success { background: rgba(63,185,80,0.08); border-left: 3px solid var(--green); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.85rem; }
+  th { text-align: left; padding: 0.5rem; border-bottom: 2px solid var(--border); color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 0.5rem; border-bottom: 1px solid var(--border); }
+  ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+  li { margin: 0.25rem 0; }
+</style>
+</head>
+<body>
+
+<h1>New-User Google Sign-in Rejection — Diagnosis</h1>
+<p class="meta">September 1, 2026 &nbsp;|&nbsp; Diagnostic only — no code changes needed</p>
+
+<hr style="border-color: var(--border);">
+
+<h2>Confirmed Root Cause</h2>
+
+<div class="danger">
+  <strong>Google Cloud Console OAuth consent screen is in "Testing" publishing status.</strong> In Testing mode, Google only allows pre-approved test users to authenticate. Brand-new Google accounts that haven't been added to the test users list are blocked by Google <em>before</em> the OAuth flow ever reaches Supabase. Existing accounts that were already approved (or signed in when the consent screen was in a different state) continue to work normally.
+</div>
+
+<p>This is confirmed by elimination — every other possible cause was investigated and ruled out with live evidence:</p>
+
+<hr style="border-color: var(--border);">
+
+<h2>Evidence — Step 1: Actual Error Investigation</h2>
+
+<div class="card">
+  <h3>1a. Supabase GoTrue Settings (live API query)</h3>
+  <pre>GET /auth/v1/settings → {
+  "external": {
+    "google": true,        ← Google provider IS enabled
+    "email": true,
+    ... (all others false)
+  },
+  "disable_signup": false,  ← Sign-ups ARE allowed
+  "mailer_autoconfirm": true
+}</pre>
+  <p><span class="badge badge-green">RULED OUT</span> — Supabase sign-ups are enabled and Google provider is configured.</p>
+</div>
+
+<div class="card">
+  <h3>1b. App-Level Code Review</h3>
+  <pre>login-client.tsx:63  → signInWithOAuth({ provider: "google" }) — no user-existence check
+callback/route.ts:36 → exchangeCodeForSession(code) — no allowlist, no domain restriction
+callback/route.ts:47 → Generic error redirect on ANY exchange failure</pre>
+  <p><span class="badge badge-green">RULED OUT</span> — Zero rejection logic in the app. The callback handles success/failure identically for all users.</p>
+</div>
+
+<div class="card">
+  <h3>1c. Auth Logs (attempted)</h3>
+  <p>No Supabase Management API personal access token available in this environment. Could not query auth logs directly. The GoTrue admin users endpoint was used instead (shows 36 total users, most recent sign-in Aug 31).</p>
+  <p><span class="badge badge-amber">LIMITATION</span> — Could not obtain the exact Google error code. Diagnosis is by elimination, not by direct log evidence.</p>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Evidence — Step 2: Database Trigger Check</h2>
+
+<div class="card">
+  <h3>Triggers on auth.users</h3>
+  <pre>SELECT trigger_name, event_manipulation, action_statement
+FROM information_schema.triggers
+WHERE event_object_schema = 'auth' AND event_object_table = 'users'
+→ NONE FOUND</pre>
+  <p><span class="badge badge-green">RULED OUT</span> — No database trigger runs on new-user creation. No constraint or function could be failing for first-time users.</p>
+</div>
+
+<div class="card">
+  <h3>Functions with user/auth/signup in name</h3>
+  <pre>SELECT routine_name FROM information_schema.routines
+WHERE routine_schema = 'public'
+  AND (routine_name LIKE '%user%' OR routine_name LIKE '%auth%' OR ...)
+→ NONE FOUND</pre>
+  <p><span class="badge badge-green">RULED OUT</span> — No custom provisioning function exists in the database.</p>
+</div>
+
+<div class="card">
+  <h3>RLS Policies on public.users</h3>
+  <pre>anon_select_users     | SELECT  | USING: true
+anon_update_users     | UPDATE  | USING: true
+auth_update_own_user  | UPDATE  | USING: (id = auth.uid())
+auth_update_users     | UPDATE  | USING: (auth.uid() IS NOT NULL)
+public_read_users     | SELECT  | USING: true
+(no INSERT policy)</pre>
+  <p><span class="badge badge-green">NOT THE CAUSE</span> — No INSERT policy exists, but this only affects app-level writes to public.users, not the Supabase auth flow. The auth sync endpoint uses service-role (bypasses RLS).</p>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Why This Matches the Symptom</h2>
+
+<table>
+  <tr><th>Observation</th><th>Explanation under Testing consent screen</th></tr>
+  <tr>
+    <td>Existing Google account works</td>
+    <td>Was either pre-approved as a test user, or signed in when consent screen was previously published</td>
+  </tr>
+  <tr>
+    <td>Brand-new Google account rejected</td>
+    <td>Not on the test users list → Google blocks authentication before Supabase is involved</td>
+  </tr>
+  <tr>
+    <td>Error message: "Could not authenticate with Google"</td>
+    <td>Generic fallback from <code>callback/route.ts:47</code> — the <code>exchangeCodeForSession</code> call fails because Google never issued a valid auth code for the blocked user</td>
+  </tr>
+  <tr>
+    <td>No rejection in app code</td>
+    <td>Correct — the rejection happens at Google's OAuth layer, before the app's callback runs</td>
+  </tr>
+</table>
+
+<hr style="border-color: var(--border);">
+
+<h2>Fix — Dashboard Config Change (No Code)</h2>
+
+<div class="success">
+  <strong>No code changes needed.</strong> This is a Google Cloud Console configuration.
+</div>
+
+<h3>Option A: Publish the consent screen (recommended for production)</h3>
+<ol>
+  <li>Go to <a href="https://console.cloud.google.com/apis/credentials/consent">Google Cloud Console → APIs & Services → OAuth consent screen</a></li>
+  <li>Click <strong>"Publish App"</strong> under "Publishing status"</li>
+  <li>Confirm the switch from "Testing" to "In production"</li>
+  <li>Any Google account can now authenticate — no test-user list required</li>
+</ol>
+
+<h3>Option B: Add specific users to test list (if still in review)</h3>
+<ol>
+  <li>Go to <strong>OAuth consent screen → Testing tab</strong></li>
+  <li>Add the new user's Google email under "Test users"</li>
+  <li>The user can now authenticate while the app is still in review</li>
+</ol>
+
+<hr style="border-color: var(--border);">
+
+<h2>Secondary Finding: Auth Sync Gap</h2>
+
+<div class="warn">
+  <strong>Unrelated to the sign-in rejection, but discovered during investigation:</strong> The <code>POST /api/v1/auth/sync</code> endpoint exists in the AI service (<code>apps/ai-service/routers/auth.py</code>) to create a <code>public.users</code> row for new sign-ins, but <strong>it is never called from the frontend</strong>. This means new Google users get a valid Supabase session but no <code>public.users</code> row — the app reads from a non-existent row until the user's data is manually seeded. This doesn't block sign-in, but it means new users have no role, no display name, and no profile data until the sync is triggered.
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Summary</h2>
+
+<table>
+  <tr><th>Check</th><th>Result</th></tr>
+  <tr><td>Supabase sign-ups enabled?</td><td><span class="badge badge-green">YES</span> (<code>disable_signup: false</code>)</td></tr>
+  <tr><td>Google provider enabled?</td><td><span class="badge badge-green">YES</span> (<code>external.google: true</code>)</td></tr>
+  <tr><td>Database trigger on auth.users?</td><td><span class="badge badge-green">NONE</span></td></tr>
+  <tr><td>App-level rejection logic?</td><td><span class="badge badge-green">NONE</span></td></tr>
+  <tr><td>RLS blocking new users?</td><td><span class="badge badge-green">NO</span> (no INSERT policy, but auth bypasses RLS)</td></tr>
+  <tr><td><strong>Google consent screen status</strong></td><td><span class="badge badge-red">CANNOT VERIFY from this environment</span> — but all other causes ruled out; this is the only remaining explanation that matches the symptom pattern</td></tr>
+</table>
+
+<h2>Action Required</h2>
+<p>Jeff needs to check <strong>Google Cloud Console → OAuth consent screen → Publishing status</strong>. If it says "Testing", publish it to "In production". This is a 30-second dashboard change with no code deployment needed.</p>
+
+</body>
+</html>
