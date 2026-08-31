@@ -109,7 +109,14 @@ export default function DashboardPage() {
     {
       id: "avg-response",
       label: "Avg Response",
-      value: `${stats?.avg_response_minutes ?? 0}m`,
+      value: (() => {
+        const mins = stats?.avg_response_minutes ?? 0;
+        if (mins <= 0) return "—";
+        if (mins < 60) return `${mins}m`;
+        const hrs = mins / 60;
+        if (hrs < 24) return `${hrs.toFixed(1)}h`;
+        return `${Math.floor(hrs / 24)}d ${Math.round(hrs % 24)}h`;
+      })(),
       span: ADMIN_KPI_TILE_SPAN.primary,
       accent: "amber" as const,
       icon: Clock,
@@ -223,7 +230,7 @@ export default function DashboardPage() {
                   <Sparkline data={kpi.sparkline} width={64} height={32} color="var(--accent)" />
                 </div>
               </div>
-              <p className="font-mono text-[10px] text-ink/50 uppercase tracking-widest mb-1 relative z-10">
+              <p className="font-mono text-[11px] text-ink/70 uppercase tracking-widest mb-1 relative z-10">
                 {kpi.label}
               </p>
               <p className={cn("font-heading font-bold tracking-tight text-2xl relative z-10", valueColorClass[kpi.accent])}>
@@ -241,7 +248,7 @@ export default function DashboardPage() {
         <div className="bg-panel/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-ink/[0.08] shadow-xs">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-              <LayoutDashboard className="w-4 h-4 text-ink/40" />
+              <LayoutDashboard className="w-4 h-4 text-ink/60" />
             </div>
             <h3 className="font-heading font-semibold tracking-tight text-lg text-ink">
               Recent Activity
@@ -260,11 +267,11 @@ export default function DashboardPage() {
                   <p className="font-medium text-sm text-ink truncate">
                     {item.title}
                   </p>
-                  <p className="font-mono text-xs text-muted">
+                  <p className="font-mono text-sm text-muted">
                     {item.location} · {item.time}
                   </p>
                 </div>
-                <span className="font-mono text-xs text-muted shrink-0">
+                <span className="font-mono text-sm text-muted shrink-0">
                   {item.status}
                 </span>
               </div>
@@ -282,7 +289,7 @@ export default function DashboardPage() {
         <div className="bg-panel/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-ink/[0.08] shadow-xs">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4 text-ink/40" />
+              <AlertTriangle className="w-4 h-4 text-ink/60" />
             </div>
             <h3 className="font-heading font-semibold tracking-tight text-lg text-ink">
               Recent Tickets
@@ -298,7 +305,7 @@ export default function DashboardPage() {
                   <p className="font-medium text-sm text-ink truncate">
                     {ticket.title}
                   </p>
-                  <p className="font-mono text-xs text-muted">
+                  <p className="font-mono text-sm text-muted">
                     {ticket.location}
                   </p>
                 </div>
@@ -339,7 +346,7 @@ export default function DashboardPage() {
               <h3 className="font-heading font-semibold tracking-tight text-lg text-ink">
                 Regional Hotspots
               </h3>
-              <p className="font-mono text-xs text-muted">Top locations by incident count</p>
+              <p className="font-mono text-sm text-muted">Top locations by incident count</p>
             </div>
           </div>
           <div className="space-y-3">
@@ -348,11 +355,11 @@ export default function DashboardPage() {
               const pct = Math.round((spot.count / maxCount) * 100);
               return (
                 <div key={spot.name} className="flex items-center gap-4">
-                  <span className="font-mono text-xs text-muted w-4 text-right">{idx + 1}</span>
+                  <span className="font-mono text-sm text-muted w-4 text-right">{idx + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <p className="font-medium text-sm text-ink truncate">{spot.name}</p>
-                      <span className="font-mono text-xs text-muted shrink-0 ml-2">{spot.count} reports</span>
+                      <span className="font-mono text-sm text-muted shrink-0 ml-2">{spot.count} reports</span>
                     </div>
                     <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
                       <div

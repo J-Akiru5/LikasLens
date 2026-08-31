@@ -25,7 +25,7 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; icon: React.Comp
   mitigated: { bg: "bg-green/10", text: "text-green", icon: CheckCircle2 },
   partial: { bg: "bg-amber/10", text: "text-amber", icon: AlertTriangle },
   open: { bg: "bg-red/10", text: "text-red", icon: AlertTriangle },
-  closed: { bg: "bg-ink/[0.04]", text: "text-ink/50", icon: Minus },
+  closed: { bg: "bg-ink/[0.04]", text: "text-ink/75", icon: Minus },
 };
 
 const LIKELIHOOD_COLORS: Record<string, string> = {
@@ -260,7 +260,7 @@ export default function AnalyticsPage() {
                   <Icon className={`w-6 h-6 ${kpi.iconColor}`} />
                 </div>
                 <div>
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block">
                     {kpi.label}
                   </span>
                   <p
@@ -300,7 +300,7 @@ export default function AnalyticsPage() {
                   <div key={status}>
                     <div className="flex justify-between font-mono text-sm mb-2">
                       <span className="text-ink/70">{status}</span>
-                      <span className="text-ink/40">
+                      <span className="text-ink/70">
                         {count} ({pct}%)
                       </span>
                     </div>
@@ -339,7 +339,7 @@ export default function AnalyticsPage() {
                     <p className="font-medium text-sm text-ink truncate">
                       {ticket.title}
                     </p>
-                    <p className="font-mono text-xs text-muted">
+                    <p className="font-mono text-sm text-muted">
                       {ticket.location}
                     </p>
                   </div>
@@ -383,7 +383,7 @@ export default function AnalyticsPage() {
               <h2 className="font-semibold tracking-tight text-xl text-ink">
                 Bias / Risk Register
               </h2>
-              <p className="font-mono text-xs text-muted">
+              <p className="font-mono text-sm text-muted">
                 AI model and system fairness risk tracking
               </p>
             </div>
@@ -394,7 +394,7 @@ export default function AnalyticsPage() {
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([category, entries]) => (
                 <div key={category}>
-                  <h3 className="font-mono text-xs uppercase tracking-widest text-ink/40 mb-3 flex items-center gap-2">
+                  <h3 className="font-mono text-xs uppercase tracking-widest text-ink/70 mb-3 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                     {CATEGORY_LABELS[category] ?? category}
                   </h3>
@@ -423,7 +423,7 @@ export default function AnalyticsPage() {
 
                               {/* Likelihood */}
                               <span
-                                className={`font-mono text-[10px] uppercase tracking-widest font-bold ${LIKELIHOOD_COLORS[entry.likelihood] ?? "text-ink/40"}`}
+                                className={`font-mono text-[10px] uppercase tracking-widest font-bold ${LIKELIHOOD_COLORS[entry.likelihood] ?? "text-ink/70"}`}
                                 title={`Likelihood: ${entry.likelihood}`}
                               >
                                 {entry.likelihood}
@@ -431,7 +431,7 @@ export default function AnalyticsPage() {
 
                               {/* Impact */}
                               <span
-                                className={`font-mono text-[10px] uppercase tracking-widest font-bold ${IMPACT_COLORS[entry.impact] ?? "text-ink/40"}`}
+                                className={`font-mono text-[10px] uppercase tracking-widest font-bold ${IMPACT_COLORS[entry.impact] ?? "text-ink/70"}`}
                                 title={`Impact: ${entry.impact}`}
                               >
                                 {entry.impact}
@@ -440,7 +440,7 @@ export default function AnalyticsPage() {
                           </div>
 
                           {/* Mitigation text */}
-                          <p className="font-mono text-xs text-ink/50 leading-relaxed">
+                          <p className="font-mono text-xs text-ink/75 leading-relaxed">
                             {entry.mitigation}
                           </p>
 

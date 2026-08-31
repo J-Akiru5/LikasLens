@@ -87,13 +87,13 @@ export default function InquiriesPage() {
                 <div className="space-y-4 flex-1">
                   <div className="flex items-center gap-4 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-ink/40" />
+                      <User className="w-4 h-4 text-ink/70" />
                       <span className="font-medium text-lg text-ink">
                         {msg.name}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-ink/40" />
+                      <Mail className="w-4 h-4 text-ink/70" />
                       <a
                         href={`mailto:${msg.email}`}
                         className="font-mono text-sm text-ink/60 hover:text-green transition-colors"
@@ -101,7 +101,7 @@ export default function InquiriesPage() {
                         {msg.email}
                       </a>
                     </div>
-                    <div className="flex items-center gap-2 text-ink/40">
+                    <div className="flex items-center gap-2 text-ink/70">
                       <Clock className="w-4 h-4" />
                       <span className="font-mono text-sm">
                         {new Date(msg.created_at).toLocaleString()}
@@ -131,7 +131,7 @@ export default function InquiriesPage() {
                       {markingReadId === msg.id ? "Marking..." : "Mark Read"}
                     </Button>
                   ) : (
-                    <span className="inline-flex items-center gap-2 font-mono text-xs text-ink/40">
+                    <span className="inline-flex items-center gap-2 font-mono text-xs text-ink/70">
                       <CheckCircle2 className="w-4 h-4" />
                       Read{" "}
                       {msg.read_at &&

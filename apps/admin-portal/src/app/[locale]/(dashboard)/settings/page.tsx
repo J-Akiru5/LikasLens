@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { showToast, Button } from "@likaslens/shared";
+import { showToast, Button, Dropdown } from "@likaslens/shared";
 import {
   Globe,
   Bell,
@@ -93,33 +93,37 @@ function PlatformSection({ settings, update }: { settings: SettingsState; update
       <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-            <Globe className="w-6 h-6 text-ink/40" />
+            <Globe className="w-6 h-6 text-ink/70" />
           </div>
           <h2 className="font-semibold tracking-tight text-2xl text-ink">General Settings</h2>
         </div>
         <div className="space-y-6">
           <div>
-            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Platform Name</label>
+            <label className="font-mono text-xs text-ink/75 uppercase tracking-widest block mb-2">Platform Name</label>
             <input type="text" value={settings.platformName}
               onChange={(e) => update("platformName", e.target.value)}
               className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
           </div>
           <div>
-            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Default Language</label>
-            <select value={settings.defaultLanguage}
-              onChange={(e) => update("defaultLanguage", e.target.value)}
-              className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all">
-              <option value="en">English</option>
-              <option value="fil">Filipino</option>
-              <option value="vi">Vietnamese</option>
-              <option value="id">Indonesian</option>
-              <option value="ms">Malay</option>
-              <option value="ta">Tamil</option>
-              <option value="th">Thai</option>
-              <option value="km">Khmer</option>
-              <option value="my">Burmese</option>
-              <option value="lo">Lao</option>
-            </select>
+            <label className="font-mono text-xs text-ink/75 uppercase tracking-widest block mb-2">Default Language</label>
+            <Dropdown
+              value={settings.defaultLanguage}
+              onChange={(val) => update("defaultLanguage", val)}
+              options={[
+                { value: "en", label: "English" },
+                { value: "fil", label: "Filipino" },
+                { value: "vi", label: "Vietnamese" },
+                { value: "id", label: "Indonesian" },
+                { value: "ms", label: "Malay" },
+                { value: "ta", label: "Tamil" },
+                { value: "th", label: "Thai" },
+                { value: "km", label: "Khmer" },
+                { value: "my", label: "Burmese" },
+                { value: "lo", label: "Lao" },
+              ]}
+              placeholder="Select language"
+              size="md"
+            />
           </div>
         </div>
       </div>
@@ -127,7 +131,7 @@ function PlatformSection({ settings, update }: { settings: SettingsState; update
       <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-            <Clock className="w-6 h-6 text-ink/40" />
+            <Clock className="w-6 h-6 text-ink/70" />
           </div>
           <h2 className="font-semibold tracking-tight text-2xl text-ink">Maintenance</h2>
         </div>
@@ -160,7 +164,7 @@ function NotificationsSection({ settings, update }: { settings: SettingsState; u
       <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-            <Bell className="w-6 h-6 text-ink/40" />
+            <Bell className="w-6 h-6 text-ink/70" />
           </div>
           <h2 className="font-semibold tracking-tight text-2xl text-ink">System Alerts</h2>
         </div>
@@ -187,7 +191,7 @@ function NotificationsSection({ settings, update }: { settings: SettingsState; u
       <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-            <Users className="w-6 h-6 text-ink/40" />
+            <Users className="w-6 h-6 text-ink/70" />
           </div>
           <h2 className="font-semibold tracking-tight text-2xl text-ink">Admin Notifications</h2>
         </div>
@@ -220,32 +224,36 @@ function SecuritySection({ settings, update }: { settings: SettingsState; update
       <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-            <Lock className="w-6 h-6 text-ink/40" />
+            <Lock className="w-6 h-6 text-ink/70" />
           </div>
           <h2 className="font-semibold tracking-tight text-2xl text-ink">Access Controls</h2>
         </div>
         <div className="space-y-6">
           <div>
-            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Session Timeout (minutes)</label>
+            <label className="font-mono text-xs text-ink/75 uppercase tracking-widest block mb-2">Session Timeout (minutes)</label>
             <input type="number" value={settings.sessionTimeout}
               onChange={(e) => update("sessionTimeout", Number(e.target.value))}
               className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
           </div>
           <div>
-            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Max Login Attempts</label>
+            <label className="font-mono text-xs text-ink/75 uppercase tracking-widest block mb-2">Max Login Attempts</label>
             <input type="number" value={settings.maxLoginAttempts}
               onChange={(e) => update("maxLoginAttempts", Number(e.target.value))}
               className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all" />
           </div>
           <div>
-            <label className="font-mono text-xs text-ink/50 uppercase tracking-widest block mb-2">Default Admin Role</label>
-            <select value={settings.defaultAdminRole}
-              onChange={(e) => update("defaultAdminRole", e.target.value)}
-              className="w-full p-3 border border-ink/10 rounded-xl bg-page text-ink font-medium text-sm focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all">
-              <option value="analyst">Analyst</option>
-              <option value="super_admin">Super Admin</option>
-              <option value="lgu">LGU</option>
-            </select>
+            <label className="font-mono text-xs text-ink/75 uppercase tracking-widest block mb-2">Default Admin Role</label>
+            <Dropdown
+              value={settings.defaultAdminRole}
+              onChange={(val) => update("defaultAdminRole", val)}
+              options={[
+                { value: "analyst", label: "Analyst" },
+                { value: "super_admin", label: "Super Admin" },
+                { value: "lgu", label: "LGU" },
+              ]}
+              placeholder="Select role"
+              size="md"
+            />
           </div>
         </div>
       </div>
@@ -253,7 +261,7 @@ function SecuritySection({ settings, update }: { settings: SettingsState; update
       <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-            <Shield className="w-6 h-6 text-ink/40" />
+            <Shield className="w-6 h-6 text-ink/70" />
           </div>
           <h2 className="font-semibold tracking-tight text-2xl text-ink">Security Policies</h2>
         </div>
@@ -286,7 +294,7 @@ function DevelopersSection() {
       <div className="bg-panel rounded-3xl p-8 shadow-sm border border-ink/5">
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-            <Key className="w-6 h-6 text-ink/40" />
+            <Key className="w-6 h-6 text-ink/70" />
           </div>
           <h2 className="font-semibold tracking-tight text-2xl text-ink">API Access</h2>
         </div>
@@ -364,7 +372,7 @@ export default function SettingsPage() {
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
                   isActive ? "bg-accent/10" : "bg-ink/[0.04]"
                 }`}>
-                  <Icon className={`w-6 h-6 ${isActive ? "text-accent" : "text-ink/40"}`} />
+                  <Icon className={`w-6 h-6 ${isActive ? "text-accent" : "text-ink/70"}`} />
                 </div>
                 <div>
                   <h3 className="font-medium text-sm text-ink">{tab.label}</h3>

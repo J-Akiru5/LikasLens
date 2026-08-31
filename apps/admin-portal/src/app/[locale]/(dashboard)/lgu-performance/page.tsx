@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   getLguPerformance,
   Button,
+  Dropdown,
   Skeleton,
   EmptyState,
   showToast,
@@ -83,7 +84,7 @@ function LguKpiCard({
           <Icon className={`w-6 h-6 ${s.iconColor}`} />
         </div>
         <div>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block">
             {label}
           </span>
           <p
@@ -118,7 +119,7 @@ function ProgressBar({
     <div className="space-y-1">
       {label && (
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70">
             {label}
           </span>
           <span className="font-mono text-xs text-ink/60">{Math.round(pct)}%</span>
@@ -322,7 +323,7 @@ export default function LguPerformancePage() {
   const SortHeader = ({ field, label }: { field: string; label: string }) => (
     <button
       onClick={() => handleSort(field)}
-      className="flex items-center gap-1 font-mono text-xs text-ink/50 uppercase tracking-widest hover:text-ink transition-colors whitespace-nowrap"
+      className="flex items-center gap-1 font-mono text-xs text-ink/75 uppercase tracking-widest hover:text-ink transition-colors whitespace-nowrap"
     >
       {label}
       {sortField === field &&
@@ -405,7 +406,7 @@ export default function LguPerformancePage() {
       {/* Filter bar */}
       <div className="bg-panel rounded-2xl border border-ink/5 p-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="flex items-center gap-2 text-ink/40 flex-shrink-0">
+          <div className="flex items-center gap-2 text-ink/70 flex-shrink-0">
             <Filter className="w-4 h-4" />
             <span className="font-mono text-xs uppercase tracking-widest">
               Filters
@@ -414,22 +415,23 @@ export default function LguPerformancePage() {
 
           <div className="flex flex-wrap items-center gap-3 flex-1">
             {/* Region dropdown */}
-            <select
-              value={filterRegion}
-              onChange={(e) => setFilterRegion(e.target.value)}
-              className="px-3 py-2 bg-page border border-ink/10 rounded-xl font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20 appearance-none cursor-pointer"
-            >
-              <option value="">All Regions</option>
-              {regions.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
+            <div className="min-w-[180px]">
+              <Dropdown
+                value={filterRegion}
+                onChange={(val) => setFilterRegion(val)}
+                options={[
+                  { value: "", label: "All Regions" },
+                  ...regions.map((r) => ({ value: r, label: r })),
+                ]}
+                placeholder="All Regions"
+                size="sm"
+                onClear={() => setFilterRegion("")}
+              />
+            </div>
 
             {/* Date from */}
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/30">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/60">
                 From
               </span>
               <input
@@ -442,7 +444,7 @@ export default function LguPerformancePage() {
 
             {/* Date to */}
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/30">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/60">
                 To
               </span>
               <input
@@ -488,18 +490,18 @@ export default function LguPerformancePage() {
               color="green"
             />
             <div className="space-y-1">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block">
                 Avg Response Time
               </span>
               <p className="font-semibold text-lg text-ink">
                 {platformAvg.avg_response_hours}h
               </p>
-              <p className="font-mono text-xs text-ink/40">
+              <p className="font-mono text-xs text-ink/70">
                 {platformAvg.total_resolved} of {platformAvg.total_assigned} resolved
               </p>
             </div>
             <div className="space-y-1">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block">
                 Avg Resolution Time
               </span>
               <p className="font-semibold text-lg text-ink">
@@ -626,12 +628,12 @@ function LguTableRow({
         <td className="px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-ink/[0.04] flex items-center justify-center shrink-0">
-              <Building2 className="w-4 h-4 text-ink/40" />
+              <Building2 className="w-4 h-4 text-ink/70" />
             </div>
             <div>
               <p className="font-medium text-sm text-ink">{lgu.lgu_name}</p>
               {lgu.region && (
-                <p className="font-mono text-xs text-ink/40">{lgu.region}</p>
+                <p className="font-mono text-xs text-ink/70">{lgu.region}</p>
               )}
             </div>
           </div>
@@ -676,7 +678,7 @@ function LguTableRow({
         <td className="px-6 py-4 text-right">
           <span
             className={`font-mono text-sm ${
-              lgu.escalation_count > 0 ? "text-red font-medium" : "text-ink/50"
+              lgu.escalation_count > 0 ? "text-red font-medium" : "text-ink/75"
             }`}
           >
             {lgu.escalation_count}
@@ -699,7 +701,7 @@ function LguTableRow({
             <div className="grid gap-4 sm:grid-cols-3">
               {/* Detail cards */}
               <div className="bg-panel rounded-xl p-4 border border-ink/5">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block">
                   Avg Resolution Time
                 </span>
                 <p className="font-semibold text-lg text-ink mt-1">
@@ -707,7 +709,7 @@ function LguTableRow({
                 </p>
               </div>
               <div className="bg-panel rounded-xl p-4 border border-ink/5">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block">
                   Pending
                 </span>
                 <p className="font-semibold text-lg text-ink mt-1">
@@ -715,7 +717,7 @@ function LguTableRow({
                 </p>
               </div>
               <div className="bg-panel rounded-xl p-4 border border-ink/5">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block">
                   SLA Breaches
                 </span>
                 <p
@@ -730,7 +732,7 @@ function LguTableRow({
               {/* Response time bar chart */}
               {platformAvg && (
                 <div className="bg-panel rounded-xl p-4 border border-ink/5 space-y-3">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70">
                     Response vs Platform
                   </span>
                   <div className="space-y-2">
@@ -756,7 +758,7 @@ function LguTableRow({
 
               {/* Resolution rate bar chart */}
               <div className="bg-panel rounded-xl p-4 border border-ink/5 space-y-3">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70">
                   Resolution Rate vs Platform
                 </span>
                 <div className="space-y-2">
@@ -781,7 +783,7 @@ function LguTableRow({
 
               {/* Status */}
               <div className="bg-panel rounded-xl p-4 border border-ink/5">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block">
                   Status
                 </span>
                 <div className="flex items-center gap-2 mt-1">
@@ -797,7 +799,7 @@ function LguTableRow({
                     {lgu.status === "red" && <Shield className="w-3 h-3" />}
                     {getStatusLabel(lgu.status)}
                   </span>
-                  <span className="font-mono text-xs text-ink/40">
+                  <span className="font-mono text-xs text-ink/70">
                     {lgu.is_active ? "Active" : "Inactive"}
                   </span>
                 </div>

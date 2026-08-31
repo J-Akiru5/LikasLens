@@ -7,27 +7,40 @@ import { createClient } from "@/lib/supabase";
 import {
   Search,
   MoreVertical,
-  Eye,
   Clock,
   MapPin,
   ChevronLeft,
   ChevronRight,
   CheckSquare,
-  UserPlus,
   RefreshCw,
   Trash2,
+  ArrowUpRight,
 } from "lucide-react";
 import { useBulkSelect } from "@/hooks/use-bulk-select";
 import { BulkActionsBar } from "@/components/bulk-actions-bar";
+import { BulkActionModal } from "@/components/bulk-action-modal";
+import { IncidentDetailPanel } from "@/components/incident-detail-panel";
 
 const STATUS_OPTIONS = [
-  { value: "pending_review", label: "Pending AI Review" },
-  { value: "investigating", label: "Investigating" },
-  { value: "monitoring", label: "Monitoring" },
-  { value: "verified", label: "Verified" },
-  { value: "resolved", label: "Resolved" },
-  { value: "closed", label: "Closed" },
+  { value: "pending_review", label: "Pending AI Review", description: "Waiting for AI triage to complete" },
+  { value: "investigating", label: "Investigating", description: "Active field investigation underway" },
+  { value: "monitoring", label: "Monitoring", description: "Issue confirmed, under observation" },
+  { value: "verified", label: "Verified", description: "Evidence verified by officer" },
+  { value: "resolved", label: "Resolved", description: "Issue resolved — case closed" },
+  { value: "closed", label: "Closed", description: "Closed without resolution" },
 ];
+
+function timeAgo(dateStr: string): string {
+  const d = new Date(dateStr);
+  const now = Date.now();
+  const diffMin = Math.floor((now - d.getTime()) / 60000);
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH}h ago`;
+  const diffD = Math.floor(diffH / 24);
+  return `${diffD}d ago`;
+}
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -40,7 +53,14 @@ export default function TicketsPage() {
   const [ngos, setNgos] = useState<NgoGroup[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [openStatusMenuId, setOpenStatusMenuId] = useState<string | null>(null);
+
+  // Modal state
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
+
+  // Detail panel state
+  const [detailTicketId, setDetailTicketId] = useState<string | null>(null);
+
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const bulk = useBulkSelect(tickets);
@@ -87,7 +107,7 @@ export default function TicketsPage() {
     fetchTickets();
   }, [fetchTickets]);
 
-  // Load NGOs for the assign dropdown
+  // Load NGOs for the assign modal
   useEffect(() => {
     getAdminNgos({ per_page: "100", active_only: "1" })
       .then((res) => {
@@ -111,7 +131,8 @@ export default function TicketsPage() {
     const s = status.toLowerCase();
     if (s === "open") return "bg-amber/10 text-amber";
     if (s === "resolved" || s === "closed") return "bg-green/10 text-green";
-    if (s === "investigating" || s === "monitoring") return "bg-green/10 text-green";
+    if (s === "investigating" || s === "monitoring") return "bg-accent/10 text-accent";
+    if (s === "pending_review") return "bg-purple/10 text-purple";
     return "bg-ink/[0.04] text-ink/60";
   };
 
@@ -124,6 +145,7 @@ export default function TicketsPage() {
       if (res.success) {
         showToast(res.message || "Operation successful", "success");
         bulk.clear();
+        setStatusModalOpen(false);
         await fetchTickets();
       }
     } catch (err) {
@@ -143,6 +165,7 @@ export default function TicketsPage() {
       if (res.success) {
         showToast(res.message || "Operation successful", "success");
         bulk.clear();
+        setAssignModalOpen(false);
       }
     } catch (err) {
       console.error(err);
@@ -177,7 +200,6 @@ export default function TicketsPage() {
       const res = await updateTicketStatus(ticketId, newStatus);
       if (res.success) {
         showToast(res.message || `Status changed to ${newStatus}`, "success");
-        setOpenStatusMenuId(null);
         closeMenu();
         await fetchTickets();
       }
@@ -213,13 +235,13 @@ export default function TicketsPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/60" />
           <input
             type="text"
             placeholder="Search tickets..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-9 pr-4 py-2.5 bg-page border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 bg-page border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
           />
         </div>
         <Dropdown
@@ -251,7 +273,7 @@ export default function TicketsPage() {
                 {bulk.isAllSelected ? "Deselect all" : "Select all"}
               </button>
               {bulk.selectedCount > 0 && (
-                <span className="font-mono text-xs text-ink/40">
+                <span className="font-mono text-xs text-ink/70">
                   {bulk.selectedCount} of {tickets.length} selected
                 </span>
               )}
@@ -262,116 +284,86 @@ export default function TicketsPage() {
             {tickets.length === 0 && (
               <div className="col-span-full p-16 bg-panel/90 backdrop-blur-xl rounded-3xl border border-ink/[0.08] text-center flex flex-col items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-ink/5 flex items-center justify-center">
-                  <Search className="w-8 h-8 text-ink/40" />
+                  <Search className="w-8 h-8 text-ink/70" />
                 </div>
                 <div>
                   <h3 className="font-heading font-bold text-lg text-ink">No tickets found</h3>
-                  <p className="text-sm text-ink/50 mt-1">Try adjusting your search criteria.</p>
+                  <p className="text-sm text-ink/75 mt-1">Try adjusting your search criteria.</p>
                 </div>
               </div>
             )}
             {tickets.map((ticket, i) => (
               <div
                 key={ticket.id}
-                className={`bg-panel/90 backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xs border transition-all cursor-pointer flex flex-col h-full relative ${
-                  bulk.isSelected(ticket.id)
-                    ? "border-green/40 ring-2 ring-green/10"
-                    : "border-ink/[0.08] hover:border-ink/[0.16] hover:shadow-md hover:scale-[1.01]"
-                }`}
+                className={`bg-panel/90 backdrop-blur-xl rounded-2xl p-5 shadow-xs border transition-all cursor-pointer flex flex-col h-full relative ${bulk.isSelected(ticket.id)
+                  ? "border-green/40 ring-2 ring-green/10"
+                  : "border-ink/[0.08] hover:border-ink/[0.16] hover:shadow-md hover:scale-[1.01]"}`}
                 onClick={() => bulk.toggle(ticket.id)}
               >
-                <div className="absolute top-4 left-4 z-10">
+                {/* Top row: checkbox (left) + menu (right) */}
+                <div className="flex items-start justify-between mb-3">
                   <div
-                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
-                      bulk.isSelected(ticket.id)
-                        ? "bg-green border-green text-white"
-                        : "border-ink/20 hover:border-ink/40"
-                    }`}
+                    className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${bulk.isSelected(ticket.id)
+                      ? "bg-green border-green text-white"
+                      : "border-ink/20 hover:border-ink/40"}`}
                   >
                     {bulk.isSelected(ticket.id) && <CheckSquare className="w-3.5 h-3.5" />}
                   </div>
-                </div>
-
-                <div className="absolute top-4 right-4 z-10">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuId(openMenuId === ticket.id ? null : ticket.id);
-                    }}
-                    className="p-1.5 text-ink/40 hover:text-ink transition-colors rounded-full hover:bg-ink/[0.04]"
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-                  {openMenuId === ticket.id && (
-                    <div
-                      ref={menuRef}
-                      className="absolute right-0 mt-1 w-48 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden z-50"
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === ticket.id ? null : ticket.id);
+                      }}
+                      className="p-1.5 text-ink/70 hover:text-ink transition-colors rounded-full hover:bg-ink/[0.04]"
                     >
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          closeMenu();
-                          showToast(`Viewing ticket ${ticket.display_id || ticket.id}`, "info");
-                        }}
-                        className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                    {openMenuId === ticket.id && (
+                      <div
+                        ref={menuRef}
+                        className="absolute right-0 mt-1 w-44 border border-ink/10 bg-page shadow-lg rounded-xl overflow-hidden z-50"
                       >
-                        <Eye className="w-4 h-4" /> View Details
-                      </button>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenStatusMenuId(openStatusMenuId === ticket.id ? null : ticket.id);
-                        }}
-                        className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.02] transition-colors border-b border-ink/10"
-                      >
-                        <RefreshCw className="w-4 h-4" /> Change Status
-                      </button>
-                      {openStatusMenuId === ticket.id && (
-                        <div className="border-b border-ink/10 bg-ink/[0.02]">
-                          {STATUS_OPTIONS.map((opt) => (
-                            <button
-                              key={opt.value}
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStatusChange(ticket.id, opt.value);
-                              }}
-                              className="flex w-full items-center gap-2 pl-10 pr-4 py-2 text-sm text-ink/60 hover:text-ink hover:bg-ink/[0.04] transition-colors"
-                            >
-                              {opt.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                      {userRole === "super_admin" && (
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteTicket(ticket.id);
+                            closeMenu();
+                            setDetailTicketId(ticket.id);
                           }}
-                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red/70 hover:text-red hover:bg-red/5 transition-colors"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-ink/70 hover:text-ink hover:bg-ink/[0.02] transition-colors"
                         >
-                          <Trash2 className="w-4 h-4" /> Remove
+                          <ArrowUpRight className="w-4 h-4" /> Open ticket
                         </button>
-                      )}
-                    </div>
-                  )}
+                        {userRole === "super_admin" && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTicket(ticket.id);
+                            }}
+                            className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red hover:bg-red/10 transition-colors border-t border-ink/10"
+                          >
+                            <Trash2 className="w-4 h-4" /> Remove
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex justify-between items-center mb-4 pl-7 pr-8">
-                  <span className="font-mono text-[10px] text-ink/40 font-bold tracking-widest uppercase">
+                {/* ID + status pill */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="font-mono text-[10px] text-ink/60 font-bold tracking-widest uppercase">
                     {ticket.display_id || `INC-${String(i + 1).padStart(3, "0")}`}
                   </span>
-                  <span className={`px-2.5 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${getStatusPill(ticket.status)}`}>
-                    {ticket.status}
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusPill(ticket.status)}`}>
+                    {ticket.status.replace(/_/g, " ")}
                   </span>
                 </div>
 
-                {/* AI confidence tier (CardinalMu-inspired Watch/Advisory/Confirmed) */}
-                <div className="mb-3 pl-7 pr-8 flex items-center gap-2">
+                {/* AI confidence tier */}
+                <div className="mb-3 flex items-center gap-2 flex-wrap">
                   <ConfidenceTierBadge
                     score={Number((ticket as unknown as { ai_confidence?: number }).ai_confidence ?? 0)}
                     showScore
@@ -381,18 +373,27 @@ export default function TicketsPage() {
                   />
                 </div>
 
-                <h3 className="font-bold text-[17px] text-ink leading-snug mb-4 line-clamp-2 flex-1">
+                {/* Title */}
+                <h3 className="font-bold text-[16px] text-ink leading-snug mb-4 line-clamp-2 flex-1">
                   {ticket.title}
                 </h3>
 
-                <div className="flex flex-col gap-2.5 pt-4 border-t border-ink/5">
-                  <div className="flex items-start gap-2.5 text-ink/60">
-                    <MapPin className="w-4 h-4 shrink-0 opacity-60" strokeWidth={2} />
-                    <span className="text-[14px] leading-tight line-clamp-2">{ticket.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2.5 text-ink/40">
-                    <Clock className="w-4 h-4 shrink-0 opacity-60" strokeWidth={2} />
-                    <span className="text-[11px] font-mono tracking-widest uppercase">Updated recently</span>
+                {/* Meta footer */}
+                <div className="flex flex-col gap-2.5 pt-3 border-t border-ink/5">
+                  {ticket.location ? (
+                    <div className="flex items-start gap-2.5 text-ink/60 min-w-0">
+                      <MapPin className="w-4 h-4 shrink-0 opacity-60 mt-0.5" strokeWidth={2} />
+                      <span className="text-[13px] leading-tight line-clamp-2">{ticket.location}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2.5 text-ink/40">
+                      <MapPin className="w-4 h-4 shrink-0 opacity-50" strokeWidth={2} />
+                      <span className="text-[13px] italic">No location recorded</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-ink/70">
+                    <Clock className="w-3.5 h-3.5 shrink-0 opacity-60" strokeWidth={2} />
+                    <span className="text-[11px] font-medium tracking-wider uppercase text-muted">{timeAgo(ticket.created_at)}</span>
                   </div>
                 </div>
               </div>
@@ -427,32 +428,46 @@ export default function TicketsPage() {
         </div>
       )}
 
+      {/* Minimal bulk action bar */}
       <BulkActionsBar
         selectedCount={bulk.selectedCount}
         onClear={bulk.clear}
-        actions={[
-          {
-            label: "Assign to LGU",
-            icon: <UserPlus className="w-3.5 h-3.5" />,
-            options: ngos.map((ngo) => ({ value: ngo.id, label: ngo.name })),
-            onOptionSelect: handleBulkAssign,
-            disabled: bulkLoading || ngos.length === 0,
-          },
-          {
-            label: "Change Status",
-            icon: <RefreshCw className="w-3.5 h-3.5" />,
-            options: STATUS_OPTIONS,
-            onOptionSelect: handleBulkStatusChange,
-            disabled: bulkLoading,
-          },
-          {
-            label: "Delete",
-            icon: <Trash2 className="w-3.5 h-3.5" />,
-            onClick: handleBulkDelete,
-            variant: "danger",
-            disabled: bulkLoading,
-          },
-        ]}
+        onStatusClick={() => setStatusModalOpen(true)}
+        onAssignClick={() => setAssignModalOpen(true)}
+        onDelete={handleBulkDelete}
+        disabled={bulkLoading}
+      />
+
+      {/* Status change modal */}
+      <BulkActionModal
+        open={statusModalOpen}
+        onClose={() => setStatusModalOpen(false)}
+        title="Change status"
+        subtitle={`Update ${bulk.selectedCount} selected ticket${bulk.selectedCount !== 1 ? "s" : ""}`}
+        options={STATUS_OPTIONS}
+        onSelect={(v) => handleBulkStatusChange(v)}
+        loading={bulkLoading}
+        icon={<RefreshCw className="w-5 h-5 text-accent" />}
+        searchPlaceholder="Search statuses..."
+      />
+
+      {/* Assign to LGU modal */}
+      <BulkActionModal
+        open={assignModalOpen}
+        onClose={() => setAssignModalOpen(false)}
+        title="Assign to LGU"
+        subtitle={`Assign ${bulk.selectedCount} selected ticket${bulk.selectedCount !== 1 ? "s" : ""} to an NGO group`}
+        options={ngos.map((n) => ({ value: n.id, label: n.name, description: n.region }))}
+        onSelect={(v) => handleBulkAssign(v)}
+        loading={bulkLoading}
+        searchPlaceholder="Search NGOs by name or region..."
+      />
+
+      {/* Detail panel */}
+      <IncidentDetailPanel
+        ticketId={detailTicketId}
+        onClose={() => setDetailTicketId(null)}
+        onStatusChange={fetchTickets}
       />
     </div>
   );
