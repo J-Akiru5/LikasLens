@@ -46,7 +46,7 @@
 <body>
 
 <h1>LikasLens — Admin Portal Visual Alignment</h1>
-<p class="subtitle">Brand Alignment Report · August 31, 2026 · Branch: <code>feat/admin-frontend-brand-alignment</code></p>
+<p class="subtitle">Brand Alignment Report · August 31, 2026 · Branch: <code>feat/admin-frontend-brand-alignment</code> → <code>development</code> → <code>staging</code></p>
 
 <hr class="section-divider">
 
@@ -54,7 +54,7 @@
 
 <div class="kpi-grid">
   <div class="kpi">
-    <div class="kpi-value" style="color: var(--green)">5</div>
+    <div class="kpi-value" style="color: var(--green)">6</div>
     <div class="kpi-label">Files Changed</div>
   </div>
   <div class="kpi">
@@ -156,6 +156,8 @@
   <div class="mod">M  apps/admin-portal/src/app/globals.css</div>
   <div class="mod">M  apps/admin-portal/src/app/[locale]/page.tsx</div>
   <div class="mod">M  apps/admin-portal/src/app/[locale]/login/login-client.tsx</div>
+  <div class="mod">M  apps/admin-portal/src/components/admin-layout-wrapper.tsx</div>
+  <div class="new">A  docs/admin-frontend-brand-alignment-2026-08-31.html</div>
 </div>
 
 <h3>3A. <code>apps/admin-portal/src/app/layout.tsx</code></h3>
@@ -276,6 +278,21 @@
 
 <div class="callout callout-warn">
   <strong>Design distinction preserved:</strong> The admin portal remains operationally dense with sidebar navigation, KPI cards, kanban boards, and data tables — it does not look like the citizen-facing marketing site. The alignment is about shared visual DNA, not identical layouts.
+</div>
+
+<hr class="section-divider">
+
+<h2>9. Deployment Status</h2>
+
+<table>
+  <tr><th>Target</th><th>Commit</th><th>Status</th></tr>
+  <tr><td><code>feat/admin-frontend-brand-alignment</code></td><td><code>8be0c0d</code></td><td><span class="badge badge-green">MERGED</span></td></tr>
+  <tr><td><code>development</code></td><td><code>8be0c0d</code></td><td><span class="badge badge-green">PUSHED</span></td></tr>
+  <tr><td><code>staging</code></td><td><code>6bf0afb</code></td><td><span class="badge badge-green">PUSHED</span> — Vercel preview building</td></tr>
+</table>
+
+<div class="callout callout-success">
+  <strong>Preview deployment:</strong> Staging push triggers Vercel preview build. Admin portal preview will be available at the Vercel staging URL once build completes (~2-3 min).
 </div>
 
 <hr class="section-divider">
