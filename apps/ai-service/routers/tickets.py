@@ -330,17 +330,19 @@ async def bulk_status(
 
 
 async def _notify_routing_learner(ticket: Ticket):
-    """Port of TicketController::notifyRoutingLearner — updates Neo4j scoring table."""
-    try:
-        hours = (datetime.now(timezone.utc) - ticket.created_at).total_seconds() / 3600
-        from routing_learner import record_resolution
-        record_resolution(
-            violation_type=ticket.ai_triage_summary or "unknown",
-            lgu_id=str(ticket.id),
-            resolution_hours=round(hours, 2),
-        )
-    except Exception as e:
-        logger.warning("Routing learner notification failed: %s", e)
+    """Port of TicketController::notifyRoutingLearner — updates Neo4j scoring table.
+
+    DISABLED: The Ticket model has no LGU foreign key (no agency_id, no
+    lgu_id column). The previous implementation passed str(ticket.id) as
+    lgu_id, which corrupted the learner's scoring table with a unique
+    fake LGU on every resolution. Re-enable once a real LGU identifier
+    is available on the ticket (e.g. from ticket_assignments or a future
+    agency_id column).
+    """
+    logger.info(
+        "Routing learner notification skipped for ticket %s — no LGU ID available",
+        ticket.id,
+    )
 
 
 @router.get("/{ticket_id}/explain")
@@ -373,7 +375,7 @@ async def explain_ticket(
         "illegal_dumping": "RA 9003 (Ecological Solid Waste Management Act)",
         "solid_waste": "RA 9003 (Ecological Solid Waste Management Act)",
         "deforestation": "PD 705 (Revised Forestry Code) / RA 7161",
-        "water_pollution": "RA 9275 (Clean Air Act)",
+        "water_pollution": "RA 9275 (Philippine Clean Water Act)",
         "air_pollution": "RA 8749 (Clean Air Act)",
     }
 

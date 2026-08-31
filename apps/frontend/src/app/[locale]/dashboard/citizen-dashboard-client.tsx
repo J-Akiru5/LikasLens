@@ -155,7 +155,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
       trend: "up" as const,
       delta: stats?.avg_response_trend || "",
       sparkline: [0, 0, 0, 0, 0, 0, stats?.avg_response_minutes ?? 0],
-      category: `vs ${stats?.avg_response_sla ?? 30}m SLA`,
+      category: stats?.avg_response_sla ? `vs ${stats.avg_response_sla}m SLA` : "SLA target not configured",
       icon: Clock,
       accent: "accent" as const,
     },

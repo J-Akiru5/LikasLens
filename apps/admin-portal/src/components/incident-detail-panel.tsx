@@ -25,8 +25,8 @@ const STATUS_OPTIONS = [
 
 function confidenceColor(confidence: number | null): string {
   if (confidence === null) return "bg-ink/5 text-ink/40";
-  if (confidence >= 70) return "bg-green/10 text-green";
-  if (confidence >= 30) return "bg-amber-500/10 text-amber-500";
+  if (confidence >= 0.7) return "bg-green/10 text-green";
+  if (confidence >= 0.3) return "bg-amber-500/10 text-amber-500";
   return "bg-red-500/10 text-red-500";
 }
 
@@ -146,8 +146,8 @@ export function IncidentDetailPanel({
                       confidenceColor(ticket.ai_confidence ?? null)
                     )}
                   >
-                    {ticket.ai_confidence !== null
-                      ? `${ticket.ai_confidence}% confidence`
+                    {ticket.ai_confidence != null
+                      ? `${(ticket.ai_confidence * 100).toFixed(0)}% confidence`
                       : "No AI analysis"}
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-ink/5 text-ink/50">

@@ -56,7 +56,7 @@ export default async function DashboardPage() {
         return Math.round(totalMinutes / resolvedTickets.length);
       })(),
       avg_response_hours: 0,
-      avg_response_sla: 30,
+      avg_response_sla: 0,
       avg_response_progress: 0,
       avg_response_trend: "Calculated from resolved tickets",
       system_load: 0,
