@@ -154,6 +154,8 @@ async def submit_report(
         title=title,
         description=body.description or "Automatically generated report from LikasLens mobile submission",
         status="open",
+        created_at=now,
+        updated_at=now,
         **ghost_fields,
     )
     db.add(ticket)
@@ -168,8 +170,11 @@ async def submit_report(
         checksum_sha256=checksum,
         mime_type=mime_type,
         file_size_bytes=len(stripped_bytes),
+        captured_at=now,
         exif_removed_at=now,
         yolo_status="pending",
+        created_at=now,
+        updated_at=now,
     )
     db.add(evidence)
 
