@@ -125,7 +125,7 @@ async def submit_report(
 
     # 4. Upload to Supabase Storage (S3-compatible)
     ticket_id = uuid.uuid4()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     ext = "jpg" if "jpeg" in mime_type else mime_type.split("/")[-1]
     storage_path = f"evidence/{now.strftime('%Y/%m/%d')}/{ticket_id}.{ext}"
 
