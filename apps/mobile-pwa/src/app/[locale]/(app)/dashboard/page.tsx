@@ -155,7 +155,7 @@ export default function DashboardPage() {
           description: t.description || `Reported at ${t.location || "field location"}`,
           time: timeAgo(t.created_at || new Date().toISOString()),
           timestamp: t.created_at || new Date().toISOString(),
-          type: t.priority === "critical" ? "Urgent" : t.priority === "high" ? "Important" : "Notice",
+          type: (t.urgency_score ?? 3) >= 5 ? "Critical" : (t.urgency_score ?? 3) >= 3 ? "Warning" : "Info",
           location: t.location || "Metro Manila",
           status: t.status === "resolved" ? "Resolved" : t.status === "investigating" ? "Under Action" : "Received",
           reporter: "Community Member",
@@ -265,7 +265,7 @@ export default function DashboardPage() {
     return feed.map((item, idx) => ({
       id: item.id || `feed-${idx}`,
       display_id: item.display_id || `RPT-${idx + 1}`,
-      type: item.type || "Notice",
+      type: item.type || "Info",
       title: item.title || "Environmental Report",
       location: item.location || "Metro Manila, Philippines",
       time: item.time || "Recently",

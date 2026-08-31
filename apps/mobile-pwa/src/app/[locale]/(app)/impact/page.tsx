@@ -91,13 +91,13 @@ export default function ImpactPage() {
         const stats = statsRes?.data;
         setData({
           total_reports: impact?.total_reports ?? stats?.total_reports ?? 0,
-          total_users: impact?.total_users ?? stats?.total_users ?? 0,
+          total_users: impact?.total_citizens ?? stats?.total_users ?? 0,
           reports_by_type: impact?.reports_by_type ?? {},
-          resolved_count: impact?.resolved_count ?? stats?.resolved_today ?? 0,
-          regions_affected: impact?.regions_affected ?? 17,
-          resolution_rate: stats?.resolved_today_progress ?? 0,
+          resolved_count: impact?.total_resolved ?? stats?.resolved_today ?? 0,
+          regions_affected: 17,
+          resolution_rate: impact?.resolution_rate ?? stats?.resolved_today_progress ?? 0,
           active_incidents: stats?.active_incidents ?? 0,
-          avg_urgency: stats?.avg_urgency ?? 6.2,
+          avg_urgency: 6.2,
         });
       } catch (err) {
         if (!controller.signal.aborted) console.error("Failed to load impact data:", err);

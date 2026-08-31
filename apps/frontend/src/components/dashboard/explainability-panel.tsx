@@ -12,7 +12,7 @@ import {
   Sparkles,
   Link2,
 } from "lucide-react";
-import { getSupabaseClient } from "@likaslens/shared";
+import { getTicketExplain } from "@likaslens/shared";
 import { ConfidenceWaterfall } from "./confidence-waterfall";
 import type {
   TicketExplainResponse,
@@ -104,13 +104,8 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
     setLoading(true);
     setError(null);
     try {
-      const db = getSupabaseClient();
-      const { data: res, error } = await db.from("tickets").select("*").eq("id", ticketId).single();
-      if (res) {
-        setData({ ticket: res } as TicketExplainResponse);
-      } else {
-        setError("Explain data unavailable");
-      }
+      const res = await getTicketExplain(ticketId);
+      setData(res);
     } catch {
       setError("Unable to load AI explanation");
     } finally {
