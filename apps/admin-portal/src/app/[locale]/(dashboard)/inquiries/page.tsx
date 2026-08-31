@@ -3,7 +3,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { laravelGet, laravelPatch } from "@likaslens/shared";
+import { getAdminContactMessages, markContactMessageRead } from "@likaslens/shared";
 import type { PaginatedResponse, ApiResponse } from "@likaslens/shared";
 import { showToast, AdminTableSkeleton, EmptyState, Button } from "@likaslens/shared";
 import { ChevronLeft, ChevronRight, Mail, User, Clock, CheckCircle2 } from "lucide-react";
@@ -30,10 +30,10 @@ export default function InquiriesPage() {
   }, [page]);
 
   const fetchMessages = () => {
-    laravelGet<PaginatedResponse<ContactMessage>>(`/admin/contact-messages?per_page=50&page=${page}`)
+    getAdminContactMessages({ per_page: "50", page: page.toString() })
       .then((res) => {
         if (res.success) {
-          setMessages(res.data);
+          setMessages(res.data.map((m) => ({ ...m, status: m.status as "unread" | "read" })));
           setLastPage(res.meta?.last_page ?? 1);
         }
       })
@@ -44,13 +44,10 @@ export default function InquiriesPage() {
   const markAsRead = async (id: number) => {
     setMarkingReadId(id);
     try {
-      const res = await laravelPatch<ApiResponse<ContactMessage>>(
-        `/admin/contact-messages/${id}/read`,
-        {},
-      );
+      const res = await markContactMessageRead(id);
       if (res.success) {
         setMessages((prev) =>
-          prev.map((msg) => (msg.id === id ? res.data : msg)),
+          prev.map((msg) => (msg.id === id ? { ...msg, status: "read" as const, read_at: new Date().toISOString() } : msg)),
         );
         showToast("Message marked as read", "success");
       }

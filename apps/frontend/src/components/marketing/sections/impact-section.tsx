@@ -5,7 +5,7 @@ import Image from "next/image";
 import { m } from "framer-motion";
 import { CheckCircle2, MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { laravelGet, EmptyState, formatDate } from "@likaslens/shared";
+import { getPublicImpact, EmptyState, formatDate } from "@likaslens/shared";
 import type { PublicImpactData } from "@likaslens/shared";
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -38,9 +38,7 @@ export function ImpactSection() {
     const controller = new AbortController();
     async function fetchImpact() {
       try {
-        const res = await laravelGet<{ success: boolean; data: PublicImpactData }>(
-          "/public/impact", controller.signal,
-        );
+        const res = await getPublicImpact();
         if (res.success) setData(res.data);
       } catch {
         // silent

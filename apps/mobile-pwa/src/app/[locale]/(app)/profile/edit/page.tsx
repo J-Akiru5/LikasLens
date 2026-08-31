@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { User, Camera, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { getProfile, laravelPut, showToast, Button } from "@likaslens/shared";
+import { getProfile, getSupabaseClient, showToast, Button } from "@likaslens/shared";
 
 export default function EditProfilePage() {
   const router = useRouter();
@@ -40,7 +40,9 @@ export default function EditProfilePage() {
     }
     setSaving(true);
     try {
-      await laravelPut("/user/profile", { name: name.trim() });
+      const db = getSupabaseClient();
+      const { error } = await db.from("users").update({ name: name.trim() }).eq("id", (await db.from("users").select("id").limit(1).single()).data?.id);
+      if (error) throw error;
       showToast("Profile updated successfully", "success");
       router.push(`/${locale}/profile`);
     } catch {

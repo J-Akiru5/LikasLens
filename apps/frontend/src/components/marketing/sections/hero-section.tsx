@@ -19,7 +19,7 @@ import {
   Fingerprint,
   Leaf,
 } from "lucide-react";
-import { laravelGet, MagneticButton } from "@likaslens/shared";
+import { getPublicImpact, MagneticButton } from "@likaslens/shared";
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Evidence Console — hero centerpiece
@@ -98,12 +98,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
   useEffect(() => {
     async function pull() {
       try {
-        const res = await laravelGet<{
-          success: boolean;
-          data: {
-            recent_verified: { title?: string; location?: string; date?: string; status?: string }[];
-          };
-        }>("/public/impact").catch(() => null);
+        const res = await getPublicImpact().catch(() => null);
         if (!res?.success) return;
         const live = (res.data.recent_verified ?? []).slice(0, 2).map((r, i) => ({
           id: `RPT-${7776 - i}`,

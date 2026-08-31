@@ -25,6 +25,7 @@ export interface DashboardStats {
   resolved_today_progress: number;
   resolved_today_trend: string;
   avg_response_minutes: number;
+  avg_response_hours: number;
   avg_response_sla: number;
   avg_response_progress: number;
   avg_response_trend: string;

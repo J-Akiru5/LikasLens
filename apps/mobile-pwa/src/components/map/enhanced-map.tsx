@@ -22,7 +22,7 @@ import {
   Shield,
 } from "lucide-react";
 import Link from "next/link";
-import { laravelGet } from "@likaslens/shared";
+import { getHeatmap, getHeatmapViolationTypes } from "@likaslens/shared";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 // ── Constants ────────────────────────────────────────────────────────────
@@ -212,7 +212,7 @@ export function EnhancedMap({
 
   // Fetch violation types
   useEffect(() => {
-    laravelGet<{ success: boolean; data: ViolationType[] }>("/reports/heatmap/violation-types")
+      getHeatmapViolationTypes()
       .then((res) => {
         if (res?.success && res.data) setViolationTypes(res.data);
       })
@@ -221,16 +221,13 @@ export function EnhancedMap({
 
   // Fetch heatmap data
   const fetchData = useCallback(async (force = false) => {
-    setLoading(true);
+      setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      params.set("days", String(days));
-      if (selectedType) params.set("type", selectedType);
-      if (force) params.set("_bust", String(Date.now()));
-      const res = await laravelGet<{ success: boolean; data: HeatmapData }>(
-        `/reports/heatmap?${params.toString()}`
-      );
+        const params: Record<string, string> = {};
+        if (selectedType) params.type = selectedType;
+        if (force) params._bust = String(Date.now());
+        const res = await getHeatmap(params);
       if (res?.success && res.data) {
         setData({
           points: Array.isArray(res.data.points) ? res.data.points : [],

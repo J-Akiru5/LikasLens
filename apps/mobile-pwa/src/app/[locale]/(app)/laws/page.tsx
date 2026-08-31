@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import { Scale, Search, ExternalLink, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
-import { laravelGet, type PaginatedResponse } from "@likaslens/shared";
+import { getPublicLaws, type PaginatedResponse } from "@likaslens/shared";
 
 interface Law {
   id: string;
@@ -55,7 +55,7 @@ export default function LawsPage() {
         const params: Record<string, string> = { per_page: "50" };
         if (search) params.search = search;
         const qs = "?" + new URLSearchParams(params).toString();
-        const res = await laravelGet<PaginatedResponse<Law>>(`/laws${qs}`);
+        const res = await getPublicLaws(params);
         if (res.success) setApiLaws(res.data);
       } catch (err) {
         console.error("Failed to fetch laws:", err);

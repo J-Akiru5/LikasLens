@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import {
-  laravelGet,
+  getDashboardStats,
   AnimatedCounter,
   GlowCard,
   RevealSection,
@@ -61,7 +61,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const res = await laravelGet<{ success: boolean; data: DashboardStats }>("/dashboard/stats");
+        const res = await getDashboardStats();
         if (res.success) setStats(res.data);
       } catch {
         // Silent
