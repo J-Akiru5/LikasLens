@@ -69,11 +69,29 @@ export function getTicket(id: string) {
   return laravelGet<ApiResponse<TicketDetail>>(`/tickets/${id}`);
 }
 
-export function updateTicketStatus(id: string, status: string) {
-  return laravelPatch<ApiResponse<{ id: string; old_status: string; new_status: string; resolved_at: string | null }>>(
-    `/tickets/${id}/status`,
-    { status }
-  );
+export async function updateTicketStatus(
+  id: string,
+  status: string,
+  notes?: string
+): Promise<ApiResponse<{ id: string; old_status: string; new_status: string; resolved_at: string | null }>> {
+  if (typeof window === "undefined") {
+    throw new Error("updateTicketStatus requires browser context (Next.js proxy route)");
+  }
+
+  const res = await fetch(`/api/v1/ai/tickets/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status, notes }),
+  });
+
+  const json = await res.json();
+
+  if (!res.ok) {
+    const detail = json?.detail || `Status update failed (${res.status})`;
+    throw new Error(detail);
+  }
+
+  return json as ApiResponse<{ id: string; old_status: string; new_status: string; resolved_at: string | null }>;
 }
 
 export function deleteTicket(id: string) {

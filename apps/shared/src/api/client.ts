@@ -223,32 +223,17 @@ async function routeRequest<T>(
     return { success: true, data } as T;
   }
 
-  // ── Update ticket status ───────────────────────────────────────────────────
+  // ── Ticket status update ─────────────────────────────────────────────────
+  // REMOVED: Direct Supabase UPDATE bypass.
+  // Status updates must go through FastAPI's PATCH /api/v1/tickets/{id}/status
+  // which enforces ALLOWED_TRANSITIONS, creates timeline entries, and requires
+  // LGU role authorization. Use updateTicketStatus() from admin.ts instead.
   const statusMatch = path.match(/^tickets\/([a-f0-9-]+)\/status$/);
   if (statusMatch && method === "PATCH") {
-    const id = statusMatch[1];
-    const newStatus = (body as Record<string, string>)?.status;
-
-    const { data: old, error: e1 } = await db()
-      .from("tickets")
-      .select("status")
-      .eq("id", id)
-      .single();
-    if (e1) throw e1;
-
-    const update: Record<string, unknown> = { status: newStatus, updated_at: new Date().toISOString() };
-    if (newStatus === "resolved") update.resolved_at = new Date().toISOString();
-
-    const { error: e2 } = await db()
-      .from("tickets")
-      .update(update)
-      .eq("id", id);
-    if (e2) throw e2;
-
-    return {
-      success: true,
-      data: { id, old_status: old.status, new_status: newStatus, resolved_at: update.resolved_at || null },
-    } as T;
+    throw new Error(
+      "Direct ticket status update is not allowed. " +
+      "Use updateTicketStatus() from @likaslens/shared/api/admin which routes through FastAPI authorization."
+    );
   }
 
   // ── AI Triage Pre-check ───────────────────────────────────────────────────

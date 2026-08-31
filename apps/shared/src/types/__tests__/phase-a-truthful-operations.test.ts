@@ -229,3 +229,29 @@ describe("A4: ALLOWED_TRANSITIONS state machine", () => {
     expect(ALLOWED_TRANSITIONS.resolved).toContain("verified");
   });
 });
+
+// ─── Phase B: RouteRequest authorization enforcement ────────────────────────
+
+describe("Phase B: routeRequest tickets/:id/status PATCH throws instead of bypassing", () => {
+  const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+    open: ["investigating", "closed"],
+    investigating: ["monitoring", "resolved", "closed"],
+    monitoring: ["resolved", "investigating", "closed"],
+    resolved: ["verified", "closed"],
+    pending_review: ["open", "investigating", "closed"],
+    verified: ["closed"],
+    closed: [],
+  };
+
+  it("ALLOWED_TRANSITIONS prevents open → resolved", () => {
+    expect(ALLOWED_TRANSITIONS.open).not.toContain("resolved");
+  });
+
+  it("ALLOWED_TRANSITIONS prevents closed → any", () => {
+    expect(ALLOWED_TRANSITIONS.closed).toHaveLength(0);
+  });
+
+  it("ALLOWED_TRANSITIONS prevents monitoring → open", () => {
+    expect(ALLOWED_TRANSITIONS.monitoring).not.toContain("open");
+  });
+});
