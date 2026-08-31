@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   getAdminPredictions,
   getTickets,
+  Dropdown,
   Skeleton,
   EmptyState,
   showToast,
@@ -272,19 +273,19 @@ export default function PredictionsPage() {
       {/* Filter */}
       {violationTypes.length > 0 && (
         <div className="flex items-center gap-3">
-          <Filter className="w-4 h-4 text-ink/40" />
-          <select
-            value={violationFilter}
-            onChange={(e) => setViolationFilter(e.target.value)}
-            className="bg-panel border border-ink/10 rounded-xl px-4 py-2 text-sm font-mono text-ink focus:outline-none focus:ring-2 focus:ring-accent/20 appearance-none cursor-pointer"
-          >
-            <option value="">All violation types</option>
-            {violationTypes.map((code) => (
-              <option key={code} value={code}>
-                {code.replace(/_/g, " ")}
-              </option>
-            ))}
-          </select>
+          <div className="min-w-[200px]">
+            <Dropdown
+              value={violationFilter}
+              onChange={(val) => setViolationFilter(val)}
+              options={[
+                { value: "", label: "All violation types" },
+                ...violationTypes.map((code) => ({ value: code, label: code.replace(/_/g, " ") })),
+              ]}
+              placeholder="All violation types"
+              size="sm"
+              onClear={() => setViolationFilter("")}
+            />
+          </div>
         </div>
       )}
 

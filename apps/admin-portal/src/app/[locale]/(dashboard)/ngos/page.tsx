@@ -12,6 +12,7 @@ import {
   bulkNgoVerify,
   bulkNgoDelete,
   Button,
+  Dropdown,
 } from "@likaslens/shared";
 import type { NgoGroup } from "@likaslens/shared";
 import { showToast, AdminCardGridSkeleton, Modal, ConfirmModal } from "@likaslens/shared";
@@ -23,12 +24,12 @@ import {
   CheckSquare,
   ShieldCheck,
   Trash2,
-  Filter,
   Eye,
   Loader2,
   Mail,
   Phone,
   MapPin,
+  Pencil,
 } from "lucide-react";
 import { useBulkSelect } from "@/hooks/use-bulk-select";
 import { BulkActionsBar } from "@/components/bulk-actions-bar";
@@ -119,10 +120,20 @@ export default function NgosPage() {
       };
 
       if (editId) {
-        await updateAdminNgo(editId, payload);
+        const res = await fetch(`/api/v1/admin/ngos`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editId, ...payload }),
+        });
+        if (!res.ok) throw new Error((await res.json()).error || "Update failed");
         showToast("NGO updated successfully", "success");
       } else {
-        await createAdminNgo(payload);
+        const res = await fetch(`/api/v1/admin/ngos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error((await res.json()).error || "Create failed");
         showToast("NGO created successfully", "success");
       }
 
@@ -159,7 +170,8 @@ export default function NgosPage() {
     if (!deleteTarget) return;
     setDeleteLoading(true);
     try {
-      await deleteAdminNgo(deleteTarget);
+      const res = await fetch(`/api/v1/admin/ngos?id=${deleteTarget}`, { method: "DELETE" });
+      if (!res.ok) throw new Error((await res.json()).error || "Delete failed");
       showToast("NGO deleted successfully", "success");
       setDeleteTarget(null);
       loadNgos();
@@ -188,7 +200,7 @@ export default function NgosPage() {
     setBulkLoading(true);
     try {
       const res = await bulkNgoVerify(ids);
-      if (res.success) {
+      if (res && res.success) {
         showToast(res.message || "Operation successful", "success");
         bulk.clear();
         loadNgos();
@@ -208,7 +220,7 @@ export default function NgosPage() {
     setBulkLoading(true);
     try {
       const res = await bulkNgoDelete(ids);
-      if (res.success) {
+      if (res && res.success) {
         showToast(res.message || "Operation successful", "success");
         bulk.clear();
         loadNgos();
@@ -259,19 +271,19 @@ export default function NgosPage() {
       )}
 
       {!showForm && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-panel rounded-2xl p-3 border border-ink/5">
-          <div className="flex items-center gap-2 text-ink/40 flex-1 min-w-0">
-            <Filter className="w-4 h-4 shrink-0" />
-            <select
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="flex-1 min-w-[200px] max-w-[240px]">
+            <Dropdown
               value={regionFilter}
-              onChange={(e) => setRegionFilter(e.target.value)}
-              className="bg-transparent font-mono text-sm text-ink focus:outline-none min-w-0 max-w-[200px]"
-            >
-              <option value="">All Regions</option>
-              {regions.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
+              onChange={(val) => setRegionFilter(val)}
+              options={[
+                { value: "", label: "All Regions" },
+                ...regions.map((r) => ({ value: r, label: r })),
+              ]}
+              placeholder="All Regions"
+              size="md"
+              onClear={() => setRegionFilter("")}
+            />
           </div>
           <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
             <input
@@ -387,7 +399,7 @@ export default function NgosPage() {
                 {bulk.isAllSelected ? "Deselect all" : "Select all"}
               </button>
               {bulk.selectedCount > 0 && (
-                <span className="font-mono text-xs text-ink/40">
+                <span className="font-mono text-xs text-ink/70">
                   {bulk.selectedCount} of {ngos.length} selected
                 </span>
               )}
@@ -408,20 +420,21 @@ export default function NgosPage() {
                 <div
                   key={ngo.id}
                   onClick={() => bulk.toggle(ngo.id)}
-                  className={`bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border transition-all cursor-pointer relative ${
+                  className={`bg-panel rounded-2xl p-5 shadow-sm border transition-all cursor-pointer relative ${
                     bulk.isSelected(ngo.id)
                       ? "border-green/40 ring-2 ring-green/10"
-                      : "border-ink/5 hover:scale-[1.02]"
+                      : "border-ink/10 hover:border-accent/20 hover:shadow-md"
                   }`}
                 >
                   {/* Checkbox */}
-                  <div className="absolute top-4 left-4 z-10">
+                  <div className="absolute top-5 left-5 z-10">
                     <div
                       className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
                         bulk.isSelected(ngo.id)
-                          ? "bg-green border-green text-white"
+                          ? "bg-accent border-accent text-white"
                           : "border-ink/20 hover:border-ink/40"
-                      }`}
+                      }`
+                    }
                     >
                       {bulk.isSelected(ngo.id) && <CheckSquare className="w-3.5 h-3.5" />}
                     </div>
@@ -429,36 +442,46 @@ export default function NgosPage() {
 
                   <div className="flex items-start justify-between pl-7">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-                        <Building2 className="w-5 h-5 text-ink/40" />
+                      <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                        <Building2 className="w-5 h-5 text-accent" />
                       </div>
                       <div>
-                        <h3 className="font-medium text-sm text-ink">
+                        <h3 className="font-semibold text-sm text-ink">
                           {ngo.name}
                         </h3>
-                        <p className="font-mono text-xs text-muted">
+                        <p className="text-xs text-muted mt-0.5">
                           {ngo.region}
                         </p>
                       </div>
                     </div>
                     <span
-                      className={`px-2.5 py-1 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                         ngo.is_active
                           ? "bg-green/10 text-green"
-                          : "bg-ink/[0.04] text-ink/40"
+                          : "bg-ink/5 text-ink/75"
                       }`}
                     >
                       {ngo.is_active ? "Active" : "Inactive"}
                     </span>
                   </div>
-                  {ngo.contact_email && (
-                    <p className="mt-2 font-mono text-xs text-muted pl-7">
-                      {ngo.contact_email}
-                    </p>
-                  )}
+                  <div className="mt-3 pl-7 space-y-1">
+                    {ngo.contact_email && (
+                      <div className="flex items-center gap-2 text-xs text-muted">
+                        <Mail className="w-3.5 h-3.5 text-accent/60" />
+                        {ngo.contact_email}
+                      </div>
+                    )}
+                    {ngo.contact_phone && (
+                      <div className="flex items-center gap-2 text-xs text-muted">
+                        <Phone className="w-3.5 h-3.5 text-accent/60" />
+                        {ngo.contact_phone}
+                      </div>
+                    )}
+                  </div>
                   <div className="mt-4 flex gap-2 pl-7">
                     <Button
-                      variant="ghost"
+                      variant="secondary"
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         viewDetail(ngo.id);
@@ -468,22 +491,23 @@ export default function NgosPage() {
                     </Button>
                     <Button
                       variant="ghost"
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEdit(ngo);
                       }}
                     >
-                      Edit
+                      <Pencil className="w-3.5 h-3.5" /> Edit
                     </Button>
                     <Button
-                      variant="ghost"
+                      variant="danger"
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteTarget(ngo.id);
                       }}
-                      className="text-red hover:bg-red/5"
                     >
-                      Delete
+                      <Trash2 className="w-3.5 h-3.5" /> Delete
                     </Button>
                   </div>
                 </div>
@@ -545,7 +569,7 @@ export default function NgosPage() {
       >
         {detailLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-ink/30" />
+            <Loader2 className="w-6 h-6 animate-spin text-ink/60" />
           </div>
         ) : selectedNgo ? (
           <div className="space-y-6">
@@ -579,7 +603,7 @@ export default function NgosPage() {
               <div className="space-y-1">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-muted">Status</span>
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${selectedNgo.is_active ? "bg-green/10 text-green" : "bg-ink/[0.04] text-ink/40"}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-widest font-bold ${selectedNgo.is_active ? "bg-green/10 text-green" : "bg-ink/[0.04] text-ink/70"}`}>
                     {selectedNgo.is_active ? "Active" : "Inactive"}
                   </span>
                   {Boolean((selectedNgo as unknown as Record<string, unknown>).is_verified) && (
@@ -614,7 +638,7 @@ export default function NgosPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="font-mono text-xs text-ink/30 py-4 text-center">No assignments yet</p>
+                  <p className="font-mono text-xs text-ink/60 py-4 text-center">No assignments yet</p>
                 )}
               </div>
             )}

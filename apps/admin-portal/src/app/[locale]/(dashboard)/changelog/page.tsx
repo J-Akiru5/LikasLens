@@ -12,7 +12,7 @@ const SECTION_COLORS: Record<string, string> = {
   Fixed: "bg-amber/10 text-amber",
   Changed: "bg-ink/[0.04] text-ink/60",
   Removed: "bg-red/10 text-red",
-  Deprecated: "bg-ink/[0.04] text-ink/40",
+  Deprecated: "bg-ink/[0.04] text-ink/70",
   Security: "bg-green/10 text-green",
 };
 
@@ -23,7 +23,7 @@ export default function AdminChangelogPage() {
     <div className="space-y-8">
       <div>
         <div className="flex items-center gap-3">
-          <ScrollText className="w-6 h-6 text-ink/40" />
+          <ScrollText className="w-6 h-6 text-ink/70" />
           <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">Changelog</h1>
         </div>
         <p className="font-mono text-base text-muted mt-1">
@@ -38,7 +38,7 @@ export default function AdminChangelogPage() {
               <h2 className="font-semibold tracking-tight text-2xl text-ink">
                 v{version.version}
               </h2>
-              <span className="font-mono text-xs text-ink/40 tracking-wider">
+              <span className="font-mono text-xs text-ink/70 tracking-wider">
                 {version.date}
               </span>
             </div>

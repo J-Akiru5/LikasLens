@@ -5,6 +5,17 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MessageCircle, X, Send, Bot, User, Sparkles, Scale, Camera, ChevronRight } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+
+// Safe wrapper: useTranslations throws during SSR if NextIntlClientProvider
+// context is missing (e.g. on error boundary / login redirect pages).
+// Fall back to a no-op translator so the chat widget never crashes a page.
+function useSafeTranslations(namespace: string) {
+  try {
+    return useTranslations(namespace);
+  } catch {
+    return (key: string) => key;
+  }
+}
 import Link from "next/link";
 import { useGeminiChat, type ChatMessage } from "../../hooks/useGeminiChat";
 import { cn } from "../../utils";
@@ -138,7 +149,7 @@ export function LiksiChat({
   isAuthenticated?: boolean;
   className?: string;
 }) {
-  const t = useTranslations("chat");
+  const t = useSafeTranslations("chat");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { messages, loading, sendMessage, addAssistantMessage } = useGeminiChat(persona, locale);

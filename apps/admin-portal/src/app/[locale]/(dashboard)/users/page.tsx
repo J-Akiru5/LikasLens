@@ -37,7 +37,7 @@ interface UserRow {
   email: string;
   role: Role;
   trust_score: number;
-  reward_points_balance: number;
+
   created_at: string;
   deleted_at: string | null;
 }
@@ -118,14 +118,12 @@ export default function UsersPage() {
     }
     setCreateLoading(true);
     try {
-      const { getSupabaseClient } = await import("@likaslens/shared");
-      const db = getSupabaseClient();
-      const { error } = await db.from("users").insert({
-        name: createForm.name,
-        email: createForm.email,
-        role: createForm.role,
+      const res = await fetch(`/api/v1/admin/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: createForm.name, email: createForm.email, role: createForm.role }),
       });
-      if (error) throw error;
+      if (!res.ok) throw new Error((await res.json()).error || "Create failed");
       showToast("User created successfully", "success");
       setShowCreate(false);
       setCreateForm({ name: "", email: "", role: "citizen" });
@@ -253,7 +251,7 @@ export default function UsersPage() {
 
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/60" />
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -262,7 +260,7 @@ export default function UsersPage() {
               setSearch(e.target.value);
               setPage(0);
             }}
-            className="w-full pl-9 pr-4 py-2.5 bg-page border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 bg-page border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
           />
         </div>
         <Dropdown
@@ -322,14 +320,14 @@ export default function UsersPage() {
               {bulk.isAllSelected ? "Deselect all" : "Select all"}
             </button>
             {bulk.selectedCount > 0 && (
-              <span className="font-mono text-xs text-ink/40">
+              <span className="font-mono text-xs text-ink/70">
                 {bulk.selectedCount} of {users.length} selected
               </span>
             )}
           </div>
 
           <div className="bg-panel rounded-3xl shadow-sm border border-ink/5 overflow-hidden">
-            <div className="hidden sm:grid grid-cols-12 gap-2 font-mono text-xs text-ink/40 uppercase tracking-wider p-4 border-b border-ink/5">
+            <div className="hidden sm:grid grid-cols-12 gap-2 font-mono text-xs text-ink/70 uppercase tracking-wider p-4 border-b border-ink/5">
               <div className="col-span-1" />
               <div className="col-span-3">Name</div>
               <div className="col-span-3">Email</div>
@@ -364,7 +362,7 @@ export default function UsersPage() {
                     {user.name || "Anonymous"}
                   </span>
                 </div>
-                <div className="hidden sm:block sm:col-span-3 truncate font-mono text-sm text-ink/50">
+                <div className="hidden sm:block sm:col-span-3 truncate font-mono text-sm text-ink/75">
                   {user.email}
                 </div>
                 <div className="col-span-3 sm:col-span-2 flex items-center gap-2">
@@ -372,7 +370,7 @@ export default function UsersPage() {
                 </div>
                 <div className="hidden sm:block sm:col-span-1 font-mono text-sm">
                   <span
-                    className={`font-medium ${user.trust_score >= 70 ? "text-green" : user.trust_score >= 40 ? "text-ink" : "text-ink/40"}`}
+                    className={`font-medium ${user.trust_score >= 70 ? "text-green" : user.trust_score >= 40 ? "text-ink" : "text-ink/70"}`}
                   >
                     {user.trust_score}
                   </span>
@@ -392,7 +390,7 @@ export default function UsersPage() {
                       handleDelete(user.id);
                     }}
                     disabled={!!user.deleted_at}
-                    className="p-1.5 text-ink/40 hover:text-red hover:bg-red/5 rounded-lg transition-colors disabled:opacity-30"
+                    className="p-1.5 text-ink/70 hover:text-red hover:bg-red/5 rounded-lg transition-colors disabled:opacity-30"
                     title="Deactivate user"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -447,18 +445,18 @@ export default function UsersPage() {
               onClick={() => setShowCreate(false)}
               className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-ink/10 hover:bg-ink/[0.02] rounded-lg transition-colors"
             >
-              <X className="w-4 h-4 text-ink/40" />
+              <X className="w-4 h-4 text-ink/70" />
             </button>
 
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-                <UsersIcon className="w-5 h-5 text-ink/40" />
+                <UsersIcon className="w-5 h-5 text-ink/70" />
               </div>
               <div>
                 <h2 className="font-semibold tracking-tight text-xl text-ink">
                   Create New User
                 </h2>
-                <p className="font-mono text-xs text-muted">
+                <p className="font-mono text-sm text-muted">
                   Add a user account
                 </p>
               </div>
@@ -466,35 +464,35 @@ export default function UsersPage() {
 
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
-                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
                   Name *
                 </label>
                 <input
                   type="text"
                   value={createForm.name}
                   onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
                   placeholder="Enter full name"
                   required
                 />
               </div>
 
               <div>
-                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
                   Email *
                 </label>
                 <input
                   type="email"
                   value={createForm.email}
                   onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
                   placeholder="user@example.com"
                   required
                 />
               </div>
 
               <div>
-                <label className="font-mono text-xs text-ink/40 uppercase tracking-widest mb-1 block">
+                <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
                   Role
                 </label>
                 <Dropdown

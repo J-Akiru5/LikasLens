@@ -6,6 +6,7 @@ import {
   getAuditLogDetail,
   getAuditLogActions,
   Button,
+  Dropdown,
   Skeleton,
   EmptyState,
   Modal,
@@ -220,7 +221,7 @@ function DiffModal({
         {/* Meta info */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block mb-1">
               Action
             </span>
             <span
@@ -230,7 +231,7 @@ function DiffModal({
             </span>
           </div>
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block mb-1">
               Entity
             </span>
             <p className="font-mono text-sm text-ink">
@@ -238,7 +239,7 @@ function DiffModal({
             </p>
           </div>
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block mb-1">
               Actor
             </span>
             <p className="font-mono text-sm text-ink">
@@ -246,7 +247,7 @@ function DiffModal({
             </p>
           </div>
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block mb-1">
               Timestamp
             </span>
             <p className="font-mono text-sm text-ink">
@@ -255,21 +256,21 @@ function DiffModal({
           </div>
           {log.ip_address && (
             <div>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block mb-1">
                 IP Address
               </span>
               <p className="font-mono text-sm text-ink flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-ink/40" />
+                <Globe className="w-3.5 h-3.5 text-ink/70" />
                 {log.ip_address}
               </p>
             </div>
           )}
           <div>
-            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/40 block mb-1">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-ink/70 block mb-1">
               User Agent
             </span>
             <p className="font-mono text-xs text-ink/60 flex items-center gap-1.5 truncate">
-              <Monitor className="w-3.5 h-3.5 text-ink/40 shrink-0" />
+              <Monitor className="w-3.5 h-3.5 text-ink/70 shrink-0" />
               {log.user_agent ?? "N/A"}
             </p>
           </div>
@@ -286,7 +287,7 @@ function DiffModal({
           </div>
         ) : (
           <div className="space-y-3">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-ink/40 font-bold">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-ink/70 font-bold">
               Changes ({changedFields.length} field
               {changedFields.length !== 1 ? "s" : ""})
             </p>
@@ -384,20 +385,20 @@ function TimelineView({
                     >
                       {formatActionLabel(log.action)}
                     </span>
-                    <span className="font-mono text-xs text-muted">
+                    <span className="font-mono text-sm text-muted">
                       {log.entity_type}
                     </span>
-                    <span className="font-mono text-xs text-ink/30">
+                    <span className="font-mono text-xs text-ink/60">
                       #{log.entity_id.slice(0, 8)}
                     </span>
                   </div>
-                  <span className="font-mono text-xs text-muted shrink-0">
+                  <span className="font-mono text-sm text-muted shrink-0">
                     {new Date(log.created_at).toLocaleString()}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm text-ink/70">
-                  <User className="w-3.5 h-3.5 text-ink/40" />
+                  <User className="w-3.5 h-3.5 text-ink/70" />
                   <span className="font-mono text-xs">
                     {log.actor?.name ?? "System"}
                   </span>
@@ -405,7 +406,7 @@ function TimelineView({
 
                 {hasChanges && (
                   <div className="mt-3 flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-ink/40">
+                    <div className="flex items-center gap-1.5 text-xs font-mono text-ink/70">
                       <span className="px-1.5 py-0.5 rounded bg-red/5 text-red/70">
                         {Object.keys(log.old_values!).length} old
                       </span>
@@ -418,7 +419,7 @@ function TimelineView({
                 )}
 
                 {log.ip_address && (
-                  <p className="font-mono text-xs text-muted mt-2">
+                  <p className="font-mono text-sm text-muted mt-2">
                     IP: {log.ip_address}
                   </p>
                 )}
@@ -561,7 +562,7 @@ export default function AuditLogsPage() {
             className={`flex items-center gap-2 px-3 py-2 rounded-lg font-mono text-xs uppercase tracking-widest transition-all ${
               viewMode === "table"
                 ? "bg-panel shadow-sm text-ink font-bold"
-                : "text-ink/50 hover:text-ink/70"
+                : "text-ink/75 hover:text-ink/70"
             }`}
           >
             <List className="w-4 h-4" />
@@ -573,7 +574,7 @@ export default function AuditLogsPage() {
             className={`flex items-center gap-2 px-3 py-2 rounded-lg font-mono text-xs uppercase tracking-widest transition-all ${
               viewMode === "timeline"
                 ? "bg-panel shadow-sm text-ink font-bold"
-                : "text-ink/50 hover:text-ink/70"
+                : "text-ink/75 hover:text-ink/70"
             }`}
           >
             <GitBranch className="w-4 h-4" />
@@ -582,41 +583,35 @@ export default function AuditLogsPage() {
         </div>
 
         {/* Action filter */}
-        <select
-          value={actionFilter}
-          onChange={(e) => {
-            setActionFilter(e.target.value);
-            setPage(1);
-          }}
-          className="px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20 appearance-none cursor-pointer"
-        >
-          <option value="">All actions</option>
-          {actionOptions.map((action) => (
-            <option key={action} value={action}>
-              {formatActionLabel(action)}
-            </option>
-          ))}
-        </select>
+        <div className="min-w-[160px]">
+          <Dropdown
+            value={actionFilter}
+            onChange={(val) => { setActionFilter(val); setPage(1); }}
+            options={[
+              { value: "", label: "All actions" },
+              ...actionOptions.map((action) => ({ value: action, label: formatActionLabel(action) })),
+            ]}
+            placeholder="All actions"
+            size="sm"
+            onClear={() => { setActionFilter(""); setPage(1); }}
+          />
+        </div>
 
         {/* Entity filter */}
-        <select
-          value={entityFilter}
-          onChange={(e) => {
-            setEntityFilter(e.target.value);
-            setPage(1);
-          }}
-          className="px-3 py-2 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent/20 appearance-none cursor-pointer"
-        >
-          {ENTITY_TYPE_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <div className="min-w-[160px]">
+          <Dropdown
+            value={entityFilter}
+            onChange={(val) => { setEntityFilter(val); setPage(1); }}
+            options={ENTITY_TYPE_OPTIONS}
+            placeholder="All entities"
+            size="sm"
+            onClear={() => { setEntityFilter(""); setPage(1); }}
+          />
+        </div>
 
         {/* Date from */}
         <div className="flex items-center gap-1.5">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/30">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/60">
             From
           </span>
           <input
@@ -632,7 +627,7 @@ export default function AuditLogsPage() {
 
         {/* Date to */}
         <div className="flex items-center gap-1.5">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/30">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-ink/60">
             To
           </span>
           <input
@@ -705,7 +700,7 @@ export default function AuditLogsPage() {
               key={log.id}
               className="flex items-start gap-3 p-4 border-b border-ink/5 last:border-0 hover:bg-ink/[0.02] transition-colors"
             >
-              <ScrollText className="mt-0.5 h-5 w-5 text-ink/30 shrink-0" />
+              <ScrollText className="mt-0.5 h-5 w-5 text-ink/60 shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span
@@ -713,10 +708,10 @@ export default function AuditLogsPage() {
                   >
                     {formatActionLabel(log.action)}
                   </span>
-                  <span className="font-mono text-xs text-muted">
+                  <span className="font-mono text-sm text-muted">
                     {log.entity_type}
                   </span>
-                  <span className="font-mono text-xs text-ink/30">
+                  <span className="font-mono text-xs text-ink/60">
                     #{log.entity_id.slice(0, 8)}
                   </span>
                 </div>
@@ -725,7 +720,7 @@ export default function AuditLogsPage() {
                   {new Date(log.created_at).toLocaleString()}
                 </p>
                 {log.ip_address && (
-                  <p className="font-mono text-xs text-muted mt-1">
+                  <p className="font-mono text-sm text-muted mt-1">
                     IP: {log.ip_address}
                   </p>
                 )}

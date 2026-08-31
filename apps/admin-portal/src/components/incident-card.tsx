@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Clock, Fingerprint } from "lucide-react";
+import { MapPin, Clock, Fingerprint, AlertCircle, ImageOff } from "lucide-react";
 import { cn } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
 
@@ -20,7 +20,7 @@ function getUrgencyTier(score: number | null): string {
 }
 
 function confidenceColor(confidence: number | null): string {
-  if (confidence === null) return "bg-ink/5 text-ink/40";
+  if (confidence === null) return "bg-ink/5 text-ink/60";
   if (confidence >= 70) return "bg-green/10 text-green";
   if (confidence >= 30) return "bg-amber-500/10 text-amber-500";
   return "bg-red-500/10 text-red-500";
@@ -60,15 +60,14 @@ export function IncidentCard({
     <button
       onClick={onClick}
       className={cn(
-        "w-full text-left bg-panel rounded-xl border border-ink/5 p-3",
-        "hover:border-ink/15 hover:shadow-sm transition-all cursor-pointer",
-        "active:scale-[0.98]"
+        "w-full text-left bg-panel rounded-xl border border-ink/10 p-3",
+        "hover:border-accent/20 hover:shadow-md transition-all cursor-pointer",
       )}
     >
       {/* Photo + Content */}
       <div className="flex gap-3">
         {/* Thumbnail */}
-        <div className="w-14 h-14 rounded-lg overflow-hidden bg-ink/[0.03] flex-shrink-0 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-lg overflow-hidden bg-accent/5 flex-shrink-0 flex items-center justify-center">
           {photoUrl ? (
             <img
               src={photoUrl}
@@ -76,7 +75,7 @@ export function IncidentCard({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-ink/5" />
+            <AlertCircle className="w-6 h-6 text-accent/40" />
           )}
         </div>
 
@@ -87,7 +86,7 @@ export function IncidentCard({
             {confidence !== null && (
               <span
                 className={cn(
-                  "px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider",
+                  "px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider",
                   confidenceColor(confidence)
                 )}
               >
@@ -97,7 +96,7 @@ export function IncidentCard({
             {urgency !== null && (
               <span
                 className={cn(
-                  "px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider border",
+                  "px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
                   URGENCY_COLORS[urgencyTier]
                 )}
               >
@@ -105,25 +104,27 @@ export function IncidentCard({
               </span>
             )}
             {ticket.id && (
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono text-ink/40 bg-ink/[0.03]">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono text-ink/60 bg-ink/5">
                 {ticket.display_id || ticket.id.slice(0, 8)}
               </span>
             )}
           </div>
 
           {/* Title */}
-          <p className="text-xs font-semibold text-ink truncate leading-tight">
+          <p className="text-sm font-semibold text-ink truncate leading-tight">
             {ticket.title || "Untitled incident"}
           </p>
 
           {/* Meta */}
-          <div className="flex items-center gap-3 mt-1.5">
-            <span className="inline-flex items-center gap-1 text-[10px] text-ink/40 font-mono">
-              <MapPin className="w-2.5 h-2.5" />
-              <span className="truncate max-w-[100px]">{ticket.location}</span>
-            </span>
-            <span className="inline-flex items-center gap-1 text-[10px] text-ink/40 font-mono">
-              <Clock className="w-2.5 h-2.5" />
+          <div className="flex items-center gap-3 mt-1">
+            {ticket.location && (
+              <span className="inline-flex items-center gap-1 text-[11px] text-muted">
+                <MapPin className="w-3 h-3 text-accent/50" />
+                <span className="truncate max-w-[100px]">{ticket.location}</span>
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 text-[11px] text-muted">
+              <Clock className="w-3 h-3 text-accent/50" />
               {timeAgo(ticket.created_at)}
             </span>
           </div>
@@ -134,7 +135,7 @@ export function IncidentCard({
       {ticket.reporter === "anonymous" && (
         <div className="flex items-center gap-1 mt-2 px-2 py-1 rounded bg-amber-500/5 border border-amber-500/10">
           <Fingerprint className="w-3 h-3 text-amber-500" />
-          <span className="text-[9px] font-mono text-amber-500 uppercase tracking-wider">
+          <span className="text-[10px] font-bold text-amber-500 uppercase tracking-wider">
             Ghost Mode
           </span>
         </div>

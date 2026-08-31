@@ -99,7 +99,7 @@ export function KanbanBoard({
               <span className="text-xs font-bold text-ink uppercase tracking-wider">
                 {col.label}
               </span>
-              <span className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-ink/5 text-ink/40">
+              <span className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold bg-ink/5 text-ink/70">
                 {items.length}
               </span>
             </div>
@@ -113,7 +113,7 @@ export function KanbanBoard({
               )}
             >
               {items.length === 0 ? (
-                <div className="flex items-center justify-center h-24 text-xs text-ink/30 font-mono">
+                <div className="flex items-center justify-center h-24 text-xs text-muted">
                   No incidents
                 </div>
               ) : (

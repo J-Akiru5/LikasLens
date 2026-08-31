@@ -11,8 +11,24 @@ export interface ChatMessage {
 
 type Persona = "citizen" | "admin";
 
+// Safe wrapper: useTranslations throws during SSR if NextIntlClientProvider
+// context is missing. Fall back so the chat hook never crashes a page.
+function useSafeTranslations(namespace: string) {
+  try {
+    return useTranslations(namespace);
+  } catch {
+    const fallbacks: Record<string, Record<string, string>> = {
+      chat: {
+        welcomeCitizen: "Hello! I'm Liksi, your AI guide for LikasLens. How may I assist you today?",
+        welcomeAdmin: "Welcome to the Admin Portal! I'm Liksi, your AI operations assistant.",
+      },
+    };
+    return (key: string) => fallbacks[namespace]?.[key] ?? key;
+  }
+}
+
 export function useGeminiChat(persona: Persona = "citizen", locale: string = "en") {
-  const t = useTranslations("chat");
+  const t = useSafeTranslations("chat");
   const welcome = persona === "admin" ? t("welcomeAdmin") : t("welcomeCitizen");
 
   const [messages, setMessages] = useState<ChatMessage[]>([
