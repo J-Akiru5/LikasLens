@@ -350,9 +350,9 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
                           <span className={`px-3 py-1 rounded-full font-mono text-xs font-bold flex items-center gap-1.5 ${
                             isResolved
                               ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                              : report.status === "in_review"
+                              : (report.status as string) === "in_review" || report.status === "pending_review"
                               ? "bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20"
-                              : report.status === "investigating" || report.status === "assigned"
+                              : report.status === "investigating" || (report.status as string) === "assigned"
                               ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20"
                               : "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                           }`}>
@@ -361,9 +361,9 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
                             }`} />
                             {isResolved
                               ? "Resolved"
-                              : report.status === "in_review"
+                              : (report.status as string) === "in_review" || report.status === "pending_review"
                               ? "AI Triage"
-                              : report.status === "investigating" || report.status === "assigned"
+                              : report.status === "investigating" || (report.status as string) === "assigned"
                               ? "Inspectors Dispatched"
                               : "Report Received"}
                           </span>

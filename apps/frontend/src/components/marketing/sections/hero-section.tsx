@@ -165,26 +165,39 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
       }}
     >
       {/* Premium Data Topography Background */}
-      <div style={{ position: "absolute", inset: 0, opacity: ghostMode ? 0.6 : 1, transition: "opacity 0.6s ease" }}>
+      <div style={{ position: "absolute", inset: 0, opacity: ghostMode ? 0.65 : 1, transition: "opacity 0.6s ease" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/landing_hero_bg_premium.webp')", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.8 }} />
         {/* Subtle dark gradient overlay to ensure text remains perfectly readable */}
         <div
           style={{
             position: "absolute", inset: 0,
             background: ghostMode 
-              ? "linear-gradient(180deg, rgba(13,26,18,0.98) 0%, rgba(13,26,18,0.7) 45%, rgba(13,26,18,0.95) 100%)"
-              : "linear-gradient(180deg, rgba(13,26,18,0.9) 0%, rgba(13,26,18,0.4) 45%, rgba(13,26,18,0.85) 100%)",
+              ? "linear-gradient(180deg, rgba(12,22,40,0.98) 0%, rgba(12,22,40,0.72) 45%, rgba(12,22,40,0.96) 100%)"
+              : "linear-gradient(180deg, rgba(13,26,18,0.92) 0%, rgba(13,26,18,0.45) 45%, rgba(13,26,18,0.88) 100%)",
             transition: "background 0.6s ease",
             pointerEvents: "none",
             zIndex: 1
           }}
         />
+        {/* Ambient atmospheric radial light sources */}
+        <div
+          style={{
+            position: "absolute", top: "20%", left: "10%", width: "500px", height: "500px",
+            background: "radial-gradient(circle, rgba(27,67,50,0.45) 0%, rgba(46,230,200,0.08) 40%, transparent 70%)",
+            filter: "blur(60px)", pointerEvents: "none", zIndex: 1
+          }}
+        />
+        <div
+          style={{
+            position: "absolute", top: "25%", right: "8%", width: "550px", height: "550px",
+            background: "radial-gradient(circle, rgba(46,230,200,0.15) 0%, rgba(27,67,50,0.3) 45%, transparent 70%)",
+            filter: "blur(70px)", pointerEvents: "none", zIndex: 1
+          }}
+        />
       </div>
 
       {/* Instrument grid */}
-      <div className="ec-grid" style={{ position: "absolute", inset: 0, opacity: 0.8, pointerEvents: "none", zIndex: 1 }} />
-
-      {/* Navigation removed; using the unified StickyLandingNav from page.tsx */}
+      <div className="ec-grid" style={{ position: "absolute", inset: 0, opacity: 0.85, pointerEvents: "none", zIndex: 1 }} />
 
       {/* Hero content — asymmetric case-file layout */}
       <div className="px-5 sm:px-8 pt-28 pb-24 w-full max-w-7xl mx-auto relative" style={{ zIndex: 2 }}>
@@ -196,12 +209,13 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
               <span
                 className="ec-eyebrow"
                 style={{
-                  background: "rgba(46,230,200,0.08)",
-                  borderColor: "rgba(46,230,200,0.22)",
+                  background: "rgba(46,230,200,0.09)",
+                  borderColor: "rgba(46,230,200,0.26)",
                   color: "var(--accent-bright)",
+                  boxShadow: "0 2px 12px rgba(46,230,200,0.12)",
                 }}
               >
-                <span className="ec-status-dot ec-status-active" style={{ background: "var(--accent-bright)" }} />
+                <span className="ec-status-dot animate-pulse" style={{ background: "var(--accent-bright)", boxShadow: "0 0 8px var(--accent-bright)" }} />
                 {t("readyBanner")}
               </span>
             </m.div>
@@ -211,12 +225,12 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
               style={{
                 fontSize: "var(--display-hero)",
                 fontFamily: "var(--font-heading)",
-                fontWeight: 700,
-                letterSpacing: "-0.035em",
-                lineHeight: 1.02,
+                fontWeight: 800,
+                letterSpacing: "-0.04em",
+                lineHeight: 0.98,
                 color: "#ffffff",
                 margin: 0,
-                textShadow: "0 4px 24px rgba(0,0,0,0.6)"
+                textShadow: "0 4px 30px rgba(0,0,0,0.7)"
               }}
             >
               {t("heroTitle")}
@@ -225,51 +239,75 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
             <m.p
               variants={fadeUp}
               style={{
-                fontSize: "clamp(1rem, 1.4vw, 1.125rem)",
-                color: "rgba(240,237,232,0.95)",
-                maxWidth: 480,
+                fontSize: "clamp(1rem, 1.35vw, 1.125rem)",
+                fontFamily: "var(--font-body)",
+                color: "rgba(240,237,232,0.92)",
+                maxWidth: 490,
                 lineHeight: 1.6,
                 margin: 0,
-                textShadow: "0 2px 12px rgba(0,0,0,0.8)"
+                textShadow: "0 2px 14px rgba(0,0,0,0.8)"
               }}
             >
               {t("heroSubtitle")}
             </m.p>
 
-            <m.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+            {/* Primary & Secondary CTA System */}
+            <m.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
               <MagneticButton pull={0.3}>
                 <Link
                   href="/report"
                   style={{
-                    display: "inline-flex", alignItems: "center", gap: 8,
-                    padding: "13px 26px", borderRadius: 10,
-                    background: "var(--accent-bright)", color: "var(--hero-bg)",
+                    display: "inline-flex", alignItems: "center", gap: 9,
+                    padding: "14px 28px", borderRadius: 12,
+                    background: "var(--accent-bright)", color: "#0c1628",
                     fontWeight: 700, fontSize: 14, letterSpacing: "-0.01em",
                     textDecoration: "none", border: "none",
                     fontFamily: "var(--font-body)",
-                    transition: "all 0.25s ease",
+                    boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.4), 0 8px 24px -4px rgba(46,230,200,0.4)",
+                    transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                    (e.currentTarget as HTMLElement).style.boxShadow = "inset 0 1px 0 0 rgba(255,255,255,0.5), 0 12px 32px -4px rgba(46,230,200,0.58)";
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                    (e.currentTarget as HTMLElement).style.boxShadow = "inset 0 1px 0 0 rgba(255,255,255,0.4), 0 8px 24px -4px rgba(46,230,200,0.4)";
                   }}
                 >
-                  <Camera style={{ width: 16, height: 16 }} />
+                  <Camera style={{ width: 17, height: 17 }} />
                   {t("reportIssue")}
-                  <ArrowRight style={{ width: 16, height: 16 }} />
+                  <ArrowRight style={{ width: 17, height: 17 }} />
                 </Link>
               </MagneticButton>
+
               <MagneticButton pull={0.15}>
                 <a
                   href="/public-record"
                   style={{
-                    display: "inline-flex", alignItems: "center", gap: 8,
-                    padding: "13px 26px", borderRadius: 10,
-                    background: "transparent", color: "#ffffff",
+                    display: "inline-flex", alignItems: "center", gap: 9,
+                    padding: "14px 28px", borderRadius: 12,
+                    background: "rgba(255,255,255,0.06)", color: "#ffffff",
                     fontWeight: 600, fontSize: 14, letterSpacing: "-0.01em",
                     textDecoration: "none",
-                    border: "1px solid rgba(240,237,232,0.18)",
+                    border: "1px solid rgba(240,237,232,0.22)",
+                    backdropFilter: "blur(12px)",
                     fontFamily: "var(--font-body)",
-                    transition: "all 0.25s ease",
+                    boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
+                    transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)";
+                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(240,237,232,0.38)";
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
+                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(240,237,232,0.22)";
                   }}
                 >
-                  <BarChart3 style={{ width: 16, height: 16 }} />
+                  <BarChart3 style={{ width: 17, height: 17 }} />
                   {t("viewPublicReports")}
                 </a>
               </MagneticButton>
@@ -277,44 +315,45 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
 
             {/* Provenance line — what makes these numbers trustworthy */}
             <m.div variants={fadeUp} style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.5)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.6)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                 <span className="ec-status-dot ec-status-resolved" />
                 {t("liveLedger")}
               </div>
-              <span style={{ width: 1, height: 14, background: "rgba(240,237,232,0.14)" }} />
-              <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.4)" }}>
+              <span style={{ width: 1, height: 14, background: "rgba(240,237,232,0.18)" }} />
+              <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.48)", letterSpacing: "0.04em" }}>
                 {t("agencies")}
               </span>
             </m.div>
           </m.div>
 
-          {/* Right — LIVE INCIDENT LEDGER (now with premium glassmorphism) */}
+          {/* Right — LIVE INCIDENT LEDGER (Centerpiece terminal) */}
           <m.div
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.35, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
             <div 
-              className="ec-ledger shadow-2xl backdrop-blur-md" 
+              className="ec-ledger backdrop-blur-xl" 
               role="group" 
               aria-label="Live incident ledger"
               style={{
-                background: ghostMode ? "rgba(13, 26, 18, 0.8)" : "rgba(13, 26, 18, 0.5)",
-                border: "1px solid rgba(255, 255, 255, 0.12)",
-                borderRadius: "16px",
+                background: ghostMode ? "rgba(10, 20, 32, 0.85)" : "rgba(10, 22, 16, 0.75)",
+                border: "1px solid rgba(255, 255, 255, 0.14)",
+                borderRadius: "18px",
+                boxShadow: "0 24px 64px -12px rgba(0, 0, 0, 0.75), 0 0 1px 1px rgba(255, 255, 255, 0.08)",
                 overflow: "hidden",
                 transition: "background 0.6s ease"
               }}
             >
               {/* Header */}
-              <div className="ec-ledger-head">
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span className="ec-status-dot" style={{ background: "var(--accent-bright)", animation: "breathe 3s ease-in-out infinite" }} />
-                  <span style={{ fontFamily: "var(--font-data)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(240,237,232,0.55)" }}>
+              <div className="ec-ledger-head" style={{ padding: "15px 20px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+                  <span className="ec-status-dot" style={{ background: "var(--accent-bright)", boxShadow: "0 0 8px var(--accent-bright)", animation: "breathe 3s ease-in-out infinite" }} />
+                  <span style={{ fontFamily: "var(--font-data)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,237,232,0.65)", fontWeight: 600 }}>
                     {t("incidentLedgerLive")}
                   </span>
                 </div>
-                <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--accent-bright)", border: "1px solid var(--accent-bright)", borderRadius: 4, padding: "2px 8px" }}>
+                <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, color: "var(--accent-bright)", border: "1px solid rgba(46, 230, 200, 0.35)", background: "rgba(46, 230, 200, 0.08)", borderRadius: 6, padding: "2px 9px", letterSpacing: "0.08em" }}>
                   SYS-ONLINE
                 </span>
               </div>
@@ -335,15 +374,15 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.5 + idx * 0.09, duration: 0.5 }}
-                      className="ec-ledger-row"
+                      className="ec-ledger-row hover:bg-white/[0.03] transition-colors"
                       data-state={isLive ? "live" : undefined}
                     >
                       {/* ID + status */}
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "#ffffff" }}>
+                        <span style={{ fontFamily: "var(--font-data)", fontSize: 12, fontWeight: 700, color: "#ffffff", letterSpacing: "0.02em" }}>
                           {entry.id}
                         </span>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "var(--font-data)", fontSize: 9.5, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(240,237,232,0.45)" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontFamily: "var(--font-data)", fontSize: 9.5, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(240,237,232,0.5)" }}>
                           <span className={`ec-status-dot ec-status-${entry.state}`} />
                           {stateLabels[entry.state] || entry.state}
                         </span>
@@ -351,20 +390,20 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
 
                       {/* Type + coords */}
                       <div style={{ minWidth: 0 }}>
-                        <p style={{ fontFamily: "var(--font-body)", fontSize: 13.5, fontWeight: 600, color: "rgba(240,237,232,0.9)", margin: 0, lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <p style={{ fontFamily: "var(--font-body)", fontSize: 13.5, fontWeight: 600, color: "rgba(240,237,232,0.92)", margin: 0, lineHeight: 1.35, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {entry.type}
                         </p>
-                        <p style={{ fontFamily: "var(--font-data)", fontSize: 10.5, color: "rgba(240,237,232,0.42)", margin: "3px 0 0" }}>
+                        <p style={{ fontFamily: "var(--font-data)", fontSize: 10.5, color: "rgba(240,237,232,0.48)", margin: "3px 0 0" }}>
                           {entry.coords} · {entry.agency}
                         </p>
                       </div>
 
                       {/* Confidence */}
                       <div style={{ textAlign: "right", flexShrink: 0 }}>
-                        <span style={{ fontFamily: "var(--font-data)", fontSize: 14, fontWeight: 700, color: isLive ? "var(--accent-bright)" : "rgba(240,237,232,0.85)" }}>
+                        <span style={{ fontFamily: "var(--font-data)", fontSize: 14, fontWeight: 700, color: isLive ? "var(--accent-bright)" : "rgba(240,237,232,0.88)" }}>
                           {entry.confidence.toFixed(1)}%
                         </span>
-                        <p style={{ fontFamily: "var(--font-data)", fontSize: 9, color: "rgba(240,237,232,0.35)", margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        <p style={{ fontFamily: "var(--font-data)", fontSize: 9, color: "rgba(240,237,232,0.4)", margin: "2px 0 0", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                           {entry.note}
                         </p>
                       </div>
@@ -374,23 +413,23 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
               </div>
 
               {/* Footer */}
-              <div className="ec-ledger-head" style={{ borderTop: "1px solid var(--ec-rule)", borderBottom: "none" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-data)", fontSize: 10, color: "rgba(240,237,232,0.4)" }}>
+              <div className="ec-ledger-head" style={{ borderTop: "1px solid var(--ec-rule)", borderBottom: "none", padding: "14px 20px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: "var(--font-data)", fontSize: 10.5, color: "rgba(240,237,232,0.5)" }}>
                   <span className="ec-status-dot ec-status-resolved" />
                   {t("allSystemsOperational")}
                 </div>
                 <button
                   onClick={handleInstall}
                   aria-label="Install LikasLens app"
-                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)]"
+                  className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] hover:opacity-90 transition-opacity"
                   style={{
-                    display: "flex", alignItems: "center", gap: 5,
+                    display: "flex", alignItems: "center", gap: 6,
                     background: "none", border: "none", cursor: "pointer",
-                    fontFamily: "var(--font-data)", fontSize: 10.5,
+                    fontFamily: "var(--font-data)", fontSize: 10.5, fontWeight: 600,
                     color: "var(--accent-bright)", textDecoration: "underline",
                   }}
                 >
-                  <Download style={{ width: 12, height: 12 }} aria-hidden="true" /> {t("installAppBtn")}
+                  <Download style={{ width: 13, height: 13 }} aria-hidden="true" /> {t("installAppBtn")}
                 </button>
               </div>
             </div>

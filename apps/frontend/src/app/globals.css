@@ -139,9 +139,11 @@ body {
 /* Fine instrument grid — extremely subtle, not the 2px SaaS grid. */
 .ec-grid {
   background-image:
-    linear-gradient(rgba(240, 237, 232, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240, 237, 232, 0.035) 1px, transparent 1px);
+    linear-gradient(rgba(240, 237, 232, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 237, 232, 0.04) 1px, transparent 1px);
   background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 85% 85% at 50% 45%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 45%, black 40%, transparent 100%);
 }
 
 /* Case-file artifact card (pipeline nodes) — solid, one border OR one shadow. */

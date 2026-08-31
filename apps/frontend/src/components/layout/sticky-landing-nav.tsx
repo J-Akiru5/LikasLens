@@ -101,7 +101,8 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
         className="absolute top-0 left-0 h-[2px] transition-all duration-150"
         style={{
           width: `${scrollProgress}%`,
-          background: ghostMode ? "#2ee6c8" : "var(--accent)",
+          background: ghostMode ? "#2ee6c8" : "var(--accent-bright)",
+          boxShadow: scrollProgress > 0 ? (ghostMode ? "0 0 10px #2ee6c8" : "0 0 10px rgba(46, 230, 200, 0.6)") : "none",
           opacity: visible ? 1 : 0,
         }}
       />
@@ -110,14 +111,14 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
         className="transition-all duration-300"
         style={{
           background: visible
-            ? (ghostMode ? "rgba(13, 26, 18, 0.85)" : "rgba(247, 245, 242, 0.85)")
+            ? (ghostMode ? "rgba(13, 26, 18, 0.88)" : "rgba(247, 245, 242, 0.92)")
             : "transparent",
-          backdropFilter: visible ? "blur(16px)" : "none",
+          backdropFilter: visible ? "blur(20px)" : "none",
           borderBottom: visible
-            ? `1px solid ${ghostMode ? "rgba(46, 230, 200, 0.12)" : "rgba(0, 0, 0, 0.08)"}`
+            ? `1px solid ${ghostMode ? "rgba(46, 230, 200, 0.15)" : "rgba(0, 0, 0, 0.08)"}`
             : "1px solid transparent",
           boxShadow: visible
-            ? (ghostMode ? "0 4px 20px -2px rgba(0, 0, 0, 0.5)" : "0 4px 20px -2px rgba(0, 0, 0, 0.05)")
+            ? (ghostMode ? "0 8px 32px -4px rgba(0, 0, 0, 0.6)" : "0 8px 32px -4px rgba(17, 24, 20, 0.06)")
             : "none",
         }}
       >
@@ -127,14 +128,16 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
             className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-bright)] rounded-md no-underline"
             aria-label="LikasLens Home"
           >
-            <img
-              src="/images/likas-lens-logo.webp"
-              alt="LikasLens Logo"
-              className="w-7 h-7 object-contain group-hover:scale-105 transition-transform duration-300"
-              style={{ filter: !visible || ghostMode ? "brightness(0) invert(1)" : "none" }}
-            />
+            <div className="relative flex items-center justify-center">
+              <img
+                src="/images/likas-lens-logo.webp"
+                alt="LikasLens Logo"
+                className="w-7 h-7 object-contain group-hover:scale-105 transition-transform duration-300"
+                style={{ filter: !visible || ghostMode ? "brightness(0) invert(1)" : "none" }}
+              />
+            </div>
             <span
-              className="font-mono text-sm font-bold tracking-[0.16em] uppercase transition-colors"
+              className="font-mono text-sm font-bold tracking-[0.18em] uppercase transition-colors"
               style={{ color: !visible || ghostMode ? "#ffffff" : "var(--ink)" }}
             >
               LIK<span style={{ color: ghostMode ? "#2ee6c8" : "#2d6a4f" }}>Λ</span>S LENS
@@ -157,13 +160,16 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                       window.scrollTo({ top: y, behavior: "smooth" });
                     }
                   }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all relative"
+                  className="px-3.5 py-1.5 rounded-full text-[11px] font-mono font-semibold tracking-wider uppercase transition-all duration-200 relative border"
                   style={{
                     color: isActive
                       ? (ghostMode ? "#2ee6c8" : "var(--accent)")
-                      : (!visible || ghostMode ? "rgba(255, 255, 255, 0.7)" : "rgba(17, 24, 20, 0.65)"),
+                      : (!visible || ghostMode ? "rgba(255, 255, 255, 0.75)" : "rgba(17, 24, 20, 0.7)"),
                     background: isActive
-                      ? (ghostMode ? "rgba(46, 230, 200, 0.08)" : "rgba(27, 67, 50, 0.06)")
+                      ? (ghostMode ? "rgba(46, 230, 200, 0.12)" : "rgba(27, 67, 50, 0.08)")
+                      : "transparent",
+                    borderColor: isActive
+                      ? (ghostMode ? "rgba(46, 230, 200, 0.25)" : "rgba(27, 67, 50, 0.2)")
                       : "transparent",
                   }}
                 >
@@ -187,15 +193,15 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
               onClick={(e) => onGhostToggle(e)}
               aria-label={ghostMode ? tNav("switchToCivic") : tNav("switchToGhost")}
               aria-pressed={ghostMode}
-              className={`relative flex items-center h-8 min-w-[94px] max-w-[120px] rounded-full transition-all duration-300 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
+              className={`relative flex items-center h-8 min-w-[96px] max-w-[120px] rounded-full transition-all duration-300 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 ${
                 ghostMode
-                  ? "bg-secondary/15 border border-secondary/30 shadow-inner"
-                  : (!visible ? "bg-white/10 border border-white/20" : "bg-ink/5 border border-ink/10 hover:bg-ink/10 shadow-inner")
+                  ? "bg-secondary/15 border border-secondary/35 shadow-inner"
+                  : (!visible ? "bg-white/10 border border-white/20 hover:bg-white/15" : "bg-ink/5 border border-ink/10 hover:bg-ink/10 shadow-inner")
               }`}
               title="Toggle Ghost Mode"
             >
               <div
-                className={`absolute top-1 w-6 h-6 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.15)] transition-all duration-300 flex items-center justify-center z-10 ${
+                className={`absolute top-1 w-6 h-6 rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center z-10 ${
                   ghostMode
                     ? "right-1 bg-secondary"
                     : (!visible ? "left-1 bg-white" : "left-1 bg-page")
