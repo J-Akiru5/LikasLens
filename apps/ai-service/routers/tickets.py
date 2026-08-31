@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 
 from auth.supabase_jwt import require_lgu_role, verify_supabase_token
 from db.connection import get_db
@@ -63,7 +64,7 @@ async def list_tickets(
     _: dict = Depends(require_lgu_role),
 ):
     """List all tickets — LGU only."""
-    q = select(Ticket).order_by(Ticket.created_at.desc())
+    q = select(Ticket).options(selectinload(Ticket.reporter)).order_by(Ticket.created_at.desc())
     if search:
         q = q.where(
             Ticket.title.ilike(f"%{search}%")
@@ -98,7 +99,7 @@ async def get_ticket(
     _: dict = Depends(require_lgu_role),
 ):
     """Get a single ticket by ID — LGU only."""
-    result = await db.execute(select(Ticket).where(Ticket.id == uuid.UUID(ticket_id)))
+    result = await db.execute(select(Ticket).options(selectinload(Ticket.reporter)).where(Ticket.id == uuid.UUID(ticket_id)))
     ticket = result.scalar_one_or_none()
     if not ticket:
         raise HTTPException(status_code=404, detail="Ticket not found")
