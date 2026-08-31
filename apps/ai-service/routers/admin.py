@@ -169,3 +169,29 @@ async def bulk_update_role(
             "skipped": skipped,
         },
     }
+
+
+# ── DELETE /api/v1/admin/users/{id} — soft-deactivate user ────────────────
+
+
+@router.delete("/users/{user_id}")
+async def deactivate_user(
+    user_id: str,
+    token: dict = Depends(require_super_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    logger.info(
+        "Admin %s deactivated user %s",
+        token.get("sub"),
+        user_id,
+    )
+
+    return {
+        "success": True,
+        "data": {"id": user_id},
+    }

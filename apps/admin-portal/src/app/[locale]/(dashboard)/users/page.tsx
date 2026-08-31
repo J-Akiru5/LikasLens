@@ -17,8 +17,8 @@ import {
 import {
   laravelGet,
   laravelPost,
-  laravelPut,
-  laravelDelete,
+  updateUserRole,
+  deleteAdminUser,
   bulkUserRole,
   bulkUserDeactivate,
   showToast,
@@ -137,7 +137,7 @@ export default function UsersPage() {
 
   async function handleRoleChange(userId: string, newRole: string) {
     try {
-      await laravelPut(`/admin/users/${userId}/role`, { role: newRole });
+      await updateUserRole(userId, newRole);
       setUsers((prev) =>
         prev.map((u) =>
           u.id === userId ? { ...u, role: newRole as Role } : u,
@@ -153,7 +153,7 @@ export default function UsersPage() {
   async function handleDelete(userId: string) {
     if (!confirm("Deactivate this user account?")) return;
     try {
-      await laravelDelete(`/admin/users/${userId}`);
+      await deleteAdminUser(userId);
       setUsers((prev) =>
         prev.map((u) =>
           u.id === userId ? { ...u, deleted_at: new Date().toISOString() } : u,
