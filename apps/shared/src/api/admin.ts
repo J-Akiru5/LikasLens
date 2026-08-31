@@ -157,15 +157,12 @@ export async function getTicket(id: string) {
   return { success: true, data } as ApiResponse<TicketDetail>;
 }
 
-export async function updateTicketStatus(id: string, status: string) {
-  const { data: old, error: e1 } = await db().from("tickets").select("status").eq("id", id).single();
-  if (e1) throw e1;
-  const { data, error } = await db().from("tickets").update({ status, updated_at: new Date().toISOString() }).eq("id", id).select("id, status").single();
-  if (error) throw error;
-  return {
-    success: true,
-    data: { id: data.id, old_status: old.status, new_status: data.status, resolved_at: status === "resolved" ? new Date().toISOString() : null },
-  } as ApiResponse<{ id: string; old_status: string; new_status: string; resolved_at: string | null }>;
+export function updateTicketStatus(id: string, status: string, notes?: string): Promise<ApiResponse<{ id: string; old_status: string; new_status: string; resolved_at: string | null }>> {
+  return fetch(`/api/v1/ai/tickets/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status, notes }),
+  }).then((r) => r.json());
 }
 
 export async function deleteTicket(id: string) {
