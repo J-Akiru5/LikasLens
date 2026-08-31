@@ -70,7 +70,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
         content={
             "success": False,
             "error": "Internal server error",
-            "detail": str(exc) if settings.app_debug else None,
+            "detail": str(exc),
         },
     )
 
