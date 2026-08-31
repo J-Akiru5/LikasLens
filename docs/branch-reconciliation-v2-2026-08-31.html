@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens Branch Reconciliation v2 — 31 Aug 2026</title>
+<style>
+  :root { --bg: #0a0f1a; --surface: #111827; --border: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --accent: #22c55e; --warn: #f59e0b; --fail: #ef4444; --info: #3b82f6; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(135deg, #22c55e, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-size: 1.3rem; font-weight: 700; margin: 2rem 0 1rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: var(--info); }
+  .subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+  th, td { padding: 0.6rem 0.8rem; border: 1px solid var(--border); text-align: left; }
+  th { background: var(--surface); font-weight: 600; color: var(--accent); }
+  td { background: rgba(17,24,39,0.5); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+  .badge-pass { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .badge-fail { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .badge-warn { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .badge-info { background: rgba(59,130,246,0.15); color: #3b82f6; }
+  .badge-skip { background: rgba(148,163,184,0.15); color: #94a3b8; }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; overflow-x: auto; font-size: 0.8rem; margin: 1rem 0; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
+  .card-green { border-left: 4px solid var(--accent); }
+  .card-red { border-left: 4px solid var(--fail); }
+  .card-blue { border-left: 4px solid var(--info); }
+  .card-yellow { border-left: 4px solid var(--warn); }
+  ul { margin: 0.5rem 0; padding-left: 1.5rem; }
+  li { margin: 0.3rem 0; }
+  .section-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  @media (max-width: 768px) { .section-grid { grid-template-columns: 1fr; } }
+  .timestamp { color: var(--muted); font-family: monospace; font-size: 0.8rem; }
+  .evidence { background: rgba(34,197,94,0.05); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 1rem; margin: 0.75rem 0; }
+  .protocol-note { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 8px; padding: 1rem; margin: 0.75rem 0; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<h1>LikasLens Branch Reconciliation v2</h1>
+<p class="subtitle">
+  <span class="timestamp">Generated: 31 Aug 2026</span> · Supersedes
+  <code>docs/branch-reconciliation-2026-08-31.html</code> (v1)
+  <br>All claims verified against a fresh, throwaway clone per the
+  <strong>Verified-Report Protocol</strong>.
+</p>
+
+<!-- ============================================================ -->
+<h2>1. Executive Summary</h2>
+
+<div class="card card-green">
+  <h3>Outcome</h3>
+  <p>
+    Five branches reconciled into a single verified state on
+    <code>staging</code> and <code>development</code> (unified at
+    <code>ad91a0c</code>). Four superseded branches deleted. CI
+    failure diagnosed and fixed (SyncPack version mismatch). Map
+    branch landed with GPS-denied UX fix, heatmap refinement, and
+    EXIF watermark fix. Fabrication pattern re-sweep caught
+    reintroduced fallbacks from the map merge. <strong>Main
+    intentionally NOT promoted</strong> — pending Jeff's review.
+  </p>
+</div>
+
+<div class="section-grid">
+  <div class="card card-blue">
+    <h3>Before</h3>
+    <ul>
+      <li><code>staging</code>: <code>b9509d3</code> — no CI triggered</li>
+      <li><code>development</code>: <code>2150011</code> — 6/7 CI pass, SyncPack failing</li>
+      <li>5 feature/fix branches with unclear status</li>
+      <li>Map branch existed only locally, never pushed</li>
+      <li>Ticket-list async fix orphaned on stale branch</li>
+    </ul>
+  </div>
+  <div class="card card-green">
+    <h3>After</h3>
+    <ul>
+      <li><code>staging</code>: <code>ad91a0c</code> — unified with development</li>
+      <li><code>development</code>: <code>ad91a0c</code> — unified with staging</li>
+      <li>4 superseded branches deleted from origin</li>
+      <li>Map branch merged, EXIF fix landed</li>
+      <li>Ticket-list fix confirmed already present</li>
+      <li>SyncPack CI failure fixed</li>
+      <li>Main: <code>5b73f2a</code> — 13 commits behind, NOT promoted</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>2. Phase 0 — CI Diagnosis</h2>
+
+<div class="card card-blue">
+  <h3>Staging CI Status</h3>
+  <p>
+    The CI workflow (<code>.github/workflows/ci.yml</code>) triggers on
+    push to <code>main</code> and <code>development</code> only —
+    <strong>not on <code>staging</code></strong>. Direct pushes to
+    staging do not trigger CI. The last CI run visible for staging was
+    a PR run targeting <code>main</code>, which succeeded.
+  </p>
+</div>
+
+<div class="card card-yellow">
+  <h3>Development CI Status (before fix)</h3>
+  <p>8 checks ran on <code>2150011</code>:</p>
+  <table>
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>🖥️ Frontend – lint + typecheck</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>📱 Mobile PWA – lint + typecheck</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>🔐 Admin Portal – lint + typecheck</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>📦 Shared – typecheck</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>🤖 AI Service – lint + syntax</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>🛡️ Security audit</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>🔗 SyncPack – dependency consistency</td><td><span class="badge badge-fail">FAIL</span></td></tr>
+    <tr><td>Supabase Preview</td><td><span class="badge badge-skip">SKIP</span></td></tr>
+  </table>
+</div>
+
+<div class="card card-green">
+  <h3>SyncPack Root Cause</h3>
+  <p>
+    <code>apps/shared/package.json</code> had <code>"next": "^16.2.2"</code>
+    in <code>peerDependencies</code> while all three apps used
+    <code>"next": "^16.3.3"</code>. SyncPack flagged the mismatch.
+  </p>
+  <p><strong>Fix:</strong> Updated shared peerDependency to <code>"^16.3.3"</code>.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2>3. Phase 1 — Orphaned Bug Fix Recovery</h2>
+
+<div class="card card-green">
+  <h3>Finding: Fix Already Present on Development</h3>
+  <p>
+    <code>fix/ticket-list-async-error</code> (commit <code>3283e6e</code>)
+    added <code>.options(selectinload(Ticket.reporter))</code> to two
+    queries in <code>apps/ai-service/routers/tickets.py</code>.
+  </p>
+  <p>
+    On current development, both <code>list_tickets</code> (line 68) and
+    <code>get_ticket</code> (line 103) already have the selectinload
+    calls. The fix was applied through a different path — the branch is
+    redundant.
+  </p>
+  <div class="evidence">
+    <strong>Evidence (fresh clone):</strong><br>
+    <code>$ git grep -c 'selectinload' -- 'apps/ai-service/**/*.py'</code><br>
+    <code>3</code> — selectinload imported and used in both query functions
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>4. Phase 2 — Map Branch Landing</h2>
+
+<div class="card card-blue">
+  <h3>Branch State</h3>
+  <p>
+    <code>feat/map-experience-elevation</code> existed only locally
+    (commit <code>de393ef</code>), never pushed to origin. Found in
+    the local reflog and merged into an integration branch.
+  </p>
+</div>
+
+<div class="card card-green">
+  <h3>Map Branch Unique Changes (9 files)</h3>
+  <table>
+    <tr><th>File</th><th>Change</th></tr>
+    <tr><td><code>frontend/.../report/page.tsx</code></td><td>GPS-denied UX: block submission, amber badge, location-required guard</td></tr>
+    <tr><td><code>mobile-pwa/.../report/page.tsx</code></td><td>Same GPS-denied UX for mobile</td></tr>
+    <tr><td><code>frontend/.../enhanced-map.tsx</code></td><td>Heatmap gradient refinement</td></tr>
+    <tr><td><code>frontend/.../heatmap-widget-deck.tsx</code></td><td>Heatmap widget improvements</td></tr>
+    <tr><td><code>frontend/.../geo-tag-map.tsx</code></td><td>Map component updates</td></tr>
+    <tr><td><code>mobile-pwa/.../enhanced-map.tsx</code></td><td>Mobile heatmap refinement</td></tr>
+    <tr><td><code>mobile-pwa/.../geo-tag-map.tsx</code></td><td>Mobile map updates</td></tr>
+    <tr><td><code>mobile-pwa/.../camera-stamp.ts</code></td><td>EXIF watermark fix: null instead of 0,0</td></tr>
+    <tr><td><code>docs/map-experience-elevation-2026-08-31.html</code></td><td>Documentation</td></tr>
+  </table>
+</div>
+
+<div class="card card-yellow">
+  <h3>Merge Conflict Resolution</h3>
+  <p>
+    Conflicts in both <code>report/page.tsx</code> files (frontend +
+    mobile-pwa). Both the fabricated-metrics-v2 fix and the map branch
+    modified the same lat/lng lines. Resolved in favor of the map
+    branch's cleaner <code>latitude</code> (no <code>?? null</code>
+    needed since the GPS-denied guard prevents null from reaching
+    the payload).
+  </p>
+</div>
+
+<div class="card card-red">
+  <h3>Reintroduced Fabrication (caught by re-sweep)</h3>
+  <p>
+    The map branch was based on pre-v2-fix code. Merging it
+    reintroduced hardcoded sparkline arrays and fabricated metric
+    fallbacks in the mobile-pwa dashboard. This is exactly the failure
+    mode the Verified-Report Protocol exists to catch.
+  </p>
+  <table>
+    <tr><th>Pattern</th><th>Lines</th><th>Fix</th></tr>
+    <tr><td><code>?? 14</code> (avg_response_minutes)</td><td>251, 254, 433</td><td>Replaced with <code>?? 0</code></td></tr>
+    <tr><td><code>?? 840</code> (total_users)</td><td>264</td><td>Conditional display, no fallback</td></tr>
+    <tr><td>Hardcoded sparkline arrays</td><td>232, 243, 254, 265</td><td>Zeroed to <code>[0,0,0,0,0,0,...]</code></td></tr>
+    <tr><td>citizen-dashboard-client sparkline</td><td>168</td><td>Zeroed <code>[120,145,132,...]</code></td></tr>
+    <tr><td>ActivityFeedItem type mismatch</td><td>159</td><td>Fixed <code>"Notice"|"Urgent"|"Important"</code> → <code>"Critical"|"Warning"|"Info"</code></td></tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<h2>5. Phase 3 — Integration Verification</h2>
+
+<div class="card card-green">
+  <h3>Typecheck Results</h3>
+  <table>
+    <tr><th>App</th><th>Source Errors</th><th>Build</th></tr>
+    <tr><td>frontend</td><td><span class="badge badge-pass">0</span></td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>mobile-pwa</td><td><span class="badge badge-pass">0</span> (fixed pre-existing type error)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+    <tr><td>admin-portal</td><td><span class="badge badge-pass">0</span> (only .next/types build artifact errors, pre-existing)</td><td><span class="badge badge-pass">PASS</span></td></tr>
+  </table>
+</div>
+
+<div class="card card-green">
+  <h3>Fabrication-Pattern Re-Sweep (post-merge)</h3>
+  <div class="evidence">
+    <strong>Command:</strong> <code>git grep -nE '(\|\||\?\?)\s*[0-9]{2,6}\b' -- 'apps/**/*.ts' 'apps/**/*.tsx'</code><br>
+    <strong>Result:</strong> Only known false positives remain:
+    <ul>
+      <li><code>predictions/page.tsx:199</code> — <code>?? 90</code> (UI display window, feature-flagged off)</li>
+      <li><code>citizen-dashboard-client.tsx:158</code> — <code>?? 30</code> (SLA display default)</li>
+      <li><code>geo-tag-map.tsx:27-28</code> — map center coordinates (legitimate default view)</li>
+      <li><code>layout.tsx:86</code> — <code>?? 40</code> (click handler, not data)</li>
+      <li><code>globe-3d.tsx:88</code>, <code>globe.tsx:103</code> — <code>|| 400</code> (container offset, not data)</li>
+    </ul>
+    <strong>Zero genuine fabrication hits.</strong>
+  </div>
+</div>
+
+<div class="card card-green">
+  <h3>Branch Divergence (verified)</h3>
+  <div class="evidence">
+    <code>$ git rev-list --left-right --count origin/staging...origin/development</code><br>
+    <code>0  0</code> — staging and development are unified at <code>ad91a0c</code>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<h2>6. Phase 4 — Branch Cleanup</h2>
+
+<table>
+  <tr><th>Branch</th><th>Action</th><th>Evidence</th><th>Status</th></tr>
+  <tr>
+    <td><code>fix/fabricated-dashboard-metrics</code> (PR #201)</td>
+    <td>PR already merged (no-op). Branch deleted.</td>
+    <td><code>git rev-list origin/staging..origin/fix/fabricated-dashboard-metrics</code> — empty</td>
+    <td><span class="badge badge-pass">DELETED</span></td>
+  </tr>
+  <tr>
+    <td><code>fix/vercel-build-failures</code></td>
+    <td>Deleted — zero unique commits vs staging</td>
+    <td><code>git rev-list origin/staging..origin/fix/vercel-build-failures</code> — empty</td>
+    <td><span class="badge badge-pass">DELETED</span></td>
+  </tr>
+  <tr>
+    <td><code>fix/ticket-list-async-error</code></td>
+    <td>Deleted — fix already on staging (selectinload ×3)</td>
+    <td><code>git show origin/staging:apps/ai-service/routers/tickets.py | grep -c selectinload</code> — 3</td>
+    <td><span class="badge badge-pass">DELETED</span></td>
+  </tr>
+  <tr>
+    <td><code>feat/map-experience-elevation</code></td>
+    <td>Merged into development/staging. Branch deleted.</td>
+    <td>Commit <code>de393ef</code> present in <code>ad91a0c</code> history</td>
+    <td><span class="badge badge-pass">DELETED</span></td>
+  </tr>
+  <tr>
+    <td><code>integrate/all-fixes</code></td>
+    <td>Integration branch, no longer needed</td>
+    <td>Merged into development and staging</td>
+    <td><span class="badge badge-pass">DELETED</span></td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>7. Fresh-Clone Verification</h2>
+
+<div class="protocol-note">
+  <strong>Verified-Report Protocol:</strong> All claims below trace to
+  a fresh, throwaway clone — not the working tree the changes were
+  assembled in.
+</div>
+
+<div class="evidence">
+  <strong>Clone command:</strong><br>
+  <code>$ rm -rf /tmp/verify-recon && git clone --depth 1 https://github.com/J-Akiru5/LikasLens.git /tmp/verify-recon</code><br><br>
+
+  <strong>Staging checkout:</strong><br>
+  <code>$ cd /tmp/verify-recon && git fetch origin staging && git checkout -b staging FETCH_HEAD</code><br><br>
+
+  <strong>HEAD commit:</strong> <code>ad91a0c fix: eliminate reintroduced fabricated sparklines and type error</code><br><br>
+
+  <strong>Fabrication grep:</strong><br>
+  <code>$ git grep -nE '(\|\||\?\?)\s*[0-9]{2,6}\b' -- 'apps/**/*.ts' 'apps/**/*.tsx'</code><br>
+  Result: 7 hits — all known false positives (predictions SLA, map center, click handler, globe offset)<br>
+  <strong>Zero genuine fabrication hits.</strong><br><br>
+
+  <strong>Positive verifications:</strong><br>
+  <code>$ git grep -c 'Location is required' -- 'apps/**/*.tsx'</code> → 2 files (frontend + mobile-pwa report pages)<br>
+  <code>$ git grep -c 'selectinload' -- 'apps/ai-service/**/*.py'</code> → 3 (import + 2 query functions)<br>
+  <code>$ grep '"next":' apps/shared/package.json</code> → <code>"next": "^16.3.3"</code> (SyncPack fix confirmed)
+</div>
+
+<!-- ============================================================ -->
+<h2>8. Commit History</h2>
+
+<table>
+  <tr><th>Hash</th><th>Message</th><th>Branches</th></tr>
+  <tr><td><code>ad91a0c</code></td><td>fix: eliminate reintroduced fabricated sparklines and type error</td><td>staging, development</td></tr>
+  <tr><td><code>eba9017</code></td><td>feat: merge map experience elevation + fix SyncPack CI failure</td><td>staging, development</td></tr>
+  <tr><td><code>de393ef</code></td><td>feat(maps): close GPS-denied fabricated-coordinate bug, refine heatmap ramp</td><td>staging, development (via merge)</td></tr>
+  <tr><td><code>2150011</code></td><td>feat(admin): revamp login UI, RBAC auth, homepage command cockpit & demo analyst provisioning</td><td>staging, development</td></tr>
+  <tr><td><code>b9509d3</code></td><td>docs: update v2 report with fresh-clone verification evidence</td><td>staging, development</td></tr>
+  <tr><td><code>2ede1ed</code></td><td>fix: eliminate all fabricated dashboard metrics and Manila coordinate fallbacks (v2 sweep)</td><td>staging, development</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>9. Final State</h2>
+
+<div class="section-grid">
+  <div class="card card-green">
+    <h3>Staging / Development</h3>
+    <ul>
+      <li>Both at <code>ad91a0c</code></li>
+      <li>Divergence: 0/0 (unified)</li>
+      <li>All 5 bug fixes present</li>
+      <li>Map branch GPS-denied fix landed</li>
+      <li>EXIF watermark fix landed</li>
+      <li>Synthwave admin UI (Lou's commit) preserved</li>
+      <li>Fabrication pattern clean (verified via fresh clone)</li>
+      <li>SynthPack CI failure fixed</li>
+    </ul>
+  </div>
+  <div class="card card-blue">
+    <h3>Main (NOT promoted)</h3>
+    <ul>
+      <li>At <code>5b73f2a</code></li>
+      <li>13 commits behind staging</li>
+      <li>Intentionally left untouched</li>
+      <li>Pending Jeff's review of this report</li>
+      <li>Vercel builds <code>main</code> — promotion triggers production deploy</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card card-yellow">
+  <h3>Remaining Remote Branches (not touched)</h3>
+  <p>
+    ~35 branches remain on origin including Dependabot PRs, feature
+    branches from other contributors, and experimental branches.
+    These are out of scope for this session. Branch hygiene for
+    these should be a separate task after the demo.
+  </p>
+</div>
+
+<!-- ============================================================ -->
+<h2>10. Lessons Learned</h2>
+
+<div class="card card-red">
+  <h3>Merge Reintroduced Fabrication</h3>
+  <p>
+    The map branch was based on pre-v2-fix code. Merging it into
+    development reintroduced hardcoded sparklines and fabricated
+    metric fallbacks that the v2 sweep had already cleaned. The
+    fabrication-pattern re-sweep (standing protocol) caught this
+    immediately — <strong>this is why the re-sweep exists</strong>.
+  </p>
+  <p>
+    <strong>Implication:</strong> Any branch created before a fix
+    lands will reintroduce the old patterns when merged. The
+    re-sweep must run after every merge, not just after the original
+    fix.
+  </p>
+</div>
+
+<div class="card card-blue">
+  <h3>Pre-Existing Type Error Fixed</h3>
+  <p>
+    <code>ActivityFeedItem.type</code> expected
+    <code>"Critical" | "Warning" | "Info"</code> but the mobile-pwa
+    dashboard mapped to <code>"Notice" | "Urgent" | "Important"</code>.
+    This was a pre-existing error on development, fixed as part of
+    this reconciliation since it's presentation-critical.
+  </p>
+</div>
+
+<!-- ============================================================ -->
+<h2>11. Next Steps</h2>
+
+<ul>
+  <li><strong>Main promotion:</strong> Pending Jeff's review. The 13-commit gap is clean and verified.</li>
+  <li><strong>AI Evidence & Validation Initiative:</strong> Next engineering priority — validated Render AI service, production API verification, neuro-symbolic pipeline end-to-end validation, benchmark metrics, judge-ready evidence.</li>
+  <li><strong>Remaining branch cleanup:</strong> ~35 remote branches (Dependabot, feature branches) — defer to after demo.</li>
+</ul>
+
+<p class="timestamp" style="margin-top: 2rem; text-align: center;">
+  Generated with Codebuff 🤖 · Verified-Report Protocol applied
+</p>
+
+</body>
+</html>
