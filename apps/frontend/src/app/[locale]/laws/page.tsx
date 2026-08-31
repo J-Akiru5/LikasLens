@@ -218,7 +218,7 @@ export default function LawsPage() {
       try {
         const supabase = createClient();
         const { data, error } = await supabase
-          .from("laws")
+          .from("environmental_laws_ph")
           .select("*")
           .order("law_code", { ascending: true });
 
