@@ -3,6 +3,7 @@ FROM python:3.12-slim AS base
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
         libgl1 \
         libglib2.0-0 \
+        libheif-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser
