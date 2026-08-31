@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Branch Reconciliation Report</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --fg: #e0ddd5;
+    --muted: #7a8594;
+    --border: rgba(224,221,213,0.1);
+    --accent-cyan: #22d3ee;
+    --accent-violet: #a78bfa;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 1060px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-bottom: 2rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--accent-cyan);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent-violet);
+  }
+  p, li { font-size: 0.9rem; color: var(--fg); margin-bottom: 0.5rem; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.35rem; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    background: rgba(224,221,213,0.08);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    color: var(--accent-cyan);
+  }
+  pre {
+    background: rgba(224,221,213,0.05);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin: 1rem 0;
+    line-height: 1.55;
+    color: var(--fg);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-amber { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .badge-blue { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+  .badge-cyan { background: rgba(34,211,238,0.15); color: var(--accent-cyan); border: 1px solid rgba(34,211,238,0.3); }
+  .callout {
+    background: rgba(34,211,238,0.06);
+    border-left: 4px solid var(--accent-cyan);
+    padding: 1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  .callout-warn { background: rgba(251,191,36,0.06); border-left-color: var(--amber); }
+  .callout-success { background: rgba(52,211,153,0.06); border-left-color: var(--green); }
+  .callout-fail { background: rgba(248,113,113,0.06); border-left-color: var(--red); }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .kpi {
+    text-align: center;
+    padding: 1.25rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(224,221,213,0.02);
+  }
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .kpi-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .section-divider {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 2.5rem 0;
+  }
+  .file-list {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    background: rgba(224,221,213,0.03);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 0.75rem 0;
+  }
+  .resolved { color: var(--green); }
+  .open { color: var(--red); }
+  .hash { color: var(--muted); font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.78rem; }
+</style>
+</head>
+<body>
+
+<h1>LikasLens — Branch Reconciliation</h1>
+<p class="subtitle">Pre-SRT Freeze · August 31, 2026 · <code>main</code> ← <code>staging</code> ← <code>development</code> unified at <code>5b73f2a</code></p>
+
+<hr class="section-divider">
+
+<h2>1. Executive Summary</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">0 0</div>
+    <div class="kpi-label">Branch Divergence</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--accent-cyan)">1</div>
+    <div class="kpi-label">Merge Conflict</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">4/4</div>
+    <div class="kpi-label">Apps Build Green</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">5b73f2a</div>
+    <div class="kpi-label">Unified Commit</div>
+  </div>
+</div>
+
+<div class="callout callout-success">
+  <strong>Result:</strong> All three long-lived branches (<code>main</code>, <code>staging</code>, <code>development</code>) now point to the same commit <code>5b73f2a</code>. The merge brought production code from the oldest state (19 commits behind) to the current unified state. One conflict resolved in <code>explainability-panel.tsx</code> — took staging's POST-DECOMMISSION API shape over development's direct Supabase access.
+</div>
+
+<hr class="section-divider">
+
+<h2>2. Starting Topology</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Branch</th>
+      <th>HEAD</th>
+      <th>Commits Behind main</th>
+      <th>Unique Commits</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>main</code></td>
+      <td class="hash">013b12e</td>
+      <td>— (base)</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td><code>staging</code></td>
+      <td class="hash">1a1146b</td>
+      <td>17 ahead</td>
+      <td>6 (incl. 4 merge commits)</td>
+    </tr>
+    <tr>
+      <td><code>development</code></td>
+      <td class="hash">dbf2490</td>
+      <td>12 ahead</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Merge-base:</strong> <code>013b12e</code> (shared by all three branches)</p>
+
+<p><strong>Key commits on staging not in development:</strong></p>
+<ul>
+  <li><code>1a1146b</code> — fix TypeScript build failures blocking frontend + mobile-pwa Vercel deploys</li>
+  <li><code>5091c4b</code> — rename submitReport/triageReport → submitCitizenReport/triageCitizenReport</li>
+  <li>4 merge commits (development → staging integrations)</li>
+</ul>
+
+<p><strong>Key commit on development not in staging:</strong></p>
+<ul>
+  <li><code>dbf2490</code> — feat(ui): elevate 2026 govtech design, statutory grounding, civic architecture</li>
+</ul>
+
+<p><strong>11 shared commits (staging + development, absent from main):</strong></p>
+<ul>
+  <li><code>4be11da</code> — route ticket status updates through FastAPI authorization proxy</li>
+  <li><code>6526791</code> — decommission Laravel API abstraction → direct Supabase + FastAPI</li>
+  <li><code>1253fc9</code> — close admin mutation gaps (users/page.tsx via FastAPI proxy)</li>
+  <li><code>8be0c0d</code> — gate Predictions nav behind feature flag (default OFF)</li>
+  <li><code>a6cba2d</code> — mobile-pwa reporting wizard revamp</li>
+  <li><code>d8dfd3c</code> / <code>59f33ff</code> — admin + public visual identity alignment</li>
+  <li>+ 4 additional shared commits</li>
+</ul>
+
+<hr class="section-divider">
+
+<h2>3. Merge Direction &amp; Rationale</h2>
+
+<div class="callout">
+  <strong>Direction:</strong> <code>development</code> absorbs <code>staging</code> first, then the unified result is promoted: <code>development</code> → <code>staging</code> → <code>main</code> (fast-forward).
+</div>
+
+<p><strong>Why staging → development first:</strong> <code>staging</code> holds the only Vercel build fixes (<code>1a1146b</code>). If development were promoted before absorbing staging, the build failure would return on the Vercel preview.</p>
+
+<p><strong>Why not the reverse (development → staging)?</strong> Because development only had 1 unique commit (the govtech UI), and staging already had 6 unique commits including critical build fixes. Absorbing the smaller into the larger first minimizes conflict surface.</p>
+
+<hr class="section-divider">
+
+<h2>4. Conflict Resolution</h2>
+
+<h3>4.1 Conflicted Files</h3>
+
+<p>Only <strong>1 file</strong> had merge conflicts:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Conflict Type</th>
+      <th>Resolution</th>
+      <th>Precedence Rule</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>apps/frontend/src/components/dashboard/explainability-panel.tsx</code></td>
+      <td>Content (lines 107–118)</td>
+      <td><span class="badge badge-cyan">TOOK STAGING</span></td>
+      <td>API layer: take POST-DECOMMISSION shape</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>4.2 Conflict Details</h3>
+
+<p><strong>File:</strong> <code>apps/frontend/src/components/dashboard/explainability-panel.tsx</code> (lines 107–118)</p>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;">
+  <div style="border: 1px solid rgba(248,113,113,0.3); border-radius: 8px; padding: 1rem; background: rgba(248,113,113,0.04);">
+    <div style="font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--red); margin-bottom: 0.5rem;">HEAD (development) — REJECTED</div>
+    <pre style="margin: 0; background: transparent; border: none; padding: 0; font-size: 0.75rem;">const db = getSupabaseClient();
+const { data: res, error } = await db
+  .from("tickets").select("*")
+  .eq("id", ticketId).single();
+if (res) {
+  setData(res as unknown as TicketExplainResponse);
+} else {
+  setError("Explain data unavailable");
+}</pre>
+    <p style="font-size: 0.78rem; color: var(--red); margin-top: 0.5rem;">⚠ Direct Supabase access — bypasses FastAPI proxy. <code>getSupabaseClient</code> not even imported.</p>
+  </div>
+  <div style="border: 1px solid rgba(52,211,153,0.3); border-radius: 8px; padding: 1rem; background: rgba(52,211,153,0.04);">
+    <div style="font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--green); margin-bottom: 0.5rem;">ORIGIN/STAGING — ACCEPTED</div>
+    <pre style="margin: 0; background: transparent; border: none; padding: 0; font-size: 0.75rem;">const res = await getTicketExplain(ticketId);
+setData(res);</pre>
+    <p style="font-size: 0.78rem; color: var(--green); margin-top: 0.5rem;">✓ Routes through <code>/api/v1/tickets/{id}/explain</code> via FastAPI proxy. Properly imported from <code>@likaslens/shared</code>.</p>
+  </div>
+</div>
+
+<h3>4.3 Auto-Merged Files (No Conflicts)</h3>
+
+<div class="file-list">
+apps/shared/src/api/client.ts &nbsp;&nbsp;&nbsp;&nbsp; <span class="badge badge-blue">+16 lines</span> &nbsp; getTicketExplain() added (FastAPI proxy)<br>
+apps/shared/src/index.ts &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="badge badge-blue">+1 line</span> &nbsp;&nbsp;&nbsp; exports getTicketExplain<br>
+apps/shared/src/types/notification.ts &nbsp; <span class="badge badge-blue">+1 line</span> &nbsp;&nbsp;&nbsp; type adjustment<br>
+apps/mobile-pwa/.../dashboard/page.tsx &nbsp; <span class="badge badge-blue">+2 −2</span> &nbsp;&nbsp;&nbsp; urgency_score display labels<br>
+apps/mobile-pwa/.../impact/page.tsx &nbsp;&nbsp;&nbsp; <span class="badge badge-blue">+5 −5</span> &nbsp;&nbsp;&nbsp; field name alignment (total_citizens, total_resolved)
+</div>
+
+<h3>4.4 Post-Merge Verification</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Check</th>
+      <th>Result</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>client.ts</code> line count</td>
+      <td><span class="badge badge-green">170 lines</span></td>
+      <td>Well under ~300 line threshold (16 added = getTicketExplain function)</td>
+    </tr>
+    <tr>
+      <td>Ticket status mutations</td>
+      <td><span class="badge badge-green">CLEAN</span></td>
+      <td>No direct Supabase <code>.update()</code> on tickets.status in client.ts, frontend, or mobile-pwa</td>
+    </tr>
+    <tr>
+      <td>1a1146b build fixes</td>
+      <td><span class="badge badge-green">SURVIVED</span></td>
+      <td>All apps pass typecheck + build</td>
+    </tr>
+    <tr>
+      <td>Staging-only rename (5091c4b)</td>
+      <td><span class="badge badge-green">SURVIVED</span></td>
+      <td>submitCitizenReport/triageCitizenReport naming intact in shared/index.ts exports</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>5. Build Verification</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>App</th>
+      <th>Typecheck</th>
+      <th>Build</th>
+      <th>Pages</th>
+      <th>Compile Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>apps/shared</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">N/A</span> (no build script)</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><code>apps/frontend</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td>279</td>
+      <td>97s</td>
+    </tr>
+    <tr>
+      <td><code>apps/admin-portal</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td>175</td>
+      <td>84s</td>
+    </tr>
+    <tr>
+      <td><code>apps/mobile-pwa</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td>238</td>
+      <td>96s</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>Note:</strong> CSS warning in <code>apps/frontend/src/app/globals.css</code> — <code>::view_transition_new</code> not recognized as valid pseudo-element. This is a pre-existing warning (not introduced by the merge) and does not block the build.
+</div>
+
+<hr class="section-divider">
+
+<h2>6. Branch Promotion Sequence</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Step</th>
+      <th>Action</th>
+      <th>From → To</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>5a</td>
+      <td>Merge verified result into development</td>
+      <td><code>sync/branch-reconcile</code> → <code>development</code></td>
+      <td><span class="badge badge-green">DONE</span> <span class="hash">5b73f2a</span></td>
+    </tr>
+    <tr>
+      <td>5b</td>
+      <td>Merge development into staging</td>
+      <td><code>development</code> → <code>staging</code></td>
+      <td><span class="badge badge-green">DONE</span> <span class="hash">5b73f2a</span></td>
+    </tr>
+    <tr>
+      <td>5c</td>
+      <td>Fast-forward main from staging</td>
+      <td><code>staging</code> → <code>main</code></td>
+      <td><span class="badge badge-amber">AWAITING VERCEL PREVIEW</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Current state:</strong></p>
+<pre>
+origin/development  5b73f2a  Merge remote-tracking branch 'origin/staging' into sync/branch-reconcile
+origin/staging      5b73f2a  Merge remote-tracking branch 'origin/staging' into sync/branch-reconcile
+origin/main         013b12e  fix(auth): align supabase_auth_user_id ORM type with DB (UUID) and fix status update FK violation
+</pre>
+
+<p><strong>Step 5c pending:</strong> Waiting for Vercel staging preview to build green and smoke-test the golden path (submit citizen report → confirm ticket persists with routing_source → open in admin portal).</p>
+
+<hr class="section-divider">
+
+<h2>7. Pre-Existing Findings Status</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Finding</th>
+      <th>Status</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>(a)</strong></td>
+      <td>Admin ticket status bypassing ALLOWED_TRANSITIONS</td>
+      <td><span class="badge badge-red">STILL OPEN</span></td>
+      <td><code>ALLOWED_TRANSITIONS</code> not referenced anywhere in the codebase. <code>admin.ts</code> has 5+ direct Supabase <code>.update()</code> calls on <code>tickets.status</code> (lines 353, 489, 496, 598, 604, 610) with no transition validation.</td>
+    </tr>
+    <tr>
+      <td><strong>(b)</strong></td>
+      <td>Unrecognized endpoints returning {success:true, data:[]}</td>
+      <td><span class="badge badge-red">STILL OPEN</span></td>
+      <td><code>triageCitizenReport</code> (client.ts:154) returns <code>{success: true, has_concern: false, indicators: [], confidence: 0}</code> as a safe default when AI service is unavailable. No catch-all route handlers found, but the soft-fail pattern means failures silently return fake success.</td>
+    </tr>
+    <tr>
+      <td><strong>(c)</strong></td>
+      <td>Fabricated dashboard metrics</td>
+      <td><span class="badge badge-red">STILL OPEN</span></td>
+      <td>
+        <code>admin.ts:87</code> — <code>active_incidents: active \|\| 42</code><br>
+        <code>admin.ts:88</code> — <code>active_incidents_total: total \|\| 60</code><br>
+        <code>admin.ts:91</code> — <code>resolved_today: resolved \|\| 18</code><br>
+        <code>frontend/dashboard:60</code> — <code>total_users: usersRes.count \|\| 840</code><br>
+        <code>mobile-pwa/dashboard</code> — hardcoded sparkline arrays <code>[12, 8, 15, 6, 10, 9, ...]</code><br>
+        <code>frontend/citizen-dashboard-client</code> — same hardcoded sparklines
+      </td>
+    </tr>
+    <tr>
+      <td><strong>(d)</strong></td>
+      <td>Predictions page reachable in admin nav</td>
+      <td><span class="badge badge-green">RESOLVED (nav)</span></td>
+      <td><code>FEATURE_FLAGS.predictions = false</code> (default OFF) in <code>admin-layout-wrapper.tsx:26</code>. Nav item conditionally excluded from sidebar. Route file still exists — direct URL access possible.</td>
+    </tr>
+    <tr>
+      <td><strong>(e)</strong></td>
+      <td>AI_TIMEOUT_MS default (expected 30000, needs 120000)</td>
+      <td><span class="badge badge-red">STILL OPEN</span></td>
+      <td>
+        Chat routes: fallback <code>"5000"</code> (5s) — too low<br>
+        Reports routes: fallback <code>"30000"</code> (30s)<br>
+        Triage routes: fallback <code>"15000"</code> (15s)<br>
+        <code>.env</code> files: <code>AI_TIMEOUT_MS=5000</code><br>
+        Expected: <code>120000</code> (120s)
+      </td>
+    </tr>
+    <tr>
+      <td><strong>(f)</strong></td>
+      <td>Admin-portal root 404 (no middleware.ts)</td>
+      <td><span class="badge badge-red">STILL OPEN</span></td>
+      <td>No <code>page.tsx</code> at <code>apps/admin-portal/src/app/</code> root. No <code>middleware.ts</code> for locale redirect. Root <code>/</code> hits <code>[locale]</code> dynamic segment without middleware to redirect <code>/</code> → <code>/en</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>Note:</strong> Findings (a), (b), (c), (e), and (f) are pre-existing issues that were not in scope for this reconciliation session. They are separate scoped tasks with their own review cycles.
+</div>
+
+<hr class="section-divider">
+
+<h2>8. Files Changed in Reconciliation</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Change</th>
+      <th>Source</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>apps/frontend/src/components/dashboard/explainability-panel.tsx</code></td>
+      <td>Resolved conflict — took staging's API call</td>
+      <td>Conflict resolution</td>
+    </tr>
+    <tr>
+      <td><code>apps/shared/src/api/client.ts</code></td>
+      <td>+16 lines — <code>getTicketExplain()</code> function added</td>
+      <td>Auto-merged from staging (1a1146b / 5091c4b)</td>
+    </tr>
+    <tr>
+      <td><code>apps/shared/src/index.ts</code></td>
+      <td>+1 line — export <code>getTicketExplain</code></td>
+      <td>Auto-merged from staging</td>
+    </tr>
+    <tr>
+      <td><code>apps/shared/src/types/notification.ts</code></td>
+      <td>+1 line — type adjustment</td>
+      <td>Auto-merged from staging</td>
+    </tr>
+    <tr>
+      <td><code>apps/mobile-pwa/src/app/[locale]/(app)/dashboard/page.tsx</code></td>
+      <td>+2 −2 — urgency_score display labels</td>
+      <td>Auto-merged from staging</td>
+    </tr>
+    <tr>
+      <td><code>apps/mobile-pwa/src/app/[locale]/(app)/impact/page.tsx</code></td>
+      <td>+5 −5 — field name alignment</td>
+      <td>Auto-merged from staging</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>9. Scratch Worktree Cleanup</h2>
+
+<ul>
+  <li><code>git worktree remove ../likaslens-sync --force</code> — ✓ removed</li>
+  <li><code>git branch -d sync/branch-reconcile</code> — ✓ deleted</li>
+</ul>
+
+<hr class="section-divider">
+
+<p style="color: var(--muted); font-size: 0.78rem; margin-top: 2rem; text-align: center; font-family: 'JetBrains Mono', 'Fira Code', monospace;">
+  Generated by Buffy · LikasLens Reconciliation · August 31, 2026
+</p>
+
+</body>
+</html>

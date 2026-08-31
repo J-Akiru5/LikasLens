@@ -135,12 +135,25 @@ export default function DashboardPage() {
       const resolved = allTickets.filter((t) => t.status === "resolved" || t.status === "closed").length;
       const active = allTickets.filter((t) => t.status !== "resolved" && t.status !== "closed").length;
 
+      // Compute avg_response_minutes from resolved tickets with both created_at and resolved_at
+      const resolvedTickets = allTickets.filter(
+        (t) => (t.status === "resolved" || t.status === "closed") && t.resolved_at && t.created_at
+      );
+      const avgMinutes = resolvedTickets.length > 0
+        ? Math.round(
+            resolvedTickets.reduce((sum, t) => {
+              const diff = new Date(t.resolved_at!).getTime() - new Date(t.created_at).getTime();
+              return sum + diff / 60000;
+            }, 0) / resolvedTickets.length
+          )
+        : null;
+
       setStats({
         total_reports: total,
         resolved_today: resolved,
         active_incidents: active,
-        avg_response_minutes: (ticketsRes?.data as any)?.avg_response_minutes ?? 14,
-        total_users: (ticketsRes?.data as any)?.total_users ?? 840,
+        avg_response_minutes: avgMinutes,
+        total_users: null,
       } as any);
 
       // Filter resolved cases
@@ -422,7 +435,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-3 divide-x divide-white/10 py-1">
             <HeroStat value={String(activeIncidents)} label="Ongoing" sublabel="Reports" accent="text-amber-300" />
             <HeroStat value={String(resolvedToday)} label="Resolved" sublabel="Today" accent="text-emerald-300" />
-            <HeroStat value={`${stats?.avg_response_minutes ?? 14}m`} label="Average" sublabel="Response" accent="text-sky-300" />
+            <HeroStat value={stats?.avg_response_minutes != null ? `${stats.avg_response_minutes}m` : "—"} label="Average" sublabel="Response" accent="text-sky-300" />
           </div>
         </div>
 

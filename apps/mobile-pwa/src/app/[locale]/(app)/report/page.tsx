@@ -398,8 +398,8 @@ export default function ReportPage() {
 
       const payload: Record<string, unknown> = {
         base64Image: dataUrlToBase64(cleanedImage),
-        latitude: latitude ?? 14.5995,
-        longitude: longitude ?? 120.9842,
+        latitude: latitude ?? null,
+        longitude: longitude ?? null,
         location: resolvedAddress,
         description: description.trim() || `${reportType.replace(/_/g, " ")} reported.`,
         report_type: reportType || "waste_dumping",

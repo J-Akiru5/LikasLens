@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Repository Hygiene Audit</title>
+<style>
+  :root { --bg: #0b0e14; --fg: #e0ddd5; --muted: #7a8594; --border: rgba(224,221,213,0.1); --cyan: #22d3ee; --violet: #a78bfa; --green: #34d399; --amber: #fbbf24; --red: #f87171; --blue: #60a5fa; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.65; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, var(--cyan), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.25rem; }
+  .subtitle { color: var(--muted); font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; margin-bottom: 2rem; }
+  h2 { font-size: 1.2rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 0.75rem; color: var(--cyan); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: var(--violet); }
+  p, li { font-size: 0.9rem; margin-bottom: 0.5rem; }
+  ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.35rem; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; background: rgba(224,221,213,0.08); padding: 0.15rem 0.45rem; border-radius: 4px; color: var(--cyan); }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; font-family: 'JetBrains Mono', monospace; }
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 9999px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .badge-amber { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .badge-blue { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+  .badge-muted { background: rgba(122,133,148,0.15); color: var(--muted); border: 1px solid rgba(122,133,148,0.3); }
+  .callout { background: rgba(34,211,238,0.06); border-left: 4px solid var(--cyan); padding: 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; font-size: 0.85rem; }
+  .callout-warn { background: rgba(251,191,36,0.06); border-left-color: var(--amber); }
+  .callout-success { background: rgba(52,211,153,0.06); border-left-color: var(--green); }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 1.25rem 0; }
+  .kpi { text-align: center; padding: 1.25rem 1rem; border: 1px solid var(--border); border-radius: 12px; background: rgba(224,221,213,0.02); }
+  .kpi-value { font-size: 2rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .kpi-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'JetBrains Mono', monospace; }
+  .section-divider { border: none; border-top: 2px solid var(--border); margin: 2.5rem 0; }
+  .phase { background: rgba(224,221,213,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
+  .phase-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .risk-low { color: var(--green); }
+  .risk-med { color: var(--amber); }
+  .risk-high { color: var(--red); }
+</style>
+</head>
+<body>
+
+<h1>LikasLens — Repository Hygiene Audit</h1>
+<p class="subtitle">Comprehensive Audit · August 31, 2026 · Branch: <code>staging</code> (at <code>29f1475</code>)</p>
+
+<hr class="section-divider">
+
+<h2>Executive Summary</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--amber)">34</div>
+    <div class="kpi-label">Remote Branches</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--red)">27</div>
+    <div class="kpi-label">Dependabot Branches</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">0</div>
+    <div class="kpi-label">Production Vulns</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--amber)">61</div>
+    <div class="kpi-label">Cleanup Items</div>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>Branch strategy:</strong> This audit operates on the current branch (<code>staging</code>). No branches will be deleted, merged, or modified without explicit approval. All recommendations are documented here for review. The base branch is <code>development</code>.
+</div>
+
+<hr class="section-divider">
+
+<h2>1. Repository Branch Audit</h2>
+
+<h3>1.1 Active Branches (3)</h3>
+<table>
+  <thead><tr><th>Branch</th><th>HEAD</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td><code>main</code></td><td><code>5b73f2a</code></td><td><span class="badge badge-green">PRODUCTION</span> — 19 commits behind development</td></tr>
+    <tr><td><code>staging</code></td><td><code>29f1475</code></td><td><span class="badge badge-blue">STAGING</span> — synced with development</td></tr>
+    <tr><td><code>development</code></td><td><code>29f1475</code></td><td><span class="badge badge-green">BASE</span> — current unified state</td></tr>
+  </tbody>
+</table>
+
+<h3>1.2 Merged Branches — Safe to Delete (15)</h3>
+<p>All merged into <code>development</code> with 0 unique commits remaining:</p>
+<table>
+  <thead><tr><th>Branch</th><th>Last Commit</th><th>Recommendation</th></tr></thead>
+  <tbody>
+    <tr><td><code>charlyn-FE3</code></td><td>2026-06-24</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>chore/vercel-staging-trigger</code></td><td>2026-08-29</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>copilot/enhance-landing-page-ui</code></td><td>2026-05-17</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>docs/repository-truth-reconciliation</code></td><td>2026-08-29</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>feat/jeff/reconnect-submit-pipeline</code></td><td>2026-08-30</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>feat/opencode-hazard-fallback</code></td><td>2026-08-30</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>feat/phase-0-threshold-and-doc-cleanup</code></td><td>2026-06-20</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>feature/jeff/ai-route-adapters</code></td><td>2026-08-29</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>fix/add-pydantic-settings-dependency</code></td><td>2026-08-31</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>fix/admin-role-authorization</code></td><td>2026-08-31</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>fix/fabricated-dashboard-metrics</code></td><td>2026-08-31</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>fix/production-reports-500</code></td><td>2026-08-31</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>fix/reconcile-persona-auth-security</code></td><td>2026-08-29</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>fix/vercel-build-failures</code></td><td>2026-08-31</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+    <tr><td><code>lou-rebased</code></td><td>2026-06-28</td><td><span class="badge badge-green">DELETE</span> — merged, 0 unique</td></tr>
+  </tbody>
+</table>
+
+<h3>1.3 Experimental / Needs Review (9)</h3>
+<table>
+  <thead><tr><th>Branch</th><th>Last Commit</th><th>Unique</th><th>Recommendation</th></tr></thead>
+  <tbody>
+    <tr><td><code>feat/analytics-phase-1</code></td><td>2026-08-30</td><td>1</td><td><span class="badge badge-amber">REVIEW</span> — 1 unmerged commit, recent</td></tr>
+    <tr><td><code>feat/admin-authoritative-status</code></td><td>2026-08-31</td><td>2</td><td><span class="badge badge-amber">REVIEW</span> — 2 unmerged commits, today</td></tr>
+    <tr><td><code>feat/admin-truthful-operations</code></td><td>2026-08-31</td><td>1</td><td><span class="badge badge-amber">REVIEW</span> — 1 unmerged commit, today</td></tr>
+    <tr><td><code>feature/jeff/liksi-persona-auth-hardening</code></td><td>2026-08-29</td><td>1</td><td><span class="badge badge-amber">REVIEW</span> — 1 unmerged commit</td></tr>
+    <tr><td><code>fix/router-registration-404</code></td><td>2026-08-31</td><td>2</td><td><span class="badge badge-amber">REVIEW</span> — 2 unmerged commits, today</td></tr>
+    <tr><td><code>fix/ticket-list-async-error</code></td><td>2026-08-31</td><td>1</td><td><span class="badge badge-amber">REVIEW</span> — 1 unmerged commit, today</td></tr>
+    <tr><td><code>katherine-FE1</code></td><td>2026-06-21</td><td>10</td><td><span class="badge badge-red">STALE</span> — 10 unmerged commits, 2+ months old</td></tr>
+    <tr><td><code>lou</code></td><td>2026-07-05</td><td>8</td><td><span class="badge badge-red">STALE</span> — 8 unmerged commits, 2 months old</td></tr>
+    <tr><td><code>test/liksi-auth-security-tests</code></td><td>2026-08-30</td><td>1</td><td><span class="badge badge-amber">REVIEW</span> — 1 unmerged commit</td></tr>
+  </tbody>
+</table>
+
+<h3>1.4 Dependabot Branches (27)</h3>
+<p>Automated dependency update PRs. Many target the now-deleted Laravel backend (<code>apps/backend</code>). Safe to close stale ones:</p>
+<table>
+  <thead><tr><th>Category</th><th>Count</th><th>Recommendation</th></tr></thead>
+  <tbody>
+    <tr><td>Laravel/PHP (backend deleted)</td><td>5</td><td><span class="badge badge-green">CLOSE</span> — backend no longer exists</td></tr>
+    <tr><td>Docker (python/php base images)</td><td>2</td><td><span class="badge badge-amber">REVIEW</span> — may still be relevant</td></tr>
+    <tr><td>GitHub Actions</td><td>5</td><td><span class="badge badge-amber">REVIEW</span> — CI/CD updates</td></tr>
+    <tr><td>npm/pnpm packages</td><td>9</td><td><span class="badge badge-amber">REVIEW</span> — some superseded by our manual upgrades</td></tr>
+    <tr><td>pip packages</td><td>5</td><td><span class="badge badge-amber">REVIEW</span> — Python dependency updates</td></tr>
+  </tbody>
+</table>
+
+<h3>1.5 Local-Only Branches (17)</h3>
+<p>These exist only locally and are not on the remote. Safe to delete after confirming no uncommitted work:</p>
+<ul>
+  <li><code>admin-side</code>, <code>backup/development-local</code>, <code>charlyn-FE3-rebased</code>, <code>design-refresh</code>, <code>feat/add-pydantic-settings-dependency</code>, <code>fix/admin-ticket-status-bypass</code>, <code>lou2-rebased</code>, <code>refactor/centralize-ai-service-config</code>, <code>roseby-FE2</code>, <code>ui-experiment-rebased</code></li>
+</ul>
+
+<hr class="section-divider">
+
+<h2>2. Codebase Hygiene Report</h2>
+
+<h3>2.1 Root-Level Utility Files (Legacy)</h3>
+<table>
+  <thead><tr><th>File</th><th>Purpose</th><th>Status</th><th>Recommendation</th></tr></thead>
+  <tbody>
+    <tr><td><code>fix-headers.js</code></td><td>One-off header fix script</td><td>Obsolete</td><td><span class="badge badge-green">REMOVE</span></td></tr>
+    <tr><td><code>replace_p6.js</code></td><td>One-off replacement script</td><td>Obsolete</td><td><span class="badge badge-green">REMOVE</span></td></tr>
+    <tr><td><code>download-logos.mjs</code></td><td>Logo download utility</td><td>Obsolete</td><td><span class="badge badge-green">REMOVE</span></td></tr>
+    <tr><td><code>clean-install.bat</code></td><td>Windows clean install</td><td>Superseded</td><td><span class="badge badge-green">REMOVE</span> — <code>pnpm install</code> suffices</td></tr>
+    <tr><td><code>fix-backend.bat</code></td><td>Laravel backend recovery</td><td>Obsolete</td><td><span class="badge badge-green">REMOVE</span> — backend deleted</td></tr>
+    <tr><td><code>Comprehensive Enterprise Audit & Refactoring Task.docx</code></td><td>Legacy audit document</td><td>Superseded</td><td><span class="badge badge-green">REMOVE</span> — replaced by docs/</td></tr>
+    <tr><td><code>Liksi Logo.png</code></td><td>Logo asset</td><td>Active</td><td><span class="badge badge-blue">KEEP</span></td></tr>
+    <tr><td><code>liksi-ezgif.gif</code>, <code>liksi-welcom.gif</code>, <code>liksi.gif</code></td><td>Animated logos</td><td>Active</td><td><span class="badge badge-blue">KEEP</span></td></tr>
+    <tr><td><code>new logo (favicon).png</code>, <code>og image.jpeg</code></td><td>Brand assets</td><td>Active</td><td><span class="badge badge-blue">KEEP</span></td></tr>
+  </tbody>
+</table>
+
+<h3>2.2 Legacy Directories</h3>
+<table>
+  <thead><tr><th>Directory</th><th>Contents</th><th>Status</th><th>Recommendation</th></tr></thead>
+  <tbody>
+    <tr><td><code>mobile/</code></td><td>Old React Native app (android/, ios/)</td><td>Superseded</td><td><span class="badge badge-green">REMOVE</span> — replaced by mobile-pwa</td></tr>
+    <tr><td><code>lou_context/</code></td><td>Work artifacts, SQL fixes, meeting notes</td><td>Temporary</td><td><span class="badge badge-green">REMOVE</span> — should not be in repo root</td></tr>
+    <tr><td><code>runs/</code></td><td>Contains <code>detect/</code></td><td>Unknown</td><td><span class="badge badge-amber">REVIEW</span> — unclear purpose</td></tr>
+    <tr><td><code>.commandcode/</code></td><td>Contains <code>taste/</code></td><td>Unknown</td><td><span class="badge badge-amber">REVIEW</span> — unclear purpose</td></tr>
+    <tr><td><code>scripts/</code></td><td>generate-favicons.js, generate-sprint-html.js, manage-alerts.ps1</td><td>Mixed</td><td><span class="badge badge-amber">REVIEW</span> — some may still be useful</td></tr>
+  </tbody>
+</table>
+
+<h3>2.3 Code Quality Indicators</h3>
+<table>
+  <thead><tr><th>Metric</th><th>Count</th><th>Assessment</th></tr></thead>
+  <tbody>
+    <tr><td>TODO/FIXME/HACK comments</td><td>0</td><td><span class="badge badge-green">CLEAN</span></td></tr>
+    <tr><td>console.log in production code</td><td>3</td><td><span class="badge badge-amber">MINOR</span> — should be console.warn or removed</td></tr>
+    <tr><td>TypeScript files</td><td>390</td><td>—</td></tr>
+    <tr><td>Python files</td><td>48</td><td>—</td></tr>
+    <tr><td>Documentation files</td><td>49</td><td>—</td></tr>
+    <tr><td>Test files (AI service)</td><td>3</td><td><span class="badge badge-amber">LOW</span> — no frontend tests</td></tr>
+    <tr><td>Frontend test files</td><td>0</td><td><span class="badge badge-red">GAP</span> — no unit/integration tests</td></tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>3. Dependency Analysis</h2>
+
+<h3>3.1 Package Counts</h3>
+<table>
+  <thead><tr><th>App</th><th>Dependencies</th><th>Dev Dependencies</th><th>Total</th></tr></thead>
+  <tbody>
+    <tr><td><code>frontend</code></td><td>27</td><td>18</td><td>45</td></tr>
+    <tr><td><code>admin-portal</code></td><td>11</td><td>8</td><td>19</td></tr>
+    <tr><td><code>mobile-pwa</code></td><td>23</td><td>11</td><td>34</td></tr>
+    <tr><td><code>shared</code></td><td>7</td><td>10</td><td>17</td></tr>
+    <tr><td><code>ai-service</code> (Python)</td><td>20</td><td>—</td><td>20</td></tr>
+  </tbody>
+</table>
+
+<h3>3.2 Security Status (from prior audit)</h3>
+<table>
+  <thead><tr><th>Category</th><th>Before</th><th>After</th></tr></thead>
+  <tbody>
+    <tr><td>Production vulnerabilities</td><td>43</td><td><span class="badge badge-green">0</span></td></tr>
+    <tr><td>Dev-only vulnerabilities</td><td>66</td><td>66 (documented, dismissed)</td></tr>
+    <tr><td>Critical</td><td>2</td><td><span class="badge badge-green">0</span></td></tr>
+  </tbody>
+</table>
+
+<h3>3.3 Notable Dependency Changes</h3>
+<ul>
+  <li><code>jspdf</code> ^2.5.1 → ^4.2.1 (major version bump — API changes may affect PDF generation)</li>
+  <li><code>next</code> ^16.2.2 → ^16.2.11 (patch, safe)</li>
+  <li><code>next-intl</code> ^4 → ^4.14.0 (minor, safe)</li>
+  <li>pnpm overrides added for <code>ws</code> and <code>protobufjs</code></li>
+</ul>
+
+<hr class="section-divider">
+
+<h2>4. Security Triage Report</h2>
+
+<h3>4.1 Production Vulnerabilities</h3>
+<div class="callout callout-success">
+  <strong>Status:</strong> 0 production vulnerabilities remaining. All remediated in prior session.
+</div>
+
+<h3>4.2 Dev-Only Vulnerabilities (66 — Documented, Not Actionable)</h3>
+<table>
+  <thead><tr><th>Package</th><th>Count</th><th>Category</th><th>Justification</th></tr></thead>
+  <tbody>
+    <tr><td><code>next</code> (via @types/next-pwa)</td><td>32</td><td>Dev-only</td><td>Type definitions, not shipped</td></tr>
+    <tr><td><code>brace-expansion</code></td><td>10</td><td>False positive</td><td>Build-tool DoS, not runtime</td></tr>
+    <tr><td><code>fast-uri</code></td><td>5</td><td>False positive</td><td>Build-time ajv validation</td></tr>
+    <tr><td><code>postcss</code></td><td>4</td><td>Dev-only</td><td>Build-time CSS processing</td></tr>
+    <tr><td><code>js-yaml</code></td><td>3</td><td>Dev-only</td><td>ESLint config parsing</td></tr>
+    <tr><td><code>next</code> (via eslint)</td><td>3</td><td>Dev-only</td><td>ESLint plugin, not shipped</td></tr>
+    <tr><td><code>serialize-javascript</code></td><td>2</td><td>False positive</td><td>PWA build tool only</td></tr>
+    <tr><td><code>nanoid</code></td><td>2</td><td>False positive</td><td>Build-time postcss</td></tr>
+    <tr><td><code>@babel/*</code></td><td>2</td><td>Dev-only</td><td>Build-time transpilation</td></tr>
+    <tr><td><code>esbuild</code></td><td>1</td><td>False positive</td><td>Windows dev server, Linux prod</td></tr>
+  </tbody>
+</table>
+
+<h3>4.3 Docker / Container Security</h3>
+<table>
+  <thead><tr><th>Layer</th><th>Status</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td>Base image (<code>python:3.12-slim</code>)</td><td><span class="badge badge-green">PATCHED</span></td><td><code>apt-get upgrade -y</code> at build time</td></tr>
+    <tr><td>OS packages</td><td><span class="badge badge-green">PATCHED</span></td><td>Upgraded during Docker build</td></tr>
+    <tr><td>Python runtime packages</td><td><span class="badge badge-green">CURRENT</span></td><td>Version ranges allow auto-patching</td></tr>
+    <tr><td>Application code</td><td><span class="badge badge-green">CLEAN</span></td><td>No known CVEs in app code</td></tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>5. Architectural Hygiene Report</h2>
+
+<h3>5.1 Module Health</h3>
+<table>
+  <thead><tr><th>Module</th><th>Status</th><th>Notes</th></tr></thead>
+  <tbody>
+    <tr><td><code>apps/frontend</code></td><td><span class="badge badge-green">HEALTHY</span></td><td>Active, builds clean, 279 pages</td></tr>
+    <tr><td><code>apps/admin-portal</code></td><td><span class="badge badge-green">HEALTHY</span></td><td>Active, builds clean, 175 pages</td></tr>
+    <tr><td><code>apps/mobile-pwa</code></td><td><span class="badge badge-green">HEALTHY</span></td><td>Active, builds clean, 238 pages</td></tr>
+    <tr><td><code>apps/shared</code></td><td><span class="badge badge-green">HEALTHY</span></td><td>Shared types, API client, UI components</td></tr>
+    <tr><td><code>apps/ai-service</code></td><td><span class="badge badge-green">HEALTHY</span></td><td>FastAPI, 48 Python files, 3 test files</td></tr>
+    <tr><td><code>apps/backend</code></td><td><span class="badge badge-green">REMOVED</span></td><td>Laravel backend decommissioned — no longer exists</td></tr>
+  </tbody>
+</table>
+
+<h3>5.2 Legacy / Superseded Systems</h3>
+<table>
+  <thead><tr><th>Item</th><th>Status</th><th>Recommendation</th></tr></thead>
+  <tbody>
+    <tr><td>Laravel backend (<code>apps/backend</code>)</td><td>Deleted</td><td>Replaced by FastAPI + Supabase. Clean.</td></tr>
+    <tr><td>React Native app (<code>mobile/</code>)</td><td>Superseded</td><td>Replaced by mobile-pwa. Directory should be removed.</td></tr>
+    <tr><td>Root utility scripts</td><td>Obsolete</td><td>One-off fixes for deleted backend. Should be removed.</td></tr>
+    <tr><td><code>lou_context/</code></td><td>Temporary</td><td>Work artifacts. Should be removed from repo.</td></tr>
+  </tbody>
+</table>
+
+<h3>5.3 Test Coverage Gap</h3>
+<div class="callout callout-warn">
+  <strong>Gap:</strong> Zero frontend/TypeScript test files. The only tests are 3 Python files in the AI service. No unit tests, integration tests, or E2E tests for the Next.js apps. This is a significant risk for a production application.
+</div>
+
+<hr class="section-divider">
+
+<h2>6. Cleanup Roadmap</h2>
+
+<div class="phase">
+  <div class="phase-title" style="color: var(--green)">Phase 1 — Safe Branch Cleanup <span class="badge badge-green">LOW RISK</span></div>
+  <p>Delete 15 merged remote branches + 10 stale local branches. No code changes.</p>
+  <ul>
+    <li>15 merged remote branches (all have 0 unique commits vs development)</li>
+    <li>10 local-only branches (no remote counterpart)</li>
+    <li>5 dependabot branches targeting deleted Laravel backend</li>
+  </ul>
+  <p><strong>Risk:</strong> <span class="risk-low">LOW</span> — All branches are merged. History preserved in git.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-title" style="color: var(--amber)">Phase 2 — Dead Code Removal <span class="badge badge-amber">MEDIUM RISK</span></div>
+  <p>Remove obsolete files and directories after confirming no references.</p>
+  <ul>
+    <li>Root utility scripts: <code>fix-headers.js</code>, <code>replace_p6.js</code>, <code>download-logos.mjs</code>, <code>clean-install.bat</code>, <code>fix-backend.bat</code></li>
+    <li>Legacy document: <code>Comprehensive Enterprise Audit & Refactoring Task.docx</code></li>
+    <li>Legacy directory: <code>mobile/</code> (old React Native app)</li>
+    <li>Work artifacts: <code>lou_context/</code></li>
+    <li>Unknown directories: <code>runs/</code>, <code>.commandcode/</code> (review first)</li>
+  </ul>
+  <p><strong>Risk:</strong> <span class="risk-med">MEDIUM</span> — Verify no imports or references before deleting.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-title" style="color: var(--amber)">Phase 3 — Dependency Cleanup <span class="badge badge-amber">MEDIUM RISK</span></div>
+  <p>Review and close stale dependabot PRs. Verify pnpm overrides don't cause regressions.</p>
+  <ul>
+    <li>Close 5 dependabot PRs targeting deleted Laravel backend</li>
+    <li>Review 9 npm/pnpm dependabot PRs — some superseded by manual upgrades</li>
+    <li>Review 5 pip dependabot PRs — Python dependency updates</li>
+    <li>Verify <code>jspdf</code> ^4.2.1 migration doesn't break PDF generation</li>
+  </ul>
+  <p><strong>Risk:</strong> <span class="risk-med">MEDIUM</span> — jspdf major version bump needs testing.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-title" style="color: var(--muted)">Phase 4 — Security Remediation <span class="badge badge-muted">INFO</span></div>
+  <p>All production vulnerabilities already remediated. Dev-only findings documented and dismissed with justification.</p>
+  <ul>
+    <li>0 production vulnerabilities (was 43)</li>
+    <li>66 dev-only vulnerabilities (documented in security-audit-2026-08-31.html)</li>
+    <li>Trivy container scans running weekly via GitHub Actions</li>
+  </ul>
+  <p><strong>Risk:</strong> <span class="risk-low">LOW</span> — No action required.</p>
+</div>
+
+<div class="phase">
+  <div class="phase-title" style="color: var(--red)">Phase 5 — Architecture Refinement <span class="badge badge-red">HIGH RISK</span></div>
+  <p>Address structural gaps. Requires careful planning.</p>
+  <ul>
+    <li>Add frontend test coverage (currently 0 test files for Next.js apps)</li>
+    <li>Investigate unmerged branches with unique commits (katherine-FE1, lou, feat/analytics-phase-1)</li>
+    <li>Review 3 console.log statements in production code</li>
+    <li>Consider adding pre-commit hooks for linting</li>
+  </ul>
+  <p><strong>Risk:</strong> <span class="risk-high">HIGH</span> — Architecture changes need thorough review.</p>
+</div>
+
+<hr class="section-divider">
+
+<h2>7. Risk Assessment Summary</h2>
+
+<table>
+  <thead><tr><th>Action</th><th>Risk</th><th>Impact</th><th>Reversibility</th></tr></thead>
+  <tbody>
+    <tr><td>Delete merged branches</td><td><span class="risk-low">LOW</span></td><td>Cleaner branch list</td><td>Re-creatable from git reflog</td></tr>
+    <tr><td>Delete root utility scripts</td><td><span class="risk-low">LOW</span></td><td>Cleaner root directory</td><td>Preserved in git history</td></tr>
+    <tr><td>Remove <code>mobile/</code> directory</td><td><span class="risk-low">LOW</span></td><td>Removes 200+ files of dead React Native code</td><td>Preserved in git history</td></tr>
+    <tr><td>Remove <code>lou_context/</code></td><td><span class="risk-low">LOW</span></td><td>Removes work artifacts from repo root</td><td>Preserved in git history</td></tr>
+    <tr><td>Close dependabot PRs</td><td><span class="risk-low">LOW</span></td><td>Reduces PR noise</td><td>Re-openable</td></tr>
+    <tr><td>Upgrade jspdf ^4.2.1</td><td><span class="risk-med">MEDIUM</span></td><td>Fixes 2 critical vulns</td><td>Revertable via lockfile</td></tr>
+    <tr><td>Add frontend tests</td><td><span class="risk-high">HIGH</span></td><td>Improves reliability</td><td>Additive only</td></tr>
+    <tr><td>Merge stale unmerged branches</td><td><span class="risk-high">HIGH</span></td><td>May introduce conflicts</td><td>Revertable via git revert</td></tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>8. Recommended Next Steps</h2>
+
+<ol>
+  <li><strong>Phase 1 (immediate):</strong> Delete 15 merged remote branches and 10 stale local branches</li>
+  <li><strong>Phase 2 (this week):</strong> Remove root utility scripts, <code>mobile/</code>, <code>lou_context/</code></li>
+  <li><strong>Phase 3 (this week):</strong> Close stale dependabot PRs targeting deleted backend</li>
+  <li><strong>Phase 4 (done):</strong> Security remediation complete — no action needed</li>
+  <li><strong>Phase 5 (next sprint):</strong> Add frontend test coverage, review unmerged branches</li>
+</ol>
+
+<hr class="section-divider">
+
+<p style="color: var(--muted); font-size: 0.78rem; margin-top: 2rem; text-align: center; font-family: 'JetBrains Mono', monospace;">
+  Generated by Buffy · LikasLens Repository Hygiene Audit · August 31, 2026
+</p>
+
+</body>
+</html>

@@ -77,26 +77,48 @@ const INCIDENT_TYPES = [
   "Soil Erosion",
 ];
 
-function generateTimeSeries(): TimeSeriesPoint[] {
+function computeTimeSeries(tickets: Ticket[]): TimeSeriesPoint[] {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const base = [18, 24, 32, 28, 45, 52, 60, 68, 74, 82, 89, 95];
-  return months.map((month, i) => ({
+  const counts: Record<string, { reports: number; resolved: number }> = {};
+  for (const m of months) counts[m] = { reports: 0, resolved: 0 };
+  for (const t of tickets) {
+    const d = new Date(t.created_at);
+    const m = months[d.getMonth()];
+    if (!m) continue;
+    counts[m].reports++;
+    if (t.status === "resolved" || t.status === "closed") counts[m].resolved++;
+  }
+  return months.map((month) => ({
     month,
-    reports: base[i],
-    resolved: Math.round(base[i] * (0.75 + (i / 12) * 0.18)),
-    carbonSaved: Math.round(base[i] * 1.8),
+    reports: counts[month].reports,
+    resolved: counts[month].resolved,
+    carbonSaved: Math.round(counts[month].resolved * 1.8),
   }));
 }
 
-function generateProvinceData(): ProvinceData[] {
-  return [
-    { name: "Metro Manila (NCR)", incidents: 84, resolved: 76, score: 90, risk: "low" },
-    { name: "Laguna (CALABARZON)", incidents: 62, resolved: 58, score: 93, risk: "low" },
-    { name: "Cebu (Central Visayas)", incidents: 48, resolved: 42, score: 87, risk: "moderate" },
-    { name: "Iloilo (Western Visayas)", incidents: 41, resolved: 36, score: 88, risk: "low" },
-    { name: "Davao (Mindanao)", incidents: 38, resolved: 32, score: 84, risk: "moderate" },
-    { name: "Palawan (MIMAROPA)", incidents: 29, resolved: 27, score: 93, risk: "low" },
-  ];
+function computeProvinceData(tickets: Ticket[]): ProvinceData[] {
+  const groups: Record<string, { incidents: number; resolved: number; urgencySum: number }> = {};
+  for (const t of tickets) {
+    // Extract a region label from address_text (last comma-separated segment)
+    const raw = (t as unknown as Record<string, unknown>).address_text as string | undefined;
+    const region = raw ? raw.split(",").pop()?.trim() || "Unknown" : "Unknown";
+    if (!groups[region]) groups[region] = { incidents: 0, resolved: 0, urgencySum: 0 };
+    groups[region].incidents++;
+    if (t.status === "resolved" || t.status === "closed") groups[region].resolved++;
+    groups[region].urgencySum += (t.urgency_score ?? 3);
+  }
+  return Object.entries(groups)
+    .sort((a, b) => b[1].incidents - a[1].incidents)
+    .slice(0, 6)
+    .map(([name, g]) => ({
+      name,
+      incidents: g.incidents,
+      resolved: g.resolved,
+      score: g.incidents > 0 ? Math.round((g.resolved / g.incidents) * 100) : 0,
+      risk: g.urgencySum / Math.max(g.incidents, 1) >= 5 ? "high" as const
+        : g.urgencySum / Math.max(g.incidents, 1) >= 3 ? "moderate" as const
+        : "low" as const,
+    }));
 }
 
 export default function ImpactPage() {
@@ -122,13 +144,15 @@ export default function ImpactPage() {
 
         if (!error && dbTickets && dbTickets.length > 0) {
           setTickets(dbTickets);
+          setTimeSeries(computeTimeSeries(dbTickets));
+          setProvinceData(computeProvinceData(dbTickets));
+        } else {
+          setTimeSeries([]);
+          setProvinceData([]);
         }
-
-        setTimeSeries(generateTimeSeries());
-        setProvinceData(generateProvinceData());
       } catch {
-        setTimeSeries(generateTimeSeries());
-        setProvinceData(generateProvinceData());
+        setTimeSeries([]);
+        setProvinceData([]);
       } finally {
         setLoading(false);
       }
@@ -136,13 +160,13 @@ export default function ImpactPage() {
     fetchData();
   }, []);
 
-  const totalIncidents = tickets.length || 278;
-  const resolvedIncidents = tickets.filter((t) => t.status === "resolved" || t.status === "closed").length || 198;
+  const totalIncidents = tickets.length;
+  const resolvedIncidents = tickets.filter((t) => t.status === "resolved" || t.status === "closed").length;
   const activeIncidents = totalIncidents - resolvedIncidents;
-  const resolutionRate = totalIncidents > 0 ? Math.round((resolvedIncidents / totalIncidents) * 100) : 71;
+  const resolutionRate = totalIncidents > 0 ? Math.round((resolvedIncidents / totalIncidents) * 100) : 0;
   const avgUrgency = tickets.length > 0
     ? (tickets.reduce((sum, t) => sum + (t.urgency_score ?? 3), 0) / tickets.length).toFixed(1)
-    : "3.2";
+    : "0";
 
   const metrics: ClimateMetric[] = [
     { label: "Total Reports", value: totalIncidents.toString(), change: "+12%", trend: "up", icon: FileCheck, color: "text-accent", accent: "accent" },
@@ -396,9 +420,9 @@ export default function ImpactPage() {
 
                     {/* Chart Summary Footer */}
                     <div className="flex items-center justify-between text-xs font-mono text-ink/50 pt-3 border-t border-ink/10">
-                      <span>Peak Volume: December (95 Reports)</span>
+                      <span>Total Reports: {totalIncidents}</span>
                       <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                        Annual Resolution Rate: 88.4%
+                        Resolution Rate: {resolutionRate}%
                       </span>
                     </div>
                   </div>
@@ -463,15 +487,15 @@ export default function ImpactPage() {
                   </div>
                   <h3 className="font-bold text-ink">Carbon Mitigation</h3>
                   <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                    18.4 tonnes
+                    {(resolvedIncidents * 0.0018).toFixed(1)} tonnes
                   </div>
                   <p className="text-xs text-ink/60 font-mono mt-1">
-                    CO₂e offset through resolved environmental violations nationwide (waste diversion & canopy protection).
+                    Estimated CO₂e offset from {resolvedIncidents} resolved environmental violations.
                   </p>
                   <div className="h-2 bg-ink/10 rounded-full overflow-hidden mt-3">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: "74%" }} />
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${totalIncidents > 0 ? Math.round((resolvedIncidents / totalIncidents) * 100) : 0}%` }} />
                   </div>
-                  <div className="text-[10px] font-mono text-ink/50 mt-1">74% of annual national target (25.0t)</div>
+                  <div className="text-[10px] font-mono text-ink/50 mt-1">{resolutionRate}% of total reports resolved</div>
                 </div>
               </div>
             </RevealSection>
@@ -482,22 +506,14 @@ export default function ImpactPage() {
                   <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-3">
                     <Droplets className="w-5 h-5 text-sky-500" />
                   </div>
-                  <h3 className="font-bold text-ink">Water Quality Index</h3>
-                  <div className="text-3xl font-bold text-sky-600 dark:text-sky-400 font-mono">7.4 pH</div>
-                  <p className="text-xs text-ink/60 font-mono mt-1">
-                    Average water quality across monitored Philippine basins (Laguna Lake, Pasig River, Iloilo River, Davao River).
-                  </p>
-                  <div className="flex gap-1 mt-3">
-                    {[7.1, 7.3, 7.2, 7.5, 7.4, 7.6, 7.4, 7.3].map((v, i) => (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
-                        <div
-                          className="w-full rounded-t bg-sky-500/70"
-                          style={{ height: `${(v - 6.5) * 35}px` }}
-                        />
-                      </div>
-                    ))}
+                  <h3 className="font-bold text-ink">Water Quality Reports</h3>
+                  <div className="text-3xl font-bold text-sky-600 dark:text-sky-400 font-mono">
+                    {tickets.filter((t) => (t.title || "").toLowerCase().includes("water") || (t.title || "").toLowerCase().includes("river") || (t.title || "").toLowerCase().includes("effluent")).length}
                   </div>
-                  <div className="text-[10px] font-mono text-ink/50 mt-1">Statutory Safe Range: 6.5–8.5 pH (RA 9275)</div>
+                  <p className="text-xs text-ink/60 font-mono mt-1">
+                    Water quality related reports in the system.
+                  </p>
+                  <div className="text-[10px] font-mono text-ink/50 mt-1">Monitored via citizen reports (RA 9275)</div>
                 </div>
               </div>
             </RevealSection>
@@ -508,24 +524,19 @@ export default function ImpactPage() {
                   <div className="w-9 h-9 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center mb-3">
                     <ShieldCheck className="w-5 h-5 text-accent" />
                   </div>
-                  <h3 className="font-bold text-ink">Agency Enforcement Rate</h3>
-                  <div className="text-3xl font-bold text-accent font-mono">88.2%</div>
+                  <h3 className="font-bold text-ink">Resolution Rate</h3>
+                  <div className="text-3xl font-bold text-accent font-mono">{resolutionRate}%</div>
                   <p className="text-xs text-ink/60 font-mono mt-1">
-                    Verified field action and cease-and-desist enforcement across Philippine environmental authorities.
+                    {resolvedIncidents} of {totalIncidents} reports resolved across monitored regions.
                   </p>
                   <div className="space-y-2 mt-3">
-                    {[
-                      { label: "DENR-EMB", pct: 88 },
-                      { label: "LLDA", pct: 92 },
-                      { label: "BFAR VII", pct: 84 },
-                      { label: "MMDA / LGUs", pct: 79 },
-                    ].map((c) => (
-                      <div key={c.label} className="flex items-center gap-2 text-xs font-mono">
-                        <span className="w-24 text-ink/70 font-semibold truncate">{c.label}</span>
+                    {provinceData.slice(0, 4).map((p) => (
+                      <div key={p.name} className="flex items-center gap-2 text-xs font-mono">
+                        <span className="w-24 text-ink/70 font-semibold truncate">{p.name.split(" (")[0]}</span>
                         <div className="flex-1 h-2 bg-ink/10 rounded-full overflow-hidden">
-                          <div className="h-full bg-accent rounded-full" style={{ width: `${c.pct}%` }} />
+                          <div className="h-full bg-accent rounded-full" style={{ width: `${p.score}%` }} />
                         </div>
-                        <span className="w-8 text-right font-bold text-ink">{c.pct}%</span>
+                        <span className="w-8 text-right font-bold text-ink">{p.score}%</span>
                       </div>
                     ))}
                   </div>
@@ -645,33 +656,22 @@ export default function ImpactPage() {
                       <p className="text-[11px] text-ink/50 font-mono">YOLOv8 Multi-Class Benchmark</p>
                     </div>
                   </div>
-                  <div className="text-2xl font-bold text-teal-600 dark:text-teal-400 font-mono">94.2%</div>
+                  <div className="text-2xl font-bold text-teal-600 dark:text-teal-400 font-mono">Active</div>
                 </div>
 
                 <div className="space-y-2 relative z-10">
-                  {[
-                    { cat: "Solid Waste (RA 9003)", acc: 96 },
-                    { cat: "Water Pollution (RA 9275)", acc: 93 },
-                    { cat: "Illegal Logging (P.D. 705)", acc: 97 },
-                    { cat: "Air Pollution (RA 8749)", acc: 91 },
-                    { cat: "Blast Fishing (RA 8550)", acc: 89 },
-                  ].map((item) => (
-                    <div key={item.cat} className="flex items-center gap-3 text-xs font-mono">
-                      <span className="w-44 text-ink/75 truncate">{item.cat}</span>
-                      <div className="flex-1 h-2 bg-ink/10 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-500"
-                          style={{ width: `${item.acc}%` }}
-                        />
-                      </div>
-                      <span className="w-10 text-right font-bold text-ink">{item.acc}%</span>
+                  {["Solid Waste (RA 9003)", "Water Pollution (RA 9275)", "Illegal Logging (P.D. 705)", "Air Pollution (RA 8749)"].map((cat) => (
+                    <div key={cat} className="flex items-center gap-3 text-xs font-mono">
+                      <span className="w-44 text-ink/75 truncate">{cat}</span>
+                      <span className="text-ink/50">—</span>
                     </div>
                   ))}
+                  <p className="text-[10px] text-ink/40 font-mono mt-1">Benchmark data pending AI Evidence Framework validation</p>
                 </div>
 
                 <div className="flex items-center justify-between text-xs font-mono text-ink/50 pt-2 border-t border-ink/10">
-                  <span>Latency: ~120ms / frame</span>
-                  <span className="text-teal-600 dark:text-teal-400 font-bold">Model: YOLOv8n-Env</span>
+                  <span>Model: YOLOv8n-Env</span>
+                  <span className="text-teal-600 dark:text-teal-400 font-bold">Vision AI Online</span>
                 </div>
               </div>
             </RevealSection>
