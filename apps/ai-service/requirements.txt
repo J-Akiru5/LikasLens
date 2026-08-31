@@ -16,3 +16,4 @@ httpx>=0.27,<1.0
 boto3>=1.34,<2.0
 email-validator>=2.0,<3.0
 pydantic-settings>=2.0,<3.0
+pillow-heif>=0.16.0,<1.0.0
