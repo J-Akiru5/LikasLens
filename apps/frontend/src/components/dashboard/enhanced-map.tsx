@@ -78,8 +78,8 @@ type ViewMode = "heatmap" | "points";
 // ── Helpers ────────────────────────────────────────────────────────────
 
 const URGENCY_HEX: Record<string, string> = {
-  critical: "#9f1239", // Deep Ruby
-  high:     "#ef4444", // Crimson
+  critical: "#7f1d3a", // Wine
+  high:     "#f43f5e", // Rose
   medium:   "#f97316", // Orange
   low:      "#0ea5e9", // Sky Blue
 };
@@ -128,12 +128,12 @@ function DeckGLOverlay({
           intensity: 1.2,
           threshold: 0.05,
           colorRange: [
-            [45, 212, 191],
-            [14, 165, 233],
-            [59, 130, 246],
-            [249, 115, 22],
-            [239, 68, 68],
-            [159, 18, 57],
+            [45, 212, 191],   // Teal 400 - Low density
+            [14, 165, 233],   // Sky 500
+            [59, 130, 246],   // Blue 500 - Moderate
+            [249, 115, 22],   // Orange 500 - Elevated
+            [244, 63, 94],    // Rose 500 - High
+            [127, 29, 58],    // Wine 900 - Critical Hotspot
           ],
           opacity: 0.88,
         }),
@@ -167,8 +167,8 @@ function DeckGLOverlay({
 
     // Scatter Pins mode — GPU ScatterplotLayer with interactive picking
     const PIN_COLORS: Record<string, [number, number, number, number]> = {
-      critical: [159, 18,  57,  240], // Deep Ruby
-      high:     [239, 68,  68,  240], // Crimson
+      critical: [127, 29,  58,  240], // Wine
+      high:     [244, 63,  94,  240], // Rose
       medium:   [249, 115, 22,  240], // Orange
       low:      [14,  165, 233, 240], // Sky Blue
     };
@@ -407,10 +407,10 @@ export function EnhancedMap({
       <div className="flex flex-wrap items-center gap-4 text-xs text-ink/60">
         <span className="font-medium text-ink/80">Severity:</span>
         {[
-          { label: "Critical", color: "#dc2626" },
-          { label: "High", color: "#ef4444" },
-          { label: "Medium", color: "#f59e0b" },
-          { label: "Low", color: "#3b82f6" },
+          { label: "Critical", color: "#7f1d3a" },
+          { label: "High", color: "#f43f5e" },
+          { label: "Medium", color: "#f97316" },
+          { label: "Low", color: "#0ea5e9" },
         ].map((item) => (
           <span key={item.label} className="flex items-center gap-1.5">
             <span

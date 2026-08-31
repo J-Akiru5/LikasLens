@@ -36,6 +36,7 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
   const [leaflet, setLeaflet] = useState<typeof L | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [gpsDenied, setGpsDenied] = useState(false);
 
   // Dynamic import — keeps the initial bundle lean
   useEffect(() => {
@@ -110,12 +111,14 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
     // Drag to refine location
     marker.on("dragend", () => {
       const pos = marker.getLatLng();
+      setGpsDenied(false);
       onLocationChange(pos.lat, pos.lng);
     });
 
     // Tap/click on map to move pin
     map.on("click", (e: L.LeafletMouseEvent) => {
       marker.setLatLng(e.latlng);
+      setGpsDenied(false);
       onLocationChange(e.latlng.lat, e.latlng.lng);
     });
 
@@ -125,12 +128,14 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
       map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
       map.once("locationfound", (e: L.LocationEvent) => {
         marker.setLatLng(e.latlng);
+        setGpsDenied(false);
         onLocationChange(e.latlng.lat, e.latlng.lng);
         map.setView(e.latlng, 16);
         setGpsLoading(false);
       });
       map.once("locationerror", () => {
         setGpsLoading(false);
+        setGpsDenied(true);
       });
     }
 
@@ -163,11 +168,15 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
     map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
     map.once("locationfound", (e: L.LocationEvent) => {
       markerRef.current?.setLatLng(e.latlng);
+      setGpsDenied(false);
       onLocationChange(e.latlng.lat, e.latlng.lng);
       map.setView(e.latlng, 16);
       setGpsLoading(false);
     });
-    map.once("locationerror", () => setGpsLoading(false));
+    map.once("locationerror", () => {
+      setGpsLoading(false);
+      setGpsDenied(true);
+    });
   };
 
   // Loading state while Leaflet JS is fetching
@@ -194,6 +203,13 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
           </span>
         </div>
       </div>
+
+      {gpsDenied && lat == null && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-700 dark:text-amber-400">
+          <Navigation className="w-3.5 h-3.5 shrink-0" />
+          <span>Couldn&apos;t access your GPS location. Tap the map below to place the incident pin manually — a location is required to submit.</span>
+        </div>
+      )}
 
       {/* Map container */}
       <div

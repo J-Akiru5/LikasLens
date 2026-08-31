@@ -1,0 +1,197 @@
+<title>Map Experience Elevation</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f5f3ec; --surface:#ffffff; --surface-2:#eeece2;
+  --ink:#16211d; --ink-soft:#4d5850; --ink-mute:#8a9289;
+  --accent:#0d6e56; --accent-soft:#e3efe9; --accent-ink:#0a4f3e;
+  --warn:#8a4c10; --warn-soft:#fbeee0; --warn-line:#e6c393;
+  --danger:#a3282e; --danger-soft:#faeaea; --danger-line:#e5b3b3;
+  --ok:#2f7a4f; --ok-soft:#e6f2ea;
+  --line:#dedad0; --line-soft:#e8e5db;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12160f; --surface:#1a2019; --surface-2:#20261e;
+    --ink:#eae7dd; --ink-soft:#b6bcb1; --ink-mute:#7c847a;
+    --accent:#3fcf9e; --accent-soft:#1c3229; --accent-ink:#8fe6bf;
+    --warn:#e0a95c; --warn-soft:#332612; --warn-line:#5c451f;
+    --danger:#e58b8f; --danger-soft:#331b1c; --danger-line:#5c2c2e;
+    --ok:#7fd39e; --ok-soft:#193025;
+    --line:#2c332a; --line-soft:#252b23;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12160f; --surface:#1a2019; --surface-2:#20261e;
+  --ink:#eae7dd; --ink-soft:#b6bcb1; --ink-mute:#7c847a;
+  --accent:#3fcf9e; --accent-soft:#1c3229; --accent-ink:#8fe6bf;
+  --warn:#e0a95c; --warn-soft:#332612; --warn-line:#5c451f;
+  --danger:#e58b8f; --danger-soft:#331b1c; --danger-line:#5c2c2e;
+  --ok:#7fd39e; --ok-soft:#193025;
+  --line:#2c332a; --line-soft:#252b23;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'Public Sans',-apple-system,'Segoe UI',sans-serif;line-height:1.6;margin:0}
+.wrap{max-width:800px;margin:0 auto;padding:3rem 1.5rem 6rem}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);margin:0 0 .75rem}
+h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:clamp(28px,4vw,40px);line-height:1.12;letter-spacing:-.01em;text-wrap:balance;margin:0 0 .5rem}
+.dek{color:var(--ink-soft);font-size:16px;max-width:62ch;margin:0 0 2.5rem}
+h2{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:22px;letter-spacing:-.005em;margin:3rem 0 1rem;padding-bottom:.6rem;border-bottom:1px solid var(--line)}
+h3{font-family:'Public Sans',sans-serif;font-weight:700;font-size:15px;margin:1.75rem 0 .6rem}
+p{margin:0 0 1rem;max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:1.25rem 1.5rem}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:1.5rem 0 2.5rem}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.9rem 1rem}
+.stat b{display:block;font-family:'Fraunces',serif;font-size:24px;font-weight:600;line-height:1}
+.stat span{font-size:12px;color:var(--ink-mute)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+.twrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+th,td{text-align:left;padding:.6rem .8rem;border-bottom:1px solid var(--line-soft);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-mute);background:var(--surface-2);font-weight:600}
+tr:last-child td{border-bottom:none}
+td code, p code{font-family:'IBM Plex Mono',monospace;font-size:12.5px;background:var(--surface-2);padding:.1em .4em;border-radius:4px}
+.tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;padding:.2em .55em;border-radius:5px;font-weight:500;white-space:nowrap}
+.tag-ok{background:var(--ok-soft);color:var(--ok)}
+.tag-rough{background:var(--warn-soft);color:var(--warn)}
+.tag-dead{background:var(--danger-soft);color:var(--danger)}
+.tag-drift{background:var(--accent-soft);color:var(--accent-ink)}
+.swatch-block{margin:1.25rem 0}
+.swatch-label{font-size:12.5px;color:var(--ink-soft);margin-bottom:.4rem;font-weight:500}
+.ramp{display:flex;border-radius:8px;overflow:hidden;height:44px;border:1px solid var(--line)}
+.ramp div{flex:1}
+.ramp-keys{display:flex;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-mute);margin-top:.3rem}
+.ramp-keys span{flex:1}
+.callout{border-radius:10px;padding:1rem 1.25rem;margin:1.25rem 0;font-size:14px}
+.callout-decision{background:var(--accent-soft);border:1px solid var(--accent);color:var(--ink)}
+.callout-decision .who{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-ink);margin-bottom:.4rem}
+.callout-fix{background:var(--danger-soft);border:1px solid var(--danger-line)}
+.callout-fix .who{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--danger);margin-bottom:.4rem}
+.before-after{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:.75rem 0}
+.ba-panel{background:var(--surface-2);border-radius:8px;padding:.9rem 1rem}
+.ba-panel .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-mute);margin-bottom:.5rem;font-weight:600}
+.ba-panel pre{margin:0;font-family:'IBM Plex Mono',monospace;font-size:11.5px;white-space:pre-wrap;word-break:break-word;color:var(--ink-soft)}
+.file-list{list-style:none;margin:0;padding:0;font-family:'IBM Plex Mono',monospace;font-size:12.5px}
+.file-list li{padding:.35rem 0;border-bottom:1px solid var(--line-soft);color:var(--ink-soft)}
+.file-list li:last-child{border-bottom:none}
+.roadmap{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.6rem}
+.roadmap li{display:flex;gap:.75rem;align-items:baseline;padding:.75rem 1rem;background:var(--surface);border:1px solid var(--line);border-radius:9px;font-size:14px}
+.roadmap .n{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-mute);min-width:1.2rem}
+.out-of-scope{background:var(--surface-2);border:1px dashed var(--line);border-radius:10px;padding:1.1rem 1.25rem;margin-top:1.5rem}
+.out-of-scope .who{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-mute);margin-bottom:.4rem}
+.foot{margin-top:3.5rem;padding-top:1.5rem;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-mute);font-family:'IBM Plex Mono',monospace}
+@media(max-width:560px){.before-after{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">LikasLens · Engineering audit &amp; design pass · 31 Aug 2026</p>
+  <h1>Map experience elevation</h1>
+  <p class="dek">MapLibre GL + deck.gl + CARTO stay the map stack for every view, heatmap included. This is the audit of what's live vs. dead across six-plus map components, the fixes that landed, and what's next — inside that stack, on purpose.</p>
+
+  <div class="stat-row">
+    <div class="stat"><b>8</b><span>map components audited</span></div>
+    <div class="stat"><b>1</b><span>dead file found (Leaflet widget)</span></div>
+    <div class="stat"><b>2</b><span>fabricated-coordinate bugs closed</span></div>
+    <div class="stat"><b>3</b><span>files sharing the new ramp</span></div>
+  </div>
+
+  <h2>1 · Audit — what's actually running</h2>
+  <p>Read end to end, cross-checked against what's actually imported. The headline finding: two files both export a component named <code>HeatmapWidget</code>, but only one is wired to a route.</p>
+
+  <div class="twrap">
+    <table>
+      <thead><tr><th>File</th><th>Status</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td><code>dashboard/enhanced-map.tsx</code></td><td><span class="tag tag-rough">working, rough</span></td><td>MapLibre + deck.gl, vector CARTO styles, heatmap/pins toggle, hover + click inspector. Solid base.</td></tr>
+        <tr><td><code>dashboard/heatmap-widget.tsx</code></td><td><span class="tag tag-dead">dead code</span></td><td>Leaflet + leaflet.heat + raster tiles — a different stack entirely. Zero imports anywhere in <code>apps/</code>. Superseded by the file below.</td></tr>
+        <tr><td><code>dashboard/heatmap-widget-deck.tsx</code></td><td><span class="tag tag-ok">live</span></td><td>The one actually rendered, from <code>citizen-dashboard-client.tsx</code>. MapLibre + deck.gl, raster CARTO tiles. Carries the real 6-stop severity ramp.</td></tr>
+        <tr><td><code>maps/geo-tag-map.tsx</code> (frontend)</td><td><span class="tag tag-rough">partially fixed → now closed</span></td><td>GPS denial already stopped setting a fake marker; it just went silent. Added an explicit "couldn't access GPS" banner this pass.</td></tr>
+        <tr><td><code>public-record/public-record-map.tsx</code></td><td><span class="tag tag-ok">working as intended</span></td><td>Its Philippines-wide default is only the initial camera framing, not a per-incident coordinate. Not a bug.</td></tr>
+        <tr><td>mobile-pwa <code>map/enhanced-map.tsx</code></td><td><span class="tag tag-drift">duplicate, drifted</span></td><td>~95% identical to frontend's, but shipped its own <code>URGENCY_HEX</code> palette — critical read as a flat red, not the frontend's ruby. Aligned this pass.</td></tr>
+        <tr><td>mobile-pwa <code>maps/geo-tag-map.tsx</code></td><td><span class="tag tag-drift">different stack</span></td><td>Leaflet + OSM, not MapLibre — different props, no address resolution. Genuine divergence from the frontend version, not shared code with a typo.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:1.25rem"><strong>On the design-token premise:</strong> the brief assumed <code>globals.css</code> defines no <code>--accent</code> tokens. It does — two <code>:root</code> blocks (civic / ghost) already define <code>--accent</code> and <code>--accent-bright</code>, used across the app. The new severity colors below are picked to sit alongside that palette rather than introduce a second one.</p>
+
+  <p style="font-size:13px;color:var(--ink-mute)">Note: live-data volume and frame pacing under pan/zoom weren't verified against a running dev server this pass — code-level review only. Worth a follow-up before judging if time allows.</p>
+
+  <h2>2 · Heatmap gradient — refined, not replaced</h2>
+  <p>The existing 6-stop ramp was a genuine severity gradient, not a placeholder. The one weak seam: <code>high → critical</code> read as two shades of the same red once GPU blur softened the edges at real zoom levels — <code>elevated → high</code> already carried the biggest perceptual jump in the ramp. Reviewed with Jeff and shipped:</p>
+
+  <div class="swatch-block">
+    <div class="swatch-label">Before</div>
+    <div class="ramp">
+      <div style="background:#2dd4bf"></div><div style="background:#0ea5e9"></div><div style="background:#3b82f6"></div>
+      <div style="background:#f97316"></div><div style="background:#ef4444"></div><div style="background:#9f1239"></div>
+    </div>
+    <div class="ramp-keys"><span>low</span><span>sky</span><span>blue</span><span>elevated</span><span>high</span><span>critical</span></div>
+  </div>
+  <div class="swatch-block">
+    <div class="swatch-label">After</div>
+    <div class="ramp">
+      <div style="background:#2dd4bf"></div><div style="background:#0ea5e9"></div><div style="background:#3b82f6"></div>
+      <div style="background:#f97316"></div><div style="background:#f43f5e"></div><div style="background:#7f1d3a"></div>
+    </div>
+    <div class="ramp-keys"><span>low</span><span>sky</span><span>blue</span><span>elevated</span><span>high</span><span>critical</span></div>
+  </div>
+
+  <div class="callout callout-decision">
+    <div class="who">Reviewed with Jeff</div>
+    High moved <code>#ef4444 → #f43f5e</code> (rose, cooler) and critical moved <code>#9f1239 → #7f1d3a</code> (darker, more saturated wine) — applied to <code>enhanced-map.tsx</code> (frontend + mobile), <code>heatmap-widget-deck.tsx</code>, and every legend/pin color that referenced the old values, so the whole stack reads as one severity language again.
+  </div>
+
+  <h2>3 · GPS-denied submission — fabricated coordinates removed</h2>
+  <p>The location picker (<code>geo-tag-map.tsx</code>) had already stopped setting a fake marker on GPS denial. But the report pages in both apps still fell back to Manila's coordinates at the moment of submission if the user never manually tapped the map — the exact bug this was meant to close, still live.</p>
+
+  <div class="before-after">
+    <div class="ba-panel">
+      <div class="lbl">Before — both apps, finalizeSubmission</div>
+      <pre>latitude: latitude ?? 14.5995,
+longitude: longitude ?? 120.9842,</pre>
+    </div>
+    <div class="ba-panel">
+      <div class="lbl">After</div>
+      <pre>latitude,
+longitude,
+// submission blocked upstream
+// if either is null</pre>
+    </div>
+  </div>
+
+  <div class="callout callout-decision">
+    <div class="who">Product decision — confirmed with Jeff</div>
+    <strong>Block submission.</strong> Not the flag-and-accept alternative. A citizen with GPS denied and no manual pin now sees the "Review &amp; Submit" button disabled with an inline explanation, rather than a ticket landing at DENR/DILG with a coordinate nobody visited.
+  </div>
+
+  <h3>What changed, file by file</h3>
+  <ul class="file-list">
+    <li>frontend <code>report/page.tsx</code> — removed the Manila fallback in <code>finalizeSubmission</code>; button disabled without lat/lng; inline warning added.</li>
+    <li>frontend <code>geo-tag-map.tsx</code> — GPS-denial now shows an amber banner ("tap the map to place the pin") instead of failing silently.</li>
+    <li>mobile-pwa <code>report/page.tsx</code> — same submission fix, plus a second fallback removed: the camera EXIF-stamp overlay was burning <code>0, 0</code> into the visible photo watermark when GPS wasn't ready. It now prints "LOCATION PENDING" instead.</li>
+    <li>mobile-pwa <code>geo-tag-map.tsx</code> — same GPS-denial banner, ported to its Leaflet implementation.</li>
+  </ul>
+
+  <p style="margin-top:1rem">Nominatim reverse-geocoding was already in place in the frontend's <code>geo-tag-map.tsx</code> for address resolution — no new geocoding work was needed this pass.</p>
+
+  <h2>4 · Cleanup deferred</h2>
+  <p><code>dashboard/heatmap-widget.tsx</code> is confirmed dead (Leaflet stack, zero imports) but the sandbox in this session couldn't delete files — Jeff asked to leave it for a manual pass rather than fight the permission prompt. Run when ready:</p>
+  <div class="ba-panel" style="max-width:520px">
+    <pre>git rm apps/frontend/src/components/dashboard/heatmap-widget.tsx</pre>
+  </div>
+
+  <h2>5 · Roadmap — inside the MapLibre / deck.gl ecosystem</h2>
+  <ol class="roadmap">
+    <li><span class="n">01</span><div><strong>3D severity extrusion</strong> — deck.gl <code>ColumnLayer</code> or <code>HexagonLayer</code> keyed to urgency score, for a tilt-view of hotspots at the admin dashboard.</div></li>
+    <li><span class="n">02</span><div><strong>Time-slider playback</strong> — scrub incident history over days/weeks using the existing <code>getHeatmap({ days })</code> param, animating the deck.gl layer's data window.</div></li>
+    <li><span class="n">03</span><div><strong>Self-hosted vector tiles</strong> — drop the CARTO dependency by serving Philippines-scoped tiles (tippecanoe / martin), removing the last external map SLA.</div></li>
+    <li><span class="n">04</span><div><strong>Offline tile caching</strong> — cache the mobile PWA's viewport tiles via service worker for field use with no signal.</div></li>
+  </ol>
+
+  <div class="out-of-scope">
+    <div class="who">Explicitly out of scope</div>
+    Google Maps is not on this roadmap. It was evaluated and rejected for this cycle — new SDK, new API key, new billing dependency, two days before judging. That stands after judging too: revisit only if a specific, named problem surfaces that MapLibre/deck.gl genuinely cannot solve, not by default.
+  </div>
+
+  <div class="foot">feat/map-experience-elevation · branched from origin/development @ 29f1475</div>
+</div>

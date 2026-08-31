@@ -1,6 +1,6 @@
 interface StampMetadata {
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   ghostMode: boolean;
   reportId?: string;
 }
@@ -73,11 +73,15 @@ export function captureWithStamp(
   ctx.font = `${Math.round(12 * scale)}px monospace`;
   
   const padX = Math.round(14 * scale);
-  if (!metadata.ghostMode) {
-    ctx.fillText(`\u{1F4CD} ${metadata.latitude.toFixed(6)}, ${metadata.longitude.toFixed(6)}`, padX, canvas.height - Math.round(34 * scale));
-  } else {
+  if (metadata.ghostMode) {
     ctx.fillStyle = "#2dd4bf";
     ctx.fillText(`\u{1F4CD} [COORDINATES ENCRYPTED - GHOST MODE]`, padX, canvas.height - Math.round(34 * scale));
+    ctx.fillStyle = "#ffffff";
+  } else if (metadata.latitude != null && metadata.longitude != null) {
+    ctx.fillText(`\u{1F4CD} ${metadata.latitude.toFixed(6)}, ${metadata.longitude.toFixed(6)}`, padX, canvas.height - Math.round(34 * scale));
+  } else {
+    ctx.fillStyle = "#fbbf24";
+    ctx.fillText(`\u{1F4CD} LOCATION PENDING`, padX, canvas.height - Math.round(34 * scale));
     ctx.fillStyle = "#ffffff";
   }
   
