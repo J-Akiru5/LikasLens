@@ -50,22 +50,27 @@ html:not([data-theme="ghost"]) .light-mode-only, body:not([data-theme="ghost"]) 
   background: var(--muted);
 }
 
-/* ── Admin landing/login: aligned hero treatment ─────────────────────────── */
-.admin-hero {
-  background-color: var(--hero-bg);
+/* ── Fine instrument grid & atmospheric overlays ─────────────────────────── */
+.ec-grid {
   background-image:
-    radial-gradient(ellipse 70% 60% at 10% 10%, rgba(46,230,200,0.18) 0%, transparent 55%),
-    radial-gradient(ellipse 80% 70% at 90% 20%, rgba(13,40,22,0.7) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 50% 90%, rgba(46,230,200,0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 60% at 0% 80%, rgba(45,106,79,0.35) 0%, transparent 55%);
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
+    linear-gradient(rgba(240, 237, 232, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 237, 232, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 85% 85% at 50% 45%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 45%, black 40%, transparent 100%);
 }
 
-[data-theme="ghost"] .admin-hero {
+.ec-grid-subtle {
   background-image:
-    radial-gradient(ellipse 70% 60% at 10% 10%, rgba(46,230,200,0.15) 0%, transparent 55%),
-    radial-gradient(ellipse 80% 70% at 90% 20%, rgba(12,22,40,0.6) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 50% 90%, rgba(46,230,200,0.1) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 60% at 0% 80%, rgba(46,230,200,0.08) 0%, transparent 60%);
+    linear-gradient(rgba(240, 237, 232, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240, 237, 232, 0.018) 1px, transparent 1px);
+  background-size: 64px 64px;
 }
+
+/* ── Card glass & ambient glow effects ─────────────────────────────────────── */
+.card-glass {
+  background-color: color-mix(in oklab, var(--panel) 92%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+

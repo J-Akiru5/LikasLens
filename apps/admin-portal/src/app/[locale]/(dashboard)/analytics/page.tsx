@@ -207,9 +207,9 @@ export default function AnalyticsPage() {
       icon: TrendingDown,
       iconBg: "bg-amber/10",
       iconColor: "text-amber",
-      valueColor: "text-amber-600",
-      bgTint: "bg-amber-500/[0.02] hover:bg-amber-500/[0.04]",
-      ghostColor: "text-amber-500",
+      valueColor: "text-amber",
+      bgTint: "bg-amber/[0.02] hover:bg-amber/[0.04]",
+      ghostColor: "text-amber",
     },
   ];
 
@@ -229,7 +229,7 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
+          <h1 className="font-heading font-bold tracking-tight text-3xl sm:text-4xl text-ink">
             Analytics
           </h1>
           <p className="font-mono text-base text-muted mt-1">
@@ -245,7 +245,7 @@ export default function AnalyticsPage() {
           return (
             <div
               key={kpi.label}
-              className={`rounded-2xl border border-ink/5 p-5 ${kpi.bgTint} group transition-colors duration-300 relative overflow-hidden`}
+              className={`rounded-2xl bg-panel/90 backdrop-blur-xl border border-ink/[0.08] p-5 ${kpi.bgTint} group transition-all duration-300 relative overflow-hidden shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-ink/[0.14]`}
             >
               <div
                 className={`absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110 ${kpi.ghostColor}`}

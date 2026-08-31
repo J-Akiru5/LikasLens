@@ -1122,11 +1122,9 @@ body:not([data-theme="ghost"]) .light-mode-only {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .partner-carousel-section {
-    padding: 48px 0;
+    padding: 36px 0;
     overflow: hidden;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    background: var(--panel);
+    background: transparent;
 }
 
 .partner-carousel-header {

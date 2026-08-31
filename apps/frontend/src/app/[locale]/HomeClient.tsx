@@ -21,6 +21,10 @@ const SectionSkeleton = () => (
   </div>
 );
 
+const StatutoryGroundingBar = dynamic(
+  () => import("@/components/marketing/sections/statutory-grounding-bar").then((m) => m.StatutoryGroundingBar),
+  { ssr: false, loading: SectionSkeleton }
+);
 const HowItWorksSection = dynamic(
   () => import("@/components/marketing/sections/how-it-works-section").then((m) => m.HowItWorksSection),
   { ssr: false, loading: SectionSkeleton }
@@ -42,25 +46,7 @@ const InstallCtaSection = dynamic(
   { ssr: false, loading: SectionSkeleton }
 );
 
-function SectionDivider({ variant = "subtle" }: { variant?: "subtle" | "accent" }) {
-  return (
-    <div
-      className="w-full pointer-events-none"
-      style={{ height: variant === "accent" ? 80 : 48 }}
-    >
-      {variant === "accent" && (
-        <div className="max-w-7xl mx-auto px-5 sm:px-8 h-full flex items-center">
-          <div
-            className="h-px w-full"
-            style={{
-              background: "linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent)",
-            }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
+
 
 export default function HomeClient() {
   const params = useParams();
@@ -138,7 +124,7 @@ export default function HomeClient() {
             new CustomEvent("open-liksi-chat", {
               detail: {
                 instantMessage:
-                  "🌿 Kumusta! I am Liksi, the statutory legal AI engine behind LikasLens. As you can see in this pipeline, I automatically evaluate citizen evidentiary photos against Philippine environmental laws (RA 9003, RA 9275, PD 705) and route them to DENR-EMB & LGUs with guaranteed 24-hr response SLAs. Feel free to ask me any environmental law question!",
+                  "🌿 Magandang araw po! I am Liksi, your helpful AI guide for LikasLens. As you explore our environmental pipeline, I can explain how we verify citizen reports against Philippine environmental laws (RA 9003, RA 9275, PD 705) and route them to DENR and local government offices. Please feel free to ask me any question!",
               },
             })
           );
@@ -190,21 +176,18 @@ export default function HomeClient() {
 
       <StickyLandingNav ghostMode={ghostMode} onGhostToggle={toggleGhost} />
       <main
-        className="relative min-h-dvh"
-        style={{ background: "var(--page)", color: "var(--ink)" }}
+        className="relative min-h-dvh civic-grid-bg"
+        style={{ color: "var(--ink)" }}
       >
+        <div aria-hidden="true" className="civic-glow-header" />
         <HeroSection ghostMode={ghostMode} onGhostToggle={toggleGhost} />
         <PartnerCarousel title={tLanding("partnerTitle")} />
+        <StatutoryGroundingBar />
         <HowItWorksSection />
-        <SectionDivider variant="accent" />
         <GhostModeSection ghostMode={ghostMode} onGhostToggle={toggleGhost} />
-        <SectionDivider variant="accent" />
         <ImpactSection />
-        <SectionDivider variant="accent" />
         <TechStackSection />
-        <SectionDivider />
         <FaqSection />
-        <SectionDivider />
         <InstallCtaSection ghostMode={ghostMode} />
         <Footer ghostMode={ghostMode} />
         <LanguageSuggestionPopup currentLocale={locale as "en" | "fil" | "vi" | "id" | "ms" | "ta"} />

@@ -52,7 +52,7 @@ export default function TriagePage() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl text-ink">
+          <h1 className="font-heading font-bold tracking-tight text-3xl sm:text-4xl text-ink">
             Command Center
           </h1>
           <p className="font-mono text-base text-muted mt-1">

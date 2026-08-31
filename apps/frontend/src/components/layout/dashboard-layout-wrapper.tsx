@@ -28,7 +28,7 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { href: "/dashboard/my-reports", label: "My Submissions", icon: FileText },
   { href: "/report", label: "Submit Report", icon: Camera, highlight: true },
   
-  { divider: true, dividerLabel: "Community Telemetry" },
+  { divider: true, dividerLabel: "Community Activity" },
   { href: "/dashboard/incidents", label: "Public Incidents", icon: AlertCircle },
   { href: "/public-record", label: "Public Record", icon: Globe },
   { href: "/dashboard/map", label: "Hazard Map", icon: MapIcon },

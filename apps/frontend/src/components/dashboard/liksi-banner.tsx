@@ -13,10 +13,10 @@ export function LiksiBanner({ userName }: LiksiBannerProps) {
   const params = useParams<{ locale: string }>();
   const locale = params?.locale || "en";
   const chatMessages = [
-    "Welcome back! I'm Liksi, your AI assistant. 🌿",
-    "Ready to make an impact today? Every report counts! 🌍",
-    "See something wrong? Tap the Report tab below! ⚡",
-    "I'll route your reports to the right agency! 🤖",
+    "Welcome back! I'm Liksi, your AI environmental assistant.",
+    "Ready to make an impact today? Every report counts.",
+    "See something wrong? Tap the Report tab below.",
+    "I'll route your reports directly to the right government agency.",
   ];
   const [chatIndex, setChatIndex] = useState(0);
 

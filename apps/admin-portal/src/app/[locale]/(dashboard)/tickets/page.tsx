@@ -201,7 +201,7 @@ export default function TicketsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
+        <h1 className="font-heading font-bold tracking-tight text-3xl sm:text-4xl text-ink">
           Tickets
         </h1>
         <p className="font-mono text-base text-muted mt-1">
@@ -217,7 +217,7 @@ export default function TicketsPage() {
             placeholder="Search tickets..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-9 pr-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 bg-page border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
           />
         </div>
         <Dropdown
@@ -258,12 +258,12 @@ export default function TicketsPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {tickets.length === 0 && (
-              <div className="col-span-full p-16 bg-panel rounded-3xl border border-ink/5 text-center flex flex-col items-center gap-4">
+              <div className="col-span-full p-16 bg-panel/90 backdrop-blur-xl rounded-3xl border border-ink/[0.08] text-center flex flex-col items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-ink/5 flex items-center justify-center">
                   <Search className="w-8 h-8 text-ink/40" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-ink">No tickets found</h3>
+                  <h3 className="font-heading font-bold text-lg text-ink">No tickets found</h3>
                   <p className="text-sm text-ink/50 mt-1">Try adjusting your search criteria.</p>
                 </div>
               </div>
@@ -271,10 +271,10 @@ export default function TicketsPage() {
             {tickets.map((ticket, i) => (
               <div
                 key={ticket.id}
-                className={`bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border transition-all cursor-pointer flex flex-col h-full relative ${
+                className={`bg-panel/90 backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xs border transition-all cursor-pointer flex flex-col h-full relative ${
                   bulk.isSelected(ticket.id)
                     ? "border-green/40 ring-2 ring-green/10"
-                    : "border-ink/5 hover:scale-[1.02]"
+                    : "border-ink/[0.08] hover:border-ink/[0.16] hover:shadow-md hover:scale-[1.01]"
                 }`}
                 onClick={() => bulk.toggle(ticket.id)}
               >

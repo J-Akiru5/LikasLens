@@ -18,6 +18,9 @@ import {
   Download,
   Fingerprint,
   Leaf,
+  WifiOff,
+  Zap,
+  Building2,
 } from "lucide-react";
 import { getPublicImpact, MagneticButton } from "@likaslens/shared";
 
@@ -308,16 +311,64 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
               </MagneticButton>
             </m.div>
 
-            {/* Provenance line — what makes these numbers trustworthy */}
-            <m.div variants={fadeUp} style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginTop: 4 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 7, fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.6)", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+            {/* Provenance & Island Reliability Bar — 2026 Civic Guarantee */}
+            <m.div variants={fadeUp} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
+              <div
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "4px 10px", borderRadius: 8,
+                  background: "rgba(255, 255, 255, 0.05)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.85)",
+                  letterSpacing: "0.02em",
+                }}
+              >
                 <span className="ec-status-dot ec-status-resolved" />
-                {t("liveLedger")}
+                <span>{t("liveLedger")}</span>
               </div>
-              <span style={{ width: 1, height: 14, background: "rgba(240,237,232,0.18)" }} />
-              <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.48)", letterSpacing: "0.04em" }}>
-                {t("agencies")}
-              </span>
+
+              <div
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "4px 10px", borderRadius: 8,
+                  background: "rgba(46, 230, 200, 0.08)",
+                  border: "1px solid rgba(46, 230, 200, 0.2)",
+                  fontFamily: "var(--font-data)", fontSize: 11, color: "var(--accent-bright)",
+                  letterSpacing: "0.02em",
+                }}
+                title="Works without cell service across remote Philippine islands"
+              >
+                <WifiOff className="w-3.5 h-3.5 text-[#2ee6c8] shrink-0" />
+                <span className="font-semibold">Works Without Internet</span>
+              </div>
+
+              <div
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "4px 10px", borderRadius: 8,
+                  background: "rgba(255, 255, 255, 0.05)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.85)",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>Instant AI Analysis</span>
+              </div>
+
+              <div
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "4px 10px", borderRadius: 8,
+                  background: "rgba(255, 255, 255, 0.05)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  fontFamily: "var(--font-data)", fontSize: 11, color: "rgba(240,237,232,0.65)",
+                  letterSpacing: "0.02em",
+                }}
+              >
+                <Building2 className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                <span>{t("agencies")}</span>
+              </div>
             </m.div>
           </m.div>
 
@@ -330,7 +381,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
             <div 
               className="ec-ledger backdrop-blur-xl" 
               role="group" 
-              aria-label="Live incident ledger"
+              aria-label="Live Community Reports"
               style={{
                 background: ghostMode ? "rgba(10, 20, 32, 0.85)" : "rgba(10, 22, 16, 0.75)",
                 border: "1px solid rgba(255, 255, 255, 0.14)",
@@ -349,7 +400,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
                   </span>
                 </div>
                 <span style={{ fontFamily: "var(--font-data)", fontSize: 10, fontWeight: 700, color: "var(--accent-bright)", border: "1px solid rgba(46, 230, 200, 0.35)", background: "rgba(46, 230, 200, 0.08)", borderRadius: 6, padding: "2px 9px", letterSpacing: "0.08em" }}>
-                  SYS-ONLINE
+                  LIVE
                 </span>
               </div>
 
@@ -448,10 +499,47 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
         </m.div>
       </m.div>
 
-      {/* Wave divider into page */}
-      <div style={{ position: "absolute", bottom: -2, left: 0, right: 0, pointerEvents: "none", lineHeight: 0, zIndex: 20 }}>
-        <svg viewBox="0 0 1440 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: "block", width: "100%", height: 100 }}>
-          <path d="M0,40 C180,90 360,10 540,50 C720,90 900,20 1080,55 C1260,90 1380,30 1440,50 L1440,100 L0,100 Z" fill="var(--page)" />
+      {/* Bespoke Topographic Horizon Curve */}
+      <div 
+        aria-hidden="true"
+        style={{ 
+          position: "absolute", 
+          bottom: -1, 
+          left: 0, 
+          right: 0, 
+          height: 80, 
+          pointerEvents: "none", 
+          lineHeight: 0,
+          zIndex: 20 
+        }} 
+      >
+        <svg 
+          viewBox="0 0 1440 80" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg" 
+          preserveAspectRatio="none" 
+          style={{ display: "block", width: "100%", height: "100%" }}
+        >
+          <defs>
+            <linearGradient id="horizonGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#2ee6c8" stopOpacity="0.6" />
+              <stop offset="30%" stopColor="#2ee6c8" stopOpacity="0.2" />
+              <stop offset="70%" stopColor="#2ee6c8" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#2ee6c8" stopOpacity="0.3" />
+            </linearGradient>
+          </defs>
+
+          {/* Clean Topographic Horizon Silhouette */}
+          <path
+            d="M0,32 C320,68 640,8 960,42 C1200,64 1340,24 1440,36 L1440,80 L0,80 Z"
+            fill="var(--page)"
+          />
+          <path
+            d="M0,32 C320,68 640,8 960,42 C1200,64 1340,24 1440,36"
+            stroke="url(#horizonGlow)"
+            strokeWidth="1.5"
+            fill="none"
+          />
         </svg>
       </div>
     </section>

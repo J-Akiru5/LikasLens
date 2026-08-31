@@ -247,8 +247,67 @@ body {
   z-index: 1;
 }
 
-::view-transition-new(root) {
+::view_transition_new(root) {
   z-index: 999999;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2026 PRECISION CIVIC TECH BACKGROUND & ATMOSPHERIC LIGHTING
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --page: #f6f8f7;
+  --panel: #ffffff;
+}
+
+[data-theme="ghost"],
+.ghost-mode {
+  --page: #06120d;
+  --panel: #0b1e16;
+}
+
+.civic-grid-bg {
+  position: relative;
+  background-color: var(--page);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(46, 230, 200, 0.07) 0%, rgba(27, 67, 50, 0.02) 35%, transparent 70%),
+    radial-gradient(circle at 80% 40%, rgba(46, 230, 200, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 20% 70%, rgba(27, 67, 50, 0.025) 0%, transparent 50%),
+    linear-gradient(to right, rgba(15, 23, 42, 0.032) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.032) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 64px 64px, 64px 64px;
+}
+
+[data-theme="ghost"] .civic-grid-bg,
+html[data-theme="ghost"] .civic-grid-bg,
+.ghost-mode .civic-grid-bg {
+  background-color: #06120d;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(46, 230, 200, 0.18) 0%, rgba(6, 18, 13, 0.5) 45%, transparent 75%),
+    radial-gradient(circle at 85% 35%, rgba(46, 230, 200, 0.09) 0%, transparent 55%),
+    radial-gradient(circle at 15% 65%, rgba(46, 230, 200, 0.08) 0%, transparent 55%),
+    linear-gradient(to right, rgba(46, 230, 200, 0.095) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(46, 230, 200, 0.095) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 64px 64px, 64px 64px;
+}
+
+.civic-glow-header {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1400px;
+  height: 600px;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(46, 230, 200, 0.08) 0%, rgba(27, 67, 50, 0.02) 45%, transparent 75%);
+  filter: blur(50px);
+}
+
+[data-theme="ghost"] .civic-glow-header,
+html[data-theme="ghost"] .civic-glow-header,
+.ghost-mode .civic-glow-header {
+  background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(46, 230, 200, 0.22) 0%, rgba(6, 18, 13, 0.5) 60%, transparent 80%);
+}
+
 
 

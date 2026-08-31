@@ -55,7 +55,7 @@ export function DashboardLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className={cn("flex h-dvh overflow-hidden bg-ink/[0.04]", className)}>
+    <div className={cn("flex h-dvh overflow-hidden bg-ink/[0.04] relative", isGhostMode && "ec-grid-subtle", className)}>
       <RouteProgress />
 
       <Sidebar
@@ -70,7 +70,7 @@ export function DashboardLayout({
         onMobileOpenChange={setMobileSidebarOpen}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-page lg:my-4 lg:mr-4 lg:ml-0 lg:rounded-[2.5rem] lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative z-10 transition-all duration-300">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-page lg:my-4 lg:mr-4 lg:ml-0 lg:rounded-[2.5rem] lg:shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-ink/[0.04] relative z-10 transition-all duration-300">
         <MobileHeader
           isGhostMode={isGhostMode}
           onThemeToggle={onThemeToggle}

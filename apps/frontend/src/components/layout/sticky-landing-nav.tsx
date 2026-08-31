@@ -34,6 +34,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
   const [user, setUser] = useState<any>(null);
 
   const navLinks = [
+    { href: "#laws", label: tNav("laws") },
     { href: "#how-it-works", label: tNav("howItWorks") },
     { href: "#ghost", label: tNav("ghostMode") },
     { href: "#impact", label: tNav("impact") },
@@ -43,27 +44,31 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
   ];
 
   useEffect(() => {
+    let isMounted = true;
     const supabase = createClient();
     async function loadUser() {
       try {
         const { data: { user: authUser } } = await supabase.auth.getUser();
-        setUser(authUser ?? null);
+        if (isMounted) setUser(authUser ?? null);
       } catch {
         try {
           const { data: { session } } = await supabase.auth.getSession();
-          setUser(session?.user ?? null);
+          if (isMounted) setUser(session?.user ?? null);
         } catch {
-          setUser(null);
+          if (isMounted) setUser(null);
         }
       }
     }
-    loadUser();
+    loadUser().catch(() => {});
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      setUser(session?.user ?? null);
+      if (isMounted) setUser(session?.user ?? null);
     });
     
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleScroll = useCallback(() => {
@@ -72,7 +77,7 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     setScrollProgress(docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0);
 
-    const sections = ["how-it-works", "ghost", "impact", "architecture", "faq", "install-guide"];
+    const sections = ["laws", "how-it-works", "ghost", "impact", "architecture", "faq", "install-guide"];
     let current = "";
     for (const id of sections) {
       const el = document.getElementById(id);
@@ -160,17 +165,21 @@ export function StickyLandingNav({ ghostMode, onGhostToggle }: StickyLandingNavP
                       window.scrollTo({ top: y, behavior: "smooth" });
                     }
                   }}
-                  className="px-3.5 py-1.5 rounded-full text-[11px] font-mono font-semibold tracking-wider uppercase transition-all duration-200 relative border"
+                  className="px-3.5 py-1.5 rounded-full text-[11px] font-mono tracking-wider uppercase transition-all duration-200 relative border"
                   style={{
                     color: isActive
-                      ? (ghostMode ? "#2ee6c8" : "var(--accent)")
+                      ? (ghostMode ? "#2ee6c8" : "#065f46")
                       : (!visible || ghostMode ? "rgba(255, 255, 255, 0.75)" : "rgba(17, 24, 20, 0.7)"),
                     background: isActive
-                      ? (ghostMode ? "rgba(46, 230, 200, 0.12)" : "rgba(27, 67, 50, 0.08)")
+                      ? (ghostMode ? "rgba(46, 230, 200, 0.14)" : "rgba(5, 150, 105, 0.12)")
                       : "transparent",
                     borderColor: isActive
-                      ? (ghostMode ? "rgba(46, 230, 200, 0.25)" : "rgba(27, 67, 50, 0.2)")
+                      ? (ghostMode ? "rgba(46, 230, 200, 0.35)" : "rgba(5, 150, 105, 0.28)")
                       : "transparent",
+                    boxShadow: isActive
+                      ? (ghostMode ? "0 0 12px rgba(46, 230, 200, 0.2)" : "0 1px 3px rgba(5, 150, 105, 0.1)")
+                      : "none",
+                    fontWeight: isActive ? 700 : 600,
                   }}
                 >
                   {label}

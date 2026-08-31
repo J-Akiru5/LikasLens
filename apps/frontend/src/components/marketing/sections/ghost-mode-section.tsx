@@ -24,7 +24,7 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
   const t = useTranslations("landing");
 
   return (
-    <section id="ghost" className="ec-section">
+    <section id="ghost" className="ec-section bg-transparent relative z-10">
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <div
           style={{
@@ -108,11 +108,9 @@ export function GhostModeSection({ ghostMode, onGhostToggle }: GhostModeSectionP
                 )}
               </button>
 
-              {/* Stark Reality Whistleblower Context Card with Clickable External Link */}
+              {/* Data Privacy & Whistleblower Protection Context Card */}
               <a
-                href="https://www.globalwitness.org/en/campaigns/environmental-activists/"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/privacy"
                 style={{
                   marginTop: 12,
                   display: "flex",

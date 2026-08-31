@@ -107,7 +107,7 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
       const db = getSupabaseClient();
       const { data: res, error } = await db.from("tickets").select("*").eq("id", ticketId).single();
       if (res) {
-        setData({ ticket: res } as TicketExplainResponse);
+        setData(res as unknown as TicketExplainResponse);
       } else {
         setError("Explain data unavailable");
       }

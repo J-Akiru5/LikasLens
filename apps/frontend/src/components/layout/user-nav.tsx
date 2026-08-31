@@ -11,7 +11,20 @@ import { showToast, ConfirmModal } from "@likaslens/shared";
 import type { User as SupabaseUser, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 export function UserNav({ invert = false, variant = "header" }: { invert?: boolean; variant?: "header" | "sidebar" } = {}) {
-  const t = useTranslations("nav");
+  let t: (key: string) => string;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    t = useTranslations("nav");
+  } catch {
+    t = (key: string) => {
+      const fallback: Record<string, string> = {
+        login: "Log In",
+        signUp: "Report Violation",
+      };
+      return fallback[key] || key;
+    };
+  }
+
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -19,29 +32,37 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
   const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
+    let isMounted = true;
     async function getUser() {
       try {
         const { data: { user: authUser } } = await supabase.auth.getUser();
-        setUser(authUser ?? null);
+        if (isMounted) setUser(authUser ?? null);
       } catch {
         try {
           const { data: { session } } = await supabase.auth.getSession();
-          setUser(session?.user ?? null);
+          if (isMounted) setUser(session?.user ?? null);
         } catch {
-          setUser(null);
+          if (isMounted) setUser(null);
         }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
-    getUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+    getUser().catch(() => {
+      if (isMounted) setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+      if (isMounted) {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, [supabase]);
 
   const handleLogout = async () => {

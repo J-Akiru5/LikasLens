@@ -103,7 +103,7 @@ export function AppHeader({
       <div className="flex items-center gap-4">
         {pageTitle ? (
           <div className="min-w-0 flex-1">
-            <h1 className="font-semibold tracking-tight text-xl sm:text-2xl text-ink truncate">
+            <h1 className="font-heading font-semibold tracking-tight text-xl sm:text-2xl text-ink truncate">
               {pageTitle}
             </h1>
             {pageSubtitle && (
@@ -111,7 +111,7 @@ export function AppHeader({
             )}
           </div>
         ) : greeting ? (
-          <h1 className="font-semibold tracking-tight text-sm sm:text-xl text-ink truncate max-w-[60vw] sm:max-w-none">
+          <h1 className="font-heading font-semibold tracking-tight text-sm sm:text-xl text-ink truncate max-w-[60vw] sm:max-w-none">
             Welcome back, <span className="text-green">{greeting}</span>
           </h1>
         ) : showBranding ? (

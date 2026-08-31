@@ -146,7 +146,7 @@ export function HowItWorksSection() {
   ];
 
   return (
-    <section id="how-it-works" className="ec-section" style={{ background: "var(--page)" }}>
+    <section id="how-it-works" className="ec-section bg-transparent relative z-10">
       {/* Pipeline connector animation keyframes */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes flowDotHorizontal {

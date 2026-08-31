@@ -54,7 +54,7 @@ const CITIZEN_TAB_INACTIVE =
   "flex items-center justify-center px-3 sm:px-5 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 text-ink/60 hover:text-ink hover:bg-ink/[0.03]";
 
 export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeActive }: CitizenDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"my-reports" | "overview" | "resolved">("my-reports");
+  const [activeTab, setActiveTab] = useState<"overview" | "my-reports" | "resolved">("overview");
   const [queueCount, setQueueCount] = useState(0);
   const [myReports, setMyReports] = useState<Ticket[]>([]);
   const [loadingMyReports, setLoadingMyReports] = useState(true);
@@ -216,10 +216,10 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">Dashboard Overview</h1>
-          <p className="text-sm text-ink/60 mt-1">Real-time civic intelligence and environmental monitoring telemetry.</p>
+          <p className="text-sm text-ink/60 mt-1">Live environmental updates, community reports, and government action tracker.</p>
         </div>
         <div className="flex items-center gap-3">
-          <PulseBadge label="Live Telemetry" size="sm" />
+          <PulseBadge label="Live Activity" size="sm" />
           <Button asChild variant="ink" size="md" className="rounded-xl shadow-sm">
             <Link href="/report">Submit Report</Link>
           </Button>
@@ -230,6 +230,12 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ink/5 pb-4">
         <div className="flex items-center gap-1.5 bg-ink/[0.03] dark:bg-white/[0.04] p-1.5 rounded-2xl w-full sm:w-fit border border-ink/5 min-w-0">
           <button
+            onClick={() => setActiveTab('overview')}
+            className={cn(activeTab === 'overview' ? CITIZEN_TAB_ACTIVE : CITIZEN_TAB_INACTIVE)}
+          >
+            Community Activity
+          </button>
+          <button
             onClick={() => setActiveTab('my-reports')}
             className={cn(activeTab === 'my-reports' ? CITIZEN_TAB_ACTIVE : CITIZEN_TAB_INACTIVE, "gap-2")}
           >
@@ -239,12 +245,6 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
                 {myReports.length}
               </span>
             )}
-          </button>
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={cn(activeTab === 'overview' ? CITIZEN_TAB_ACTIVE : CITIZEN_TAB_INACTIVE)}
-          >
-            Community Telemetry
           </button>
           <button
             onClick={() => setActiveTab('resolved')}
@@ -436,7 +436,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
             <section className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-base sm:text-lg text-ink">Environmental Impact Insights</h2>
-                <span className="text-xs text-ink/50 font-mono">Real-time Telemetry</span>
+                <span className="text-xs text-ink/50 font-mono">Live Community Stats</span>
               </div>
               <StatsCards items={statCards} />
             </section>
@@ -446,8 +446,8 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
           <RevealSection stagger={0.12}>
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-base sm:text-lg text-ink">Community Incident Telemetry</h2>
-                <span className="text-xs text-ink/50 font-mono">Automated Triage</span>
+                <h2 className="font-semibold text-base sm:text-lg text-ink">Recent Community Reports</h2>
+                <span className="text-xs text-ink/50 font-mono">Live Activity Feed</span>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
@@ -472,7 +472,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
                           </div>
                           <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 text-accent text-xs font-bold font-mono">
                             <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-                            YOLOv8 + Graph
+                            AI Categorized
                           </span>
                         </div>
                         <p className="text-xs text-ink/60 mb-4">
@@ -481,7 +481,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
                         <ViolationDonut />
                       </div>
                       <div className="mt-6 pt-4 border-t border-ink/5 flex items-center justify-between text-xs text-ink/50">
-                        <span>Automated Dispatch Engine</span>
+                        <span>AI Incident Routing</span>
                         <span className="font-mono font-semibold text-green">94.6% Accuracy</span>
                       </div>
                     </div>
@@ -497,7 +497,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
             <section className="space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-base sm:text-lg text-ink">Regional Hotspots & Incident Map</h2>
-                <span className="text-xs text-ink/50 font-mono">Interactive Deck.gl</span>
+                <span className="text-xs text-ink/50 font-mono">Live Incident Map</span>
               </div>
               <HeatmapWidget />
             </section>

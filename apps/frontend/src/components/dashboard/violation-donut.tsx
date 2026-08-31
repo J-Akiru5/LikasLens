@@ -234,7 +234,7 @@ export function ViolationDonut() {
     return (
       <div className="flex flex-col items-center justify-center h-[340px] rounded-2xl border border-ink/5 bg-panel/50">
         <div className="w-8 h-8 rounded-full border-2 border-accent border-t-transparent animate-spin mb-3" />
-        <span className="text-xs text-ink/40 font-mono">Querying live telemetry...</span>
+        <span className="text-xs text-ink/40 font-mono">Loading incident statistics...</span>
       </div>
     );
   }

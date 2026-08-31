@@ -9,12 +9,123 @@ import Link from "next/link";
 import { useGeminiChat, type ChatMessage } from "../../hooks/useGeminiChat";
 import { cn } from "../../utils";
 
-const THINKING_STEPS = [
-  "Liksi is reviewing Philippine environmental statutes...",
-  "Checking DENR-EMB, LLDA & LGU jurisdiction rules...",
-  "Evaluating statutory penalties and enforcement SLAs...",
-  "Synthesizing legal triage report...",
-];
+function getThinkingSteps(query: string, locale: string = "en"): string[] {
+  const q = query.toLowerCase().trim();
+  const isFil = locale === "fil" || /^(ano|paano|saan|bakit|sino|kumusta|magandang|paki|tulungan)/.test(q);
+
+  // 1. Legal / Statute / Penalty queries
+  if (
+    q.includes("law") ||
+    q.includes("batas") ||
+    q.includes("ra ") ||
+    q.includes("ra9") ||
+    q.includes("ra8") ||
+    q.includes("pd ") ||
+    q.includes("penalty") ||
+    q.includes("multa") ||
+    q.includes("kulong") ||
+    q.includes("fine") ||
+    q.includes("legal") ||
+    q.includes("denr") ||
+    q.includes("emb") ||
+    q.includes("cenro") ||
+    q.includes("lgu") ||
+    q.includes("statute") ||
+    q.includes("violation") ||
+    q.includes("paglabag")
+  ) {
+    if (isFil) {
+      return [
+        "Sinusuri ang mga kaugnay na batas sa kalikasan...",
+        "Tinitingnan ang hurisdiksyon ng DENR at LGU...",
+        "Inihahanda ang wastong gabay ayon sa batas...",
+      ];
+    }
+    return [
+      "Reviewing relevant environmental statutes...",
+      "Checking DENR and LGU jurisdictional mandates...",
+      "Synthesizing statutory guidance...",
+    ];
+  }
+
+  // 2. Incident reporting / How to report / Upload photo / Ghost Mode
+  if (
+    q.includes("report") ||
+    q.includes("ulat") ||
+    q.includes("sumbong") ||
+    q.includes("photo") ||
+    q.includes("larawan") ||
+    q.includes("camera") ||
+    q.includes("ghost") ||
+    q.includes("anonymous") ||
+    q.includes("submit") ||
+    q.includes("paano") ||
+    q.includes("how to") ||
+    q.includes("gps") ||
+    q.includes("location")
+  ) {
+    if (isFil) {
+      return [
+        "Inihahanda ang gabay sa pag-uulat...",
+        "Sinusuri ang mga hakbang sa LikasLens...",
+        "Binubuo ang maayos na paliwanag...",
+      ];
+    }
+    return [
+      "Preparing reporting workflow guidance...",
+      "Checking LikasLens submission steps...",
+      "Formulating helpful instructions...",
+    ];
+  }
+
+  // 3. Environmental issues (pollution, waste, smoke, mining, flood, etc.)
+  if (
+    q.includes("basura") ||
+    q.includes("waste") ||
+    q.includes("plastic") ||
+    q.includes("usok") ||
+    q.includes("smoke") ||
+    q.includes("hangin") ||
+    q.includes("air") ||
+    q.includes("tubig") ||
+    q.includes("water") ||
+    q.includes("ilog") ||
+    q.includes("river") ||
+    q.includes("dagat") ||
+    q.includes("ocean") ||
+    q.includes("puno") ||
+    q.includes("tree") ||
+    q.includes("logging") ||
+    q.includes("quarry") ||
+    q.includes("mining") ||
+    q.includes("mina")
+  ) {
+    if (isFil) {
+      return [
+        "Sinusuri ang isyung pangkalikasan...",
+        "Tinitingnan ang mga pamantayan sa proteksyon...",
+        "Inihahanda ang rekomendasyon para sa inyo...",
+      ];
+    }
+    return [
+      "Analyzing environmental context...",
+      "Checking environmental protection guidelines...",
+      "Drafting practical recommendations...",
+    ];
+  }
+
+  // 4. Default / General / Greetings / Casual chat
+  if (isFil) {
+    return [
+      "Pinoproseso ang inyong mensahe...",
+      "Inihahanda ang sagot para sa inyo...",
+    ];
+  }
+  return [
+    "Thinking and preparing a response...",
+    "Drafting a helpful reply...",
+  ];
+}
 
 export function LiksiChat({
   persona = "citizen",
@@ -30,13 +141,16 @@ export function LiksiChat({
   const t = useTranslations("chat");
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const { messages, loading, sendMessage } = useGeminiChat(persona, locale);
+  const { messages, loading, sendMessage, addAssistantMessage } = useGeminiChat(persona, locale);
   const [input, setInput] = useState("");
+  const [lastQuery, setLastQuery] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const bottomAnchorRef = useRef<HTMLDivElement>(null);
   const [thinkingIndex, setThinkingIndex] = useState(0);
 
-  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
+  const activeThinkingSteps = useMemo(() => {
+    return getThinkingSteps(lastQuery, locale);
+  }, [lastQuery, locale]);
 
   // Rotate thinking steps when loading
   useEffect(() => {
@@ -45,52 +159,53 @@ export function LiksiChat({
       return;
     }
     const interval = setInterval(() => {
-      setThinkingIndex((prev) => (prev + 1) % THINKING_STEPS.length);
+      setThinkingIndex((prev) => (prev + 1) % activeThinkingSteps.length);
     }, 1800);
     return () => clearInterval(interval);
-  }, [loading]);
+  }, [loading, activeThinkingSteps.length]);
 
   const scrollToBottom = useCallback((smooth = true) => {
-    if (bottomAnchorRef.current) {
-      bottomAnchorRef.current.scrollIntoView({
-        behavior: smooth ? "smooth" : "auto",
-        block: "end",
-      });
-    } else if (listRef.current) {
-      listRef.current.scrollTop = listRef.current.scrollHeight;
-    }
+    requestAnimationFrame(() => {
+      if (listRef.current) {
+        listRef.current.scrollTo({
+          top: listRef.current.scrollHeight,
+          behavior: smooth ? "smooth" : "auto",
+        });
+      }
+      if (bottomAnchorRef.current) {
+        bottomAnchorRef.current.scrollIntoView({
+          behavior: smooth ? "smooth" : "auto",
+          block: "end",
+        });
+      }
+    });
   }, []);
 
-  // Listen for global custom event to open Liksi and send/prime a prompt or insert an instant hardcoded message
+  // Listen for global custom event to open Liksi and send/prime a prompt or insert an instant message
   useEffect(() => {
     const handleOpenLiksi = (e: Event) => {
       const customEvent = e as CustomEvent<{ prompt?: string; instantMessage?: string }>;
       setOpen(true);
       if (customEvent.detail?.instantMessage) {
-        const text = customEvent.detail.instantMessage;
-        setLocalMessages((prev) => {
-          if (prev.some((m) => m.content === text)) return prev;
-          return [...prev, { id: crypto.randomUUID(), role: "assistant", content: text }];
-        });
+        addAssistantMessage(customEvent.detail.instantMessage);
+        setTimeout(() => scrollToBottom(true), 50);
       } else if (customEvent.detail?.prompt) {
+        setLastQuery(customEvent.detail.prompt);
         sendMessage(customEvent.detail.prompt);
+        setTimeout(() => scrollToBottom(true), 50);
       }
     };
     window.addEventListener("open-liksi-chat", handleOpenLiksi as EventListener);
     return () => window.removeEventListener("open-liksi-chat", handleOpenLiksi as EventListener);
-  }, [sendMessage]);
-
-  const displayMessages = useMemo(() => {
-    return [...messages, ...localMessages];
-  }, [messages, localMessages]);
+  }, [sendMessage, addAssistantMessage, scrollToBottom]);
 
   useEffect(() => {
     if (open) {
       scrollToBottom(false);
-      const timer = setTimeout(() => scrollToBottom(true), 50);
+      const timer = setTimeout(() => scrollToBottom(true), 60);
       return () => clearTimeout(timer);
     }
-  }, [displayMessages.length, open, loading, scrollToBottom]);
+  }, [messages.length, open, loading, scrollToBottom]);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -104,8 +219,10 @@ export function LiksiChat({
     const text = input.trim();
     if (!text || loading) return;
     setInput("");
+    setLastQuery(text);
     sendMessage(text);
-    setTimeout(() => scrollToBottom(true), 30);
+    scrollToBottom(false);
+    setTimeout(() => scrollToBottom(true), 40);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -187,7 +304,7 @@ export function LiksiChat({
 
             {/* Messages Container */}
             <div ref={listRef} className="flex-1 overflow-y-auto p-3.5 space-y-3.5 bg-page/70 relative">
-              {displayMessages.length === 0 && !loading && (
+              {messages.length === 0 && !loading && (
                 <div className="flex flex-col items-center justify-center h-full gap-2 text-center p-4">
                   <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center mb-1">
                     <Scale className="w-6 h-6 text-teal-600 dark:text-teal-400" />
@@ -196,11 +313,11 @@ export function LiksiChat({
                 </div>
               )}
 
-              {displayMessages.map((msg, idx) => (
+              {messages.map((msg, idx) => (
                 <ChatBubble
                   key={msg.id}
                   message={msg}
-                  isLatest={idx === displayMessages.length - 1}
+                  isLatest={idx === messages.length - 1}
                   localePrefix={localePrefix}
                   onScrollNeeded={() => {
                     scrollToBottom(true);
@@ -222,7 +339,7 @@ export function LiksiChat({
                         <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce" />
                       </div>
                       <span className="text-[11px] font-medium text-ink/70 transition-all duration-300">
-                        {THINKING_STEPS[thinkingIndex]}
+                        {activeThinkingSteps[thinkingIndex % activeThinkingSteps.length]}
                       </span>
                     </div>
                   </div>
@@ -367,6 +484,9 @@ function ChatBubble({
   onScrollNeeded: () => void;
 }) {
   const isUser = message.role === "user";
+  const [isStreaming, setIsStreaming] = useState(() => {
+    return !isUser && !streamedMessageIds.has(message.id) && message.id !== "welcome";
+  });
   const [displayedContent, setDisplayedContent] = useState(() => {
     // If user message or already streamed, show full content immediately
     if (isUser || streamedMessageIds.has(message.id) || message.id === "welcome") {
@@ -375,26 +495,30 @@ function ChatBubble({
     return "";
   });
 
-  // Fast typewriter effect (~14ms per word/chunk) for incoming assistant messages
+  // 2026 Smooth typewriter streaming (~36ms per word) for incoming assistant messages
   useEffect(() => {
     if (isUser || streamedMessageIds.has(message.id) || message.id === "welcome") {
       setDisplayedContent(message.content);
+      setIsStreaming(false);
       return;
     }
 
+    setIsStreaming(true);
     const words = message.content.split(" ");
     let currentIdx = 0;
+
     const interval = setInterval(() => {
-      currentIdx += 2; // Stream 2 words per tick for high-speed responsiveness
+      currentIdx += 1; // Stream 1 word per tick for natural reading cadence
       if (currentIdx >= words.length) {
         setDisplayedContent(message.content);
+        setIsStreaming(false);
         streamedMessageIds.add(message.id);
         clearInterval(interval);
       } else {
         setDisplayedContent(words.slice(0, currentIdx).join(" "));
       }
       onScrollNeeded();
-    }, 22);
+    }, 36);
 
     return () => clearInterval(interval);
   }, [message.content, message.id, isUser, onScrollNeeded]);
@@ -446,10 +570,13 @@ function ChatBubble({
         ) : (
           <div>
             <MarkdownRenderer content={displayedContent || message.content} />
+            {isStreaming && (
+              <span className="inline-block w-1.5 h-3.5 ml-1 bg-teal-500 rounded-xs animate-pulse align-middle" />
+            )}
 
             {/* One-Tap Report Handoff Card */}
-            {hasViolationContext && displayedContent === message.content && (
-              <div className="mt-3 pt-2.5 border-t border-ink/10 flex items-center justify-between">
+            {hasViolationContext && !isStreaming && (
+              <div className="mt-3 pt-2.5 border-t border-ink/10 flex items-center justify-between animate-fade-in">
                 <Link
                   href={`${localePrefix}/report`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 text-white font-mono text-[11px] font-bold hover:bg-teal-700 transition-all shadow-xs"

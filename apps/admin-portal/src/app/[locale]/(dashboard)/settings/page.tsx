@@ -335,7 +335,7 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">Settings</h1>
+          <h1 className="font-heading font-bold tracking-tight text-3xl sm:text-4xl text-ink">Settings</h1>
           <p className="font-mono text-base text-muted mt-1">System configuration</p>
         </div>
         <Button
@@ -355,17 +355,17 @@ export default function SettingsPage() {
           const isActive = activeTab === tab.id;
           return (
             <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)}
-              className={`bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border text-left transition-all ${
+              className={`bg-panel/90 backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xs border text-left transition-all ${
                 isActive
-                  ? "border-green/30 bg-green/[0.02]"
-                  : "border-ink/5 hover:bg-ink/[0.02]"
+                  ? "border-accent/30 bg-accent/[0.04] ring-1 ring-accent/20"
+                  : "border-ink/[0.08] hover:border-ink/[0.16] hover:shadow-xs"
               }`}
               aria-pressed={isActive}>
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
-                  isActive ? "bg-green/10" : "bg-ink/[0.04]"
+                  isActive ? "bg-accent/10" : "bg-ink/[0.04]"
                 }`}>
-                  <Icon className={`w-6 h-6 ${isActive ? "text-green" : "text-ink/40"}`} />
+                  <Icon className={`w-6 h-6 ${isActive ? "text-accent" : "text-ink/40"}`} />
                 </div>
                 <div>
                   <h3 className="font-medium text-sm text-ink">{tab.label}</h3>
@@ -384,8 +384,8 @@ export default function SettingsPage() {
         {activeTab === "developers" && <DevelopersSection />}
       </div>
 
-      <div className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
-        <h3 className="font-semibold tracking-tight text-xl text-ink mb-4">System Information</h3>
+      <div className="bg-panel/90 backdrop-blur-xl rounded-3xl p-4 sm:p-6 shadow-xs border border-ink/[0.08]">
+        <h3 className="font-heading font-semibold tracking-tight text-xl text-ink mb-4">System Information</h3>
         <div className="space-y-2 font-mono text-sm text-muted">
           <p>LikasLens Admin Portal v0.1.0</p>
           <p>Environment: {process.env.NODE_ENV}</p>

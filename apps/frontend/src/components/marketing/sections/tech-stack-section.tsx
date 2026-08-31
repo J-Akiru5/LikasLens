@@ -116,6 +116,7 @@ const staggerContainer = {
 
 export function TechStackSection() {
   const t = useTranslations("architecture");
+  const [selectedNode, setSelectedNode] = useState<string | null>("input");
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
   const nodes: TechNode[] = [
@@ -181,20 +182,15 @@ export function TechStackSection() {
     },
   ];
 
-  const activeNode = nodes.find(n => n.id === hoveredNode);
+  const activeNodeId = hoveredNode || selectedNode;
+  const activeNode = activeNodeId ? nodes.find(n => n.id === activeNodeId) || null : null;
 
   return (
-    <section id="architecture" className="ec-section" style={{ background: "var(--page)" }}>
+    <section id="architecture" className="ec-section bg-transparent relative z-10">
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes techPulse {
           0%, 100% { opacity: 0.3; transform: scale(1); }
           50% { opacity: 0.6; transform: scale(1.3); }
-        }
-        @keyframes techFlowDot {
-          0% { offset-distance: 0%; opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { offset-distance: 100%; opacity: 0; }
         }
       `}} />
 
@@ -243,37 +239,31 @@ export function TechStackSection() {
             viewport={{ once: true, margin: "-60px" }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           >
-            {nodes.map((node) => {
-              const isHovered = hoveredNode === node.id;
-              const isConnected = hoveredNode
-                ? CONNECTIONS.some(
-                    c => (c.from === hoveredNode && c.to === node.id) || (c.to === hoveredNode && c.from === node.id)
-                  )
-                : false;
+            {nodes.map((node, idx) => {
+              const isSelected = selectedNode === node.id;
+              const isActive = activeNodeId === node.id;
               const { Icon } = node;
 
               return (
                 <m.div
                   key={node.id}
                   variants={fadeUp}
+                  onClick={() => setSelectedNode(prev => prev === node.id ? null : node.id)}
                   onMouseEnter={() => setHoveredNode(node.id)}
                   onMouseLeave={() => setHoveredNode(null)}
-                  className="group relative cursor-pointer select-none rounded-2xl border p-5 transition-all duration-300"
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                  className="group relative cursor-pointer select-none rounded-2xl border p-5 transition-all duration-300 active:scale-[0.98]"
                   style={{
-                    background: isHovered
-                      ? `color-mix(in srgb, ${node.color} 6%, var(--panel))`
-                      : isConnected
-                        ? `color-mix(in srgb, ${node.color} 3%, var(--panel))`
-                        : "var(--panel)",
-                    borderColor: isHovered
-                      ? node.color
-                      : isConnected
-                        ? `color-mix(in srgb, ${node.color} 40%, var(--border))`
-                        : "var(--border)",
-                    transform: isHovered ? "translateY(-2px)" : "none",
-                    boxShadow: isHovered
-                      ? `0 8px 24px -8px color-mix(in srgb, ${node.color} 25%, transparent)`
-                      : "none",
+                    background: isActive
+                      ? `color-mix(in srgb, ${node.color} 8%, var(--panel))`
+                      : "var(--panel)",
+                    borderColor: isActive ? node.color : "var(--border)",
+                    transform: isActive ? "translateY(-3px)" : "none",
+                    boxShadow: isActive
+                      ? `0 12px 28px -8px color-mix(in srgb, ${node.color} 30%, transparent)`
+                      : "0 2px 8px -2px rgba(0,0,0,0.03)",
                   }}
                 >
                   <div className="flex items-start gap-3.5">
@@ -291,7 +281,7 @@ export function TechStackSection() {
                       <p
                         className="font-bold text-sm leading-tight transition-colors duration-200"
                         style={{
-                          color: isHovered ? node.color : "var(--ink)",
+                          color: isActive ? node.color : "var(--ink)",
                           fontFamily: "var(--font-heading)",
                         }}
                       >
@@ -304,22 +294,17 @@ export function TechStackSection() {
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] text-muted">
+                    <span className="font-mono text-[10px] tracking-wider uppercase opacity-70">
+                      Step 0{idx + 1}
+                    </span>
                     <div className="flex items-center gap-1.5">
-                      {CONNECTIONS.filter(c => c.from === node.id || c.to === node.id).map((c, i) => {
-                        const other = c.from === node.id ? c.to : c.from;
-                        const otherNode = nodes.find(n => n.id === other);
-                        return (
-                          <div
-                            key={i}
-                            className="w-1.5 h-1.5 rounded-full transition-all duration-300"
-                            style={{
-                              background: hoveredNode === other ? otherNode?.color : "var(--border-strong)",
-                              animation: hoveredNode === other ? "techPulse 1.5s ease-in-out infinite" : "none",
-                            }}
-                            title={`${t("connectedTo")} ${otherNode?.label}`}
-                          />
-                        );
-                      })}
+                      <div
+                        className="w-2 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          backgroundColor: isActive ? node.color : "var(--border-strong)",
+                          boxShadow: isActive ? `0 0 8px ${node.color}` : "none",
+                        }}
+                      />
                     </div>
                   </div>
                 </m.div>
@@ -341,70 +326,109 @@ export function TechStackSection() {
                 background: "var(--panel)",
                 borderColor: activeNode ? activeNode.color : "var(--border)",
                 boxShadow: activeNode
-                  ? `0 12px 40px -12px color-mix(in srgb, ${activeNode.color} 15%, transparent)`
-                  : "0 4px 16px -8px rgba(0,0,0,0.06)",
+                  ? `0 12px 40px -12px color-mix(in srgb, ${activeNode.color} 20%, transparent)`
+                  : "0 4px 20px -4px rgba(0,0,0,0.06)",
               }}
             >
-              {/* Header */}
-              <div
-                className="px-6 py-4 border-b transition-all duration-500"
-                style={{
-                  borderColor: activeNode ? `color-mix(in srgb, ${activeNode.color} 15%, var(--border))` : "var(--border)",
-                  background: activeNode
-                    ? `color-mix(in srgb, ${activeNode.color} 4%, var(--panel))`
-                    : "var(--panel)",
-                }}
-              >
-                <p
-                  className="font-mono text-[10px] font-bold uppercase tracking-widest transition-colors duration-300"
-                  style={{ color: activeNode?.color ?? "var(--muted)", margin: 0 }}
-                >
-                  {activeNode ? activeNode.sublabel : t("systemDetails")}
-                </p>
-                <p
-                  className="text-lg font-bold transition-colors duration-300 mt-1"
-                  style={{ color: "var(--ink)", margin: 0, fontFamily: "var(--font-heading)" }}
-                >
-                  {activeNode ? activeNode.label : t("hoverANode")}
-                </p>
-              </div>
-
-              {/* Body */}
-              <div className="px-6 py-5">
-                <p
-                  className="text-sm leading-relaxed transition-all duration-300"
-                  style={{
-                    color: activeNode ? "var(--ink)" : "var(--muted)",
-                    margin: 0,
-                    minHeight: 80,
-                  }}
-                >
-                  {activeNode
-                    ? activeNode.detail
-                    : t("defaultDetail")}
-                </p>
-              </div>
-
-              {/* Flow visualization */}
-              <div className="px-6 pb-5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  {nodes.map((node, i) => (
-                    <div key={node.id} className="flex items-center gap-2">
-                      <div
-                        className="w-2 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          background: hoveredNode === node.id ? node.color : "var(--border-strong)",
-                          boxShadow: hoveredNode === node.id ? `0 0 8px ${node.color}` : "none",
-                        }}
-                      />
-                      {i < nodes.length - 1 && (
-                        <div className="w-4 h-px" style={{ background: "var(--border)" }} />
-                      )}
+              {activeNode ? (
+                <>
+                  {/* Active Header */}
+                  <div
+                    className="px-6 py-4 border-b transition-all duration-500"
+                    style={{
+                      borderColor: `color-mix(in srgb, ${activeNode.color} 15%, var(--border))`,
+                      background: `color-mix(in srgb, ${activeNode.color} 5%, var(--panel))`,
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p
+                        className="font-mono text-[10px] font-bold uppercase tracking-widest transition-colors duration-300"
+                        style={{ color: activeNode.color, margin: 0 }}
+                      >
+                        {activeNode.sublabel}
+                      </p>
+                      <span className="font-mono text-[10px] text-muted uppercase">
+                        Step {nodes.findIndex(n => n.id === activeNode.id) + 1} of {nodes.length}
+                      </span>
                     </div>
-                  ))}
+                    <p
+                      className="text-lg font-bold transition-colors duration-300 mt-1"
+                      style={{ color: "var(--ink)", margin: 0, fontFamily: "var(--font-heading)" }}
+                    >
+                      {activeNode.label}
+                    </p>
+                  </div>
+
+                  {/* Active Body */}
+                  <div className="px-6 py-5">
+                    <p
+                      className="text-sm leading-relaxed transition-all duration-300"
+                      style={{
+                        color: "var(--ink)",
+                        margin: 0,
+                        minHeight: 72,
+                      }}
+                    >
+                      {activeNode.detail}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                /* Unselected State Prompt */
+                <>
+                  <div
+                    className="px-6 py-4 border-b border-border/60"
+                    style={{ background: "var(--page)" }}
+                  >
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted" style={{ margin: 0 }}>
+                      Architecture Guide
+                    </p>
+                    <p className="text-base font-bold text-ink mt-1" style={{ margin: 0, fontFamily: "var(--font-heading)" }}>
+                      Select Any Stage
+                    </p>
+                  </div>
+
+                  <div className="px-6 py-5">
+                    <p className="text-sm text-muted leading-relaxed" style={{ margin: 0, minHeight: 72 }}>
+                      Click or tap any step on the left to inspect its role in connecting citizen evidence to legal government enforcement.
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {/* Step indicator pipeline */}
+              <div className="px-6 pb-5 border-t border-border/40 pt-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {nodes.map((node, i) => {
+                    const isCurrent = activeNode?.id === node.id;
+                    return (
+                      <button
+                        key={node.id}
+                        type="button"
+                        onClick={() => setSelectedNode(prev => prev === node.id ? null : node.id)}
+                        className="flex items-center gap-2 cursor-pointer p-0 bg-transparent border-0 group"
+                        title={node.label}
+                      >
+                        <div
+                          className="w-2.5 h-2.5 rounded-full transition-all duration-300 group-hover:scale-125"
+                          style={{
+                            background: isCurrent ? node.color : "var(--border-strong)",
+                            boxShadow: isCurrent ? `0 0 10px ${node.color}` : "none",
+                          }}
+                        />
+                        {i < nodes.length - 1 && (
+                          <div className="w-3.5 h-px" style={{ background: "var(--border)" }} />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
                 <p className="font-mono text-[9px] text-muted mt-2 tracking-wider uppercase">
-                  {t("dataFlowPipeline")}
+                  {activeNode ? (
+                    <>{t("dataFlowPipeline")} &bull; Step {nodes.findIndex(n => n.id === activeNode.id) + 1} Selected</>
+                  ) : (
+                    <>{t("dataFlowPipeline")} &bull; Tap a stage to inspect</>
+                  )}
                 </p>
               </div>
             </div>

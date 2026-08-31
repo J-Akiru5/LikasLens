@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { m } from "framer-motion";
-import { CheckCircle2, MapPin } from "lucide-react";
+import { CheckCircle2, MapPin, Trash2, Wind, Trees, Waves, AlertTriangle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getPublicImpact, EmptyState, formatDate } from "@likaslens/shared";
 import type { PublicImpactData } from "@likaslens/shared";
@@ -70,6 +70,11 @@ export function ImpactSection() {
   };
 
   const TITLE_MAP: Record<string, string> = {
+    "Illegal Dumping Site Cleared": t("resDumping"),
+    "Smoke & Factory Plume Stopped": t("resWildfire"),
+    "Coastal Drainage Cleaned": t("resCoastal"),
+    "Illegal Timber Impounded": t("resTrafficking"),
+    "Riverbank Erosion Fixed": t("resErosion"),
     "Illegal Dumping Detected": t("resDumping"),
     "Wildfire Risk Assessment": t("resWildfire"),
     "Coastal Erosion Threat": t("resCoastal"),
@@ -78,7 +83,7 @@ export function ImpactSection() {
   };
 
   return (
-    <section id="impact" className="ec-section" style={{ background: "var(--page)" }}>
+    <section id="impact" className="ec-section bg-transparent relative z-10">
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
 
         {/* Editorial intro */}
@@ -145,26 +150,55 @@ export function ImpactSection() {
             </div>
           </m.div>
 
-          {/* Forensic photo tile */}
+          {/* Forensic photo tile with telemetry HUD overlay */}
           <m.div
             initial={{ opacity: 0, y: 22 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="group hover:shadow-xl transition-all duration-500"
-            style={{ borderRadius: "20px", minHeight: 260, position: "relative", border: "1px solid var(--border)", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)", overflow: "hidden" }}
+            className="group hover:shadow-xl transition-all duration-500 relative rounded-[20px] overflow-hidden border border-border min-h-[280px]"
+            style={{ boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08)" }}
           >
             <Image
               src="/images/impact_ridge_to_reef_3d.webp"
               alt="A river winding through forested Philippine highlands"
               fill
               sizes="(min-width: 1024px) 40vw, 100vw"
-              style={{ objectFit: "cover", objectPosition: "center", transform: "scale(1.2)" }}
+              style={{ objectFit: "cover", objectPosition: "center", transform: "scale(1.08)" }}
             />
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "40px 32px 32px", background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)" }}>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "rgba(255, 255, 255, 0.95)", margin: 0, maxWidth: 320, lineHeight: 1.5, fontWeight: 500, textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>
-                {t("ridgeToReefDesc")}
-              </p>
+            {/* Dark gradient overlay for maximum readability */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: "linear-gradient(180deg, rgba(12, 22, 32, 0.5) 0%, rgba(10, 18, 26, 0.88) 100%)",
+              }}
+            />
+
+            {/* Telemetry HUD content */}
+            <div className="relative z-10 h-full p-6 sm:p-7 flex flex-col justify-between">
+              <div className="flex items-center justify-between gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 text-white font-mono text-[10px] uppercase font-bold tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Nationwide Coverage
+                </span>
+                <span className="font-mono text-[10px] text-emerald-400/90 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                  Mountains to Coastlines
+                </span>
+              </div>
+
+              <div className="my-auto py-3">
+                <p style={{ fontFamily: "var(--font-body)", fontSize: 13.5, color: "rgba(255, 255, 255, 0.95)", margin: 0, lineHeight: 1.6, fontWeight: 500, textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>
+                  {t("ridgeToReefDesc")}
+                </p>
+              </div>
+
+              <div className="pt-3 border-t border-white/15 flex items-center justify-between text-[11px] font-mono text-white/75">
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                  Archipelago-Wide Map
+                </span>
+                <span className="text-emerald-400 font-bold">Verified GPS Location</span>
+              </div>
             </div>
           </m.div>
         </div>
@@ -188,15 +222,31 @@ export function ImpactSection() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {typeEntries.map(([name, count]) => {
-                  const pct = maxType > 0 ? (count / maxType) * 100 : 0;
+                  const total = stats.total_reports || 1;
+                  const pct = Math.round((count / total) * 100);
                   const localizedName = TYPE_MAP[name] ?? name;
+                  const Icon = name.includes("Waste")
+                    ? Trash2
+                    : name.includes("Air")
+                    ? Wind
+                    : name.includes("Forest")
+                    ? Trees
+                    : name.includes("Water")
+                    ? Waves
+                    : AlertTriangle;
+
                   return (
                     <div key={name}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-                        <span style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--ink)", fontWeight: 600 }}>{localizedName}</span>
-                        <span style={{ fontFamily: "var(--font-data)", fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>{count}</span>
+                        <span style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--ink)", fontWeight: 600, display: "flex", alignItems: "center", gap: 7 }}>
+                          <Icon className="w-3.5 h-3.5 text-accent-bright shrink-0" />
+                          <span>{localizedName}</span>
+                        </span>
+                        <span style={{ fontFamily: "var(--font-data)", fontSize: 12.5, fontWeight: 700, color: "var(--accent)" }}>
+                          {count} <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 500 }}>({pct}%)</span>
+                        </span>
                       </div>
-                      <div style={{ height: 6, borderRadius: 9999, background: "color-mix(in oklab, var(--accent) 10%, transparent)", overflow: "hidden" }}>
+                      <div style={{ height: 6, borderRadius: 9999, background: "color-mix(in oklab, var(--accent) 12%, transparent)", overflow: "hidden" }}>
                         <m.div initial={{ width: 0 }} whileInView={{ width: `${pct}%` }} viewport={{ once: true }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} style={{ height: "100%", borderRadius: 9999, background: "var(--accent)" }} />
                       </div>
                     </div>
@@ -230,12 +280,19 @@ export function ImpactSection() {
                         <CheckCircle2 style={{ width: 14, height: 14, color: "var(--green)" }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", margin: 0, lineHeight: 1.4 }}>{localizedTitle}</p>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                          <p style={{ fontSize: 13.5, fontWeight: 600, color: "var(--ink)", margin: 0, lineHeight: 1.35 }}>{localizedTitle}</p>
+                          {item.status && (
+                            <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+                              {item.status}
+                            </span>
+                          )}
+                        </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)" }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontFamily: "var(--font-data)", fontSize: 10.5, color: "var(--muted)" }}>
                             <MapPin style={{ width: 10, height: 10 }} /> {item.location}
                           </span>
-                          <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--muted)" }}>{formatDate(item.date, "short")}</span>
+                          <span style={{ fontFamily: "var(--font-data)", fontSize: 10.5, color: "var(--muted)" }}>&bull; {formatDate(item.date, "short")}</span>
                         </div>
                       </div>
                     </div>

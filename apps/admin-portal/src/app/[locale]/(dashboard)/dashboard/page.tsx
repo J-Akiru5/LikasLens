@@ -34,7 +34,7 @@ const ADMIN_KPI_TILE_SPAN = {
   secondary: "col-span-6 sm:col-span-6 lg:col-span-2",
 } as const;
 const ADMIN_PULSE_BADGE =
-  "items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest shadow-[0_0_0_4px_color-mix(in_oklab,var(--green)_25%,transparent)]";
+  "items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest border border-green/20 shadow-xs";
 
 export default function DashboardPage() {
   const params = useParams<{ locale: string }>();
@@ -83,9 +83,6 @@ export default function DashboardPage() {
   const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening";
   const dateStr = formatDate(now, "long", locale);
 
-  // Phase 5: asymmetric KPI tiles (1 hero + 2 primary + 2 secondary)
-  // Active Incidents is the hero (largest, green halo for "operational awareness")
-  // Avg Response is dropped — Admin Portal emphasizes throughput, not minutes.
   const kpiTiles = [
     {
       id: "active-incidents",
@@ -153,14 +150,14 @@ export default function DashboardPage() {
 
   const bgTintClass: Record<typeof kpiTiles[number]["accent"], string> = {
     green: "bg-green/[0.02] hover:bg-green/[0.04]",
-    amber: "bg-amber-500/[0.02] hover:bg-amber-500/[0.04]",
+    amber: "bg-amber/[0.02] hover:bg-amber/[0.04]",
     accent: "bg-accent/[0.02] hover:bg-accent/[0.04]",
     muted: "bg-ink/[0.02] hover:bg-ink/[0.04]",
   };
 
   const valueColorClass: Record<typeof kpiTiles[number]["accent"], string> = {
     green: "text-green",
-    amber: "text-amber-600",
+    amber: "text-amber",
     accent: "text-accent",
     muted: "text-ink",
   };
@@ -175,12 +172,12 @@ export default function DashboardPage() {
       {/* ── Welcome Header ─────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="font-semibold tracking-tight text-3xl md:text-3xl sm:text-4xl text-ink">
+          <h1 className="font-heading font-bold tracking-tight text-3xl md:text-4xl text-ink">
             {greeting}
           </h1>
           <p className="font-mono text-sm text-muted mt-1">{dateStr}</p>
         </div>
-        {/* Phase 5: green-halo "All Systems Online" pulse badge */}
+        {/* Green-halo "All Systems Online" pulse badge */}
         <span className={cn(ADMIN_PULSE_BADGE, "hidden md:inline-flex")}>
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green/60" />
@@ -190,7 +187,7 @@ export default function DashboardPage() {
         </span>
       </div>
 
-      {/* ── Phase 5: Asymmetric KPI Grid (1 hero + 2 primary + 2 secondary) ── */}
+      {/* ── Asymmetric KPI Grid (1 hero + 2 primary + 2 secondary) ── */}
       <RevealSection stagger={0.06}>
       <div className={ADMIN_KPI_GRID}>
         {kpiTiles.map((kpi) => {
@@ -200,12 +197,15 @@ export default function DashboardPage() {
               key={kpi.id}
               className={cn(
                 kpi.span,
-                "kpi-card relative overflow-hidden rounded-2xl border border-border p-5 group transition-colors duration-300",
+                "kpi-card relative overflow-hidden rounded-2xl bg-panel/90 backdrop-blur-xl border border-ink/[0.08] p-5 group transition-all duration-300 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-ink/[0.14]",
                 bgTintClass[kpi.accent],
                 "before:absolute before:left-0 before:right-0 before:top-0 before:h-0.5",
                 accentBarClass[kpi.accent]
               )}
             >
+              {/* Subtle ambient hover glow */}
+              <div className="absolute -right-8 -bottom-8 w-28 h-28 rounded-full blur-[30px] opacity-0 group-hover:opacity-20 pointer-events-none transition-opacity duration-500 bg-accent-bright" />
+              
               <div 
                 className={cn(
                   "absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110",
@@ -226,7 +226,7 @@ export default function DashboardPage() {
               <p className="font-mono text-[10px] text-ink/50 uppercase tracking-widest mb-1 relative z-10">
                 {kpi.label}
               </p>
-              <p className={cn("font-semibold tracking-tight text-2xl relative z-10", valueColorClass[kpi.accent])}>
+              <p className={cn("font-heading font-bold tracking-tight text-2xl relative z-10", valueColorClass[kpi.accent])}>
                 {kpi.value}
               </p>
             </div>
@@ -238,12 +238,12 @@ export default function DashboardPage() {
       {/* ── Activity + Tickets Side by Side ─────────────────── */}
       <RevealSection>
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="bg-panel rounded-2xl p-4 sm:p-6 border border-ink/5">
+        <div className="bg-panel/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-ink/[0.08] shadow-xs">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
               <LayoutDashboard className="w-4 h-4 text-ink/40" />
             </div>
-            <h3 className="font-semibold tracking-tight text-lg text-ink">
+            <h3 className="font-heading font-semibold tracking-tight text-lg text-ink">
               Recent Activity
             </h3>
           </div>
@@ -279,12 +279,12 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-panel rounded-2xl p-4 sm:p-6 border border-ink/5">
+        <div className="bg-panel/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-ink/[0.08] shadow-xs">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
               <AlertTriangle className="w-4 h-4 text-ink/40" />
             </div>
-            <h3 className="font-semibold tracking-tight text-lg text-ink">
+            <h3 className="font-heading font-semibold tracking-tight text-lg text-ink">
               Recent Tickets
             </h3>
           </div>
@@ -327,16 +327,16 @@ export default function DashboardPage() {
       </div>
       </RevealSection>
 
-      {/* ── Regional Hotspots ⭐ NEW ──────────────────────── */}
+      {/* ── Regional Hotspots ──────────────────────── */}
       {hotspots.length > 0 && (
         <RevealSection>
-        <div className="bg-panel rounded-2xl p-4 sm:p-6 border border-ink/5">
+        <div className="bg-panel/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-ink/[0.08] shadow-xs">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-9 h-9 rounded-xl bg-red/10 flex items-center justify-center">
               <MapPin className="w-4 h-4 text-red" />
             </div>
             <div>
-              <h3 className="font-semibold tracking-tight text-lg text-ink">
+              <h3 className="font-heading font-semibold tracking-tight text-lg text-ink">
                 Regional Hotspots
               </h3>
               <p className="font-mono text-xs text-muted">Top locations by incident count</p>

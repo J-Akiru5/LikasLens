@@ -232,7 +232,7 @@ export default function UsersPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-semibold tracking-tight text-3xl sm:text-4xl md:text-4xl sm:text-5xl text-ink">
+          <h1 className="font-heading font-bold tracking-tight text-3xl sm:text-4xl text-ink">
             Users
           </h1>
           <p className="font-mono text-base text-muted mt-1">
@@ -262,7 +262,7 @@ export default function UsersPage() {
               setSearch(e.target.value);
               setPage(0);
             }}
-            className="w-full pl-9 pr-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 bg-page border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
           />
         </div>
         <Dropdown
