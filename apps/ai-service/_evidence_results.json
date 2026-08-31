@@ -1,0 +1,219 @@
+{
+  "timestamp": "2026-08-31T16:41:31.993364+00:00",
+  "total_tests": 18,
+  "passed": 11,
+  "failed": 7,
+  "chat_latency": {
+    "count": 5,
+    "mean_ms": 839.6,
+    "median_ms": 724.8,
+    "min_ms": 687.1,
+    "max_ms": 1348.4
+  },
+  "results": [
+    {
+      "name": "health",
+      "url": "https://likaslens-ai-service.onrender.com/health",
+      "method": "GET",
+      "status": 502,
+      "latency_ms": 507.4,
+      "body": {
+        "_raw": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>502</title>\n    <style>@font-face {\n  font-family: \"Roobert\";\n  font-weight: 500;\n  font-style: normal;\n  font-stretch: normal;\n  src: url(\"data:font/woff2;base64,d09GMk9UVE8AAKewAAwAAAABa6QAAKdfAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAADYKmehqCHhuC4UocpRQGYACLBgE2AiQDkygEBgWFRwcgW8pqkQKZcr0u0nk2H+gc25rBL5CqkDOqYXNqo87dNmL1mgByHi4yIGwcgLFJz2f/////f/pSkaHK"
+      },
+      "pass": false
+    },
+    {
+      "name": "root",
+      "url": "https://likaslens-ai-service.onrender.com/",
+      "method": "GET",
+      "status": 502,
+      "latency_ms": 335.4,
+      "body": {
+        "_raw": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>502</title>\n    <style>@font-face {\n  font-family: \"Roobert\";\n  font-weight: 500;\n  font-style: normal;\n  font-stretch: normal;\n  src: url(\"data:font/woff2;base64,d09GMk9UVE8AAKewAAwAAAABa6QAAKdfAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAADYKmehqCHhuC4UocpRQGYACLBgE2AiQDkygEBgWFRwcgW8pqkQKZcr0u0nk2H+gc25rBL5CqkDOqYXNqo87dNmL1mgByHi4yIGwcgLFJz2f/////f/pSkaHK"
+      },
+      "pass": false
+    },
+    {
+      "name": "health/config",
+      "url": "https://likaslens-ai-service.onrender.com/health/config",
+      "method": "GET",
+      "status": 502,
+      "latency_ms": 339.7,
+      "body": {
+        "_raw": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>502</title>\n    <style>@font-face {\n  font-family: \"Roobert\";\n  font-weight: 500;\n  font-style: normal;\n  font-stretch: normal;\n  src: url(\"data:font/woff2;base64,d09GMk9UVE8AAKewAAwAAAABa6QAAKdfAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAADYKmehqCHhuC4UocpRQGYACLBgE2AiQDkygEBgWFRwcgW8pqkQKZcr0u0nk2H+gc25rBL5CqkDOqYXNqo87dNmL1mgByHi4yIGwcgLFJz2f/////f/pSkaHK"
+      },
+      "pass": false
+    },
+    {
+      "name": "health/models",
+      "url": "https://likaslens-ai-service.onrender.com/health/models",
+      "method": "GET",
+      "status": 502,
+      "latency_ms": 255.7,
+      "body": {
+        "_raw": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>502</title>\n    <style>@font-face {\n  font-family: \"Roobert\";\n  font-weight: 500;\n  font-style: normal;\n  font-stretch: normal;\n  src: url(\"data:font/woff2;base64,d09GMk9UVE8AAKewAAwAAAABa6QAAKdfAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAADYKmehqCHhuC4UocpRQGYACLBgE2AiQDkygEBgWFRwcgW8pqkQKZcr0u0nk2H+gc25rBL5CqkDOqYXNqo87dNmL1mgByHi4yIGwcgLFJz2f/////f/pSkaHK"
+      },
+      "pass": false
+    },
+    {
+      "name": "graph/topology",
+      "url": "https://likaslens-ai-service.onrender.com/graph/topology",
+      "method": "GET",
+      "status": 502,
+      "latency_ms": 364.1,
+      "body": {
+        "_raw": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>502</title>\n    <style>@font-face {\n  font-family: \"Roobert\";\n  font-weight: 500;\n  font-style: normal;\n  font-stretch: normal;\n  src: url(\"data:font/woff2;base64,d09GMk9UVE8AAKewAAwAAAABa6QAAKdfAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAADYKmehqCHhuC4UocpRQGYACLBgE2AiQDkygEBgWFRwcgW8pqkQKZcr0u0nk2H+gc25rBL5CqkDOqYXNqo87dNmL1mgByHi4yIGwcgLFJz2f/////f/pSkaHK"
+      },
+      "pass": false
+    },
+    {
+      "name": "routing/status",
+      "url": "https://likaslens-ai-service.onrender.com/routing/status",
+      "method": "GET",
+      "status": 502,
+      "latency_ms": 322.8,
+      "body": {
+        "_raw": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>502</title>\n    <style>@font-face {\n  font-family: \"Roobert\";\n  font-weight: 500;\n  font-style: normal;\n  font-stretch: normal;\n  src: url(\"data:font/woff2;base64,d09GMk9UVE8AAKewAAwAAAABa6QAAKdfAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAADYKmehqCHhuC4UocpRQGYACLBgE2AiQDkygEBgWFRwcgW8pqkQKZcr0u0nk2H+gc25rBL5CqkDOqYXNqo87dNmL1mgByHi4yIGwcgLFJz2f/////f/pSkaHK"
+      },
+      "pass": false
+    },
+    {
+      "name": "routing/stats",
+      "url": "https://likaslens-ai-service.onrender.com/routing/stats",
+      "method": "GET",
+      "status": 502,
+      "latency_ms": 274.7,
+      "body": {
+        "_raw": "<!DOCTYPE html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n    <title>502</title>\n    <style>@font-face {\n  font-family: \"Roobert\";\n  font-weight: 500;\n  font-style: normal;\n  font-stretch: normal;\n  src: url(\"data:font/woff2;base64,d09GMk9UVE8AAKewAAwAAAABa6QAAKdfAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAADYKmehqCHhuC4UocpRQGYACLBgE2AiQDkygEBgWFRwcgW8pqkQKZcr0u0nk2H+gc25rBL5CqkDOqYXNqo87dNmL1mgByHi4yIGwcgLFJz2f/////f/pSkaHK"
+      },
+      "pass": false
+    },
+    {
+      "name": "chat (via proxy)",
+      "url": "https://likaslens.syntaxure.dev/api/v1/ai/chat",
+      "method": "POST",
+      "status": 200,
+      "latency_ms": 2019.8,
+      "body": {
+        "reply": "Under **Republic Act 9003 (Ecological Solid Waste Management Act of 2000)**:\n\n\u2022 **Prohibited Acts**: Open dumping, littering in public spaces, and open burning (siga) of solid waste.\n\u2022 **Penalties**: Fines ranging from \u20b1300 up to \u20b11,000,000, community service (1\u201315 days), or imprisonment depending on severity.\n\u2022 **Jurisdiction**: Local Government Units (Barangay & City/Municipal CENRO) in coordination with DENR-EMB.\n\nYou can easily document and file an evidentiary report through LikasLens to notify authorities.",
+        "success": true
+      },
+      "pass": true
+    },
+    {
+      "name": "triage validation (no image)",
+      "url": "https://likaslens.syntaxure.dev/api/v1/ai/reports/triage",
+      "method": "POST",
+      "status": 400,
+      "latency_ms": 434.9,
+      "body": {
+        "error": "base64Image is required"
+      },
+      "pass": true
+    },
+    {
+      "name": "ticket status (no auth)",
+      "url": "https://likaslens.syntaxure.dev/api/v1/ai/tickets/00000000-0000-0000-0000-000000000000/status",
+      "method": "PATCH",
+      "status": 200,
+      "latency_ms": 1372.2,
+      "body": {
+        "_raw": "<!DOCTYPE html><html data-dpl-id=\"dpl_9wqegqKsmxc2sKnc7TmDVBq6xYLc\" lang=\"en\" class=\"bricolage_grotesque_d5033cc-module__Z84rAq__variable public_sans_5851226a-module__1RuOAa__variable jetbrains_mono_daafd3c0-module__eL7kSa__variable h-full antialiased\" data-theme=\"civic\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/3ek8b1kfdrea2.css?dpl=dpl_9wqegqKsmxc2sKnc7"
+      },
+      "pass": true
+    },
+    {
+      "name": "frontend",
+      "url": "https://likaslens.syntaxure.dev/en/dashboard",
+      "method": "GET",
+      "status": 200,
+      "latency_ms": 1182.0,
+      "body": {
+        "_raw": "<!DOCTYPE html><html data-dpl-id=\"dpl_9wqegqKsmxc2sKnc7TmDVBq6xYLc\" lang=\"en\" class=\"bricolage_grotesque_d5033cc-module__Z84rAq__variable public_sans_5851226a-module__1RuOAa__variable jetbrains_mono_daafd3c0-module__eL7kSa__variable h-full antialiased\" data-theme=\"civic\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/3ek8b1kfdrea2.css?dpl=dpl_9wqegqKsmxc2sKnc7"
+      },
+      "pass": true
+    },
+    {
+      "name": "admin portal",
+      "url": "https://likasadmin.syntaxure.dev/en/dashboard",
+      "method": "GET",
+      "status": 200,
+      "latency_ms": 2098.9,
+      "body": {
+        "_raw": "<!DOCTYPE html><html data-dpl-id=\"dpl_2c1AiXkcrKDhRk43QaByM53ToZsj\" lang=\"en\" class=\"bricolage_grotesque_d5033cc-module__Z84rAq__variable public_sans_5851226a-module__1RuOAa__variable jetbrains_mono_daafd3c0-module__eL7kSa__variable h-full antialiased\" data-theme=\"civic\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"preload\" as=\"image\" imageSrcSet=\"/_next/image?url=%2Fimages%2Fadmin_auth_bg.webp&amp;w=384&amp;q=75&amp;dpl=dpl_2c1AiXk"
+      },
+      "pass": true
+    },
+    {
+      "name": "mobile PWA",
+      "url": "https://likaslensapp.syntaxure.dev/en/dashboard",
+      "method": "GET",
+      "status": 200,
+      "latency_ms": 2601.8,
+      "body": {
+        "_raw": "<!DOCTYPE html><html lang=\"en\" class=\"bricolage_grotesque_d5033cc-module__Z84rAq__variable public_sans_5851226a-module__1RuOAa__variable jetbrains_mono_daafd3c0-module__eL7kSa__variable h-full antialiased\" data-theme=\"civic\"><head><meta charSet=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/3m2iqz3cimelj.css\" data-precedence=\"next\"/><link rel=\"stylesheet\" href=\"/_next/static/chun"
+      },
+      "pass": true
+    },
+    {
+      "name": "chat benchmark 1",
+      "url": "https://likaslens.syntaxure.dev/api/v1/ai/chat",
+      "method": "POST",
+      "status": 200,
+      "latency_ms": 746.1,
+      "body": {
+        "reply": "Thank you for reaching out! I'm here to assist you with Philippine environmental statutes (RA 9003 Solid Waste, RA 9275 Clean Water, RA 8749 Clean Air, PD 705 Forestry), how to submit verified reports safely, or how reports are dispatched to DENR and local authorities. How may I assist you further?",
+        "success": true
+      },
+      "pass": true
+    },
+    {
+      "name": "chat benchmark 2",
+      "url": "https://likaslens.syntaxure.dev/api/v1/ai/chat",
+      "method": "POST",
+      "status": 200,
+      "latency_ms": 687.1,
+      "body": {
+        "reply": "Under **Presidential Decree 705 (Revised Forestry Code of the Philippines)**:\n\n\u2022 **Prohibited Acts**: Cutting, gathering, or possessing timber and forest products without an authorized DENR permit.\n\u2022 **Penalties**: Penalized as qualified theft under the Revised Penal Code, with mandatory confiscation of timber, tools, and conveyances.\n\u2022 **Jurisdiction**: DENR Forest Management Bureau (FMB), PENRO/CENRO, and Law Enforcement (PNP).",
+        "success": true
+      },
+      "pass": true
+    },
+    {
+      "name": "chat benchmark 3",
+      "url": "https://likaslens.syntaxure.dev/api/v1/ai/chat",
+      "method": "POST",
+      "status": 200,
+      "latency_ms": 691.7,
+      "body": {
+        "reply": "Under **Republic Act 9275 (Philippine Clean Water Act of 2004)**:\n\n\u2022 **Prohibited Acts**: Discharging untreated industrial or domestic wastewater into rivers, lakes, aquifers, or coastal waters.\n\u2022 **Penalties**: Fines of \u20b110,000 to \u20b1200,000 per day of violation until rectified, plus potential cease-and-desist orders.\n\u2022 **Jurisdiction**: DENR Environmental Management Bureau (EMB), LLDA (within lake basins), and Philippine Coast Guard (PCG for maritime waters).",
+        "success": true
+      },
+      "pass": true
+    },
+    {
+      "name": "chat benchmark 4",
+      "url": "https://likaslens.syntaxure.dev/api/v1/ai/chat",
+      "method": "POST",
+      "status": 200,
+      "latency_ms": 724.8,
+      "body": {
+        "reply": "Under **Republic Act 9003 (Ecological Solid Waste Management Act of 2000)**:\n\n\u2022 **Prohibited Acts**: Open dumping, littering in public spaces, and open burning (siga) of solid waste.\n\u2022 **Penalties**: Fines ranging from \u20b1300 up to \u20b11,000,000, community service (1\u201315 days), or imprisonment depending on severity.\n\u2022 **Jurisdiction**: Local Government Units (Barangay & City/Municipal CENRO) in coordination with DENR-EMB.\n\nYou can easily document and file an evidentiary report through LikasLens to notify authorities.",
+        "success": true
+      },
+      "pass": true
+    },
+    {
+      "name": "chat benchmark 5",
+      "url": "https://likaslens.syntaxure.dev/api/v1/ai/chat",
+      "method": "POST",
+      "status": 200,
+      "latency_ms": 1348.4,
+      "body": {
+        "reply": "Under **Republic Act 8749 (Philippine Clean Air Act of 1999)**:\n\n\u2022 **Prohibited Acts**: Excessive emissions from industrial smokestacks, vehicle smoke-belching, and incineration of hazardous waste.\n\u2022 **Penalties**: Fines, suspension of vehicle registration or business operating permits, and mandatory compliance action.\n\u2022 **Jurisdiction**: DENR Environmental Management Bureau (EMB), LTO (vehicular emission), and LGUs.",
+        "success": true
+      },
+      "pass": true
+    }
+  ]
+}
