@@ -165,7 +165,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
       value: String(stats?.total_reports ?? 0),
       trend: "flat" as const,
       delta: `${stats?.total_users ?? 0} Citizens`,
-      sparkline: [120, 145, 132, 158, 140, 165, stats?.total_reports ?? 60],
+      sparkline: [0, 0, 0, 0, 0, 0, stats?.total_reports ?? 0],
       category: "Platform Total",
       icon: Activity,
       accent: "muted" as const,

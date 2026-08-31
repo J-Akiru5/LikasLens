@@ -163,7 +163,7 @@ export default function DashboardPage() {
           description: t.description || `Reported at ${t.location || "field location"}`,
           time: timeAgo(t.created_at || new Date().toISOString()),
           timestamp: t.created_at || new Date().toISOString(),
-          type: t.priority === "critical" ? "Urgent" : t.priority === "high" ? "Important" : "Notice",
+          type: (t.priority === "critical" ? "Critical" : t.priority === "high" ? "Warning" : "Info") as "Critical" | "Warning" | "Info",
           location: t.location || "Metro Manila",
           status: t.status === "resolved" || t.status === "closed" ? "Resolved" : t.status === "monitoring" ? "Monitoring" : t.status === "investigating" ? "Under Investigation" : t.status === "pending_review" ? "Pending Review" : t.status === "verified" ? "Verified" : "Received",
           reporter: "Community Member",
@@ -229,7 +229,7 @@ export default function DashboardPage() {
       value: String(stats?.active_incidents ?? 0),
       trend: (stats?.active_incidents ?? 0) === 0 ? ("up" as const) : ("down" as const),
       delta: "+4%",
-      sparkline: [12, 8, 15, 6, 10, 9, stats?.active_incidents ?? 0],
+      sparkline: [0, 0, 0, 0, 0, 0, stats?.active_incidents ?? 0],
       category: "Ongoing",
       icon: TriangleAlert,
       accent: "amber" as const,
@@ -240,7 +240,7 @@ export default function DashboardPage() {
       value: String(stats?.resolved_today ?? 0),
       trend: "up" as const,
       delta: "+12%",
-      sparkline: [3, 7, 4, 9, 6, 8, stats?.resolved_today ?? 0],
+      sparkline: [0, 0, 0, 0, 0, 0, stats?.resolved_today ?? 0],
       category: "Resolved",
       icon: CheckCircle,
       accent: "green" as const,
@@ -248,10 +248,10 @@ export default function DashboardPage() {
     {
       id: "avg-response",
       label: "Avg Response",
-      value: `${stats?.avg_response_minutes ?? 14}m`,
+      value: `${stats?.avg_response_minutes ?? 0}m`,
       trend: "up" as const,
       delta: "Fast",
-      sparkline: [5.2, 4.8, 4.5, 4.1, 3.8, 3.5, stats?.avg_response_minutes ?? 14],
+      sparkline: [0, 0, 0, 0, 0, 0, stats?.avg_response_minutes ?? 0],
       category: "Response Time",
       icon: Clock,
       accent: "accent" as const,
@@ -261,8 +261,8 @@ export default function DashboardPage() {
       label: "Total Reports",
       value: String(stats?.total_reports ?? 0),
       trend: "flat" as const,
-      delta: `${stats?.total_users ?? 840} Citizens`,
-      sparkline: [120, 145, 132, 158, 140, 165, stats?.total_reports ?? 0],
+      delta: stats?.total_users ? `${stats.total_users} Citizens` : "Citizens",
+      sparkline: [0, 0, 0, 0, 0, 0, stats?.total_reports ?? 0],
       category: "All-Time",
       icon: Activity,
       accent: "muted" as const,
@@ -430,7 +430,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-3 divide-x divide-white/10 py-1">
             <HeroStat value={String(activeIncidents)} label="Ongoing" sublabel="Reports" accent="text-amber-300" />
             <HeroStat value={String(resolvedToday)} label="Resolved" sublabel="Today" accent="text-emerald-300" />
-            <HeroStat value={`${stats?.avg_response_minutes ?? 14}m`} label="Average" sublabel="Response" accent="text-sky-300" />
+            <HeroStat value={`${stats?.avg_response_minutes ?? 0}m`} label="Average" sublabel="Response" accent="text-sky-300" />
           </div>
         </div>
 
