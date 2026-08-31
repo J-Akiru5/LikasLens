@@ -38,7 +38,7 @@ export function LoginClient() {
   }
 
   return (
-    <main className="min-h-dvh flex flex-col lg:flex-row bg-[#0A0A0A] text-white selection:bg-accent/30 selection:text-current">
+    <main className="min-h-dvh flex flex-col lg:flex-row bg-hero-bg text-white selection:bg-accent-bright/30 selection:text-current">
       {/* Left Panel: Secure Command Center Visuals */}
       <div className="hidden lg:flex lg:w-[55%] relative bg-black items-center justify-center overflow-hidden">
         <Image
@@ -50,25 +50,25 @@ export function LoginClient() {
           priority
         />
         
-        {/* Animated HUD Elements */}
+        {/* Animated HUD Elements — aligned with frontend ec-grid */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_center,transparent_0%,rgb(0,0,0))]" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,150,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,150,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />
+          <div className="absolute inset-0 ec-grid" style={{ opacity: 0.03 }} />
         </div>
 
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-          className="relative z-10 w-full max-w-xl mx-12 p-10 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(0,255,150,0.05)]"
+          className="relative z-10 w-full max-w-xl mx-12 p-10 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_50px_rgba(46,230,200,0.05)]"
         >
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-black/60 border border-white/20 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(0,255,150,0.2)]">
-              <ShieldCheck className="w-6 h-6 text-accent" />
+            <div className="w-12 h-12 bg-black/60 border border-white/20 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(46,230,200,0.2)]">
+              <ShieldCheck className="w-6 h-6 text-accent-bright" />
             </div>
             <div>
               <h2 className="text-xl font-bold tracking-widest uppercase text-white/90">LikasLens</h2>
-              <p className="text-xs font-mono text-accent tracking-widest uppercase">Global Command Center</p>
+              <p className="text-xs font-mono text-accent-bright tracking-widest uppercase">Environmental Command Center</p>
             </div>
           </div>
           
@@ -84,7 +84,7 @@ export function LoginClient() {
       </div>
 
       {/* Right Panel: Secure Login Form */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-24 relative overflow-y-auto bg-[#0A0A0A]">
+      <div className="flex-1 flex flex-col justify-center items-center p-6 sm:p-12 lg:p-24 relative overflow-y-auto bg-hero-bg">
         <motion.div 
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -94,14 +94,14 @@ export function LoginClient() {
           {/* Logo for Mobile only */}
           <div className="flex lg:hidden justify-center mb-8">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10">
-              <ShieldCheck className="w-8 h-8 text-accent" />
+              <ShieldCheck className="w-8 h-8 text-accent-bright" />
             </div>
           </div>
 
           <div className="mb-10 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full mb-6">
-              <Lock className="w-3.5 h-3.5 text-accent" />
-              <span className="text-[10px] font-mono text-white/70 uppercase tracking-widest">Secure Gateway</span>
+            <div className="label-pill-dark inline-flex items-center gap-2 mb-6">
+              <Lock className="w-3.5 h-3.5" />
+              Secure Gateway
             </div>
             <h1 className="font-semibold tracking-tight text-3xl text-white mb-2">
               System Login
@@ -115,9 +115,9 @@ export function LoginClient() {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="mb-8 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-mono text-sm flex items-start gap-3 shadow-[0_0_20px_rgba(239,68,68,0.1)]"
+              className="mb-8 p-4 rounded-xl bg-red/10 border border-red/20 text-red font-mono text-sm flex items-start gap-3 shadow-[0_0_20px_rgba(153,27,27,0.1)]"
             >
-              <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5 text-red-500" />
+              <ShieldCheck className="w-5 h-5 shrink-0 mt-0.5 text-red" />
               <span>{error}</span>
             </motion.div>
           )}
@@ -133,7 +133,7 @@ export function LoginClient() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all placeholder:text-white/20 font-mono text-sm"
+                className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-accent-bright/50 focus:border-accent-bright/50 transition-all placeholder:text-white/20 font-mono text-sm"
                 placeholder="analyst@likaslens.gov"
               />
             </div>
@@ -148,7 +148,7 @@ export function LoginClient() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all placeholder:text-white/20 font-mono text-sm pr-12 tracking-widest"
+                  className="w-full px-4 py-3.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-accent-bright/50 focus:border-accent-bright/50 transition-all placeholder:text-white/20 font-mono text-sm pr-12 tracking-widest"
                   placeholder="••••••••••••"
                 />
                 <button
@@ -168,7 +168,7 @@ export function LoginClient() {
                 size="xl"
                 type="submit"
                 loading={loading}
-                className="w-full shadow-[0_0_20px_rgba(0,255,150,0.1)] hover:shadow-[0_0_30px_rgba(0,255,150,0.2)]"
+                className="w-full"
               >
                 {loading ? "Authenticating..." : (
                   <>

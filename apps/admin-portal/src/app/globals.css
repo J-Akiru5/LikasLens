@@ -2,6 +2,21 @@
 @source "../../node_modules/@likaslens/shared/src/**/*.{ts,tsx}";
 @import "@likaslens/shared/src/styles/design-tokens.css";
 
+/* Theme Visibility Helpers (consistent with frontend) */
+[data-theme="ghost"] .light-mode-only { display: none !important; }
+[data-theme="ghost"] .ghost-mode-only { display: block !important; }
+html:not([data-theme="ghost"]) .ghost-mode-only, body:not([data-theme="ghost"]) .ghost-mode-only { display: none !important; }
+html:not([data-theme="ghost"]) .light-mode-only, body:not([data-theme="ghost"]) .light-mode-only { display: block !important; }
+
+/* ── Distinctive typography system (aligned with public frontend) ───────────
+   Bricolage Grotesque for display, Public Sans for body, JetBrains Mono for data. */
+:root {
+  --font-body: var(--font-body), "Public Sans", system-ui, -apple-system, sans-serif;
+  --font-data: var(--font-data), "JetBrains Mono", ui-monospace, monospace;
+  --font-heading: var(--font-display), "Bricolage Grotesque", system-ui, sans-serif;
+  --font-sans: var(--font-body), "Public Sans", system-ui, sans-serif;
+}
+
 /* ── Focus visible (WCAG 2.4.7) ─────────────────────────────────────────── */
 :focus-visible {
   outline: 2px solid var(--accent);
@@ -33,4 +48,24 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--muted);
+}
+
+/* ── Admin landing/login: aligned hero treatment ─────────────────────────── */
+.admin-hero {
+  background-color: var(--hero-bg);
+  background-image:
+    radial-gradient(ellipse 70% 60% at 10% 10%, rgba(46,230,200,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 70% at 90% 20%, rgba(13,40,22,0.7) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 90%, rgba(46,230,200,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 60% at 0% 80%, rgba(45,106,79,0.35) 0%, transparent 55%);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+[data-theme="ghost"] .admin-hero {
+  background-image:
+    radial-gradient(ellipse 70% 60% at 10% 10%, rgba(46,230,200,0.15) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 70% at 90% 20%, rgba(12,22,40,0.6) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 50% at 50% 90%, rgba(46,230,200,0.1) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 60% at 0% 80%, rgba(46,230,200,0.08) 0%, transparent 60%);
 }

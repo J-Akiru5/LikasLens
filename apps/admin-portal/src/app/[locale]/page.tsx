@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Leaf,
   ShieldCheck,
   Map,
   Bot,
@@ -12,7 +11,6 @@ import {
   Activity,
   Eye,
   Fingerprint,
-  BarChart3,
   Scale,
   Zap,
   Globe,
@@ -73,49 +71,31 @@ const STATS = [
 
 export default function AdminLandingPage() {
   return (
-    <main 
-      className="relative min-h-screen overflow-hidden selection:bg-[#2ee6c8]/30 selection:text-white font-body"
-      style={{
-        backgroundColor: "#1a3828",
-        backgroundImage: `
-          radial-gradient(ellipse 70% 60% at 10% 10%, rgba(46,230,200,0.18) 0%, transparent 55%),
-          radial-gradient(ellipse 80% 70% at 90% 20%, rgba(13,40,22,0.7) 0%, transparent 60%),
-          radial-gradient(ellipse 50% 50% at 50% 90%, rgba(46,230,200,0.08) 0%, transparent 50%),
-          radial-gradient(ellipse 60% 60% at 0% 80%, rgba(45,106,79,0.35) 0%, transparent 55%)
-        `,
-      }}
-    >
-      {/* Grid overlay */}
+    <main className="relative min-h-screen overflow-hidden selection:bg-accent-bright/30 selection:text-white font-body admin-hero">
+      {/* Grid overlay — consistent with frontend ec-grid treatment */}
       <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          opacity: 0.025,
-          pointerEvents: "none",
-          backgroundImage:
-            "linear-gradient(rgba(240,237,232,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(240,237,232,0.4) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
+        className="absolute inset-0 pointer-events-none ec-grid"
+        style={{ opacity: 0.025 }}
       />
 
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 lg:px-10 py-5 flex items-center justify-between transition-all">
         <div className="flex items-center gap-2">
           <img src="/images/likas-lens-logo.webp" alt="LikasLens Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
-          <span className="font-heading tracking-[0.2em] text-xl text-[#f0ede8] flex items-center mt-0.5">
+          <span className="font-heading tracking-[0.2em] text-xl text-hero-ink flex items-center mt-0.5">
             <span className="font-medium">LIK</span>
-            <span className="font-semibold mx-[1px]">Λ</span>
+            <span className="font-semibold mx-[1px]">&Lambda;</span>
             <span className="font-medium mr-1">S</span>
             <span className="font-bold uppercase">LENS</span>
           </span>
-          <span className="font-mono text-[10px] text-[rgba(240,237,232,0.5)] uppercase tracking-widest ml-2 border border-[rgba(240,237,232,0.2)] rounded px-2 py-0.5">
+          <span className="font-mono text-[10px] text-hero-muted uppercase tracking-widest ml-2 border border-hero-border rounded px-2 py-0.5">
             Admin
           </span>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(240,237,232,0.1)] text-[#f0ede8] font-bold text-sm uppercase tracking-widest hover:bg-[rgba(255,255,255,0.1)] transition-all"
+            className="btn-secondary-dark"
           >
             Sign In <ArrowRight className="w-4 h-4" />
           </Link>
@@ -127,38 +107,29 @@ export default function AdminLandingPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[rgba(46,230,200,0.1)] border border-[rgba(46,230,200,0.2)] backdrop-blur-sm mb-8"
+          className="label-pill-dark mb-8"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#2ee6c8] animate-pulse" />
-          <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#2ee6c8]">
-            Authorized Personnel Only
-          </span>
+          <span className="w-1.5 h-1.5 rounded-full bg-accent-bright animate-pulse" />
+          Authorized Personnel Only
         </motion.div>
 
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-5xl md:text-7xl lg:text-8xl font-heading font-black tracking-tighter leading-[0.85] mb-6 text-[#f0ede8]"
+          className="text-5xl md:text-7xl lg:text-8xl font-heading font-black tracking-tighter leading-[0.85] mb-6 text-hero-ink"
         >
           <span>Manage.</span>{" "}
           <span>Triage.</span>
           <br />
-          <span style={{
-            background: "linear-gradient(135deg, #2ee6c8 0%, #5aefb0 50%, #a8f5d0 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}>
-            Resolve.
-          </span>
+          <span className="text-accent-bright">Resolve.</span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-lg md:text-xl max-w-2xl font-medium mb-12 text-[rgba(240,237,232,0.55)] leading-relaxed"
+          className="text-lg md:text-xl max-w-2xl font-medium mb-12 text-hero-muted leading-relaxed"
         >
           The central command center for environmental analysts, NGO partners, and
           government agencies to process civic reports and track environmental issues
@@ -171,57 +142,15 @@ export default function AdminLandingPage() {
           transition={{ delay: 0.3 }}
           className="flex flex-col sm:flex-row gap-4"
         >
-          <Link
-            href="/login"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "16px 32px", borderRadius: 12,
-              background: "#2ee6c8", color: "#0d1a12",
-              fontWeight: 700, fontSize: 16, letterSpacing: "-0.01em",
-              textDecoration: "none", border: "none",
-              boxShadow: "0 0 0 0 rgba(46,230,200,0)",
-              transition: "all 0.25s ease",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px -8px rgba(46,230,200,0.5)";
-              (e.currentTarget as HTMLElement).style.background = "#40f0d4";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(46,230,200,0)";
-              (e.currentTarget as HTMLElement).style.background = "#2ee6c8";
-            }}
-          >
+          <Link href="/login" className="btn-primary-dark">
             Access Dashboard <ArrowRight className="w-5 h-5" />
           </Link>
-          <Link
-            href="https://likaslens.syntaxure.dev"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "16px 32px", borderRadius: 12,
-              background: "transparent", color: "#f0ede8",
-              fontWeight: 600, fontSize: 16, letterSpacing: "-0.01em",
-              textDecoration: "none",
-              border: "1px solid rgba(240,237,232,0.12)",
-              transition: "all 0.25s ease",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(46,230,200,0.4)";
-              (e.currentTarget as HTMLElement).style.color = "#2ee6c8";
-              (e.currentTarget as HTMLElement).style.background = "rgba(46,230,200,0.05)";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(240,237,232,0.12)";
-              (e.currentTarget as HTMLElement).style.color = "#f0ede8";
-              (e.currentTarget as HTMLElement).style.background = "transparent";
-            }}
-          >
+          <Link href="https://likaslens.syntaxure.dev" className="btn-secondary-dark">
             Back to LikasLens
           </Link>
         </motion.div>
 
-        {/* Stats strip */}
+        {/* Stats strip — using shared hero-card + stat-chip patterns */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -231,10 +160,10 @@ export default function AdminLandingPage() {
           {STATS.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.label} className="flex flex-col items-center gap-2 p-6 rounded-2xl bg-[rgba(255,255,255,0.03)] border border-[rgba(240,237,232,0.05)] backdrop-blur-md">
-                <Icon className="w-5 h-5 text-[#2ee6c8]/60" />
-                <span className="font-heading text-3xl font-black text-[#f0ede8]">{stat.value}</span>
-                <span className="font-mono text-[10px] text-[rgba(240,237,232,0.5)] uppercase tracking-widest">{stat.label}</span>
+              <div key={stat.label} className="hero-card flex flex-col items-center gap-2 p-6">
+                <Icon className="w-5 h-5 text-accent-bright/60" />
+                <span className="font-heading text-3xl font-black text-hero-ink">{stat.value}</span>
+                <span className="font-mono text-[10px] text-hero-muted uppercase tracking-widest">{stat.label}</span>
               </div>
             );
           })}
@@ -250,15 +179,15 @@ export default function AdminLandingPage() {
           variants={staggerContainer}
           className="text-center mb-16"
         >
-          <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[rgba(46,230,200,0.1)] border border-[rgba(46,230,200,0.2)] mb-6">
-            <Fingerprint className="w-3.5 h-3.5 text-[#2ee6c8]" />
-            <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#2ee6c8]">Platform Capabilities</span>
+          <motion.div variants={fadeUp} className="label-pill-dark inline-flex items-center gap-2 mb-6">
+            <Fingerprint className="w-3.5 h-3.5 text-accent-bright" />
+            Platform Capabilities
           </motion.div>
-          <motion.h2 variants={fadeUp} className="font-heading text-4xl md:text-5xl font-black tracking-tight uppercase mb-4 text-[#f0ede8]">
+          <motion.h2 variants={fadeUp} className="font-heading text-4xl md:text-5xl font-black tracking-tight uppercase mb-4 text-hero-ink">
             Built for{" "}
-            <span className="text-[#2ee6c8]">Action</span>
+            <span className="text-accent-bright">Action</span>
           </motion.h2>
-          <motion.p variants={fadeUp} className="text-lg text-[rgba(240,237,232,0.55)] max-w-xl mx-auto leading-relaxed">
+          <motion.p variants={fadeUp} className="text-lg text-hero-muted max-w-xl mx-auto leading-relaxed">
             Everything you need to triage, manage, and resolve environmental reports
             in one unified dashboard.
           </motion.p>
@@ -272,23 +201,23 @@ export default function AdminLandingPage() {
           variants={staggerContainer}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {FEATURES.map((feature, i) => {
+          {FEATURES.map((feature) => {
             const Icon = feature.icon;
             return (
               <motion.div
                 key={feature.title}
                 variants={fadeUp}
                 whileHover={{ y: -6, boxShadow: "0 20px 48px -16px rgba(46,230,200,0.15)" }}
-                className="group relative p-8 rounded-2xl bg-[rgba(255,255,255,0.03)] border border-[rgba(240,237,232,0.05)] backdrop-blur-sm transition-all duration-300"
+                className="feature-card group relative p-8 rounded-2xl bg-hero-panel border border-hero-border transition-all duration-300"
               >
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#2ee6c8] to-transparent scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
-                <div className={`w-14 h-14 rounded-xl border border-[rgba(46,230,200,0.2)] flex items-center justify-center mb-6 bg-[rgba(46,230,200,0.05)] group-hover:scale-110 group-hover:bg-[rgba(46,230,200,0.1)] transition-all`}>
-                  <Icon className="w-6 h-6 text-[#2ee6c8]" />
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-accent-bright to-transparent scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
+                <div className="w-14 h-14 rounded-xl border border-accent-bright/20 flex items-center justify-center mb-6 bg-accent-bright/5 group-hover:scale-110 group-hover:bg-accent-bright/10 transition-all">
+                  <Icon className="w-6 h-6 text-accent-bright" />
                 </div>
-                <h3 className="font-heading text-xl font-black uppercase tracking-tight mb-3 text-[#f0ede8]">
+                <h3 className="font-heading text-xl font-black uppercase tracking-tight mb-3 text-hero-ink">
                   {feature.title}
                 </h3>
-                <p className="text-[rgba(240,237,232,0.55)] leading-relaxed text-sm">
+                <p className="text-hero-muted leading-relaxed text-sm">
                   {feature.description}
                 </p>
               </motion.div>
@@ -303,47 +232,22 @@ export default function AdminLandingPage() {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="max-w-4xl mx-auto text-center p-12 md:p-16 rounded-3xl relative overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg, rgba(46,230,200,0.1) 0%, rgba(13,40,22,0.8) 100%)",
-            border: "1px solid rgba(46,230,200,0.2)",
-          }}
+          className="max-w-4xl mx-auto text-center p-12 md:p-16 rounded-3xl hero-card relative overflow-hidden"
         >
           {/* Decorative circles */}
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-[#2ee6c8]/10 -translate-y-1/2 translate-x-1/2 blur-2xl" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-[#2ee6c8]/5 translate-y-1/2 -translate-x-1/2 blur-2xl" />
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-accent-bright/10 -translate-y-1/2 translate-x-1/2 blur-2xl" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-accent-bright/5 translate-y-1/2 -translate-x-1/2 blur-2xl" />
 
           <div className="relative z-10">
-            <h2 className="font-heading text-4xl md:text-5xl font-black tracking-tight uppercase mb-4 text-[#f0ede8]">
+            <h2 className="font-heading text-4xl md:text-5xl font-black tracking-tight uppercase mb-4 text-hero-ink">
               Ready to Make a{" "}
-              <span className="text-[#2ee6c8]">Difference</span>?
+              <span className="text-accent-bright">Difference</span>?
             </h2>
-            <p className="text-[rgba(240,237,232,0.6)] text-lg mb-10 max-w-xl mx-auto">
+            <p className="text-hero-muted text-lg mb-10 max-w-xl mx-auto">
               Join the team protecting the Philippines&apos; environment. Every report matters,
               every resolution counts.
             </p>
-            <Link
-              href="/login"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 8,
-                padding: "16px 32px", borderRadius: 12,
-                background: "#2ee6c8", color: "#0d1a12",
-                fontWeight: 700, fontSize: 16, letterSpacing: "-0.01em",
-                textDecoration: "none", border: "none",
-                boxShadow: "0 0 0 0 rgba(46,230,200,0)",
-                transition: "all 0.25s ease",
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 30px -8px rgba(46,230,200,0.5)";
-                (e.currentTarget as HTMLElement).style.background = "#40f0d4";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 0 rgba(46,230,200,0)";
-                (e.currentTarget as HTMLElement).style.background = "#2ee6c8";
-              }}
-            >
+            <Link href="/login" className="btn-primary-dark">
               Sign In to Dashboard <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
@@ -351,15 +255,15 @@ export default function AdminLandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-[rgba(240,237,232,0.05)] py-8 px-6">
+      <footer className="relative z-10 border-t border-hero-border py-8 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-[rgba(240,237,232,0.5)]">
+          <div className="flex items-center gap-2 text-hero-muted">
             <img src="/images/likas-lens-logo.webp" alt="LikasLens Logo" className="w-6 h-6 object-contain drop-shadow-sm" />
             <span className="font-mono text-xs uppercase tracking-widest">
               LikasLens Admin Platform
             </span>
           </div>
-          <span className="font-mono text-[10px] text-[rgba(240,237,232,0.3)] uppercase tracking-widest">
+          <span className="font-mono text-[10px] text-hero-muted/60 uppercase tracking-widest">
             Protecting the environment together
           </span>
         </div>
