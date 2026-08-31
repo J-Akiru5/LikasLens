@@ -30,15 +30,21 @@ async def sync_user(body: SyncRequest, db: AsyncSession = Depends(get_db)):
     Called by the frontend after Supabase sign-up/sign-in to sync the user record
     into our DB. Idempotent — safe to call on every login.
     """
+    # Cast to UUID — the DB column is UUID, not varchar
+    try:
+        auth_uuid = uuid.UUID(body.supabase_auth_user_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid supabase_auth_user_id format")
+
     result = await db.execute(
-        select(User).where(User.supabase_auth_user_id == body.supabase_auth_user_id)
+        select(User).where(User.supabase_auth_user_id == auth_uuid)
     )
     user = result.scalar_one_or_none()
 
     if not user:
         user = User(
             id=uuid.uuid4(),
-            supabase_auth_user_id=body.supabase_auth_user_id,
+            supabase_auth_user_id=auth_uuid,
             name=body.name or "Citizen",
             email=body.email,
             role=body.role,

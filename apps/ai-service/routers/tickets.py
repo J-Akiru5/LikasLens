@@ -185,13 +185,26 @@ async def update_status(
     if body.status in ("resolved", "closed"):
         ticket.resolved_at = datetime.now(timezone.utc)
 
-    # Timeline entry
-    actor_id_str = token.get("sub")
+    # Timeline entry — look up the app user by Supabase auth UUID
+    actor_id = None
+    auth_sub = token.get("sub")
+    if auth_sub:
+        try:
+            auth_uuid = uuid.UUID(auth_sub)
+            user_result = await db.execute(
+                select(User).where(User.supabase_auth_user_id == auth_uuid)
+            )
+            app_user = user_result.scalar_one_or_none()
+            if app_user:
+                actor_id = app_user.id
+        except (ValueError, AttributeError):
+            pass  # malformed UUID or missing — leave actor_id as None
+
     timeline_entry = TicketTimeline(
         id=uuid.uuid4(),
         ticket_id=uuid.UUID(ticket_id),
         actor_type="lgu",
-        actor_id=uuid.UUID(actor_id_str) if actor_id_str else None,
+        actor_id=actor_id,
         from_status=old_status,
         to_status=body.status,
         note=body.notes,
