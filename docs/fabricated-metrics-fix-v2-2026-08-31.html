@@ -428,23 +428,47 @@
 <h3>Report Pages (Sites 16-17)</h3>
 <p><strong>Approach (a):</strong> When GPS is unavailable, coordinates are now <code>null</code> instead of fabricated Manila coordinates. The backend (<code>apps/ai-service/routers/reports.py</code>) already accepts <code>latitude: float | None = None</code> and <code>longitude: float | None = None</code>. Ghost mode's <code>fuzz_location</code> also guards with <code>if latitude is not None</code>. No backend fix needed.</p>
 
-<hr class="section-divider">
+<hr class="section-divider"><h2>4. Independent Verification (Fresh Clone)</h2>
 
-<h2>4. Step 4 Re-Grep Output</h2>
+<p>Per the Verified-Report Protocol, this fix was verified from a fresh, throwaway clone — not from the working tree where the fix was made. The following evidence is from that independent check.</p>
 
-<p>After all edits, the exhaustive grep was re-run:</p>
+<h3>4a. Commit Confirmed Live on Remote</h3>
+<pre>$ rm -rf /tmp/verify-clean && git clone --depth 1 https://github.com/J-Akiru5/LikasLens.git /tmp/verify-clean
+$ cd /tmp/verify-clean && git fetch origin staging && git checkout -b staging FETCH_HEAD
+$ git log --oneline -3
+2ede1ed fix: eliminate all fabricated dashboard metrics and Manila coordinate fallbacks (v2 sweep)
+29f1475 Merge branch 'development' of https://github.com/J-Akiru5/LikasLens into development
+2c5eb92 fix(security): remediate all production vulnerabilities</pre>
 
-<pre>git grep -nE '(\|\||\?\?)\s*[0-9]{2,6}\b' -- 'apps/**/*.ts' 'apps/**/*.tsx'</pre>
+<h3>4b. Exhaustive Grep from Fresh Clone</h3>
+<pre>$ git grep -nE '(\|\||\?\?)\s*[0-9]{2,6}\b' -- 'apps/**/*.ts' 'apps/**/*.tsx'
+apps/admin-portal/src/app/[locale]/(dashboard)/predictions/page.tsx:199:          {meta?.days_back ?? 90} days
+apps/frontend/src/components/maps/geo-tag-map.tsx:27:    longitude: initialLng ?? 121.774,
+apps/frontend/src/components/maps/geo-tag-map.tsx:28:    latitude: initialLat ?? 12.8797,
+apps/mobile-pwa/src/app/[locale]/(app)/layout.tsx:86:    const clickY = e?.clientY ?? 40;
+apps/mobile-pwa/src/components/globe/globe-3d.tsx:88:      const sensitivity = 4 / (container.offsetWidth || 400);
+apps/shared/src/ui/globe.tsx:103:      const sensitivity = 4 / (container.offsetWidth || 400);</pre>
+<p><strong>All 6 remaining hits are confirmed false positives</strong> (UI defaults, map center, gesture handling, container sizing). Zero genuine fabrication hits.</p>
 
-<p><strong>Remaining hits (all confirmed false positives):</strong></p>
-<pre>apps/admin-portal/.../predictions/page.tsx:199:  {meta?.days_back ?? 90} days
-apps/frontend/.../geo-tag-map.tsx:27:  longitude: initialLng ?? 121.774,
-apps/frontend/.../geo-tag-map.tsx:28:  latitude: initialLat ?? 12.8797,
-apps/mobile-pwa/.../layout.tsx:86:  const clickY = e?.clientY ?? 40;
-apps/mobile-pwa/.../globe-3d.tsx:88:  const sensitivity = 4 / (container.offsetWidth || 400);
-apps/shared/.../globe.tsx:103:  const sensitivity = 4 / (container.offsetWidth || 400);</pre>
+<h3>4c. Positive Verification — Fixes Present on Remote</h3>
+<pre>$ git grep -n "278" -- 'apps/frontend/src/app/[locale]/dashboard/impact/page.tsx'
+GONE (not found)
 
-<p><strong>Zero genuine fabrication hits remain.</strong></p>
+$ git grep -n "840" -- 'apps/mobile-pwa/src/app/[locale]/(app)/dashboard/page.tsx'
+GONE (not found)
+
+$ git grep -n "14.5995" -- 'apps/frontend/src/app/[locale]/report/page.tsx' 'apps/mobile-pwa/src/app/[locale]/(app)/report/page.tsx'
+GONE (not found)
+
+$ git grep -n "computeTimeSeries" -- 'apps/frontend/src/app/[locale]/dashboard/impact/page.tsx'
+apps/frontend/src/app/[locale]/dashboard/impact/page.tsx:80:function computeTimeSeries(tickets: Ticket[]): TimeSeriesPoint[] {
+apps/frontend/src/app/[locale]/dashboard/impact/page.tsx:147:          setTimeSeries(computeTimeSeries(dbTickets));
+
+$ git grep -n "computeProvinceData" -- 'apps/frontend/src/app/[locale]/dashboard/impact/page.tsx'
+apps/frontend/src/app/[locale]/dashboard/impact/page.tsx:99:function computeProvinceData(tickets: Ticket[]): ProvinceData[] {
+apps/frontend/src/app/[locale]/dashboard/impact/page.tsx:148:          setProvinceData(computeProvinceData(dbTickets));</pre>
+
+<p><strong>All fabricated values confirmed absent. All real-data computations confirmed present.</strong></p>
 
 <hr class="section-divider">
 
@@ -554,6 +578,18 @@ apps/shared/.../globe.tsx:103:  const sensitivity = 4 / (container.offsetWidth |
 <div class="callout callout-success">
   <strong>Key insight from this near-miss:</strong> <code>resolutionRate</code>'s fallback was a ternary <code>: 71</code>, not <code>|| 71</code> or <code>?? 71</code>. The regex the running session (and the earlier queued prompt) both relied on wouldn't have caught it even with a full sweep. <strong>Grep is necessary but not sufficient.</strong> After finding a fabrication site, read the surrounding function fully — and sweep every function that touches a metric, not just the ones named in the prompt.
 </div>
+
+<hr class="section-divider">
+
+<h2>9. Verified-Report Protocol Acknowledgment</h2>
+
+<p>This report was finalized only after:</p>
+<ol>
+  <li>The change was pushed to the remote (commit <code>2ede1ed</code> on <code>origin/staging</code> and <code>origin/development</code>).</li>
+  <li>A fresh, throwaway clone (<code>/tmp/verify-clean</code>) independently confirmed the change is present on the remote.</li>
+  <li>The report's evidence section (§4) quotes the actual command output from that fresh clone.</li>
+</ol>
+<p>The Verified-Report Protocol governs all subsequent fix tasks in this project.</p>
 
 <hr class="section-divider">
 
