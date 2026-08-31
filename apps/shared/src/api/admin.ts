@@ -107,7 +107,9 @@ export function updateUserRole(id: string, role: string) {
 }
 
 export function deleteAdminUser(id: string) {
-  return laravelDelete<ApiResponse<null>>(`/admin/users/${id}`);
+  return fetch(`/api/v1/admin/users/${id}`, {
+    method: "DELETE",
+  }).then((r) => r.json()) as Promise<ApiResponse<null>>;
 }
 
 // Admin: NGOs
