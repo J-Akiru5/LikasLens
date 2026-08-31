@@ -127,8 +127,8 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
           className="flex items-center w-full gap-3 p-2 rounded-xl hover:bg-ink/[0.04] transition-colors group text-left"
         >
           <div className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden border bg-ink/5 border-ink/10 shrink-0">
-            {user.user_metadata?.avatar_url ? (
-              <Image src={user.user_metadata.avatar_url} alt="Avatar" width={40} height={40} sizes="40px" unoptimized className="w-full h-full object-cover" />
+            {(user.user_metadata?.custom_avatar_url || user.user_metadata?.avatar_url) ? (
+              <Image src={(user.user_metadata.custom_avatar_url || user.user_metadata.avatar_url) as string} alt="Avatar" width={40} height={40} sizes="40px" unoptimized className="w-full h-full object-cover" />
             ) : (
               <User className="w-5 h-5 text-ink/70" />
             )}
@@ -168,9 +168,9 @@ export function UserNav({ invert = false, variant = "header" }: { invert?: boole
             invert ? "bg-white/10 border-white/20" : "bg-ink/5 border-ink/10"
           }`}
         >
-          {user.user_metadata?.avatar_url ? (
+          {(user.user_metadata?.custom_avatar_url || user.user_metadata?.avatar_url) ? (
             <Image
-              src={user.user_metadata.avatar_url}
+              src={(user.user_metadata.custom_avatar_url || user.user_metadata.avatar_url) as string}
               alt="Avatar"
               width={32}
               height={32}
