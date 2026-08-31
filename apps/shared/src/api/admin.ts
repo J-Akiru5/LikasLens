@@ -91,11 +91,19 @@ export function getAdminUser(id: string) {
 }
 
 export function updateAdminUser(id: string, data: Record<string, unknown>) {
-  return laravelPut<ApiResponse<User>>(`/admin/users/${id}`, data);
+  return fetch(`/api/v1/admin/users/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  }).then((r) => r.json()) as Promise<ApiResponse<User>>;
 }
 
 export function updateUserRole(id: string, role: string) {
-  return laravelPut<ApiResponse<User>>(`/admin/users/${id}/role`, { role });
+  return fetch(`/api/v1/admin/users/${id}/role`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role }),
+  }).then((r) => r.json()) as Promise<ApiResponse<User>>;
 }
 
 export function deleteAdminUser(id: string) {
@@ -199,7 +207,11 @@ export function bulkTicketDelete(ids: string[]) {
 }
 
 export function bulkUserRole(ids: string[], role: string) {
-  return laravelPost<ApiResponse<{ updated: number; skipped: number }>>("/admin/users/bulk-role", { ids, role });
+  return fetch("/api/v1/admin/users/bulk-role", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids, role }),
+  }).then((r) => r.json()) as Promise<ApiResponse<{ updated: number; skipped: string[] }>>;
 }
 
 export function bulkUserDeactivate(ids: string[]) {

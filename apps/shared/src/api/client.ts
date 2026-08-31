@@ -627,33 +627,12 @@ async function routeRequest<T>(
   }
 
   // ── Admin user update ──────────────────────────────────────────────────────
-  const adminUserMatch = path.match(/^admin\/users\/([a-f0-9-]+)$/);
-  if (adminUserMatch && method === "PUT") {
-    const id = adminUserMatch[1];
-    const { error } = await db()
-      .from("users")
-      .update({ ...body as Record<string, unknown>, updated_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) throw error;
-
-    const { data } = await db().from("users").select("*").eq("id", id).single();
-    return { success: true, data } as T;
-  }
+  // Routed through /api/v1/admin/users/{id} proxy — no direct Supabase writes.
+  // See admin.ts updateUserProfile() for the proxy call.
 
   // ── Admin user role update ─────────────────────────────────────────────────
-  const adminRoleMatch = path.match(/^admin\/users\/([a-f0-9-]+)\/role$/);
-  if (adminRoleMatch && method === "PUT") {
-    const id = adminRoleMatch[1];
-    const role = (body as Record<string, string>)?.role;
-    if (!role) throw new Error("role is required");
-    const { error } = await db()
-      .from("users")
-      .update({ role, updated_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) throw error;
-    const { data } = await db().from("users").select("*").eq("id", id).single();
-    return { success: true, data } as T;
-  }
+  // Routed through /api/v1/admin/users/{id}/role proxy — no direct Supabase writes.
+  // See admin.ts updateUserRole() for the proxy call.
 
   // ── Admin NGOs ─────────────────────────────────────────────────────────────
   if (path === "admin/ngos" && method === "GET") {
