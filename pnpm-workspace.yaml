@@ -13,3 +13,5 @@ allowBuilds:
   unrs-resolver: true
 overrides:
   next-intl: "^4"
+  ws: ">=8.21.0"
+  protobufjs: ">=7.6.5"
