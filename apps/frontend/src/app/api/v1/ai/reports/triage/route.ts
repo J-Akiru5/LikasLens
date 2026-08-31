@@ -56,10 +56,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(data, { status: res.status });
   } catch (err: unknown) {
     console.error("[/api/v1/ai/reports/triage] Error:", err);
-    // Triage failure is non-critical — return safe defaults so the submit flow continues
+    const message = err instanceof Error ? err.message : "AI service unavailable";
     return NextResponse.json(
-      { success: true, has_concern: false, indicators: [], confidence: 0 },
-      { status: 200 }
+      { success: false, detail: `Triage unavailable: ${message}` },
+      { status: 503 }
     );
   }
 }

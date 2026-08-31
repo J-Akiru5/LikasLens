@@ -93,7 +93,7 @@ export default function DashboardPage() {
       icon: AlertTriangle,
       color: "text-amber",
       bg: "bg-amber/10",
-      sparkline: [12, 8, 15, 6, 10, 9, stats?.active_incidents ?? 0],
+      sparkline: [] as number[],
     },
     {
       id: "resolved-today",
@@ -104,7 +104,7 @@ export default function DashboardPage() {
       icon: CheckCircle2,
       color: "text-green",
       bg: "bg-green/10",
-      sparkline: [3, 7, 4, 9, 6, 8, stats?.resolved_today ?? 0],
+      sparkline: [] as number[],
     },
     {
       id: "avg-response",
@@ -115,7 +115,7 @@ export default function DashboardPage() {
       icon: Clock,
       color: "text-accent",
       bg: "bg-accent/10",
-      sparkline: [52, 48, 45, 41, 38, 35, stats?.avg_response_minutes ?? 0],
+      sparkline: [] as number[],
     },
     {
       id: "total-users",
@@ -126,7 +126,7 @@ export default function DashboardPage() {
       icon: Users,
       color: "text-secondary",
       bg: "bg-secondary/10",
-      sparkline: [120, 145, 132, 158, 140, 165, stats?.total_users ?? 0],
+      sparkline: [] as number[],
     },
     {
       id: "open-tickets",
@@ -137,7 +137,7 @@ export default function DashboardPage() {
       icon: AlertTriangle,
       color: "text-ink",
       bg: "bg-ink/[0.04]",
-      sparkline: [40, 36, 30, 28, 24, 22, (stats as any)?.open_tickets ?? 0],
+      sparkline: [] as number[],
     },
   ];
 
