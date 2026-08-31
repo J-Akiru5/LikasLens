@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — AI_TIMEOUT_MS Fix</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --fg: #e0ddd5;
+    --muted: #7a8594;
+    --border: rgba(224,221,213,0.1);
+    --accent-cyan: #22d3ee;
+    --accent-violet: #a78bfa;
+    --green: #34d399;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 1060px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle { color: var(--muted); font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; margin-bottom: 2rem; }
+  h2 { font-size: 1.2rem; font-weight: 700; margin-top: 2.5rem; margin-bottom: 0.75rem; color: var(--accent-cyan); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  p, li { font-size: 0.9rem; margin-bottom: 0.5rem; }
+  ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.35rem; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; background: rgba(224,221,213,0.08); padding: 0.15rem 0.45rem; border-radius: 4px; color: var(--accent-cyan); }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+  th, td { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border); }
+  th { font-weight: 600; color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; font-family: 'JetBrains Mono', monospace; }
+  .badge { display: inline-block; padding: 0.15rem 0.55rem; border-radius: 9999px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .callout { background: rgba(52,211,153,0.06); border-left: 4px solid var(--green); padding: 1rem; border-radius: 0 8px 8px 0; margin: 1rem 0; font-size: 0.85rem; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin: 1.25rem 0; }
+  .kpi { text-align: center; padding: 1.25rem 1rem; border: 1px solid var(--border); border-radius: 12px; background: rgba(224,221,213,0.02); }
+  .kpi-value { font-size: 2rem; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .kpi-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; font-family: 'JetBrains Mono', monospace; }
+  .section-divider { border: none; border-top: 2px solid var(--border); margin: 2.5rem 0; }
+</style>
+</head>
+<body>
+
+<h1>LikasLens — AI_TIMEOUT_MS Fix</h1>
+<p class="subtitle">Configuration Fix · August 31, 2026 · Branch: <code>fix/fabricated-dashboard-metrics</code></p>
+
+<hr class="section-divider">
+
+<h2>Summary</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">14</div>
+    <div class="kpi-label">Locations Fixed</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">120s</div>
+    <div class="kpi-label">New Default</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">3</div>
+    <div class="kpi-label">Apps Updated</div>
+  </div>
+</div>
+
+<div class="callout">
+  <strong>Result:</strong> All <code>AI_TIMEOUT_MS</code> defaults unified to <code>120000</code> (2 minutes). Previously inconsistent: chat/health used 5s, reports used 30s, triage used 15s. AI inference routinely takes 30–90s in production.
+</div>
+
+<hr class="section-divider">
+
+<h2>Before → After</h2>
+
+<table>
+  <thead><tr><th>Route</th><th>Before</th><th>After</th></tr></thead>
+  <tbody>
+    <tr><td>chat (all 3 apps)</td><td><code>"5000"</code> (5s)</td><td><code>"120000"</code> (120s)</td></tr>
+    <tr><td>health (all 3 apps)</td><td><code>"5000"</code> (5s)</td><td><code>"120000"</code> (120s)</td></tr>
+    <tr><td>reports (frontend + mobile-pwa)</td><td><code>"30000"</code> (30s)</td><td><code>"120000"</code> (120s)</td></tr>
+    <tr><td>triage (frontend + mobile-pwa)</td><td><code>"15000"</code> (15s)</td><td><code>"120000"</code> (120s)</td></tr>
+    <tr><td>.env + .env.example (admin-portal + frontend)</td><td><code>5000</code></td><td><code>120000</code></td></tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>Files Changed</h2>
+
+<table>
+  <thead><tr><th>File</th><th>Change</th></tr></thead>
+  <tbody>
+    <tr><td><code>admin-portal/.../chat/route.ts</code></td><td>5000 → 120000</td></tr>
+    <tr><td><code>admin-portal/.../health/route.ts</code></td><td>5000 → 120000</td></tr>
+    <tr><td><code>admin-portal/.env.example</code></td><td>5000 → 120000</td></tr>
+    <tr><td><code>frontend/.../chat/route.ts</code></td><td>5000 → 120000</td></tr>
+    <tr><td><code>frontend/.../health/route.ts</code></td><td>5000 → 120000</td></tr>
+    <tr><td><code>frontend/.../reports/route.ts</code></td><td>30000 → 120000</td></tr>
+    <tr><td><code>frontend/.../triage/route.ts</code></td><td>15000 → 120000</td></tr>
+    <tr><td><code>frontend/.env.example</code></td><td>5000 → 120000</td></tr>
+    <tr><td><code>mobile-pwa/.../chat/route.ts</code></td><td>5000 → 120000</td></tr>
+    <tr><td><code>mobile-pwa/.../health/route.ts</code></td><td>5000 → 120000</td></tr>
+    <tr><td><code>mobile-pwa/.../reports/route.ts</code></td><td>30000 → 120000</td></tr>
+    <tr><td><code>mobile-pwa/.../triage/route.ts</code></td><td>15000 → 120000</td></tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<p style="color: var(--muted); font-size: 0.78rem; margin-top: 2rem; text-align: center; font-family: 'JetBrains Mono', monospace;">
+  Generated by Buffy · LikasLens AI_TIMEOUT_MS Fix · August 31, 2026
+</p>
+
+</body>
+</html>
