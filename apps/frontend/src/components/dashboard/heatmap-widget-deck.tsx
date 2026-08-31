@@ -68,8 +68,8 @@ function DeckGLOverlay({ data }: { data: HeatmapPoint[] }) {
           [14, 165, 233],   // Sky 500
           [59, 130, 246],   // Blue 500 - Moderate
           [249, 115, 22],   // Orange 500 - Elevated
-          [239, 68, 68],    // Crimson 500 - High
-          [159, 18, 57],    // Deep Ruby 800 - Critical Hotspot
+          [244, 63, 94],    // Rose 500 - High
+          [127, 29, 58],    // Wine 900 - Critical Hotspot
         ],
         opacity: 0.88,
       }),
@@ -281,17 +281,17 @@ export function HeatmapWidget() {
             </div>
 
             <div className="flex items-start gap-2.5 text-xs">
-              <span className="w-3.5 h-3.5 rounded-full bg-[#ef4444] ring-2 ring-[#ef4444]/20 mt-0.5 shrink-0" />
+              <span className="w-3.5 h-3.5 rounded-full bg-[#f43f5e] ring-2 ring-[#f43f5e]/20 mt-0.5 shrink-0" />
               <div>
-                <strong className="text-ink font-semibold">Crimson Red</strong>
+                <strong className="text-ink font-semibold">Rose</strong>
                 <p className="text-[11px] text-ink/60 leading-tight mt-0.5">High hazard / urgent intervention</p>
               </div>
             </div>
 
             <div className="flex items-start gap-2.5 text-xs">
-              <span className="w-3.5 h-3.5 rounded-full bg-[#9f1239] ring-2 ring-[#9f1239]/20 mt-0.5 shrink-0" />
+              <span className="w-3.5 h-3.5 rounded-full bg-[#7f1d3a] ring-2 ring-[#7f1d3a]/20 mt-0.5 shrink-0" />
               <div>
-                <strong className="text-ink font-semibold">Deep Ruby / Carmine</strong>
+                <strong className="text-ink font-semibold">Deep Wine</strong>
                 <p className="text-[11px] text-ink/60 leading-tight mt-0.5">Critical hot zones & repeat violations</p>
               </div>
             </div>
@@ -334,11 +334,11 @@ export function HeatmapWidget() {
             <span>Elevated</span>
           </span>
           <span className="flex items-center gap-1.5" title="High hazard / urgent intervention">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ef4444] ring-2 ring-[#ef4444]/20" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#f43f5e] ring-2 ring-[#f43f5e]/20" />
             <span>High</span>
           </span>
           <span className="flex items-center gap-1.5 font-bold text-ink" title="Critical hot zones & repeat violations">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#9f1239] ring-2 ring-[#9f1239]/20" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#7f1d3a] ring-2 ring-[#7f1d3a]/20" />
             <span>Critical Hotspot</span>
           </span>
         </div>

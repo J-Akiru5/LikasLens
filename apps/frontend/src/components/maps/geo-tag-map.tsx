@@ -35,6 +35,7 @@ export function GeoTagMap({
 
   const [isGhost, setIsGhost] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [gpsDenied, setGpsDenied] = useState(false);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -89,12 +90,16 @@ export function GeoTagMap({
             setMarkerPos({ lat, lng });
             resolveAddress(lat, lng);
             setIsLocating(false);
+            setGpsDenied(false);
           },
           () => {
             setIsLocating(false);
+            setGpsDenied(true);
           },
           { enableHighAccuracy: true, timeout: 8000 }
         );
+      } else {
+        setGpsDenied(true);
       }
     } else {
       resolveAddress(initialLat, initialLng);
@@ -128,6 +133,7 @@ export function GeoTagMap({
     const lat = e.lngLat.lat;
     const lng = e.lngLat.lng;
     setMarkerPos({ lat, lng });
+    setGpsDenied(false);
     resolveAddress(lat, lng);
   };
 
@@ -135,6 +141,7 @@ export function GeoTagMap({
     const lat = e.lngLat.lat;
     const lng = e.lngLat.lng;
     setMarkerPos({ lat, lng });
+    setGpsDenied(false);
     resolveAddress(lat, lng);
   };
 
@@ -155,6 +162,13 @@ export function GeoTagMap({
           {isLocating ? "Locating..." : "Auto-Locate GPS"}
         </button>
       </div>
+
+      {gpsDenied && !markerPos && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-700 dark:text-amber-400">
+          <Compass className="w-3.5 h-3.5 shrink-0" />
+          <span>Couldn&apos;t access your GPS location. Tap the map below to place the incident pin manually — a location is required to submit.</span>
+        </div>
+      )}
 
       <div
         style={{ height }}

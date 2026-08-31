@@ -90,7 +90,7 @@ export default function ReportPage() {
   const [base64Image, setBase64Image] = useState<string>("");
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);
-  const [resolvedAddress, setResolvedAddress] = useState<string>("Metro Manila, Philippines");
+  const [resolvedAddress, setResolvedAddress] = useState<string>("Locating coordinates...");
   const [isGhostMode, setIsGhostMode] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isTriaging, setIsTriaging] = useState<boolean>(false);
@@ -374,6 +374,13 @@ export default function ReportPage() {
   };
 
   const finalizeSubmission = async (cleanedImage: string) => {
+    if (latitude == null || longitude == null) {
+      showToast("Location is required. Tap the map to set the incident location before submitting.", "error");
+      setShowReviewModal(false);
+      setStep(3);
+      return;
+    }
+
     let userId: string | undefined = undefined;
     if (!isGhostMode) {
       try {
@@ -389,8 +396,8 @@ export default function ReportPage() {
 
     const payload: Record<string, unknown> = {
       base64Image: cleanedImage,
-      latitude: latitude ?? null,
-      longitude: longitude ?? null,
+      latitude,
+      longitude,
       location: resolvedAddress,
       description: description.trim() || `${reportType.replace(/_/g, " ")} reported.`,
       report_type: reportType,
@@ -1063,10 +1070,21 @@ export default function ReportPage() {
                           </div>
                         </div>
 
-                        <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold shrink-0">
-                          GPS Active
+                        <span className={`px-3 py-1 rounded-full font-mono text-xs font-bold shrink-0 ${
+                          latitude != null && longitude != null
+                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                            : "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                        }`}>
+                          {latitude != null && longitude != null ? "GPS Active" : "Not Set"}
                         </span>
                       </div>
+
+                      {(latitude == null || longitude == null) && (
+                        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2.5">
+                          <MapPin className="w-4 h-4 shrink-0" />
+                          <span>Location not set. Click or tap the map to place the incident pin — a location is required to submit.</span>
+                        </div>
+                      )}
 
                       {/* Observations & Field Details Box */}
                       <div className="p-5 rounded-3xl bg-panel border border-ink/[0.08] dark:border-white/10 space-y-3 shadow-xs">
@@ -1120,8 +1138,9 @@ export default function ReportPage() {
 
                         <button
                           type="button"
+                          disabled={latitude == null || longitude == null}
                           onClick={() => setShowReviewModal(true)}
-                          className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-ink text-page font-bold text-base hover:-translate-y-px transition-all shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:shadow-[0_14px_32px_rgba(0,0,0,0.25)] cursor-pointer"
+                          className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-ink text-page font-bold text-base hover:-translate-y-px transition-all shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:shadow-[0_14px_32px_rgba(0,0,0,0.25)] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:shadow-none"
                         >
                           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                           Review & Submit
@@ -1349,7 +1368,7 @@ export default function ReportPage() {
                 </button>
                 <button
                   type="button"
-                  disabled={isSubmitting || isTriaging || !base64Image}
+                  disabled={isSubmitting || isTriaging || !base64Image || latitude == null || longitude == null}
                   onClick={() => handleSubmit()}
                   className="flex-1 flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-ink text-page font-bold text-base hover:-translate-y-1 active:translate-y-0 transition-all shadow-[0_8px_24px_rgba(0,0,0,0.18)] hover:shadow-[0_14px_32px_rgba(0,0,0,0.25)] disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                 >

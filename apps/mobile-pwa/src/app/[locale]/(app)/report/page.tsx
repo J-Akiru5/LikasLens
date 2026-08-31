@@ -342,8 +342,8 @@ export default function ReportPage() {
       return;
     }
     const dataUrl = captureWithStamp(video, {
-      latitude: latitude ?? 0,
-      longitude: longitude ?? 0,
+      latitude,
+      longitude,
       ghostMode: isGhostMode,
     });
     haptic("medium");
@@ -379,6 +379,13 @@ export default function ReportPage() {
       return;
     }
 
+    if (latitude == null || longitude == null) {
+      showToast("Location is required. Tap the map to set the incident location before submitting.", "error");
+      setShowReviewModal(false);
+      setStep(3);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const cleanedImage = await stripExif(base64Image);
@@ -398,8 +405,8 @@ export default function ReportPage() {
 
       const payload: Record<string, unknown> = {
         base64Image: dataUrlToBase64(cleanedImage),
-        latitude: latitude ?? null,
-        longitude: longitude ?? null,
+        latitude,
+        longitude,
         location: resolvedAddress,
         description: description.trim() || `${reportType.replace(/_/g, " ")} reported.`,
         report_type: reportType || "waste_dumping",
@@ -1002,10 +1009,22 @@ export default function ReportPage() {
                       {resolvedAddress}
                     </p>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 font-mono text-[9px] font-bold shrink-0">
-                    GPS Active
+                  <span className={cn(
+                    "px-2 py-0.5 rounded-full font-mono text-[9px] font-bold shrink-0",
+                    latitude != null && longitude != null
+                      ? "bg-emerald-500/15 text-emerald-600"
+                      : "bg-amber-500/15 text-amber-600"
+                  )}>
+                    {latitude != null && longitude != null ? "GPS Active" : "Not Set"}
                   </span>
                 </div>
+
+                {(latitude == null || longitude == null) && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                    <MapPin className="w-3.5 h-3.5 shrink-0" />
+                    <span>Location not set. Tap the map above to place the incident pin — a location is required to submit.</span>
+                  </div>
+                )}
 
                 {/* Field Notes & Quick Chips */}
                 <div className="p-4 rounded-3xl bg-panel border border-ink/10 space-y-3 shadow-xs">
@@ -1050,8 +1069,9 @@ export default function ReportPage() {
                   </button>
                   <button
                     type="button"
+                    disabled={latitude == null || longitude == null}
                     onClick={() => setShowReviewModal(true)}
-                    className="flex-1 py-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-md shadow-emerald-600/20"
+                    className="flex-1 py-3.5 rounded-2xl bg-emerald-600 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-md shadow-emerald-600/20 disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <CheckCircle2 className="w-4 h-4 text-emerald-200" />
                     Review & Submit
