@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Quick-Fixes Bundle (2026-09-01)</title>
+<style>
+  :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #c9d1d9; --text-dim: #8b949e; --accent: #58a6ff; --green: #3fb950; --red: #f85149; --amber: #d29922; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; color: #f0ede8; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.3rem; color: var(--accent); margin: 2rem 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; color: #f0ede8; margin: 1.25rem 0 0.5rem; }
+  .meta { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-amber { background: rgba(210,153,34,0.15); color: var(--amber); border: 1px solid rgba(210,153,34,0.3); }
+  .badge-red { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
+  pre { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: 'SF Mono', Consolas, monospace; font-size: 0.8rem; overflow-x: auto; margin: 0.75rem 0; white-space: pre-wrap; }
+  .highlight { background: rgba(88,166,255,0.08); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  .warn { background: rgba(210,153,34,0.08); border-left: 3px solid var(--amber); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  .danger { background: rgba(248,81,73,0.08); border-left: 3px solid var(--red); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.85rem; }
+  th { text-align: left; padding: 0.5rem; border-bottom: 2px solid var(--border); color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 0.5rem; border-bottom: 1px solid var(--border); }
+  ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+  li { margin: 0.25rem 0; }
+</style>
+</head>
+<body>
+
+<h1>Quick-Fixes Bundle</h1>
+<p class="meta">September 1, 2026 &nbsp;|&nbsp; Branch: <code>development</code> &nbsp;|&nbsp; Commit: <code>088b40e</code></p>
+
+<hr style="border-color: var(--border);">
+
+<h2>Step 0 — Prompt #1 Status Note</h2>
+
+<div class="danger">
+  <strong>Admin ticket-status bypass: STILL UNFIXED on origin/development.</strong> All 6 bypass functions (bulkTicketStatus, escalatePattern, verifyReport, classifyTriageTicket, dismissTriageTicket, escalateTriageTicket) remain direct Supabase writes. The fix exists on branch <code>fix/admin-status-bypass-v2</code> (commit <code>aa07d6c</code>) but was never merged. No code overlap with this prompt's scope.
+</div>
+
+<pre>git grep -n 'from("tickets").update' origin/development -- apps/shared/src/api/admin.ts
+250:  ... updateTicketStatus fallback (documented — OK)
+459:  bulkTicketStatus — ❌ STILL DIRECT WRITE
+595:  escalatePattern — ❌ STILL DIRECT WRITE
+602:  verifyReport — ❌ STILL DIRECT WRITE
+704:  classifyTriageTicket — ❌ STILL DIRECT WRITE
+710:  dismissTriageTicket — ❌ STILL DIRECT WRITE
+716:  escalateTriageTicket — ❌ STILL DIRECT WRITE</pre>
+
+<hr style="border-color: var(--border);">
+
+<h2>Fix 1 — Fabricated SLA Metric</h2>
+
+<div class="card">
+  <h3>Problem</h3>
+  <p><code>avg_response_sla: 30</code> was hardcoded in two sites with no data behind it:</p>
+  <ul>
+    <li><code>dashboard/page.tsx:59</code> — bare <code>avg_response_sla: 30</code></li>
+    <li><code>citizen-dashboard-client.tsx:158</code> — <code>vs ${stats?.avg_response_sla ?? 30}m SLA</code></li>
+  </ul>
+  <p>A third site exists in <code>admin.ts:150</code> — out of scope (prompt #1's file).</p>
+
+  <h3>Fix</h3>
+  <ul>
+    <li><code>dashboard/page.tsx</code>: Changed <code>avg_response_sla: 30</code> → <code>avg_response_sla: 0</code></li>
+    <li><code>citizen-dashboard-client.tsx</code>: Changed to <code>stats?.avg_response_sla ? `vs ${stats.avg_response_sla}m SLA` : "SLA target not configured"</code></li>
+  </ul>
+  <p>Display now shows "SLA target not configured" when no real SLA data exists — never a fabricated number.</p>
+
+  <h3>Fresh Clone Verification</h3>
+  <pre>apps/frontend/src/app/[locale]/dashboard/page.tsx:59:      avg_response_sla: 0,
+apps/frontend/src/app/[locale]/dashboard/citizen-dashboard-client.tsx:158:
+  category: stats?.avg_response_sla ? `vs ${stats.avg_response_sla}m SLA` : "SLA target not configured",</pre>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Fix 2 — RA 9275 Mislabel</h2>
+
+<div class="card">
+  <h3>Problem</h3>
+  <p><code>tickets.py:376</code> had <code>"water_pollution": "RA 9275 (Clean Air Act)"</code>. RA 9275 is the Philippine Clean Water Act, not Clean Air.</p>
+
+  <h3>Fix</h3>
+  <p>Changed to <code>"RA 9275 (Philippine Clean Water Act)"</code></p>
+
+  <h3>Full STATUTE_MAP Verification</h3>
+  <table>
+    <tr><th>Key</th><th>Label</th><th>Correct?</th></tr>
+    <tr><td><code>illegal_dumping</code></td><td>RA 9003 (Ecological Solid Waste Management Act)</td><td><span class="badge badge-green">✅</span></td></tr>
+    <tr><td><code>solid_waste</code></td><td>RA 9003 (Ecological Solid Waste Management Act)</td><td><span class="badge badge-green">✅</span></td></tr>
+    <tr><td><code>deforestation</code></td><td>PD 705 (Revised Forestry Code) / RA 7161</td><td><span class="badge badge-green">✅</span></td></tr>
+    <tr><td><code>water_pollution</code></td><td>RA 9275 (Philippine Clean Water Act)</td><td><span class="badge badge-green">✅ FIXED</span></td></tr>
+    <tr><td><code>air_pollution</code></td><td>RA 8749 (Clean Air Act)</td><td><span class="badge badge-green">✅</span></td></tr>
+  </table>
+
+  <h3>Fresh Clone Verification</h3>
+  <pre>"water_pollution": "RA 9275 (Philippine Clean Water Act)",</pre>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Fix 3 — Confidence Display</h2>
+
+<div class="card">
+  <h3>Problem</h3>
+  <p><code>incident-detail-panel.tsx:150</code> rendered <code>${ticket.ai_confidence}% confidence</code> — the raw 0.0-1.0 fraction, producing "0.92% confidence" on the government-facing screen.</p>
+  <p>Additionally, <code>confidenceColor()</code> used thresholds of 70 and 30 — treating the value as a percentage, but it's stored as 0-1. Every ticket got the red "low confidence" style.</p>
+
+  <h3>Fix</h3>
+  <ul>
+    <li>Display: <code>${(ticket.ai_confidence * 100).toFixed(0)}% confidence</code> — matches explainability-panel.tsx and live-feed.tsx</li>
+    <li>Color thresholds: <code>0.7</code> and <code>0.3</code> instead of <code>70</code> and <code>30</code></li>
+  </ul>
+
+  <h3>Fresh Clone Verification</h3>
+  <pre>apps/admin-portal/src/components/incident-detail-panel.tsx:150:
+  ? `${(ticket.ai_confidence * 100).toFixed(0)}% confidence`</pre>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Fix 4 — Routing Learner Bogus LGU-id</h2>
+
+<div class="card">
+  <h3>Problem</h3>
+  <p><code>tickets.py:339</code> (<code>_notify_routing_learner</code>) passed <code>str(ticket.id)</code> as <code>lgu_id</code>. The Ticket model has no LGU foreign key (no <code>agency_id</code>, no <code>lgu_id</code> column). Every resolution corrupted the learner's scoring table with a unique fake LGU entry.</p>
+
+  <h3>Decision: Disable the call</h3>
+  <p>There is no meaningful LGU identifier available at this point in the flow. <code>ai_recommended_office</code> is a display string like "DENR-EMB", not a foreign key. The call currently contributes nothing correct and only pollutes data. Re-enable once a real LGU foreign key is available (e.g. from <code>ticket_assignments</code> or a future <code>agency_id</code> column).</p>
+
+  <h3>Fresh Clone Verification</h3>
+  <pre>async def _notify_routing_learner(ticket: Ticket):
+    """DISABLED: The Ticket model has no LGU foreign key ...
+    Re-enable once a real LGU identifier is available."""
+    logger.info(
+        "Routing learner notification skipped for ticket %s — no LGU ID available",
+        ticket.id,
+    )</pre>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Full-Tree Fabrication Sweep</h2>
+
+<div class="highlight">
+  <strong>Sweep command:</strong> <code>git grep -nE '(\|\||\?\?)\s*[0-9]{2,6}\b|:\s*[0-9]{2,3}\s*[,;]' -- 'apps/**/*.ts' 'apps/**/*.tsx'</code>
+</div>
+
+<p>All hits triaged. No genuine fabrication sites found beyond the 2 fixed above (and the known third in admin.ts, out of scope):</p>
+
+<table>
+  <tr><th>File</th><th>Hit</th><th>Verdict</th></tr>
+  <tr><td><code>predictions/page.tsx:199</code></td><td><code>meta?.days_back ?? 90</code></td><td>False positive — UI fallback for API metadata</td></tr>
+  <tr><td><code>settings/page.tsx:60,70</code></td><td><code>ecoCreditRate: 10</code>, <code>sessionTimeout: 60</code></td><td>False positive — admin settings defaults</td></tr>
+  <tr><td><code>geo-tag-map.tsx:27-28</code></td><td><code>longitude ?? 121.774</code>, <code>latitude ?? 12.8797</code></td><td>False positive — Manila map center coordinates</td></tr>
+  <tr><td><code>mobile-pwa/layout.tsx:86</code></td><td><code>clientY ?? 40</code></td><td>False positive — touch event Y coordinate fallback</td></tr>
+  <tr><td><code>globe-3d.tsx:88</code>, <code>globe.tsx:103</code></td><td><code>offsetWidth || 400</code></td><td>False positive — container width fallback for sensitivity calc</td></tr>
+  <tr><td><code>layout.tsx</code>, <code>changelog</code>, <code>contact</code></td><td><code>height: 630</code></td><td>False positive — OpenGraph image dimensions</td></tr>
+  <tr><td><code>impact/page.tsx</code> (many)</td><td>CSS values</td><td>False positive — inline style properties</td></tr>
+  <tr><td><code>admin.ts:150</code></td><td><code>avg_response_sla: 30</code></td><td><span class="badge badge-red">KNOWN — out of scope (prompt #1)</span></td></tr>
+</table>
+
+<hr style="border-color: var(--border);">
+
+<h2>Build Verification</h2>
+
+<table>
+  <tr><th>App</th><th>Result</th></tr>
+  <tr><td><code>pnpm --filter frontend build</code></td><td><span class="badge badge-green">PASS</span></td></tr>
+  <tr><td><code>pnpm --filter admin-portal build</code></td><td><span class="badge badge-green">PASS</span> (after fixing TS error: <code>ai_confidence</code> possibly undefined)</td></tr>
+  <tr><td><code>python -m pytest tests/test_e2e_migration.py::TestTickets</code></td><td><span class="badge badge-green">11/11 PASS</span></td></tr>
+</table>
+
+<hr style="border-color: var(--border);">
+
+<h2>Fresh Clone Verification Summary</h2>
+
+<pre>Commit: 088b40e — fix: fabricated SLA, RA 9275 mislabel, confidence display, routing learner
+
+1. SLA FABRICATION: avg_response_sla: 0 (was 30). Display: "SLA target not configured"
+2. RA 9275: "RA 9275 (Philippine Clean Water Act)" (was "Clean Air Act")
+3. CONFIDENCE: (ticket.ai_confidence * 100).toFixed(0)% (was raw fraction)
+4. ROUTING LEARNER: Disabled (was passing ticket.id as lgu_id)
+5. SWEEP: Zero genuine fabrication hits (3rd site in admin.ts:150 out of scope)
+6. BUILDS: frontend ✅  admin-portal ✅  server tests 11/11 ✅</pre>
+
+<h2>Remaining Items for Next Prompt</h2>
+<ul>
+  <li><strong>admin.ts:150</strong> — third <code>avg_response_sla: 30</code> fabrication site, out of scope for this prompt (prompt #1's file)</li>
+  <li><strong>Admin ticket-status bypass</strong> — 6 functions still direct writes, fix exists on <code>fix/admin-status-bypass-v2</code> but not merged</li>
+</ul>
+
+</body>
+</html>
