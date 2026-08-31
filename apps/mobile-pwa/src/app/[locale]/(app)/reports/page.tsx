@@ -10,8 +10,8 @@ import { ViolationDonut } from "@/components/charts/violation-donut";
 interface DashboardStats {
   active_incidents: number;
   resolved_today: number;
-  avg_response_hours: number;
-  system_load: number;
+  avg_response_hours: number | null;
+  system_load: number | null;
 }
 
 interface StatusCount {

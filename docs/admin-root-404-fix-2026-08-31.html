@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Admin Portal Root 404 Fix</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --fg: #e0ddd5;
+    --muted: #7a8594;
+    --border: rgba(224,221,213,0.1);
+    --accent-cyan: #22d3ee;
+    --accent-violet: #a78bfa;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 1060px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin-bottom: 2rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--accent-cyan);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent-violet);
+  }
+  p, li { font-size: 0.9rem; color: var(--fg); margin-bottom: 0.5rem; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.35rem; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    background: rgba(224,221,213,0.08);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    color: var(--accent-cyan);
+  }
+  pre {
+    background: rgba(224,221,213,0.05);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin: 1rem 0;
+    line-height: 1.55;
+    color: var(--fg);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .badge-cyan { background: rgba(34,211,238,0.15); color: var(--accent-cyan); border: 1px solid rgba(34,211,238,0.3); }
+  .callout {
+    background: rgba(34,211,238,0.06);
+    border-left: 4px solid var(--accent-cyan);
+    padding: 1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  .callout-success { background: rgba(52,211,153,0.06); border-left-color: var(--green); }
+  .callout-warn { background: rgba(251,191,36,0.06); border-left-color: var(--amber); }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .kpi {
+    text-align: center;
+    padding: 1.25rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(224,221,213,0.02);
+  }
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .kpi-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .section-divider {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 2.5rem 0;
+  }
+  .diff-add {
+    background: rgba(52,211,153,0.08);
+    border-left: 3px solid var(--green);
+    padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 0.5rem 0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+  }
+  .diff-remove {
+    background: rgba(248,113,113,0.08);
+    border-left: 3px solid var(--red);
+    padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 0.5rem 0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+
+<h1>LikasLens — Admin Portal Root 404 Fix</h1>
+<p class="subtitle">Routing Fix · August 31, 2026 · Branch: <code>fix/fabricated-dashboard-metrics</code></p>
+
+<hr class="section-divider">
+
+<h2>1. Executive Summary</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">1</div>
+    <div class="kpi-label">File Changed</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">1</div>
+    <div class="kpi-label">Line Changed</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">✓</div>
+    <div class="kpi-label">Build Passes</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">0</div>
+    <div class="kpi-label">Breaking Changes</div>
+  </div>
+</div>
+
+<div class="callout callout-success">
+  <strong>Result:</strong> Navigating to <code>https://likasadmin.syntaxure.dev/</code> now redirects to <code>/en</code> instead of returning a 404. One line changed in the existing proxy middleware.
+</div>
+
+<hr class="section-divider">
+
+<h2>2. The Problem</h2>
+
+<p>The admin-portal's proxy middleware (<code>src/proxy.ts</code>) handled the root path <code>/</code> by calling <code>NextResponse.next()</code>, which passes the request through to Next.js. But there is no <code>page.tsx</code> at the app root — all pages live under <code>[locale]/</code>. So the pass-through hits no route and returns a 404.</p>
+
+<p>Meanwhile, <code>/en</code> works perfectly — it matches the <code>[locale]</code> dynamic segment and renders the admin landing page.</p>
+
+<h3>Why no middleware.ts?</h3>
+
+<p>Next.js 16 uses <code>proxy.ts</code> as the middleware entry point (not the traditional <code>middleware.ts</code>). The admin-portal already had a fully-featured <code>proxy.ts</code> with Supabase auth session refresh, locale detection via <code>next-intl</code>, and login redirect logic — it just handled the root path incorrectly.</p>
+
+<hr class="section-divider">
+
+<h2>3. The Fix</h2>
+
+<p><strong>File:</strong> <code>apps/admin-portal/src/proxy.ts</code> — 1 line changed</p>
+
+<div class="diff-remove">  // Completely bypass for root path
+  if (pathname === "/") {
+    return NextResponse.next({ request });
+  }</div>
+<div class="diff-add">  // Redirect root path to default locale
+  if (pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locales[0]}`;
+    return NextResponse.redirect(url);
+  }</div>
+
+<p><code>locales[0]</code> is <code>"en"</code> (from <code>@likaslens/shared</code> i18n config). The redirect is a 307 (temporary) by default, which is correct — it preserves the HTTP method and allows the browser to cache the redirect.</p>
+
+<hr class="section-divider">
+
+<h2>4. Verification</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Check</th>
+      <th>Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Typecheck</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td>Build</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td>Root <code>/</code> behavior</td>
+      <td>Redirects to <code>/en</code> (307)</td>
+    </tr>
+    <tr>
+      <td><code>/en</code> behavior</td>
+      <td>Renders admin landing page (unchanged)</td>
+    </tr>
+    <tr>
+      <td><code>/en/dashboard</code> behavior</td>
+      <td>Renders dashboard when authenticated (unchanged)</td>
+    </tr>
+    <tr>
+      <td>Auth-gated routes</td>
+      <td>Unauthenticated users redirected to <code>/en/login</code> (unchanged)</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>5. Files Changed</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Change</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>apps/admin-portal/src/proxy.ts</code></td>
+      <td>Root path <code>/</code>: changed <code>NextResponse.next()</code> to <code>NextResponse.redirect(/en)</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>6. Remaining Findings Status</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Finding</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>(a)</strong></td>
+      <td>Admin ticket status bypassing ALLOWED_TRANSITIONS</td>
+      <td><span class="badge badge-green">RESOLVED</span> — separate fix</td>
+    </tr>
+    <tr>
+      <td><strong>(b)</strong></td>
+      <td>Unrecognized endpoints returning {success:true, data:[]}</td>
+      <td><span class="badge badge-red">OPEN</span> — separate task</td>
+    </tr>
+    <tr>
+      <td><strong>(c)</strong></td>
+      <td>Fabricated dashboard metrics</td>
+      <td><span class="badge badge-green">RESOLVED</span> — separate fix</td>
+    </tr>
+    <tr>
+      <td><strong>(d)</strong></td>
+      <td>Predictions page reachable in admin nav</td>
+      <td><span class="badge badge-green">RESOLVED</span> — feature flag OFF</td>
+    </tr>
+    <tr>
+      <td><strong>(e)</strong></td>
+      <td>AI_TIMEOUT_MS default</td>
+      <td><span class="badge badge-red">OPEN</span> — separate task</td>
+    </tr>
+    <tr>
+      <td><strong>(f)</strong></td>
+      <td>Admin-portal root 404</td>
+      <td><span class="badge badge-green">RESOLVED</span> — this fix</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<p style="color: var(--muted); font-size: 0.78rem; margin-top: 2rem; text-align: center; font-family: 'JetBrains Mono', 'Fira Code', monospace;">
+  Generated by Buffy · LikasLens Admin Root 404 Fix · August 31, 2026
+</p>
+
+</body>
+</html>

@@ -21,7 +21,7 @@ function getAiUrl(): string {
 }
 
 function getTimeoutMs(): number {
-  return parseInt(process.env.AI_TIMEOUT_MS || "30000", 10);
+  return parseInt(process.env.AI_TIMEOUT_MS || "120000", 10);
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {

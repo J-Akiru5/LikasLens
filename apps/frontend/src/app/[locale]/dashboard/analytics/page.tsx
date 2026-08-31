@@ -44,8 +44,8 @@ const HotspotList = dynamic(
 interface DashboardStats {
   active_incidents: number;
   resolved_today: number;
-  avg_response_hours: number;
-  system_load: number;
+  avg_response_hours: number | null;
+  system_load: number | null;
 }
 
 const kpiCards: { key: keyof DashboardStats; icon: React.ElementType; label: string; color: string; suffix: string; decimals: number }[] = [

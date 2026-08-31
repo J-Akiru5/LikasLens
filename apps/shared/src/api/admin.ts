@@ -77,38 +77,40 @@ export async function getUserImpact() {
 // Dashboard
 export async function getDashboardStats() {
   const { data: tickets } = await db().from("tickets").select("id, status, created_at, resolved_at");
+  const { count: userCount } = await db().from("users").select("id", { count: "exact", head: true });
   const allTickets = tickets || [];
   const total = allTickets.length;
   const active = allTickets.filter((t: Record<string, unknown>) => t.status !== "resolved").length;
   const resolved = allTickets.filter((t: Record<string, unknown>) => t.status === "resolved").length;
+  const investigating = allTickets.filter((t: Record<string, unknown>) => t.status === "investigating").length;
   return {
     success: true,
     data: {
-      active_incidents: active || 42,
-      active_incidents_total: total || 60,
-      active_incidents_progress: Math.round(((active || 42) / (total || 1)) * 100),
-      active_incidents_trend: "+4%",
-      resolved_today: resolved || 18,
-      resolved_today_total: total || 60,
-      resolved_today_progress: Math.round(((resolved || 18) / (total || 1)) * 100),
-      resolved_today_trend: "+12%",
-      avg_response_minutes: 14,
-      avg_response_hours: 0.23,
-      avg_response_sla: 30,
-      avg_response_progress: 46,
-      avg_response_trend: "Optimal",
-      system_load: 64,
+      active_incidents: active,
+      active_incidents_total: total,
+      active_incidents_progress: total > 0 ? Math.round((active / total) * 100) : 0,
+      active_incidents_trend: "",
+      resolved_today: resolved,
+      resolved_today_total: total,
+      resolved_today_progress: total > 0 ? Math.round((resolved / total) * 100) : 0,
+      resolved_today_trend: "",
+      avg_response_minutes: null,
+      avg_response_hours: null,
+      avg_response_sla: null,
+      avg_response_progress: null,
+      avg_response_trend: null,
+      system_load: null,
       system_load_total: 100,
-      system_load_progress: 64,
-      system_load_trend: "Normal",
+      system_load_progress: null,
+      system_load_trend: null,
       total_tickets: total,
       total_reports: total,
-      total_users: 840,
-      ghost_reports: Math.round(total * 0.28),
+      total_users: userCount || 0,
+      ghost_reports: 0,
       tickets_by_status: {
-        open: active || 42,
-        investigating: Math.round((active || 42) * 0.4),
-        resolved: resolved || 18,
+        open: active,
+        investigating,
+        resolved,
       },
     } as DashboardStats,
   };
@@ -349,10 +351,12 @@ export async function updateAdminCurrencySetting(id: string, data: Record<string
 }
 
 // Admin: Bulk Operations
-export async function bulkTicketStatus(ids: string[], status: string) {
-  const { error } = await db().from("tickets").update({ status, updated_at: new Date().toISOString() }).in("id", ids);
-  if (error) throw error;
-  return { success: true, data: { updated: ids.length, failed: [] } } as ApiResponse<{ updated: number; failed: string[] }>;
+export function bulkTicketStatus(ids: string[], status: string, notes?: string): Promise<ApiResponse<{ updated: number; failed: string[] }>> {
+  return fetch(`/api/v1/ai/tickets/bulk-status`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticket_ids: ids, status, notes }),
+  }).then((r) => r.json());
 }
 
 export async function bulkTicketAssign(ids: string[], lgu_id: string) {
@@ -485,17 +489,21 @@ export async function detectPatternEscalation(_params?: Record<string, string>) 
   return { success: true, data: data || [] } as ApiResponse<unknown[]>;
 }
 
-export async function escalatePattern(data: { ticket_ids: string[]; reason: string }) {
-  const { error } = await db().from("tickets").update({ status: "investigating" }).in("id", data.ticket_ids);
-  if (error) throw error;
-  return { success: true, data: { escalated: data.ticket_ids.length } } as ApiResponse<{ escalated: number }>;
+export function escalatePattern(data: { ticket_ids: string[]; reason: string }): Promise<ApiResponse<{ updated: number; failed: string[] }>> {
+  return fetch(`/api/v1/ai/tickets/bulk-status`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticket_ids: data.ticket_ids, status: "investigating", notes: data.reason }),
+  }).then((r) => r.json());
 }
 
 // Admin: Report Verification
-export async function verifyReport(reportId: string, data: { status: string; notes?: string }) {
-  const { data: result, error } = await db().from("tickets").update({ status: data.status }).eq("id", reportId).select("id, status").single();
-  if (error) throw error;
-  return { success: true, data: { id: result.id, new_status: result.status } } as ApiResponse<{ id: string; new_status: string }>;
+export function verifyReport(reportId: string, data: { status: string; notes?: string }): Promise<ApiResponse<{ id: string; old_status: string; new_status: string }>> {
+  return fetch(`/api/v1/ai/tickets/${reportId}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: data.status, notes: data.notes }),
+  }).then((r) => r.json());
 }
 
 export async function batchSyncReports(data: { reports: unknown[] }) {
@@ -594,22 +602,31 @@ export async function getTriageQueue(params?: Record<string, string>) {
   } as PaginatedResponse<TriageTicket>;
 }
 
-export async function classifyTriageTicket(id: string, data: { violation_type_id: string; severity: number; notes?: string }) {
-  const { data: result, error } = await db().from("tickets").update({ urgency_score: data.severity, status: "investigating" }).eq("id", id).select("id, status").single();
-  if (error) throw error;
-  return { success: true, data: { id: result.id, old_status: "open", new_status: result.status, violation_type: data.violation_type_id, severity: data.severity } } as ApiResponse<{ id: string; old_status: string; new_status: string; violation_type: string; severity: number }>;
+export function classifyTriageTicket(id: string, data: { violation_type_id: string; severity: number; notes?: string }): Promise<ApiResponse<{ id: string; old_status: string; new_status: string; violation_type: string; severity: number }>> {
+  return fetch(`/api/v1/ai/tickets/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "investigating", urgency_score: data.severity, notes: data.notes }),
+  }).then((r) => r.json() as Promise<ApiResponse<{ id: string; old_status: string; new_status: string }>>).then((res) => ({
+    ...res,
+    data: { ...res.data!, violation_type: data.violation_type_id, severity: data.severity },
+  }));
 }
 
-export async function dismissTriageTicket(id: string, _data?: { reason?: string }) {
-  const { data: result, error } = await db().from("tickets").update({ status: "closed" }).eq("id", id).select("id, status").single();
-  if (error) throw error;
-  return { success: true, data: { id: result.id, old_status: "open", new_status: result.status } } as ApiResponse<{ id: string; old_status: string; new_status: string }>;
+export function dismissTriageTicket(id: string, _data?: { reason?: string }): Promise<ApiResponse<{ id: string; old_status: string; new_status: string }>> {
+  return fetch(`/api/v1/ai/tickets/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "closed", notes: _data?.reason }),
+  }).then((r) => r.json());
 }
 
-export async function escalateTriageTicket(id: string) {
-  const { data: result, error } = await db().from("tickets").update({ urgency_score: 5, status: "investigating" }).eq("id", id).select("id, status, urgency_score").single();
-  if (error) throw error;
-  return { success: true, data: { id: result.id, old_status: "open", new_status: result.status, urgency_score: result.urgency_score } } as ApiResponse<{ id: string; old_status: string; new_status: string; urgency_score: number }>;
+export function escalateTriageTicket(id: string): Promise<ApiResponse<{ id: string; old_status: string; new_status: string; urgency_score: number }>> {
+  return fetch(`/api/v1/ai/tickets/${id}/status`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "investigating", urgency_score: 5 }),
+  }).then((r) => r.json());
 }
 
 export async function getTriageViolationTypes() {
