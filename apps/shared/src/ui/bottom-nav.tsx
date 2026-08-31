@@ -33,6 +33,8 @@ function tapHaptic() {
 export function BottomNav({ items, className }: BottomNavProps) {
   const pathname = usePathname();
 
+  if (!items || items.length === 0) return null;
+
   const pathParts = pathname.split("/");
   const hasLocale = (locales as readonly string[]).includes(pathParts[1]);
   const localePrefix = hasLocale ? `/${pathParts[1]}` : "";

@@ -35,8 +35,8 @@ const accentColors: Record<Accent, { stroke: string; glow: string; text: string;
 
 function SmoothAreaSparkline({ points, color, id }: { points: number[]; color: string; id: string }) {
   if (!points || points.length < 2) return null;
-  const w = 84;
-  const h = 30;
+  const w = 52;
+  const h = 22;
   const min = Math.min(...points);
   const max = Math.max(...points);
   const span = max - min || 1;
@@ -44,7 +44,7 @@ function SmoothAreaSparkline({ points, color, id }: { points: number[]; color: s
 
   const coords = points.map((p, i) => {
     const x = i * step;
-    const y = h - ((p - min) / span) * (h - 8) - 4;
+    const y = h - ((p - min) / span) * (h - 6) - 3;
     return { x, y };
   });
 
@@ -69,15 +69,15 @@ function SmoothAreaSparkline({ points, color, id }: { points: number[]; color: s
         </linearGradient>
       </defs>
       <path d={areaD} fill={`url(#grad-${id})`} />
-      <path d={pathD} fill="none" stroke={color} strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={lastPoint.x} cy={lastPoint.y} r="2.75" fill={color} />
+      <path d={pathD} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={lastPoint.x} cy={lastPoint.y} r="2.25" fill={color} />
     </svg>
   );
 }
 
 export function StatsCards({ items, className, gridClassName }: StatsCardsProps) {
   return (
-    <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5", gridClassName, className)}>
+    <div className={cn("grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4", gridClassName, className)}>
       {items.map((item, idx) => {
         const accent = item.accent ?? "accent";
         const theme = accentColors[accent];
@@ -87,9 +87,9 @@ export function StatsCards({ items, className, gridClassName }: StatsCardsProps)
           <div
             key={item.id || idx}
             className={cn(
-              "group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl p-5 sm:p-6 overflow-hidden transition-all duration-300",
-              "bg-panel/90 backdrop-blur-xl border border-ink/[0.08] dark:border-white/10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)]",
-              "hover:-translate-y-1 hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.08)] hover:border-ink/15 dark:hover:border-white/20"
+              "group relative flex flex-col justify-between rounded-2xl p-3.5 sm:p-4 overflow-hidden transition-all duration-300",
+              "bg-panel/90 backdrop-blur-xl border border-ink/[0.08] dark:border-white/10 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.3)]",
+              "hover:-translate-y-0.5 hover:shadow-[0_12px_24px_-6px_rgba(0,0,0,0.08)] hover:border-ink/15 dark:hover:border-white/20"
             )}
           >
             {/* Top glass rim highlight */}
@@ -97,39 +97,39 @@ export function StatsCards({ items, className, gridClassName }: StatsCardsProps)
 
             {/* Ambient Radial Hover Glow */}
             <div
-              className="absolute -top-10 -right-10 w-36 h-36 rounded-full blur-[40px] opacity-0 group-hover:opacity-40 transition-opacity duration-500 pointer-events-none"
+              className="absolute -top-10 -right-10 w-28 h-28 rounded-full blur-[30px] opacity-0 group-hover:opacity-30 transition-opacity duration-500 pointer-events-none"
               style={{ backgroundColor: theme.stroke }}
             />
 
             {/* Header: Category chip & Icon */}
-            <div className="relative z-10 flex items-center justify-between gap-2 mb-4">
-              <div className="flex items-center gap-2 min-w-0">
+            <div className="relative z-10 flex items-center justify-between gap-1.5 mb-2.5">
+              <div className="flex items-center gap-1.5 min-w-0">
                 {IconComponent && (
-                  <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border", theme.bgBadge)}>
+                  <div className={cn("w-6 h-6 rounded-md flex items-center justify-center shrink-0 border", theme.bgBadge)}>
                     {React.isValidElement(item.icon) ? (
                       item.icon
                     ) : (
-                      <IconComponent className="w-3.5 h-3.5" />
+                      <IconComponent className="w-3 h-3" />
                     )}
                   </div>
                 )}
                 {item.category && (
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-ink/60 truncate">
+                  <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-ink/60 truncate">
                     {item.category}
                   </span>
                 )}
               </div>
 
               {/* Status pulse dot */}
-              <span className="relative flex h-2 w-2">
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: theme.stroke }} />
-                <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: theme.stroke }} />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: theme.stroke }} />
               </span>
             </div>
 
             {/* Hero Value & Sparkline */}
-            <div className="relative z-10 flex items-baseline justify-between gap-3 my-1">
-              <div className="text-3xl sm:text-4xl lg:text-[42px] font-black tracking-tight leading-none text-ink font-sans">
+            <div className="relative z-10 flex items-baseline justify-between gap-2 my-0.5">
+              <div className="text-2xl sm:text-3xl font-black tracking-tight leading-none text-ink font-sans">
                 {item.value}
               </div>
               {item.sparkline && (
@@ -138,15 +138,15 @@ export function StatsCards({ items, className, gridClassName }: StatsCardsProps)
             </div>
 
             {/* Footer: Metric Label & Trend Chip */}
-            <div className="relative z-10 flex items-center justify-between gap-2 mt-4 pt-3 border-t border-ink/[0.06] dark:border-white/[0.06]">
-              <span className="text-xs font-semibold text-ink/70 uppercase tracking-wide truncate">
+            <div className="relative z-10 flex items-center justify-between gap-1 mt-2.5 pt-2 border-t border-ink/[0.06] dark:border-white/[0.06]">
+              <span className="text-[10px] sm:text-xs font-semibold text-ink/70 uppercase tracking-wide truncate">
                 {item.label}
               </span>
 
               {item.trend && (
                 <span
                   className={cn(
-                    "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0 border",
+                    "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider shrink-0 border",
                     item.trend === "up"
                       ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                       : item.trend === "down"
@@ -155,11 +155,11 @@ export function StatsCards({ items, className, gridClassName }: StatsCardsProps)
                   )}
                 >
                   {item.trend === "up" ? (
-                    <TrendingUp className="w-3 h-3" />
+                    <TrendingUp className="w-2.5 h-2.5" />
                   ) : item.trend === "down" ? (
-                    <TrendingDown className="w-3 h-3" />
+                    <TrendingDown className="w-2.5 h-2.5" />
                   ) : (
-                    <Minus className="w-3 h-3" />
+                    <Minus className="w-2.5 h-2.5" />
                   )}
                   {item.delta ?? (item.trend === "up" ? "Up" : item.trend === "down" ? "Down" : "Flat")}
                 </span>

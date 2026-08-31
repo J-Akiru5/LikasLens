@@ -629,7 +629,7 @@ export function Dropdown(props: DropdownProps) {
                 placement === "top" ? "bottom center" : "top center",
             }}
             className={cn(
-              "absolute z-50 rounded-2xl border border-ink/10 bg-page shadow-xl shadow-black/5 backdrop-blur-xl overflow-hidden",
+              "absolute z-50 rounded-2xl border border-ink/10 bg-panel shadow-2xl backdrop-blur-2xl overflow-hidden",
               placement === "top" ? "bottom-full mb-2" : "top-full mt-2",
               menuWidth || "w-full"
             )}

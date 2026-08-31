@@ -8,7 +8,6 @@ import {
   User,
   LogOut,
   ChevronRight,
-
   Settings,
   Edit2,
   History,
@@ -20,6 +19,7 @@ import {
   Map,
   FileText,
   WifiOff,
+  Bell,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { LargeTitle } from "@/components/native/large-title";
@@ -27,13 +27,9 @@ import { useHaptics } from "@/hooks/use-haptics";
 import { usePullToRefresh } from "@/context/pull-to-refresh";
 import { MobileProfileSkeleton } from "@likaslens/shared";
 
-/* ─────────────────────────────────────────────────────────────────────────────
-   Profile — identity header card + grouped inset list (iOS Settings pattern).
-   Two grouped sections (Account, Citizen tools) + a separated destructive row.
-   ───────────────────────────────────────────────────────────────────────────── */
-
 const ACCOUNT_ITEMS = [
   { href: "/history", label: "My Submissions", Icon: History, tint: "var(--accent)" },
+  { href: "/notifications", label: "Notifications", Icon: Bell, tint: "var(--green)" },
   { href: "/offline-queue", label: "Offline Queue", Icon: WifiOff, tint: "var(--amber)" },
   { href: "/settings", label: "Account Settings", Icon: Settings, tint: "var(--muted)" },
 ];

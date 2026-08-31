@@ -9,7 +9,7 @@ import {
   MapPin,
   FileText,
   Camera,
-  CheckCircle2,
+  CircleCheck,
   XCircle,
   X,
   Loader2,
@@ -319,7 +319,7 @@ export default function OfflineQueuePage() {
         {/* Queue list or empty state */}
         {queue.length === 0 ? (
           <EmptyState
-            icon={CheckCircle2}
+            icon={CircleCheck}
             title="All caught up"
             description="No offline reports waiting to sync. When you submit a report without internet, it will appear here."
             className="mt-16"

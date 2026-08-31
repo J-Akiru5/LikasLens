@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Network, ChevronDown, ChevronUp, AlertTriangle, Cpu, Scale, Building2, ShieldCheck, X } from "lucide-react";
+import { Network, ChevronDown, ChevronUp, AlertTriangle, Cpu, Scale, Building2, ShieldCheck, X, TreePine, Droplets, Trash2, Fish, CircleCheck, ArrowRight, Activity, Sparkles, Layers } from "lucide-react";
 import { cn } from "@likaslens/shared";
 import { useSwipeDownToClose } from "@/hooks/use-swipe-down-to-close";
 
@@ -177,6 +177,7 @@ export default function KnowledgeGraphPage() {
   const [terminalText, setTerminalText] = useState("");
   const [terminalIdx, setTerminalIdx] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
+  const [apiStatus, setApiStatus] = useState<"idle" | "connecting" | "ok" | "error">("idle");
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   const svgW = 520;
@@ -213,6 +214,8 @@ export default function KnowledgeGraphPage() {
   useEffect(() => {
     let raf: number;
     let frameCount = 0;
+    let isSettled = false;
+    const maxFrames = 150;
     const kRepel = 28000;
     const kSpring = 0.014;
     const restLen = 140;
@@ -222,8 +225,12 @@ export default function KnowledgeGraphPage() {
     const dampen = 0.82;
 
     const tick = () => {
+      if (isSettled) return;
       const ns = nodesRef.current;
-      if (!ns.length) { raf = requestAnimationFrame(tick); return; }
+      if (!ns.length) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
 
       for (let i = 0; i < ns.length; i++) {
         for (let j = i + 1; j < ns.length; j++) {
@@ -253,6 +260,7 @@ export default function KnowledgeGraphPage() {
         if (typeof t.fx !== "number") { t.vx -= (dx / d) * f; t.vy -= (dy / d) * f; }
       });
 
+      let totalMotion = 0;
       ns.forEach((n) => {
         if (typeof n.fx === "number" && typeof n.fy === "number") {
           n.x = n.fx; n.y = n.fy; n.vx = 0; n.vy = 0;
@@ -266,16 +274,48 @@ export default function KnowledgeGraphPage() {
           const pad = NODE_CONFIG[n.type].radius + 10;
           n.x = Math.max(pad, Math.min(svgW - pad, n.x));
           n.y = Math.max(pad, Math.min(svgH - pad, n.y));
+          totalMotion += Math.abs(n.vx) + Math.abs(n.vy);
         }
       });
 
       frameCount++;
-      if (frameCount % 3 === 0) setNodes(ns.map((n) => ({ ...n })));
+      if (frameCount % 3 === 0) {
+        setNodes(ns.map((n) => ({ ...n })));
+      }
+
+      // Settle cleanly once movement decays or max frames reached
+      if ((totalMotion < 0.1 && frameCount > 40) || frameCount >= maxFrames) {
+        isSettled = true;
+        setNodes(ns.map((n) => ({ ...n })));
+        return;
+      }
+
       raf = requestAnimationFrame(tick);
     };
+
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      isSettled = true;
+      cancelAnimationFrame(raf);
+    };
   }, [activeId]);
+
+  // Live API verification
+  useEffect(() => {
+    let cancelled = false;
+    async function pingApi() {
+      setApiStatus("connecting");
+      try {
+        const res = await fetch("http://localhost:8001/graph/topology", { signal: AbortSignal.timeout(5000) });
+        if (!cancelled) setApiStatus(res.ok ? "ok" : "error");
+      } catch {
+        if (!cancelled) setApiStatus("error");
+      }
+    }
+    pingApi();
+    const interval = setInterval(pingApi, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
 
   const onNodeTouchStart = useCallback((id: string) => {
     setDragging(id);
@@ -289,25 +329,49 @@ export default function KnowledgeGraphPage() {
     const x = ((touch.clientX - rect.left) / rect.width) * svgW;
     const y = ((touch.clientY - rect.top) / rect.height) * svgH;
     const node = nodesRef.current.find((n) => n.id === dragging);
-    if (node) { node.fx = x; node.fy = y; }
+    if (node) {
+      node.fx = x;
+      node.fy = y;
+      node.x = x;
+      node.y = y;
+      setNodes(nodesRef.current.map((n) => ({ ...n })));
+    }
   }, [dragging]);
 
   const onSvgTouchEnd = useCallback(() => {
     if (!dragging) return;
     const node = nodesRef.current.find((n) => n.id === dragging);
-    if (node) { node.fx = null; node.fy = null; }
+    if (node) {
+      node.fx = null;
+      node.fy = null;
+    }
     setDragging(null);
   }, [dragging]);
 
   const TypeIcon = { incident: AlertTriangle, ai: Cpu, law: Scale, agency: Building2, proof: ShieldCheck } as const;
 
   return (
-    <div className="min-h-full pb-24 bg-[#0a0f1a]">
-      <header className="sticky top-0 z-30 bg-[#0a0f1a]/90 backdrop-blur-md border-b border-white/10 px-4 h-14 flex items-center">
-        <Network className="w-4 h-4 text-[#2ee6c8] mr-2" />
-        <h1 className="text-sm font-bold text-white tracking-wide">Graph Explorer</h1>
-        <button onClick={() => setShowPresets(true)} className="ml-auto px-2 py-1 rounded-lg bg-white/10 text-[10px] text-white/60 font-mono">
-          {activePreset.title.split(" ").slice(0, 2).join(" ")}
+    <div className="min-h-full pb-6 bg-[#0a0f1a]">
+      <header className="sticky top-0 z-30 bg-[#0a0f1a]/95 backdrop-blur-xl border-b border-white/10 px-4 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#2ee6c8]/10 border border-[#2ee6c8]/25 flex items-center justify-center">
+            <Network className="w-4 h-4 text-[#2ee6c8]" />
+          </div>
+          <div>
+            <h1 className="text-sm font-bold text-white tracking-wide leading-tight">Graph Explorer</h1>
+            <span className="text-[9px] font-mono text-white/40 block">NEO4J REASONING MESH</span>
+          </div>
+        </div>
+
+        {/* Interactive Scenario Selector Dropdown Trigger */}
+        <button
+          onClick={() => setShowPresets(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#131d33] hover:bg-[#1a2845] active:scale-95 border border-white/15 text-xs font-semibold text-white shadow-md transition-all cursor-pointer group"
+          title="Switch Graph Scenario"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[#2ee6c8] animate-pulse shrink-0" />
+          <span className="truncate max-w-[120px] font-mono">{activePreset.title}</span>
+          <ChevronDown className="w-3.5 h-3.5 text-white/60 group-hover:text-white transition-transform group-active:translate-y-0.5" />
         </button>
       </header>
 
@@ -426,6 +490,34 @@ export default function KnowledgeGraphPage() {
         </div>
       )}
 
+      {/* Legend + API Status */}
+      <div className="px-4 pb-3 space-y-3">
+        {/* Legend */}
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          {Object.entries(NODE_CONFIG).map(([type, config]) => (
+            <div key={type} className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: config.color }} />
+              <span className="text-[9px] font-mono text-ink/50">{config.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Live API Verification */}
+        <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#080c15] border border-white/10">
+          <div className="flex items-center gap-2">
+            <span className={`w-1.5 h-1.5 rounded-full ${
+              apiStatus === "ok" ? "bg-green" : apiStatus === "connecting" ? "bg-amber animate-pulse" : apiStatus === "error" ? "bg-red" : "bg-white/20"
+            }`} />
+            <span className="text-[10px] font-mono text-white/40">NEO4J TOPOLOGY</span>
+          </div>
+          <span className={`text-[9px] font-mono font-bold ${
+            apiStatus === "ok" ? "text-green" : apiStatus === "error" ? "text-red" : "text-white/30"
+          }`}>
+            {apiStatus === "ok" ? "CONNECTED" : apiStatus === "connecting" ? "PINGING..." : apiStatus === "error" ? "OFFLINE" : "IDLE"}
+          </span>
+        </div>
+      </div>
+
       {/* Terminal Toggle */}
       <div className="px-4 pb-4">
         <button onClick={() => setShowTerminal(!showTerminal)} className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#080c15] border border-white/10">
@@ -442,27 +534,135 @@ export default function KnowledgeGraphPage() {
         )}
       </div>
 
-      {/* Preset Picker Modal */}
+      {/* Preset Picker Modal / Bottom Sheet (Modern White Theme with Edge) */}
       {showPresets && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPresets(false)} />
-          <div ref={presetSheetRef} className="relative bg-white rounded-t-3xl shadow-2xl max-h-[70vh] flex flex-col">
-            <div className="flex justify-center pt-3 pb-2"><div className="w-12 h-1.5 bg-gray-200 rounded-full" /></div>
-            <div className="px-5 pb-3 flex justify-between items-center border-b border-gray-100">
-              <h2 className="text-lg font-bold text-ink">Select Scenario</h2>
-              <button onClick={() => setShowPresets(false)} aria-label="Close presets" className="p-1 text-ink/40"><X className="w-5 h-5" /></button>
+          <div
+            className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setShowPresets(false)}
+          />
+          <div
+            ref={presetSheetRef}
+            className="relative bg-white text-ink rounded-t-[28px] shadow-[0_-16px_50px_rgba(0,0,0,0.25)] max-h-[80vh] flex flex-col border-t-2 border-ink/10 overflow-hidden"
+          >
+            {/* Grab Handle */}
+            <div className="flex justify-center pt-3 pb-1.5">
+              <div className="w-10 h-1.5 bg-ink/20 rounded-full" />
             </div>
-            <div className="overflow-y-auto px-5 py-4 pb-8 flex-1 space-y-2">
-              {PRESETS.map((p) => (
-                <button key={p.id} onClick={() => { setActiveId(p.id); setShowPresets(false); }}
-                  className={cn("w-full text-left p-4 rounded-2xl border transition-all", p.id === activeId ? "border-green bg-green/5" : "border-ink/10 bg-white")}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-bold text-ink">{p.title}</span>
-                    <span className={cn("text-[9px] font-bold uppercase px-1.5 py-0.5 rounded", p.severity === "critical" ? "bg-red-500/10 text-red-500" : "bg-amber-500/10 text-amber-500")}>{p.severity}</span>
-                  </div>
-                  <p className="text-xs text-ink/50">{p.category}</p>
-                </button>
-              ))}
+
+            {/* Sheet Header with Edge */}
+            <div className="px-5 pb-3.5 flex justify-between items-center border-b border-ink/10 bg-slate-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-teal-500/10 border border-teal-500/25 flex items-center justify-center">
+                  <Layers className="w-4 h-4 text-teal-600" />
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-ink tracking-tight">Select Graph Scenario</h2>
+                  <p className="text-[10px] text-ink/50 font-mono">4 ACTIVE REASONING SIMULATIONS</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPresets(false)}
+                aria-label="Close presets"
+                className="p-2 rounded-xl bg-ink/5 hover:bg-ink/10 text-ink/70 hover:text-ink transition-colors cursor-pointer active:scale-95"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Scenario Cards List with Edge */}
+            <div className="overflow-y-auto px-4 py-3.5 pb-8 flex-1 space-y-2.5">
+              {PRESETS.map((p) => {
+                const isActive = p.id === activeId;
+                const config =
+                  p.id === "solid-waste"
+                    ? { icon: Trash2, color: "#f97316", law: "RA 9003", agency: "CENRO", bgTint: "border-l-amber-500" }
+                    : p.id === "deforestation"
+                    ? { icon: TreePine, color: "#10b981", law: "P.D. 705", agency: "DENR", bgTint: "border-l-emerald-500" }
+                    : p.id === "wastewater"
+                    ? { icon: Droplets, color: "#06b6d4", law: "RA 9275", agency: "LLDA / EMB", bgTint: "border-l-cyan-500" }
+                    : { icon: Fish, color: "#3b82f6", law: "RA 8550", agency: "BFAR / PCG", bgTint: "border-l-blue-500" };
+
+                const IconComponent = config.icon;
+
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      setActiveId(p.id);
+                      setShowPresets(false);
+                    }}
+                    className={cn(
+                      "w-full text-left p-3.5 rounded-2xl border-2 border-l-[6px] transition-all cursor-pointer relative overflow-hidden group active:scale-[0.98]",
+                      config.bgTint,
+                      isActive
+                        ? "border-ink bg-slate-50 shadow-md ring-2 ring-ink/10"
+                        : "border-ink/10 bg-white hover:border-ink/25 hover:bg-slate-50/50 shadow-xs"
+                    )}
+                  >
+                    {/* Top Row: Category tag + Severity */}
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="w-5 h-5 rounded-lg flex items-center justify-center"
+                          style={{ backgroundColor: `${config.color}15` }}
+                        >
+                          <IconComponent className="w-3 h-3" style={{ color: config.color }} />
+                        </span>
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-ink/60">
+                          {p.category}
+                        </span>
+                      </div>
+
+                      <span
+                        className={cn(
+                          "text-[9px] font-mono font-black uppercase px-2 py-0.5 rounded-md border tracking-wider",
+                          p.severity === "critical"
+                            ? "bg-red-500/10 text-red-600 border-red-500/30"
+                            : "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                        )}
+                      >
+                        {p.severity}
+                      </span>
+                    </div>
+
+                    {/* Middle Row: Scenario Title + Active Checkmark */}
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <h3
+                        className={cn(
+                          "text-sm font-black font-mono tracking-tight",
+                          isActive ? "text-ink" : "text-ink/90 group-hover:text-ink"
+                        )}
+                      >
+                        {p.title}
+                      </h3>
+
+                      {isActive ? (
+                        <span className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm shrink-0">
+                          <CircleCheck className="w-4 h-4" />
+                        </span>
+                      ) : (
+                        <span className="w-6 h-6 rounded-full border border-ink/20 flex items-center justify-center shrink-0 group-hover:border-ink/40 text-transparent">
+                          <CircleCheck className="w-3.5 h-3.5" />
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Bottom Metadata Badges */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-ink/5 text-[10px] font-mono text-ink/60 flex-wrap">
+                      <span className="px-2 py-0.5 rounded bg-ink/[0.04] font-semibold text-ink/75">
+                        5 Graph Nodes
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-ink/[0.04]">
+                        Law: <b className="text-ink">{config.law}</b>
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-ink/[0.04]">
+                        Enforcer: <b className="text-ink">{config.agency}</b>
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

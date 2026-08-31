@@ -16,6 +16,7 @@ interface MobileLayoutProps {
   onThemeToggle: () => void;
   backHref?: string;
   onPullToRefresh?: () => Promise<void>;
+  hideHeader?: boolean;
   className?: string;
 }
 
@@ -26,6 +27,7 @@ export function MobileLayout({
   onThemeToggle,
   backHref,
   onPullToRefresh,
+  hideHeader = false,
   className,
 }: MobileLayoutProps) {
   const pathname = usePathname();
@@ -44,11 +46,12 @@ export function MobileLayout({
       )}
     >
       {/* Top Bar */}
-      <header
-        className={cn(
-          "h-14 flex items-center justify-between px-4 relative z-20 shrink-0 transition-colors duration-200",
-          isDashboard ? "border-b border-ink/10" : ""
-        )}
+      {!hideHeader && (
+        <header
+          className={cn(
+            "h-14 flex items-center justify-between px-4 relative z-20 shrink-0 transition-colors duration-200",
+            isDashboard ? "border-b border-ink/10" : ""
+          )}
         style={{
           paddingTop: "env(safe-area-inset-top, 0px)",
           background: isDashboard ? "color-mix(in oklab, var(--page) 78%, transparent)" : "transparent",
@@ -129,9 +132,15 @@ export function MobileLayout({
             </div>
           </div>
         </header>
+      )}
 
       {/* Main Content */}
-      <main className={cn("flex-1 pb-28", onPullToRefresh ? "overflow-hidden" : "overflow-y-auto")}>
+      <main
+        className={cn(
+          "flex-1",
+          onPullToRefresh ? "overflow-hidden" : "overflow-y-auto"
+        )}
+      >
         {onPullToRefresh ? (
           <PullToRefresh onRefresh={onPullToRefresh} className="h-full">
             {children}

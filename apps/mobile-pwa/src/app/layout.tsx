@@ -4,7 +4,6 @@ import {
   Public_Sans,
   JetBrains_Mono,
 } from "next/font/google";
-import Script from "next/script";
 import { getLocale } from "next-intl/server";
 import "./globals.css";
 
@@ -85,6 +84,8 @@ export const viewport: Viewport = {
 
 import { AppleSplashScreens } from "@/components/apple-splash-screens";
 import { SplashScreen } from "@/components/splash-screen";
+import { ThemeInitializer } from "@/components/theme-initializer";
+import { ServiceWorkerRegistrar } from "@/components/sw-registrar";
 
 export default async function RootLayout({
   children,
@@ -104,23 +105,10 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <AppleSplashScreens />
-        <Script id="theme-initializer" strategy="beforeInteractive">
-          {`try {
-            var savedTheme = localStorage.getItem('likaslens-theme');
-            if (savedTheme === 'ghost') {
-              document.documentElement.setAttribute('data-theme', 'ghost');
-            }
-          } catch (e) {}`}
-        </Script>
-        <Script id="sw-register" strategy="afterInteractive">
-          {`if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-              navigator.serviceWorker.register('/sw.js');
-            });
-          }`}
-        </Script>
       </head>
       <body className="min-h-full flex flex-col bg-page">
+        <ThemeInitializer />
+        <ServiceWorkerRegistrar />
         <SplashScreen />
         <a
           href="#main-content"
