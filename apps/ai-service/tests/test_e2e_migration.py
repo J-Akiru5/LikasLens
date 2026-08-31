@@ -334,6 +334,99 @@ class TestTickets:
         assert "Cannot transition" in resp.json()["detail"]
         app.dependency_overrides.clear()
 
+    def test_update_status_with_urgency_score(self):
+        """PATCH endpoint accepts optional urgency_score."""
+        self._auth_lgu()
+        ticket = _sample_ticket()
+        session = _mock_session(one_result=ticket)
+        app.dependency_overrides[get_db] = lambda: session
+
+        resp = client.patch(
+            f"/api/v1/tickets/{ticket.id}/status",
+            json={"status": "investigating", "urgency_score": 4.5},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+        assert data["data"]["new_status"] == "investigating"
+        app.dependency_overrides.clear()
+
+    def test_bulk_status_valid(self):
+        """Bulk status update with all valid transitions succeeds."""
+        self._auth_lgu()
+        t1 = _sample_ticket(status="open")
+        t2 = _sample_ticket(status="open")
+        session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = [t1, t2]
+        session.execute.return_value = mock_result
+        session.add = MagicMock()
+        session.commit = AsyncMock()
+        app.dependency_overrides[get_db] = lambda: session
+
+        resp = client.post(
+            "/api/v1/tickets/bulk-status",
+            json={"ticket_ids": [str(t1.id), str(t2.id)], "status": "investigating"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+        assert data["data"]["updated"] == 2
+        assert data["data"]["failed"] == []
+        app.dependency_overrides.clear()
+
+    def test_bulk_status_rejects_invalid_transition(self):
+        """Bulk status update rejects if ANY ticket has an invalid transition."""
+        self._auth_lgu()
+        t1 = _sample_ticket(status="open")
+        t2 = _sample_ticket(status="closed")  # closed -> investigating is NOT allowed
+        session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = [t1, t2]
+        session.execute.return_value = mock_result
+        session.add = MagicMock()
+        session.commit = AsyncMock()
+        app.dependency_overrides[get_db] = lambda: session
+
+        resp = client.post(
+            "/api/v1/tickets/bulk-status",
+            json={"ticket_ids": [str(t1.id), str(t2.id)], "status": "investigating"},
+        )
+        assert resp.status_code == 422
+        assert "Batch rejected" in resp.json()["detail"]
+        app.dependency_overrides.clear()
+
+    def test_bulk_status_ticket_not_found(self):
+        """Bulk status update rejects if any ticket ID is not found."""
+        self._auth_lgu()
+        t1 = _sample_ticket(status="open")
+        session = AsyncMock()
+        mock_result = MagicMock()
+        mock_result.scalars.return_value.all.return_value = [t1]  # only 1 ticket returned, 2 requested
+        session.execute.return_value = mock_result
+        session.add = MagicMock()
+        session.commit = AsyncMock()
+        app.dependency_overrides[get_db] = lambda: session
+
+        resp = client.post(
+            "/api/v1/tickets/bulk-status",
+            json={"ticket_ids": [str(t1.id), str(uuid.uuid4())], "status": "investigating"},
+        )
+        assert resp.status_code == 422
+        assert "Batch rejected" in resp.json()["detail"]
+        app.dependency_overrides.clear()
+
+    def test_bulk_status_empty_ids(self):
+        """Bulk status update rejects empty ticket_ids."""
+        self._auth_lgu()
+        resp = client.post(
+            "/api/v1/tickets/bulk-status",
+            json={"ticket_ids": [], "status": "investigating"},
+        )
+        assert resp.status_code == 422
+        assert "empty" in resp.json()["detail"].lower()
+        app.dependency_overrides.clear()
+
 
 # ============================================================================
 # Public — GET /api/v1/public/tickets

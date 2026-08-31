@@ -94,10 +94,10 @@ export default function ImpactPage() {
           total_users: impact?.total_citizens ?? stats?.total_users ?? 0,
           reports_by_type: impact?.reports_by_type ?? {},
           resolved_count: impact?.total_resolved ?? stats?.resolved_today ?? 0,
-          regions_affected: 17,
+          regions_affected: 0,
           resolution_rate: impact?.resolution_rate ?? stats?.resolved_today_progress ?? 0,
           active_incidents: stats?.active_incidents ?? 0,
-          avg_urgency: 6.2,
+          avg_urgency: 0,
         });
       } catch (err) {
         if (!controller.signal.aborted) console.error("Failed to load impact data:", err);
