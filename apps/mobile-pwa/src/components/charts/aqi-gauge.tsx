@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
 import { echarts, useEChartsTheme } from "./echarts-theme";
-import { laravelGet } from "@likaslens/shared";
+import { getSupabaseClient } from "@likaslens/shared";
 
 interface AqiData {
   us_aqi: number;

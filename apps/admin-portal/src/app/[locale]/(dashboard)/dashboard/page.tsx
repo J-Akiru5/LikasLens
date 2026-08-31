@@ -5,8 +5,8 @@ import {
   getDashboardStats,
   getDashboardFeed,
   getTickets,
+  getAnalyticsDashboard,
   Sparkline,
-  laravelGet,
   EmptyState,
   cn,
   RevealSection,
@@ -52,7 +52,7 @@ export default function DashboardPage() {
           getDashboardStats(),
           getDashboardFeed(),
           getTickets({ per_page: "5" }),
-          laravelGet<any>("/analytics/dashboard").catch(() => null),
+          getAnalyticsDashboard().catch(() => null),
         ]);
         if (statsRes.success) setStats(statsRes.data);
         if (feedRes.success) setFeed(feedRes.data);

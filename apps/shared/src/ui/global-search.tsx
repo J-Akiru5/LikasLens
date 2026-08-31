@@ -11,7 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Search, Loader2, Ticket, Scale, Building2, Users, type LucideIcon } from "lucide-react";
 import { cn } from "../utils";
-import { laravelGet } from "../api/client";
+import { getSupabaseClient } from "../supabase/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -37,72 +37,64 @@ type SearchEntity = SearchResult["type"];
 const ENTITY_CONFIG: Record<SearchEntity, {
   icon: LucideIcon;
   label: string;
-  endpoint: string;
+  table: string;
   hrefPrefix: string;
   extractResults: (data: unknown) => { id: string; label: string; subtitle: string }[];
 }> = {
   ticket: {
     icon: Ticket,
     label: "Tickets",
-    endpoint: "/tickets",
+    table: "tickets",
     hrefPrefix: "/tickets",
     extractResults: (data: any) => {
-      const tickets = data?.data ?? [];
-      return Array.isArray(tickets)
-        ? tickets.map((t: any) => ({
-            id: t.id,
-            label: t.title || `Ticket #${t.id?.slice(0, 8)}`,
-            subtitle: `${t.status || "unknown"} · ${t.violation_type || ""}`,
-          }))
-        : [];
+      const tickets = Array.isArray(data) ? data : [];
+      return tickets.map((t: any) => ({
+        id: t.id,
+        label: t.title || `Ticket #${t.id?.slice(0, 8)}`,
+        subtitle: `${t.status || "unknown"} · ${t.violation_type || ""}`,
+      }));
     },
   },
   law: {
     icon: Scale,
     label: "Laws",
-    endpoint: "/admin/laws",
+    table: "environmental_laws_ph",
     hrefPrefix: "/laws",
     extractResults: (data: any) => {
-      const laws = data?.data ?? [];
-      return Array.isArray(laws)
-        ? laws.map((l: any) => ({
-            id: l.id,
-            label: l.title || l.name || `Law #${l.id?.slice(0, 8)}`,
-            subtitle: l.code || l.jurisdiction || "",
-          }))
-        : [];
+      const laws = Array.isArray(data) ? data : [];
+      return laws.map((l: any) => ({
+        id: l.id,
+        label: l.title || l.name || `Law #${l.id?.slice(0, 8)}`,
+        subtitle: l.code || l.jurisdiction || "",
+      }));
     },
   },
   ngo: {
     icon: Building2,
     label: "NGOs",
-    endpoint: "/admin/ngos",
+    table: "ngo_groups",
     hrefPrefix: "/ngos",
     extractResults: (data: any) => {
-      const ngos = data?.data ?? [];
-      return Array.isArray(ngos)
-        ? ngos.map((n: any) => ({
-            id: n.id,
-            label: n.name,
-            subtitle: n.focus || n.country || "",
-          }))
-        : [];
+      const ngos = Array.isArray(data) ? data : [];
+      return ngos.map((n: any) => ({
+        id: n.id,
+        label: n.name,
+        subtitle: n.focus || n.country || "",
+      }));
     },
   },
   user: {
     icon: Users,
     label: "Users",
-    endpoint: "/admin/users",
+    table: "users",
     hrefPrefix: "/users",
     extractResults: (data: any) => {
-      const users = data?.data ?? [];
-      return Array.isArray(users)
-        ? users.map((u: any) => ({
-            id: u.id,
-            label: u.name || u.email || `User #${u.id?.slice(0, 8)}`,
-            subtitle: u.email || u.role || "",
-          }))
-        : [];
+      const users = Array.isArray(data) ? data : [];
+      return users.map((u: any) => ({
+        id: u.id,
+        label: u.name || u.email || `User #${u.id?.slice(0, 8)}`,
+        subtitle: u.email || u.role || "",
+      }));
     },
   },
 };
@@ -207,13 +199,17 @@ export function GlobalSearch({
       const q = query.trim();
       if (!q) return;
 
+      const db = getSupabaseClient();
       const entities: SearchEntity[] = entityTypes as SearchEntity[];
       const promises = entities.map(async (type) => {
         const config = ENTITY_CONFIG[type as SearchEntity];
         try {
-          const data = await laravelGet<any>(
-            `${config.endpoint}?per_page=5&search=${encodeURIComponent(q)}`
-          );
+          const { data, error } = await db
+            .from(config.table)
+            .select("*")
+            .or(`name.ilike.%${q}%,title.ilike.%${q}%,email.ilike.%${q}%,description.ilike.%${q}%`)
+            .limit(5);
+          if (error) throw error;
           return { type, items: config.extractResults(data) };
         } catch {
           return { type, items: [] };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { BarChart3, TrendingUp, Users, Loader2, Clock, Activity } from "lucide-react";
-import { laravelGet, showToast, Skeleton, AnimatedCounter, RevealSection, PulseBadge } from "@likaslens/shared";
+import { getDashboardStats, showToast, Skeleton, AnimatedCounter, RevealSection, PulseBadge } from "@likaslens/shared";
 import type { DashboardStats, ApiResponse } from "@likaslens/shared";
 import { AqiGauge } from "@/components/charts/aqi-gauge";
 import { TimeSeriesChart } from "@/components/charts/time-series-chart";
@@ -17,7 +17,7 @@ export default function AnalyticsPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await laravelGet<ApiResponse<DashboardStats>>("/dashboard/stats");
+      const res = await getDashboardStats();
       setStats(res?.data ?? null);
       setLastUpdated(new Date());
     } catch (err) {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ReactECharts from "echarts-for-react/lib/core";
 import { echarts, useEChartsTheme } from "./echarts-theme";
 import { useChartColors } from "./use-chart-colors";
-import { laravelGet } from "@likaslens/shared";
+import { getAnalyticsDashboard } from "@likaslens/shared";
 import type { ApiResponse } from "@likaslens/shared";
 
 interface TimeSeriesEntry {
@@ -26,7 +26,7 @@ export function TimeSeriesChart() {
   useEffect(() => {
     async function fetchTimeSeries() {
       try {
-        const res = await laravelGet<ApiResponse<AnalyticsData>>("/analytics/dashboard");
+        const res = await getAnalyticsDashboard();
         const analytics = res?.data;
         if (analytics?.time_series) {
           setData({

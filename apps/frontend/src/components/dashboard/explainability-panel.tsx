@@ -12,7 +12,7 @@ import {
   Sparkles,
   Link2,
 } from "lucide-react";
-import { laravelGet } from "@likaslens/shared";
+import { getSupabaseClient } from "@likaslens/shared";
 import { ConfidenceWaterfall } from "./confidence-waterfall";
 import type {
   TicketExplainResponse,
@@ -104,11 +104,10 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await laravelGet<{ success: boolean; data: TicketExplainResponse }>(
-        `/tickets/${ticketId}/explain`
-      );
-      if (res.success) {
-        setData(res.data);
+      const db = getSupabaseClient();
+      const { data: res, error } = await db.from("tickets").select("*").eq("id", ticketId).single();
+      if (res) {
+        setData({ ticket: res } as TicketExplainResponse);
       } else {
         setError("Explain data unavailable");
       }

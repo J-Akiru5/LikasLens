@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import { TreePine, Droplets, Zap, ShieldCheck, Globe, TrendingUp, AlertTriangle, Clock, Activity, Cpu, Network, Brain, DollarSign, Users, BarChart3, Target, FileText, MapPin, Loader2 } from "lucide-react";
-import { laravelGet, showToast, Skeleton, AnimatedCounter, RevealSection } from "@likaslens/shared";
+import { getPublicImpact, getDashboardStats, showToast, Skeleton, AnimatedCounter, RevealSection } from "@likaslens/shared";
 import { ViolationDonut } from "@/components/charts/violation-donut";
 
 const PhilippineTelemetryGrid = dynamic(
@@ -83,10 +83,10 @@ export default function ImpactPage() {
     const controller = new AbortController();
     async function load() {
       try {
-        const [impactRes, statsRes] = await Promise.all([
-          laravelGet<any>("/public/impact"),
-          laravelGet<any>("/dashboard/stats"),
-        ]);
+          const [impactRes, statsRes] = await Promise.all([
+            getPublicImpact(),
+            getDashboardStats(),
+          ]);
         const impact = impactRes?.data;
         const stats = statsRes?.data;
         setData({

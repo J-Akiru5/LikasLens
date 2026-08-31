@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MapPin, AlertTriangle, TrendingUp } from "lucide-react";
-import { laravelGet } from "@likaslens/shared";
+import { getAnalyticsDashboard } from "@likaslens/shared";
 
 interface Hotspot {
   province: string;
@@ -37,7 +37,7 @@ export function HotspotList() {
   useEffect(() => {
     async function fetchHotspots() {
       try {
-        const res = await laravelGet<any>("/analytics/dashboard");
+          const res = await getAnalyticsDashboard();
         if (res?.success && res?.data?.hotspots) {
           setHotspots(res.data.hotspots.slice(0, 8));
         }

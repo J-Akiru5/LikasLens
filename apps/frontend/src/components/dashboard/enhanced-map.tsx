@@ -22,7 +22,7 @@ import {
   Shield,
 } from "lucide-react";
 import Link from "next/link";
-import { laravelGet } from "@likaslens/shared";
+import { getHeatmap, getHeatmapViolationTypes } from "@likaslens/shared";
 
 // ── Constants ────────────────────────────────────────────────────────────
 
@@ -253,7 +253,7 @@ export function EnhancedMap({
 
   // Fetch violation types
   useEffect(() => {
-    laravelGet<{ success: boolean; data: ViolationType[] }>("/reports/heatmap/violation-types")
+    getHeatmapViolationTypes()
       .then((res) => {
         if (res.success) setViolationTypes(res.data);
       })
@@ -265,13 +265,10 @@ export function EnhancedMap({
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      params.set("days", String(days));
-      if (selectedType) params.set("type", selectedType);
-      if (force) params.set("_bust", "1"); // cache-bust on manual refresh
-      const res = await laravelGet<{ success: boolean; data: HeatmapData }>(
-        `/reports/heatmap?${params.toString()}`
-      );
+      const heatmapParams: Record<string, string> = { days: String(days) };
+      if (selectedType) heatmapParams.type = selectedType;
+      if (force) heatmapParams._bust = "1";
+      const res = await getHeatmap(heatmapParams);
       if (res.success && res.data) {
         setData({
           points: Array.isArray(res.data.points) ? res.data.points : [],

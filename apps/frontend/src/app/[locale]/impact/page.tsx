@@ -18,7 +18,7 @@ import {
   Activity,
 } from "lucide-react";
 import { UserNav } from "@/components/layout/user-nav";
-import { laravelGet, Skeleton } from "@likaslens/shared";
+import { getPublicImpact, Skeleton } from "@likaslens/shared";
 import type { PublicImpactData } from "@likaslens/shared";
 
 /* ── Animations ────────────────────────────────────────── */
@@ -147,10 +147,7 @@ export default function ImpactPage() {
     const controller = new AbortController();
     async function fetchImpact() {
       try {
-        const res = await laravelGet<{ success: boolean; data: PublicImpactData }>(
-          "/public/impact",
-          controller.signal,
-        );
+        const res = await getPublicImpact();
         if (res.success) {
           setData(res.data);
         } else {

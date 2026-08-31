@@ -142,6 +142,8 @@ export interface AnalyticsDashboardData {
   reports_by_day: { date: string; count: number }[];
   tickets_by_status: Record<string, number>;
   tickets_by_type: Record<string, number>;
+  hotspots: { province: string; risk_score: number; report_count: number; dominant_type: string }[];
+  time_series: { date: string; count: number; resolved?: number; label?: string }[];
 }
 
 export interface ViolationTypeEntry {
