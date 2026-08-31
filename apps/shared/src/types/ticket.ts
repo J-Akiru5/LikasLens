@@ -27,6 +27,8 @@ export interface TicketDetail extends Ticket {
   address_text?: string;
   ai_triage_summary?: string;
   ai_confidence?: number;
+  ai_recommended_office?: string | null;
+  routing_source?: string | null;
   is_redd_eligible?: boolean;
   evidence: TicketEvidence[];
   classifications: TicketClassification[];
@@ -116,8 +118,6 @@ export interface TriageTicket {
 
 export interface ConfidenceBreakdown {
   visual: number;
-  community_corroboration: number;
-  geo_within_known_zone: number;
 }
 
 export interface RuleChain {

@@ -390,8 +390,6 @@ async def explain_ticket(
             "confidence": confidence,
             "confidence_breakdown": {
                 "visual": confidence,
-                "community_corroboration": 0.4,
-                "geo_within_known_zone": 0.5,
             },
             "rule_chain": {
                 "rule_fired": (

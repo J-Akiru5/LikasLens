@@ -180,6 +180,41 @@ export function IncidentDetailPanel({
                 </div>
               )}
 
+              {/* Routing & Recommended Office */}
+              {(ticket.ai_recommended_office || ticket.routing_source) && (
+                <div>
+                  <p className="text-xs font-mono text-ink/40 uppercase tracking-wider mb-2">
+                    Routing
+                  </p>
+                  <div className="space-y-2">
+                    {ticket.ai_recommended_office && (
+                      <div className="flex items-center gap-2 text-sm text-ink/70">
+                        <span className="text-ink/40">Recommended Office:</span>
+                        <span className="font-medium">{ticket.ai_recommended_office}</span>
+                      </div>
+                    )}
+                    {ticket.routing_source && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-ink/40">Source:</span>
+                        {ticket.routing_source === "neo4j" ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-green/10 text-green border border-green/20">
+                            Knowledge Graph
+                          </span>
+                        ) : ticket.routing_source === "postgresql_fallback" ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-ink/5 text-ink/50">
+                            Deterministic Fallback
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-ink/5 text-ink/50">
+                            {ticket.routing_source}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Classifications */}
               {ticket.classifications?.length > 0 && (
                 <div>
