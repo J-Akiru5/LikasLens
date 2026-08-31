@@ -18,8 +18,12 @@ import {
   FileText,
   ShieldAlert,
   Gauge,
-  MapPinned,
 } from "lucide-react";
+
+// Feature flags — default OFF for competition demo safety
+const FEATURE_FLAGS = {
+  predictions: false,
+} as const;
 
 const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { divider: true, dividerLabel: "Overview" },
@@ -27,7 +31,9 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { href: "/analytics", label: "Analytics", icon: BarChart3, roles: ["analyst", "super_admin", "lgu"] },
 
   { divider: true, dividerLabel: "Operations" },
-  { href: "/predictions", label: "Predictions", icon: MapPinned, roles: ["analyst", "super_admin"] },
+  ...(FEATURE_FLAGS.predictions
+    ? [{ href: "/predictions", label: "Predictions", icon: Gauge, roles: ["analyst", "super_admin"] as string[] }]
+    : []),
   { href: "/triage", label: "Triage", icon: ShieldAlert, roles: ["analyst", "super_admin"] },
   { href: "/tickets", label: "Tickets", icon: Ticket, roles: ["analyst", "super_admin", "lgu"] },
   { href: "/ngos", label: "NGOs", icon: Building2, roles: ["analyst", "super_admin"] },

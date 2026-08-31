@@ -27,6 +27,10 @@ export interface TicketDetail extends Ticket {
   address_text?: string;
   ai_triage_summary?: string;
   ai_confidence?: number;
+  ai_recommended_office?: string;
+  routing_source?: string;
+  ghost_mode?: boolean;
+  location_fuzzed?: boolean;
   is_redd_eligible?: boolean;
   evidence: TicketEvidence[];
   classifications: TicketClassification[];

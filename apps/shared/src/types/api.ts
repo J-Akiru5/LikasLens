@@ -19,24 +19,26 @@ export interface DashboardStats {
   active_incidents: number;
   active_incidents_total: number;
   active_incidents_progress: number;
-  active_incidents_trend: string;
   resolved_today: number;
   resolved_today_total: number;
   resolved_today_progress: number;
-  resolved_today_trend: string;
-  avg_response_minutes: number;
-  avg_response_sla: number;
-  avg_response_progress: number;
-  avg_response_trend: string;
-  system_load: number;
-  system_load_total: number;
-  system_load_progress: number;
-  system_load_trend: string;
   total_tickets: number;
   total_reports: number;
-  total_users: number;
-  ghost_reports: number;
   tickets_by_status: Record<string, number>;
+  // Deprecated fields — no longer populated by admin handler.
+  // Kept optional so consuming apps compile without breakage.
+  active_incidents_trend?: string;
+  resolved_today_trend?: string;
+  avg_response_minutes?: number;
+  avg_response_sla?: number;
+  avg_response_progress?: number;
+  avg_response_trend?: string;
+  system_load?: number;
+  system_load_total?: number;
+  system_load_progress?: number;
+  system_load_trend?: string;
+  total_users?: number;
+  ghost_reports?: number;
 }
 
 export interface ActivityFeedItem {
@@ -46,7 +48,9 @@ export interface ActivityFeedItem {
   title: string;
   description: string;
   location: string;
-  time: string;
+  created_at?: string;
+  /** @deprecated Use created_at and compute relative time client-side */
+  time?: string;
   status: string;
   reporter: string;
 }

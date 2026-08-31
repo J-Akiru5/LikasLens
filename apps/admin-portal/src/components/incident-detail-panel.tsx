@@ -10,16 +10,44 @@ import {
   Fingerprint,
   Shield,
   Loader2,
+  Brain,
+  Route,
+  EyeOff,
+  MapPinned,
 } from "lucide-react";
 import { cn, getTicket, updateTicketStatus, showToast } from "@likaslens/shared";
 import type { TicketDetail } from "@likaslens/shared";
 
-const STATUS_OPTIONS = [
-  { value: "investigating", label: "Move to Review", color: "bg-amber-500" },
-  { value: "monitoring", label: "Move to Verify", color: "bg-blue-500" },
-  { value: "resolved", label: "Mark Resolved", color: "bg-green" },
-  { value: "closed", label: "Close", color: "bg-ink/20" },
-];
+// ALLOWED_TRANSITIONS mirrors FastAPI's server-side state machine
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  open: ["investigating", "closed"],
+  investigating: ["monitoring", "resolved", "closed"],
+  monitoring: ["resolved", "investigating", "closed"],
+  resolved: ["verified", "closed"],
+  pending_review: ["open", "investigating", "closed"],
+  verified: ["closed"],
+  closed: [],
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  investigating: "Move to Review",
+  monitoring: "Move to Verify",
+  resolved: "Mark Resolved",
+  closed: "Close",
+  open: "Reopen",
+  verified: "Verify",
+  pending_review: "Send to Review",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  investigating: "bg-amber-500",
+  monitoring: "bg-blue-500",
+  resolved: "bg-green",
+  closed: "bg-ink/20",
+  open: "bg-amber/10",
+  verified: "bg-green",
+  pending_review: "bg-amber-500",
+};
 
 function confidenceColor(confidence: number | null): string {
   if (confidence === null) return "bg-ink/5 text-ink/40";
@@ -178,6 +206,62 @@ export function IncidentDetailPanel({
                 </div>
               )}
 
+              {/* Neuro-Symbolic Reasoning Provenance */}
+              <div className="p-3 rounded-xl bg-ink/[0.02] border border-ink/5 space-y-2">
+                <p className="text-xs font-mono text-ink/40 uppercase tracking-wider">
+                  Routing Provenance
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                  {ticket.ai_recommended_office && (
+                    <div className="flex items-center gap-2">
+                      <Brain className="w-3 h-3 text-accent" />
+                      <span className="text-ink/50">Office:</span>
+                      <span className="text-ink/70 font-medium">{ticket.ai_recommended_office}</span>
+                    </div>
+                  )}
+                  {ticket.routing_source && (
+                    <div className="flex items-center gap-2">
+                      <Route className="w-3 h-3 text-accent" />
+                      <span className="text-ink/50">Source:</span>
+                      <span className={cn(
+                        "font-medium",
+                        ticket.routing_source === "neo4j" ? "text-green" : "text-amber"
+                      )}>
+                        {ticket.routing_source === "neo4j" ? "Knowledge Graph" : "Rule Fallback"}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-3 h-3 text-accent" />
+                    <span className="text-ink/50">Confidence:</span>
+                    <span className="text-ink/70 font-medium">
+                      {ticket.ai_confidence !== null ? `${ticket.ai_confidence}%` : "N/A"}
+                    </span>
+                  </div>
+                  {ticket.ghost_mode !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <EyeOff className="w-3 h-3 text-accent" />
+                      <span className="text-ink/50">Ghost Mode:</span>
+                      <span className={cn("font-medium", ticket.ghost_mode ? "text-green" : "text-ink/50")}>
+                        {ticket.ghost_mode ? "Active" : "Off"}
+                      </span>
+                    </div>
+                  )}
+                  {ticket.location_fuzzed !== undefined && (
+                    <div className="flex items-center gap-2">
+                      <MapPinned className="w-3 h-3 text-accent" />
+                      <span className="text-ink/50">Location:</span>
+                      <span className={cn("font-medium", ticket.location_fuzzed ? "text-amber" : "text-ink/70")}>
+                        {ticket.location_fuzzed ? "Privacy-fuzzed (~1km)" : "Exact coordinates"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-[10px] text-ink/30 mt-1">
+                  Evidence → AI category → Graph routing → Recommended office → Operator decision
+                </p>
+              </div>
+
               {/* Classifications */}
               {ticket.classifications?.length > 0 && (
                 <div>
@@ -261,16 +345,14 @@ export function IncidentDetailPanel({
               Actions
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {STATUS_OPTIONS.map((opt) => (
+              {(ALLOWED_TRANSITIONS[ticket.status] || []).map((nextStatus) => (
                 <button
-                  key={opt.value}
-                  onClick={() => handleStatusChange(opt.value)}
-                  disabled={acting || ticket.status === opt.value}
+                  key={nextStatus}
+                  onClick={() => handleStatusChange(nextStatus)}
+                  disabled={acting}
                   className={cn(
                     "flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all",
-                    ticket.status === opt.value
-                      ? "bg-ink/5 text-ink/30 cursor-not-allowed"
-                      : "bg-ink/[0.03] text-ink/70 hover:bg-ink/[0.06] active:scale-[0.98]"
+                    "bg-ink/[0.03] text-ink/70 hover:bg-ink/[0.06] active:scale-[0.98]"
                   )}
                 >
                   {acting ? (
@@ -278,9 +360,14 @@ export function IncidentDetailPanel({
                   ) : (
                     <CheckCircle2 className="w-3.5 h-3.5" />
                   )}
-                  {opt.label}
+                  {STATUS_LABELS[nextStatus] || nextStatus}
                 </button>
               ))}
+              {(!ALLOWED_TRANSITIONS[ticket.status] || ALLOWED_TRANSITIONS[ticket.status].length === 0) && (
+                <p className="col-span-2 text-xs text-ink/30 font-mono text-center py-2">
+                  No transitions available
+                </p>
+              )}
             </div>
           </div>
         )}

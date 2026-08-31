@@ -107,134 +107,73 @@ async function routeRequest<T>(
 
   // ── Dashboard Stats ────────────────────────────────────────────────────────
   if ((path === "dashboard/stats" || path === "admin/dashboard/stats") && method === "GET") {
-    try {
-      const { data: tickets } = await db()
-        .from("tickets")
-        .select("id, status, created_at, resolved_at");
+    const { data: tickets, error } = await db()
+      .from("tickets")
+      .select("id, status, created_at, resolved_at");
 
-      const total_tickets = tickets?.length || 60;
-      const active_incidents = tickets ? tickets.filter((t: Record<string, unknown>) => t.status !== "resolved").length : 42;
-      const resolved_today = tickets ? tickets.filter((t: Record<string, unknown>) => t.status === "resolved").length : 18;
+    if (error) throw error;
 
-      const statsData = {
-        active_incidents: active_incidents || 42,
-        active_incidents_total: total_tickets,
-        active_incidents_progress: Math.round(((active_incidents || 42) / (total_tickets || 1)) * 100),
-        active_incidents_trend: "+4%",
-        resolved_today: resolved_today || 18,
-        resolved_today_total: total_tickets,
-        resolved_today_progress: Math.round(((resolved_today || 18) / (total_tickets || 1)) * 100),
-        resolved_today_trend: "+12%",
-        avg_response_minutes: 14,
-        avg_response_sla: 30,
-        avg_response_progress: 46,
-        avg_response_trend: "Optimal",
-        system_load: 64,
-        system_load_total: 100,
-        system_load_progress: 64,
-        system_load_trend: "Normal",
-        total_tickets,
-        total_reports: total_tickets,
-        total_users: 840,
-        ghost_reports: Math.round(total_tickets * 0.28),
-        tickets_by_status: {
-          open: active_incidents || 42,
-          investigating: Math.round((active_incidents || 42) * 0.4),
-          resolved: resolved_today || 18,
-        },
-      };
+    const all = tickets || [];
+    const active_incidents = all.filter((t: Record<string, unknown>) => t.status !== "resolved" && t.status !== "closed").length;
+    const resolved_today = all.filter((t: Record<string, unknown>) => t.status === "resolved").length;
 
-      return { success: true, data: statsData } as T;
-    } catch {
-      return {
-        success: true,
-        data: {
-          active_incidents: 42,
-          active_incidents_total: 60,
-          active_incidents_progress: 70,
-          active_incidents_trend: "+4%",
-          resolved_today: 18,
-          resolved_today_total: 60,
-          resolved_today_progress: 30,
-          resolved_today_trend: "+12%",
-          avg_response_minutes: 14,
-          avg_response_sla: 30,
-          avg_response_progress: 46,
-          avg_response_trend: "Optimal",
-          system_load: 64,
-          system_load_total: 100,
-          system_load_progress: 64,
-          system_load_trend: "Normal",
-          total_tickets: 60,
-          total_reports: 60,
-          total_users: 840,
-          ghost_reports: 17,
-          tickets_by_status: { open: 42, resolved: 18 },
-        },
-      } as T;
-    }
+    const statsData = {
+      active_incidents,
+      active_incidents_total: all.length,
+      active_incidents_progress: all.length ? active_incidents / all.length : 0,
+      resolved_today,
+      resolved_today_total: all.length,
+      resolved_today_progress: all.length ? resolved_today / all.length : 0,
+      total_tickets: all.length,
+      total_reports: all.length,
+      tickets_by_status: {
+        open: all.filter((t: Record<string, unknown>) => t.status === "open").length,
+        investigating: all.filter((t: Record<string, unknown>) => t.status === "investigating").length,
+        monitoring: all.filter((t: Record<string, unknown>) => t.status === "monitoring").length,
+        resolved: resolved_today,
+        closed: all.filter((t: Record<string, unknown>) => t.status === "closed").length,
+      },
+    };
+
+    return { success: true, data: statsData } as T;
   }
 
   // ── Dashboard Feed ─────────────────────────────────────────────────────────
   if ((path === "dashboard/feed" || path === "admin/dashboard/feed") && method === "GET") {
-    try {
-      const { data: tickets } = await db()
-        .from("tickets")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(20);
+    const { data: tickets, error } = await db()
+      .from("tickets")
+      .select("id, title, status, created_at, urgency_score, address_text, location, latitude, longitude, reporter_name")
+      .order("created_at", { ascending: false })
+      .limit(20);
 
-      const sampleLocations = [
-        "Quezon City, Metro Manila",
-        "Puerto Princesa, Palawan",
-        "Cebu City, Central Visayas",
-        "Davao Oriental, Mindanao",
-        "Baguio City, Benguet",
-        "Iloilo River Basin, Western Visayas",
-        "Manila Bay Coastline, NCR",
-        "Sierra Madre Foothills, Luzon"
-      ];
+    if (error) throw error;
 
-      const items = (tickets && tickets.length > 0 ? tickets : [
-        { id: "595f7636-1e21-4ce0-a535-8e76627f27e5", title: "Oil Spill Near Boracay Shoreline", urgency_score: 5, status: "investigating", address_text: "Station 1, White Beach, Malay, Aklan" },
-        { id: "29d589cb-2c0b-4c1e-a1ab-bd46c70991f8", title: "Mangrove Clearing in Kalibo Wetlands", urgency_score: 4, status: "open", address_text: "Kalibo River Estuary, Kalibo, Aklan" },
-        { id: "ad60870c-069f-43a6-954f-d3de52f4c3c1", title: "Numancia Landfill Leachate Contamination", urgency_score: 3, status: "monitoring", address_text: "Municipal Landfill, Numancia, Aklan" },
-        { id: "019efc05-3184-7221-b8ae-1da93cb8e123", title: "Industrial Effluent Discharge", urgency_score: 5, status: "open", address_text: "Iloilo River Basin, Western Visayas" },
-        { id: "019efc05-4921-7890-c10a-9fb42da1a456", title: "Illegal Quarrying Activity", urgency_score: 3, status: "open", address_text: "Sierra Madre Foothills, Rizal" },
-      ]).map((t: Record<string, unknown>, idx: number) => {
-        const rawId = String(t.id || `item-${idx}`);
-        const cleanHex = rawId.replace(/[^a-zA-Z0-9]/g, "");
-        const display_id = `TKT-${cleanHex.slice(0, 6).toUpperCase() || (1000 + idx)}`;
-        const score = typeof t.urgency_score === "number" ? t.urgency_score : 3;
-        const type = score >= 5 ? "Critical" : score >= 3 ? "Warning" : "Info";
-        
-        let location = String(t.address_text || t.location || "");
-        if (!location && t.latitude && t.longitude) {
-          location = `${Number(t.latitude).toFixed(3)}°N, ${Number(t.longitude).toFixed(3)}°E`;
-        }
-        if (!location) {
-          location = sampleLocations[idx % sampleLocations.length];
-        }
+    const items = (tickets || []).map((t: Record<string, unknown>, idx: number) => {
+      const rawId = String(t.id || `item-${idx}`);
+      const cleanHex = rawId.replace(/[^a-zA-Z0-9]/g, "");
+      const display_id = `TKT-${cleanHex.slice(0, 6).toUpperCase() || (1000 + idx)}`;
+      const score = typeof t.urgency_score === "number" ? t.urgency_score : 3;
+      const type = score >= 5 ? "Critical" : score >= 3 ? "Warning" : "Info";
 
-        const timeAgo = idx === 0 ? "5m ago" : idx === 1 ? "18m ago" : idx === 2 ? "1h ago" : `${idx + 1}h ago`;
+      let location = String(t.address_text || t.location || "");
+      if (!location && t.latitude && t.longitude) {
+        location = `${Number(t.latitude).toFixed(3)}°N, ${Number(t.longitude).toFixed(3)}°E`;
+      }
 
-        return {
-          id: rawId,
-          display_id,
-          type,
-          title: String(t.title || "Environmental Hazard Detected"),
-          description: String(t.description || "Field evidence submitted for automated agency dispatch."),
-          location,
-          time: timeAgo,
-          status: t.status === "resolved" ? "Resolved" : t.status === "investigating" ? "Investigating" : "Active",
-          reporter: String(t.reporter_name || "Verified Citizen"),
-        };
-      });
+      return {
+        id: rawId,
+        display_id,
+        type,
+        title: String(t.title || "Environmental Hazard Detected"),
+        description: String(t.description || "Field evidence submitted for automated agency dispatch."),
+        location,
+        created_at: String(t.created_at || new Date().toISOString()),
+        status: t.status === "resolved" ? "Resolved" : t.status === "investigating" ? "Investigating" : "Active",
+        reporter: String(t.reporter_name || "Verified Citizen"),
+      };
+    });
 
-      return { success: true, data: items } as T;
-    } catch {
-      return { success: true, data: [] } as T;
-    }
+    return { success: true, data: items } as T;
   }
 
   // ── Ticket list ────────────────────────────────────────────────────────────
@@ -447,9 +386,11 @@ async function routeRequest<T>(
 
   // ── Dashboard stats ────────────────────────────────────────────────────────
   if (path === "dashboard/stats" && method === "GET") {
-    const { data: tickets } = await db()
+    const { data: tickets, error } = await db()
       .from("tickets")
       .select("status, created_at, resolved_at, urgency_score");
+
+    if (error) throw error;
 
     const all = tickets || [];
     const now = new Date();
@@ -467,17 +408,12 @@ async function routeRequest<T>(
         active_incidents: active.length,
         active_incidents_total: all.length,
         active_incidents_progress: all.length ? active.length / all.length : 0,
-        active_incidents_trend: "+0%",
         resolved_today: resolvedToday.length,
         resolved_today_total: resolvedToday.length,
-        resolved_today_progress: 1,
-        resolved_today_trend: "+0%",
+        resolved_today_progress: all.length ? resolvedToday.length / all.length : 0,
         critical_incidents: critical.length,
         critical_incidents_total: active.length,
         critical_incidents_progress: active.length ? critical.length / active.length : 0,
-        critical_incidents_trend: "+0%",
-        avg_response_hours: 0,
-        avg_response_hours_trend: "N/A",
       },
     } as T;
   }
@@ -525,7 +461,6 @@ async function routeRequest<T>(
         tickets_by_category: Object.entries(byCategory).map(([category, count]) => ({ category, count })),
         total: all.length,
         resolved: all.filter((t) => t.status === "resolved").length,
-        avg_confidence: 0,
       },
     } as T;
   }
@@ -590,9 +525,6 @@ async function routeRequest<T>(
     return {
       success: true,
       data: {
-        eco_credits: 0,
-        trust_score: 0,
-        community_rank: 0,
         total_reports: all.length,
         total_citizens: totalCitizens || 0,
         reports: resolved.map((t) => ({
@@ -1010,7 +942,7 @@ async function routeRequest<T>(
 
   // ── Unrecognized route ─────────────────────────────────────────────────────
   console.warn(`[supabase-api] Unhandled endpoint: ${method} ${endpoint}`);
-  return { success: true, data: [] } as T;
+  throw new Error(`Unhandled endpoint: ${method} ${endpoint}`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1068,10 +1000,10 @@ export async function laravelFetch<T>(
     return await routeRequest<T>(endpoint, method, body);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    // If Supabase RLS blocks, return empty gracefully
+    // If Supabase RLS blocks, surface the authorization failure
     if (msg.includes("row-level security") || msg.includes("permission denied")) {
       console.warn(`[supabase-api] RLS blocked: ${method} ${endpoint}`);
-      return { success: true, data: [] } as T;
+      throw new Error(`Authorization failed: ${method} ${endpoint}`);
     }
     throw err;
   }

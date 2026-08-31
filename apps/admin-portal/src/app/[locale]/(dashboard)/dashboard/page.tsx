@@ -21,17 +21,15 @@ import { DashboardSkeleton } from "@likaslens/shared";
 import {
   AlertTriangle,
   CheckCircle2,
-  Clock,
-  Users,
   LayoutDashboard,
   MapPin,
 } from "lucide-react";
 
 const ADMIN_KPI_GRID = "grid grid-cols-12 gap-4";
 const ADMIN_KPI_TILE_SPAN = {
-  hero: "col-span-12 lg:col-span-4",
-  primary: "col-span-6 sm:col-span-6 lg:col-span-4",
-  secondary: "col-span-6 sm:col-span-6 lg:col-span-2",
+  hero: "col-span-12 lg:col-span-6",
+  primary: "col-span-6 sm:col-span-6 lg:col-span-3",
+  secondary: "col-span-6 sm:col-span-6 lg:col-span-3",
 } as const;
 const ADMIN_PULSE_BADGE =
   "items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest shadow-[0_0_0_4px_color-mix(in_oklab,var(--green)_25%,transparent)]";
@@ -83,9 +81,8 @@ export default function DashboardPage() {
   const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening";
   const dateStr = formatDate(now, "long", locale);
 
-  // Phase 5: asymmetric KPI tiles (1 hero + 2 primary + 2 secondary)
-  // Active Incidents is the hero (largest, green halo for "operational awareness")
-  // Avg Response is dropped — Admin Portal emphasizes throughput, not minutes.
+  // Phase 5: asymmetric KPI tiles (1 hero + 2 secondary)
+  // Only show stats derived from real data — no fabricated metrics
   const kpiTiles = [
     {
       id: "active-incidents",
@@ -96,71 +93,46 @@ export default function DashboardPage() {
       icon: AlertTriangle,
       color: "text-amber",
       bg: "bg-amber/10",
-      sparkline: [12, 8, 15, 6, 10, 9, stats?.active_incidents ?? 0],
+      sparkline: [stats?.active_incidents ?? 0],
     },
     {
       id: "resolved-today",
-      label: "Resolved Today",
+      label: "Resolved",
       value: stats?.resolved_today ?? 0,
       span: ADMIN_KPI_TILE_SPAN.primary,
       accent: "accent" as const,
       icon: CheckCircle2,
       color: "text-green",
       bg: "bg-green/10",
-      sparkline: [3, 7, 4, 9, 6, 8, stats?.resolved_today ?? 0],
-    },
-    {
-      id: "avg-response",
-      label: "Avg Response",
-      value: `${stats?.avg_response_minutes ?? 0}m`,
-      span: ADMIN_KPI_TILE_SPAN.primary,
-      accent: "amber" as const,
-      icon: Clock,
-      color: "text-accent",
-      bg: "bg-accent/10",
-      sparkline: [52, 48, 45, 41, 38, 35, stats?.avg_response_minutes ?? 0],
-    },
-    {
-      id: "total-users",
-      label: "Total Users",
-      value: stats?.total_users ?? 0,
-      span: ADMIN_KPI_TILE_SPAN.secondary,
-      accent: "muted" as const,
-      icon: Users,
-      color: "text-secondary",
-      bg: "bg-secondary/10",
-      sparkline: [120, 145, 132, 158, 140, 165, stats?.total_users ?? 0],
+      sparkline: [stats?.resolved_today ?? 0],
     },
     {
       id: "open-tickets",
-      label: "Open Tickets",
-      value: (stats as any)?.open_tickets ?? 0,
+      label: "Total Tickets",
+      value: stats?.total_tickets ?? 0,
       span: ADMIN_KPI_TILE_SPAN.secondary,
       accent: "muted" as const,
       icon: AlertTriangle,
       color: "text-ink",
       bg: "bg-ink/[0.04]",
-      sparkline: [40, 36, 30, 28, 24, 22, (stats as any)?.open_tickets ?? 0],
+      sparkline: [stats?.total_tickets ?? 0],
     },
   ];
 
   const accentBarClass: Record<typeof kpiTiles[number]["accent"], string> = {
     green: "before:bg-green",
-    amber: "before:bg-amber",
     accent: "before:bg-accent",
     muted: "before:bg-muted",
   };
 
   const bgTintClass: Record<typeof kpiTiles[number]["accent"], string> = {
     green: "bg-green/[0.02] hover:bg-green/[0.04]",
-    amber: "bg-amber-500/[0.02] hover:bg-amber-500/[0.04]",
     accent: "bg-accent/[0.02] hover:bg-accent/[0.04]",
     muted: "bg-ink/[0.02] hover:bg-ink/[0.04]",
   };
 
   const valueColorClass: Record<typeof kpiTiles[number]["accent"], string> = {
     green: "text-green",
-    amber: "text-amber-600",
     accent: "text-accent",
     muted: "text-ink",
   };
@@ -248,7 +220,18 @@ export default function DashboardPage() {
             </h3>
           </div>
           <div className="space-y-3">
-            {feed.slice(0, 8).map((item) => (
+            {feed.slice(0, 8).map((item) => {
+              const timeAgo = (() => {
+                if (!item.created_at) return "recently";
+                const diff = Date.now() - new Date(item.created_at).getTime();
+                const mins = Math.floor(diff / 60000);
+                if (mins < 1) return "just now";
+                if (mins < 60) return `${mins}m ago`;
+                const hrs = Math.floor(mins / 60);
+                if (hrs < 24) return `${hrs}h ago`;
+                return `${Math.floor(hrs / 24)}d ago`;
+              })();
+              return (
               <div
                 key={item.id}
                 className="flex items-start gap-3 border-b border-ink/5 pb-3 last:border-0"
@@ -261,14 +244,15 @@ export default function DashboardPage() {
                     {item.title}
                   </p>
                   <p className="font-mono text-xs text-muted">
-                    {item.location} · {item.time}
+                    {item.location} · {timeAgo}
                   </p>
                 </div>
                 <span className="font-mono text-xs text-muted shrink-0">
                   {item.status}
                 </span>
               </div>
-            ))}
+              );
+            })}
             {feed.length === 0 && (
               <EmptyState
                 icon={LayoutDashboard}

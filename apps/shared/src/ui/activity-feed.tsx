@@ -10,7 +10,9 @@ interface FeedItem {
   type: "Critical" | "Warning" | "Info";
   title: string;
   location: string;
-  time: string;
+  created_at?: string;
+  /** @deprecated Use created_at and compute relative time client-side */
+  time?: string;
   status: string;
 }
 
@@ -123,7 +125,15 @@ export function ActivityFeed({ items, loading, error }: { items?: FeedItem[]; lo
                 </span>
               </div>
             </div>
-            <span className="text-[10px] font-mono font-semibold text-ink/40 shrink-0 uppercase tracking-wider pt-1">{item.time || 'Recently'}</span>
+            <span className="text-[10px] font-mono font-semibold text-ink/40 shrink-0 uppercase tracking-wider pt-1">{item.time || (item.created_at ? (() => {
+              const diff = Date.now() - new Date(item.created_at!).getTime();
+              const mins = Math.floor(diff / 60000);
+              if (mins < 1) return 'just now';
+              if (mins < 60) return `${mins}m ago`;
+              const hrs = Math.floor(mins / 60);
+              if (hrs < 24) return `${hrs}h ago`;
+              return `${Math.floor(hrs / 24)}d ago`;
+            })() : 'Recently')}</span>
           </div>
         </div>
       ))}
