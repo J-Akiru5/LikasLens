@@ -137,21 +137,19 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
 
 export async function triageCitizenReport(base64Image: string): Promise<TriageResult> {
   if (typeof window !== "undefined" && navigator.onLine) {
-    try {
-      const res = await fetch("/api/v1/ai/reports/triage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ base64Image }),
-      });
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch (e) {
-      console.warn("[triageCitizenReport] AI triage unavailable:", e);
+    const res = await fetch("/api/v1/ai/reports/triage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ base64Image }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(err.detail || `Triage request failed (${res.status})`);
     }
+    return await res.json();
   }
 
-  return { success: true, has_concern: false, indicators: [], confidence: 0 };
+  throw new Error("Triage unavailable: offline");
 }
 
 // ── Ticket Explain via FastAPI proxy ───────────────────────────────────

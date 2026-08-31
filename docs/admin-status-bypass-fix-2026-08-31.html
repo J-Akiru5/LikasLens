@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Admin Ticket Status Bypass Fix</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --fg: #e0ddd5;
+    --muted: #7a8594;
+    --border: rgba(224,221,213,0.1);
+    --accent-cyan: #22d3ee;
+    --accent-violet: #a78bfa;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 1060px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin-bottom: 2rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--accent-cyan);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent-violet);
+  }
+  p, li { font-size: 0.9rem; color: var(--fg); margin-bottom: 0.5rem; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.35rem; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    background: rgba(224,221,213,0.08);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    color: var(--accent-cyan);
+  }
+  pre {
+    background: rgba(224,221,213,0.05);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin: 1rem 0;
+    line-height: 1.55;
+    color: var(--fg);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-amber { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .badge-blue { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+  .badge-cyan { background: rgba(34,211,238,0.15); color: var(--accent-cyan); border: 1px solid rgba(34,211,238,0.3); }
+  .callout {
+    background: rgba(34,211,238,0.06);
+    border-left: 4px solid var(--accent-cyan);
+    padding: 1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  .callout-warn { background: rgba(251,191,36,0.06); border-left-color: var(--amber); }
+  .callout-success { background: rgba(52,211,153,0.06); border-left-color: var(--green); }
+  .callout-fail { background: rgba(248,113,113,0.06); border-left-color: var(--red); }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .kpi {
+    text-align: center;
+    padding: 1.25rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(224,221,213,0.02);
+  }
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .kpi-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .section-divider {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 2.5rem 0;
+  }
+  .diff-add {
+    background: rgba(52,211,153,0.08);
+    border-left: 3px solid var(--green);
+    padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 0.5rem 0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+  }
+  .diff-remove {
+    background: rgba(248,113,113,0.08);
+    border-left: 3px solid var(--red);
+    padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 0.5rem 0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+
+<h1>LikasLens — Admin Ticket Status Bypass Fix</h1>
+<p class="subtitle">Security / Audit-Trail Fix · August 31, 2026 · Branch: <code>fix/admin-ticket-status-bypass</code> → <code>development</code></p>
+
+<hr class="section-divider">
+
+<h2>1. Executive Summary</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">6/6</div>
+    <div class="kpi-label">Call Sites Fixed</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">0</div>
+    <div class="kpi-label">Direct ticket.status Writes</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">11/11</div>
+    <div class="kpi-label">Ticket Tests Pass</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">4/4</div>
+    <div class="kpi-label">Apps Build Green</div>
+  </div>
+</div>
+
+<div class="callout callout-success">
+  <strong>Result:</strong> All six direct Supabase <code>tickets.status</code> writes in <code>admin.ts</code> now route through the authorized FastAPI proxy. Every status transition is validated against <code>ALLOWED_TRANSITIONS</code>, requires LGU role authorization, and writes a <code>TicketTimeline</code> audit-trail entry. Zero direct writes remain.
+</div>
+
+<hr class="section-divider">
+
+<h2>2. The Problem</h2>
+
+<p>Six functions in <code>apps/shared/src/api/admin.ts</code> wrote to <code>tickets.status</code> directly via Supabase, bypassing:</p>
+<ul>
+  <li><strong>Transition validation</strong> — <code>ALLOWED_TRANSITIONS</code> state machine (e.g., closed → investigating is invalid)</li>
+  <li><strong>Role enforcement</strong> — <code>require_lgu_role</code> middleware on the FastAPI endpoint</li>
+  <li><strong>Audit trail</strong> — <code>TicketTimeline</code> row written for every authorized transition</li>
+</ul>
+
+<p>One function was already correct:</p>
+<ul>
+  <li><code>updateTicketStatus()</code> (line 160) → routes through <code>PATCH /api/v1/ai/tickets/{id}/status</code> — the reference implementation</li>
+</ul>
+
+<hr class="section-divider">
+
+<h2>3. The Fix</h2>
+
+<h3>3.1 Approach</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th>Functions</th>
+      <th>Endpoint Used</th>
+      <th>Reasoning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Single-ticket</strong></td>
+      <td><code>verifyReport</code>, <code>classifyTriageTicket</code>, <code>dismissTriageTicket</code>, <code>escalateTriageTicket</code></td>
+      <td><code>PATCH /api/v1/ai/tickets/{id}/status</code></td>
+      <td>Existing endpoint, already validated. Extended with optional <code>urgency_score</code> for compound writes.</td>
+    </tr>
+    <tr>
+      <td><strong>Bulk</strong></td>
+      <td><code>bulkTicketStatus</code>, <code>escalatePattern</code></td>
+      <td><code>POST /api/v1/ai/tickets/bulk-status</code> (new)</td>
+      <td>Each ticket validated independently. Entire batch rejected on any invalid transition. No partial application.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.2 Server-Side Changes</h3>
+
+<p><strong>File:</strong> <code>apps/ai-service/routers/tickets.py</code></p>
+
+<p><strong>1. Extended <code>StatusUpdateRequest</code></strong> with optional <code>urgency_score</code>:</p>
+<div class="diff-remove">class StatusUpdateRequest(BaseModel):
+    status: str
+    notes: str | None = None</div>
+<div class="diff-add">class StatusUpdateRequest(BaseModel):
+    status: str
+    notes: str | None = None
+    urgency_score: float | None = None</div>
+
+<p><strong>2. Updated <code>update_status()</code></strong> to apply urgency_score when provided:</p>
+<div class="diff-add">    if body.urgency_score is not None:
+        ticket.urgency_score = body.urgency_score</div>
+
+<p><strong>3. New <code>BulkStatusRequest</code> model:</strong></p>
+<div class="diff-add">class BulkStatusRequest(BaseModel):
+    ticket_ids: list[str]
+    status: str
+    notes: str | None = None</div>
+
+<p><strong>4. New <code>POST /api/v1/tickets/bulk-status</code> endpoint:</strong></p>
+<ul>
+  <li>Fetches all requested tickets in one query</li>
+  <li>Validates each ticket's current status against <code>ALLOWED_TRANSITIONS</code></li>
+  <li>If ANY ticket has an invalid transition → <strong>rejects entire batch</strong> with 422 + per-item error details</li>
+  <li>If all valid → applies transitions + writes <code>TicketTimeline</code> entries for each</li>
+  <li>Requires <code>require_lgu_role</code> (same as single-ticket endpoint)</li>
+</ul>
+
+<h3>3.3 Proxy Route</h3>
+
+<p><strong>New file:</strong> <code>apps/admin-portal/src/app/api/v1/ai/tickets/bulk-status/route.ts</code></p>
+<p>Proxies <code>POST</code> requests to the AI service, forwarding the Supabase auth token. Same pattern as the existing <code>[id]/status/route.ts</code> proxy.</p>
+
+<h3>3.4 Client-Side Changes</h3>
+
+<p><strong>File:</strong> <code>apps/shared/src/api/admin.ts</code></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Function</th>
+      <th>Before (Direct Supabase)</th>
+      <th>After (FastAPI Proxy)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bulkTicketStatus</code></td>
+      <td><code>db().from("tickets").update({...}).in("id", ids)</code></td>
+      <td><code>fetch("/api/v1/ai/tickets/bulk-status", {POST})</code></td>
+    </tr>
+    <tr>
+      <td><code>escalatePattern</code></td>
+      <td><code>db().from("tickets").update({status:"investigating"}).in("id", data.ticket_ids)</code></td>
+      <td><code>fetch("/api/v1/ai/tickets/bulk-status", {POST})</code></td>
+    </tr>
+    <tr>
+      <td><code>verifyReport</code></td>
+      <td><code>db().from("tickets").update({status: data.status}).eq("id", reportId)</code></td>
+      <td><code>fetch("/api/v1/ai/tickets/{id}/status", {PATCH})</code></td>
+    </tr>
+    <tr>
+      <td><code>classifyTriageTicket</code></td>
+      <td><code>db().from("tickets").update({urgency_score, status:"investigating"}).eq("id", id)</code></td>
+      <td><code>fetch("/api/v1/ai/tickets/{id}/status", {PATCH + urgency_score})</code></td>
+    </tr>
+    <tr>
+      <td><code>dismissTriageTicket</code></td>
+      <td><code>db().from("tickets").update({status:"closed"}).eq("id", id)</code></td>
+      <td><code>fetch("/api/v1/ai/tickets/{id}/status", {PATCH})</code></td>
+    </tr>
+    <tr>
+      <td><code>escalateTriageTicket</code></td>
+      <td><code>db().from("tickets").update({urgency_score:5, status:"investigating"}).eq("id", id)</code></td>
+      <td><code>fetch("/api/v1/ai/tickets/{id}/status", {PATCH + urgency_score:5})</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.5 Atomicity Note</h3>
+
+<p>For compound writes (<code>classifyTriageTicket</code>, <code>escalateTriageTicket</code>), the status transition and urgency_score update happen in a single FastAPI transaction via the PATCH endpoint. The two fields are updated together before <code>db.commit()</code>, so they are atomic within the database transaction. If the request fails mid-flight, neither field is persisted.</p>
+
+<hr class="section-divider">
+
+<h2>4. Verification</h2>
+
+<h3>4.1 Grep Confirmation — No Remaining Direct Writes</h3>
+
+<div class="callout callout-success">
+  <strong>Post-fix grep:</strong> <code>grep -rn '\.from("tickets").*\.update.*status' apps/ --include="*.ts" --include="*.tsx"</code> returns <strong>zero results</strong>. All six call sites are confirmed rerouted.
+</div>
+
+<h3>4.2 Unit Tests</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Test</th>
+      <th>What it verifies</th>
+      <th>Result</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>test_update_status_valid</code></td>
+      <td>Valid open→investigating transition succeeds</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td><code>test_update_status_invalid</code></td>
+      <td>Invalid open→monitoring rejected with 422</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td><code>test_update_status_with_urgency_score</code> <span class="badge badge-cyan">NEW</span></td>
+      <td>PATCH accepts optional urgency_score field</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td><code>test_bulk_status_valid</code> <span class="badge badge-cyan">NEW</span></td>
+      <td>Bulk update with all valid transitions succeeds (2 tickets)</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td><code>test_bulk_status_rejects_invalid_transition</code> <span class="badge badge-cyan">NEW</span></td>
+      <td>Bulk update rejects entire batch when one ticket has invalid transition (closed→investigating)</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td><code>test_bulk_status_ticket_not_found</code> <span class="badge badge-cyan">NEW</span></td>
+      <td>Bulk update rejects when any ticket ID not found in DB</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td><code>test_bulk_status_empty_ids</code> <span class="badge badge-cyan">NEW</span></td>
+      <td>Bulk update rejects empty ticket_ids array</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Full test suite:</strong> 37 passed, 2 failed (pre-existing <code>TestAuthSync</code> failures — unrelated to this fix).</p>
+
+<h3>4.3 Build Verification</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>App</th>
+      <th>Typecheck</th>
+      <th>Build</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>apps/shared</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">N/A</span></td>
+      <td>No build script</td>
+    </tr>
+    <tr>
+      <td><code>apps/admin-portal</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td>New route <code>/api/v1/ai/tickets/bulk-status</code> present in build output</td>
+    </tr>
+    <tr>
+      <td><code>apps/frontend</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><code>apps/mobile-pwa</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>5. Files Changed</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Change Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>apps/ai-service/routers/tickets.py</code></td>
+      <td><span class="badge badge-blue">MODIFIED</span></td>
+      <td>Extended <code>StatusUpdateRequest</code> with <code>urgency_score</code>. Updated <code>update_status()</code>. Added <code>BulkStatusRequest</code> model and <code>POST /bulk-status</code> endpoint.</td>
+    </tr>
+    <tr>
+      <td><code>apps/admin-portal/src/app/api/v1/ai/tickets/bulk-status/route.ts</code></td>
+      <td><span class="badge badge-green">NEW</span></td>
+      <td>Next.js proxy route for bulk ticket status updates.</td>
+    </tr>
+    <tr>
+      <td><code>apps/shared/src/api/admin.ts</code></td>
+      <td><span class="badge badge-blue">MODIFIED</span></td>
+      <td>Rewrote 6 functions to call FastAPI proxy instead of direct Supabase writes.</td>
+    </tr>
+    <tr>
+      <td><code>apps/ai-service/tests/test_e2e_migration.py</code></td>
+      <td><span class="badge badge-blue">MODIFIED</span></td>
+      <td>Added 5 new tests for PATCH urgency_score, bulk-status valid/invalid/not-found/empty.</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>6. What Was NOT Changed</h2>
+
+<ul>
+  <li><code>updateTicketStatus()</code> (line 160) — already correct, untouched</li>
+  <li><code>ALLOWED_TRANSITIONS</code> in <code>models.py</code> — transition rules unchanged</li>
+  <li>Other <code>.update()</code> calls in <code>admin.ts</code> on non-ticket tables (ngo_groups, rewards_catalog, users, etc.) — out of scope</li>
+  <li>No schema changes, no migration, no env var changes</li>
+</ul>
+
+<hr class="section-divider">
+
+<h2>7. Remaining Findings Status</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Finding</th>
+      <th>Status After This Fix</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>(a)</strong></td>
+      <td>Admin ticket status bypassing ALLOWED_TRANSITIONS</td>
+      <td><span class="badge badge-green">RESOLVED</span></td>
+    </tr>
+    <tr>
+      <td><strong>(b)</strong></td>
+      <td>Unrecognized endpoints returning {success:true, data:[]}</td>
+      <td><span class="badge badge-red">OPEN</span> — separate task</td>
+    </tr>
+    <tr>
+      <td><strong>(c)</strong></td>
+      <td>Fabricated dashboard metrics</td>
+      <td><span class="badge badge-red">OPEN</span> — separate task</td>
+    </tr>
+    <tr>
+      <td><strong>(d)</strong></td>
+      <td>Predictions page reachable in admin nav</td>
+      <td><span class="badge badge-green">RESOLVED</span> — feature flag OFF</td>
+    </tr>
+    <tr>
+      <td><strong>(e)</strong></td>
+      <td>AI_TIMEOUT_MS default</td>
+      <td><span class="badge badge-red">OPEN</span> — separate task</td>
+    </tr>
+    <tr>
+      <td><strong>(f)</strong></td>
+      <td>Admin-portal root 404</td>
+      <td><span class="badge badge-red">OPEN</span> — separate task</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<p style="color: var(--muted); font-size: 0.78rem; margin-top: 2rem; text-align: center; font-family: 'JetBrains Mono', 'Fira Code', monospace;">
+  Generated by Buffy · LikasLens Admin Status Bypass Fix · August 31, 2026
+</p>
+
+</body>
+</html>

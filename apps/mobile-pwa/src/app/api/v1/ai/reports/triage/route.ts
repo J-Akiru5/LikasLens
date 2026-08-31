@@ -15,7 +15,7 @@ function getAiUrl(): string {
 }
 
 function getTimeoutMs(): number {
-  return parseInt(process.env.AI_TIMEOUT_MS || "15000", 10);
+  return parseInt(process.env.AI_TIMEOUT_MS || "120000", 10);
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -53,9 +53,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json(data, { status: res.status });
   } catch (err: unknown) {
     console.error("[/api/v1/ai/reports/triage] Error:", err);
+    const message = err instanceof Error ? err.message : "AI service unavailable";
     return NextResponse.json(
-      { success: true, has_concern: false, indicators: [], confidence: 0 },
-      { status: 200 }
+      { success: false, detail: `Triage unavailable: ${message}` },
+      { status: 503 }
     );
   }
 }

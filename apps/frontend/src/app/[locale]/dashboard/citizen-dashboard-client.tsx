@@ -129,10 +129,10 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
     {
       id: "active-incidents",
       label: "Active Incidents",
-      value: String(stats?.active_incidents ?? 42),
-      trend: (stats?.active_incidents ?? 42) === 0 ? ("up" as const) : ("down" as const),
-      delta: stats?.active_incidents_trend || "+4%",
-      sparkline: [12, 8, 15, 6, 10, 9, stats?.active_incidents ?? 42],
+      value: String(stats?.active_incidents ?? 0),
+      trend: (stats?.active_incidents ?? 0) === 0 ? ("up" as const) : ("down" as const),
+      delta: stats?.active_incidents_trend || "",
+      sparkline: [] as number[],
       category: "Current Cases",
       icon: TriangleAlert,
       accent: "amber" as const,
@@ -140,10 +140,10 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
     {
       id: "resolved-today",
       label: "Resolved Today",
-      value: String(stats?.resolved_today ?? 18),
+      value: String(stats?.resolved_today ?? 0),
       trend: "up" as const,
-      delta: stats?.resolved_today_trend || "+12%",
-      sparkline: [3, 7, 4, 9, 6, 8, stats?.resolved_today ?? 18],
+      delta: stats?.resolved_today_trend || "",
+      sparkline: [] as number[],
       category: "Daily Resolution",
       icon: CheckCircle,
       accent: "green" as const,
@@ -151,36 +151,28 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
     {
       id: "avg-response",
       label: "Avg Response",
-      value: `${stats?.avg_response_minutes ?? 14}m`,
+      value: stats?.avg_response_minutes != null ? `${stats.avg_response_minutes}m` : "—",
       trend: "up" as const,
-      delta: stats?.avg_response_trend || "Optimal",
-      sparkline: [5.2, 4.8, 4.5, 4.1, 3.8, 3.5, stats?.avg_response_minutes ?? 14],
-      category: `vs ${stats?.avg_response_sla ?? 30}m SLA`,
+      delta: stats?.avg_response_trend || "",
+      sparkline: [] as number[],
+      category: stats?.avg_response_sla != null ? `vs ${stats.avg_response_sla}m SLA` : "SLA not set",
       icon: Clock,
       accent: "accent" as const,
     },
     {
       id: "total-reports",
       label: "Total Reports",
-      value: String(stats?.total_reports ?? 60),
+      value: String(stats?.total_reports ?? 0),
       trend: "flat" as const,
-      delta: `${stats?.total_users ?? 840} Citizens`,
-      sparkline: [120, 145, 132, 158, 140, 165, stats?.total_reports ?? 60],
+      delta: `${stats?.total_users ?? 0} Citizens`,
+      sparkline: [] as number[],
       category: "Platform Total",
       icon: Activity,
       accent: "muted" as const,
     },
   ];
 
-  const defaultSampleFeed: ActivityFeedItem[] = [
-    { id: "TKT-8942", display_id: "TKT-8942", type: "Critical", title: "Illegal Dumping Detected", description: "Hazardous debris dumped in river corridor.", location: "Quezon City, Metro Manila", time: "5m ago", status: "Active", reporter: "Verified Citizen" },
-    { id: "TKT-8941", display_id: "TKT-8941", type: "Warning", title: "Wildfire Risk Assessment", description: "Dry season brush fire warning issued.", location: "Sierra Madre Foothills, Rizal", time: "18m ago", status: "Active", reporter: "Forest Ranger" },
-    { id: "TKT-8940", display_id: "TKT-8940", type: "Info", title: "Coastal Erosion Threat", description: "Tidal sea wall reinforcement needed.", location: "Manila Bay Coastline, NCR", time: "1h ago", status: "Resolved", reporter: "Coastal Watch" },
-    { id: "TKT-8939", display_id: "TKT-8939", type: "Critical", title: "Industrial Effluent Discharge", description: "Chemical runoff detected in waterway.", location: "Iloilo River Basin, Western Visayas", time: "2h ago", status: "Active", reporter: "Eco Patrol" },
-    { id: "TKT-8938", display_id: "TKT-8938", type: "Warning", title: "Illegal Quarrying Activity", description: "Unlicensed aggregate extraction reported.", location: "Cebu Highlands, Central Visayas", time: "3h ago", status: "Active", reporter: "Community Leader" },
-  ];
-
-  const feedToUse = (feed && feed.length > 0) ? feed : defaultSampleFeed;
+  const feedToUse = feed || [];
 
   const feedItems = feedToUse
     .filter((item) => {

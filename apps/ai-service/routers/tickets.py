@@ -2,7 +2,8 @@
 GET   /api/v1/tickets              — LGU: list all tickets
 GET   /api/v1/tickets/{id}         — LGU: ticket detail
 GET   /api/v1/tickets/{id}/timeline — Citizen-safe status history
-PATCH /api/v1/tickets/{id}/status   — LGU: update status
+PATCH /api/v1/tickets/{id}/status   — LGU: update status (with optional urgency_score)
+POST  /api/v1/tickets/bulk-status   — LGU: bulk status update with per-ticket validation
 GET   /api/v1/tickets/{id}/explain  — AI routing explanation
 """
 
@@ -157,6 +158,13 @@ async def get_timeline(
 class StatusUpdateRequest(BaseModel):
     status: str
     notes: str | None = None
+    urgency_score: float | None = None
+
+
+class BulkStatusRequest(BaseModel):
+    ticket_ids: list[str]
+    status: str
+    notes: str | None = None
 
 
 @router.patch("/{ticket_id}/status")
@@ -184,6 +192,8 @@ async def update_status(
     ticket.status = body.status
     if body.status in ("resolved", "closed"):
         ticket.resolved_at = datetime.now(timezone.utc)
+    if body.urgency_score is not None:
+        ticket.urgency_score = body.urgency_score
 
     # Timeline entry — look up the app user by Supabase auth UUID
     actor_id = None
@@ -219,6 +229,103 @@ async def update_status(
     return {
         "success": True,
         "data": {"id": ticket_id, "old_status": old_status, "new_status": body.status},
+    }
+
+
+
+@router.post("/bulk-status")
+async def bulk_status(
+    body: BulkStatusRequest,
+    db: AsyncSession = Depends(get_db),
+    token: dict = Depends(require_lgu_role),
+):
+    """
+    Bulk-update ticket statuses with per-ticket transition validation.
+
+    Validates each ticket independently against ALLOWED_TRANSITIONS.
+    If ANY ticket has an invalid transition, the entire batch is rejected
+    (no partial application). Each valid transition writes a TicketTimeline
+    entry for audit trail.
+    """
+    if not body.ticket_ids:
+        raise HTTPException(status_code=422, detail="ticket_ids cannot be empty")
+
+    # Fetch all tickets in one query
+    uuids = [uuid.UUID(tid) for tid in body.ticket_ids]
+    result = await db.execute(select(Ticket).where(Ticket.id.in_(uuids)))
+    tickets = result.scalars().all()
+
+    # Build lookup map
+    ticket_map = {str(t.id): t for t in tickets}
+
+    # Validate ALL transitions before writing any
+    errors: list[dict] = []
+    for tid in body.ticket_ids:
+        ticket = ticket_map.get(tid)
+        if not ticket:
+            errors.append({"ticket_id": tid, "error": "Ticket not found"})
+            continue
+        allowed = ALLOWED_TRANSITIONS.get(ticket.status, [])
+        if body.status not in allowed:
+            errors.append(
+                {
+                    "ticket_id": tid,
+                    "error": f"Cannot transition from '{ticket.status}' to '{body.status}'. Allowed: {allowed}",
+                }
+            )
+
+    if errors:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Batch rejected: {len(errors)} ticket(s) have invalid transitions",
+            headers={"X-Bulk-Errors": str(errors)},
+        )
+
+    # Resolve actor ID from auth token
+    actor_id = None
+    auth_sub = token.get("sub")
+    if auth_sub:
+        try:
+            auth_uuid = uuid.UUID(auth_sub)
+            user_result = await db.execute(
+                select(User).where(User.supabase_auth_user_id == auth_uuid)
+            )
+            app_user = user_result.scalar_one_or_none()
+            if app_user:
+                actor_id = app_user.id
+        except (ValueError, AttributeError):
+            pass
+
+    # Apply transitions + timeline entries
+    updated_ids: list[str] = []
+    for tid in body.ticket_ids:
+        ticket = ticket_map[tid]
+        old_status = ticket.status
+        ticket.status = body.status
+        if body.status in ("resolved", "closed"):
+            ticket.resolved_at = datetime.now(timezone.utc)
+
+        timeline_entry = TicketTimeline(
+            id=uuid.uuid4(),
+            ticket_id=ticket.id,
+            actor_type="lgu",
+            actor_id=actor_id,
+            from_status=old_status,
+            to_status=body.status,
+            note=body.notes,
+        )
+        db.add(timeline_entry)
+        updated_ids.append(tid)
+
+    await db.commit()
+
+    return {
+        "success": True,
+        "data": {
+            "updated": len(updated_ids),
+            "failed": [],
+            "ids": updated_ids,
+        },
     }
 
 

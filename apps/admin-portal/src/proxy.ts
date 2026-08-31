@@ -23,9 +23,11 @@ export async function proxy(request: NextRequest) {
     return intlMiddleware(request);
   }
 
-  // Completely bypass for root path
+  // Redirect root path to default locale
   if (pathname === "/") {
-    return NextResponse.next({ request });
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locales[0]}`;
+    return NextResponse.redirect(url);
   }
 
   let supabaseResponse = intlMiddleware(request);

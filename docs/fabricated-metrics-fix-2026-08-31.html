@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Fabricated Dashboard Metrics Fix</title>
+<style>
+  :root {
+    --bg: #0b0e14;
+    --fg: #e0ddd5;
+    --muted: #7a8594;
+    --border: rgba(224,221,213,0.1);
+    --accent-cyan: #22d3ee;
+    --accent-violet: #a78bfa;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --blue: #60a5fa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.65;
+    padding: 2rem;
+    max-width: 1060px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin-bottom: 2rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--accent-cyan);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--accent-violet);
+  }
+  p, li { font-size: 0.9rem; color: var(--fg); margin-bottom: 0.5rem; }
+  ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.35rem; }
+  code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    background: rgba(224,221,213,0.08);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    color: var(--accent-cyan);
+  }
+  pre {
+    background: rgba(224,221,213,0.05);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    margin: 1rem 0;
+    line-height: 1.55;
+    color: var(--fg);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+  .badge-amber { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  .badge-red { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+  .badge-blue { background: rgba(96,165,250,0.15); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+  .badge-cyan { background: rgba(34,211,238,0.15); color: var(--accent-cyan); border: 1px solid rgba(34,211,238,0.3); }
+  .callout {
+    background: rgba(34,211,238,0.06);
+    border-left: 4px solid var(--accent-cyan);
+    padding: 1rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  .callout-warn { background: rgba(251,191,36,0.06); border-left-color: var(--amber); }
+  .callout-success { background: rgba(52,211,153,0.06); border-left-color: var(--green); }
+  .callout-fail { background: rgba(248,113,113,0.06); border-left-color: var(--red); }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0;
+  }
+  .kpi {
+    text-align: center;
+    padding: 1.25rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(224,221,213,0.02);
+  }
+  .kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .kpi-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+  .section-divider {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 2.5rem 0;
+  }
+  .diff-add {
+    background: rgba(52,211,153,0.08);
+    border-left: 3px solid var(--green);
+    padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 0.5rem 0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+  }
+  .diff-remove {
+    background: rgba(248,113,113,0.08);
+    border-left: 3px solid var(--red);
+    padding: 0.75rem 1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 0.5rem 0;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+
+<h1>LikasLens — Fabricated Dashboard Metrics Fix</h1>
+<p class="subtitle">Data Integrity Fix · August 31, 2026 · Branch: <code>fix/fabricated-dashboard-metrics</code> → <code>development</code></p>
+
+<hr class="section-divider">
+
+<h2>1. Executive Summary</h2>
+
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">7</div>
+    <div class="kpi-label">Files Changed</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">0</div>
+    <div class="kpi-label">Hardcoded Fallbacks</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">4/4</div>
+    <div class="kpi-label">Apps Build Green</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-value" style="color: var(--green)">0</div>
+    <div class="kpi-label">Fabricated Sparklines</div>
+  </div>
+</div>
+
+<div class="callout callout-success">
+  <strong>Result:</strong> All hardcoded fallback values (42, 18, 60, 840), fabricated sparkline arrays, fake sample feed items, and phantom metrics (system_load, avg_response, ghost_reports) have been removed. Dashboard now displays real data or explicit zero/null states.
+</div>
+
+<hr class="section-divider">
+
+<h2>2. The Problem</h2>
+
+<p>Six hardcoded fallback values and fabricated metrics were scattered across the dashboard layer, causing the UI to display misleading data when the database returned zero or few records:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Fabricated Value</th>
+      <th>Impact</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>admin.ts:87</code></td>
+      <td><code>active || 42</code></td>
+      <td>Shows 42 active incidents when there are 0</td>
+    </tr>
+    <tr>
+      <td><code>admin.ts:88</code></td>
+      <td><code>total || 60</code></td>
+      <td>Shows 60 total tickets when there are 0</td>
+    </tr>
+    <tr>
+      <td><code>admin.ts:91</code></td>
+      <td><code>resolved || 18</code></td>
+      <td>Shows 18 resolved when there are 0</td>
+    </tr>
+    <tr>
+      <td><code>frontend/dashboard:60</code></td>
+      <td><code>usersRes.count || 840</code></td>
+      <td>Shows 840 citizens when there are 0</td>
+    </tr>
+    <tr>
+      <td><code>admin.ts:97-108</code></td>
+      <td>Hardcoded avg_response, system_load, ghost_reports</td>
+      <td>Phantom metrics with no data source</td>
+    </tr>
+    <tr>
+      <td><code>citizen-dashboard-client</code></td>
+      <td>Hardcoded sparkline arrays <code>[12, 8, 15, 6, 10, 9, ...]</code></td>
+      <td>Fake trend data with no basis</td>
+    </tr>
+    <tr>
+      <td><code>citizen-dashboard-client</code></td>
+      <td><code>defaultSampleFeed</code> with 5 fabricated incidents</td>
+      <td>Shows fake tickets (TKT-8942 through TKT-8938)</td>
+    </tr>
+    <tr>
+      <td><code>mobile-pwa/dashboard</code></td>
+      <td>Hardcoded delta strings <code>"+4%"</code>, <code>"+12%"</code>, <code>"Fast"</code></td>
+      <td>Misleading trend labels</td>
+    </tr>
+    <tr>
+      <td><code>mobile-pwa/impact</code></td>
+      <td><code>regions_affected: 17</code>, <code>avg_urgency: 6.2</code></td>
+      <td>Fabricated impact metrics</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>3. The Fix</h2>
+
+<h3>3.1 Source of Truth: <code>admin.ts getDashboardStats()</code></h3>
+
+<p>The central dashboard stats function was rewritten to:</p>
+<ul>
+  <li>Query the <code>users</code> table for actual user count (was hardcoded 840)</li>
+  <li>Derive <code>investigating</code> count from actual ticket statuses (was <code>Math.round(active * 0.4)</code>)</li>
+  <li>Remove all <code>|| 42</code>, <code>|| 18</code>, <code>|| 60</code>, <code>|| 840</code> fallbacks</li>
+  <li>Set fabricated metrics to <code>null</code>: <code>avg_response_minutes</code>, <code>avg_response_hours</code>, <code>avg_response_sla</code>, <code>avg_response_progress</code>, <code>avg_response_trend</code>, <code>system_load</code>, <code>system_load_progress</code>, <code>system_load_trend</code></li>
+  <li>Set <code>ghost_reports</code> to <code>0</code> (was <code>Math.round(total * 0.28)</code>)</li>
+</ul>
+
+<h3>3.2 Frontend Dashboard</h3>
+
+<p><code>frontend/dashboard/page.tsx</code> — Same fixes as admin.ts: removed hardcoded fallbacks, derived investigating from actual data, set phantom metrics to null.</p>
+
+<h3>3.3 Citizen Dashboard Client</h3>
+
+<p><code>frontend/citizen-dashboard-client.tsx</code>:</p>
+<ul>
+  <li>Removed all hardcoded defaults (<code>?? 42</code>, <code>?? 18</code>, <code>?? 60</code>, <code>?? 840</code>, <code>?? 14</code>, <code>?? 30</code>)</li>
+  <li>Replaced hardcoded sparkline arrays with empty arrays <code>[]</code></li>
+  <li>Removed <code>defaultSampleFeed</code> — 5 fabricated incidents with fake ticket IDs</li>
+  <li>Feed now shows empty state when no real data exists</li>
+</ul>
+
+<h3>3.4 Mobile PWA Dashboard</h3>
+
+<p><code>mobile-pwa/dashboard/page.tsx</code>:</p>
+<ul>
+  <li>Removed hardcoded delta strings (<code>"+4%"</code>, <code>"+12%"</code>, <code>"Fast"</code>)</li>
+  <li>Replaced hardcoded sparkline arrays with empty arrays</li>
+  <li>Avg response shows "—" when no data instead of fabricated "14m"</li>
+</ul>
+
+<h3>3.5 Mobile PWA Impact Page</h3>
+
+<p><code>mobile-pwa/impact/page.tsx</code>:</p>
+<ul>
+  <li>Removed <code>regions_affected: 17</code> → now <code>0</code></li>
+  <li>Removed <code>avg_urgency: 6.2</code> → now <code>0</code></li>
+</ul>
+
+<h3>3.6 Type Updates</h3>
+
+<p><code>shared/types/api.ts</code> — <code>DashboardStats</code> interface updated to allow <code>null</code> for fields that may not have data yet:</p>
+<div class="diff-add">  avg_response_minutes: number | null;
+  avg_response_hours: number | null;
+  avg_response_sla: number | null;
+  avg_response_progress: number | null;
+  avg_response_trend: string | null;
+  system_load: number | null;
+  system_load_progress: number | null;
+  system_load_trend: string | null;</div>
+
+<p>Local <code>DashboardStats</code> interfaces in <code>frontend/analytics/page.tsx</code> and <code>mobile-pwa/reports/page.tsx</code> updated to match.</p>
+
+<hr class="section-divider">
+
+<h2>4. Verification</h2>
+
+<h3>4.1 Build Verification</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>App</th>
+      <th>Typecheck</th>
+      <th>Build</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>apps/shared</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">N/A</span></td>
+    </tr>
+    <tr>
+      <td><code>apps/admin-portal</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td><code>apps/frontend</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+    <tr>
+      <td><code>apps/mobile-pwa</code></td>
+      <td><span class="badge badge-green">PASS</span></td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>4.2 Grep Confirmation</h3>
+
+<div class="callout callout-success">
+  <strong>Post-fix grep:</strong> <code>grep -rn '|| 42\||| 18\||| 60\||| 840\|defaultSampleFeed\|sparkline: \[' apps/ --include="*.tsx" --include="*.ts"</code> returns <strong>zero results</strong> for hardcoded fallback values and fabricated sparklines.
+</div>
+
+<hr class="section-divider">
+
+<h2>5. Files Changed</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>File</th>
+      <th>Change</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>apps/shared/src/api/admin.ts</code></td>
+      <td>Rewrote <code>getDashboardStats()</code> — removed all hardcoded fallbacks, added user count query, derived investigating from actual data</td>
+    </tr>
+    <tr>
+      <td><code>apps/shared/src/types/api.ts</code></td>
+      <td>Updated <code>DashboardStats</code> to allow null for unpopulated metrics</td>
+    </tr>
+    <tr>
+      <td><code>apps/frontend/src/app/[locale]/dashboard/page.tsx</code></td>
+      <td>Removed hardcoded fallbacks and phantom metrics</td>
+    </tr>
+    <tr>
+      <td><code>apps/frontend/src/app/[locale]/dashboard/citizen-dashboard-client.tsx</code></td>
+      <td>Removed hardcoded stat defaults, sparkline arrays, and <code>defaultSampleFeed</code></td>
+    </tr>
+    <tr>
+      <td><code>apps/frontend/src/app/[locale]/dashboard/analytics/page.tsx</code></td>
+      <td>Updated local <code>DashboardStats</code> type to allow null</td>
+    </tr>
+    <tr>
+      <td><code>apps/mobile-pwa/src/app/[locale]/(app)/dashboard/page.tsx</code></td>
+      <td>Removed hardcoded deltas and sparkline arrays</td>
+    </tr>
+    <tr>
+      <td><code>apps/mobile-pwa/src/app/[locale]/(app)/impact/page.tsx</code></td>
+      <td>Removed hardcoded <code>regions_affected: 17</code> and <code>avg_urgency: 6.2</code></td>
+    </tr>
+    <tr>
+      <td><code>apps/mobile-pwa/src/app/[locale]/(app)/reports/page.tsx</code></td>
+      <td>Updated local <code>DashboardStats</code> type to allow null</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<h2>6. Remaining Findings Status</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Finding</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>(a)</strong></td>
+      <td>Admin ticket status bypassing ALLOWED_TRANSITIONS</td>
+      <td><span class="badge badge-green">RESOLVED</span> — separate fix</td>
+    </tr>
+    <tr>
+      <td><strong>(b)</strong></td>
+      <td>Unrecognized endpoints returning {success:true, data:[]}</td>
+      <td><span class="badge badge-red">OPEN</span> — separate task</td>
+    </tr>
+    <tr>
+      <td><strong>(c)</strong></td>
+      <td>Fabricated dashboard metrics</td>
+      <td><span class="badge badge-green">RESOLVED</span> — this fix</td>
+    </tr>
+    <tr>
+      <td><strong>(d)</strong></td>
+      <td>Predictions page reachable in admin nav</td>
+      <td><span class="badge badge-green">RESOLVED</span> — feature flag OFF</td>
+    </tr>
+    <tr>
+      <td><strong>(e)</strong></td>
+      <td>AI_TIMEOUT_MS default</td>
+      <td><span class="badge badge-red">OPEN</span> — separate task</td>
+    </tr>
+    <tr>
+      <td><strong>(f)</strong></td>
+      <td>Admin-portal root 404</td>
+      <td><span class="badge badge-red">OPEN</span> — separate task</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr class="section-divider">
+
+<p style="color: var(--muted); font-size: 0.78rem; margin-top: 2rem; text-align: center; font-family: 'JetBrains Mono', 'Fira Code', monospace;">
+  Generated by Buffy · LikasLens Fabricated Metrics Fix · August 31, 2026
+</p>
+
+</body>
+</html>

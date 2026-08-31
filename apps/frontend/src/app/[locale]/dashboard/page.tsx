@@ -37,31 +37,33 @@ export default async function DashboardPage() {
     const active = tickets.filter((t) => t.status !== "resolved").length;
     const resolved = tickets.filter((t) => t.status === "resolved").length;
 
+    const investigating = tickets.filter((t) => t.status === "investigating").length;
+
     statsData = {
       active_incidents: active,
       active_incidents_total: total,
-      active_incidents_progress: Math.round((active / (total || 1)) * 100),
-      active_incidents_trend: "+4%",
+      active_incidents_progress: total > 0 ? Math.round((active / total) * 100) : 0,
+      active_incidents_trend: "",
       resolved_today: resolved,
       resolved_today_total: total,
-      resolved_today_progress: Math.round((resolved / (total || 1)) * 100),
-      resolved_today_trend: "+12%",
-      avg_response_minutes: 14,
-      avg_response_hours: 14,
-      avg_response_sla: 30,
-      avg_response_progress: 46,
-      avg_response_trend: "Optimal",
-      system_load: 64,
+      resolved_today_progress: total > 0 ? Math.round((resolved / total) * 100) : 0,
+      resolved_today_trend: "",
+      avg_response_minutes: null,
+      avg_response_hours: null,
+      avg_response_sla: null,
+      avg_response_progress: null,
+      avg_response_trend: null,
+      system_load: null,
       system_load_total: 100,
-      system_load_progress: 64,
-      system_load_trend: "Normal",
+      system_load_progress: null,
+      system_load_trend: null,
       total_tickets: total,
       total_reports: total,
-      total_users: usersRes.count || 840,
-      ghost_reports: Math.round(total * 0.28),
+      total_users: usersRes.count || 0,
+      ghost_reports: 0,
       tickets_by_status: {
         open: active,
-        investigating: Math.round(active * 0.4),
+        investigating,
         resolved,
       },
     };
