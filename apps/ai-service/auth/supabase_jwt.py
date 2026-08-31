@@ -195,3 +195,14 @@ def require_lgu_role(token: dict = Depends(verify_supabase_token)) -> dict:
             detail="LGU officer access required",
         )
     return token
+
+
+def require_super_admin(token: dict = Depends(verify_supabase_token)) -> dict:
+    """Require the user to have role = super_admin. Used for user/role management."""
+    role = token.get("user_metadata", {}).get("role", "citizen")
+    if role != "super_admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Super admin access required",
+        )
+    return token
