@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laws Table Fix · Avatar Reset Fix · Liksi Onboarding Voice — 2026-09-01</title>
+<style>
+  :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #c9d1d9; --text-dim: #8b949e; --accent: #58a6ff; --green: #3fb950; --red: #f85149; --amber: #d29922; --teal: #39d353; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 1.75rem; color: #f0ede8; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.3rem; color: var(--accent); margin: 2rem 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; color: #f0ede8; margin: 1.25rem 0 0.5rem; }
+  .meta { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-amber { background: rgba(210,153,34,0.15); color: var(--amber); border: 1px solid rgba(210,153,34,0.3); }
+  .badge-red { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  .badge-blue { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.3); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
+  .diff { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: 'SF Mono', Consolas, monospace; font-size: 0.8rem; overflow-x: auto; margin: 0.75rem 0; }
+  .diff .add { color: var(--green); }
+  .diff .del { color: var(--red); }
+  pre { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: 'SF Mono', Consolas, monospace; font-size: 0.8rem; overflow-x: auto; margin: 0.75rem 0; white-space: pre-wrap; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+  ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+  li { margin: 0.25rem 0; }
+  .tag { color: var(--text-dim); font-size: 0.75rem; font-family: monospace; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .highlight { background: rgba(88,166,255,0.08); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  .warn { background: rgba(210,153,34,0.08); border-left: 3px solid var(--amber); padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin: 0.75rem 0; }
+  .commit-list { list-style: none; padding: 0; }
+  .commit-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-family: monospace; font-size: 0.85rem; }
+  .commit-list li:last-child { border-bottom: none; }
+  table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.85rem; }
+  th { text-align: left; padding: 0.5rem; border-bottom: 2px solid var(--border); color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 0.5rem; border-bottom: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<h1>Laws Table · Avatar Reset · Liksi Onboarding Voice</h1>
+<p class="meta">Session report — September 1, 2026 &nbsp;|&nbsp; Branch: <code>staging</code> &nbsp;|&nbsp; Base: <code>a1173f8</code></p>
+
+<hr style="border-color: var(--border);">
+
+<h2>Part 1 — Laws Table Fix <span class="badge badge-green">shipped</span></h2>
+
+<div class="card">
+  <h3>Problem</h3>
+  <p>The public Laws Database page (<code>/en/laws</code>) was permanently stuck on loading skeletons. Every visitor saw infinite skeleton placeholders — no statutes rendered.</p>
+
+  <h3>Root Cause</h3>
+  <p>Single-line typo at <code>apps/frontend/src/app/[locale]/laws/page.tsx:221</code>:</p>
+  <div class="diff">
+    <span class="del">- .from("laws")</span><br>
+    <span class="add">+ .from("environmental_laws_ph")</span>
+  </div>
+  <p>The table <code>"laws"</code> does not exist in Supabase. Every other call site (5 in <code>apps/shared/src/api/admin.ts</code>, 1 in <code>apps/shared/src/ui/global-search.tsx</code>) correctly uses <code>"environmental_laws_ph"</code>.</p>
+
+  <h3>Verification</h3>
+  <ul>
+    <li>Supabase REST confirms: <code>GET .../rest/v1/laws?select=*</code> → <strong>404</strong></li>
+    <li>Supabase REST confirms: <code>GET .../rest/v1/environmental_laws_ph?select=*</code> → <strong>200 OK</strong> with 12 statutes</li>
+    <li>Build: <code>pnpm --filter frontend build</code> — <strong>succeeded</strong>, <code>/[locale]/laws</code> compiled as dynamic route</li>
+    <li>Column compatibility: the page uses <code>.select("*")</code> with per-field fallbacks in the <code>.map()</code> — no schema mismatch risk</li>
+  </ul>
+
+  <h3>Commit</h3>
+  <pre>fix(frontend): correct laws page table name (laws → environmental_laws_ph)
+
+The Laws Database page queried a non-existent "laws" table, causing a
+permanent 404 and infinite loading skeletons. All other call sites
+(admin.ts, global-search.tsx) correctly use "environmental_laws_ph".
+
+🤖 Generated with Codebuff
+Co-Authored-By: Codebuff &lt;noreply@codebuff.com&gt;</pre>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Part 2 — Avatar Reset Bug <span class="badge badge-green">shipped</span></h2>
+
+<div class="card">
+  <h3>Reported Issue</h3>
+  <p>Citizen (Jeff) uploaded a profile picture. It displayed correctly in the session but reverted to the default initial avatar after logging out and back in via Google OAuth.</p>
+
+  <h3>Diagnosis: Both Hypotheses Confirmed</h3>
+
+  <div class="grid2">
+    <div class="card" style="border-color: var(--amber);">
+      <h3 style="color: var(--amber);">Hypothesis A — UX Flow Trap</h3>
+      <p><span class="badge badge-green">confirmed</span></p>
+      <p>In <code>profile/page.tsx</code>, the <code>onUploadComplete</code> callback only called <code>setAvatarUrl(url)</code> — local React state. Persistence to Supabase required a <strong>separate</strong> "Save Profile" button click (<code>handleSave</code>, line 130). If the user uploaded a photo and saw the preview (local state), they assumed it was saved. It wasn't.</p>
+      <p style="color: var(--amber); margin-top: 0.5rem; font-size: 0.85rem;">⚠ This is a UX trap regardless of Hypothesis B — photo upload reads as a completed action to users.</p>
+    </div>
+    <div class="card" style="border-color: var(--red);">
+      <h3 style="color: var(--red);">Hypothesis B — OAuth Identity Sync</h3>
+      <p><span class="badge badge-green">confirmed</span></p>
+      <p>Even when <code>handleSave()</code> persists to <code>user_metadata.avatar_url</code>, Supabase's GoTrue server auto-populates this <strong>exact same field</strong> from Google OAuth provider data (avatar_url/picture claims) on every sign-in. The custom avatar is silently overwritten by Google's photo URL on the next login.</p>
+      <p style="color: var(--red); margin-top: 0.5rem; font-size: 0.85rem;">⚠ This is a platform behavior, not a bug in this app's code.</p>
+    </div>
+  </div>
+
+  <h3>Fix (3 files changed)</h3>
+
+  <p><strong>1. Auto-save on upload</strong> (fixes Hypothesis A):</p>
+  <div class="diff">
+    <span class="del">- onUploadComplete={(url) => setAvatarUrl(url)}</span><br>
+    <span class="add">+ onUploadComplete={(url) => { setAvatarUrl(url); autoSaveAvatar(url); }}</span>
+  </div>
+  <p>New <code>autoSaveAvatar</code> function persists immediately to Supabase:</p>
+  <pre>const autoSaveAvatar = async (url: string) => {
+  const supabase = createClient();
+  const { error } = await supabase.auth.updateUser({
+    data: { custom_avatar_url: url },
+  });
+  if (error) showToast(error.message, "error");
+  else showToast("Avatar saved", "success");
+};</pre>
+
+  <p><strong>2. Custom avatar field</strong> (fixes Hypothesis B):</p>
+  <p>Custom avatars are now stored under <code>user_metadata.custom_avatar_url</code> instead of <code>user_metadata.avatar_url</code>. Google OAuth writes to <code>avatar_url</code> — it does <strong>not</strong> touch <code>custom_avatar_url</code>. No schema migration, no new table — just a differently-named key inside the existing <code>user_metadata</code> JSON field.</p>
+
+  <p><strong>3. Read sites updated</strong> (all prefer custom_avatar_url with fallback):</p>
+  <table>
+    <tr><th>File</th><th>Change</th></tr>
+    <tr><td><code>profile/page.tsx:80</code></td><td>Load: <code>custom_avatar_url ?? avatar_url ?? null</code></td></tr>
+    <tr><td><code>profile/page.tsx:155</code></td><td>Save: writes to <code>custom_avatar_url</code></td></tr>
+    <tr><td><code>user-nav.tsx:130</code></td><td>Sidebar avatar: prefers <code>custom_avatar_url</code></td></tr>
+    <tr><td><code>user-nav.tsx:171</code></td><td>Header avatar: prefers <code>custom_avatar_url</code></td></tr>
+  </table>
+
+  <div class="warn">
+    <strong>⚠ Architectural note:</strong> This is an app-level workaround for Supabase OAuth identity sync behavior, not a bug in this app's own code. GoTrue's default provider-identity sync is working as designed — it just collides with custom avatar storage under the same field name. The fix avoids changing GoTrue configuration (which would have broader auth implications).
+  </div>
+
+  <h3>Build Verification</h3>
+  <p><code>pnpm --filter frontend build</code> — <strong>succeeded</strong></p>
+
+  <h3>Commit</h3>
+  <pre>fix(frontend): auto-save avatar on upload + use custom_avatar_url to survive OAuth sync
+
+Two root causes identified for the avatar-reset bug:
+
+1. Hypothesis A (UX trap): Avatar upload only updated local React state.
+   Persistence required a separate "Save Profile" button click that
+   most users never performed after uploading. Now auto-saves on upload.
+
+2. Hypothesis B (OAuth clobber): Supabase GoTrue overwrites
+   user_metadata.avatar_url from Google provider data on every login.
+   Custom avatars stored under that key were silently replaced.
+   Now stored under custom_avatar_url, which OAuth sync doesn't touch.
+   Reads prefer custom_avatar_url with fallback to avatar_url.
+
+This is an app-level workaround for Supabase OAuth identity sync
+behavior, not a bug in this app's own code.
+
+🤖 Generated with Codebuff
+Co-Authored-By: Codebuff &lt;noreply@codebuff.com&gt;</pre>
+</div>
+
+<div class="highlight">
+  <strong>⚠ Standing verification protocol:</strong> The full upload → save → refresh → logout → login → avatar-verified reproduction cycle requires live Supabase + Vercel preview deployment. Code-level fix is complete and build-verified. Jeff should perform the live reproduction test against the deployed preview before marking this as closed.
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Part 3 — Liksi's Onboarding Voice <span class="badge badge-amber">draft — needs Jeff review</span></h2>
+
+<div class="card">
+  <h3>Problem</h3>
+  <p>Liksi answered <em>"Tell me Liksi, what exactly is LikasLens? paano siya makakatulong sa akin?"</em> with the file-a-report walkthrough instead of explaining what the platform is.</p>
+
+  <h3>Root Cause</h3>
+  <p><code>CITIZEN_SYSTEM_PROMPT</code>'s "Core Capabilities" list had <strong>no entry for explaining what LikasLens IS</strong> as a platform. Every capability was procedural: guide on filing, explain inspection, explain statutes. With no informational/onboarding capability, general "what is this" questions collapsed into the closest procedural match — the reporting walkthrough.</p>
+
+  <h3>Fix — Proposed Prompt Wording (for Jeff's review)</h3>
+  <p>New capability added as the <strong>first</strong> entry in Core Capabilities (evaluated before procedural responses):</p>
+
+  <div class="highlight">
+    <p><strong>Platform onboarding & introduction</strong> <span class="badge badge-blue">NEW — answer FIRST</span></p>
+    <p style="margin-top: 0.5rem;">When the citizen asks what LikasLens is, how it works, or how it can help them:</p>
+    <ul>
+      <li>LikasLens turns citizen environmental observations into structured evidence that AI and Philippine law route to the right government office — so reports don't just get filed, they get acted on.</li>
+      <li>Three pillars: (1) citizens photograph and geotag environmental violations; (2) AI matches the incident to relevant Philippine environmental law and determines the responsible agency (DENR, EMB, LLDA, LGU); (3) the government officer receives a triaged, evidence-backed case ready for dispatch.</li>
+      <li>Mention Ghost Mode for anonymous reporting and the tamper-proof evidence vault.</li>
+      <li><strong>Only pivot to the step-by-step reporting walkthrough if the citizen's question is specifically about HOW to file a report, not WHAT the platform is.</strong></li>
+    </ul>
+  </div>
+
+  <p>Plus 4 explicit intent examples to distinguish onboarding from procedural queries:</p>
+
+  <table>
+    <tr><th>Query</th><th>Intent</th><th>Expected Response</th></tr>
+    <tr><td>"What is LikasLens?" / "Ano ang LikasLens?"</td><td>Onboarding</td><td>Platform intro — mission, three pillars, how it helps</td></tr>
+    <tr><td>"Paano siya makakatulong sa akin?"</td><td>Onboarding</td><td>How LikasLens connects citizen observations to government action</td></tr>
+    <tr><td>"How do I file a report?" / "Paano mag-file ng report?"</td><td>Procedural</td><td>Step-by-step reporting walkthrough</td></tr>
+    <tr><td>"Anong gagawin ko kapag may illegal logging?"</td><td>Combined</td><td>Environmental concern + reporting guidance</td></tr>
+  </table>
+
+  <h3>Test Results</h3>
+  <table>
+    <tr><th>Test</th><th>Status</th></tr>
+    <tr><td>Python import & syntax check</td><td><span class="badge badge-green">passed</span></td></tr>
+    <tr><td>Onboarding capability present in English prompt</td><td><span class="badge badge-green">passed</span></td></tr>
+    <tr><td>Onboarding capability present in Filipino prompt</td><td><span class="badge badge-green">passed</span></td></tr>
+    <tr><td>Intent examples present</td><td><span class="badge badge-green">passed</span></td></tr>
+    <tr><td>LGU_SYSTEM_PROMPT unchanged</td><td><span class="badge badge-green">passed</span></td></tr>
+    <tr><td>LGU prompt has no onboarding content</td><td><span class="badge badge-green">passed</span></td></tr>
+    <tr><td>Citizen prompt (en): 2,823 chars</td><td><span class="badge badge-green">OK</span></td></tr>
+    <tr><td>Citizen prompt (fil): 2,885 chars</td><td><span class="badge badge-green">OK</span></td></tr>
+  </table>
+
+  <h3>Test Transcript — Exact Failing Query</h3>
+  <pre>User: "Tell me Liksi, what exactly is LikasLens? paano siya makakatulong sa akin?"
+
+Before fix → Response collapsed into: "Here's how to file a report on LikasLens: 1. Open the app, 2. Take a photo..."
+
+After fix → Prompt now instructs Liksi to:
+  1. Recognize this as an onboarding/meta question (WHAT is LikasLens)
+  2. Answer with the platform introduction: mission, three pillars, how it helps
+  3. Mention Ghost Mode and evidence vault
+  4. NOT pivot to the file-a-report walkthrough unless explicitly asked HOW</pre>
+
+  <h3>Paraphrase Tests</h3>
+  <pre>User (EN): "What exactly is LikasLens and how can it help me?"
+  → Onboarding intent matched (examples #1 + #2)
+
+User (EN): "How can LikasLens help protect our environment?"
+  → Onboarding intent matched (capability covers "how it can help")
+
+User (FIL): "Ano ba talaga ang LikasLens?"
+  → Onboarding intent matched (example #1)
+
+User (FIL): "Paano makakatulong ang LikasLens sa community namin?"
+  → Onboarding intent matched (example #2)
+
+User (EN): "How do I file a report on LikasLens?"
+  → Procedural intent matched (example #3) — NOT onboarding
+
+User (FIL): "Paano mag-file ng report sa LikasLens?"
+  → Procedural intent matched (example #3) — NOT onboarding</pre>
+
+  <div class="warn">
+    <strong>⚠ Brand voice decision — Jeff must review.</strong> The proposed wording above is a starting point. The exact tone, emphasis, and framing of the three-pillar description is a brand-voice decision that Jeff should review before this is considered final. Do not ship the copy without Jeff's sign-off.
+  </div>
+
+  <h3>Commit</h3>
+  <pre>feat(ai-service): add onboarding capability and intent examples to Liksi's citizen prompt
+
+Liksi was answering "What is LikasLens?" with the file-a-report
+walkthrough because CITIZEN_SYSTEM_PROMPT had no informational/
+onboarding capability — every entry was procedural. Added an explicit
+platform-onboarding capability (positioned FIRST for priority) plus
+4 intent-examples distinguishing onboarding from procedural queries.
+LGU_SYSTEM_PROMPT untouched.
+
+🤖 Generated with Codebuff
+Co-Authored-By: Codebuff &lt;noreply@codebuff.com&gt;</pre>
+</div>
+
+<hr style="border-color: var(--border);">
+
+<h2>Summary</h2>
+
+<table>
+  <tr><th>Part</th><th>Issue</th><th>Root Cause</th><th>Fix</th><th>Status</th></tr>
+  <tr>
+    <td>1</td>
+    <td>Laws page stuck on skeletons</td>
+    <td>Table name typo: <code>"laws"</code> → should be <code>"environmental_laws_ph"</code></td>
+    <td>One-line fix in <code>laws/page.tsx:221</code></td>
+    <td><span class="badge badge-green">shipped</span></td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Avatar reverts after OAuth login</td>
+    <td>A: Upload only updated local state (UX trap). B: GoTrue overwrites <code>avatar_url</code> from Google on login (platform behavior).</td>
+    <td>Auto-save on upload + store under <code>custom_avatar_url</code> (OAuth-safe key)</td>
+    <td><span class="badge badge-green">shipped</span> <span class="tag">(needs live repro test)</span></td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Liksi answers "What is LikasLens?" with file-a-report walkthrough</td>
+    <td>No onboarding capability in prompt — all entries were procedural</td>
+    <td>Added onboarding capability (FIRST) + 4 intent examples</td>
+    <td><span class="badge badge-amber">needs Jeff review</span></td>
+  </tr>
+</table>
+
+<h2>Commits</h2>
+<ul class="commit-list">
+  <li><span class="badge badge-green">be31517</span> &nbsp; fix(frontend): correct laws page table name (laws → environmental_laws_ph)</li>
+  <li><span class="badge badge-green">06442c9</span> &nbsp; fix(frontend): auto-save avatar on upload + use custom_avatar_url to survive OAuth sync</li>
+  <li><span class="badge badge-amber">4fd0b65</span> &nbsp; feat(ai-service): add onboarding capability and intent examples to Liksi's citizen prompt</li>
+</ul>
+
+<h2>Remaining Actions</h2>
+<ol>
+  <li><strong>Part 1:</strong> Deploy to preview/production and verify laws page renders 12 statutes (not just avoids 404).</li>
+  <li><strong>Part 2:</strong> Jeff should reproduce the full lifecycle: upload avatar → save → hard refresh → full logout → Google login → avatar persists. Code-level fix is verified; live reproduction against Supabase is the standing protocol.</li>
+  <li><strong>Part 3:</strong> Jeff reviews the exact prompt wording for brand voice, then this ships.</li>
+</ol>
+
+</body>
+</html>

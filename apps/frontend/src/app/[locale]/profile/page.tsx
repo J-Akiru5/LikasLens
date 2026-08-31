@@ -78,7 +78,7 @@ function ProfilePageContent() {
                 })
               : null,
           );
-          setAvatarUrl(user.user_metadata?.avatar_url ?? null);
+          setAvatarUrl(user.user_metadata?.custom_avatar_url ?? user.user_metadata?.avatar_url ?? null);
           setDisplayName(user.user_metadata?.display_name ?? "");
           setBio(user.user_metadata?.bio ?? "");
           setCountryCode(user.user_metadata?.country_code ?? "PH");
@@ -127,6 +127,23 @@ function ProfilePageContent() {
     };
   }, []);
 
+  /** Auto-save the custom avatar immediately on upload (Hypothesis A fix).
+   *  Stored under a distinct key (`custom_avatar_url`) so Supabase's OAuth
+   *  identity sync on Google login won't overwrite it (Hypothesis B fix).
+   */
+  const autoSaveAvatar = async (url: string) => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({
+        data: { custom_avatar_url: url },
+      });
+      if (error) showToast(error.message, "error");
+      else showToast("Avatar saved", "success");
+    } catch {
+      showToast("Failed to save avatar", "error");
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     const supabase = createClient();
@@ -134,7 +151,7 @@ function ProfilePageContent() {
       data: {
         display_name: displayName,
         bio,
-        avatar_url: avatarUrl,
+        custom_avatar_url: avatarUrl,
         country_code: countryCode,
       },
     });
@@ -473,7 +490,7 @@ function ProfilePageContent() {
                   <AvatarUpload
                     userId={userId}
                     currentUrl={avatarUrl}
-                    onUploadComplete={(url) => setAvatarUrl(url)}
+                    onUploadComplete={(url) => { setAvatarUrl(url); autoSaveAvatar(url); }}
                   />
                 </div>
               )}
