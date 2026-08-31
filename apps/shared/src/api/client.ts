@@ -10,6 +10,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { getSupabaseClient } from "../supabase/client";
+import type { TicketExplainResponse } from "../types/ticket";
 
 function db() {
   return getSupabaseClient();
@@ -151,4 +152,19 @@ export async function triageCitizenReport(base64Image: string): Promise<TriageRe
   }
 
   return { success: true, has_concern: false, indicators: [], confidence: 0 };
+}
+
+// ── Ticket Explain via FastAPI proxy ───────────────────────────────────
+// Calls GET /api/v1/tickets/{ticket_id}/explain (public, no auth required).
+// Returns AI routing explanation: confidence breakdown, rule chain, neighbours.
+
+export async function getTicketExplain(ticketId: string): Promise<TicketExplainResponse> {
+  const res = await fetch(`/api/v1/tickets/${ticketId}/explain`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `Explain request failed (${res.status})`);
+  }
+  const json = await res.json();
+  // FastAPI returns { success: true, data: TicketExplainResponse }
+  return (json.data ?? json) as TicketExplainResponse;
 }

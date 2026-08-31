@@ -5,6 +5,7 @@ export interface AppNotification {
     ticket_id?: string;
     from_status?: string;
     to_status?: string;
+    title?: string;
     message?: string;
     response_breached?: boolean;
     resolution_breached?: boolean;

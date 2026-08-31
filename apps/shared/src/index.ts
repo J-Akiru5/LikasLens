@@ -18,7 +18,7 @@ export {
   setLocaleCookie,
 } from "./i18n/language-suggestion";
 export { LanguageSuggestionPopup } from "./ui/language-suggestion-popup";
-export { submitCitizenReport, triageCitizenReport } from "./api/client";
+export { submitCitizenReport, triageCitizenReport, getTicketExplain } from "./api/client";
 export type { ReportPayload, ReportResult, TriageResult } from "./api/client";
 export * from "./lib/offline-queue";
 export { getSupabaseClient } from "./supabase/client";
