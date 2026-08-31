@@ -454,11 +454,68 @@ export async function updateAdminCurrencySetting(id: string, data: Record<string
   return { success: true, data: result } as ApiResponse<CurrencySetting>;
 }
 
+// ── Authorized ticket status routing ───────────────────────────────────────
+// Helper: routes a single-ticket status change through the authorized proxy
+// (transition validation, LGU role check, timeline audit trail). Falls back
+// to direct Supabase update only when the AI service is unreachable.
+async function routeTicketStatus(
+  id: string,
+  status: string,
+  extra?: { notes?: string; urgency_score?: number },
+): Promise<ApiResponse<{ id: string; old_status: string; new_status: string }>> {
+  try {
+    const res = await fetch(`/api/v1/ai/tickets/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, ...extra }),
+    });
+    if (res.ok) return await res.json();
+  } catch {
+    // AI service unavailable — fall through to direct Supabase update
+  }
+
+  // Fallback: direct Supabase update when AI service is down
+  const { data: old, error: e1 } = await db().from("tickets").select("status").eq("id", id).single();
+  if (e1) throw e1;
+
+  const updatePayload: Record<string, unknown> = { status };
+  if (extra?.urgency_score !== undefined) updatePayload.urgency_score = extra.urgency_score;
+  if (status === "resolved" || status === "closed") updatePayload.resolved_at = new Date().toISOString();
+
+  const { error } = await db().from("tickets").update(updatePayload).eq("id", id);
+  if (error) throw error;
+
+  // Best-effort timeline entry
+  try {
+    await db().from("ticket_timeline").insert({
+      ticket_id: id,
+      action: "status_change",
+      from_status: old?.status || null,
+      to_status: status,
+      notes: extra?.notes || null,
+      created_at: new Date().toISOString(),
+    });
+  } catch {
+    // Timeline insert is best-effort
+  }
+
+  return {
+    success: true,
+    data: { id, old_status: old?.status || "", new_status: status },
+  } as ApiResponse<{ id: string; old_status: string; new_status: string }>;
+}
+
 // Admin: Bulk Operations
 export async function bulkTicketStatus(ids: string[], status: string) {
-  const { error } = await db().from("tickets").update({ status, updated_at: new Date().toISOString() }).in("id", ids);
-  if (error) throw error;
-  return { success: true, data: { updated: ids.length, failed: [] } } as ApiResponse<{ updated: number; failed: string[] }>;
+  const failed: string[] = [];
+  for (const id of ids) {
+    try {
+      await routeTicketStatus(id, status);
+    } catch {
+      failed.push(id);
+    }
+  }
+  return { success: failed.length === 0, data: { updated: ids.length - failed.length, failed } } as ApiResponse<{ updated: number; failed: string[] }>;
 }
 
 export async function bulkTicketAssign(ids: string[], lgu_id: string) {
@@ -592,16 +649,21 @@ export async function detectPatternEscalation(_params?: Record<string, string>) 
 }
 
 export async function escalatePattern(data: { ticket_ids: string[]; reason: string }) {
-  const { error } = await db().from("tickets").update({ status: "investigating" }).in("id", data.ticket_ids);
-  if (error) throw error;
-  return { success: true, data: { escalated: data.ticket_ids.length } } as ApiResponse<{ escalated: number }>;
+  const failed: string[] = [];
+  for (const id of data.ticket_ids) {
+    try {
+      await routeTicketStatus(id, "investigating", { notes: data.reason });
+    } catch {
+      failed.push(id);
+    }
+  }
+  return { success: failed.length === 0, data: { escalated: data.ticket_ids.length - failed.length, failed } } as ApiResponse<{ escalated: number; failed: string[] }>;
 }
 
 // Admin: Report Verification
 export async function verifyReport(reportId: string, data: { status: string; notes?: string }) {
-  const { data: result, error } = await db().from("tickets").update({ status: data.status }).eq("id", reportId).select("id, status").single();
-  if (error) throw error;
-  return { success: true, data: { id: result.id, new_status: result.status } } as ApiResponse<{ id: string; new_status: string }>;
+  const result = await routeTicketStatus(reportId, data.status, { notes: data.notes });
+  return { success: result.success, data: { id: result.data.id, new_status: result.data.new_status } } as ApiResponse<{ id: string; new_status: string }>;
 }
 
 export async function batchSyncReports(data: { reports: unknown[] }) {
@@ -701,21 +763,18 @@ export async function getTriageQueue(params?: Record<string, string>) {
 }
 
 export async function classifyTriageTicket(id: string, data: { violation_type_id: string; severity: number; notes?: string }) {
-  const { data: result, error } = await db().from("tickets").update({ urgency_score: data.severity, status: "investigating" }).eq("id", id).select("id, status").single();
-  if (error) throw error;
-  return { success: true, data: { id: result.id, old_status: "open", new_status: result.status, violation_type: data.violation_type_id, severity: data.severity } } as ApiResponse<{ id: string; old_status: string; new_status: string; violation_type: string; severity: number }>;
+  const result = await routeTicketStatus(id, "investigating", { urgency_score: data.severity, notes: data.notes });
+  return { success: result.success, data: { id: result.data.id, old_status: result.data.old_status, new_status: result.data.new_status, violation_type: data.violation_type_id, severity: data.severity } } as ApiResponse<{ id: string; old_status: string; new_status: string; violation_type: string; severity: number }>;
 }
 
-export async function dismissTriageTicket(id: string, _data?: { reason?: string }) {
-  const { data: result, error } = await db().from("tickets").update({ status: "closed" }).eq("id", id).select("id, status").single();
-  if (error) throw error;
-  return { success: true, data: { id: result.id, old_status: "open", new_status: result.status } } as ApiResponse<{ id: string; old_status: string; new_status: string }>;
+export async function dismissTriageTicket(id: string, data?: { reason?: string }) {
+  const result = await routeTicketStatus(id, "closed", { notes: data?.reason });
+  return { success: result.success, data: { id: result.data.id, old_status: result.data.old_status, new_status: result.data.new_status } } as ApiResponse<{ id: string; old_status: string; new_status: string }>;
 }
 
 export async function escalateTriageTicket(id: string) {
-  const { data: result, error } = await db().from("tickets").update({ urgency_score: 5, status: "investigating" }).eq("id", id).select("id, status, urgency_score").single();
-  if (error) throw error;
-  return { success: true, data: { id: result.id, old_status: "open", new_status: result.status, urgency_score: result.urgency_score } } as ApiResponse<{ id: string; old_status: string; new_status: string; urgency_score: number }>;
+  const result = await routeTicketStatus(id, "investigating", { urgency_score: 5 });
+  return { success: result.success, data: { id: result.data.id, old_status: result.data.old_status, new_status: result.data.new_status, urgency_score: 5 } } as ApiResponse<{ id: string; old_status: string; new_status: string; urgency_score: number }>;
 }
 
 export async function getTriageViolationTypes() {
