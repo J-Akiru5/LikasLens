@@ -21,8 +21,10 @@ import { useBulkSelect } from "@/hooks/use-bulk-select";
 import { BulkActionsBar } from "@/components/bulk-actions-bar";
 
 const STATUS_OPTIONS = [
+  { value: "pending_review", label: "Pending AI Review" },
   { value: "investigating", label: "Investigating" },
   { value: "monitoring", label: "Monitoring" },
+  { value: "verified", label: "Verified" },
   { value: "resolved", label: "Resolved" },
   { value: "closed", label: "Closed" },
 ];

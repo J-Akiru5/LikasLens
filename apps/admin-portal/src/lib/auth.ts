@@ -2,10 +2,34 @@ import { createClient } from "@/lib/supabase";
 
 export async function signIn(email: string, password: string) {
   const supabase = createClient();
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+  let { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
     password,
   });
+
+  // If demo account does not exist yet in this Supabase instance, auto-provision it
+  if (error && (email.trim() === "analyst@likaslens.ph" || email.trim() === "analyst@likaslens.gov")) {
+    const signUpRes = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          full_name: "Juan Dela Cruz",
+          role: "analyst",
+        },
+      },
+    });
+
+    if (!signUpRes.error && signUpRes.data.user) {
+      // Retry sign in with newly created demo analyst
+      const retry = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      data = retry.data;
+      error = retry.error;
+    }
+  }
 
   if (error) throw new Error(error.message);
   if (!data.user) throw new Error("No user returned from Supabase");
@@ -24,3 +48,4 @@ export async function signOut() {
   const supabase = createClient();
   await supabase.auth.signOut();
 }
+

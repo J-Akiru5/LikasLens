@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getTickets, AdminTableSkeleton, Skeleton, EmptyState, IncidentDrawer, RevealSection } from "@likaslens/shared";
+import { getTickets, AdminTableSkeleton, Skeleton, EmptyState, IncidentDrawer, RevealSection, STATUS_LABELS } from "@likaslens/shared";
 import type { Ticket } from "@likaslens/shared";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import { createClient } from "@/utils/supabase/client";
@@ -22,10 +22,12 @@ import {
 
 const statusDot: Record<string, string> = {
   open: "bg-[#c27a2e]",
-  investigating: "bg-[#c27a2e]",
-  monitoring: "bg-[#2d6a4f]",
-  resolved: "bg-[#3a7d54]",
-  closed: "bg-[#3a7d54]",
+  pending_review: "bg-[#e09f3e]",
+  investigating: "bg-[#5c93ba]",
+  monitoring: "bg-[#7b5ea7]",
+  verified: "bg-[#3a7d54]",
+  resolved: "bg-[#2d6a4f]",
+  closed: "bg-[#6b7280]",
 };
 
 const ITEMS_PER_PAGE = 12;
@@ -192,9 +194,9 @@ export default function IncidentsPage() {
             </button>
 
             <button
-              onClick={() => setSelectedStatus("in_review")}
+              onClick={() => setSelectedStatus("pending_review")}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                (selectedStatus as string) === "in_review"
+                (selectedStatus as string) === "pending_review"
                   ? "bg-accent text-page shadow-xs"
                   : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
               }`}
@@ -202,32 +204,32 @@ export default function IncidentsPage() {
               <span>Under Review</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
-                  (selectedStatus as string) === "in_review"
+                  (selectedStatus as string) === "pending_review"
                     ? "bg-page/20 text-page border border-page/30 shadow-xs"
                     : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
                 }`}
               >
-                {tickets.filter((t) => (t.status as string) === "in_review" || t.status === "pending_review").length}
+                {tickets.filter((t) => t.status === "pending_review").length}
               </span>
             </button>
 
             <button
               onClick={() => setSelectedStatus("investigating")}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                selectedStatus === "investigating" || (selectedStatus as string) === "assigned"
+                selectedStatus === "investigating"
                   ? "bg-accent text-page shadow-xs"
                   : "bg-panel border border-ink/10 text-ink/60 hover:text-ink"
               }`}
             >
-              <span>Inspectors On Site</span>
+              <span>Investigating</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold transition-all ${
-                  selectedStatus === "investigating" || (selectedStatus as string) === "assigned"
+                  selectedStatus === "investigating"
                     ? "bg-page/20 text-page border border-page/30 shadow-xs"
                     : "bg-ink/[0.06] dark:bg-white/10 text-ink/70 border border-ink/10"
                 }`}
               >
-                {tickets.filter((t) => t.status === "investigating" || (t.status as string) === "assigned").length}
+                {tickets.filter((t) => t.status === "investigating").length}
               </span>
             </button>
 
@@ -299,9 +301,10 @@ export default function IncidentsPage() {
                 paginatedIncidents.map((ticket, i) => {
                   const globalIndex = (currentPage - 1) * ITEMS_PER_PAGE + i + 1;
                   const status = ticket.status?.toLowerCase() || "open";
-                  const isResolved = status === "resolved" || status === "closed";
+                  const isResolved = status === "resolved" || status === "closed" || status === "verified";
                   const isMonitoring = status === "monitoring";
-                  const isInvestigating = status === "investigating" || status === "action_taken";
+                  const isInvestigating = status === "investigating";
+                  const isPendingReview = status === "pending_review";
 
                   const statusBadgeClass = isResolved
                     ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
@@ -309,7 +312,9 @@ export default function IncidentsPage() {
                       ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
                       : isInvestigating
                         ? "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20"
-                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
+                        : isPendingReview
+                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                          : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
 
                   const urgencyScore = (ticket as any).urgency_score ?? 1;
                   const urgencyLevel =
@@ -362,7 +367,7 @@ export default function IncidentsPage() {
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[9px] font-mono uppercase tracking-wider font-semibold border ${statusBadgeClass}`}
                           >
-                            {ticket.status}
+                            {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS] || ticket.status}
                           </span>
                         </div>
 

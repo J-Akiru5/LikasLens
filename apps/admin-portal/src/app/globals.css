@@ -50,22 +50,90 @@ html:not([data-theme="ghost"]) .light-mode-only, body:not([data-theme="ghost"]) 
   background: var(--muted);
 }
 
-/* ── Fine instrument grid & atmospheric overlays ─────────────────────────── */
-.ec-grid {
-  background-image:
-    linear-gradient(rgba(240, 237, 232, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240, 237, 232, 0.04) 1px, transparent 1px);
-  background-size: 80px 80px;
-  mask-image: radial-gradient(ellipse 85% 85% at 50% 45%, black 40%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 45%, black 40%, transparent 100%);
+/* ═══════════════════════════════════════════════════════════════════════════
+   2026 PRECISION CIVIC TECH BACKGROUND & ATMOSPHERIC LIGHTING
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --page: #f6f8f7;
+  --panel: #ffffff;
+  --hero-bg: #0d1a12;
+  --hero-ink: #f0ede8;
+  --hero-muted: rgba(240, 237, 232, 0.6);
+  --hero-border: rgba(240, 237, 232, 0.12);
+  --hero-panel: rgba(255, 255, 255, 0.05);
+  --accent-bright: #2ee6c8;
 }
 
-.ec-grid-subtle {
-  background-image:
-    linear-gradient(rgba(240, 237, 232, 0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(240, 237, 232, 0.018) 1px, transparent 1px);
-  background-size: 64px 64px;
+[data-theme="ghost"],
+.ghost-mode {
+  --page: #06120d;
+  --panel: #0b1e16;
 }
+
+.civic-grid-bg {
+  position: relative;
+  background-color: var(--page);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(46, 230, 200, 0.07) 0%, rgba(27, 67, 50, 0.02) 35%, transparent 70%),
+    radial-gradient(circle at 80% 40%, rgba(46, 230, 200, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 20% 70%, rgba(27, 67, 50, 0.025) 0%, transparent 50%),
+    linear-gradient(to right, rgba(15, 23, 42, 0.032) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.032) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 64px 64px, 64px 64px;
+}
+
+[data-theme="ghost"] .civic-grid-bg,
+.ghost-mode .civic-grid-bg {
+  background-color: #06120d;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(46, 230, 200, 0.18) 0%, rgba(6, 18, 13, 0.5) 45%, transparent 75%),
+    radial-gradient(circle at 85% 35%, rgba(46, 230, 200, 0.09) 0%, transparent 55%),
+    radial-gradient(circle at 15% 65%, rgba(46, 230, 200, 0.08) 0%, transparent 55%),
+    linear-gradient(to right, rgba(46, 230, 200, 0.095) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(46, 230, 200, 0.095) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 64px 64px, 64px 64px;
+}
+
+.civic-glow-header {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1400px;
+  height: 600px;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 50% at 50% -10%, rgba(46, 230, 200, 0.08) 0%, rgba(27, 67, 50, 0.02) 45%, transparent 75%);
+  filter: blur(50px);
+}
+
+.ec-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(46, 230, 200, 0.09);
+  border: 1px solid rgba(46, 230, 200, 0.26);
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-bright);
+}
+
+.ec-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.ec-status-routing { background: var(--amber); }
+.ec-status-resolved { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,0.5); }
+.ec-status-critical { background: var(--red); }
+.ec-status-active { background: var(--teal-ink); }
 
 /* ── Card glass & ambient glow effects ─────────────────────────────────────── */
 .card-glass {

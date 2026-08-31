@@ -15,8 +15,10 @@ import { cn, getTicket, updateTicketStatus, showToast } from "@likaslens/shared"
 import type { TicketDetail } from "@likaslens/shared";
 
 const STATUS_OPTIONS = [
-  { value: "investigating", label: "Move to Review", color: "bg-amber-500" },
-  { value: "monitoring", label: "Move to Verify", color: "bg-blue-500" },
+  { value: "pending_review", label: "Pending AI Review", color: "bg-amber-500" },
+  { value: "investigating", label: "Investigating", color: "bg-blue-500" },
+  { value: "monitoring", label: "Monitoring", color: "bg-purple" },
+  { value: "verified", label: "Verified", color: "bg-green" },
   { value: "resolved", label: "Mark Resolved", color: "bg-green" },
   { value: "closed", label: "Close", color: "bg-ink/20" },
 ];

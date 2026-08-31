@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — Admin Portal Handover for Lou</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#0c1628;--panel:#111e35;--panel-el:#162240;
+  --ink:#e8e0d4;--muted:#8a9baa;--faint:#5c6e7a;
+  --line:1px solid rgba(232,228,220,.08);--line2:1px solid rgba(232,228,220,.14);
+  --accent:#2ee6c8;--sec:#e8ad55;--amber:#f59e0b;--green:#34d399;--red:#f87171;--violet:#a78bfa;
+  --fh:'Montserrat',Arial,sans-serif;--fb:'Inter',Arial,sans-serif;--fm:'Space Mono','Courier New',monospace;
+  --r:10px;--pad:clamp(24px,5vw,72px);
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--fb);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased}
+.wrap{width:100%;padding:0 var(--pad)}.prose{max-width:750px}.wide{max-width:1200px}
+h1,h2,h3{font-family:var(--fh);font-weight:700;letter-spacing:-.02em;margin:0}
+h1{font-size:clamp(1.9rem,4.2vw,2.7rem);line-height:1.12}
+h2{font-size:clamp(1.35rem,3vw,1.8rem);margin:0 0 10px}
+h3{font-size:1.12rem;margin:30px 0 10px;font-weight:600}
+h4{font-size:.72rem;font-family:var(--fm);text-transform:uppercase;letter-spacing:.09em;color:var(--accent);margin:0 0 8px;font-weight:700}
+p{margin:0 0 14px;color:var(--muted);max-width:72ch}
+strong{color:var(--ink);font-weight:600}
+code{font-family:var(--fm);font-size:.83em;background:var(--panel-el);border:var(--line);padding:1px 6px;border-radius:4px;color:var(--accent);word-break:break-word}
+pre{font-family:var(--fm);font-size:.76rem;background:#0a1220;border:var(--line2);border-radius:var(--r);padding:14px;overflow-x:auto;color:#c9d6e3;line-height:1.55}
+section{padding:clamp(34px,4.5vw,50px) 0;border-top:var(--line)}
+.tag{font-family:var(--fm);font-size:.68rem;color:var(--sec);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;font-weight:700;display:flex;align-items:center;gap:10px}
+.tag::before{content:"";width:22px;height:1px;background:var(--sec)}
+.nav{position:sticky;top:0;z-index:60;background:var(--page);border-bottom:var(--line)}
+.nav-in{max-width:1200px;margin:0 auto;padding:0 var(--pad);display:flex;gap:16px;overflow-x:auto;font-family:var(--fm);font-size:.7rem}
+.nav a{color:var(--muted);text-decoration:none;white-space:nowrap;padding:12px 0}
+.nav a:hover{color:var(--accent)}
+.hero{padding:clamp(36px,5vw,52px) 0 clamp(30px,4vw,40px);border-bottom:var(--line)}
+.pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--fm);font-size:.66rem;text-transform:uppercase;letter-spacing:.1em;color:var(--red);border:1px solid rgba(248,113,113,.3);background:rgba(248,113,113,.07);padding:5px 12px;border-radius:999px;font-weight:700}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--red);animation:p 1.8s ease-in-out infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:13px;margin:22px 0}
+.stat{background:var(--panel);border:var(--line2);border-radius:var(--r);padding:15px}
+.stat .n{font-family:var(--fm);font-size:clamp(1.3rem,2.6vw,1.7rem);font-weight:700;color:var(--accent);line-height:1}
+.stat .n.r{color:var(--red)}.stat .n.g{color:var(--green)}.stat .n.a{color:var(--amber)}
+.stat .l{font-size:.72rem;color:var(--faint);margin-top:6px;line-height:1.38}
+.call{position:relative;background:var(--panel);border:var(--line2);border-radius:var(--r);padding:17px 21px 17px 24px;margin:16px 0}
+.call::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--r) 0 0 var(--r);background:var(--accent)}
+.call.r::before{background:var(--red)}.call.g::before{background:var(--green)}.call.a::before{background:var(--amber)}.call.v::before{background:var(--violet)}
+.call p:last-child{margin-bottom:0}
+.tw{overflow-x:auto;margin:15px 0;border:var(--line2);border-radius:var(--r)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.85rem}
+th{background:var(--panel-el);text-align:left;padding:9px 12px;font-family:var(--fm);font-size:.63rem;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);border-bottom:var(--line)}
+td{padding:9px 12px;border-bottom:var(--line);color:var(--muted);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:.64rem;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.badge::before{content:"";width:5px;height:5px;border-radius:50%}
+.b-ok{color:var(--green);background:rgba(52,211,153,.11)}.b-ok::before{background:var(--green)}
+.b-no{color:var(--red);background:rgba(248,113,113,.11)}.b-no::before{background:var(--red)}
+.b-part{color:var(--amber);background:rgba(245,158,11,.11)}.b-part::before{background:var(--amber)}
+.b-exp{color:var(--violet);background:rgba(167,139,250,.11)}.b-exp::before{background:var(--violet)}
+.steps{counter-reset:s;margin:16px 0 0;padding:0;list-style:none}
+.steps li{position:relative;padding:0 0 18px 38px;border-left:var(--line2);margin-left:13px}
+.steps li:last-child{border-color:transparent;padding-bottom:0}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:-14px;top:-2px;width:27px;height:27px;border-radius:50%;background:var(--panel);border:1px solid var(--accent);color:var(--accent);font-family:var(--fm);font-weight:700;font-size:.78rem;display:flex;align-items:center;justify-content:center}
+.steps h4{margin:2px 0 5px;color:var(--ink);font-family:var(--fb);font-size:.9rem;text-transform:none;letter-spacing:0;font-weight:600}
+.steps p{margin:0;font-size:.85rem}
+.fsm{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.fsm-node{background:var(--panel);border:var(--line2);border-radius:8px;padding:11px 14px;font-family:var(--fm);font-size:.78rem;min-width:150px}
+.fsm-node .from{color:var(--ink);font-weight:700}
+.fsm-node .to{color:var(--faint);font-size:.72rem;margin-top:4px;display:block}
+.fsm-node.dead{border-color:rgba(248,113,113,.3)}
+footer{padding:28px 0 46px;border-top:var(--line);color:var(--faint);font-family:var(--fm);font-size:.68rem}
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in">
+  <a href="#tldr">tl;dr</a><a href="#blocker">the blocker</a><a href="#expected">not bugs</a>
+  <a href="#matrix">what works</a><a href="#fsm">status rules</a><a href="#focus">where to focus</a>
+</div></nav>
+
+<div class="wrap hero"><div class="prose">
+  <span class="pill"><span class="pulse"></span>One blocker is causing most failures</span>
+  <h1 style="margin-top:15px">Admin portal handover</h1>
+  <p style="font-size:1.06rem;margin-top:14px">Lou — before you file more bugs, read §1. There's a single backend failure that makes almost every admin action fail in a way that looks like many separate problems. Some of what you're seeing is also <em>correct new behavior</em>, not regressions — §2 covers that. Everything here was verified against the live service today, not assumed from code.</p>
+  <div class="stats">
+    <div class="stat"><div class="n r">1</div><div class="l">Backend blocker likely causing the bulk of failures</div></div>
+    <div class="stat"><div class="n g">10</div><div class="l">Admin functions properly authorized via FastAPI</div></div>
+    <div class="stat"><div class="n a">98</div><div class="l">Still direct-to-Supabase (work, but unauthorized)</div></div>
+    <div class="stat"><div class="n">Sep 3</div><div class="l">Judging — 3 days out</div></div>
+  </div>
+</div></div>
+
+<section id="blocker"><div class="wrap">
+  <div class="prose"><div class="tag">01 — start here</div>
+  <h2>The blocker: new accounts can't be created at all</h2>
+  <p>Reproduced live today against the deployed service. Any new user signing up — including any test account you create — fails at the sync step:</p></div>
+  <div class="wide">
+<pre>POST /api/v1/auth/sync
+→ 500 NotNullViolationError: null value in column "password"
+  of relation "users" violates not-null constraint</pre>
+  <div class="prose">
+  <p><strong>Why this looks like many bugs:</strong> the app keeps two user records — Supabase Auth (login) and the app's own <code>users</code> table (roles, permissions, ticket ownership). Sync creates the second one. When it fails, you can log in fine, but the backend has no row for you, so your role can't resolve. Every authorization check then fails, and every admin action looks independently broken.</p>
+  <p><strong>The cause:</strong> the <code>users</code> table still has a <code>password</code> column marked NOT NULL — a leftover from the Laravel era, when that table handled passwords itself. Supabase Auth holds passwords now, so the app never writes one. The ORM doesn't model the column at all, so every insert omits it and Postgres rejects the row.</p>
+  <p><strong>The fix is Jeff's, not yours</strong> — one schema change: make <code>password</code> nullable or drop it. Until that ships, testing new accounts will keep failing no matter what the UI does.</p></div>
+  <div class="call a"><h4>What to do meanwhile</h4>
+  <p>Test with an account that <em>already has</em> a row in the <code>users</code> table with a role set — not a freshly created one. Ask Jeff which existing account to use. If your account predates this issue, you're fine; if you created it recently, that's very likely why everything 401s or 403s for you.</p></div>
+  </div>
+</div></section>
+
+<section id="expected"><div class="wrap">
+  <div class="prose"><div class="tag">02 — not bugs</div>
+  <h2>Three things that changed on purpose</h2>
+  <p>These will look like regressions. They aren't — they're deliberate fixes from this week. Please don't file these.</p></div>
+  <div class="wide">
+  <div class="call g"><h4>The dashboard looks emptier, with fewer tiles</h4>
+  <p>It used to show 5 KPI tiles including <em>840 total users</em>, <em>42 active incidents</em>, <em>17 ghost reports</em>, <em>+12% trend</em>. Every one of those was <strong>hardcoded fake data</strong> — invented numbers that displayed regardless of what the database actually contained, including when a query failed outright. They're gone. It's now 3 tiles showing real counts. If the real count is zero, it shows zero. That's correct: showing fabricated metrics to competition judges on a platform whose entire pitch is evidence integrity was the single most dangerous thing in the codebase.</p></div>
+  <div class="call g"><h4>The Predictions page is missing from the nav</h4>
+  <p>Deliberately hidden behind a feature flag defaulting OFF. There is no real forecasting model behind it — it would have shown synthetic trends from a handful of seed tickets labelled as predictions. Hidden until it's backed by something real.</p></div>
+  <div class="call g"><h4>Failed data loads now show errors instead of content</h4>
+  <p>Previously, a failed or permission-denied query silently returned <code>{success: true, data: []}</code> — indistinguishable from "no data." Now failures surface as real errors. If you see more error states than before, that's the system telling the truth about failures it used to hide. Report <em>what</em> failed, but the error state itself is the fix working.</p></div>
+  </div>
+</div></section>
+
+<section id="matrix"><div class="wrap">
+  <div class="prose"><div class="tag">03 — what actually works</div>
+  <h2>Feature-by-feature status</h2>
+  <p>"Authorized" means it routes through the FastAPI backend with real permission checks. "Direct DB" means it works in the UI but writes straight to Supabase with no server-side authorization — functional for demo purposes, but a known security gap.</p></div>
+  <div class="wide"><div class="tw"><table>
+    <thead><tr><th>Area</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Ticket list &amp; triage board</td><td><span class="badge b-ok">working</span></td><td>Fixed today — was returning a 500 for every authenticated request. Now returns real tickets with reporter data.</td></tr>
+      <tr><td>Ticket status change</td><td><span class="badge b-ok">authorized</span></td><td>Routes through FastAPI, enforces the state machine in §4, writes a real timeline entry. Verified live.</td></tr>
+      <tr><td>Routing provenance panel</td><td><span class="badge b-ok">working</span></td><td>Incident detail now shows AI category, confidence, recommended office, and whether the Neo4j graph or the rule fallback produced it. This is the neuro-symbolic story — worth making visually clear for the demo.</td></tr>
+      <tr><td>User role change</td><td><span class="badge b-ok">authorized</span></td><td>super_admin only, enforced server-side. Invalid roles rejected with a real 400.</td></tr>
+      <tr><td>User edit / delete</td><td><span class="badge b-ok">authorized</span></td><td>Real FastAPI endpoints with proxy routes.</td></tr>
+      <tr><td>Bulk user role change</td><td><span class="badge b-ok">authorized</span></td><td>Routes through the bulk-role endpoint.</td></tr>
+      <tr><td>Ticket delete</td><td><span class="badge b-no">unauthorized</span></td><td>Direct Supabase delete. No FastAPI endpoint exists. No audit trail. Known and deliberately deferred — <strong>avoid demoing this</strong>.</td></tr>
+      <tr><td>Bulk ticket status / assign / delete</td><td><span class="badge b-no">unauthorized</span></td><td>Direct DB, bypasses the state machine entirely — bulk status change can produce transitions the single-ticket path would reject. Avoid in demo.</td></tr>
+      <tr><td>NGOs, Laws, Rewards, Currency admin</td><td><span class="badge b-part">direct DB</span></td><td>All CRUD goes straight to Supabase, no authorization. Works, but unverified against the demo path.</td></tr>
+      <tr><td>Analytics / LGU performance</td><td><span class="badge b-part">unverified</span></td><td>Return shapes were fixed for typechecking, but real data flow hasn't been tested end to end.</td></tr>
+      <tr><td>Predictions</td><td><span class="badge b-exp">hidden</span></td><td>Feature-flagged OFF deliberately. Not a bug.</td></tr>
+      <tr><td>New account creation</td><td><span class="badge b-no">blocked</span></td><td>See §1. Blocks role assignment for any new user.</td></tr>
+    </tbody>
+  </table></div></div>
+</div></section>
+
+<section id="fsm"><div class="wrap">
+  <div class="prose"><div class="tag">04 — status rules</div>
+  <h2>Why some status changes are rejected</h2>
+  <p>Status transitions are enforced server-side. A rejected change returns a real 422 with an explanatory message — that's correct behavior, not a bug. These are the actual allowed moves, read from the backend today:</p></div>
+  <div class="wide"><div class="fsm">
+    <div class="fsm-node"><span class="from">open</span><span class="to">→ investigating, closed</span></div>
+    <div class="fsm-node"><span class="from">investigating</span><span class="to">→ monitoring, resolved, closed</span></div>
+    <div class="fsm-node"><span class="from">monitoring</span><span class="to">→ resolved, investigating, closed</span></div>
+    <div class="fsm-node"><span class="from">resolved</span><span class="to">→ verified, closed</span></div>
+    <div class="fsm-node"><span class="from">pending_review</span><span class="to">→ open, investigating, closed</span></div>
+    <div class="fsm-node"><span class="from">verified</span><span class="to">→ closed</span></div>
+    <div class="fsm-node dead"><span class="from">closed</span><span class="to">→ nothing (terminal)</span></div>
+  </div>
+  <div class="call v"><h4>The most common false bug report</h4>
+  <p><code>open → resolved</code> is <strong>not allowed</strong> — you must go through <code>investigating</code> first. If the UI offers "Resolved" as a button on an open ticket, that's a real UI bug worth filing (the buttons should reflect what's actually permitted), but the backend rejecting it is correct.</p></div>
+  </div>
+</div></section>
+
+<section id="focus"><div class="wrap">
+  <div class="prose"><div class="tag">05 — where to focus</div>
+  <h2>Priority order for the next 3 days</h2></div>
+  <div class="wide"><ol class="steps">
+    <li><h4>Confirm you can actually authenticate with a working role</h4>
+      <p>Everything else is untestable until this is true. If your account was created recently, §1 is probably why nothing works. Get a known-good account from Jeff before filing anything else.</p></li>
+    <li><h4>Test only the golden demo path, deeply</h4>
+      <p>Citizen submits a report → it appears in the triage list → open it and see the AI category, confidence, recommended office, and routing source → change its status through a valid transition → status updates and appears in the timeline. That exact chain is what judges see. Everything else is secondary this week.</p></li>
+    <li><h4>Make routing provenance visually obvious</h4>
+      <p>The panel showing "reasoned via knowledge graph" vs "via rule fallback" is the single strongest piece of evidence for the neuro-symbolic claim. It's currently correct but plain. Making that legible and confident at a glance is probably the highest-value frontend work left.</p></li>
+    <li><h4>File UI bugs where buttons offer impossible actions</h4>
+      <p>Any place the UI presents an action the backend will reject — invalid status transitions, delete buttons on things that can't be deleted — is worth fixing so the demo never hits an avoidable error in front of judges.</p></li>
+    <li><h4>Skip these entirely</h4>
+      <p>Ticket delete, bulk operations, NGO/Laws/Rewards admin, Predictions. All either unauthorized, deferred, or deliberately hidden. Not worth your remaining hours and not in the demo script.</p></li>
+  </ol></div>
+</div></section>
+
+<footer><div class="wrap">LikasLens — admin handover for Lou · verified against live production Aug 31, 2026 · <code>staging</code></div></footer>
+</body>
+</html>

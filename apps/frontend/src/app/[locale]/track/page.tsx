@@ -38,7 +38,7 @@ interface TicketRecord {
   id: string;
   title: string;
   description?: string;
-  status: "open" | "in_review" | "assigned" | "investigating" | "resolved" | "dismissed";
+  status: "open" | "pending_review" | "investigating" | "monitoring" | "verified" | "resolved" | "closed";
   latitude?: number;
   longitude?: number;
   address_text?: string;
@@ -130,10 +130,12 @@ function TrackContent() {
   const getStageStatus = (stageIdx: number, currentStatus: string) => {
     const statusOrder: Record<string, number> = {
       open: 1,
-      in_review: 2,
-      assigned: 3,
-      investigating: 4,
+      pending_review: 2,
+      investigating: 3,
+      monitoring: 4,
+      verified: 5,
       resolved: 5,
+      closed: 5,
     };
     const currentIdx = statusOrder[currentStatus] || 1;
 

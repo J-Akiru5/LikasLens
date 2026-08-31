@@ -28,7 +28,7 @@ const FEATURE_FLAGS = {
 
 const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { divider: true, dividerLabel: "Overview" },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true, roles: ["analyst", "super_admin", "lgu", "partner"] },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true, roles: ["analyst", "super_admin", "lgu"] },
   { href: "/analytics", label: "Analytics", icon: BarChart3, roles: ["analyst", "super_admin", "lgu"] },
 
   { divider: true, dividerLabel: "Operations" },
@@ -48,7 +48,7 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { divider: true, dividerLabel: "System" },
   { href: "/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["super_admin"] },
   { href: "/changelog", label: "Changelog", icon: FileText, roles: ["analyst", "super_admin"] },
-  { href: "/settings", label: "Settings", icon: Settings, roles: ["super_admin", "lgu", "partner"] },
+  { href: "/settings", label: "Settings", icon: Settings, roles: ["super_admin", "lgu"] },
   { href: "/settings?tab=currency", label: "Currency Rates", icon: Settings, roles: ["super_admin"] },
 ];
 

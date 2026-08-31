@@ -113,11 +113,24 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
     updated_at: new Date().toISOString(),
   };
 
-  const { data: ticket, error: ticketErr } = await db()
+  let { data: ticket, error: ticketErr } = await db()
     .from("tickets")
     .insert(ticketPayload)
     .select()
     .single();
+
+  // Handle 409 conflict (e.g., AI service partially inserted before 502)
+  if (ticketErr && (ticketErr as any).code === "23505") {
+    console.warn("[submitCitizenReport] Conflict on insert — retrying with new ID");
+    ticketPayload.id = crypto.randomUUID();
+    const retry = await db()
+      .from("tickets")
+      .insert(ticketPayload)
+      .select()
+      .single();
+    ticket = retry.data;
+    ticketErr = retry.error;
+  }
 
   if (ticketErr) throw ticketErr;
 

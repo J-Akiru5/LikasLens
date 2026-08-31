@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens — JWT/ES256 Migration: Independent Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#ffffff; --panel:#ffffff; --panel-elevated:#fafafa;
+  --ink:#111814; --muted:#525e58; --muted-subtle:#748078;
+  --border:rgba(0,0,0,.08); --border-strong:rgba(0,0,0,.14);
+  --accent:#1b4332; --accent-fg:#ffffff; --accent-hover:#163829; --accent-subtle:rgba(27,67,50,.08);
+  --teal:#0d8c79; --teal-bright:#2ee6c8;
+  --amber:#b45309; --amber-subtle:rgba(180,83,9,.09);
+  --green:#166534; --green-subtle:rgba(22,101,52,.09);
+  --red:#991b1b; --red-subtle:rgba(153,27,27,.09);
+  --hero-bg:#0d1a12; --hero-ink:#f0ede8; --hero-muted:rgba(240,237,232,.62); --hero-border:rgba(240,237,232,.1); --hero-panel:rgba(255,255,255,.05);
+  --radius-md:.5rem; --radius-lg:.75rem; --radius-xl:1rem;
+  --shadow-md:0 4px 14px rgba(17,24,20,.08), 0 2px 4px rgba(17,24,20,.05);
+  --shadow-lg:0 14px 34px rgba(17,24,20,.13), 0 4px 10px rgba(17,24,20,.06);
+  --font-body:"Public Sans",system-ui,-apple-system,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--font-body);line-height:1.6;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,5vw,64px);}
+.prose{max-width:760px;}
+code,.mono{font-family:var(--font-mono);}
+
+/* ── Hero ───────────────────────────────────────────────────────────── */
+.hero{background:radial-gradient(120% 140% at 15% 0%, #12261a 0%, var(--hero-bg) 55%, #081008 100%);color:var(--hero-ink);border-bottom:1px solid var(--hero-border);padding:clamp(40px,7vw,72px) 0 clamp(32px,5vw,48px);}
+.hero .eyebrow{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-bright);background:var(--hero-panel);border:1px solid var(--hero-border);padding:6px 12px;border-radius:999px;}
+.hero h1{font-size:clamp(1.7rem,4vw,2.6rem);line-height:1.15;margin:18px 0 10px;letter-spacing:-.01em;font-weight:800;}
+.hero p.lede{color:var(--hero-muted);max-width:680px;font-size:1.02rem;margin:0 0 22px;}
+.meta-row{display:flex;flex-wrap:wrap;gap:10px 28px;font-size:.85rem;color:var(--hero-muted);font-family:var(--font-mono);}
+.meta-row b{color:var(--hero-ink);font-weight:600;}
+
+/* ── TL;DR stat cards ──────────────────────────────────────────────── */
+.tldr{margin-top:-30px;position:relative;z-index:2;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow-lg);}
+.stat-card .n{font-family:var(--font-mono);font-size:1.7rem;font-weight:700;line-height:1;}
+.stat-card .l{color:var(--muted);font-size:.82rem;margin-top:6px;}
+.stat-card.good .n{color:var(--green);} .stat-card.warn .n{color:var(--amber);} .stat-card.bad .n{color:var(--red);} .stat-card.neutral .n{color:var(--accent);}
+
+/* ── Sections ──────────────────────────────────────────────────────── */
+section{padding:clamp(32px,5vw,54px) 0;border-bottom:1px solid var(--border);}
+section:last-of-type{border-bottom:none;}
+.section-tag{font-family:var(--font-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);font-weight:600;}
+h2{font-size:clamp(1.35rem,3vw,1.85rem);margin:6px 0 8px;letter-spacing:-.01em;}
+h3{font-size:1.08rem;margin:26px 0 8px;}
+p{color:var(--ink);}
+.dim{color:var(--muted);}
+
+/* ── Finding cards ─────────────────────────────────────────────────── */
+.finding{border:1px solid var(--border);border-left:4px solid var(--border-strong);border-radius:var(--radius-md);padding:16px 18px;margin:14px 0;background:var(--panel-elevated);}
+.finding.confirmed{border-left-color:var(--green);}
+.finding.moderate{border-left-color:var(--amber);}
+.finding.critical{border-left-color:var(--red);}
+.finding .fh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+.badge{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;font-weight:700;padding:3px 9px;border-radius:999px;}
+.badge.confirmed{background:var(--green-subtle);color:var(--green);}
+.badge.moderate{background:var(--amber-subtle);color:var(--amber);}
+.badge.critical{background:var(--red-subtle);color:var(--red);}
+.badge.tag{background:var(--accent-subtle);color:var(--accent);}
+.finding h4{margin:0;font-size:1rem;}
+.finding .body p{margin:6px 0;font-size:.95rem;}
+.finding .evi{font-family:var(--font-mono);font-size:.8rem;background:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--muted);margin-top:8px;white-space:pre-wrap;}
+
+/* ── Flow diagram ──────────────────────────────────────────────────── */
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:0;margin:20px 0;}
+.flow .node{background:var(--panel);border:1px solid var(--border-strong);border-radius:var(--radius-md);padding:10px 14px;font-family:var(--font-mono);font-size:.82rem;box-shadow:var(--shadow-md);}
+.flow .arrow{color:var(--muted-subtle);padding:0 10px;font-size:1.1rem;}
+.flow .node.branch{border-color:var(--teal);color:var(--teal);}
+
+/* ── Tables ────────────────────────────────────────────────────────── */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg);margin:16px 0;}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:.87rem;}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+th{background:var(--panel-elevated);font-family:var(--font-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);}
+td.wrap-cell{white-space:normal;}
+tr:last-child td{border-bottom:none;}
+.pill{display:inline-block;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:999px;font-family:var(--font-mono);}
+.pill.yes{background:var(--green-subtle);color:var(--green);}
+.pill.no{background:var(--panel-elevated);color:var(--muted-subtle);}
+.pill.secret{background:var(--red-subtle);color:var(--red);}
+.pill.unverified{background:var(--amber-subtle);color:var(--amber);}
+code.inline{background:var(--panel-elevated);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:.85em;}
+
+/* ── Verdict ───────────────────────────────────────────────────────── */
+.verdict{background:linear-gradient(135deg,var(--accent) 0%,#0f2e20 100%);color:#fff;border-radius:var(--radius-xl);padding:clamp(24px,4vw,36px);margin-top:10px;}
+.verdict h3{color:#fff;margin-top:0;}
+.verdict p{color:rgba(255,255,255,.88);}
+.verdict ol{color:rgba(255,255,255,.92);padding-left:20px;}
+.verdict li{margin:8px 0;}
+
+footer{padding:26px 0 50px;color:var(--muted-subtle);font-size:.82rem;}
+
+@media (max-width:640px){
+  .flow{flex-direction:column;align-items:stretch;}
+  .flow .arrow{align-self:center;transform:rotate(90deg);padding:6px 0;}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow">● Independent code review</span>
+    <h1>JWT ES256/JWKS Migration — LikasLens AI Service</h1>
+    <p class="lede">Review of the auth refactor described in your session handoff, checked against the actual code, tests, and config on <code class="mono">origin/development</code> — not against the handoff's own summary of itself.</p>
+    <div class="meta-row">
+      <span><b>Repo:</b> J-Akiru5/LikasLens</span>
+      <span><b>Commit reviewed:</b> 1671bbf</span>
+      <span><b>Branch:</b> development</span>
+      <span><b>Scope:</b> apps/ai-service/auth, config.py, .env.example, routers</span>
+      <span><b>Date:</b> Aug 30, 2026</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap tldr">
+  <div class="stat-grid">
+    <div class="stat-card good"><div class="n">20 / 20</div><div class="l">New JWT tests — actually re-run against the repo, not taken on faith</div></div>
+    <div class="stat-card good"><div class="n">87</div><div class="l">Total tests collected — matches the handoff's claim</div></div>
+    <div class="stat-card good"><div class="n">Fixed</div><div class="l">JWKS deadlock — confirmed by reading the lock logic, not just the diff summary</div></div>
+    <div class="stat-card bad"><div class="n">1 open</div><div class="l">Real production-readiness gap, unrelated to the JWT work itself (see §3)</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<section>
+  <span class="section-tag">§1 · JWT / JWKS architecture review</span>
+  <h2>The refactor does what it claims. Two claims in the code's own docstring don't match its own behavior.</h2>
+  <div class="prose">
+    <p>I cloned the repo, checked out <code class="inline">1671bbf</code> on <code class="inline">development</code>, and read <code class="inline">jwks_client.py</code> and <code class="inline">supabase_jwt.py</code> directly rather than trusting the handoff's description of them. Then I installed the actual dependencies and ran <code class="inline">tests/test_supabase_jwt.py</code> myself.</p>
+  </div>
+
+  <h3>Verified working</h3>
+
+  <div class="finding confirmed">
+    <div class="fh"><span class="badge confirmed">Verified fact</span><h4>The deadlock is actually fixed, not just described as fixed</h4></div>
+    <div class="body">
+      <p><code class="inline">get_signing_key()</code> reads the cache without holding <code class="inline">_cache_lock</code>, then calls <code class="inline">_refresh()</code> outside the lock. <code class="inline">_refresh()</code> acquires the lock itself, only to swap in a freshly-built dict — it never calls back into a function that re-acquires the same lock. That's the nested-acquisition pattern that caused the original deadlock, and it's genuinely gone.</p>
+      <p>Caveat: there's no test that actually spins up concurrent threads hitting a cache-miss simultaneously — the 20 new tests exercise the refresh <em>logic</em> sequentially, not the <em>threading</em> claim. The fix is correct by inspection; it isn't regression-tested against reintroduction. I'd add one thread-based test before calling this permanently closed.</p>
+    </div>
+  </div>
+
+  <div class="finding confirmed">
+    <div class="fh"><span class="badge confirmed">Verified fact</span><h4>Algorithm-confusion attack is correctly prevented</h4></div>
+    <div class="body">
+      <p>This is the one that actually matters, and it's done right. The header's <code class="inline">alg</code> determines the verification path <em>before</em> any key is touched: <code class="inline">ES256</code> is verified with <code class="inline">jwt.decode(token, signing_key, algorithms=["ES256"])</code> using the JWKS public key, and <code class="inline">HS256</code> is verified separately with <code class="inline">jwt.decode(token, secret, algorithms=["HS256"])</code> using the shared secret. The classic attack — set <code class="inline">alg: HS256</code> and sign with the public EC key as if it were an HMAC secret — doesn't work here because the public key is never passed into the HS256 branch. Good separation.</p>
+    </div>
+  </div>
+
+  <div class="finding confirmed">
+    <div class="fh"><span class="badge confirmed">Verified fact</span><h4>Tests actually pass — I ran them, not summarized them</h4></div>
+    <div class="body">
+      <p>All 20 new JWT tests pass in a clean sandbox (installed <code class="inline">python-jose[cryptography]</code>, <code class="inline">fastapi</code>, <code class="inline">httpx</code> fresh). Full-suite collection also comes to exactly 87, matching the handoff. Running the full 87: <b>81 passed</b>, 2 failed + 4 errored — every one of those is <code class="inline">ModuleNotFoundError: ultralytics</code> (image analysis) or a Roboflow fixture, both unrelated ML dependencies I didn't install, not a defect in the auth work. I'm not independently vouching for "87/87" in a fully-loaded environment — I didn't install <code class="inline">ultralytics</code> or hit a real Neo4j/Postgres instance — but the part of the claim that's actually in scope for this review (JWT/JWKS) is directly confirmed, not inferred.</p>
+    </div>
+  </div>
+
+  <div class="finding confirmed">
+    <div class="fh"><span class="badge confirmed">Verified fact</span><h4>Auth is actually wired into routes, not orphaned</h4></div>
+    <div class="body">
+      <p><code class="inline">require_lgu_role</code> gates the LGU-only endpoints in <code class="inline">routers/tickets.py</code>; <code class="inline">optional_auth</code> is used in <code class="inline">routers/reports.py</code> and <code class="inline">routers/liksi.py</code> for anonymous-capable ("ghost mode") reporting. This matters because it's easy to ship a correct auth module that nothing actually calls — that's not what happened here.</p>
+    </div>
+  </div>
+
+  <h3>Real gaps, right-sized</h3>
+
+  <div class="finding moderate">
+    <div class="fh"><span class="badge moderate">Confirmed gap</span><span class="badge tag">low practical severity</span><h4>The docstring says <code class="inline">iss</code> is verified. The code doesn't verify it.</h4></div>
+    <div class="body">
+      <p><code class="inline">supabase_jwt.py</code>'s module docstring says the flow verifies "signature + standard claims (exp, iat, iss, etc.)". <code class="inline">python-jose</code>'s <code class="inline">jwt.decode()</code> only checks <code class="inline">iss</code> if you pass an explicit <code class="inline">issuer=</code> argument — this code doesn't. So <code class="inline">iss</code> is not actually checked.</p>
+      <p>Why this isn't critical: the JWKS client only loads keys from <em>your own</em> project's JWKS endpoint, keyed by <code class="inline">kid</code>. A token from a different issuer would need to collide with a <code class="inline">kid</code> your project actually has and be signed by your project's actual private key — which means it would have to <em>be</em> a token from your project regardless of what its <code class="inline">iss</code> claim says. So the missing check is mostly redundant with the JWKS scoping, not a live bypass. Still, "the docstring says X, the code does Y" is exactly the kind of drift that turns into a real bug during the next refactor. Either add the explicit <code class="inline">issuer=</code> check for defense-in-depth, or fix the comment so it stops claiming a guarantee that isn't there.</p>
+      <div class="evi">jwt.decode(token, signing_key, algorithms=["ES256"], options={"verify_aud": False})
+# no issuer= kwarg passed anywhere in either branch</div>
+    </div>
+  </div>
+
+  <div class="finding moderate">
+    <div class="fh"><span class="badge moderate">Design choice worth naming</span><h4><code class="inline">verify_aud</code> is explicitly disabled on both paths</h4></div>
+    <div class="body">
+      <p>Same pattern as <code class="inline">iss</code> above — it's disabled outright, not defaulted. This is common enough with Supabase (the <code class="inline">aud</code> claim isn't always something projects rely on) and isn't a new problem introduced by this refactor — it was already the behavior in the old HS256-only code you pasted in the handoff. Flagging it because "two of the standard JWT claims are explicitly turned off" is worth being a deliberate decision rather than an inherited one.</p>
+    </div>
+  </div>
+
+  <div class="finding moderate">
+    <div class="fh"><span class="badge moderate">Minor</span><h4>Legacy HS256 fallback is real, ongoing attack surface for as long as it's configured</h4></div>
+    <div class="body">
+      <p>Your own <code class="inline">.env.example</code> already says the right thing here ("only remain if we intentionally want HS256 backward compatibility"). I'm just underlining it: as long as <code class="inline">SUPABASE_JWT_SECRET</code> is set on Render, a leaked or weak shared secret is a full auth bypass, independent of how good the ES256/JWKS side is. Worth an actual removal date on the calendar, not just a comment.</p>
+    </div>
+  </div>
+
+  <h3>How the verified flow actually looks</h3>
+  <div class="flow">
+    <div class="node">JWT arrives</div><div class="arrow">→</div>
+    <div class="node">read <code class="mono">kid</code>+<code class="mono">alg</code> (unverified header)</div><div class="arrow">→</div>
+    <div class="node branch">alg not in {ES256,HS256}?</div><div class="arrow">→</div>
+    <div class="node">401, rejected</div>
+  </div>
+  <div class="flow">
+    <div class="node branch">alg = ES256</div><div class="arrow">→</div>
+    <div class="node">JWKS cache lookup by <code class="mono">kid</code></div><div class="arrow">→</div>
+    <div class="node">miss → refresh (no nested lock)</div><div class="arrow">→</div>
+    <div class="node">verify with public key</div>
+  </div>
+</section>
+
+<section>
+  <span class="section-tag">§2 · Environment variable audit</span>
+  <h2>What the code actually requires, where it's actually read from</h2>
+  <div class="prose">
+    <p>Built directly from <code class="inline">config.py</code>, both <code class="inline">.env.example</code> files, and grepping every consumer of each variable — not from the variable names in your handoff's list. One honest limitation up front: I don't have a Render connector, and the Vercel tools I have access to expose project/deployment metadata, not the actual configured environment-variable values — so the "Render" and "Vercel" columns below reflect <em>what the code needs from each surface</em>, confirmed by inspection, not a live read of your dashboards. You'll still need to eyeball Render's and Vercel's env var screens against this table yourself.</p>
+  </div>
+
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Variable</th><th>AI service (Render)</th><th>Frontend (Vercel)</th><th>Admin portal (Vercel)</th><th>Required?</th><th>Secret?</th></tr></thead>
+    <tbody>
+      <tr><td><code class="mono">SUPABASE_URL</code></td><td><span class="pill yes">needed</span></td><td class="wrap-cell">different var: <code class="inline">NEXT_PUBLIC_SUPABASE_URL</code></td><td class="wrap-cell">same as frontend</td><td>Required (ES256 primary)</td><td><span class="pill no">no</span> public project URL</td></tr>
+      <tr><td><code class="mono">SUPABASE_JWT_SECRET</code></td><td><span class="pill unverified">optional</span></td><td><span class="pill no">n/a</span></td><td><span class="pill no">n/a</span></td><td>Only if keeping HS256 legacy fallback</td><td><span class="pill secret">yes</span></td></tr>
+      <tr><td><code class="mono">JWKS_CACHE_TTL_SECONDS</code></td><td><span class="pill unverified">optional</span></td><td><span class="pill no">n/a</span></td><td><span class="pill no">n/a</span></td><td>Optional — code default is <b>3600s (1h)</b>, not the 86400s the handoff suggests. Set explicitly on Render if you actually want 24h.</td><td><span class="pill no">no</span></td></tr>
+      <tr><td><code class="mono">DATABASE_URL</code></td><td><span class="pill yes">needed</span></td><td><span class="pill no">n/a</span></td><td><span class="pill no">n/a</span></td><td>Required in production (hard CRITICAL warning, but not enforced as a hard crash — see §3)</td><td><span class="pill secret">yes</span></td></tr>
+      <tr><td><code class="mono">GOOGLE_API_KEY</code></td><td><span class="pill yes">needed</span></td><td><span class="pill no">n/a</span></td><td><span class="pill no">n/a</span></td><td>Required for chat/hazard/RAG features</td><td><span class="pill secret">yes</span></td></tr>
+      <tr><td><code class="mono">NEO4J_URI / _USER / _PASSWORD</code></td><td><span class="pill unverified">optional</span></td><td><span class="pill no">n/a</span></td><td><span class="pill no">n/a</span></td><td>Optional — graph features silently disable without all three</td><td><span class="pill secret">password: yes</span></td></tr>
+      <tr><td><code class="mono">SUPABASE_STORAGE_URL / _KEY / _SECRET</code></td><td><span class="pill yes">needed</span></td><td><span class="pill no">n/a</span></td><td><span class="pill no">n/a</span></td><td>All three required together (confirmed used in <code class="inline">routers/reports.py</code> via boto3) — <code class="inline">storage_configured</code> is false if any one is missing</td><td><span class="pill secret">key+secret: yes</span></td></tr>
+      <tr><td><code class="mono">SUPABASE_STORAGE_BUCKET</code></td><td><span class="pill unverified">optional</span></td><td><span class="pill no">n/a</span></td><td><span class="pill no">n/a</span></td><td>Defaults to <code class="inline">evidence</code> in code — only set if it's actually different</td><td><span class="pill no">no</span></td></tr>
+      <tr><td><code class="mono">ROBOFLOW_API_KEY / _MODEL_ID</code></td><td><span class="pill unverified">optional</span></td><td><span class="pill no">n/a</span></td><td><span class="pill no">n/a</span></td><td>Optional — detection falls back to default YOLO without it</td><td><span class="pill secret">key: yes</span></td></tr>
+      <tr><td><code class="mono">LIKASLENS_METRICS_LOG</code></td><td><span class="pill unverified">optional</span></td><td><span class="pill no">n/a</span></td><td><span class="pill no">n/a</span></td><td>Optional, disabled if unset — see §3 for a real problem with this one on Render specifically</td><td><span class="pill no">no</span></td></tr>
+      <tr><td><code class="mono">AI_SERVICE_API_KEY</code></td><td><span class="pill yes">strongly recommend setting</span></td><td>consumed indirectly via calls to the AI service</td><td>same</td><td>Technically optional — see §3, this is the headline finding</td><td><span class="pill secret">yes</span></td></tr>
+      <tr><td><code class="mono">NEXT_PUBLIC_SUPABASE_ANON_KEY</code></td><td><span class="pill no">n/a</span></td><td><span class="pill yes">needed</span></td><td><span class="pill yes">needed</span></td><td>Required</td><td><span class="pill no">no — designed to be public, RLS protects it</span></td></tr>
+      <tr><td><code class="mono">SUPABASE_SERVICE_ROLE_KEY</code></td><td><span class="pill no">n/a</span></td><td><span class="pill yes">needed</span></td><td><span class="pill no">not found in admin-portal code</span></td><td>Required for account deletion</td><td><span class="pill secret">yes — see confirmation below</span></td></tr>
+      <tr><td><code class="mono">RENDER_AI_URL / LOCAL_AI_URL</code></td><td><span class="pill no">n/a</span></td><td><span class="pill yes">needed</span></td><td><span class="pill yes">needed</span></td><td>Points the Next.js server-side proxy at the AI service</td><td><span class="pill no">no</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="finding confirmed">
+    <div class="fh"><span class="badge confirmed">Verified fact</span><h4>No backend secret is actually exposed to the frontend bundle</h4></div>
+    <div class="body">
+      <p>This was the one part of the audit I could fully close by inspection rather than by trusting a naming convention. <code class="inline">SUPABASE_SERVICE_ROLE_KEY</code> is read exactly once in the frontend, in <code class="inline">apps/frontend/src/app/[locale]/actions/account.ts</code> — which opens with <code class="inline">"use server"</code>. That's a Next.js Server Action: it never ships to the client bundle, regardless of the variable's name. Grepped the whole frontend and admin-portal trees for the string — this is the only usage. No accidental exposure found.</p>
+    </div>
+  </div>
+
+  <div class="finding moderate">
+    <div class="fh"><span class="badge moderate">Note</span><h4>No <code class="inline">render.yaml</code> in the repo</h4></div>
+    <div class="body">
+      <p>Render env config for this service lives entirely in the Render dashboard, not in-repo. That's a normal setup, but it means "variables documented but no longer used by code" and "variables required in Render but missing locally" (your own audit questions 3/5/6) can only be answered by you looking at the Render dashboard side-by-side with the table above — I have no connector into Render from here.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="section-tag">§3 · Production readiness</span>
+  <h2>The auth refactor is ready. One separate thing isn't — and it's more consequential than anything in §1.</h2>
+
+  <div class="finding critical">
+    <div class="fh"><span class="badge critical">Confirmed, actionable</span><h4>If <code class="inline">AI_SERVICE_API_KEY</code> isn't set on Render, your Gemini- and Roboflow-backed endpoints are open to the internet, unauthenticated, with no Supabase login required</h4></div>
+    <div class="body">
+      <p>This isn't part of the JWT work and I want to be clear it isn't a regression from last night's refactor — it's a pre-existing gap that the JWT review surfaced while tracing what actually gates each route. In <code class="inline">main.py</code>, <code class="inline">verify_api_key()</code> checks an <code class="inline">X-API-Key</code> header against <code class="inline">settings.ai_service_api_key</code> — but:</p>
+      <div class="evi">if not settings.ai_service_api_key:
+    return   # <-- no key configured = check passes for everyone</div>
+      <p>This dependency gates <code class="inline">/analyze</code>, <code class="inline">/analyze/base64</code>, <code class="inline">/analyze/similarity</code>, <code class="inline">/api/v1/analyze-hazard</code>, <code class="inline">/api/v1/chat</code>, and the <code class="inline">/routing/*</code> endpoints — i.e., the endpoints that actually call Gemini and Roboflow and cost you money per request. It's separate from the Supabase JWT auth you just rebuilt; a request straight to the Render URL never touches <code class="inline">verify_supabase_token</code> at all for these routes.</p>
+      <p>Right now this only produces a <code class="inline">WARNING</code> at startup (not <code class="inline">CRITICAL</code>), and <code class="inline">validate_startup()</code> only logs — it never stops the process from booting even on a CRITICAL. So it's easy to deploy to Render, see the service come up healthy, and not notice that anyone who finds the URL can run your Gemini bill up. <b>Action:</b> confirm <code class="inline">AI_SERVICE_API_KEY</code> is actually set in Render's dashboard before this goes live, and consider promoting this specific warning to CRITICAL plus an actual startup abort in production.</p>
+    </div>
+  </div>
+
+  <div class="finding moderate">
+    <div class="fh"><span class="badge moderate">Confirmed, worth a decision</span><h4><code class="inline">LIKASLENS_METRICS_LOG</code> writes to local disk — Render's filesystem doesn't persist that across deploys</h4></div>
+    <div class="body">
+      <p>If this is set to a local path on Render (no persistent disk attached), every redeploy or restart silently loses the metrics log. Not a security issue, just a "config that works locally, quietly does nothing useful in production" issue — exactly the repo-vs-runtime distinction your own audit asked me to check. Either attach a Render persistent disk, or point this at something that survives restarts (S3/Supabase Storage, since you already have that wired up for evidence uploads).</p>
+    </div>
+  </div>
+
+  <div class="finding confirmed">
+    <div class="fh"><span class="badge confirmed">Verified fact</span><h4><code class="inline">validate_startup()</code> never actually blocks a bad deploy</h4></div>
+    <div class="body">
+      <p>Every "CRITICAL" string it produces is only ever passed to <code class="inline">logger.error()</code> in <code class="inline">log_config_summary()</code> — there's no <code class="inline">sys.exit</code> or raised exception anywhere in that path. A misconfigured production deploy (missing <code class="inline">DATABASE_URL</code>, missing all auth vars) will boot, serve a healthy-looking <code class="inline">/health</code>, and fail requests one at a time instead of failing loudly at boot. That's arguably fine for auth specifically (missing auth vars → JWKS client is <code class="inline">None</code> → every protected request 401s, which fails closed, not open) — but for <code class="inline">DATABASE_URL</code> it means broken deploys look alive until the first real request hits the DB.</p>
+    </div>
+  </div>
+
+  <h3>What I did <em>not</em> verify — flagging the boundary honestly</h3>
+  <div class="prose">
+    <p>I have no live credentials for your actual Supabase project, Neo4j Aura instance, or Render deployment, so I can't confirm end-to-end that a real Supabase-issued ES256 token verifies against your real JWKS endpoint in production — only that the code does what it should against a locally-generated EC keypair in tests. I also didn't install <code class="inline">ultralytics</code> or stand up Postgres/Neo4j to re-run the other 6 non-JWT test failures/errors, since those are unrelated to what this handoff asked me to review. Both are reasonable to leave to a staging smoke test rather than something I should chase down here — but they're gaps, not silent passes.</p>
+  </div>
+
+  <div class="verdict">
+    <h3>Bottom line</h3>
+    <p>The architectural direction you approved — ES256/JWKS primary, HS256 transitional — is implemented correctly, the deadlock is genuinely fixed, and the algorithm-confusion attack is genuinely closed. That part is ready for staging. Before you actually deploy:</p>
+    <ol>
+      <li><b>Confirm <code>AI_SERVICE_API_KEY</code> is set on Render.</b> This is the one item that could cost real money if missed, and it has nothing to do with last night's JWT work.</li>
+      <li>Decide the fate of <code>SUPABASE_JWT_SECRET</code> — keep it for a defined migration window, or drop it now that ES256 is primary.</li>
+      <li>Either add an explicit <code>issuer=</code> check to <code>jwt.decode()</code>, or fix the docstring so it stops claiming a check that isn't there.</li>
+      <li>Point <code>LIKASLENS_METRICS_LOG</code> somewhere that survives a Render restart, or accept it's dev-only.</li>
+      <li>Add one concurrency test that actually spins up threads against a JWKS cache miss, so the deadlock fix has a regression guard instead of just a correct reading.</li>
+    </ol>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap">Reviewed against <code class="mono">github.com/J-Akiru5/LikasLens</code> @ <code class="mono">1671bbf</code> on the <code class="mono">development</code> branch. Findings are separated into verified fact (read the code / ran the tests myself) vs. confirmed gap (code contradicts its own docs or comments) vs. things I explicitly could not check from here — see each finding's badge.</div>
+</footer>
+
+</body>
+</html>

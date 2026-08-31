@@ -16,9 +16,11 @@ const URGENCY_COLORS: Record<string, { dot: string; bg: string; label: string }>
 const STATUS_FILTERS = [
   { value: null, label: "All Incidents" },
   { value: "open", label: "Received/Open" },
-  { value: "investigating", label: "Under Review" },
-  { value: "assigned", label: "Inspectors On Site" },
+  { value: "pending_review", label: "Pending Review" },
+  { value: "investigating", label: "Under Investigation" },
+  { value: "monitoring", label: "Monitoring" },
   { value: "resolved", label: "Resolved" },
+  { value: "closed", label: "Closed" },
 ];
 
 const ITEMS_PER_PAGE = 10;
@@ -65,8 +67,9 @@ function getStatusColor(status?: string) {
     case "closed":
       return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400";
     case "investigating":
-    case "assigned":
-      return "bg-blue-500/15 text-blue-600 dark:text-blue-400";
+      return "bg-sky-500/15 text-sky-600 dark:text-sky-400";
+    case "pending_review":
+      return "bg-amber-500/15 text-amber-600 dark:text-amber-400";
     case "monitoring":
       return "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400";
     default:
@@ -77,8 +80,8 @@ function getStatusColor(status?: string) {
 function getStatusLabel(status?: string) {
   switch (status?.toLowerCase()) {
     case "open": return "Report Received";
-    case "investigating": return "Under Review";
-    case "assigned": return "Inspectors Dispatched";
+    case "pending_review": return "Pending Review";
+    case "investigating": return "Under Investigation";
     case "monitoring": return "Monitoring";
     case "resolved": return "Resolved";
     case "closed": return "Closed";
@@ -377,7 +380,7 @@ export default function IncidentsPage() {
                 <p className="text-[10px] font-mono text-ink/40 uppercase tracking-wider">Government Action Pipeline</p>
                 {[
                   { label: "Report Received & Photo Saved", done: true },
-                  { label: "Assigned to Government Office", done: ["assigned", "investigating", "monitoring", "resolved", "closed"].includes(selectedTicket.status || "") },
+                  { label: "Assigned to Government Office", done: ["pending_review", "investigating", "monitoring", "resolved", "closed"].includes(selectedTicket.status || "") },
                   { label: "Sent to Inspection Team", done: ["investigating", "monitoring", "resolved", "closed"].includes(selectedTicket.status || "") },
                   { label: "On-Site Inspection & Clean-up", done: ["monitoring", "resolved", "closed"].includes(selectedTicket.status || "") },
                   { label: "Problem Solved & Cleaned Up", done: ["resolved", "closed"].includes(selectedTicket.status || "") },

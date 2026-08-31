@@ -23,13 +23,6 @@ export async function proxy(request: NextRequest) {
     return intlMiddleware(request);
   }
 
-  // Redirect root path to default locale
-  if (pathname === "/") {
-    const url = request.nextUrl.clone();
-    url.pathname = `/${locales[0]}`;
-    return NextResponse.redirect(url);
-  }
-
   let supabaseResponse = intlMiddleware(request);
 
   const supabase = createServerClient(
@@ -72,8 +65,11 @@ export async function proxy(request: NextRequest) {
     return pathWithoutLocale === route || pathWithoutLocale === `${route}/`;
   });
 
-  // If user is logged in and trying to access login, redirect to dashboard
-  if (user) {
+  const userRole = user?.user_metadata?.role as string | undefined;
+  const isAuthorizedAdmin = !!(user && userRole && ["analyst", "super_admin", "admin", "lgu"].includes(userRole));
+
+  // If user is logged in with an authorized admin role and trying to access login, redirect to dashboard
+  if (isAuthorizedAdmin) {
     if (isPublicRoute) {
       const url = request.nextUrl.clone();
       url.pathname = `/${locales[0]}/dashboard`;
@@ -82,8 +78,8 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // If user is NOT logged in
-  if (!user) {
+  // If user is NOT logged in or does not have admin permissions
+  if (!isAuthorizedAdmin) {
     if (isPublicRoute || matchesPath("/")) {
       return supabaseResponse;
     }

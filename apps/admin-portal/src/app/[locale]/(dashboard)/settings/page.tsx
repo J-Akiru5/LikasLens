@@ -245,7 +245,6 @@ function SecuritySection({ settings, update }: { settings: SettingsState; update
               <option value="analyst">Analyst</option>
               <option value="super_admin">Super Admin</option>
               <option value="lgu">LGU</option>
-              <option value="partner">Partner</option>
             </select>
           </div>
         </div>

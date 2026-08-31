@@ -247,7 +247,7 @@ body {
   z-index: 1;
 }
 
-::view_transition_new(root) {
+::view-transition-new(root) {
   z-index: 999999;
 }
 
