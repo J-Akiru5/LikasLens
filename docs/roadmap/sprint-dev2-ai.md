@@ -1,7 +1,7 @@
 # Sprint Roadmap — dev2 (Jeff)
 
 > **Role:** Backend + Roboflow + AI Workflow
-> **Sprint:** v0.9.3 → v0.9.4 (ASEAN Hackathon Final Push)
+> **Sprint:** v0.9.3 → v0.9.4 (IPOPHL SRT Final Push)
 > **Period:** Jun 21 – Jun 28, 2026
 > **Monorepo:** `LikasLens` — `apps/backend` (Laravel 12) + `apps/ai-service` (Python 3.12 / FastAPI)
 

@@ -1,6 +1,6 @@
 # LikasLens — Pitch Deck (7 Slides)
 
-> **ASEAN AI Hackathon 2026**
+> **IPOPHL SRT Innovation Contest 2026**
 > **Design:** Eco-Brutalism (dark green/neon/amber palette)
 > **Target:** 5-7 minute presentation
 
@@ -17,14 +17,14 @@
 │     Sensor.                                         │
 │                                                     │
 │     The Ecological Prevention Layer for             │
-│     Southeast Asia.                                 │
+│     the Philippines.                                 │
 │                                                     │
 │     [LikasLens Logo — Leaf/Lens Icon]               │
 │                                                     │
 │     Neuro-Symbolic Civic Reporting                   │
-│     for the ASEAN Region                            │
+│     for Philippine Governance                        │
 │                                                     │
-│     ASEAN AI Hackathon 2026                         │
+│     IPOPHL SRT Innovation Contest 2026              │
 └─────────────────────────────────────────────────────┘
 
 Speaker notes:
@@ -52,7 +52,7 @@ Speaker notes:
 │                                                     │
 │     ┌────────────────────────────────────────┐      │
 │     │ $30B+ annual economic cost (World Bank) │      │
-│     │ 5.7M hectares of forest lost (ASEAN)    │      │
+│     │ 5.7M hectares of forest lost (PH, 2020-2024)   │      │
 │     │ 70% of environmental crimes unreported  │      │
 │     │ Whistleblowers face physical danger     │      │
 │     └────────────────────────────────────────┘      │
@@ -62,7 +62,7 @@ Speaker notes:
 Speaker notes:
 - Open with the Guimaras anchor — a real, recent, cinematic case
 - "Environmental crime is the 4th largest illicit enterprise globally"
-- "ASEAN is disproportionately affected — 15% of global tropical forests, 34% of coastal mangroves"
+- "The Philippines is disproportionately affected — 5th most vulnerable country to climate change"
 - "Citizens see it every day. They just can't report it safely."
 - "Our bet: prevention beats response. Detection in 250ms saves the next flood."
 ```
@@ -89,9 +89,9 @@ Speaker notes:
 │        EXIF stripping, anonymous submission,        │
 │        no server-side identity linkage              │
 │                                                     │
-│     4. ASEAN GRAPH DATABASE                         │
-│        6 countries, 25+ laws, 10+ agencies          │
-│        Transboundary routing via Neo4j Cypher       │
+│     4. PHILIPPINE GRAPH DATABASE                     │
+│        16 PH laws, 5 agencies, PH jurisdictions      │
+│        Architecture supports ASEAN expansion         │
 │                                                     │
 │     "We don't just detect hazards.                  │
 │      We reason across laws, agencies, and borders." │
@@ -134,7 +134,7 @@ Speaker notes:
 │     graph traversal.                                │
 │     All services communicate via REST JSON          │
 │     OpenAPI contracts. PWA deploys on Vercel.       │
-│     Backend + AI on Azure.                          │
+│     Backend + AI on Google Cloud Run.                 │
 └─────────────────────────────────────────────────────┘
 
 Speaker notes:
@@ -222,8 +222,8 @@ Speaker notes:
 └─────────────────────────────────────────────────────┘
 
 Speaker notes:
-- "Ghost Mode was designed for the Philippines, where environmental defenders are the second-deadliest country for activists"
-- "The PWA handles spotty ASEAN field connectivity — 4G is not everywhere"
+- "Ghost Mode was designed for the Philippines, where environmental defenders face real danger"
+- "The PWA handles spotty field connectivity — 4G is not everywhere in rural PH"
 - "The offline queue means field workers in remote forests can submit reports that sync when they return to town"
 - "Confidence tier (Watch | Advisory | Confirmed) is borrowed from the CardinalMu intelligence framework — judges will recognize the pattern"
 ```
@@ -249,8 +249,8 @@ Speaker notes:
 │     DEPLOYMENT TODAY       WHAT'S NEXT              │
 │     ───────────────       ────────────              │
 │                                                     │
-│     6 ASEAN countries     NGO pilot in Negros       │
-│     25+ laws indexed      Occidental, PH            │
+│     Philippines (live)     NGO pilot in Negros       │
+│     16 PH laws indexed      Occidental, PH            │
 │     18 hazard types       Capacitor APK for         │
 │     Offline-capable PWA   community installs        │
 │     Zero-knowledge Ghost  Cambodia, Laos, Myanmar   │
@@ -267,8 +267,8 @@ Speaker notes:
 └─────────────────────────────────────────────────────┘
 
 Speaker notes:
-- "We started with the Philippines as our pilot — 16 laws, 5 NGOs, verified with real legal data"
-- "ASEAN expansion is our core differentiator — no other platform covers 6 countries with jurisdictional routing"
+- "We started with the Philippines as our pilot — 16 laws, 5 enforcement agencies, verified with real legal data"
+- "The architecture is ASEAN-scalable — adding a country means adding vertices and edges to Neo4j, not rewriting code"
 - "Our next phase is NGO partnerships for field validation and community distribution"
 - "Every KPI above was measured end-to-end in the live build, not estimated"
 - "Thank the judges. Open for questions."

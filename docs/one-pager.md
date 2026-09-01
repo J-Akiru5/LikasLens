@@ -1,4 +1,4 @@
-# LikasLens — ASEAN AI Hackathon One-Pager
+# LikasLens — IPOPHL SRT Innovation Contest 2026: One-Pager
 
 ---
 
@@ -45,7 +45,7 @@
 | Layer | Technology | Role |
 |-------|-----------|------|
 | **Frontend** | Next.js 14 PWA + Tailwind | Citizen app, offline-capable with IndexedDB queue |
-| **Backend API** | Laravel 12 (PHP) + Sanctum | Report ingestion, user management, leaderboard |
+| **Backend API** | Laravel 12 (PHP) + Sanctum | Report ingestion, user management, LGU performance analytics |
 | **Auth** | Supabase Auth | Identity, social login |
 | **AI Service** | FastAPI + YOLOv8 Nano + Gemini 2.5 Flash | Hazard classification, incident brief generation |
 | **Graph DB** | Cosmos DB Gremlin | Neuro-symbolic routing: hazard → law → agency → jurisdiction |
@@ -59,10 +59,10 @@
 Unlike traditional classification-only systems, LikasLens uses a Gremlin knowledge graph to **reason about incidents** — tracing detected hazards through the specific environmental laws they violate, identifying the correct enforcement agency, and routing reports to the appropriate jurisdiction. This is not just "what is it?" — it's "what law was broken, who enforces it, and where?"
 
 ### 2. Ghost Mode (Zero-Knowledge Protection)
-Environmental whistleblowers in ASEAN face real physical danger. Ghost Mode strips all EXIF metadata (GPS, device ID, timestamp) before transmission, uses anonymous submissions, and ensures **no server-side linkage** between reporter identity and report content. The evidence is real; the reporter is invisible.
+Environmental whistleblowers in the Philippines face real physical danger. Ghost Mode strips all EXIF metadata (GPS, device ID, timestamp) before transmission, uses anonymous submissions, and ensures **no server-side linkage** between reporter identity and report content. The evidence is real; the reporter is invisible.
 
-### 3. ASEAN Jurisdiction Graph
-The Gremlin graph spans **6 ASEAN countries** (PH, ID, TH, VN, MY, SG) with 25+ environmental laws, 10+ enforcement agencies, and jurisdiction vertices at national, provincial, and regional levels. Transboundary incidents (e.g., haze crossing from Indonesia to Singapore) are traced across borders.
+### 3. Philippine Jurisdiction Graph
+The Neo4j knowledge graph contains **16 Philippine environmental laws** (PD-705, RA-9003, RA-8749, RA-9275, etc.), **5 enforcement agencies** (DENR, PNP, PCG, NBI, LGU), and jurisdiction vertices at national, provincial, and regional levels. Architecture supports ASEAN expansion by adding country-specific vertices and edges — no schema changes required.
 
 ### 4. Offline-First PWA
 Field reporters often lack connectivity. The PWA caches critical resources with a three-tier strategy (Cache-First, Stale-While-Revalidate, Network-First) and queues reports in IndexedDB for automatic sync when connectivity returns. **No data is ever lost.**
@@ -71,7 +71,7 @@ Field reporters often lack connectivity. The PWA caches critical resources with 
 
 ## Reach
 
-6 ASEAN countries · 25+ environmental laws · 10+ enforcement agencies · 18 hazard types · 11 violation classifications
+16 Philippine environmental laws · 5 enforcement agencies · 18 hazard types · 11 violation classifications · Architecture supports 10 ASEAN countries
 
 ## Impact Metrics
 
@@ -88,14 +88,14 @@ Field reporters often lack connectivity. The PWA caches critical resources with 
 
 ---
 
-## ASEAN Scalability
+## Architecture & Expansion
 
-LikasLens is built for ASEAN from day one:
+LikasLens is built Philippines-first with ASEAN-scalable architecture:
 
-- **Multi-currency eco-credits** — PHP, IDR, THB, VND, MYR, SGD already seeded
-- **Country-specific laws** — each country has its anchor environmental legislation in the graph
+- **Multi-currency eco-credits** — PHP seeded; IDR, THB, VND, MYR, SGD architecture-ready
+- **Country-specific laws** — Neo4j graph model supports adding country vertices without schema changes
 - **Jurisdictional routing** — national, provincial, and regional vertices enable precise agency matching
-- **Language-ready** — Next.js i18n with `next-intl` for localization
+- **Language-ready** — Next.js i18n with `next-intl`; 3 languages fully translated, 2 substantially translated, 4 in progress
 - **PWA distribution** — no app store needed; installable from URL
 
 ---
@@ -107,7 +107,7 @@ LikasLens is built for ASEAN from day one:
 | Frontend / PWA | Dev 1 |
 | AI / Neuro-symbolic | Dev 2 |
 | Backend / API | Dev 3 |
-| Integration / DevOps / ASEAN Data | Dev 4 |
+| Integration / DevOps / Data | Dev 4 |
 
 ---
 

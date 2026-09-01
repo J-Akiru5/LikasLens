@@ -1,6 +1,6 @@
 # Developer 3 — Backend + Admin Portal
 
-> **Sprint:** ASEAN Hackathon Sprint (v0.9.x → v1.0)
+> **Sprint:** IPOPHL SRT Sprint (v0.9.x → v1.0)
 > **Timeline:** June 21–28, 2026 (Sat–Sat)
 > **Assigned To:** Cha (Charlyn)
 > **Focus:** Admin portal polish, backend admin APIs, multi-tenancy, RBAC hardening

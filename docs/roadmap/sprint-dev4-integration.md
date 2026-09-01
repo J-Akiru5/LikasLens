@@ -1,6 +1,6 @@
 # Developer 4 — Lightweight Tasks, QA & Documentation
 
-> **Sprint:** ASEAN AI Hackathon Prep
+> **Sprint:** IPOPHL SRT Prep
 > **Version:** v0.9.3
 > **Timeline:** June 21-22, 2026 (Sat-Sun)
 > **Total Hours:** 8-10h (minimal load — Kat is also video editing)

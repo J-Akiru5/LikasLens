@@ -8,7 +8,7 @@
 <h1 align="center">LikasLens — AI-Powered Civic Environmental Intelligence</h1>
 
 <p align="center">
-  <strong>AI ASEAN Hackathon 2026</strong> — Southeast Asia's first neuro-symbolic environmental reporting & accountability platform
+  <strong>IPOPHL SRT Innovation Contest 2026</strong> — A neuro-symbolic environmental intelligence infrastructure for Philippine governance
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 
 ## 🎯 The Problem
 
-Environmental degradation across Southeast Asia is accelerating — but reporting is fragmented, anonymous whistleblowing is dangerous, and government accountability is opaque.
+Environmental degradation across the Philippines is accelerating — but reporting is fragmented, anonymous whistleblowing is dangerous, and government accountability is opaque.
 
 Citizens witness violations every day — illegal logging in watersheds, open burning of agricultural waste, factories discharging into rivers, illegal fishing in protected areas, mining violations, wildlife poaching, overflowing garbage, flood hazards, and even fires consuming homes and forests — but they face three systemic barriers:
 
@@ -42,7 +42,7 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 
 ## 💡 The Solution
 
-**LikasLens** is a neuro-symbolic civic intelligence platform that closes the environmental accountability loop for Southeast Asia:
+**LikasLens** is a neuro-symbolic civic intelligence platform that closes the environmental accountability loop for the Philippines:
 
 1. **📸 Snap a photo** — Any environmental violation, hazard, or emergency captured by a phone camera
 2. **🤖 AI analyzes it** — YOLOv8 vision models detect the issue type, severity, and hazard class (dual COCO + environmental models + Roboflow ensemble)
@@ -50,7 +50,7 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 4. **🏛️ Publicly tracked** — Every report becomes a ticket with a transparent status. LGUs are scored on their response and resolution times
 5. **🕵️ Ghost Mode protects you** — EXIF stripping, anonymous submission, GPS fuzzing to barangay centroids — zero trace left behind for dangerous reports
 
-> **Built for the AI ASEAN Hackathon 2026** — Designed for the Philippines and expandable across all 10 ASEAN member states with multi-language support, jurisdiction-aware law routing, and offline-first mobile architecture.
+> **Built for the IPOPHL SRT Innovation Contest 2026** — A neuro-symbolic pipeline that identifies Philippine environmental violations, routes them to the correct enforcing agency via a Neo4j knowledge graph, and protects whistleblowers with zero-knowledge Ghost Mode. Architecture supports ASEAN expansion.
 
 ---
 
@@ -67,7 +67,7 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 | **Cryptographic Evidence Hashing** | SHA-256 evidence hashing with append-only audit trail and Supabase Vault storage for tamper-proof evidentiary chain of custody. |
 | **Report Chaining & Corroboration** | GPS-proximity clustering links related reports into chains. Community corroboration (>50m distance, different user) auto-escalates priority. Anti-Sybil 5m geofence blocks spam. |
 | **Public Impact Dashboard** | Real-time aggregated stats: total reports, resolution rate, reports by type, recently resolved, top barangays. Publicly accessible without login. |
-| **Public Scoreboard** | LGU performance transparency — resolution rates, average response times, SLA compliance, escalation counts. Drives civic accountability. |
+| **Public Scoreboard** | LGU performance transparency — resolution rates, average response times, SLA compliance. Publicly accessible at `/public-record`. |
 | **Rewards & Achievements** | Eco-credit economy: earn reward points for reporting, get achievements for milestones, redeem at partner stores (SM, Jollibee, Globe, Mercury Drug, 7-Eleven). |
 | **Multi-Tenancy** | Country/jurisdiction-scoped tenants. Each tenant has its own laws, agencies, violation types, and routing rules. |
 | **LGU Performance Monitoring** | Color-coded (green/amber/red) LGU card with resolution rates, SLA breaches, escalations, and platform-wide averages. |
@@ -79,10 +79,10 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 | **Notification System** | Real-time notifications for ticket status changes, SLA breaches, achievement unlocks, and reward redemptions. |
 | **Offline Queue** | IndexedDB-backed offline report queue with automatic sync when connectivity resumes. Batch syncs up to 50 queued reports. |
 | **On-Device AI (ONNX Runtime)** | YOLOv8 ONNX models run directly in the browser via WebAssembly. On-device triage works without internet connectivity. |
-| **Multi-Language (10 ASEAN Languages)** | Full i18n in English, Filipino, Indonesian, Malay, Thai, Vietnamese, Khmer, Lao, Burmese, and Tamil. Including YOLO label translations. |
+| **Multi-Language** | Full i18n across 10 locales (English, Filipino, Vietnamese, Indonesian, Malay, Tamil, Thai, Khmer, Burmese, Lao). Filipino, Vietnamese, and Indonesian fully translated; Tamil and Malay substantially translated; Thai, Khmer, Burmese, and Lao in progress. |
 | **PDF Certificate Generation** | Download verified report certificates as PDF with blockchain evidence hashes and QR codes. |
 | **Interactive Maps** | MapLibre GL + deck.gl with hexagon layers, heatmap layers, scatterplot layers, satellite overlays (NASA GIBS), and time-lapse playback. |
-| **3D Globe Visualization** | Interactive 3D globe using cobe.js showing ASEAN network visualization with drag-to-rotate and auto-rotation. |
+| **3D Globe Visualization** | Interactive 3D globe using cobe.js showing Philippine deployment with ASEAN expansion roadmap, drag-to-rotate and auto-rotation. |
 | **ECharts Analytics** | Rich analytics dashboards with time-series charts, violation donut charts, Sankey flow diagrams (Source → Violation → Agency), AQI gauges, and hotspot lists. |
 | **PWA + PWABuilder** | Progressive Web App with custom service worker, offline caching, push notifications, and background sync. Android `.apk`/`.aab` generated via **PWABuilder**. iOS installable via Safari home screen with native splash screen support. |
 | **Likasy AI Chatbot** | Gemini-powered legal assistant that answers citizen questions about environmental laws, violations, and rights. |
@@ -104,7 +104,7 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 - LGU performance analytics with platform-wide benchmarks
 - User wallet, rewards catalog, redemption flow
 - Achievement system with rank progression
-- Leaderboard (weekly, monthly, barangay, spotlight, stats)
+- **Leaderboard (weekly, monthly, barangay, spotlight, stats)** — API endpoints defined; UI rendering in progress
 - NGO registration, verification, and management
 - Environmental laws database with CRUD
 - Notification delivery and preferences
@@ -455,20 +455,20 @@ python seed_neo4j.py  # Seeds the knowledge graph with laws, agencies, and locat
 
 ## 🌐 Localization
 
-LikasLens supports **10 languages** across all applications:
+LikasLens supports **10 language locales** across all applications:
 
-| Code | Language | Native |
-|------|----------|--------|
-| `en` | English | English |
-| `fil` | Filipino | Filipino |
-| `vi` | Vietnamese | Tiếng Việt |
-| `id` | Indonesian | Bahasa Indonesia |
-| `ms` | Malay | Bahasa Melayu |
-| `ta` | Tamil | தமிழ் |
-| `th` | Thai | ไทย |
-| `km` | Khmer | ភាសាខ្មែរ |
-| `my` | Burmese | မြန်မာ |
-| `lo` | Lao | ລາວ |
+| Code | Language | Native | Status |
+|------|----------|--------|--------|
+| `en` | English | English | Complete (baseline) |
+| `fil` | Filipino | Filipino | Complete |
+| `vi` | Vietnamese | Tiếng Việt | Complete |
+| `id` | Indonesian | Bahasa Indonesia | Complete |
+| `ms` | Malay | Bahasa Melayu | Substantial |
+| `ta` | Tamil | தமிழ் | Substantial |
+| `th` | Thai | ไทย | Partial (nav + landing translated) |
+| `km` | Khmer | ភាសាខ្មែរ | Partial (nav + landing translated) |
+| `my` | Burmese | မြန်မာ | Partial (nav + landing translated) |
+| `lo` | Lao | ລາວ | Partial (nav + landing translated) |
 
 YOLO detection labels are also translated for on-device inference display.
 
@@ -530,7 +530,7 @@ See `docs/GCP_DEPLOYMENT.md` for complete cloud deployment instructions.
 
 ## 🤝 Contributing
 
-This project was built for the **AI ASEAN Hackathon 2026**. For contribution guidelines, please refer to the project's issue tracker and pull request process.
+This project was built for the **IPOPHL SRT Innovation Contest 2026**. For contribution guidelines, please refer to the project's issue tracker and pull request process.
 
 ---
 
@@ -541,5 +541,5 @@ MIT — see [LICENSE](LICENSE) for details.
 ---
 
 <p align="center">
-  <sub>Built with ❤️ for the AI ASEAN Hackathon 2026 · Iloilo, Philippines</sub>
+  <sub>Built with ❤️ for the IPOPHL SRT Innovation Contest 2026 · University of Makati, Philippines</sub>
 </p>

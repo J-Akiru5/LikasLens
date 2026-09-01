@@ -449,7 +449,7 @@
     <div class="meta-pills">
       <span class="pill"><span class="dot" style="background:var(--accent)"></span> 3:00 Total Runtime</span>
       <span class="pill"><span class="dot" style="background:var(--green)"></span> 11 Screen Recordings</span>
-      <span class="pill"><span class="dot" style="background:var(--purple)"></span> Hackathon + Public</span>
+      <span class="pill"><span class="dot" style="background:var(--purple)"></span> IPOPHL SRT</span>
       <span class="pill"><span class="dot" style="background:var(--orange)"></span> English VO</span>
     </div>
   </div>
@@ -634,8 +634,8 @@
       <div class="timeline-row" data-task="p2a-04">
         <div class="timeline-time">1:38 – 1:45</div>
         <div class="timeline-content">
-          <h4>Leaderboard</h4>
-          <p>Show citizen rankings with eco-credit scores. Switch between weekly/monthly tabs. Show barangay-level leaderboard view. Scroll through top reporters.</p>
+          <h4>Achievements & Eco-Credits</h4>
+          <p>Show citizen achievement badges, eco-credit balance, and rank progression. Highlight the gamification system that incentivizes environmental reporting.</p>
           <div class="vo">VO: "Citizens are ranked. Communities compete. Accountability becomes visible."</div>
         </div>
         <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
@@ -712,9 +712,9 @@
       <div class="timeline-row" data-task="p2c-01">
         <div class="timeline-time">2:15 – 2:25</div>
         <div class="timeline-content">
-          <h4>Public Scoreboard — LGU Performance</h4>
-          <p>Show the public-facing scoreboard with LGU (Local Government Unit) rankings. Display resolution rates as percentage bars, SLA compliance badges, average response times. Scroll through different LGUs to show comparison.</p>
-          <div class="vo">VO: "The Public Scoreboard holds governments accountable — tracking resolution times, SLA compliance, and performance across every Local Government Unit."</div>
+          <h4>Public Impact Dashboard</h4>
+          <p>Show the public-facing impact dashboard with aggregate metrics. Display total reports, resolution rates, reports by type, and recently verified incidents.</p>
+          <div class="vo">VO: "The Public Impact Dashboard holds governments accountable — tracking resolution times, incident trends, and performance across every Local Government Unit."</div>
         </div>
         <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
       </div>
@@ -734,7 +734,7 @@
         <div class="timeline-content">
           <h4>Impact Dashboard — Analytics</h4>
           <p>Show multiple chart types in sequence: (1) AQI gauge with current reading, (2) Violation donut chart showing category breakdown, (3) Time series chart showing trends, (4) Sankey flow diagram showing report routing. Each chart gets ~2 seconds.</p>
-          <div class="vo">VO: "Impact analytics transform raw reports into actionable intelligence — AQI monitoring, violation breakdowns, and cross-border environmental trends across ASEAN."</div>
+          <div class="vo">VO: "Impact analytics transform raw reports into actionable intelligence — AQI monitoring, violation breakdowns, and environmental trends across the Philippines."</div>
         </div>
         <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
       </div>
@@ -865,20 +865,19 @@
       <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
     </div>
 
-    <!-- Recording: Scoreboard -->
+    <!-- Recording: Public Impact Dashboard -->
     <div class="rec-card" data-rec="rec-scoreboard">
       <span class="badge badge-mobile">Mobile PWA</span>
-      <h4>Scoreboard</h4>
-      <div class="route">/scoreboard</div>
-      <p class="desc">Citizen and barangay leaderboard rankings with competitive gamification.</p>
+      <h4>Public Impact Dashboard</h4>
+      <div class="route">/public-record</div>
+      <p class="desc">Public-facing impact dashboard showing aggregate environmental reporting metrics.</p>
       <div class="what-to-show">
         <strong>What to Record</strong>
         <ul>
-          <li>Top 3 citizens with avatar and eco-credit count</li>
-          <li>Full ranked list with scroll</li>
-          <li>Switch between Weekly / Monthly / All-Time tabs</li>
-          <li>Barangay-level leaderboard tab</li>
-          <li>Your current rank highlighted in the list</li>
+          <li>Total reports and resolution rate</li>
+          <li>Reports by type breakdown</li>
+          <li>Recently verified incidents</li>
+          <li>Community impact metrics</li>
         </ul>
       </div>
       <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
@@ -903,10 +902,10 @@
       <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
     </div>
 
-    <!-- Recording: Public Scoreboard -->
+    <!-- Recording: Public Impact Dashboard (Frontend) -->
     <div class="rec-card" data-rec="rec-public-scoreboard">
       <span class="badge badge-frontend">Frontend</span>
-      <h4>Public Scoreboard</h4>
+      <h4>Public Impact Dashboard</h4>
       <div class="route">/scoreboard</div>
       <p class="desc">Public-facing LGU performance dashboard showing government accountability metrics.</p>
       <div class="what-to-show">
@@ -973,7 +972,7 @@
           <li>3D globe rotating — show violation points plotted globally</li>
           <li>KPI cards: total reports, resolution rate, active incidents</li>
           <li>Regional breakdown with comparative metrics</li>
-          <li>Zoom into ASEAN region to show cross-border coverage</li>
+          <li>Zoom into Philippine regions to show geographic coverage</li>
         </ul>
       </div>
       <div class="tracker-check"><input type="checkbox" onchange="updateProgress()"></div>
@@ -984,7 +983,7 @@
       <span class="badge badge-frontend">Frontend</span>
       <h4>Laws Reference</h4>
       <div class="route">/laws</div>
-      <p class="desc">Searchable database of environmental laws across ASEAN countries.</p>
+      <p class="desc">Searchable database of Philippine environmental laws.</p>
       <div class="what-to-show">
         <strong>What to Record</strong>
         <ul>

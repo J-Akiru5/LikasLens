@@ -1,6 +1,6 @@
 # LikasLens — Demo Script
 
-> **ASEAN AI Hackathon 2026**
+> **IPOPHL SRT Innovation Contest 2026**
 > **Duration:** ~10:15 minutes (hard cap: 12 min)
 > **Presenter:** Developer 4 (Integration Lead)
 
@@ -24,7 +24,7 @@
 | Time | Action | Screen |
 |------|--------|--------|
 | 0:00 | **"Every citizen's phone is an environmental sensor."** | LikasLens landing page |
-| 0:15 | Point out: ASEAN positioning tagline in hero, live metrics counter showing total reports from PH + ASEAN countries | Scroll to metrics section |
+| 0:15 | Point out: Philippines-first positioning tagline in hero, live metrics counter showing total reports | Scroll to metrics section |
 | 0:30 | *Transition:* "But before I show you the platform, let me anchor you in one story." | Slide 1 with hook overlay |
 
 **Key line:** *"We bridge the gap between what citizens see and what regulators need."*
@@ -84,7 +84,7 @@
 | 5:05 | Show the **resolution rate** chart and geographic heat map. Point out hotspots. | Charts |
 | 5:20 | Explain the neuro-symbolic pipeline: *"When a report comes in, YOLOv8 Nano classifies the hazard visually. The Gremlin graph traces from hazard → law → enforcement agency. Gemini 2.5 Flash generates a natural-language incident brief."* | Pipeline diagram (have this on a second tab or slide) |
 | 5:40 | **Explain Mode (live tap):** click "Explain" on the LGU dashboard — show rule fired (RA 9003), agency (DENR VI), confidence breakdown, graph neighbors. | Explain drawer |
-| 6:00 | Explain ASEAN expansion: *"The same graph now spans 6 ASEAN countries. If a haze crosses from Indonesia to Singapore, the graph traces it through transboundary laws."* | ASEAN jurisdiction map |
+| 6:00 | Explain Philippine jurisdiction graph: *"The graph contains 16 Philippine environmental laws and 5 enforcement agencies. When a report comes in, Neo4j traces from hazard → law → agency → jurisdiction in 3ms."* | Graph traversal view |
 | 6:10 | Show a sample incident: The Illegal Logging report maps to **PD 705 (Revised Forestry Code)** -> enforced by **Forest Watch Negros** -> jurisdiction **PH-NATIONAL**. | Graph traversal result |
 | 6:30 | *Transition:* "Let's test failure resilience — what happens when the AI service is unavailable?" | Disconnect AI service |
 
@@ -110,29 +110,29 @@
 | Time | Action | Screen |
 |------|--------|--------|
 | 7:20 | Toggle airplane mode or disconnect WiFi. **Offline Banner** slides down (red) with `WifiSlash` icon. | Red offline banner |
-| 7:30 | Navigate to `/laws` and `/scoreboard` — pages still load from service worker cache. | Cached pages |
+| 7:30 | Navigate to `/laws` and `/public-record` — pages still load from service worker cache. | Cached pages |
 | 7:45 | Return to `/report`. Submit a report while offline. "You are offline — report queued securely" toast. | Queue toast |
 | 7:55 | Reconnect WiFi. **Green "Connection restored" banner** slides down with checkmark. Reports auto-sync. | Green banner + sync toast |
 | 8:10 | Explain: "The PWA uses three-tier caching: Cache-First for static assets, Stale-While-Revalidate for legal data, Network-First for dynamic data. Reports queue in IndexedDB." | — |
-| 8:45 | *Transition:* "Finally, let's see the social layer — leaderboard, achievements, and eco-credits." | Navigate to leaderboard |
+| 8:45 | *Transition:* "Finally, let's see the social layer — achievements and eco-credits." | Navigate to profile |
 
 **Key line:** *"Out in the field, internet isn't guaranteed. The PWA works regardless."*
 
 ---
 
-## Flow 7 — Closing: Leaderboard & Credits (1:30)
+## Flow 7 — Closing: Public Record & Credits (1:30)
 
 | Time | Action | Screen |
 |------|--------|--------|
-| 8:50 | Navigate to **Scoreboard** (`/scoreboard`). | Public leaderboard |
-| 9:00 | Show: top eco-citizens by reward points, recent reports, resolution stats. | Scoreboard entries |
+| 8:50 | Navigate to **Public Record** (`/public-record`). | Public impact dashboard |
+| 9:00 | Show: total reports, resolution rate, reports by type, recently verified incidents. | Public record entries |
 | 9:15 | Navigate to **Profile** (`/profile`). Show: achievements unlocked, rank progress bar, eco-credit balance. | Profile page |
-| 9:30 | Closing message: *"LikasLens turns every citizen's phone into an environmental sensor. Neuro-symbolic AI connects evidence to laws. Ghost Mode protects the vulnerable. And ASEAN scalability means this works from Manila to Jakarta, Bangkok to Singapore."* | Landing page again |
+| 9:30 | Closing message: *"LikasLens turns every citizen's phone into an environmental sensor. Neuro-symbolic AI connects evidence to laws. Ghost Mode protects the vulnerable. And the architecture is built to scale across ASEAN."* | Landing page again |
 | 9:50 | **REDD+ kicker:** "And every verified incident we log is REDD+ MRV-eligible data — opening carbon market revenue to the communities that protect their forests." | REDD+ badge overlay |
 | 10:00 | Land tagline. | — |
 | 10:15 | End. | — |
 
-**Key line:** *"One platform. Six countries. Every citizen is an environmental sensor."*
+**Key line:** *"One platform. Philippines-first, ASEAN-scalable. Every citizen is an environmental sensor."*
 
 ---
 
@@ -156,5 +156,5 @@
 - **"How is this different from existing reporting apps?"** -> Neuro-symbolic reasoning (not just classification). The graph traces hazard->law->agency->jurisdiction. And Ghost Mode is zero-knowledge.
 - **"How do you verify reports?"** -> Trust score system (citizen credibility scoring). AI cross-references with satellite imagery. Multiple reports from different citizens in same geo-zone raise confidence.
 - **"Is this actually deployed?"** -> Yes — frontend on Vercel, backend on Azure, AI service on Azure Container Apps. Cosmos DB Gremlin for the graph. Supabase for auth.
-- **"What's next after the hackathon?"** -> In-field NGO partnerships in Negros Occidental pilot region. Mobile APK distribution to local communities. Additional ASEAN country laws and agency data.
+- **"What's next after the competition?"** -> In-field NGO partnerships in Negros Occidental pilot region. Mobile APK distribution to local communities. ASEAN graph expansion (adding country vertices and edges to Neo4j).
 - **"Is this REDD+ compatible?"** -> Yes. Every verified incident is logged with GPS polygon, photos, witness corroboration, and confidence — the four fields South Pole and Verra auditors look for in MRV chains.
