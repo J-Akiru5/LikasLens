@@ -24,6 +24,7 @@ interface BulkActionsBarProps {
   // New simplified props (used by tickets page)
   onStatusClick?: () => void;
   onAssignClick?: () => void;
+  onAssignOfficerClick?: () => void;
   onDelete?: () => void;
   disabled?: boolean;
   // Legacy props (used by NGOs, users pages)
@@ -79,6 +80,7 @@ export function BulkActionsBar({
   onClear,
   onStatusClick,
   onAssignClick,
+  onAssignOfficerClick,
   onDelete,
   disabled,
   actions,
@@ -114,6 +116,15 @@ export function BulkActionsBar({
             className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider font-bold bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-40"
           >
             Assign
+          </button>
+        )}
+        {onAssignOfficerClick && (
+          <button
+            onClick={onAssignOfficerClick}
+            disabled={disabled}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-mono text-xs uppercase tracking-wider font-bold bg-green/10 text-green hover:bg-green/20 transition-colors disabled:opacity-40"
+          >
+            Assign officer
           </button>
         )}
         {onStatusClick && (

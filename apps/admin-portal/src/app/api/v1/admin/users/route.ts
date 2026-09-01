@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { logAuditEvent } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,6 +35,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         name: body.name,
         email: body.email,
         role: body.role || "citizen",
+        agency_name: body.agency_name || null,
+        service_area: body.service_area || null,
         trust_score: 50,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -45,6 +48,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       console.error("[/api/v1/admin/users] POST error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await logAuditEvent(request, {
+      action: "user.created",
+      entity_type: "user",
+      entity_id: data.id,
+      new_data: { name: data.name, email: data.email, role: data.role } as Record<string, unknown>,
+    });
 
     return NextResponse.json({ data }, { status: 201 });
   } catch (err: unknown) {
@@ -64,6 +74,11 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     updates.updated_at = new Date().toISOString();
 
     const db = getSupabase();
+    const { data: before } = await db
+      .from("users")
+      .select("name, email, role, deleted_at")
+      .eq("id", id)
+      .maybeSingle();
     const { data, error } = await db
       .from("users")
       .update(updates)
@@ -75,6 +90,14 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       console.error("[/api/v1/admin/users] PUT error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await logAuditEvent(request, {
+      action: "user.updated",
+      entity_type: "user",
+      entity_id: id,
+      old_data: (before || {}) as Record<string, unknown>,
+      new_data: data as Record<string, unknown>,
+    });
 
     return NextResponse.json({ data });
   } catch (err: unknown) {
@@ -92,6 +115,11 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
 
     const db = getSupabase();
+    const { data: before } = await db
+      .from("users")
+      .select("name, email, role")
+      .eq("id", id)
+      .maybeSingle();
     // Soft delete
     const { error } = await db
       .from("users")
@@ -102,6 +130,14 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       console.error("[/api/v1/admin/users] DELETE error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await logAuditEvent(request, {
+      action: "user.deactivated",
+      entity_type: "user",
+      entity_id: id,
+      old_data: (before || {}) as Record<string, unknown>,
+      new_data: { deleted_at: new Date().toISOString() } as Record<string, unknown>,
+    });
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

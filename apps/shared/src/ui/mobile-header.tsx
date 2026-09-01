@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { Bell, Leaf, Menu, Fingerprint, X, AlertCircle, CheckCircle, Info } from "lucide-react";
 import { cn } from "../utils";
+import { useNotifications } from "../hooks/useNotifications";
+import { formatDistanceToNow } from "../lib/format";
+import type { AppNotification } from "../types/notification";
 
 type NotificationType = "critical" | "resolved" | "info";
 
@@ -19,7 +22,6 @@ interface MobileHeaderProps {
   isGhostMode: boolean;
   onThemeToggle: () => void;
   onMobileMenuToggle: () => void;
-  notifications?: Notification[];
 }
 
 const iconMap: Record<NotificationType, React.ReactNode> = {
@@ -28,12 +30,32 @@ const iconMap: Record<NotificationType, React.ReactNode> = {
   info: <Info className="w-4 h-4 text-green" />,
 };
 
+function toMobileNotif(n: AppNotification): Notification {
+  let type: NotificationType = "info";
+  if (n.type.includes("Escalation") || n.type.includes("breach")) type = "critical";
+  else if (n.type.includes("TicketStatus") || n.type.includes("StatusUpdated")) type = "resolved";
+  let time = "";
+  try {
+    time = formatDistanceToNow(new Date(n.created_at), { locale: "en" });
+  } catch {
+    time = "";
+  }
+  return {
+    id: n.id,
+    type,
+    title: (n.data && (n.data.title as string)) || "Notification",
+    desc: (n.data && (n.data.message as string)) || "You have a new notification",
+    time,
+  };
+}
+
 export function MobileHeader({
   isGhostMode,
   onThemeToggle,
   onMobileMenuToggle,
-  notifications = [],
 }: MobileHeaderProps) {
+  const { notifications, unreadCount, markAsRead } = useNotifications({ pollInterval: 30000 });
+  const viewNotifications = notifications.map(toMobileNotif);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -98,14 +120,16 @@ export function MobileHeader({
             className="relative p-2 rounded-xl text-ink/50 hover:text-ink hover:bg-ink/5 transition-colors"
           >
             <Bell className="w-5 h-5" aria-hidden="true" />
-            {notifications.length > 0 && (
+            {unreadCount > 0 && (
               <span
                 className={cn(
-                  "absolute top-1.5 right-1.5 w-2 h-2 rounded-full",
-                  isGhostMode ? "bg-[#2ee6c8]" : "bg-red"
+                  "absolute top-1.5 right-1.5 min-w-[14px] h-[14px] px-0.5 rounded-full border border-page flex items-center justify-center text-[9px] font-bold",
+                  isGhostMode ? "bg-accent-bright text-ink" : "bg-red text-white"
                 )}
                 aria-hidden="true"
-              />
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
             )}
           </button>
 
@@ -124,7 +148,7 @@ export function MobileHeader({
                 </button>
               </div>
               <div className="max-h-72 overflow-y-auto">
-                {notifications.length === 0 ? (
+                {viewNotifications.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
                     <div className="w-10 h-10 rounded-full bg-ink/5 flex items-center justify-center mb-2">
                       <Bell className="w-4 h-4 text-ink/30" />
@@ -133,10 +157,11 @@ export function MobileHeader({
                     <p className="text-xs text-ink/50 mt-1">You&rsquo;re all caught up!</p>
                   </div>
                 ) : (
-                  notifications.map((n) => (
+                  viewNotifications.map((n) => (
                     <div
                       key={n.id}
-                      className="p-3 border-b border-ink/10 last:border-0"
+                      onClick={() => markAsRead(n.id)}
+                      className={cn("p-3 border-b border-ink/10 last:border-0 cursor-pointer", !notifications.find((x) => x.id === n.id)?.read_at && "bg-ink/[0.02]")}
                     >
                       <div className="flex items-start gap-3">
                         <div className="mt-0.5 shrink-0">{iconMap[n.type]}</div>

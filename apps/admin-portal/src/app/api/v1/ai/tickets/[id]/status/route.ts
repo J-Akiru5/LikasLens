@@ -8,6 +8,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { logAuditEvent } from "@/lib/audit";
+import { notifyReporter, maybeAutoAssign } from "@/lib/ticket-notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,8 +45,22 @@ export async function PATCH(
       );
     }
 
+    // Resolve the actor's row id in the users table (FK target for
+    // ticket_assignments.assigned_by_user_id) from their auth email.
+    const actorService = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: actorRow } = await actorService
+      .from("users")
+      .select("id")
+      .eq("email", session.user.email ?? "")
+      .maybeSingle();
+    const actorUserId: string | null = actorRow?.id ?? null;
+
     // Try the AI service first
     const aiUrl = getAiUrl();
+    const oldStatusRef = { value: "" };
     try {
       const res = await fetch(`${aiUrl}/api/v1/tickets/${id}/status`, {
         method: "PATCH",
@@ -57,6 +73,33 @@ export async function PATCH(
 
       if (res.ok) {
         const data = await res.json();
+        await logAuditEvent(request, {
+          action: "ticket.status_changed",
+          entity_type: "ticket",
+          entity_id: id,
+          new_data: { status: body.status } as Record<string, unknown>,
+          metadata: { source: "ai_service" },
+        });
+
+        // Notify the citizen who submitted the report; auto-route to a
+        // matching officer when a case opens for investigation.
+        const serviceSupabase = createServiceClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+        const aiOld = (data as { data?: { old_status?: string } })?.data?.old_status;
+        const { data: t } = await serviceSupabase
+          .from("tickets")
+          .select("status")
+          .eq("id", id)
+          .maybeSingle();
+        const fromStatus = aiOld || (t?.status === body.status ? null : t?.status || null) || null;
+        if (fromStatus !== body.status) {
+          await notifyReporter(serviceSupabase, id, fromStatus, body.status);
+        }
+        if (body.status === "investigating") {
+          await maybeAutoAssign(serviceSupabase, id, actorUserId);
+        }
         return NextResponse.json(data, { status: res.status });
       }
     } catch {
@@ -97,14 +140,30 @@ export async function PATCH(
     try {
       await serviceSupabase.from("ticket_timeline").insert({
         ticket_id: id,
-        action: "status_change",
+        actor_type: "system",
         from_status: oldTicket?.status || null,
         to_status: body.status,
-        notes: body.notes || null,
+        note: body.notes || null,
         created_at: new Date().toISOString(),
       });
     } catch {
       // Timeline is optional
+    }
+
+    await logAuditEvent(request, {
+      action: "ticket.status_changed",
+      entity_type: "ticket",
+      entity_id: id,
+      old_data: { status: oldTicket?.status || null } as Record<string, unknown>,
+      new_data: updatePayload as Record<string, unknown>,
+      metadata: { source: "direct_fallback" },
+    });
+
+    // Notify the citizen who submitted the report; auto-route to a matching
+    // officer when a case opens for investigation.
+    await notifyReporter(serviceSupabase, id, oldTicket?.status || null, body.status);
+    if (body.status === "investigating") {
+      await maybeAutoAssign(serviceSupabase, id, actorUserId);
     }
 
     return NextResponse.json({

@@ -235,7 +235,7 @@ function DiffModal({
               Entity
             </span>
             <p className="font-mono text-sm text-ink">
-              {log.entity_type} &middot; {log.entity_id.slice(0, 8)}
+              {log.entity_type} &middot; {(log.entity_id || "—").slice(0, 8)}
             </p>
           </div>
           <div>
@@ -389,7 +389,7 @@ function TimelineView({
                       {log.entity_type}
                     </span>
                     <span className="font-mono text-xs text-ink/60">
-                      #{log.entity_id.slice(0, 8)}
+                      #{(log.entity_id || "—").slice(0, 8)}
                     </span>
                   </div>
                   <span className="font-mono text-sm text-muted shrink-0">
@@ -712,7 +712,7 @@ export default function AuditLogsPage() {
                     {log.entity_type}
                   </span>
                   <span className="font-mono text-xs text-ink/60">
-                    #{log.entity_id.slice(0, 8)}
+                    #{(log.entity_id || "—").slice(0, 8)}
                   </span>
                 </div>
                 <p className="font-mono text-sm text-ink/70">

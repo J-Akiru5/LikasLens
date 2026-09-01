@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
+import { logAuditEvent } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,6 +47,14 @@ export async function PUT(
     });
 
     const data = await res.json();
+    if (res.ok) {
+      await logAuditEvent(request, {
+        action: "user.updated",
+        entity_type: "user",
+        entity_id: id,
+        new_data: body as Record<string, unknown>,
+      });
+    }
     return NextResponse.json(data, { status: res.status });
   } catch (err: unknown) {
     console.error("[/api/v1/admin/users/[id]] Error:", err);
@@ -59,7 +68,7 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
   try {
@@ -86,6 +95,14 @@ export async function DELETE(
     });
 
     const data = await res.json();
+    if (res.ok) {
+      await logAuditEvent(request, {
+        action: "user.deactivated",
+        entity_type: "user",
+        entity_id: id,
+        metadata: { soft_delete: true },
+      });
+    }
     return NextResponse.json(data, { status: res.status });
   } catch (err: unknown) {
     console.error("[/api/v1/admin/users/[id]] DELETE Error:", err);

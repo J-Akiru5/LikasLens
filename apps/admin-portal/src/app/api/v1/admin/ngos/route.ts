@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { logAuditEvent } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,6 +46,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    await logAuditEvent(request, {
+      action: "ngo.created",
+      entity_type: "ngo",
+      entity_id: data.id,
+      new_data: data as Record<string, unknown>,
+    });
+
     return NextResponse.json({ data }, { status: 201 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -61,6 +69,11 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
 
     const db = getSupabase();
+    const { data: before } = await db
+      .from("ngo_groups")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
     const { data, error } = await db
       .from("ngo_groups")
       .update(updates)
@@ -72,6 +85,14 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       console.error("[/api/v1/admin/ngos] PUT error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await logAuditEvent(request, {
+      action: "ngo.updated",
+      entity_type: "ngo",
+      entity_id: id,
+      old_data: (before || {}) as Record<string, unknown>,
+      new_data: data as Record<string, unknown>,
+    });
 
     return NextResponse.json({ data });
   } catch (err: unknown) {
@@ -89,12 +110,24 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
 
     const db = getSupabase();
+    const { data: before } = await db
+      .from("ngo_groups")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
     const { error } = await db.from("ngo_groups").delete().eq("id", id);
 
     if (error) {
       console.error("[/api/v1/admin/ngos] DELETE error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    await logAuditEvent(request, {
+      action: "ngo.deleted",
+      entity_type: "ngo",
+      entity_id: id,
+      old_data: (before || {}) as Record<string, unknown>,
+    });
 
     return NextResponse.json({ success: true });
   } catch (err: unknown) {

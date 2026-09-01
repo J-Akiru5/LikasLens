@@ -27,6 +27,8 @@ interface AppHeaderProps {
   unreadCount?: number;
   onMarkAsRead?: (id: string) => void;
   onMarkAllAsRead?: () => void;
+  /** Overrides the "View All Notifications" link (default: /dashboard/notifications) */
+  notificationsHref?: string;
   children?: React.ReactNode;
   className?: string;
   /** When provided, a hamburger button is rendered on mobile (lg:hidden) */
@@ -46,6 +48,7 @@ export function AppHeader({
   unreadCount = 0,
   onMarkAsRead,
   onMarkAllAsRead,
+  notificationsHref = "/dashboard/notifications",
   children,
   className,
   onMobileMenuToggle,
@@ -265,7 +268,7 @@ export function AppHeader({
                 </div>
                 <div className="p-2 border-t border-ink/10 text-center">
                   <Link
-                    href="/dashboard/notifications"
+                    href={notificationsHref}
                     className="font-mono text-xs text-ink/50 hover:text-ink transition-colors"
                     onClick={() => setNotifOpen(false)}
                   >

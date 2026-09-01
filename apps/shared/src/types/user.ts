@@ -21,6 +21,8 @@ export interface User {
   role: Role;
   trust_score: number;
   reward_points_balance: number;
+  agency_name?: string | null;
+  service_area?: string | null;
   created_at: string;
   deleted_at?: string | null;
 }

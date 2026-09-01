@@ -65,6 +65,8 @@ export default function UsersPage() {
     name: "",
     email: "",
     role: "citizen" as Role,
+    agency_name: "",
+    service_area: "",
   });
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -121,12 +123,18 @@ export default function UsersPage() {
       const res = await fetch(`/api/v1/admin/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: createForm.name, email: createForm.email, role: createForm.role }),
+        body: JSON.stringify({
+          name: createForm.name,
+          email: createForm.email,
+          role: createForm.role,
+          agency_name: createForm.agency_name.trim() || null,
+          service_area: createForm.service_area.trim() || null,
+        }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Create failed");
       showToast("User created successfully", "success");
       setShowCreate(false);
-      setCreateForm({ name: "", email: "", role: "citizen" });
+      setCreateForm({ name: "", email: "", role: "citizen", agency_name: "", service_area: "" });
       fetchUsers();
     } catch (err) {
       console.error(err);
@@ -503,6 +511,37 @@ export default function UsersPage() {
                   className="w-full"
                 />
               </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
+                    Agency / Office
+                  </label>
+                  <input
+                    type="text"
+                    value={createForm.agency_name}
+                    onChange={(e) => setCreateForm({ ...createForm, agency_name: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                    placeholder="e.g. DENR-EMB Region 4A"
+                  />
+                </div>
+                <div>
+                  <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
+                    Service area (city/province)
+                  </label>
+                  <input
+                    type="text"
+                    value={createForm.service_area}
+                    onChange={(e) => setCreateForm({ ...createForm, service_area: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                    placeholder="e.g. Quezon City"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-ink/50">
+                Officers only see tickets assigned to them or to their agency. Tickets matching the
+                service area auto-route when a case opens for investigation.
+              </p>
 
               <div className="flex justify-end gap-3 pt-2">
                 <Button

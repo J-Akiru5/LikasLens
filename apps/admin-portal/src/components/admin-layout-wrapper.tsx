@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { DashboardLayout, type NavItem, GlobalSearch, useNotifications } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase";
 import {
@@ -59,6 +59,7 @@ export function AdminDashboardLayoutWrapper({
   children,
 }: AdminDashboardLayoutWrapperProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [role, setRole] = useState<string | null>(null);
   const [isGhostMode, setIsGhostMode] = useState(false);
   const [authToken, setAuthToken] = useState<string | undefined>(undefined);
@@ -117,6 +118,7 @@ export function AdminDashboardLayoutWrapper({
       unreadCount={unreadCount}
       onMarkAsRead={markAsRead}
       onMarkAllAsRead={markAllAsRead}
+      notificationsHref={`/${pathname.split("/")[1] || "en"}/notifications`}
       extraSidebarBottom={
         <button
           onClick={handleSignOut}

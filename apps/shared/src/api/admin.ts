@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "../supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -46,39 +47,98 @@ function paginate(params?: Record<string, string>) {
 }
 
 // Auth
-export async function getProfile() {
-  const { data, error } = await db().from("users").select("*").limit(1).single();
+export async function getProfile(client?: SupabaseClient) {
+  // Prefer a session-based client (mobile/frontend) so the CURRENT user's
+  // profile is returned. The sessionless shared client has no auth context,
+  // so .limit(1) would return a random user's row.
+  const supabase = client || db();
+  if (!client) {
+    console.warn("[getProfile] called without a session client — sign in to read your profile");
+    return { success: true, data: null } as ApiResponse<UserProfile | null>;
+  }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { success: true, data: null } as ApiResponse<UserProfile | null>;
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("supabase_auth_user_id", user.id)
+    .maybeSingle();
   if (error) throw error;
   return { success: true, data } as ApiResponse<UserProfile>;
 }
 
 // Citizen Dashboard
 export async function getUserImpact() {
-  const { data, error } = await db().from("tickets").select("id, status, created_at");
-  if (error) throw error;
-  const reports = (data || []).map((t: Record<string, unknown>) => ({
+  const [ticketsRes, usersRes] = await Promise.all([
+    db().from("tickets").select("id, status, created_at"),
+    db().from("users").select("id, role, trust_score"),
+  ]);
+  if (ticketsRes.error) throw ticketsRes.error;
+  const reports = (ticketsRes.data || []).map((t: Record<string, unknown>) => ({
     id: String(t.id),
     status: String(t.status),
     created_at: String(t.created_at),
   }));
+  const citizens = (usersRes.data || []).filter((u: Record<string, unknown>) => u.role === "citizen");
+  const trustScores = citizens.map((u: Record<string, unknown>) => Number(u.trust_score) || 0);
+  const avgTrust = trustScores.length > 0 ? Math.round(trustScores.reduce((a: number, b: number) => a + b, 0) / trustScores.length) : 0;
   return {
     success: true,
     data: {
       eco_credits: reports.length * 10,
-      trust_score: 85,
-      community_rank: 1,
+      trust_score: avgTrust,
+      community_rank: 0,
       total_reports: reports.length,
-      total_citizens: 100,
+      total_citizens: citizens.length || (usersRes.data || []).length,
       reports,
     },
   } as ApiResponse<{ eco_credits: number; trust_score: number; community_rank: number; total_reports: number; total_citizens: number; reports: { id: string; status: string; created_at: string }[] }>;
 }
 
 // Dashboard
+
+/**
+ * Pull the FULL visible ticket set through the scoped /api/v1/tickets route
+ * (get_my_tickets RPC): officers see only their agency/assignment, citizens
+ * only their own submissions. Returns null when the route is unavailable so
+ * callers can fall back to the legacy read. Used by the dashboard fetchers so
+ * stat cards / feeds never leak data outside the session's visibility set.
+ */
+async function fetchVisibleTickets(): Promise<Record<string, unknown>[] | null> {
+  try {
+    const first = await fetch("/api/v1/tickets?page=1", { cache: "no-store" });
+    if (!first.ok) return null;
+    const j1 = (await first.json()) as {
+      data?: Array<Record<string, unknown>>;
+      meta?: { total?: number };
+    };
+    const total = Number(j1?.meta?.total ?? 0);
+    const rows: Array<Record<string, unknown>> = [...(j1?.data || [])];
+    const pages = Math.min(Math.ceil(total / 50), 20);
+    for (let p = 2; p <= pages; p++) {
+      const r = await fetch(`/api/v1/tickets?page=${p}`, { cache: "no-store" });
+      if (!r.ok) break;
+      const jp = (await r.json()) as { data?: Array<Record<string, unknown>> };
+      rows.push(...(jp?.data || []));
+    }
+    return rows;
+  } catch {
+    return null;
+  }
+}
+
 export async function getDashboardStats() {
-  // Fetch all tickets with status + timestamps for real calculations
-  const { data: tickets } = await db().from("tickets").select("id, status, created_at, resolved_at");
-  const allTickets = tickets || [];
+  // Fetch all VISIBLE tickets with status + timestamps for real calculations
+  const visible = await fetchVisibleTickets();
+  let allTickets: Record<string, unknown>[];
+  if (visible !== null) {
+    allTickets = visible;
+  } else {
+    const { data: tickets } = await db().from("tickets").select("id, status, created_at, resolved_at");
+    allTickets = (tickets || []) as Record<string, unknown>[];
+  }
   const total = allTickets.length;
 
   // Real status counts
@@ -110,7 +170,7 @@ export async function getDashboardStats() {
   let resolvedWithTime = 0;
   for (const t of allTickets) {
     if (t.resolved_at && t.created_at) {
-      const diff = new Date(t.resolved_at).getTime() - new Date(t.created_at).getTime();
+      const diff = new Date(String(t.resolved_at)).getTime() - new Date(String(t.created_at)).getTime();
       if (diff > 0) {
         totalResponseMs += diff;
         resolvedWithTime++;
@@ -124,14 +184,18 @@ export async function getDashboardStats() {
   // Total users from the users table
   const { count: totalUsers } = await db().from("users").select("id", { count: "exact", head: true });
 
-  // Ghost reports (reports submitted in ghost mode) — check for ghost_mode column or use reporter_type
+  // Ghost reports (reports submitted in ghost mode) — computed from the visible set when scoped
   let ghostReports = 0;
-  try {
-    const { data: ghostData } = await db().from("tickets").select("id", { count: "exact" }).eq("ghost_mode", true);
-    ghostReports = ghostData?.length ?? 0;
-  } catch {
-    // Column may not exist yet — fall back to 0
-    ghostReports = 0;
+  if (visible !== null) {
+    ghostReports = visible.filter((t) => t.ghost_mode === true).length;
+  } else {
+    try {
+      const { data: ghostData } = await db().from("tickets").select("id", { count: "exact" }).eq("ghost_mode", true);
+      ghostReports = ghostData?.length ?? 0;
+    } catch {
+      // Column may not exist yet — fall back to 0
+      ghostReports = 0;
+    }
   }
 
   return {
@@ -173,10 +237,21 @@ export async function getDashboardStats() {
 }
 
 export async function getDashboardFeed() {
-  const { data, error } = await db().from("tickets").select("*").order("created_at", { ascending: false }).limit(20);
-  if (error) throw error;
+  const visible = await fetchVisibleTickets();
+  let data: Record<string, unknown>[];
+  if (visible !== null) {
+    data = visible.slice(0, 20);
+  } else {
+    const { data: raw, error } = await db()
+      .from("tickets")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    data = (raw || []) as Record<string, unknown>[];
+  }
   const now = Date.now();
-  const items = (data || []).map((t: Record<string, unknown>, idx: number) => {
+  const items = data.map((t: Record<string, unknown>, idx: number) => {
     const score = typeof t.urgency_score === "number" ? t.urgency_score : 3;
     // Real relative time from created_at
     const createdAt = t.created_at ? new Date(t.created_at as string).getTime() : now;
@@ -201,7 +276,23 @@ export async function getDashboardFeed() {
 }
 
 // Tickets
+// Session-scoped list: in the admin portal this goes through /api/v1/tickets
+// (backed by the get_my_tickets RPC) so officers only see tickets assigned to
+// them / their agency, and citizens only see their own submissions. Falls back
+// to the direct public read when the route is unavailable (e.g. other apps).
 export async function getTickets(params?: Record<string, string>) {
+  try {
+    const qs = new URLSearchParams(params || {}).toString();
+    const res = await fetch(`/api/v1/tickets${qs ? `?${qs}` : ""}`, {
+      cache: "no-store",
+    });
+    if (res.ok) {
+      return (await res.json()) as PaginatedResponse<Ticket>;
+    }
+  } catch {
+    // Route unavailable — fall through to the direct read
+  }
+
   const { page, perPage, from, to } = paginate(params);
   let query = db().from("tickets").select("*", { count: "exact" });
   const search = params?.search;
@@ -225,6 +316,20 @@ export async function getTickets(params?: Record<string, string>) {
 }
 
 export async function getTicket(id: string) {
+  // Scoped detail via /api/v1/tickets/[id] (get_my_tickets RPC): officers and
+  // citizens get 404 for any ticket outside their visibility set. A 404 is a
+  // definitive "not visible" — NEVER fall back to the raw read on it.
+  try {
+    const res = await fetch(`/api/v1/tickets/${id}`, { cache: "no-store" });
+    if (res.ok) return (await res.json()) as ApiResponse<TicketDetail>;
+    return {
+      success: false,
+      error: `Ticket not found or not visible (${res.status})`,
+    } as unknown as ApiResponse<TicketDetail>;
+  } catch {
+    // Route genuinely unavailable (older deploy) — legacy fallback below.
+  }
+
   const { data, error } = await db().from("tickets").select("*").eq("id", id).single();
   if (error) throw error;
   // Map address_text → location so the TicketDetail type's `location` field is populated.
@@ -238,11 +343,20 @@ export async function updateTicketStatus(id: string, status: string, notes?: str
 }
 
 export async function deleteTicket(id: string) {
-  const { data: old, error: e1 } = await db().from("tickets").select("status").eq("id", id).single();
-  if (e1) throw e1;
-  const { error } = await db().from("tickets").delete().eq("id", id);
-  if (error) throw error;
-  return { success: true, data: { id, old_status: old.status } } as ApiResponse<{ id: string; old_status: string }>;
+  // Routed through the service-role API endpoint because the browser shared
+  // client is sessionless (anon) and role-gated `admin_delete_tickets` RLS
+  // would otherwise reject the delete.
+  const res = await fetch("/api/v1/admin/tickets/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ids: [id] }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Delete failed (${res.status})`);
+  }
+  const data = await res.json();
+  return { success: true, data: { id, old_status: "" } } as ApiResponse<{ id: string; old_status: string }>;
 }
 
 // Admin: Users
@@ -488,31 +602,51 @@ export async function bulkTicketStatus(ids: string[], status: string) {
 }
 
 export async function bulkTicketAssign(ids: string[], lgu_id: string) {
-  const assignments = ids.map((ticket_id) => ({ ticket_id, assigned_group_id: lgu_id, status: "pending" }));
-  try {
-    const { error } = await db().from("ticket_assignments").insert(assignments);
-    if (error) throw error;
-    return {
-      success: true,
-      data: { created: ids.length, skipped: 0 },
-      message: `${ids.length} ticket${ids.length !== 1 ? "s" : ""} assigned`,
-    } as ApiResponse<{ created: number; skipped: number }>;
-  } catch {
-    // RLS blocked the insert — assignments need the service role key
-    throw new Error("Failed to assign tickets: database permissions. Run the RLS policy SQL to fix.");
+  // Routed through the service-role API endpoint because the browser shared
+  // client is sessionless (anon) and RLS blocks ticket_assignments inserts.
+  const res = await fetch("/api/v1/admin/ticket-assignments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticket_ids: ids, lgu_id }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Assign failed (${res.status})`);
   }
+  return res.json() as Promise<ApiResponse<{ created: number; skipped: number }>>;
+}
+
+export async function bulkTicketAssignOfficer(ids: string[], assignee_user_id: string) {
+  // Person-level assignment: the ticket becomes visible only to this officer
+  // (and others in their agency).
+  const res = await fetch("/api/v1/admin/ticket-assignments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticket_ids: ids, assignee_user_id }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Assign failed (${res.status})`);
+  }
+  return res.json() as Promise<ApiResponse<{ created: number; skipped: number }>>;
 }
 
 export async function bulkTicketDelete(ids: string[]) {
   const failed: string[] = [];
   let deleted = 0;
 
-  // Try direct Supabase delete first
+  // Try the service-role API endpoint first (bypasses RLS like other admin writes)
   try {
-    const { error } = await db().from("tickets").delete().in("id", ids);
-    if (error) throw error;
-    // Supabase returns 204 even with 0 rows if RLS blocks it — verify by checking
-    deleted = ids.length;
+    const res = await fetch("/api/v1/admin/tickets/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    });
+    if (res.ok) {
+      deleted = ids.length;
+    } else {
+      failed.push(...ids);
+    }
   } catch {
     // Fall back to individual AI service API deletes
     await Promise.all(ids.map(async (id) => {
@@ -639,21 +773,31 @@ export async function deleteTenant(id: string) {
 }
 
 // Admin: Contact Messages (Inquiries)
-export async function getAdminContactMessages(params?: Record<string, string>) {
-  const { page, perPage, from, to } = paginate(params);
-  const { data, error, count } = await db().from("contact_messages").select("*", { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
-  if (error) throw error;
-  return {
-    success: true,
-    data: data || [],
-    meta: { current_page: page, last_page: Math.max(1, Math.ceil((count || 0) / perPage)), per_page: perPage, total: count || 0 },
-  } as PaginatedResponse<{ id: number; name: string; email: string; message: string; status: string; read_at: string | null; created_at: string }>;
+// Routed through the service-role API endpoint because the browser shared
+// client is sessionless (anon) and RLS hides contact_messages from it.
+export async function getAdminContactMessages(params?: Record<string, string>): Promise<PaginatedResponse<{ id: number; name: string; email: string; message: string; status: string; read_at: string | null; created_at: string }>> {
+  const { page, perPage } = paginate(params);
+  const res = await fetch(`/api/v1/admin/inquiries?page=${page}&per_page=${perPage}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Request failed: ${res.status}`);
+  }
+  return res.json();
 }
 
 export async function markContactMessageRead(id: number) {
-  const { data, error } = await db().from("contact_messages").update({ status: "read", read_at: new Date().toISOString() }).eq("id", id).select("id, status, read_at").single();
-  if (error) throw error;
-  return { success: true, data } as ApiResponse<{ id: number; status: string; read_at: string }>;
+  const res = await fetch("/api/v1/admin/inquiries", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Request failed: ${res.status}`);
+  }
+  return res.json() as Promise<ApiResponse<{ id: number; status: string; read_at: string }>>;
 }
 
 // Admin: Pattern Escalation
@@ -701,28 +845,40 @@ export interface AuditLogEntry {
   actor: { id: string; name: string } | null;
 }
 
-export async function getAuditLogs(params?: Record<string, string>) {
-  const { page, perPage, from, to } = paginate(params);
-  const { data, error, count } = await db().from("audit_logs").select("*", { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
-  if (error) throw error;
-  return {
-    success: true,
-    data: data || [],
-    meta: { current_page: page, last_page: Math.max(1, Math.ceil((count || 0) / perPage)), per_page: perPage, total: count || 0 },
-  } as PaginatedResponse<AuditLogEntry>;
+// Routed through the service-role API endpoint because the browser shared
+// client is sessionless (anon) and RLS hides audit_logs from it.
+export async function getAuditLogs(params?: Record<string, string>): Promise<PaginatedResponse<AuditLogEntry>> {
+  const { page, perPage } = paginate(params);
+  const res = await fetch(`/api/v1/admin/audit-logs?page=${page}&per_page=${perPage}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Request failed: ${res.status}`);
+  }
+  return res.json();
 }
 
 export async function getAuditLogDetail(id: string) {
-  const { data, error } = await db().from("audit_logs").select("*").eq("id", id).single();
-  if (error) throw error;
-  return { success: true, data } as ApiResponse<AuditLogEntry>;
+  const res = await fetch(`/api/v1/admin/audit-logs?id=${encodeURIComponent(id)}`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Request failed: ${res.status}`);
+  }
+  return res.json() as Promise<ApiResponse<AuditLogEntry>>;
 }
 
 export async function getAuditLogActions() {
-  const { data, error } = await db().from("audit_logs").select("action");
-  if (error) throw error;
-  const actions = [...new Set((data || []).map((l: Record<string, string>) => l.action).filter(Boolean))];
-  return { success: true, data: actions } as ApiResponse<string[]>;
+  const res = await fetch("/api/v1/admin/audit-logs?actions=1", {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `Request failed: ${res.status}`);
+  }
+  return res.json() as Promise<ApiResponse<string[]>>;
 }
 
 // Admin: Predictions (Hotspot Detection)
@@ -1055,18 +1211,24 @@ export async function getLeaderboardSpotlight() {
 }
 
 export async function getLeaderboardStats() {
-  const { data, error } = await db().from("users").select("id, total_xp");
-  if (error) throw error;
-  const users = data || [];
+  const [usersRes, ticketsRes] = await Promise.all([
+    db().from("users").select("id, total_xp, trust_score"),
+    db().from("tickets").select("id, status"),
+  ]);
+  if (usersRes.error) throw usersRes.error;
+  const users = usersRes.data || [];
+  const tickets = ticketsRes.data || [];
+  const verifiedCount = tickets.filter((t: Record<string, unknown>) => ["resolved", "verified", "closed"].includes(String(t.status))).length;
+  const trustScores = users.map((u: Record<string, unknown>) => Number(u.trust_score) || 0);
   return {
     success: true,
     data: {
       total_participants: users.length,
       total_xp_distributed: users.reduce((sum: number, u: Record<string, unknown>) => sum + (Number(u.total_xp) || 0), 0),
       avg_xp: users.length > 0 ? Math.round(users.reduce((sum: number, u: Record<string, unknown>) => sum + (Number(u.total_xp) || 0), 0) / users.length) : 0,
-      total_reports_submitted: 0,
-      total_reports_verified: 0,
-      avg_trust_score: 0,
+      total_reports_submitted: tickets.length,
+      total_reports_verified: verifiedCount,
+      avg_trust_score: trustScores.length > 0 ? Math.round(trustScores.reduce((a: number, b: number) => a + b, 0) / trustScores.length) : 0,
     },
   } as unknown as ApiResponse<LeaderboardStats>;
 }
@@ -1104,26 +1266,100 @@ export async function getUserRedemptions() {
 
 // Analytics
 export async function getAnalyticsDashboard() {
-  const { data, error } = await db().from("tickets").select("status, urgency_score, created_at, resolved_at");
-  if (error) throw error;
-  const tickets = data || [];
+  const visible = await fetchVisibleTickets();
+  let tickets: Record<string, unknown>[];
+  if (visible !== null) {
+    tickets = visible;
+  } else {
+    const { data, error } = await db()
+      .from("tickets")
+      .select("status, title, address_text, urgency_score, ai_triage_summary, created_at, resolved_at");
+    if (error) throw error;
+    tickets = (data || []) as Record<string, unknown>[];
+  }
+  const resolvedStatuses = new Set(["resolved", "verified", "closed"]);
+  const totalResolved = tickets.filter((t) => resolvedStatuses.has(String(t.status))).length;
+
+  // Real average response time from resolved tickets
+  const diffs: number[] = [];
+  for (const t of tickets) {
+    if (t.resolved_at && t.created_at) {
+      const diff = new Date(String(t.resolved_at)).getTime() - new Date(String(t.created_at)).getTime();
+      if (diff > 0) diffs.push(diff);
+    }
+  }
+  let avgResponseTime = "—";
+  if (diffs.length > 0) {
+    const avgMs = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+    const days = Math.floor(avgMs / 86400000);
+    const hours = Math.floor((avgMs % 86400000) / 3600000);
+    avgResponseTime = days > 0 ? `${days}d ${hours}h` : `${hours}h`;
+  }
+
+  // Real daily counts (last 30 days)
+  const dayCounts = new Map<string, { count: number; resolved: number }>();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    dayCounts.set(d.toISOString().slice(0, 10), { count: 0, resolved: 0 });
+  }
+  for (const t of tickets) {
+    const day = String(t.created_at || "").slice(0, 10);
+    const bucket = dayCounts.get(day);
+    if (bucket) {
+      bucket.count += 1;
+      if (t.resolved_at && resolvedStatuses.has(String(t.status))) bucket.resolved += 1;
+    }
+  }
+  const timeSeries = [...dayCounts.entries()].map(([date, v]) => ({ date, count: v.count, resolved: v.resolved }));
+
+  // Real status + type counts
+  const ticketsByStatus: Record<string, number> = {};
+  const ticketsByType: Record<string, number> = {};
+  for (const t of tickets) {
+    const status = String(t.status || "open");
+    ticketsByStatus[status] = (ticketsByStatus[status] || 0) + 1;
+    const type = String(t.ai_triage_summary || "") || "Other";
+    ticketsByType[type] = (ticketsByType[type] || 0) + 1;
+  }
+
+  // Real hotspots: group tickets by province (last segment of address_text)
+  const byProvince = new Map<string, { count: number; urgency: number[]; types: Record<string, number> }>();
+  for (const t of tickets) {
+    const addr = String(t.address_text || "");
+    const province = addr.split(",").pop()?.trim() || "Unknown";
+    const entry = byProvince.get(province) || { count: 0, urgency: [], types: {} };
+    entry.count += 1;
+    entry.urgency.push(Number(t.urgency_score) || 0);
+    const type = String(t.ai_triage_summary || "") || "Other";
+    entry.types[type] = (entry.types[type] || 0) + 1;
+    byProvince.set(province, entry);
+  }
+  const hotspots = [...byProvince.entries()]
+    .map(([province, v]) => ({
+      province,
+      risk_score: v.urgency.length > 0 ? Math.min(v.urgency.reduce((a, b) => a + b, 0) / v.urgency.length / 5, 1) : 0,
+      report_count: v.count,
+      dominant_type: Object.entries(v.types).sort((a, b) => b[1] - a[1])[0]?.[0] || "other",
+    }))
+    .sort((a, b) => b.report_count - a.report_count)
+    .slice(0, 8);
+
+  const reportsByDay = timeSeries.slice(-14).map(({ date, count }) => ({ date, count }));
+
   return {
     success: true,
     data: {
       total_reports: tickets.length,
       total_tickets: tickets.length,
-      total_resolved: tickets.filter((t: Record<string, unknown>) => t.status === "resolved").length,
-      resolution_rate: tickets.length > 0 ? tickets.filter((t: Record<string, unknown>) => t.status === "resolved").length / tickets.length : 0,
-      avg_response_time: "14h",
-      reports_by_day: [],
-      tickets_by_status: {
-        open: tickets.filter((t: Record<string, unknown>) => t.status === "open").length,
-        investigating: tickets.filter((t: Record<string, unknown>) => t.status === "investigating").length,
-        resolved: tickets.filter((t: Record<string, unknown>) => t.status === "resolved").length,
-      },
-      tickets_by_type: {},
-      hotspots: [],
-      time_series: [],
+      total_resolved: totalResolved,
+      resolution_rate: tickets.length > 0 ? totalResolved / tickets.length : 0,
+      avg_response_time: avgResponseTime,
+      reports_by_day: reportsByDay,
+      tickets_by_status: ticketsByStatus,
+      tickets_by_type: ticketsByType,
+      hotspots,
+      time_series: timeSeries,
     },
   } as ApiResponse<AnalyticsDashboardData>;
 }
@@ -1131,68 +1367,65 @@ export async function getAnalyticsDashboard() {
 // Public Impact
 export async function getPublicImpact() {
   try {
-    const { data, error } = await db().from("tickets").select("id, status, title, address_text, created_at, urgency_score");
+    const { data, error } = await db()
+      .from("tickets")
+      .select("id, title, status, description, address_text, latitude, longitude, ghost_mode, ai_triage_summary, urgency_score, created_at, updated_at, resolved_at");
     const tickets = (!error && data) ? data : [];
-    const resolved = tickets.filter((t: Record<string, unknown>) => t.status === "resolved");
-    const totalReports = Math.max(tickets.length, 81);
-    const totalResolved = Math.max(resolved.length, 11);
 
-    // Realistic categorized distribution mapped to Philippine environmental laws
-    const reportsByType: Record<string, number> = {
-      "Waste Management": 34,
-      "Air Quality": 23,
-      "Forestry Violation": 15,
-      "Water Quality": 9,
-    };
+    const resolvedStatuses = new Set(["resolved", "verified", "closed"]);
+    const resolved = tickets.filter((t: Record<string, unknown>) => resolvedStatuses.has(String(t.status)));
+    const totalReports = tickets.length;
+    const totalResolved = resolved.length;
 
-    if (tickets.length > 0) {
-      const counts: Record<string, number> = {};
-      for (const t of tickets) {
-        const title = String(t.title || "").toLowerCase();
-        if (title.includes("waste") || title.includes("dump") || title.includes("plastic") || title.includes("trash")) {
-          counts["Waste Management"] = (counts["Waste Management"] || 0) + 1;
-        } else if (title.includes("air") || title.includes("smoke") || title.includes("plume") || title.includes("flare")) {
-          counts["Air Quality"] = (counts["Air Quality"] || 0) + 1;
-        } else if (title.includes("forest") || title.includes("log") || title.includes("tree") || title.includes("timber")) {
-          counts["Forestry Violation"] = (counts["Forestry Violation"] || 0) + 1;
-        } else if (title.includes("water") || title.includes("river") || title.includes("effluent") || title.includes("oil") || title.includes("coastal")) {
-          counts["Water Quality"] = (counts["Water Quality"] || 0) + 1;
-        } else {
-          counts["Waste Management"] = (counts["Waste Management"] || 0) + 1;
-        }
-      }
-      if (Object.keys(counts).length > 0) {
-        Object.assign(reportsByType, counts);
-      }
+    // Category distribution computed from real ticket titles
+    const reportsByType: Record<string, number> = {};
+    for (const t of tickets) {
+      const title = String(t.title || "").toLowerCase();
+      const category =
+        /waste|dump|plastic|trash|garbage/.test(title) ? "Waste Management" :
+        /air|smoke|plume|flare|emission/.test(title) ? "Air Quality" :
+        /forest|log|tree|timber|deforest/.test(title) ? "Forestry Violation" :
+        /water|river|effluent|oil|coastal|marine|sea/.test(title) ? "Water Quality" :
+        "Other";
+      reportsByType[category] = (reportsByType[category] || 0) + 1;
     }
 
-    // Authentic verified Philippine cases
-    const recentVerified = [
-      {
-        title: "Illegal Dumping Site Cleared",
-        location: "Pasig River Estero, Manila",
-        status: "Fixed by DENR & City LGU",
-        date: new Date(Date.now() - 3 * 3600000).toISOString(),
-      },
-      {
-        title: "Smoke & Factory Plume Stopped",
-        location: "Industrial District, Valenzuela City",
-        status: "Violation Notice Issued",
-        date: new Date(Date.now() - 7 * 3600000).toISOString(),
-      },
-      {
-        title: "Illegal Timber Impounded",
-        location: "Southern Highway Checkpoint, Palawan",
-        status: "Impounded by Forest Rangers",
-        date: new Date(Date.now() - 14 * 3600000).toISOString(),
-      },
-      {
-        title: "Coastal Drainage Cleaned",
-        location: "Navotas Coastal Area, Manila Bay",
-        status: "Cleaned by Coast Guard",
-        date: new Date(Date.now() - 26 * 3600000).toISOString(),
-      },
-    ];
+    // Real recently resolved/verified cases from the database
+    const recentVerified = resolved
+      .sort((a: Record<string, unknown>, b: Record<string, unknown>) =>
+        String(b.resolved_at || b.updated_at || "").localeCompare(String(a.resolved_at || a.updated_at || ""))
+      )
+      .slice(0, 10)
+      .map((t: Record<string, unknown>) => ({
+        id: String(t.id),
+        title: String(t.title || "Environmental Incident"),
+        description: t.description ? String(t.description) : undefined,
+        location: String(t.address_text || "Unknown location"),
+        latitude: typeof t.latitude === "number" ? t.latitude : undefined,
+        longitude: typeof t.longitude === "number" ? t.longitude : undefined,
+        status: String(t.status || "resolved"),
+        date: String(t.resolved_at || t.updated_at || t.created_at || new Date().toISOString()),
+        category: String(t.ai_triage_summary || "") || undefined,
+        photo_url: t.photo_url ? String(t.photo_url) : null,
+        is_ghost: Boolean(t.ghost_mode),
+      }));
+
+    // Real citizen / NGO / community counts
+    let totalCitizens = 0;
+    let totalNgos = 0;
+    let communitiesServed = 0;
+    try {
+      const [usersRes, ngosRes] = await Promise.all([
+        db().from("users").select("id, role"),
+        db().from("ngo_groups").select("id"),
+      ]);
+      totalCitizens = (usersRes.data || []).filter((u: Record<string, unknown>) => u.role === "citizen").length || (usersRes.data || []).length;
+      totalNgos = (ngosRes.data || []).length;
+      const barangays = new Set(tickets.map((t: Record<string, unknown>) => String(t.address_text || "").split(",").pop()?.trim() || ""));
+      communitiesServed = barangays.size;
+    } catch {
+      // counts stay 0 if auxiliary queries fail — never fabricate
+    }
 
     return {
       success: true,
@@ -1200,55 +1433,32 @@ export async function getPublicImpact() {
         total_reports: totalReports,
         resolved_reports: totalResolved,
         active_reports: totalReports - totalResolved,
-        communities_served: 18,
+        communities_served: communitiesServed,
         countries_active: 1,
         total_resolved: totalResolved,
-        total_citizens: 142,
-        total_ngos: 8,
-        resolution_rate: totalResolved / totalReports,
+        total_citizens: totalCitizens,
+        total_ngos: totalNgos,
+        resolution_rate: totalReports > 0 ? totalResolved / totalReports : 0,
         recent_verified: recentVerified,
         reports_by_type: reportsByType,
       },
     } as unknown as ApiResponse<PublicImpactData>;
   } catch {
+    // If the query itself fails, return empty real data — never fabricated numbers
     return {
       success: true,
       data: {
-        total_reports: 81,
-        resolved_reports: 11,
-        active_reports: 70,
-        communities_served: 18,
+        total_reports: 0,
+        resolved_reports: 0,
+        active_reports: 0,
+        communities_served: 0,
         countries_active: 1,
-        total_resolved: 11,
-        total_citizens: 142,
-        total_ngos: 8,
-        resolution_rate: 0.135,
-        recent_verified: [
-          {
-            title: "Illegal Dumping Site Cleared",
-            location: "Pasig River Estero, Manila",
-            status: "Fixed by DENR & City LGU",
-            date: new Date(Date.now() - 3 * 3600000).toISOString(),
-          },
-          {
-            title: "Smoke & Factory Plume Stopped",
-            location: "Industrial District, Valenzuela City",
-            status: "Violation Notice Issued",
-            date: new Date(Date.now() - 7 * 3600000).toISOString(),
-          },
-          {
-            title: "Illegal Timber Impounded",
-            location: "Southern Highway Checkpoint, Palawan",
-            status: "Impounded by Forest Rangers",
-            date: new Date(Date.now() - 14 * 3600000).toISOString(),
-          },
-        ],
-        reports_by_type: {
-          "Waste Management": 34,
-          "Air Quality": 23,
-          "Forestry Violation": 15,
-          "Water Quality": 9,
-        },
+        total_resolved: 0,
+        total_citizens: 0,
+        total_ngos: 0,
+        resolution_rate: 0,
+        recent_verified: [],
+        reports_by_type: {},
       },
     } as unknown as ApiResponse<PublicImpactData>;
   }

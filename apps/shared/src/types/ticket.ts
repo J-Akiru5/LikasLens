@@ -19,6 +19,8 @@ export interface Ticket {
   urgency_score?: number;
   category?: string;
   reporter?: string;
+  ghost_mode?: boolean;
+  reporter_user_id?: string | null;
   created_at: string;
   resolved_at?: string | null;
 }

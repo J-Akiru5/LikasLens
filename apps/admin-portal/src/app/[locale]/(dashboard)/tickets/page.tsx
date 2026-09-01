@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { getTickets, bulkTicketStatus, bulkTicketAssign, bulkTicketDelete, getAdminNgos, updateTicketStatus, deleteTicket, Button } from "@likaslens/shared";
-import type { Ticket, NgoGroup } from "@likaslens/shared";
+import { getTickets, bulkTicketStatus, bulkTicketAssign, bulkTicketAssignOfficer, bulkTicketDelete, getAdminNgos, getAdminUsers, updateTicketStatus, deleteTicket, Button } from "@likaslens/shared";
+import type { Ticket, NgoGroup, User } from "@likaslens/shared";
 import { showToast, Dropdown, AdminTableSkeleton, ConfidenceTierBadge, ReddEligibilityBadge } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase";
 import {
@@ -51,12 +51,14 @@ export default function TicketsPage() {
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [ngos, setNgos] = useState<NgoGroup[]>([]);
+  const [officers, setOfficers] = useState<User[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
   // Modal state
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [assignOfficerModalOpen, setAssignOfficerModalOpen] = useState(false);
 
   // Detail panel state
   const [detailTicketId, setDetailTicketId] = useState<string | null>(null);
@@ -116,6 +118,16 @@ export default function TicketsPage() {
       .catch(console.error);
   }, []);
 
+  // Load officers (analysts / LGU staff) for person-level assignment
+  useEffect(() => {
+    getAdminUsers({ per_page: "200", role: "analyst,lgu,lgu_officer" })
+      .then((res) => {
+        const r = res as { data?: User[] };
+        if (Array.isArray(r?.data)) setOfficers(r.data);
+      })
+      .catch(console.error);
+  }, []);
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -166,6 +178,25 @@ export default function TicketsPage() {
         showToast(res.message || "Operation successful", "success");
         bulk.clear();
         setAssignModalOpen(false);
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to assign tickets", "error");
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
+  async function handleBulkAssignOfficer(officerId: string) {
+    const ids = bulk.selectedItems.map((t) => t.id);
+    if (ids.length === 0) return;
+    setBulkLoading(true);
+    try {
+      const res = await bulkTicketAssignOfficer(ids, officerId);
+      if (res.success) {
+        showToast(res.message || "Operation successful", "success");
+        bulk.clear();
+        setAssignOfficerModalOpen(false);
       }
     } catch (err) {
       console.error(err);
@@ -434,6 +465,7 @@ export default function TicketsPage() {
         onClear={bulk.clear}
         onStatusClick={() => setStatusModalOpen(true)}
         onAssignClick={() => setAssignModalOpen(true)}
+        onAssignOfficerClick={() => setAssignOfficerModalOpen(true)}
         onDelete={handleBulkDelete}
         disabled={bulkLoading}
       />
@@ -461,6 +493,22 @@ export default function TicketsPage() {
         onSelect={(v) => handleBulkAssign(v)}
         loading={bulkLoading}
         searchPlaceholder="Search NGOs by name or region..."
+      />
+
+      {/* Assign to officer modal */}
+      <BulkActionModal
+        open={assignOfficerModalOpen}
+        onClose={() => setAssignOfficerModalOpen(false)}
+        title="Assign to officer"
+        subtitle={`Assign ${bulk.selectedCount} selected ticket${bulk.selectedCount !== 1 ? "s" : ""} to one officer — only they (and their agency) will see it`}
+        options={officers.map((o) => ({
+          value: o.id,
+          label: o.name,
+          description: `${o.role}${o.agency_name ? ` · ${o.agency_name}` : ""}${o.service_area ? ` · ${o.service_area}` : ""}`,
+        }))}
+        onSelect={(v) => handleBulkAssignOfficer(v)}
+        loading={bulkLoading}
+        searchPlaceholder="Search officers by name or agency..."
       />
 
       {/* Detail panel */}

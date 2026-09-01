@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
+import { logAuditEvent } from "@/lib/audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,6 +57,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     const data = await res.json();
+    if (res.ok) {
+      for (const id of body.ids) {
+        await logAuditEvent(request, {
+          action: "user.role_changed",
+          entity_type: "user",
+          entity_id: id,
+          new_data: { role: body.role } as Record<string, unknown>,
+          metadata: { bulk: true },
+        });
+      }
+    }
     return NextResponse.json(data, { status: res.status });
   } catch (err: unknown) {
     console.error("[/api/v1/admin/users/bulk-role] Error:", err);

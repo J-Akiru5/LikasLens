@@ -29,6 +29,7 @@ interface DashboardLayoutProps {
   unreadCount?: number;
   onMarkAsRead?: (id: string) => void;
   onMarkAllAsRead?: () => void;
+  notificationsHref?: string;
 }
 
 export function DashboardLayout({
@@ -51,6 +52,7 @@ export function DashboardLayout({
   unreadCount,
   onMarkAsRead,
   onMarkAllAsRead,
+  notificationsHref,
 }: DashboardLayoutProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -88,6 +90,7 @@ export function DashboardLayout({
           unreadCount={unreadCount}
           onMarkAsRead={onMarkAsRead}
           onMarkAllAsRead={onMarkAllAsRead}
+          notificationsHref={notificationsHref}
           children={headerChildren}
         />
 

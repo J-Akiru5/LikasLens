@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useNotifications } from "@likaslens/shared";
+import { createClient } from "@/lib/supabase";
 import { cn } from "@likaslens/shared";
 import { formatDate } from "@likaslens/shared";
-import { Bell, AlertCircle, CheckCircle, Info, CheckCheck, Loader2 } from "lucide-react";
+import { Bell, AlertCircle, CheckCircle, Info, CheckCheck, Loader2, Send, X } from "lucide-react";
 
 function getNotifIcon(type: string) {
   if (type.includes("Escalation") || type.includes("breach"))
@@ -53,7 +55,26 @@ function EmptyState() {
   );
 }
 
+const AUDIENCES: { value: string; label: string }[] = [
+  { value: "everyone", label: "All users" },
+  { value: "super_admin", label: "Super Admins" },
+  { value: "admin", label: "Admins" },
+  { value: "analyst", label: "Analysts" },
+  { value: "lgu_officer", label: "LGU staff & officers" },
+  { value: "lgu", label: "LGU (legacy role)" },
+  { value: "partner", label: "Partners" },
+  { value: "citizen", label: "Citizens" },
+];
+
 export default function AdminNotificationsPage() {
+  const [authToken, setAuthToken] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    createClient()
+      .auth.getSession()
+      .then(({ data }) => setAuthToken(data.session?.access_token));
+  }, []);
+
   const {
     notifications,
     meta,
@@ -62,9 +83,54 @@ export default function AdminNotificationsPage() {
     markAsRead,
     markAllAsRead,
     loadMore,
-  } = useNotifications();
+    refresh,
+  } = useNotifications({ pollInterval: 30000, token: authToken });
 
   const hasMore = meta && meta.current_page < meta.last_page;
+
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [audience, setAudience] = useState("everyone");
+  const [targetUser, setTargetUser] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+
+  const handleSend = async () => {
+    if (!title.trim() || !message.trim()) {
+      setSendError("Title and message are required.");
+      return;
+    }
+    setSending(true);
+    setSendError(null);
+    try {
+      const res = await fetch("/api/v1/admin/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim(),
+          message: message.trim(),
+          for_role: audience === "everyone" ? null : audience,
+          user_id: targetUser.trim() ? targetUser.trim() : null,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setSendError(body?.error || "Failed to send notification");
+        return;
+      }
+      setComposerOpen(false);
+      setTitle("");
+      setMessage("");
+      setAudience("everyone");
+      setTargetUser("");
+      await refresh();
+    } catch (err: unknown) {
+      setSendError(err instanceof Error ? err.message : "Failed to send notification");
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -75,16 +141,110 @@ export default function AdminNotificationsPage() {
             {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
           </p>
         </div>
-        {unreadCount > 0 && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={markAllAsRead}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono text-ink/60 hover:text-ink border border-ink/10 rounded-lg hover:bg-ink/[0.02] transition-colors"
+            onClick={() => {
+              setComposerOpen((v) => !v);
+              setSendError(null);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono text-white bg-green hover:bg-green/90 rounded-lg transition-colors"
           >
-            <CheckCheck className="w-4 h-4" />
-            Mark all as read
+            <Send className="w-4 h-4" />
+            Send notification
           </button>
-        )}
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllAsRead}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono text-ink/60 hover:text-ink border border-ink/10 rounded-lg hover:bg-ink/[0.02] transition-colors"
+            >
+              <CheckCheck className="w-4 h-4" />
+              Mark all as read
+            </button>
+          )}
+        </div>
       </div>
+
+      {composerOpen && (
+        <div className="rounded-2xl border border-green/20 bg-green/[0.03] p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-lg text-ink">Send a notification</h2>
+            <button
+              onClick={() => setComposerOpen(false)}
+              aria-label="Close composer"
+              className="p-1.5 rounded-lg text-ink/50 hover:text-ink hover:bg-ink/5 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-xs font-mono uppercase tracking-wider text-ink/50">Title</span>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={200}
+                placeholder="e.g. Scheduled maintenance tonight"
+                className="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-ink/10 bg-page focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-mono uppercase tracking-wider text-ink/50">Audience</span>
+              <select
+                value={audience}
+                onChange={(e) => setAudience(e.target.value)}
+                className="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-ink/10 bg-page focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                {AUDIENCES.map((a) => (
+                  <option key={a.value} value={a.value}>
+                    {a.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <label className="block">
+            <span className="text-xs font-mono uppercase tracking-wider text-ink/50">
+              Message
+            </span>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              maxLength={2000}
+              rows={3}
+              placeholder="What do users need to know?"
+              className="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-ink/10 bg-page focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-mono uppercase tracking-wider text-ink/50">
+              Specific user (optional, overrides audience)
+            </span>
+            <input
+              value={targetUser}
+              onChange={(e) => setTargetUser(e.target.value)}
+              placeholder="user id from the Users page"
+              className="mt-1 w-full px-3 py-2 text-sm rounded-lg border border-ink/10 bg-page focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </label>
+          {sendError && <p className="text-sm text-red">{sendError}</p>}
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => setComposerOpen(false)}
+              className="px-4 py-2 text-sm font-mono text-ink/60 hover:text-ink border border-ink/10 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSend}
+              disabled={sending}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono text-white bg-green hover:bg-green/90 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              {sending ? "Sending..." : "Send"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {loading && notifications.length === 0 ? (
         <NotificationSkeleton />

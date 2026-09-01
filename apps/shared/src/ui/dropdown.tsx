@@ -549,22 +549,30 @@ export function Dropdown(props: DropdownProps) {
           {!selectedLabel && placeholder}
         </span>
 
-        {/* Clear button */}
+        {/* Clear button — a span (role=button), because a <button> inside
+            the <button> trigger is invalid HTML and causes hydration errors */}
         {!multi && selectedLabel && onClear && !disabled && (
-          <button
-            type="button"
+          <span
+            role="button"
+            tabIndex={-1}
             onClick={(e) => {
               e.stopPropagation();
               onClear();
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.stopPropagation();
+                onClear();
+              }
+            }}
             className={cn(
-              "text-ink/30 hover:text-ink/60 transition-colors rounded-full p-0.5",
+              "text-ink/30 hover:text-ink/60 transition-colors rounded-full p-0.5 cursor-pointer",
               iconSize[size]
             )}
             aria-label="Clear selection"
           >
             <X className={iconSize[size]} />
-          </button>
+          </span>
         )}
 
         {/* Chevron / Spinner */}

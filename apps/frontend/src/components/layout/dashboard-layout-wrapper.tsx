@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, type ReactNode } from "react";
 import { flushSync } from "react-dom";
-import { DashboardLayout, getQueueCount, notifyThemeColor } from "@likaslens/shared";
+import { DashboardLayout, getQueueCount, notifyThemeColor, useNotifications } from "@likaslens/shared";
 import type { NavItem } from "@likaslens/shared";
 import {
   LayoutGrid,
@@ -21,6 +21,7 @@ import {
   Search,
 } from "lucide-react";
 import { UserNav } from "./user-nav";
+import { createClient } from "@/utils/supabase/client";
 import { AnimatePresence, motion } from "framer-motion";
 
 const SIDEBAR_NAV_ITEMS: NavItem[] = [
@@ -63,11 +64,25 @@ export function DashboardLayoutWrapper({
   const [isGhostMode, setIsGhostMode] = useState(false);
   const [queueCount, setQueueCount] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [authToken, setAuthToken] = useState<string | undefined>(undefined);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications({
+    pollInterval: 30000,
+    token: authToken,
+  });
 
   // 2026 Ghost Mode Cloaking Wave State
   const [waveState, setWaveState] = useState<{ active: boolean; x: number; y: number; isGhost: boolean } | null>(null);
   const [showStealthToast, setShowStealthToast] = useState(false);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch Supabase session token for notification RPCs
+  useEffect(() => {
+    createClient()
+      .auth.getSession()
+      .then(({ data }: { data: { session: { access_token?: string } | null } }) =>
+        setAuthToken(data.session?.access_token)
+      );
+  }, []);
 
   // Fetch queue count on mount and on visibility change
   useEffect(() => {
@@ -168,6 +183,10 @@ export function DashboardLayoutWrapper({
         pageTitle={pageTitle}
         pageSubtitle={pageSubtitle}
         showBranding={showBranding}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        onMarkAsRead={markAsRead}
+        onMarkAllAsRead={markAllAsRead}
         extraSidebarBottom={<UserNav variant="sidebar" />}
         headerChildren={headerChildren}
       >
