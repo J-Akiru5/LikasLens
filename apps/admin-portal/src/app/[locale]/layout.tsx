@@ -1,6 +1,6 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
-import { ToastContainer, LiksiChat } from "@likaslens/shared";
+import { ToastContainer } from "@likaslens/shared";
 import { locales } from "@likaslens/shared";
 import { LocaleLayoutClient } from "@/components/layout/locale-layout-client";
 import { createClient } from "@/lib/supabase-server";
@@ -30,10 +30,11 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
+      {/* LiksiChat + ToastProvider are mounted inside LocaleLayoutClient only
+          (mounted-gated, so no SSR/client hydration mismatch) */}
       <LocaleLayoutClient locale={locale} isAuthenticated={isAuthenticated}>
         {children}
       </LocaleLayoutClient>
-      <LiksiChat persona="admin" locale={locale} isAuthenticated={true} />
       <ToastContainer />
     </NextIntlClientProvider>
   );

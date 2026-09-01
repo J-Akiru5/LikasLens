@@ -36,18 +36,8 @@ export function TimeSeriesChart() {
           });
         }
       } catch {
-        // Fallback mock
-        const now = new Date();
-        const dates = Array.from({ length: 30 }, (_, i) => {
-          const d = new Date(now);
-          d.setDate(d.getDate() - (29 - i));
-          return d.toISOString().split("T")[0];
-        });
-        setData({
-          dates,
-          reports: dates.map(() => Math.floor(Math.random() * 20 + 5)),
-          resolved: dates.map(() => Math.floor(Math.random() * 15 + 2)),
-        });
+        // No fabricated data — show an empty chart if the API fails
+        setData({ dates: [], reports: [], resolved: [] });
       } finally {
         setLoading(false);
       }

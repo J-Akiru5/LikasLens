@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase-server";
 import { logAuditEvent } from "@/lib/audit";
 
@@ -14,6 +15,36 @@ export const dynamic = "force-dynamic";
 
 function getAiUrl(): string {
   return process.env.RENDER_AI_URL || process.env.LOCAL_AI_URL || "http://127.0.0.1:8001";
+}
+
+/**
+ * Keep Supabase auth account roles in sync with the users table (see the
+ * single-user role route for why this matters). Legacy rows without a real
+ * auth account are skipped silently.
+ */
+async function syncAuthRoles(userIds: string[], role: string): Promise<void> {
+  try {
+    const db = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: userRows } = await db
+      .from("users")
+      .select("supabase_auth_user_id")
+      .in("id", userIds);
+    if (!userRows) return;
+    await Promise.allSettled(
+      userRows
+        .filter((r) => r.supabase_auth_user_id)
+        .map((r) =>
+          db.auth.admin.updateUserById(r.supabase_auth_user_id, {
+            user_metadata: { role },
+          })
+        )
+    );
+  } catch (err) {
+    console.warn("[/api/v1/admin/users/bulk-role] auth metadata sync failed:", err);
+  }
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -58,6 +89,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const data = await res.json();
     if (res.ok) {
+      await syncAuthRoles(body.ids, body.role);
       for (const id of body.ids) {
         await logAuditEvent(request, {
           action: "user.role_changed",

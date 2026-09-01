@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase-server";
 import { logAuditEvent } from "@/lib/audit";
 
@@ -14,6 +15,33 @@ export const dynamic = "force-dynamic";
 
 function getAiUrl(): string {
   return process.env.RENDER_AI_URL || process.env.LOCAL_AI_URL || "http://127.0.0.1:8001";
+}
+
+/**
+ * Keep the Supabase auth account's role in sync with the users table.
+ * The admin-portal login gate reads user_metadata.role, so without this
+ * a role change in the UI would never change who may sign in.
+ * Legacy rows without a real auth account are skipped silently.
+ */
+async function syncAuthRole(userId: string, role: string): Promise<void> {
+  try {
+    const db = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: userRow } = await db
+      .from("users")
+      .select("supabase_auth_user_id")
+      .eq("id", userId)
+      .maybeSingle();
+    if (!userRow?.supabase_auth_user_id) return;
+    const { error } = await db.auth.admin.updateUserById(userRow.supabase_auth_user_id, {
+      user_metadata: { role },
+    });
+    if (error) console.warn("[/api/v1/admin/users/[id]/role] auth metadata sync:", error.message);
+  } catch (err) {
+    console.warn("[/api/v1/admin/users/[id]/role] auth metadata sync failed:", err);
+  }
 }
 
 export async function PUT(
@@ -55,6 +83,7 @@ export async function PUT(
 
     const data = await res.json();
     if (res.ok) {
+      await syncAuthRole(id, body.role);
       await logAuditEvent(request, {
         action: "user.role_changed",
         entity_type: "user",

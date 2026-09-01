@@ -121,6 +121,7 @@ export default function ReportPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmittedSuccess, setIsSubmittedSuccess] = useState(false);
   const [submittedTicketId, setSubmittedTicketId] = useState<string>("");
+  const [routedOffice, setRoutedOffice] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
 
@@ -428,6 +429,11 @@ export default function ReportPage() {
       const ticketId = res?.data?.id || `LL-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
       setSubmittedTicketId(ticketId);
 
+      // The server routes the report to the analyst/LGU account whose service
+      // area covers the location; show that real office name here.
+      const routed = (res?.data as { routed_office?: string | null } | undefined)?.routed_office;
+      setRoutedOffice(typeof routed === "string" && routed ? routed : null);
+
       // Save submission reference locally for immediate visibility in History / Submissions
       if (typeof window !== "undefined") {
         try {
@@ -635,7 +641,11 @@ export default function ReportPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-bold text-ink text-xs">2. Assigned to Government Office</p>
-                    <p className="text-ink/60 text-[10px]">Auto-routed to DENR & Local CENRO Taskforce.</p>
+                    <p className="text-ink/60 text-[10px]">
+                      {routedOffice
+                        ? `Auto-routed to ${routedOffice}.`
+                        : "Waiting for the covering local office to claim this report."}
+                    </p>
                   </div>
                   <span className="text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full uppercase">
                     Assigned

@@ -96,26 +96,9 @@ export function ViolationDonut() {
           throw new Error("No ticket data found");
         }
       } catch (err) {
-        console.warn("[ViolationDonut] Falling back to default live distribution:", err);
-        const fallbackRaw = [
-          { name: "Water Quality", value: 10 },
-          { name: "Wildlife Protection", value: 10 },
-          { name: "Air Quality", value: 10 },
-          { name: "Pollution", value: 9 },
-          { name: "Environmental Hazard", value: 8 },
-          { name: "Waste Management", value: 7 },
-          { name: "Land Use", value: 7 },
-          { name: "Coastal Pollution", value: 6 },
-          { name: "Forestry Violation", value: 4 },
-        ];
-        const totalCount = fallbackRaw.reduce((sum, item) => sum + item.value, 0);
-        setData(
-          fallbackRaw.map((item, idx) => ({
-            ...item,
-            color: getCategoryColor(item.name, idx),
-            percent: Math.round((item.value / totalCount) * 100),
-          }))
-        );
+        // No fabricated distribution — show empty if the query fails
+        console.warn("[ViolationDonut] Could not load ticket categories:", err);
+        setData([]);
       } finally {
         setLoading(false);
       }

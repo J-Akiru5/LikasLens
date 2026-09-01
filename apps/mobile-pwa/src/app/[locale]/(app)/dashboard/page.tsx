@@ -220,7 +220,7 @@ export default function DashboardPage() {
     }
   };
 
-  const isAdmin = userRole === "super_admin" || userRole === "analyst" || userRole === "lgu" || userRole === "partner";
+  const isAdmin = userRole === "super_admin" || userRole === "analyst" || userRole === "lgu";
 
   const statCards = useMemo(() => [
     {

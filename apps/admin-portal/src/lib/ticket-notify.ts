@@ -82,7 +82,7 @@ export async function notifyAssignee(
 }
 
 /**
- * Resolve the agency group ("desk") for a ticket assignment — ticket_assignments
+ * Resolve the agency group ("desk") for a ticket assignment - ticket_assignments
  * requires a NOT NULL assigned_group_id. Matches the ticket's AI category
  * against group names, falling back to a national umbrella group.
  */

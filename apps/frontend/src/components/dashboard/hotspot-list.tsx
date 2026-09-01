@@ -42,14 +42,8 @@ export function HotspotList() {
           setHotspots(res.data.hotspots.slice(0, 8));
         }
       } catch {
-        // Fallback
-        setHotspots([
-          { province: "Negros Occidental", risk_score: 0.85, report_count: 12, dominant_type: "illegal_logging" },
-          { province: "Iloilo", risk_score: 0.72, report_count: 8, dominant_type: "water_pollution" },
-          { province: "Cebu", risk_score: 0.65, report_count: 15, dominant_type: "waste_dumping" },
-          { province: "Capiz", risk_score: 0.58, report_count: 6, dominant_type: "air_pollution" },
-          { province: "Aklan", risk_score: 0.45, report_count: 4, dominant_type: "illegal_fishing" },
-        ]);
+        // No fabricated data — show an empty list if the API fails
+        setHotspots([]);
       } finally {
         setLoading(false);
       }

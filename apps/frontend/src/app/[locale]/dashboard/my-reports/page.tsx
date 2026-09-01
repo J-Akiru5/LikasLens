@@ -293,7 +293,7 @@ export default function MyReportsPage() {
         ) : (
           <div className="space-y-4">
             {filteredReports.map((report) => {
-              const isGhost = report.title?.includes("Ghost Mode") || !report.reporter;
+              const isGhost = report.ghost_mode === true || report.title?.includes("Ghost Mode");
               const meta = getStatusMeta(report.status, report.category || report.title);
               const currentStageIdx = getStageIdx(report.status);
 

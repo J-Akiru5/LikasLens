@@ -18,7 +18,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
 
-VALID_ROLES = {"citizen", "lgu_officer", "admin", "super_admin", "analyst"}
+# Canonical role set (must match apps/shared/src/types/user.ts).
+CANONICAL_ROLES = {"citizen", "ghost", "lgu", "analyst", "super_admin"}
+# Legacy role names still accepted from older data, normalized on write.
+ROLE_ALIASES = {"lgu_officer": "lgu", "admin": "super_admin"}
+VALID_ROLES = CANONICAL_ROLES | set(ROLE_ALIASES)
+
+
+def _normalize_role(role: str) -> str:
+    return ROLE_ALIASES.get(role, role)
 
 
 # ── Request schemas ────────────────────────────────────────────────────────
@@ -100,7 +108,7 @@ async def update_user_role(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     old_role = user.role
-    user.role = body.role
+    user.role = _normalize_role(body.role)
     await db.commit()
     await db.refresh(user)
 
@@ -138,6 +146,8 @@ async def bulk_update_role(
             detail=f"Invalid role '{body.role}'. Allowed: {sorted(VALID_ROLES)}",
         )
 
+    target_role = _normalize_role(body.role)
+
     if not body.ids:
         return {"success": True, "data": {"updated": 0, "skipped": []}}
 
@@ -147,8 +157,8 @@ async def bulk_update_role(
     updated = 0
     skipped = []
     for user in users:
-        if user.role != body.role:
-            user.role = body.role
+        if user.role != target_role:
+            user.role = target_role
             updated += 1
         else:
             skipped.append(str(user.id))

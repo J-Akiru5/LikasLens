@@ -55,11 +55,13 @@ export interface TicketAssignment {
   ticket_id: string;
   assigned_group_id: string;
   assigned_by_user_id: string;
+  assignee_user_id?: string | null;
   status: string;
   assignment_reason?: string;
   completed_at?: string;
   ngo_group?: NgoGroup;
   assigned_by?: { id: string; name: string };
+  assigned_to?: { id: string; name: string } | null;
 }
 
 export interface NgoGroup {

@@ -9,6 +9,7 @@ import {
   BarChart3,
   Ticket,
   Users,
+  User,
   Building2,
   Scale,
   ScrollText,
@@ -49,6 +50,9 @@ const SIDEBAR_NAV_ITEMS: NavItem[] = [
   { href: "/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["super_admin"] },
   { href: "/changelog", label: "Changelog", icon: FileText, roles: ["analyst", "super_admin"] },
   { href: "/settings", label: "Settings", icon: Settings, roles: ["super_admin", "lgu"] },
+
+  { divider: true, dividerLabel: "Account" },
+  { href: "/account", label: "My Account", icon: User, roles: ["analyst", "super_admin", "lgu", "lgu_officer", "admin"] },
 ];
 
 interface AdminDashboardLayoutWrapperProps {

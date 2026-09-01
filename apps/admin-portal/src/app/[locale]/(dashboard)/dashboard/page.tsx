@@ -354,7 +354,7 @@ export default function DashboardPage() {
               const maxCount = hotspots[0]?.count ?? 1;
               const pct = Math.round((spot.count / maxCount) * 100);
               return (
-                <div key={spot.name} className="flex items-center gap-4">
+                <div key={`${spot.name}-${idx}`} className="flex items-center gap-4">
                   <span className="font-mono text-sm text-muted w-4 text-right">{idx + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">

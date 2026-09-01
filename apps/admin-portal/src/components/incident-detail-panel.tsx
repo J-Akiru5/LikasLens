@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   X,
   MapPin,
@@ -10,6 +10,7 @@ import {
   Fingerprint,
   Shield,
   Loader2,
+  Upload,
 } from "lucide-react";
 import { cn, getTicket, updateTicketStatus, showToast } from "@likaslens/shared";
 import type { TicketDetail } from "@likaslens/shared";
@@ -44,6 +45,8 @@ export function IncidentDetailPanel({
   const [ticket, setTicket] = useState<TicketDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [acting, setActing] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadTicket = useCallback(async () => {
     if (!ticketId) return;
@@ -65,6 +68,37 @@ export function IncidentDetailPanel({
       setTicket(null);
     }
   }, [ticketId, loadTicket]);
+
+  const handleEvidenceUpload = async (file: File | undefined) => {
+    if (!file || !ticket || uploading) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = String(reader.result || "").split(",")[1] || "";
+      setUploading(true);
+      try {
+        const res = await fetch(`/api/v1/admin/tickets/${ticket.id}/evidence`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ base64Image: base64 }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || "Upload failed");
+        showToast("Resolution photo uploaded — available for review", "success");
+        await loadTicket();
+      } catch (err) {
+        console.error("[/evidence] upload error:", err);
+        showToast(err instanceof Error ? err.message : "Upload failed", "error");
+      } finally {
+        setUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+    reader.onerror = () => {
+      showToast("Could not read the selected image", "error");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleStatusChange = async (newStatus: string) => {
     if (!ticket) return;
@@ -123,16 +157,76 @@ export function IncidentDetailPanel({
             </div>
           ) : ticket ? (
             <div className="p-5 space-y-5">
-              {/* Photo */}
-              {ticket.evidence?.[0]?.file_path && (
-                <div className="rounded-xl overflow-hidden bg-ink/[0.03] aspect-video">
-                  <img
-                    src={ticket.evidence[0].file_path}
-                    alt="Evidence"
-                    className="w-full h-full object-cover"
+              {/* Evidence — Before (citizen) / After (resolution) */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-mono text-ink/40 uppercase tracking-wider">
+                    Evidence · Before / After
+                  </p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/heic"
+                    className="hidden"
+                    onChange={(e) => handleEvidenceUpload(e.target.files?.[0])}
                   />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-[10px] uppercase tracking-wider font-bold bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-40"
+                  >
+                    <Upload className="w-3 h-3" />
+                    {uploading ? "Uploading..." : "Upload after photo"}
+                  </button>
                 </div>
-              )}
+
+                {ticket.evidence?.length ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {ticket.evidence.map((ev) => {
+                      const isAfter = ev.file_path.includes("/resolution/");
+                      return (
+                        <figure
+                          key={ev.id}
+                          className="rounded-xl overflow-hidden bg-ink/[0.03] border border-ink/5"
+                        >
+                          <a href={ev.file_path} target="_blank" rel="noreferrer">
+                            <img
+                              src={ev.file_path}
+                              alt={isAfter ? "Resolution (after) photo" : "Citizen (before) photo"}
+                              className="w-full aspect-video object-cover hover:opacity-90 transition-opacity"
+                            />
+                          </a>
+                          <figcaption className="px-2 py-1.5 text-[10px] font-mono">
+                            <span
+                              className={`font-bold uppercase tracking-wider ${
+                                isAfter ? "text-green" : "text-ink/50"
+                              }`}
+                            >
+                              {isAfter ? "After" : "Before"}
+                            </span>
+                            {ev.uploaded_by?.name && (
+                              <span className="text-ink/40"> · {ev.uploaded_by.name}</span>
+                            )}
+                          </figcaption>
+                        </figure>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-ink/40 font-mono">
+                    No photos yet — the citizen's photo appears here, and officers upload the
+                    after photo as proof.
+                  </p>
+                )}
+
+                {ticket.status === "resolved" && (
+                  <p className="mt-2 text-[11px] text-ink/50 leading-snug">
+                    This case is marked resolved. The super admin reviews the before / after
+                    photos, then verifies and closes it.
+                  </p>
+                )}
+              </div>
 
               {/* Title + Status */}
               <div>
@@ -275,7 +369,9 @@ export function IncidentDetailPanel({
                       </div>
                       <div>
                         <p className="text-sm font-medium text-ink">
-                          {a.ngo_group?.name || a.assigned_group_id}
+                          {a.assigned_to?.name ||
+                            a.ngo_group?.name ||
+                            a.assigned_group_id}
                         </p>
                         {a.assignment_reason && (
                           <p className="text-xs text-ink/40">

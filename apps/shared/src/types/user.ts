@@ -1,4 +1,4 @@
-export type Role = "citizen" | "ghost" | "lgu" | "partner" | "analyst" | "super_admin";
+export type Role = "citizen" | "ghost" | "lgu" | "analyst" | "super_admin";
 
 export type AchievementTier = "basic" | "verified" | "advanced" | "authority";
 
@@ -121,7 +121,6 @@ export interface CitizenReport {
 export const ROLE_HIERARCHY: Record<Role, number> = {
   citizen: 0,
   ghost: 0,
-  partner: 1,
   lgu: 1,
   analyst: 2,
   super_admin: 3,

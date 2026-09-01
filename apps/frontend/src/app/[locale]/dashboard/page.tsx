@@ -28,7 +28,7 @@ export default async function DashboardPage() {
     const supabase = await createClient();
 
     const [ticketsRes, usersRes] = await Promise.all([
-      supabase.from("tickets").select("id, title, description, status, urgency_score, address_text, reporter_name, created_at, resolved_at"),
+      supabase.from("tickets").select("id, title, description, status, urgency_score, address_text, reporter_user_id, ghost_mode, created_at, resolved_at"),
       supabase.from("users").select("id", { count: "exact", head: true }),
     ]);
 
@@ -103,14 +103,14 @@ export default async function DashboardPage() {
           : t.status === "monitoring" ? "Monitoring"
           : t.status === "verified" ? "Verified"
           : "Active",
-        reporter: String(t.reporter_name || "Verified Citizen"),
+        reporter: t.reporter_user_id ? "Verified Citizen" : "Anonymous (Ghost Mode)",
       };
     });
   } catch {
     // Database unavailable — render page without data
   }
 
-  const isAdmin = userRole === "super_admin" || userRole === "analyst" || userRole === "lgu" || userRole === "partner";
+  const isAdmin = userRole === "super_admin" || userRole === "analyst" || userRole === "lgu";
 
   return (
     <DashboardContent userRole={userRole}>

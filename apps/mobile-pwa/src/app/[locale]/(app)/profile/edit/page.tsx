@@ -16,15 +16,19 @@ export default function EditProfilePage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await getProfile();
-        if (res?.data?.name) setName(res.data.name);
-      } catch {
-        // Fallback to Supabase user metadata
         const supabase = createClient();
-        const { data } = await supabase.auth.getUser();
-        if (data.user?.user_metadata?.full_name) {
-          setName(data.user.user_metadata.full_name);
+        const res = await getProfile(supabase);
+        if (res?.data?.name) {
+          setName(res.data.name);
+        } else {
+          // Fallback to Supabase user metadata
+          const { data } = await supabase.auth.getUser();
+          if (data.user?.user_metadata?.full_name) {
+            setName(data.user.user_metadata.full_name);
+          }
         }
+      } catch {
+        // Session may not be available — leave empty
       } finally {
         setLoading(false);
       }
@@ -40,8 +44,22 @@ export default function EditProfilePage() {
     }
     setSaving(true);
     try {
-      const db = getSupabaseClient();
-      const { error } = await db.from("users").update({ name: name.trim() }).eq("id", (await db.from("users").select("id").limit(1).single()).data?.id);
+      // Use the session-based client and target the CURRENT user's row.
+      // (The old code used the sessionless shared client with .limit(1),
+      //  which updated a random user's name.)
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        showToast("Please sign in first", "error");
+        setSaving(false);
+        return;
+      }
+      const { error } = await supabase
+        .from("users")
+        .update({ name: name.trim() })
+        .eq("supabase_auth_user_id", user.id);
       if (error) throw error;
       showToast("Profile updated successfully", "success");
       router.push(`/${locale}/profile`);

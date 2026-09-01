@@ -47,7 +47,7 @@ export default function IncidentsPage() {
     supabase.auth.getUser().then(({ data }: { data: { user: { user_metadata?: { role?: string } } | null } | null }) => {
       const role = data?.user?.user_metadata?.role as string | undefined;
       setIsAdmin(
-        role === "super_admin" || role === "analyst" || role === "lgu" || role === "partner"
+        role === "super_admin" || role === "analyst" || role === "lgu"
       );
     });
   }, []);

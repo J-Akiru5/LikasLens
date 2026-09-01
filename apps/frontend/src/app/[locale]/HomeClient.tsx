@@ -187,7 +187,21 @@ export default function HomeClient() {
         <GhostModeSection ghostMode={ghostMode} onGhostToggle={toggleGhost} />
         <ImpactSection />
         <TechStackSection />
-        <FaqSection />
+        <FaqSection
+          title={tLanding("faqTitle")}
+          subtitle={tLanding("faqSubtitle")}
+          support={tLanding("faqSupport")}
+          faqs={[
+            { q: tLanding("faqQ1"), a: tLanding("faqA1") },
+            { q: tLanding("faqQ2"), a: tLanding("faqA2") },
+            { q: tLanding("faqQ3"), a: tLanding("faqA3") },
+            { q: tLanding("faqQ4"), a: tLanding("faqA4") },
+            { q: tLanding("faqQ5"), a: tLanding("faqA5") },
+            { q: tLanding("faqQ6"), a: tLanding("faqA6") },
+            { q: tLanding("faqQ7"), a: tLanding("faqA7") },
+            { q: tLanding("faqQ8"), a: tLanding("faqA8") },
+          ]}
+        />
         <InstallCtaSection ghostMode={ghostMode} />
         <Footer ghostMode={ghostMode} />
         <LanguageSuggestionPopup currentLocale={locale as "en" | "fil" | "vi" | "id" | "ms" | "ta"} />

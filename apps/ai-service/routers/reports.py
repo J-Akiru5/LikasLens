@@ -50,6 +50,7 @@ class ReportRequest(BaseModel):
     base64Image: str
     latitude: float | None = None
     longitude: float | None = None
+    location: str | None = None
     description: str | None = None
     report_type: str | None = None
     ghost_mode: bool = False
@@ -173,6 +174,7 @@ async def submit_report(
         title=title,
         description=body.description or "Automatically generated report from LikasLens mobile submission",
         status="open",
+        address_text=body.location,
         created_at=now,
         updated_at=now,
         **ghost_fields,

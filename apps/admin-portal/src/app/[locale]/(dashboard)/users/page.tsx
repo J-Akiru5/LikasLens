@@ -13,6 +13,9 @@ import {
   X,
   CheckSquare,
   UserCog,
+  Copy,
+  Check,
+  Pencil,
 } from "lucide-react";
 import {
   getAdminUsers,
@@ -28,7 +31,7 @@ import {
 import { useBulkSelect } from "@/hooks/use-bulk-select";
 import { BulkActionsBar } from "@/components/bulk-actions-bar";
 
-type Role = "citizen" | "ghost" | "analyst" | "super_admin";
+type Role = "citizen" | "ghost" | "analyst" | "lgu" | "super_admin";
 
 interface UserRow {
   id: string;
@@ -37,18 +40,26 @@ interface UserRow {
   email: string;
   role: Role;
   trust_score: number;
+  agency_name?: string | null;
+  service_area?: string | null;
 
   created_at: string;
   deleted_at: string | null;
 }
 
 const PAGE_SIZE = 50;
-const ROLE_ORDER: Role[] = ["citizen", "ghost", "analyst", "super_admin"];
+const ROLE_ORDER: Role[] = ["citizen", "ghost", "analyst", "lgu", "super_admin"];
 
 const ROLE_OPTIONS = ROLE_ORDER.map((r) => ({
   value: r,
   label: r.charAt(0).toUpperCase() + r.slice(1),
 }));
+
+// Staff roles the super admin can create — citizens register themselves.
+const CREATE_ROLE_OPTIONS = [
+  { value: "analyst", label: "Analyst" },
+  { value: "lgu", label: "LGU" },
+];
 
 export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
@@ -60,11 +71,21 @@ export default function UsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    name: string;
+    email: string;
+    password: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [editUser, setEditUser] = useState<UserRow | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", agency_name: "", service_area: "" });
+  const [editLoading, setEditLoading] = useState(false);
   const [createForm, setCreateForm] = useState({
     name: "",
     email: "",
-    role: "citizen" as Role,
+    role: "analyst" as Role,
     agency_name: "",
     service_area: "",
   });
@@ -131,16 +152,75 @@ export default function UsersPage() {
           service_area: createForm.service_area.trim() || null,
         }),
       });
-      if (!res.ok) throw new Error((await res.json()).error || "Create failed");
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error || "Create failed");
+
+      const tempPassword = (body as { data?: { temp_password?: string } })?.data?.temp_password;
       showToast("User created successfully", "success");
       setShowCreate(false);
-      setCreateForm({ name: "", email: "", role: "citizen", agency_name: "", service_area: "" });
+      setCreateForm({ name: "", email: "", role: "analyst", agency_name: "", service_area: "" });
+      if (tempPassword) {
+        setCreatedCredentials({
+          name: createForm.name.trim(),
+          email: createForm.email.trim().toLowerCase(),
+          password: tempPassword,
+        });
+        setPasswordModalOpen(true);
+      }
       fetchUsers();
     } catch (err) {
       console.error(err);
-      showToast("Failed to create user", "error");
+      showToast(err instanceof Error ? err.message : "Failed to create user", "error");
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  const openEditUser = (user: UserRow) => {
+    setEditForm({
+      name: user.name || "",
+      agency_name: user.agency_name || "",
+      service_area: user.service_area || "",
+    });
+    setEditUser(user);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editUser) return;
+    setEditLoading(true);
+    try {
+      const res = await fetch(`/api/v1/admin/users`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editUser.id,
+          name: editForm.name.trim(),
+          agency_name: editForm.agency_name.trim() || null,
+          service_area: editForm.service_area.trim() || null,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body?.error || "Update failed");
+      showToast("User updated successfully", "success");
+      setEditUser(null);
+      await fetchUsers();
+    } catch (err) {
+      console.error(err);
+      showToast(err instanceof Error ? err.message : "Failed to update user", "error");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleCopyPassword = async () => {
+    if (!createdCredentials) return;
+    try {
+      await navigator.clipboard.writeText(createdCredentials.password);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      showToast("Copy failed — select and copy manually", "error");
     }
   };
 
@@ -369,6 +449,11 @@ export default function UsersPage() {
                   <span className="font-medium text-sm text-ink">
                     {user.name || "Anonymous"}
                   </span>
+                  {(user.agency_name || user.service_area) && (
+                    <span className="block font-mono text-[10px] text-muted truncate">
+                      {[user.agency_name, user.service_area].filter(Boolean).join(" · ")}
+                    </span>
+                  )}
                 </div>
                 <div className="hidden sm:block sm:col-span-3 truncate font-mono text-sm text-ink/75">
                   {user.email}
@@ -392,6 +477,17 @@ export default function UsersPage() {
                     size="sm"
                     className="w-32"
                   />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEditUser(user);
+                    }}
+                    disabled={!!user.deleted_at}
+                    className="p-1.5 text-ink/70 hover:text-accent hover:bg-accent/5 rounded-lg transition-colors disabled:opacity-30"
+                    title="Edit name, agency or service area"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -506,7 +602,7 @@ export default function UsersPage() {
                 <Dropdown
                   value={createForm.role}
                   onChange={(val) => setCreateForm({ ...createForm, role: val as Role })}
-                  options={ROLE_OPTIONS}
+                  options={CREATE_ROLE_OPTIONS}
                   size="md"
                   className="w-full"
                 />
@@ -560,6 +656,166 @@ export default function UsersPage() {
                 </Button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {editUser && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 px-4 overflow-y-auto bg-black/50"
+          onClick={() => setEditUser(null)}
+        >
+          <div
+            className="bg-panel p-4 sm:p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setEditUser(null)}
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center border border-ink/10 hover:bg-ink/[0.02] rounded-lg transition-colors"
+            >
+              <X className="w-4 h-4 text-ink/70" />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                <Pencil className="w-5 h-5 text-accent" />
+              </div>
+              <div>
+                <h2 className="font-semibold tracking-tight text-xl text-ink">
+                  Edit user
+                </h2>
+                <p className="font-mono text-sm text-muted">
+                  {editUser.email}
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div>
+                <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
+                  required
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
+                    Agency / Office
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.agency_name}
+                    onChange={(e) => setEditForm({ ...editForm, agency_name: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
+                    placeholder="e.g. Quezon City Environment Office"
+                  />
+                </div>
+                <div>
+                  <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
+                    Service area (city/province)
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.service_area}
+                    onChange={(e) => setEditForm({ ...editForm, service_area: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
+                    placeholder="e.g. Quezon City"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-ink/50">
+                New reports whose address mentions the service area will be routed to this
+                account. Emails can’t be changed here — that’s the login identity.
+              </p>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() => setEditUser(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  loading={editLoading}
+                >
+                  Save changes
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {passwordModalOpen && createdCredentials && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-8 pb-8 px-4 overflow-y-auto bg-black/50">
+          <div className="bg-panel p-4 sm:p-6 border border-ink/10 max-w-lg w-full rounded-3xl shadow-xl relative">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-green/10 flex items-center justify-center">
+                <UsersIcon className="w-5 h-5 text-green" />
+              </div>
+              <div>
+                <h2 className="font-semibold tracking-tight text-xl text-ink">
+                  Account created
+                </h2>
+                <p className="font-mono text-sm text-muted">
+                  Hand this login to the user now
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-green/20 bg-green/[0.03] p-4 mb-3">
+              <p className="font-mono text-xs text-ink/60 uppercase tracking-widest mb-1">
+                Login email
+              </p>
+              <p className="font-mono text-sm text-ink font-semibold break-all">
+                {createdCredentials.email}
+              </p>
+              <p className="font-mono text-xs text-ink/60 uppercase tracking-widest mt-4 mb-1">
+                Temporary password
+              </p>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 bg-panel border border-ink/10 rounded-xl px-3 py-2.5 font-mono text-sm text-ink select-all">
+                  {createdCredentials.password}
+                </code>
+                <button
+                  type="button"
+                  onClick={handleCopyPassword}
+                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider font-bold bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs text-ink/60 leading-relaxed mb-1">
+              <strong className="text-amber">Copy this password now — it will not be shown again.</strong>{" "}
+              Passwords are stored hashed, so we can never retrieve or reset it to this value later.
+            </p>
+            <p className="text-xs text-ink/50 mb-5 leading-relaxed">
+              Sign in at the admin portal with this email and password, then change it under
+              account settings. Delete this message after sharing it.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="primary"
+                type="button"
+                onClick={() => setPasswordModalOpen(false)}
+              >
+                Done
+              </Button>
+            </div>
           </div>
         </div>
       )}

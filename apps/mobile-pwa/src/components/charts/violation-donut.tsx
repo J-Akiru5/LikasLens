@@ -98,24 +98,8 @@ export function ViolationDonut() {
           throw new Error("No data");
         }
       } catch {
-        const fallbackRaw = [
-          { name: "Water Pollution", value: 28 },
-          { name: "Illegal Dumping", value: 34 },
-          { name: "Illegal Logging", value: 22 },
-          { name: "Air Pollution", value: 18 },
-          { name: "Open Burning", value: 12 },
-          { name: "Wildlife Protection", value: 10 },
-          { name: "Mining Violation", value: 8 },
-          { name: "Coastal Pollution", value: 6 },
-        ];
-        const totalCount = fallbackRaw.reduce((sum, item) => sum + item.value, 0);
-        setData(
-          fallbackRaw.map((item, idx) => ({
-            ...item,
-            color: getCategoryColor(item.name, idx),
-            percent: Math.round((item.value / totalCount) * 100),
-          }))
-        );
+        // No fabricated distribution — show empty if the query fails
+        setData([]);
       } finally {
         setLoading(false);
       }

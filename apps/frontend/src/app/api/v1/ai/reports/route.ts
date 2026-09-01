@@ -11,7 +11,9 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/server";
+import { routeTicketToCoveringOffice } from "@likaslens/shared";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -59,6 +61,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       base64Image: body.base64Image,
       latitude: body.latitude ?? null,
       longitude: body.longitude ?? null,
+      location: body.location ?? null,
       description: body.description ?? null,
       report_type: body.report_type ?? null,
       ghost_mode: body.ghost_mode ?? false,
@@ -75,7 +78,32 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Pass through the AI service's status code — the client uses this to decide fallback
     const data = await res.json();
-    return NextResponse.json(data, { status: res.status });
+
+    // Route the fresh report to the analyst / LGU account whose service area
+    // covers the location. Non-fatal — the report stays in the general pool
+    // if no account covers the area yet.
+    let routedOffice: string | null = null;
+    if (res.ok && data?.ticket_id) {
+      try {
+        const serviceClient = createServiceClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "",
+          process.env.SUPABASE_SERVICE_ROLE_KEY ||
+            process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+            ""
+        );
+        const routing = await routeTicketToCoveringOffice(
+          serviceClient,
+          String(data.ticket_id),
+          body.location ? String(body.location) : null,
+          body.report_type ? String(body.report_type) : null
+        );
+        routedOffice = routing.assigned ? routing.officeName : null;
+      } catch (e) {
+        console.error("[/api/v1/ai/reports] routing failed (non-fatal):", e);
+      }
+    }
+    return NextResponse.json({ ...data, routed_office: routedOffice }, { status: res.status });
   } catch (err: unknown) {
     // Network error, timeout, or DNS failure — return 502 so the client triggers fallback
     console.error("[/api/v1/ai/reports] Error:", err);

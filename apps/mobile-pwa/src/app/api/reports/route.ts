@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { routeTicketToCoveringOffice } from "@likaslens/shared";
 
 export async function POST(req: Request) {
   try {
@@ -70,14 +71,24 @@ export async function POST(req: Request) {
     }
 
     if (ticketErr) {
-      console.error("[mobile-pwa/api/reports] Ticket insert error:", ticketErr);
+      console.error("[api/reports] Ticket insert error:", ticketErr);
       return NextResponse.json({ success: false, error: ticketErr.message }, { status: 500 });
     }
+
+    // Route the report to the analyst / LGU account whose service area covers
+    // the location. Non-fatal: if nobody covers it yet, the report waits in
+    // the general analyst pool.
+    const routing = await routeTicketToCoveringOffice(
+      supabase,
+      ticket.id,
+      ticket.address_text,
+      ticket.ai_triage_summary
+    );
 
     return NextResponse.json({
       success: true,
       message: "Incident Report Submitted Successfully!",
-      data: ticket,
+      data: { ...ticket, routed_office: routing.assigned ? routing.officeName : null },
     });
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : "Internal Server Error";

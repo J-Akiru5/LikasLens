@@ -28,7 +28,6 @@ const KNOWN_ROLES = [
   "analyst",
   "lgu",
   "lgu_officer",
-  "partner",
   "citizen",
 ];
 

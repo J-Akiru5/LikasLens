@@ -61,8 +61,7 @@ const AUDIENCES: { value: string; label: string }[] = [
   { value: "admin", label: "Admins" },
   { value: "analyst", label: "Analysts" },
   { value: "lgu_officer", label: "LGU staff & officers" },
-  { value: "lgu", label: "LGU (legacy role)" },
-  { value: "partner", label: "Partners" },
+  { value: "lgu", label: "LGU staff & officers (legacy)" },
   { value: "citizen", label: "Citizens" },
 ];
 

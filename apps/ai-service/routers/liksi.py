@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/liksi", tags=["liksi"])
 
 # Roles that are authorized to use LGU context mode
-_LGU_ROLES = {"lgu_officer", "admin", "super_admin", "analyst"}
+_LGU_ROLES = {"lgu", "lgu_officer", "admin", "super_admin", "analyst"}
 
 
 class LiksiChatRequest(BaseModel):

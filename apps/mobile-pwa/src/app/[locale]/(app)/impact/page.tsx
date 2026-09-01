@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
 import { TreePine, Droplets, Zap, ShieldCheck, Globe, TrendingUp, AlertTriangle, Clock, Activity, Cpu, Network, Brain, DollarSign, Users, BarChart3, Target, FileText, MapPin, Loader2 } from "lucide-react";
-import { getPublicImpact, getDashboardStats, showToast, Skeleton, AnimatedCounter, RevealSection } from "@likaslens/shared";
+import { getPublicImpact, getDashboardStats, getSupabaseClient, showToast, Skeleton, AnimatedCounter, RevealSection } from "@likaslens/shared";
 import { ViolationDonut } from "@/components/charts/violation-donut";
 
 const PhilippineTelemetryGrid = dynamic(
@@ -34,6 +34,12 @@ interface ImpactData {
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+interface MonthlyTrend {
+  month: string;
+  filed: number;
+  resolved: number;
+}
 
 const REGIONAL_HOTSPOTS = [
   { name: "NCR - Metro Manila", reports: 45, sla: 92, risk: "high" },
@@ -78,11 +84,45 @@ const SCALABILITY = [
 export default function ImpactPage() {
   const [data, setData] = useState<ImpactData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [monthlyTrend, setMonthlyTrend] = useState<MonthlyTrend[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
       try {
+          // Real monthly trend from Supabase tickets (last 12 months)
+          try {
+            const supabase = getSupabaseClient();
+            const { data: trendTickets } = await supabase
+              .from("tickets")
+              .select("created_at, status");
+            const buckets = new Map<string, { filed: number; resolved: number }>();
+            const now = new Date();
+            for (let i = 11; i >= 0; i--) {
+              const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+              buckets.set(`${d.getFullYear()}-${d.getMonth()}`, { filed: 0, resolved: 0 });
+            }
+            const resolvedStatuses = new Set(["resolved", "verified", "closed"]);
+            for (const t of (trendTickets || []) as { created_at: string; status: string }[]) {
+              const d = new Date(String(t.created_at || ""));
+              if (isNaN(d.getTime())) continue;
+              const key = `${d.getFullYear()}-${d.getMonth()}`;
+              const bucket = buckets.get(key);
+              if (!bucket) continue;
+              bucket.filed += 1;
+              if (resolvedStatuses.has(t.status)) bucket.resolved += 1;
+            }
+            setMonthlyTrend(
+              [...buckets.entries()].map(([key, v]) => ({
+                month: MONTHS[Number(key.split("-")[1])],
+                filed: v.filed,
+                resolved: v.resolved,
+              }))
+            );
+          } catch {
+            setMonthlyTrend([]);
+          }
+
           const [impactRes, statsRes] = await Promise.all([
             getPublicImpact(),
             getDashboardStats(),
@@ -184,17 +224,15 @@ export default function ImpactPage() {
               <span className="text-[9px] font-mono text-ink/40">12 MONTHS</span>
             </div>
             <div className="flex items-end gap-1.5 h-32">
-              {MONTHS.map((month, i) => {
-                const filed = Math.floor(Math.random() * 60) + 20;
-                const resolved = Math.floor(filed * (0.5 + Math.random() * 0.4));
-                const maxVal = 80;
+              {monthlyTrend.map((m, i) => {
+                const maxVal = Math.max(1, ...monthlyTrend.map((x) => x.filed));
                 return (
-                  <div key={month} className="flex-1 flex flex-col items-center gap-1">
+                  <div key={`${m.month}-${i}`} className="flex-1 flex flex-col items-center gap-1">
                     <div className="w-full flex gap-0.5 items-end" style={{ height: "100px" }}>
-                      <div className="flex-1 bg-emerald-500/60 rounded-t-sm" style={{ height: `${(filed / maxVal) * 100}%` }} />
-                      <div className="flex-1 bg-emerald-800/40 rounded-t-sm" style={{ height: `${(resolved / maxVal) * 100}%` }} />
+                      <div className="flex-1 bg-emerald-500/60 rounded-t-sm" style={{ height: `${(m.filed / maxVal) * 100}%` }} />
+                      <div className="flex-1 bg-emerald-800/40 rounded-t-sm" style={{ height: `${(m.resolved / maxVal) * 100}%` }} />
                     </div>
-                    <span className="text-[7px] font-mono text-ink/40">{month}</span>
+                    <span className="text-[7px] font-mono text-ink/40">{m.month}</span>
                   </div>
                 );
               })}

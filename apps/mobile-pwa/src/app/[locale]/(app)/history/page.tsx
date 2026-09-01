@@ -138,16 +138,19 @@ export default function HistoryPage() {
 
         let list: ReportEntry[] = [];
 
-        // 1. Direct Supabase Query
+        // 1. Direct Supabase Query — OWN submissions only. Anonymous/ghost
+        //    reports from other devices must NOT appear here (they live in the
+        //    community feed); local device ghosts are merged from localStorage
+        //    in step 3.
         try {
           let query = supabase.from("tickets").select("*").order("created_at", { ascending: false });
           if (user?.id) {
-            query = query.or(`reporter_user_id.eq.${user.id},reporter_user_id.is.null`);
+            query = query.eq("reporter_user_id", user.id);
           }
           const { data: sbTickets, error: sbErr } = await query.limit(50);
           if (!sbErr && sbTickets && sbTickets.length > 0) {
             const userSbTickets = user?.id
-              ? sbTickets.filter((t: any) => t.reporter_user_id === user.id || !t.reporter_user_id)
+              ? sbTickets.filter((t: any) => t.reporter_user_id === user.id)
               : sbTickets;
 
             list = userSbTickets.map((t: any) => ({
@@ -158,7 +161,7 @@ export default function HistoryPage() {
               location: t.location || t.address_text || "Coordinates Recorded",
               status: t.status || "open",
               created_at: t.created_at,
-              isGhost: !t.reporter_user_id,
+              isGhost: t.ghost_mode === true,
             }));
           }
         } catch (err) {
@@ -172,7 +175,7 @@ export default function HistoryPage() {
             if (ticketsRes.success && ticketsRes.data) {
               const raw = ticketsRes.data;
               const filteredRaw = user?.id
-                ? raw.filter((t: any) => t.reporter_user_id === user.id || !t.reporter_user_id)
+                ? raw.filter((t: any) => t.reporter_user_id === user.id)
                 : raw;
 
               list = filteredRaw.map((t: any) => ({
@@ -183,7 +186,7 @@ export default function HistoryPage() {
                 location: t.location || t.address_text || "Coordinates Recorded",
                 status: t.status || "open",
                 created_at: t.created_at,
-                isGhost: !t.reporter_user_id,
+                isGhost: t.ghost_mode === true,
               }));
             }
           } catch {}
@@ -337,7 +340,7 @@ export default function HistoryPage() {
           ) : (
             <div className="space-y-3">
               {filtered.map((report) => {
-                const isGhost = report.isGhost || report.title?.includes("Ghost Mode");
+                const isGhost = report.isGhost === true || report.title?.includes("Ghost Mode");
                 const meta = getStatusMeta(report.status, report.category || report.title);
                 const stageIdx = getStageIdx(report.status);
 

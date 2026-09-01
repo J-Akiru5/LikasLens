@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { BottomNav, type BottomNavItem } from "./bottom-nav";
 import { PullToRefresh } from "./pull-to-refresh";
+import { useNotifications } from "../hooks/useNotifications";
 import { cn } from "../utils";
 import { Leaf, Bell, Fingerprint, Trophy, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { locales } from "../i18n/config";
 import { usePathname } from "next/navigation";
+import { formatDistanceToNow } from "../lib/format";
 
 interface MobileLayoutProps {
   children: React.ReactNode;
@@ -32,6 +34,7 @@ export function MobileLayout({
 }: MobileLayoutProps) {
   const pathname = usePathname();
   const [showNotifications, setShowNotifications] = useState(false);
+  const { notifications, unreadCount, markAsRead } = useNotifications({ pollInterval: 30000 });
   
   const pathParts = pathname.split("/");
   const hasLocale = (locales as readonly string[]).includes(pathParts[1]);
@@ -103,13 +106,17 @@ export function MobileLayout({
                 aria-expanded={showNotifications}
               >
                 <Bell className="w-5 h-5" aria-hidden="true" />
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "absolute top-1.5 right-1.5 w-2 h-2 rounded-full border-2 border-page",
-                    isGhostMode ? "bg-secondary" : "bg-green"
-                  )}
-                />
+                {unreadCount > 0 && (
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "absolute top-1.5 right-1.5 min-w-[14px] h-[14px] px-0.5 rounded-full border-2 border-page flex items-center justify-center text-[9px] font-bold",
+                      isGhostMode ? "bg-secondary" : "bg-red text-white"
+                    )}
+                  >
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
               </button>
 
               {showNotifications && (
@@ -121,10 +128,38 @@ export function MobileLayout({
                     </div>
 
                     <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
-                      <div className="p-8 text-center">
-                        <Bell className="w-8 h-8 text-ink/20 mx-auto mb-2" />
-                        <p className="text-sm text-ink/40">No notifications yet</p>
-                      </div>
+                      {notifications.length === 0 ? (
+                        <div className="p-8 text-center">
+                          <Bell className="w-8 h-8 text-ink/20 mx-auto mb-2" />
+                          <p className="text-sm text-ink/40">No new notifications</p>
+                        </div>
+                      ) : (
+                        <>
+                          {notifications.map((n) => {
+                            const payload = (n.data || {}) as { title?: string; message?: string };
+                            let time = "";
+                            try {
+                              time = formatDistanceToNow(new Date(n.created_at));
+                            } catch {
+                              time = "";
+                            }
+                            return (
+                              <div
+                                key={n.id}
+                                onClick={() => markAsRead(n.id)}
+                                className={cn(
+                                  "p-3 border-b border-ink/10 last:border-0 cursor-pointer",
+                                  !n.read_at && "bg-ink/[0.02]"
+                                )}
+                              >
+                                <div className="text-sm text-ink">{payload.title || n.type}</div>
+                                <div className="text-xs text-ink/50 mt-0.5">{payload.message}</div>
+                                <div className="text-xs text-ink/30 mt-1">{time}</div>
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
                     </div>
                   </div>
                 </>

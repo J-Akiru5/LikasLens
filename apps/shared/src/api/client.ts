@@ -10,6 +10,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { getSupabaseClient } from "../supabase/client";
+import { routeTicketToCoveringOffice } from "../lib/route-to-office";
 import type { TicketExplainResponse } from "../types/ticket";
 
 function db() {
@@ -36,7 +37,7 @@ export interface ReportResult {
   submission_path: "ai_service" | "direct_fallback";
   needs_ai_reanalysis?: boolean;
   ai_analysis?: Record<string, unknown>;
-  data?: { id?: string };
+  data?: { id?: string; routed_office?: string | null };
 }
 
 export interface TriageResult {
@@ -70,7 +71,14 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
           ticket_id: json.ticket_id,
           submission_path: "ai_service",
           ai_analysis: json.ai_analysis,
-          data: json.data,
+          // The AI path has no ticket payload, but the proxy now returns the
+          // real ticket id plus the office the report was routed to — expose
+          // both so the UI can show where the report went.
+          data: {
+            ...(json.data ?? {}),
+            id: json.ticket_id ?? json.data?.id,
+            routed_office: json.routed_office ?? null,
+          },
         };
       }
 
@@ -134,13 +142,28 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
 
   if (ticketErr) throw ticketErr;
 
+  // Route the report to the covering analyst / LGU account — same logic as
+  // the AI-service path, so fallback submissions are routed too.
+  let routedOffice: string | null = null;
+  try {
+    const routing = await routeTicketToCoveringOffice(
+      db(),
+      ticket.id,
+      ticket.address_text,
+      ticket.ai_triage_summary
+    );
+    if (routing.assigned) routedOffice = routing.officeName;
+  } catch (e) {
+    console.warn("[submitCitizenReport] routing failed (non-fatal):", e);
+  }
+
   return {
     success: true,
     message: "Report submitted via fallback.",
     ticket_id: ticket.id,
     submission_path: "direct_fallback",
     needs_ai_reanalysis: true,
-    data: ticket,
+    data: { ...ticket, routed_office: routedOffice },
   };
 }
 

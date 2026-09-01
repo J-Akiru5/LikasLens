@@ -19,11 +19,34 @@ from sqlalchemy.orm import selectinload
 
 from auth.supabase_jwt import require_lgu_role, verify_supabase_token
 from db.connection import get_db
-from db.models import ALLOWED_TRANSITIONS, Ticket, TicketTimeline, User
+from db.models import ALLOWED_TRANSITIONS, Ticket, TicketEvidence, TicketTimeline, User
 from services.ghost_mode import get_reporter_display, sanitize_for_public
 
 router = APIRouter(prefix="/api/v1/tickets", tags=["tickets"])
 logger = logging.getLogger(__name__)
+
+
+def _require_super_admin(token: dict) -> None:
+    """Verified is the super admin's final sign-off."""
+    role = token.get("user_metadata", {}).get("role", "citizen")
+    if role != "super_admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Only the super admin can mark a ticket as verified",
+        )
+
+
+async def _resolution_evidence_exists(db: AsyncSession, ticket_id):
+    """Resolution ('after') photos live under storage_path resolution/..."""
+    result = await db.execute(
+        select(TicketEvidence.id)
+        .where(
+            TicketEvidence.ticket_id == ticket_id,
+            TicketEvidence.storage_path.like("resolution/%"),
+        )
+        .limit(1)
+    )
+    return result.scalar_one_or_none() is not None
 
 
 def _ticket_to_dict(ticket: Ticket, include_reporter: bool = False) -> dict:
@@ -189,6 +212,15 @@ async def update_status(
             detail=f"Cannot transition from '{old_status}' to '{body.status}'. Allowed: {allowed}",
         )
 
+    # Verified = super admin sign-off, backed by resolution evidence
+    if body.status == "verified":
+        _require_super_admin(token)
+        if not await _resolution_evidence_exists(db, ticket.id):
+            raise HTTPException(
+                status_code=422,
+                detail="Resolution evidence required before verifying - upload an 'after' photo first",
+            )
+
     ticket.status = body.status
     if body.status in ("resolved", "closed"):
         ticket.resolved_at = datetime.now(timezone.utc)
@@ -258,6 +290,10 @@ async def bulk_status(
     # Build lookup map
     ticket_map = {str(t.id): t for t in tickets}
 
+    # Verified = super admin sign-off, backed by resolution evidence
+    if body.status == "verified":
+        _require_super_admin(token)
+
     # Validate ALL transitions before writing any
     errors: list[dict] = []
     for tid in body.ticket_ids:
@@ -271,6 +307,14 @@ async def bulk_status(
                 {
                     "ticket_id": tid,
                     "error": f"Cannot transition from '{ticket.status}' to '{body.status}'. Allowed: {allowed}",
+                }
+            )
+            continue
+        if body.status == "verified" and not await _resolution_evidence_exists(db, ticket.id):
+            errors.append(
+                {
+                    "ticket_id": tid,
+                    "error": "Resolution evidence required before verifying - upload an 'after' photo first",
                 }
             )
 
