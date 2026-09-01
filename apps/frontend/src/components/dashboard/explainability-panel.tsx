@@ -18,6 +18,7 @@ import type {
   TicketExplainResponse,
   RuleChain,
   NeighbourTicket,
+  ConfidenceBreakdown,
 } from "@likaslens/shared";
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -251,18 +252,6 @@ export function ExplainabilityPanel({ ticketId, fallback }: ExplainPanelProps) {
                       description="Object detection confidence from YOLOv8 model analyzing the uploaded image"
                       color="text-cyan"
                     />
-                    <FactorExplanation
-                      label="Community Corroboration"
-                      value={breakdown.community_corroboration}
-                      description="Score boosted when multiple reporters submit similar reports (chain)"
-                      color="text-green"
-                    />
-                    <FactorExplanation
-                      label="Geographic Proximity"
-                      value={breakdown.geo_within_known_zone}
-                      description="Score boosted when other reports exist within ~5km radius"
-                      color="text-purple"
-                    />
                   </div>
                 )}
               </div>
@@ -417,47 +406,12 @@ function CounterfactualPanel({
   breakdown,
 }: {
   confidence: number;
-  breakdown?: {
-    visual: number;
-    community_corroboration: number;
-    geo_within_known_zone: number;
-  };
+  breakdown?: ConfidenceBreakdown;
 }) {
   const baseVisual = breakdown?.visual ?? confidence;
 
-  const scenarios = [
-    {
-      label: "Without community corroboration",
-      description:
-        "If this was a single-report incident with no chain evidence",
-      impact: -0.12,
-      newConfidence: Math.max(0, confidence - 0.12),
-    },
-    {
-      label: "Without geographic data",
-      description:
-        "If no similar reports existed in the 5km zone",
-      impact: -0.08,
-      newConfidence: Math.max(0, confidence - 0.08),
-    },
-    {
-      label: "Lower visual confidence",
-      description:
-        "If YOLO detection was borderline (50% instead of current)",
-      impact: baseVisual > 0.5 ? -(baseVisual - 0.5) * 0.5 : 0,
-      newConfidence: Math.max(
-        0,
-        confidence - (baseVisual > 0.5 ? (baseVisual - 0.5) * 0.5 : 0)
-      ),
-    },
-    {
-      label: "With additional corroborating reports",
-      description:
-        "If 3 more community members reported the same issue",
-      impact: 0.08,
-      newConfidence: Math.min(1, confidence + 0.08),
-    },
-  ];
+  const impact = baseVisual > 0.5 ? -(baseVisual - 0.5) * 0.5 : 0;
+  const newConfidence = Math.max(0, confidence - impact);
 
   return (
     <div className="space-y-3">
@@ -468,34 +422,26 @@ function CounterfactualPanel({
         </p>
       </div>
 
-      {scenarios.map((s) => {
-        const delta = s.newConfidence - confidence;
-        const isPositive = delta > 0;
-        return (
-          <div
-            key={s.label}
-            className="flex items-center gap-3 p-3 rounded-xl bg-ink/[0.02] border border-ink/5"
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-ink/[0.02] border border-ink/5">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-ink">Lower visual confidence</p>
+          <p className="text-[11px] text-ink/50 mt-0.5">
+            If YOLO detection was borderline (50% instead of current)
+          </p>
+        </div>
+        <div className="text-right shrink-0">
+          <span
+            className={`text-sm font-bold ${
+              impact < 0 ? "text-red" : "text-ink/50"
+            }`}
           >
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-ink">{s.label}</p>
-              <p className="text-[11px] text-ink/50 mt-0.5">{s.description}</p>
-            </div>
-            <div className="text-right shrink-0">
-              <span
-                className={`text-sm font-bold ${
-                  isPositive ? "text-green" : delta < 0 ? "text-red" : "text-ink/50"
-                }`}
-              >
-                {isPositive ? "+" : ""}
-                {(delta * 100).toFixed(1)}%
-              </span>
-              <p className="text-[10px] text-ink/40 mt-0.5">
-                → {(s.newConfidence * 100).toFixed(0)}%
-              </p>
-            </div>
-          </div>
-        );
-      })}
+            {impact < 0 ? "" : "+"}{(impact * 100).toFixed(1)}%
+          </span>
+          <p className="text-[10px] text-ink/40 mt-0.5">
+            → {(newConfidence * 100).toFixed(0)}%
+          </p>
+        </div>
+      </div>
 
       <div className="mt-3 p-3 rounded-xl bg-amber/5 border border-amber/10">
         <p className="text-[11px] text-amber/80 leading-relaxed">

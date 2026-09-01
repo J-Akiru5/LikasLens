@@ -8,20 +8,14 @@ import type { ConfidenceBreakdown } from "@likaslens/shared";
 
 const LABELS: Record<keyof ConfidenceBreakdown, string> = {
   visual: "Visual (YOLO)",
-  community_corroboration: "Community Corroboration",
-  geo_within_known_zone: "Geographic Proximity",
 };
 
 const COLORS: Record<keyof ConfidenceBreakdown, string> = {
   visual: "#22d3ee",
-  community_corroboration: "#34d399",
-  geo_within_known_zone: "#a78bfa",
 };
 
 const WEIGHTS: Record<keyof ConfidenceBreakdown, number> = {
-  visual: 0.5,
-  community_corroboration: 0.25,
-  geo_within_known_zone: 0.25,
+  visual: 1,
 };
 
 // ── Component ──────────────────────────────────────────────────────────
