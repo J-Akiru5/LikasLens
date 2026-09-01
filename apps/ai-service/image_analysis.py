@@ -9,7 +9,9 @@ Supports dual-model detection:
 
 from __future__ import annotations
 
+import asyncio
 import base64
+import gc
 import json
 import logging
 import time
@@ -34,6 +36,12 @@ _ENV_MODEL_FAILED: bool = False
 
 MAX_IMAGE_BYTES = 20 * 1024 * 1024  # 20 MB
 MAX_PIXELS = 4000 * 4000  # 16 MP
+MAX_LONGEST_EDGE = 1920  # downscale target — cuts memory ~50% for typical phone photos
+
+# Concurrency guard — serializes YOLO inference to prevent memory stacking.
+# Value of 2 allows one requests to infer while another decodes/uploads,
+# without allowing unbounded concurrent inferences that trigger OOM.
+_inference_semaphore = asyncio.Semaphore(2)
 
 # ---------------------------------------------------------------------------
 # COCO class mapping (80 classes)
@@ -352,6 +360,14 @@ def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.50) -> dic
         image.thumbnail((4000, 4000), Image.LANCZOS)
         logger.info("Resized image from %dx%d to %dx%d", w, h, *image.size)
 
+    # Downscale to 1920px longest edge — cuts YOLO inference memory ~50%
+    # for typical 12MP+ phone photos. YOLO detects objects fine at this size.
+    w, h = image.size
+    if max(w, h) > MAX_LONGEST_EDGE:
+        ratio = MAX_LONGEST_EDGE / max(w, h)
+        image = image.resize((int(w * ratio), int(h * ratio)), Image.LANCZOS)
+        logger.info("Downscaled to %dx%d for memory efficiency", *image.size)
+
     coco_model = load_coco_model()
     env_model = load_env_model()
 
@@ -404,6 +420,11 @@ def analyze_image(image_bytes: bytes, confidence_threshold: float = 0.50) -> dic
                     })
         except Exception as exc:
             logger.warning("Environmental model inference failed: %s", exc)
+
+    # Explicit cleanup — free YOLO intermediate tensors and image buffer
+    # before Roboflow call and return. Tight memory on 512MB free tier.
+    del image
+    gc.collect()
 
     latency_ms = round((time.perf_counter() - started) * 1000, 2)
 
@@ -469,6 +490,23 @@ def analyze_base64(base64_string: str, confidence_threshold: float = 0.50) -> di
     except Exception as exc:
         raise ValueError(f"Invalid base64 encoding: {exc}") from exc
     return analyze_image(image_bytes, confidence_threshold)
+
+
+async def analyze_image_async(image_bytes: bytes, confidence_threshold: float = 0.50) -> dict[str, Any]:
+    """Async wrapper — acquires inference semaphore before running YOLO in a thread.
+
+    This prevents multiple concurrent YOLO inferences from stacking memory
+    on the 512MB free-tier instance. Trades some latency under load for
+    not crashing — the right trade on a constrained instance.
+    """
+    async with _inference_semaphore:
+        return await asyncio.to_thread(analyze_image, image_bytes, confidence_threshold)
+
+
+async def analyze_base64_async(base64_string: str, confidence_threshold: float = 0.50) -> dict[str, Any]:
+    """Async wrapper for base64 analysis with concurrency guard."""
+    async with _inference_semaphore:
+        return await asyncio.to_thread(analyze_base64, base64_string, confidence_threshold)
 
 
 def _record_metrics(

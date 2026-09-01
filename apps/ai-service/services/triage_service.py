@@ -82,8 +82,8 @@ async def run_triage(base64_image: str, ticket_id: str, db: AsyncSession) -> dic
             _circuit_failures = 0
 
     try:
-        from image_analysis import analyze_base64
-        result = await asyncio.to_thread(analyze_base64, base64_image, 0.50)
+        from image_analysis import analyze_base64_async
+        result = await analyze_base64_async(base64_image, 0.50)
         _circuit_failures = 0
     except Exception as e:
         logger.error("AI analysis failed: %s", e)

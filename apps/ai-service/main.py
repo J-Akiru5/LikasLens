@@ -270,14 +270,14 @@ async def roboflow_health():
 @app.post("/analyze", dependencies=[Depends(verify_api_key)])
 async def analyze_image_upload(file: UploadFile = File(...), confidence: float = Form(0.25)):
     """Run YOLOv8 inference on an uploaded image."""
-    from image_analysis import analyze_image
+    from image_analysis import analyze_image_async
 
     image_bytes = await file.read()
     if len(image_bytes) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail=f"File too large (max {MAX_UPLOAD_BYTES // (1024*1024)}MB)")
 
     try:
-        result = await asyncio.to_thread(analyze_image, image_bytes, confidence)
+        result = await analyze_image_async(image_bytes, confidence)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RuntimeError as exc:
@@ -289,7 +289,7 @@ async def analyze_image_upload(file: UploadFile = File(...), confidence: float =
 @app.post("/analyze/base64", dependencies=[Depends(verify_api_key)])
 async def analyze_base64_image(payload: dict):
     """Run YOLOv8 inference on a base64-encoded image."""
-    from image_analysis import analyze_base64
+    from image_analysis import analyze_base64_async
 
     base64_string = payload.get("image")
     confidence = payload.get("confidence", 0.25)
@@ -297,7 +297,7 @@ async def analyze_base64_image(payload: dict):
         return {"success": False, "error": "Missing 'image' field"}
 
     try:
-        result = await asyncio.to_thread(analyze_base64, base64_string, confidence)
+        result = await analyze_base64_async(base64_string, confidence)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RuntimeError as exc:
@@ -383,7 +383,9 @@ async def analyze_similarity(payload: dict):
     threshold = float(payload.get("threshold", 0.85))
 
     try:
-        embedding = await asyncio.to_thread(extract_features, image_bytes)
+        from image_analysis import _inference_semaphore
+        async with _inference_semaphore:
+            embedding = await asyncio.to_thread(extract_features, image_bytes)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except RuntimeError as exc:

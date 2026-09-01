@@ -4,6 +4,7 @@ POST /api/v1/reports/triage  — Pre-submission AI check (non-persisting)
 """
 
 import base64
+import hashlib
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -17,13 +18,29 @@ from auth.supabase_jwt import optional_auth, verify_supabase_token
 from config import settings
 from db.connection import get_db
 from db.models import Ticket, TicketEvidence, TicketTimeline
-from services.exif import strip_exif, get_mime_type
+from services.exif import strip_exif, get_mime_type, downscale_image
 from services.ghost_mode import sanitize_report_payload
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 logger = logging.getLogger(__name__)
 
 STORAGE_BUCKET = settings.supabase_storage_bucket
+
+# Module-level S3 client singleton — created once, reused across requests.
+# boto3 clients are thread-safe for put_object within a single process.
+_s3_client = None
+
+
+def _get_s3_client():
+    global _s3_client
+    if _s3_client is None:
+        _s3_client = boto3.client(
+            "s3",
+            endpoint_url=settings.supabase_storage_url,
+            aws_access_key_id=settings.supabase_storage_key,
+            aws_secret_access_key=settings.supabase_storage_secret,
+        )
+    return _s3_client
 
 # Anonymous ghost user ID for uploads when reporter identity is hidden
 GHOST_USER_ID = uuid.UUID("019edc0b-862e-722a-b489-c3bb01558a3c")
@@ -62,10 +79,12 @@ async def triage_image(body: TriageRequest):
 
     # Strip EXIF even for triage — never send metadata to YOLO
     stripped, _ = strip_exif(image_bytes)
+    stripped = downscale_image(stripped)
     stripped_b64 = base64.b64encode(stripped).decode()
 
     try:
-        result = analyze_base64(stripped_b64, confidence=0.35)
+        from image_analysis import analyze_base64_async
+        result = await analyze_base64_async(stripped_b64, confidence=0.35)
     except Exception:
         result = {}
 
@@ -111,6 +130,11 @@ async def submit_report(
     stripped_bytes, checksum = strip_exif(image_bytes)
     mime_type = get_mime_type(stripped_bytes)
 
+    # 2b. Downscale for storage — reduces S3 upload size and downstream memory.
+    #     1920px longest edge is sufficient for evidence viewing and YOLO detection.
+    stripped_bytes = downscale_image(stripped_bytes)
+    checksum = hashlib.sha256(stripped_bytes).hexdigest()
+
     # 3. Ghost Mode rules
     reporter_user_id = None
     if token and not body.ghost_mode:
@@ -130,12 +154,7 @@ async def submit_report(
     storage_path = f"evidence/{now.strftime('%Y/%m/%d')}/{ticket_id}.{ext}"
 
     try:
-        s3 = boto3.client(
-            "s3",
-            endpoint_url=settings.supabase_storage_url,
-            aws_access_key_id=settings.supabase_storage_key,
-            aws_secret_access_key=settings.supabase_storage_secret,
-        )
+        s3 = _get_s3_client()
         s3.put_object(
             Bucket=STORAGE_BUCKET,
             Key=storage_path,

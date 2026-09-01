@@ -40,6 +40,41 @@ def strip_exif(image_bytes: bytes) -> tuple[bytes, str]:
     return stripped, checksum
 
 
+MAX_LONGEST_EDGE = 1920
+
+
+def downscale_image(image_bytes: bytes, max_edge: int = MAX_LONGEST_EDGE) -> bytes:
+    """Downscale image so longest edge <= max_edge. Returns re-encoded bytes.
+
+    Preserves format (JPEG/PNG/WEBP). No-op if already within bounds.
+    This cuts memory for YOLO inference, Pillow re-encode, and storage.
+    """
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+    except Exception:
+        return image_bytes  # pass through unmodified on decode failure
+
+    w, h = img.size
+    if max(w, h) <= max_edge:
+        return image_bytes
+
+    ratio = max_edge / max(w, h)
+    new_size = (int(w * ratio), int(h * ratio))
+    img = img.resize(new_size, Image.LANCZOS)
+
+    fmt = img.format or "JPEG"
+    output = io.BytesIO()
+    if fmt == "JPEG":
+        img.save(output, format="JPEG", quality=92)
+    elif fmt == "PNG":
+        img.save(output, format="PNG", optimize=True)
+    elif fmt == "WEBP":
+        img.save(output, format="WEBP", quality=90)
+    else:
+        img.save(output, format="JPEG", quality=92)
+    return output.getvalue()
+
+
 MIME_MAP = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}
 
 
