@@ -409,14 +409,14 @@ export default function MyReportsPage() {
                       <div className="absolute top-3.5 sm:top-4 left-6 right-6 h-1.5 bg-ink/10 dark:bg-white/10 rounded-full z-0" />
                       <div
                         className="absolute top-3.5 sm:top-4 left-6 h-1.5 bg-accent rounded-full transition-all duration-500 z-0 shadow-[0_0_12px_rgba(6,182,212,0.6)]"                          style={{
-                            width: terminal
+                            width: terminal && !withdrawn
                               ? "92%"
                               : `${Math.max(0, Math.min(100, ((currentStageIdx - 1) / (STAGES.length - 1)) * 92))}%`,
                           }}
                       />
                       <div className="relative z-10 flex items-start justify-between">
                         {STAGES.map((s) => {
-                          const isDone = terminal || s.step < currentStageIdx;
+                          const isDone = (terminal && !withdrawn) || s.step < currentStageIdx;
                           const isActive = !withdrawn && !terminal && s.step === currentStageIdx;
                           const isStopped = withdrawn && !isDone;
                           return (
@@ -608,7 +608,7 @@ export default function MyReportsPage() {
                   </div>
                   <div className="space-y-2.5">
                     {STAGES.map((stg) => {
-                      const isDone = modalTerminal || stg.step < modalStageIdx;
+                      const isDone = (modalTerminal && !modalWithdrawn) || stg.step < modalStageIdx;
                       const isActive = !modalWithdrawn && !modalTerminal && stg.step === modalStageIdx;
                       const isStopped = modalWithdrawn && !isDone;
                       const stageDesc =

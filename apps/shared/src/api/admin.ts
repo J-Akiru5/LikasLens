@@ -12,6 +12,7 @@ import type {
   NgoGroup,
   TriageTicket,
   LguPerformanceData,
+  LguPerformanceRow,
   BiasRiskEntry,
   AdminLaw,
   AdminLawDetail,
@@ -964,14 +965,35 @@ export async function getTriageViolationTypes() {
 }
 
 // Admin: LGU Performance
-export async function getLguPerformance(_params?: Record<string, string>) {
-  const { data, error } = await db().from("tickets").select("status, created_at, resolved_at, urgency_score");
+export async function getLguPerformance(params?: Record<string, string>) {
+  // Tickets with routing/assignment metadata (latest assignment per ticket wins)
+  let query = db().from("tickets").select("id, status, created_at, resolved_at, urgency_score, ai_recommended_office, sla_response_breached, sla_resolution_breached, escalated_to");
+  if (params?.date_from) query = query.gte("created_at", params.date_from as string);
+  if (params?.date_to) query = query.lte("created_at", params.date_to as string);
+  const { data, error } = await query;
   if (error) throw error;
-  const tickets = data || [];
+  const tickets = (data || []) as Record<string, unknown>[];
+
+  // Latest assignment per ticket -> assignee (agency) user
+  const { data: assigns } = await db().from("ticket_assignments").select("ticket_id, assignee_user_id, created_at").order("created_at", { ascending: true });
+  const assigneeByTicket = new Map<string, string>();
+  for (const a of (assigns || []) as Record<string, unknown>[]) {
+    assigneeByTicket.set(String(a.ticket_id), String(a.assignee_user_id || ""));
+  }
+
+  // Agency name per assignee user
+  const assigneeIds = [...new Set(assigneeByTicket.values())].filter(Boolean);
+  const { data: users } = await db().from("users").select("id, agency_name").in("id", assigneeIds);
+  const agencyById = new Map<string, string>();
+  for (const u of (users || []) as Record<string, unknown>[]) {
+    const name = String(u.agency_name || "").trim();
+    if (name) agencyById.set(String(u.id), name);
+  }
+
   const totalTickets = tickets.length;
-  const resolvedCount = tickets.filter((t: Record<string, unknown>) => t.status === "resolved").length;
-  const verifiedCount = tickets.filter((t: Record<string, unknown>) => t.status === "verified").length;
-  const closedCount = tickets.filter((t: Record<string, unknown>) => t.status === "closed").length;
+  const resolvedCount = tickets.filter((t) => t.status === "resolved").length;
+  const verifiedCount = tickets.filter((t) => t.status === "verified").length;
+  const closedCount = tickets.filter((t) => t.status === "closed").length;
 
   // Real avg response time from resolved_at - created_at
   let totalResponseMs = 0;
@@ -994,16 +1016,78 @@ export async function getLguPerformance(_params?: Record<string, string>) {
   const resolutionRate = totalTickets > 0 ? Number(((fullyResolved / totalTickets) * 100).toFixed(1)) : 0;
 
   // Escalated = investigating with urgency >= 5
-  const escalated = tickets.filter((t: Record<string, unknown>) =>
+  const escalated = tickets.filter((t) =>
     t.status === "investigating" && (typeof t.urgency_score === "number" ? t.urgency_score : 0) >= 5
   ).length;
+
+  // Per-office aggregation: office name <- assignee agency, fallback to AI-recommended office
+  const officeOf = (t: Record<string, unknown>): string => {
+    const assigneeId = assigneeByTicket.get(String(t.id));
+    if (assigneeId && agencyById.has(assigneeId)) return agencyById.get(assigneeId) as string;
+    const recommended = String(t.ai_recommended_office || "").trim();
+    return recommended || "Unassigned";
+  };
+
+  type OfficeAgg = {
+    lgu_id: string;
+    lgu_name: string;
+    total_assigned: number;
+    total_resolved: number;
+    pending_count: number;
+    breached_count: number;
+    escalation_count: number;
+    responseMs: number;
+    resolvedWithTime: number;
+  };
+  const byOffice = new Map<string, OfficeAgg>();
+  const regionFilter = params?.region;
+  for (const t of tickets) {
+    const office = officeOf(t);
+    const agg = byOffice.get(office) || { lgu_id: `office:${office}`, lgu_name: office, total_assigned: 0, total_resolved: 0, pending_count: 0, breached_count: 0, escalation_count: 0, responseMs: 0, resolvedWithTime: 0 };
+    agg.total_assigned += 1;
+    if (["resolved", "verified", "closed"].includes(String(t.status))) agg.total_resolved += 1;
+    if (["open", "investigating"].includes(String(t.status))) agg.pending_count += 1;
+    if (t.sla_response_breached || t.sla_resolution_breached) agg.breached_count += 1;
+    if (t.status === "investigating" && (typeof t.urgency_score === "number" ? t.urgency_score : 0) >= 5) agg.escalation_count += 1;
+    if (t.resolved_at && t.created_at) {
+      const diff = new Date(t.resolved_at as string).getTime() - new Date(t.created_at as string).getTime();
+      if (diff > 0) { agg.responseMs += diff; agg.resolvedWithTime += 1; }
+    }
+    byOffice.set(office, agg);
+  }
+
+  const lgus: LguPerformanceRow[] = [...byOffice.entries()]
+    .filter(([, agg]) => agg.total_assigned > 0)
+    .map(([office, agg]) => {
+      const rate = agg.total_assigned > 0 ? Number(((agg.total_resolved / agg.total_assigned) * 100).toFixed(1)) : 0;
+      const avgHrs = agg.resolvedWithTime > 0 ? Number((agg.responseMs / agg.resolvedWithTime / 3600000).toFixed(1)) : 0;
+      const slaRate = agg.total_assigned > 0 ? Number((((agg.total_assigned - agg.breached_count) / agg.total_assigned) * 100).toFixed(1)) : 0;
+      const status: LguPerformanceRow["status"] = rate >= 75 ? "green" : rate >= 40 ? "amber" : "red";
+      return {
+        lgu_id: agg.lgu_id,
+        lgu_name: office,
+        region: null,
+        is_active: true,
+        total_assigned: agg.total_assigned,
+        total_resolved: agg.total_resolved,
+        resolution_rate: rate,
+        avg_response_hours: avgHrs,
+        avg_resolution_hours: avgHrs,
+        sla_compliance_rate: slaRate,
+        pending_count: agg.pending_count,
+        breached_count: agg.breached_count,
+        escalation_count: agg.escalation_count,
+        status,
+      };
+    })
+    .filter((l) => !regionFilter || l.region === regionFilter);
 
   return {
     success: true,
     data: {
-      lgus: [],
+      lgus,
       platform_averages: {
-        total_lgus: 0,
+        total_lgus: lgus.length,
         avg_resolution_rate: resolutionRate,
         avg_response_hours: avgResponseHours,
         avg_resolution_hours: avgResponseHours,
@@ -1381,11 +1465,6 @@ export async function getPublicImpact() {
       .select("id, title, status, description, address_text, latitude, longitude, ghost_mode, reporter_display_name, ai_triage_summary, urgency_score, created_at, updated_at, resolved_at");
     const tickets = (!error && data) ? data : [];
 
-    const resolvedStatuses = new Set(["resolved", "verified", "closed"]);
-    const resolved = tickets.filter((t: Record<string, unknown>) => resolvedStatuses.has(String(t.status)));
-    const totalReports = tickets.length;
-    const totalResolved = resolved.length;
-
     // Category distribution computed from real ticket titles
     const reportsByType: Record<string, number> = {};
     for (const t of tickets) {
@@ -1398,6 +1477,14 @@ export async function getPublicImpact() {
         "Other";
       reportsByType[category] = (reportsByType[category] || 0) + 1;
     }
+
+    // Public record shows only genuinely solved cases. Withdrawn / dismissed
+    // (closed) tickets stay private — visible only to the reporter in their
+    // own My Submissions, never on the public transparency feed.
+    const resolvedStatuses = new Set(["resolved", "verified"]);
+    const resolved = tickets.filter((t: Record<string, unknown>) => resolvedStatuses.has(String(t.status)));
+    const totalReports = tickets.length;
+    const totalResolved = resolved.length;
 
     // Real recently resolved/verified cases from the database
     const recentVerifiedRaw = resolved

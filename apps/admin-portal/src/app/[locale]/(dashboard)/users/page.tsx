@@ -30,6 +30,7 @@ import {
 } from "@likaslens/shared";
 import { useBulkSelect } from "@/hooks/use-bulk-select";
 import { BulkActionsBar } from "@/components/bulk-actions-bar";
+import ServiceAreaPicker from "@/components/service-area-picker";
 
 type Role = "citizen" | "ghost" | "analyst" | "lgu" | "super_admin";
 
@@ -42,6 +43,8 @@ interface UserRow {
   trust_score: number;
   agency_name?: string | null;
   service_area?: string | null;
+  service_area_lat?: number | null;
+  service_area_lng?: number | null;
 
   created_at: string;
   deleted_at: string | null;
@@ -80,7 +83,13 @@ export default function UsersPage() {
   const [copied, setCopied] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [editUser, setEditUser] = useState<UserRow | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", agency_name: "", service_area: "" });
+  const [editForm, setEditForm] = useState({
+    name: "",
+    agency_name: "",
+    service_area: "",
+    service_area_lat: null as number | null,
+    service_area_lng: null as number | null,
+  });
   const [editLoading, setEditLoading] = useState(false);
   const [createForm, setCreateForm] = useState({
     name: "",
@@ -88,6 +97,8 @@ export default function UsersPage() {
     role: "analyst" as Role,
     agency_name: "",
     service_area: "",
+    service_area_lat: null as number | null,
+    service_area_lng: null as number | null,
   });
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -131,6 +142,7 @@ export default function UsersPage() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (createLoading) return; // guard against double-submit
     if (!createForm.name.trim()) {
       showToast("Name is required", "error");
       return;
@@ -149,7 +161,9 @@ export default function UsersPage() {
           email: createForm.email,
           role: createForm.role,
           agency_name: createForm.agency_name.trim() || null,
-          service_area: createForm.service_area.trim() || null,
+          service_area: createForm.service_area,
+          service_area_lat: createForm.service_area_lat,
+          service_area_lng: createForm.service_area_lng,
         }),
       });
       const body = await res.json();
@@ -158,7 +172,15 @@ export default function UsersPage() {
       const tempPassword = (body as { data?: { temp_password?: string } })?.data?.temp_password;
       showToast("User created successfully", "success");
       setShowCreate(false);
-      setCreateForm({ name: "", email: "", role: "analyst", agency_name: "", service_area: "" });
+      setCreateForm({
+        name: "",
+        email: "",
+        role: "analyst",
+        agency_name: "",
+        service_area: "",
+        service_area_lat: null,
+        service_area_lng: null,
+      });
       if (tempPassword) {
         setCreatedCredentials({
           name: createForm.name.trim(),
@@ -181,6 +203,8 @@ export default function UsersPage() {
       name: user.name || "",
       agency_name: user.agency_name || "",
       service_area: user.service_area || "",
+      service_area_lat: user.service_area_lat ?? null,
+      service_area_lng: user.service_area_lng ?? null,
     });
     setEditUser(user);
   };
@@ -197,7 +221,9 @@ export default function UsersPage() {
           id: editUser.id,
           name: editForm.name.trim(),
           agency_name: editForm.agency_name.trim() || null,
-          service_area: editForm.service_area.trim() || null,
+          service_area: editForm.service_area,
+          service_area_lat: editForm.service_area_lat,
+          service_area_lng: editForm.service_area_lng,
         }),
       });
       const body = await res.json();
@@ -608,31 +634,37 @@ export default function UsersPage() {
                 />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
-                    Agency / Office
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.agency_name}
-                    onChange={(e) => setCreateForm({ ...createForm, agency_name: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
-                    placeholder="e.g. DENR-EMB Region 4A"
-                  />
-                </div>
-                <div>
-                  <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
-                    Service area (city/province)
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.service_area}
-                    onChange={(e) => setCreateForm({ ...createForm, service_area: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
-                    placeholder="e.g. Quezon City"
-                  />
-                </div>
+              <div>
+                <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
+                  Agency / Office
+                </label>
+                <input
+                  type="text"
+                  value={createForm.agency_name}
+                  onChange={(e) => setCreateForm({ ...createForm, agency_name: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
+                  placeholder="e.g. DENR-EMB Region 4A"
+                />
+              </div>
+              <div>
+                <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
+                  Service area
+                </label>
+                <ServiceAreaPicker
+                  value={{
+                    service_area: createForm.service_area,
+                    service_area_lat: createForm.service_area_lat,
+                    service_area_lng: createForm.service_area_lng,
+                  }}
+                  onChange={(next) =>
+                    setCreateForm((prev) => ({
+                      ...prev,
+                      service_area: next.service_area,
+                      service_area_lat: next.service_area_lat,
+                      service_area_lng: next.service_area_lng,
+                    }))
+                  }
+                />
               </div>
               <p className="text-xs text-ink/50">
                 Officers only see tickets assigned to them or to their agency. Tickets matching the
@@ -704,31 +736,37 @@ export default function UsersPage() {
                 />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
-                    Agency / Office
-                  </label>
-                  <input
-                    type="text"
-                    value={editForm.agency_name}
-                    onChange={(e) => setEditForm({ ...editForm, agency_name: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
-                    placeholder="e.g. Quezon City Environment Office"
-                  />
-                </div>
-                <div>
-                  <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
-                    Service area (city/province)
-                  </label>
-                  <input
-                    type="text"
-                    value={editForm.service_area}
-                    onChange={(e) => setEditForm({ ...editForm, service_area: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
-                    placeholder="e.g. Quezon City"
-                  />
-                </div>
+              <div>
+                <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
+                  Agency / Office
+                </label>
+                <input
+                  type="text"
+                  value={editForm.agency_name}
+                  onChange={(e) => setEditForm({ ...editForm, agency_name: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-panel border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
+                  placeholder="e.g. Quezon City Environment Office"
+                />
+              </div>
+              <div>
+                <label className="font-mono text-xs text-ink/70 uppercase tracking-widest mb-1 block">
+                  Service area
+                </label>
+                <ServiceAreaPicker
+                  value={{
+                    service_area: editForm.service_area,
+                    service_area_lat: editForm.service_area_lat,
+                    service_area_lng: editForm.service_area_lng,
+                  }}
+                  onChange={(next) =>
+                    setEditForm((prev) => ({
+                      ...prev,
+                      service_area: next.service_area,
+                      service_area_lat: next.service_area_lat,
+                      service_area_lng: next.service_area_lng,
+                    }))
+                  }
+                />
               </div>
               <p className="text-xs text-ink/50">
                 New reports whose address mentions the service area will be routed to this

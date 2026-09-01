@@ -53,11 +53,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const name = String(body.name).trim();
     const email = String(body.email).trim().toLowerCase();
-    const agencyName = body.agency_name ? String(body.agency_name).trim() : null;
-    const serviceArea = body.service_area ? String(body.service_area).trim() : null;
-    const tempPassword = generateTempPassword();
 
     const db = getSupabase();
+
+    // Reject duplicates up-front so an already-registered account returns a
+    // clean 409 instead of a database race error.
+    const { data: existing } = await db
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .limit(1);
+    if (existing && existing.length > 0) {
+      return NextResponse.json(
+        { error: "An account with this email already exists" },
+        { status: 409 }
+      );
+    }
+
+    const agencyName = body.agency_name ? String(body.agency_name).trim() : null;
+    const serviceArea = body.service_area ? String(body.service_area).trim() : null;
+    const serviceAreaLat =
+      typeof body.service_area_lat === "number" && Number.isFinite(body.service_area_lat)
+        ? body.service_area_lat
+        : null;
+    const serviceAreaLng =
+      typeof body.service_area_lng === "number" && Number.isFinite(body.service_area_lng)
+        ? body.service_area_lng
+        : null;
+    const tempPassword = generateTempPassword();
 
     // 1. Create the real Supabase auth account (role lives in user_metadata,
     //    which the admin-portal login gate reads).
@@ -79,28 +102,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "Failed to create auth account" }, { status: 500 });
     }
 
-    // 2. Create the profile row linked to the real auth user id.
+    // 2. The users row is auto-created by Supabase's signup trigger with the
+    //    auth user id (name/email/role come from user_metadata). Enrich it
+    //    with the admin-provided office & service-area fields instead of
+    //    re-inserting, which would collide with that auto-created row.
     const { data, error } = await db
       .from("users")
-      .insert({
-        id: authData.user.id,
-        supabase_auth_user_id: authData.user.id,
-        name,
-        email,
-        role,
+      .update({
         agency_name: agencyName,
         service_area: serviceArea,
+        service_area_lat: serviceAreaLat,
+        service_area_lng: serviceAreaLng,
         trust_score: 50,
-        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
+      .eq("id", authData.user.id)
       .select()
       .single();
 
     if (error) {
       // Roll back the auth account so we don't leave an orphaned login.
       await db.auth.admin.deleteUser(authData.user.id).catch(() => {});
-      console.error("[/api/v1/admin/users] POST insert error:", error);
+      console.error("[/api/v1/admin/users] POST update error:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

@@ -41,6 +41,10 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(255))
     email: Mapped[str] = mapped_column(String(255), unique=True)
     role: Mapped[str] = mapped_column(String(50), default="citizen")
+    agency_name: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    service_area: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    service_area_lat: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    service_area_lng: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     tickets: Mapped[list["Ticket"]] = relationship("Ticket", back_populates="reporter")

@@ -36,6 +36,7 @@ interface ReportEntry {
   status: string;
   created_at: string;
   isGhost?: boolean;
+  ai_recommended_office?: string;
 }
 
 function timeAgo(dateStr: string): string {
@@ -68,13 +69,17 @@ const getStageIdx = (status: string) => {
     assigned: 3,
     investigating: 4,  // Inspectors on site
     in_progress: 4,
+    verified: 5,       // Verified = solved & cleaned up
     resolved: 5,       // Solved & Cleaned up
-    closed: 5,
+    closed: 3,         // Withdrawn/dismissed — stops at Dispatch; no inspection happened
   };
   return statusOrder[status] || 3;
 };
 
-const getStatusMeta = (status: string, category?: string) => {
+const TERMINAL_STATUSES = new Set(["resolved", "closed", "verified"]);
+const isWithdrawn = (status: string) => status === "closed";
+
+const getStatusMeta = (status: string, category?: string, report?: ReportEntry) => {
   const isWater = category?.toLowerCase().includes("water") || category?.toLowerCase().includes("river") || category?.toLowerCase().includes("ocean");
   const isAir = category?.toLowerCase().includes("air") || category?.toLowerCase().includes("smoke") || category?.toLowerCase().includes("burn");
   const lawName = isWater
@@ -82,10 +87,13 @@ const getStatusMeta = (status: string, category?: string) => {
     : isAir
     ? "Clean Air Act (RA 8749)"
     : "Solid Waste Management Act (RA 9003)";
+  // The real desk the ticket was routed to (set at submission time) — never
+  // fall back to a generic national label when a specific office handled it.
+  const agency = report?.ai_recommended_office || "DENR & City Environment Office (CENRO)";
 
   switch (status) {
     case "resolved":
-    case "closed":
+    case "verified":
       return {
         title: "Problem Solved & Cleaned Up",
         body: "Great news! Your report has been resolved by the government taskforce and the area is cleaned up. Thank you for protecting our environment!",
@@ -93,8 +101,19 @@ const getStatusMeta = (status: string, category?: string) => {
         pillBg: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30",
         dotBg: "bg-emerald-500",
         lawName,
-        agency: "DENR & City Environment Office (CENRO)",
+        agency,
         expectedTime: "Completed & Verified",
+      };
+    case "closed":
+      return {
+        title: "Report Closed — Not Pursued",
+        body: "This report was closed after review. It may have been withdrawn, dismissed as not a violation, or handled outside the platform. If you believe this is a mistake, please file a new report or contact your LGU office.",
+        badge: "Closed / Dismissed",
+        pillBg: "bg-ink/10 text-ink/60 border-ink/20 dark:bg-white/10 dark:text-ink/50",
+        dotBg: "bg-ink/40",
+        lawName,
+        agency,
+        expectedTime: "Closed after review",
       };
     case "investigating":
     case "in_progress":
@@ -105,7 +124,7 @@ const getStatusMeta = (status: string, category?: string) => {
         pillBg: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30",
         dotBg: "bg-blue-500 animate-pulse",
         lawName,
-        agency: "DENR & City Environment Office (CENRO)",
+        agency,
         expectedTime: "Action in Progress (Today)",
       };
     default:
@@ -116,7 +135,7 @@ const getStatusMeta = (status: string, category?: string) => {
         pillBg: "bg-accent/15 text-accent border border-accent/30",
         dotBg: "bg-accent animate-pulse",
         lawName,
-        agency: "DENR & City Environment Office (CENRO)",
+        agency,
         expectedTime: "Within 24 to 48 Hours",
       };
   }
@@ -161,6 +180,7 @@ export default function HistoryPage() {
               location: t.location || t.address_text || "Coordinates Recorded",
               status: t.status || "open",
               created_at: t.created_at,
+              ai_recommended_office: t.ai_recommended_office,
               isGhost: t.ghost_mode === true,
             }));
           }
@@ -237,14 +257,15 @@ export default function HistoryPage() {
 
       const matchesStatus =
         selectedStatus === "all" ||
-        (selectedStatus === "resolved" && (r.status === "resolved" || r.status === "closed")) ||
-        (selectedStatus === "open" && r.status !== "resolved" && r.status !== "closed");
+        (selectedStatus === "resolved" && (r.status === "resolved" || r.status === "verified")) ||
+        (selectedStatus === "closed" && r.status === "closed") ||
+        (selectedStatus === "open" && r.status !== "resolved" && r.status !== "verified" && r.status !== "closed");
 
       return matchesSearch && matchesStatus;
     });
   }, [reports, searchQuery, selectedStatus]);
 
-  const activeMeta = activeReport ? getStatusMeta(activeReport.status, activeReport.category || activeReport.title) : null;
+  const activeMeta = activeReport ? getStatusMeta(activeReport.status, activeReport.category || activeReport.title, activeReport) : null;
   const activeStageIdx = activeReport ? getStageIdx(activeReport.status) : 3;
 
   if (loading) {
@@ -313,7 +334,7 @@ export default function HistoryPage() {
                   : "bg-ink/5 text-ink/60 hover:text-ink"
               )}
             >
-              Active ({reports.filter((r) => r.status !== "resolved" && r.status !== "closed").length})
+              Active ({reports.filter((r) => r.status !== "resolved" && r.status !== "verified" && r.status !== "closed").length})
             </button>
             <button
               onClick={() => setSelectedStatus("resolved")}
@@ -324,7 +345,18 @@ export default function HistoryPage() {
                   : "bg-ink/5 text-ink/60 hover:text-ink"
               )}
             >
-              Resolved ({reports.filter((r) => r.status === "resolved" || r.status === "closed").length})
+              Resolved ({reports.filter((r) => r.status === "resolved" || r.status === "verified").length})
+            </button>
+            <button
+              onClick={() => setSelectedStatus("closed")}
+              className={cn(
+                "px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-colors",
+                selectedStatus === "closed"
+                  ? "bg-accent text-page"
+                  : "bg-ink/5 text-ink/60 hover:text-ink"
+              )}
+            >
+              Closed ({reports.filter((r) => r.status === "closed").length})
             </button>
           </div>
         </div>
@@ -341,7 +373,7 @@ export default function HistoryPage() {
             <div className="space-y-3">
               {filtered.map((report) => {
                 const isGhost = report.isGhost === true || report.title?.includes("Ghost Mode");
-                const meta = getStatusMeta(report.status, report.category || report.title);
+                const meta = getStatusMeta(report.status, report.category || report.title, report);
                 const stageIdx = getStageIdx(report.status);
 
                 return (
@@ -392,8 +424,10 @@ export default function HistoryPage() {
                     <div className="pt-1">
                       <div className="flex items-center justify-between gap-1">
                         {STAGES.map((stg) => {
-                          const isDone = stg.step < stageIdx;
-                          const isActive = stg.step === stageIdx;
+                          const terminal = TERMINAL_STATUSES.has(report.status);
+                          const withdrawn = isWithdrawn(report.status);
+                          const isDone = (terminal && !withdrawn) || stg.step < stageIdx;
+                          const isActive = !withdrawn && !terminal && stg.step === stageIdx;
                           return (
                             <div
                               key={stg.step}
@@ -524,8 +558,11 @@ export default function HistoryPage() {
               </h4>
               <div className="space-y-2">
                 {STAGES.map((stg) => {
-                  const isDone = stg.step < activeStageIdx;
-                  const isActive = stg.step === activeStageIdx;
+                  const terminal = TERMINAL_STATUSES.has(activeReport.status);
+                  const withdrawn = isWithdrawn(activeReport.status);
+                  const isDone = (terminal && !withdrawn) || stg.step < activeStageIdx;
+                  const isActive = !withdrawn && !terminal && stg.step === activeStageIdx;
+                  const isStopped = withdrawn && !isDone;
 
                   return (
                     <div
@@ -556,7 +593,7 @@ export default function HistoryPage() {
                         <p className={cn("font-bold text-xs", isActive ? "text-accent" : "text-ink")}>
                           {stg.title}
                         </p>
-                        <p className="text-ink/55 text-[10px] mt-0.5">{stg.desc}</p>
+                        <p className="text-ink/55 text-[10px] mt-0.5">{isStopped ? "Not pursued — report closed." : stg.desc}</p>
                       </div>
 
                       <span
@@ -569,7 +606,7 @@ export default function HistoryPage() {
                             : "bg-ink/5 text-ink/40"
                         )}
                       >
-                        {isActive ? "ACTIVE" : isDone ? "COMPLETED" : "QUEUED"}
+                        {isActive ? "ACTIVE" : isDone ? "COMPLETED" : isStopped ? "STOPPED" : "QUEUED"}
                       </span>
                     </div>
                   );

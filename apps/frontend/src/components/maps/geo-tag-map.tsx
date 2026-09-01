@@ -23,10 +23,13 @@ export function GeoTagMap({
 }: GeoTagMapProps) {
   const mapRef = useRef<MapRef>(null);
 
+  // Default view centers on Metro Manila (Makati / BGC / University of Makati
+  // demo area). Clicking the map is the PRIMARY way to place the pin — GPS is
+  // only an optional convenience button, never auto-requested on mount.
   const [viewState, setViewState] = useState({
-    longitude: initialLng ?? 121.774,
-    latitude: initialLat ?? 12.8797,
-    zoom: initialLat && initialLng ? 16 : 6,
+    longitude: initialLng ?? 121.04,
+    latitude: initialLat ?? 14.55,
+    zoom: initialLat && initialLng ? 16 : 13,
   });
 
   const [markerPos, setMarkerPos] = useState<{ lat: number; lng: number } | null>(
@@ -77,31 +80,12 @@ export function GeoTagMap({
     [onAddressResolve, onLocationChange]
   );
 
-  // Initial Auto-locate if no coordinates are provided
+  // When coordinates are provided, place the pin and resolve the address.
+  // No auto-GPS on mount — the user clicks the map to set the incident
+  // location (more reliable for demos than browser geolocation).
   useEffect(() => {
-    if (!initialLat || !initialLng) {
-      if ("geolocation" in navigator) {
-        setIsLocating(true);
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            setViewState({ longitude: lng, latitude: lat, zoom: 16 });
-            setMarkerPos({ lat, lng });
-            resolveAddress(lat, lng);
-            setIsLocating(false);
-            setGpsDenied(false);
-          },
-          () => {
-            setIsLocating(false);
-            setGpsDenied(true);
-          },
-          { enableHighAccuracy: true, timeout: 8000 }
-        );
-      } else {
-        setGpsDenied(true);
-      }
-    } else {
+    if (initialLat && initialLng) {
+      setMarkerPos({ lat: initialLat, lng: initialLng });
       resolveAddress(initialLat, initialLng);
     }
   }, [initialLat, initialLng, resolveAddress]);
@@ -157,9 +141,10 @@ export function GeoTagMap({
           onClick={handleGPSLocate}
           disabled={isLocating}
           className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-ink/5 dark:bg-white/10 hover:bg-ink/10 dark:hover:bg-white/15 text-ink font-mono text-[11px] font-bold tracking-wider transition-all disabled:opacity-50"
+          title="Optional — you can just click the map instead"
         >
           <Navigation className={`w-3.5 h-3.5 text-accent ${isLocating ? "animate-spin" : ""}`} />
-          {isLocating ? "Locating..." : "Auto-Locate GPS"}
+          {isLocating ? "Locating..." : "Use My Location (GPS)"}
         </button>
       </div>
 

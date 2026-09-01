@@ -82,7 +82,9 @@ export async function POST(req: Request) {
       supabase,
       ticket.id,
       ticket.address_text,
-      ticket.ai_triage_summary
+      ticket.ai_triage_summary,
+      ticket.latitude,
+      ticket.longitude
     );
 
     return NextResponse.json({

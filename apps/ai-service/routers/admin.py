@@ -35,6 +35,10 @@ def _normalize_role(role: str) -> str:
 class UpdateUserRequest(BaseModel):
     name: str | None = None
     email: str | None = None
+    agency_name: str | None = None
+    service_area: str | None = None
+    service_area_lat: float | None = None
+    service_area_lng: float | None = None
 
 
 class UpdateRoleRequest(BaseModel):
@@ -65,6 +69,14 @@ async def update_user(
         user.name = body.name
     if body.email is not None:
         user.email = body.email
+    if body.agency_name is not None:
+        user.agency_name = body.agency_name
+    if body.service_area is not None:
+        user.service_area = body.service_area
+    if body.service_area_lat is not None:
+        user.service_area_lat = body.service_area_lat
+    if body.service_area_lng is not None:
+        user.service_area_lng = body.service_area_lng
 
     await db.commit()
     await db.refresh(user)
@@ -82,6 +94,10 @@ async def update_user(
             "name": user.name,
             "email": user.email,
             "role": user.role,
+            "agency_name": user.agency_name,
+            "service_area": user.service_area,
+            "service_area_lat": user.service_area_lat,
+            "service_area_lng": user.service_area_lng,
         },
     }
 

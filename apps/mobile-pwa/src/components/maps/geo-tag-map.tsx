@@ -73,11 +73,13 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
   useEffect(() => {
     if (!leaflet || !containerRef.current || mapRef.current) return;
 
-    // Philippines center as fallback
-    const defaultCenter: [number, number] = [12.8797, 121.774];
+    // Default view centers on Metro Manila (Makati / BGC / University of Makati
+    // demo area). Clicking the map is the PRIMARY way to place the pin — GPS is
+    // only an optional button, never auto-requested on mount.
+    const defaultCenter: [number, number] = [14.55, 121.04];
     const startLat = lat ?? defaultCenter[0];
     const startLng = lng ?? defaultCenter[1];
-    const startZoom = lat != null && lng != null ? 16 : 6;
+    const startZoom = lat != null && lng != null ? 16 : 13;
 
     const map = leaflet.map(containerRef.current, {
       center: [startLat, startLng],
@@ -122,22 +124,8 @@ export function GeoTagMap({ lat, lng, onLocationChange, height = "220px" }: GeoT
       onLocationChange(e.latlng.lat, e.latlng.lng);
     });
 
-    // Auto-request GPS if no coords provided yet
-    if (lat == null || lng == null) {
-      setGpsLoading(true);
-      map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: true });
-      map.once("locationfound", (e: L.LocationEvent) => {
-        marker.setLatLng(e.latlng);
-        setGpsDenied(false);
-        onLocationChange(e.latlng.lat, e.latlng.lng);
-        map.setView(e.latlng, 16);
-        setGpsLoading(false);
-      });
-      map.once("locationerror", () => {
-        setGpsLoading(false);
-        setGpsDenied(true);
-      });
-    }
+    // No auto-GPS on mount: clicking the map (or the optional
+    // "Auto-Detect My Location" button) is how the pin gets placed.
 
     mapRef.current = map;
     markerRef.current = marker;

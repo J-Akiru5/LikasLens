@@ -25,7 +25,6 @@ import {
   Sparkles,
   ShieldCheck,
   Shield,
-  UserRound,
   EyeOff,
   Navigation,
   Loader2,
@@ -109,7 +108,6 @@ export default function ReportPage() {
   const [longitude, setLongitude] = useState<number | null>(null);
   const [resolvedAddress, setResolvedAddress] = useState<string>("Locating coordinates...");
   const [isGhostMode, setIsGhostMode] = useState<boolean>(false);
-  const [displayName, setDisplayName] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isTriaging, setIsTriaging] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(true);
@@ -249,9 +247,6 @@ export default function ReportPage() {
       return;
     }
     setIsGhostMode(checked);
-    // Selecting Civic (false) or Ghost (true) clears any typed alias name —
-    // only Alias Mode keeps a public display name.
-    setDisplayName("");
     const newTheme = checked ? "ghost" : "civic";
     document.documentElement.setAttribute("data-theme", newTheme);
     try {
@@ -308,20 +303,8 @@ export default function ReportPage() {
     return () => clearTimeout(timer);
   }, [showFullscreenCamera]);
 
-  // Auto-fetch GPS when entering Step 2
-  useEffect(() => {
-    if (step === 2 && navigator.geolocation && !latitude) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
-        },
-        () => {},
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, latitude]);
+  // No auto-GPS on entering Step 2 — the citizen sets the location by clicking
+  // the map in Step 3 (reliable for demos, no permission prompt).
 
   const stripExif = async (base64: string) => {
     if (!base64) return base64;
@@ -374,16 +357,7 @@ export default function ReportPage() {
     cameraStopRef.current();
     runAIDetectionOnCapturedPhoto(dataUrl);
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
-        },
-        () => {},
-        { enableHighAccuracy: true, timeout: 8000 }
-      );
-    }
+  // Location is set by clicking the map in Step 3 — no auto-GPS request here.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -420,7 +394,6 @@ export default function ReportPage() {
       }
     }
 
-    const alias = displayName.trim();
     const payload: Record<string, unknown> = {
       base64Image: cleanedImage,
       latitude,
@@ -429,8 +402,6 @@ export default function ReportPage() {
       description: description.trim() || `${reportType.replace(/_/g, " ")} reported.`,
       report_type: reportType,
       ghost_mode: isGhostMode,
-      // Alias mode: a public-facing display name, real identity stays private
-      reporter_display_name: !isGhostMode && alias ? alias : null,
     };
 
     // Only include user_id if we have a valid UUID — null FK refs cause constraint violations
@@ -841,16 +812,14 @@ export default function ReportPage() {
                       <p className="text-sm text-ink/60 mt-0.5">
                         Select whether to report with your name or stay anonymous, then open camera.
                       </p>
-                    </div>
-
-                    {/* Privacy Mode — Clear, Simple 3-Choice Cards */}
+                    </div>                      {/* Privacy Mode — Clear, Simple 2-Choice Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {/* Civic Mode Card */}
                       <button
                         type="button"
                         onClick={() => handleGhostModeToggle(false)}
                         className={`relative p-3.5 sm:p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                          !isGhostMode && !displayName.trim()
+                          !isGhostMode
                             ? "border-emerald-500/80 bg-emerald-500/10 dark:bg-emerald-950/30 shadow-[0_4px_18px_-2px_rgba(16,185,129,0.22)] ring-2 ring-emerald-500/30"
                             : "border-ink/10 bg-panel hover:border-emerald-500/40 hover:bg-emerald-500/[0.03] opacity-75 hover:opacity-100"
                         }`}
@@ -858,19 +827,19 @@ export default function ReportPage() {
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <div className="flex items-center gap-2 min-w-0">
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                              !isGhostMode && !displayName.trim()
+                              !isGhostMode
                                 ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/30"
                                 : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                             }`}>
                               <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
                             </div>
                             <span className={`text-sm font-black tracking-tight truncate ${
-                              !isGhostMode && !displayName.trim() ? "text-emerald-700 dark:text-emerald-300" : "text-ink"
+                              !isGhostMode ? "text-emerald-700 dark:text-emerald-300" : "text-ink"
                             }`}>
                               Civic Mode (With My Name)
                             </span>
                           </div>
-                          {!isGhostMode && !displayName.trim() && (
+                          {!isGhostMode && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs shrink-0">
                               <Check className="w-3 h-3 stroke-[3]" />
                               Selected
@@ -881,69 +850,6 @@ export default function ReportPage() {
                           Name shared only with the LGU • Never shown publicly • Track status
                         </p>
                       </button>
-
-                      {/* Alias Mode Card — public display name, real identity stays private */}
-                      <div
-                        className={`relative p-3.5 sm:p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                          !isGhostMode && displayName.trim()
-                            ? "border-sky-500/80 bg-sky-500/10 dark:bg-sky-950/30 shadow-[0_4px_18px_-2px_rgba(14,165,233,0.22)] ring-2 ring-sky-500/30"
-                            : "border-ink/10 bg-panel hover:border-sky-500/40 hover:bg-sky-500/[0.03] opacity-75 hover:opacity-100"
-                        }`}
-                        onClick={() => handleGhostModeToggle(false)}
-                      >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                              !isGhostMode && displayName.trim()
-                                ? "bg-sky-500 text-white shadow-sm shadow-sky-500/30"
-                                : "bg-sky-500/15 text-sky-600 dark:text-sky-400"
-                            }`}>
-                              <UserRound className="w-4 h-4 stroke-[2.5]" />
-                            </div>
-                            <span className={`text-sm font-black tracking-tight truncate ${
-                              !isGhostMode && displayName.trim() ? "text-sky-700 dark:text-sky-300" : "text-ink"
-                            }`}>
-                              Alias Mode (Public Name)
-                            </span>
-                          </div>
-                          {!isGhostMode && displayName.trim() && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-500 text-white shadow-xs shrink-0">
-                              <Check className="w-3 h-3 stroke-[3]" />
-                              Selected
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-ink/65 pl-10 leading-snug">
-                          Public name only • Real identity stays private & never shown
-                        </p>
-                        <div className="mt-2.5 pl-10">
-                          <input
-                            type="text"
-                            value={displayName}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              setDisplayName(value);
-                              // Switching away from Ghost to Alias: clear ghost
-                              // without wiping the just-typed alias text.
-                              if (isGhostMode) {
-                                setIsGhostMode(false);
-                                const newTheme = "civic";
-                                document.documentElement.setAttribute("data-theme", newTheme);
-                                try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
-                                notifyThemeColor();
-                              }
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            placeholder="e.g. Barangay Watcher"
-                            maxLength={40}
-                            className={`w-full px-3 py-2 rounded-xl text-xs font-medium border bg-ink/[0.02] outline-none transition-all ${
-                              !isGhostMode && displayName.trim()
-                                ? "border-sky-500/50 focus:border-sky-500 text-ink"
-                                : "border-ink/10 focus:border-sky-500/60 text-ink placeholder:text-ink/40"
-                            }`}
-                          />
-                        </div>
-                      </div>
 
                       {/* Ghost Mode Card */}
                       <button
@@ -1426,16 +1332,10 @@ export default function ReportPage() {
                     <span className={`inline-flex items-center gap-1.5 text-xs font-mono font-bold px-2.5 py-0.5 rounded-full ${
                       isGhostMode
                         ? "bg-teal-500/15 text-teal-600 dark:text-teal-400"
-                        : displayName.trim()
-                        ? "bg-sky-500/15 text-sky-600 dark:text-sky-400"
                         : "bg-accent/15 text-accent"
                     }`}>
-                      {isGhostMode ? <EyeOff className="w-3 h-3" /> : displayName.trim() ? <UserRound className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
-                      {isGhostMode
-                        ? "Ghost Mode (Anonymous)"
-                        : displayName.trim()
-                        ? `Alias Mode (as ${displayName.trim()})`
-                        : "Civic Mode (With Name)"}
+                      {isGhostMode ? <EyeOff className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
+                      {isGhostMode ? "Ghost Mode (Anonymous)" : "Civic Mode (With Name)"}
                     </span>
                   </div>
                 </div>
@@ -1487,16 +1387,12 @@ export default function ReportPage() {
                 <div className={`p-3.5 rounded-2xl border flex items-center gap-3 text-xs text-ink/80 ${
                   isGhostMode
                     ? "bg-teal-500/10 border-teal-500/25"
-                    : displayName.trim()
-                    ? "bg-sky-500/10 border-sky-500/25"
                     : "bg-emerald-500/10 border-emerald-500/25"
                 }`}>
-                  {isGhostMode ? <EyeOff className="w-5 h-5 text-teal-500 shrink-0" /> : displayName.trim() ? <UserRound className="w-5 h-5 text-sky-500 shrink-0" /> : <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
+                  {isGhostMode ? <EyeOff className="w-5 h-5 text-teal-500 shrink-0" /> : <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
                   <span>
                     {isGhostMode
                       ? "All personal and phone information removed. Report is completely anonymous."
-                      : displayName.trim()
-                      ? `Shown publicly as \"${displayName.trim()}\". Your real name is never made public — only the handling LGU sees it.`
                       : "Filed under your real name — visible ONLY to the handling LGU office, never shown publicly. You will receive official updates as authorities take action."}
                   </span>
                 </div>
