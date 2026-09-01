@@ -10,13 +10,13 @@ import uuid
 from datetime import datetime, timezone
 
 import boto3
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.supabase_jwt import optional_auth, verify_supabase_token
 from config import settings
-from db.connection import get_db
+from db.connection import AsyncSessionLocal, get_db
 from db.models import Ticket, TicketEvidence, TicketTimeline
 from services.exif import strip_exif, get_mime_type, downscale_image
 from services.ghost_mode import sanitize_report_payload
@@ -44,6 +44,44 @@ def _get_s3_client():
 
 # Anonymous ghost user ID for uploads when reporter identity is hidden
 GHOST_USER_ID = uuid.UUID("019edc0b-862e-722a-b489-c3bb01558a3c")
+
+
+async def _run_triage_background(base64_image: str, ticket_id: str) -> None:
+    """
+    Background coroutine: run AI triage with its own independent DB session.
+
+    Decoupled from the request-scoped session so it can outlive the HTTP
+    response. Exceptions are logged but never re-raised — the ticket already
+    exists in the DB and will be picked up by admin re-analysis if needed.
+    """
+    if AsyncSessionLocal is None:
+        logger.error(
+            "Background triage skipped for ticket %s: DATABASE_URL not configured",
+            ticket_id,
+        )
+        return
+
+    import time
+    from services.triage_service import run_triage
+
+    t0 = time.monotonic()
+    logger.info("Background triage starting for ticket %s", ticket_id)
+    try:
+        async with AsyncSessionLocal() as bg_db:
+            await run_triage(base64_image, ticket_id, bg_db)
+        elapsed = time.monotonic() - t0
+        logger.info(
+            "Background triage complete for ticket %s (%.1fs)", ticket_id, elapsed
+        )
+    except Exception as exc:
+        elapsed = time.monotonic() - t0
+        logger.error(
+            "Background triage failed for ticket %s after %.1fs: %s",
+            ticket_id,
+            elapsed,
+            exc,
+            exc_info=True,
+        )
 
 
 class ReportRequest(BaseModel):
@@ -102,6 +140,7 @@ async def triage_image(body: TriageRequest):
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def submit_report(
     body: ReportRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     token: dict | None = Depends(optional_auth),
 ):
@@ -112,9 +151,8 @@ async def submit_report(
     3. Apply Ghost Mode rules (identity strip + location fuzz)
     4. Upload to Supabase Storage
     5. Persist Ticket + TicketEvidence in DB
-    6. Call AI analysis pipeline in-process
-    7. Store AI result + routing recommendation on Ticket
-    8. Return structured response to frontend
+    6. Schedule AI analysis in background
+    7. Return structured response to frontend
     """
     # 1. Decode image
     raw = body.base64Image
@@ -217,10 +255,11 @@ async def submit_report(
     db.add(timeline_entry)
     await db.commit()
 
-    # 6. AI analysis — in-process call (no HTTP hop!)
-    from services.triage_service import run_triage
-    ai_result = await run_triage(
-        base64.b64encode(stripped_bytes).decode(), str(ticket_id), db
+    # 6. Schedule AI analysis as a background task
+    background_tasks.add_task(
+        _run_triage_background,
+        base64.b64encode(stripped_bytes).decode(),
+        str(ticket_id)
     )
 
     return {
@@ -229,6 +268,9 @@ async def submit_report(
         "status": "open",
         "ghost_mode": body.ghost_mode,
         "submission_path": "ai_service",
-        "ai_analysis": ai_result,
+        "ai_analysis": {
+            "status": "pending",
+            "message": "AI analysis is running in the background. Ticket AI fields will populate shortly.",
+        },
         "public_ticket_url": f"/incidents/{ticket_id}",
     }

@@ -1,0 +1,4 @@
+{"ts": "2026-09-01T02:39:13.292846+00:00", "latency_ms": 860.81, "model": "yolov8n", "detection_count": 1, "classes": [6], "max_confidence": 0.6909, "has_environmental_concern": false}
+{"ts": "2026-09-01T02:40:09.066385+00:00", "latency_ms": 1015.61, "model": "yolov8n", "detection_count": 1, "classes": [0], "max_confidence": 0.2392, "has_environmental_concern": false}
+{"ts": "2026-09-01T02:40:55.641630+00:00", "latency_ms": 1134.87, "model": "yolov8n", "detection_count": 1, "classes": [0], "max_confidence": 0.2039, "has_environmental_concern": false}
+{"ts": "2026-09-01T02:41:32.617685+00:00", "latency_ms": 1188.55, "model": "yolov8n", "detection_count": 3, "classes": [0, 29, 32], "max_confidence": 0.4971, "has_environmental_concern": false}
