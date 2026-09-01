@@ -45,7 +45,7 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 **LikasLens** is a neuro-symbolic civic intelligence platform that closes the environmental accountability loop for the Philippines:
 
 1. **📸 Snap a photo** — Any environmental violation, hazard, or emergency captured by a phone camera
-2. **🤖 AI analyzes it** — YOLOv8 vision models detect the issue type, severity, and hazard class (dual COCO + environmental models + Roboflow ensemble)
+2. **🤖 AI analyzes it** — YOLOv8 vision models detect the issue type, severity, and hazard class (COCO + Roboflow ensemble; environmental model implemented, currently COCO-only for demo reliability)
 3. **🧠 GraphRAG routes it** — A Neo4j knowledge graph + Gemini 2.5 Flash neural synthesis identifies the exact law violated and the government agency responsible
 4. **🏛️ Publicly tracked** — Every report becomes a ticket with a transparent status. LGUs are scored on their response and resolution times
 5. **🕵️ Ghost Mode protects you** — EXIF stripping, anonymous submission, GPS fuzzing to barangay centroids — zero trace left behind for dangerous reports
@@ -60,7 +60,7 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 
 | Feature | Description |
 |---------|-------------|
-| **AI-Powered Image Analysis** | Dual YOLOv8 models (COCO + environmental) detect 80+ COCO classes + waste/fire/deforestation/water pollution classes. Roboflow Serverless API as a third ensemble model for maximum accuracy. |
+| **AI-Powered Image Analysis** | YOLOv8 COCO detector (80+ classes) + Roboflow Serverless API (garbage detection ensemble). Environmental YOLO model implemented and committed — toggled off for demo reliability on free-tier infrastructure. |
 | **Neuro-Symbolic Routing** | Hybrid GraphRAG pipeline — Neo4j graph traversal for exact law matching + Gemini 2.5 Flash vector search fallback. Outputs violated laws, enforcing agencies, and grounded legal summaries. |
 | **Adaptive Routing Learner** | ML system that learns which LGUs resolve which violation types fastest, continuously optimizing routing decisions based on historical resolution times. |
 | **Ghost Mode (Whistleblower Protection)** | End-to-end anonymous reporting: EXIF metadata stripped at capture → GPS fuzzed via barangay centroids → submitted as anonymous ghost user → zero identifiable data stored. Toggle per-report. |
@@ -118,7 +118,7 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 
 | Endpoint | Function |
 |----------|----------|
-| `POST /analyze` | YOLOv8 dual-model inference (COCO + environmental) on uploaded image |
+| `POST /analyze` | YOLOv8 COCO inference + Roboflow ensemble on uploaded image |
 | `POST /analyze/base64` | YOLOv8 inference on base64-encoded image |
 | `POST /analyze/similarity` | Image feature extraction + embedding similarity search |
 | `POST /api/v1/analyze-hazard` | Neuro-symbolic pipeline: Neo4j GraphRAG + Gemini 2.5 Flash legal synthesis |
@@ -239,7 +239,7 @@ Citizens witness violations every day — illegal logging in watersheds, open bu
 | Technology | Purpose |
 |------------|---------|
 | **FastAPI** | High-performance Python async microservice |
-| **YOLOv8** (Ultralytics) | State-of-the-art real-time object detection (COCO + environmental models) |
+| **YOLOv8** (Ultralytics) | COCO object detection (80 classes) + environmental waste model (implemented, toggle-ready via ENV_MODEL_PATH) |
 | **Google Gemini 2.5 Flash** | Legal text synthesis, hazard report generation, chatbot |
 | **Neo4j AuraDB** | Graph database for environmental law knowledge graph |
 | **GraphRAG** | Hybrid retrieval: graph traversal + vector similarity search |

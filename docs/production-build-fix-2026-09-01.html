@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Production Build Fix — 2026-09-01</title>
+  <style>
+    :root { --bg: #0d1117; --fg: #c9d1d9; --accent: #58a6ff; --green: #3fb950; --red: #f85149; --yellow: #d29922; --border: #30363d; --code-bg: #161b22; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+    h1 { color: var(--accent); margin-bottom: 0.5rem; font-size: 1.6rem; }
+    h2 { color: var(--accent); margin: 2rem 0 0.75rem; font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+    h3 { margin: 1.25rem 0 0.5rem; font-size: 1.05rem; }
+    .meta { color: #8b949e; margin-bottom: 2rem; font-size: 0.9rem; }
+    .badge { display: inline-block; padding: 0.15em 0.6em; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+    .badge-ok { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+    .badge-warn { background: rgba(210,153,34,0.15); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+    .badge-fail { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.75rem 0; }
+    code { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
+    .inline-code { background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; }
+    th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+    th { background: var(--code-bg); }
+    .diff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0.75rem 0; }
+    .diff-grid > div { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .diff-grid .label { background: var(--code-bg); padding: 0.4rem 0.75rem; font-weight: 600; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+    .diff-grid pre { margin: 0; border: none; border-radius: 0; }
+    .removed { background: rgba(248,81,73,0.08); }
+    .added { background: rgba(63,185,80,0.08); }
+    .section-result { margin: 0.75rem 0; padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid var(--border); }
+    .section-result.pass { border-color: rgba(63,185,80,0.4); }
+    .section-result.fail { border-color: rgba(248,81,73,0.4); }
+    .callout { margin: 1rem 0; padding: 1rem; border-radius: 6px; border: 1px solid; }
+    .callout.warn { border-color: rgba(210,153,34,0.4); background: rgba(210,153,34,0.05); }
+    .callout.info { border-color: rgba(88,166,255,0.4); background: rgba(88,166,255,0.05); }
+    ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+    li { margin: 0.25rem 0; }
+  </style>
+</head>
+<body>
+
+<h1>Production Build Fix — 2026-09-01</h1>
+<p class="meta">Commit: <code class="inline-code">e41aff7</code> &nbsp;|&nbsp; Branches: development → staging → main &nbsp;|&nbsp; All three at identical commit with zero divergence</p>
+
+<!-- ============================================================ -->
+<h2>1. Root Cause</h2>
+
+<p>Prompt 4 removed <code class="inline-code">community_corroboration</code> and <code class="inline-code">geo_within_known_zone</code> from <code class="inline-code">ConfidenceBreakdown</code> in <code class="inline-code">apps/shared/src/types/ticket.ts</code> (now only <code class="inline-code">visual: number</code>). The build-verification step for that prompt only covered <code class="inline-code">apps/shared</code> and <code class="inline-code">apps/admin-portal</code>, not <code class="inline-code">apps/frontend</code> — a scoping gap. Three frontend files still referenced the removed fields, causing TypeScript errors that broke the production build.</p>
+
+<p>The removal itself was correct. The fix is to update the three frontend files to match the trimmed type.</p>
+
+<!-- ============================================================ -->
+<h2>2. Files Fixed</h2>
+
+<!-- ── File 1 ──────────────────────────────────────────────── -->
+<h3>2.1 confidence-waterfall.tsx</h3>
+
+<p><strong>Problem:</strong> <code class="inline-code">LABELS</code>, <code class="inline-code">COLORS</code>, and <code class="inline-code">WEIGHTS</code> were typed <code class="inline-code">Record&lt;keyof ConfidenceBreakdown, ...&gt;</code> and still listed all three old keys. The component's generic <code class="inline-code">Object.keys(breakdown)</code> logic was fine — only the hardcoded record literals needed trimming.</p>
+
+<div class="diff-grid">
+  <div>
+    <div class="label removed">BEFORE</div>
+    <pre><code>const LABELS: Record&lt;keyof ConfidenceBreakdown, string&gt; = {
+  visual: "Visual (YOLO)",
+  community_corroboration: "Community Corroboration",
+  geo_within_known_zone: "Geographic Proximity",
+};
+
+const COLORS: Record&lt;keyof ConfidenceBreakdown, string&gt; = {
+  visual: "#22d3ee",
+  community_corroboration: "#34d399",
+  geo_within_known_zone: "#a78bfa",
+};
+
+const WEIGHTS: Record&lt;keyof ConfidenceBreakdown, number&gt; = {
+  visual: 0.5,
+  community_corroboration: 0.25,
+  geo_within_known_zone: 0.25,
+};</code></pre>
+  </div>
+  <div>
+    <div class="label added">AFTER</div>
+    <pre><code>const LABELS: Record&lt;keyof ConfidenceBreakdown, string&gt; = {
+  visual: "Visual (YOLO)",
+};
+
+const COLORS: Record&lt;keyof ConfidenceBreakdown, string&gt; = {
+  visual: "#22d3ee",
+};
+
+const WEIGHTS: Record&lt;keyof ConfidenceBreakdown, number&gt; = {
+  visual: 1,
+};</code></pre>
+  </div>
+</div>
+
+<p><strong>Design note:</strong> <code class="inline-code">WEIGHTS.visual</code> set to <code class="inline-code">1</code> (not 0.5) — it's now the sole signal, so the waterfall bar represents the full confidence contribution.</p>
+
+<!-- ── File 2 ──────────────────────────────────────────────── -->
+<h3>2.2 explainability-panel.tsx — Factor List</h3>
+
+<p><strong>Problem:</strong> Two <code class="inline-code">&lt;FactorExplanation&gt;</code> blocks rendered <code class="inline-code">breakdown.community_corroboration</code> and <code class="inline-code">breakdown.geo_within_known_zone</code> — fields that don't exist anywhere in the system, not just in the type.</p>
+
+<div class="diff-grid">
+  <div>
+    <div class="label removed">REMOVED (two blocks)</div>
+    <pre><code>&lt;FactorExplanation
+  label="Community Corroboration"
+  value={breakdown.community_corroboration}
+  description="Score boosted when multiple reporters
+    submit similar reports (chain)"
+  color="text-green"
+/&gt;
+&lt;FactorExplanation
+  label="Geographic Proximity"
+  value={breakdown.geo_within_known_zone}
+  description="Score boosted when other reports exist
+    within ~5km radius"
+  color="text-purple"
+/&gt;</code></pre>
+  </div>
+  <div>
+    <div class="label added">KEPT (one block)</div>
+    <pre><code>&lt;FactorExplanation
+  label="Visual Detection (YOLO)"
+  value={breakdown.visual}
+  description="Object detection confidence from
+    YOLOv8 model analyzing the uploaded image"
+  color="text-cyan"
+/&gt;</code></pre>
+  </div>
+</div>
+
+<p>Also added <code class="inline-code">ConfidenceBreakdown</code> to the <code class="inline-code">@likaslens/shared</code> type imports (needed for Step 3).</p>
+
+<!-- ── File 3 ──────────────────────────────────────────────── -->
+<h3>2.3 explainability-panel.tsx — CounterfactualPanel</h3>
+
+<p><strong>Problem (type drift):</strong> <code class="inline-code">CounterfactualPanel</code> had a locally duplicated three-field prop type instead of importing <code class="inline-code">ConfidenceBreakdown</code> from shared. This let the drift happen silently — the local shape wasn't constrained by the shared type.</p>
+
+<p><strong>Problem (fabricated data):</strong> Three of four counterfactual scenarios described signals that were <strong>never computed from real data</strong>, even before this break. They had hardcoded impact numbers (-0.12, -0.08, +0.08) with no backing signal at any layer. Only "Lower visual confidence" derives its number from a real input (<code class="inline-code">breakdown.visual</code>).</p>
+
+<div class="callout warn">
+  <strong>Note:</strong> The fabricated counterfactual scenarios predate today's break. They were only surfaced by diagnosing the production build failure. This is the same "never fabricate, remove instead" rule applied consistently with the admin bypass fix earlier today.
+</div>
+
+<div class="diff-grid">
+  <div>
+    <div class="label removed">BEFORE — prop type + 4 scenarios</div>
+    <pre><code>function CounterfactualPanel({
+  confidence,
+  breakdown,
+}: {
+  confidence: number;
+  breakdown?: {
+    visual: number;
+    community_corroboration: number;
+    geo_within_known_zone: number;
+  };
+}) {
+  const scenarios = [
+    {
+      label: "Without community corroboration",
+      impact: -0.12,       // FABRICATED
+      ...
+    },
+    {
+      label: "Without geographic data",
+      impact: -0.08,       // FABRICATED
+      ...
+    },
+    {
+      label: "Lower visual confidence",
+      impact: derived from baseVisual, // REAL
+      ...
+    },
+    {
+      label: "With additional corroborating reports",
+      impact: 0.08,        // FABRICATED
+      ...
+    },
+  ];
+}</code></pre>
+  </div>
+  <div>
+    <div class="label added">AFTER — shared type + 1 real scenario</div>
+    <pre><code>function CounterfactualPanel({
+  confidence,
+  breakdown,
+}: {
+  confidence: number;
+  breakdown?: ConfidenceBreakdown;  // shared type
+}) {
+  const baseVisual = breakdown?.visual ?? confidence;
+  const impact = baseVisual &gt; 0.5
+    ? -(baseVisual - 0.5) * 0.5 : 0;
+  const newConfidence = Math.max(0, confidence - impact);
+
+  // Single card: "Lower visual confidence"
+  // ...rendered inline, no scenarios array
+}</code></pre>
+  </div>
+</div>
+
+<p><strong>UI judgment call (Step 3e):</strong> The "What-If" tab now shows a single real counterfactual. This is an honest reflection of what the system actually measures. I kept the tab rather than removing it — a single real scenario is more useful than four fabricated ones, and the tab structure still works with one card. The tab label stays "What-If" since it still shows what would change the confidence.</p>
+
+<!-- ============================================================ -->
+<h2>3. Build Verification</h2>
+
+<h3>3.1 Local builds (before push)</h3>
+<table>
+  <tr><th>App</th><th>Command</th><th>TypeScript</th><th>Build</th></tr>
+  <tr><td>frontend</td><td><code>pnpm --filter frontend build</code></td><td><span class="badge badge-ok">PASS</span></td><td><span class="badge badge-ok">279 pages</span></td></tr>
+  <tr><td>admin-portal</td><td><code>pnpm --filter admin-portal build</code></td><td><span class="badge badge-ok">PASS</span></td><td><span class="badge badge-ok">166 pages</span></td></tr>
+  <tr><td>mobile-pwa</td><td><code>pnpm --filter mobile-pwa build</code></td><td><span class="badge badge-ok">PASS</span></td><td><span class="badge badge-ok">238 pages</span></td></tr>
+</table>
+
+<h3>3.2 CI (GitHub Actions — commit e41aff7)</h3>
+<table>
+  <tr><th>Job</th><th>Result</th></tr>
+  <tr><td>Frontend — lint + typecheck + build</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Admin Portal — lint + typecheck + build</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Mobile PWA — lint + typecheck + build</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Shared — typecheck</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>AI Service — lint + syntax</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>SyncPack — dependency consistency</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Security audit</td><td><span class="badge badge-ok">PASS</span></td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>4. Fresh-Clone Verification</h2>
+
+<p>After each push, a fresh shallow clone was made and verified:</p>
+
+<table>
+  <tr><th>Branch</th><th>Commit</th><th>rev-list parity</th><th>Zero removed-field refs</th><th>Result</th></tr>
+  <tr>
+    <td>development</td>
+    <td><code>e41aff7</code></td>
+    <td>—</td>
+    <td>0 matches in both files</td>
+    <td><span class="badge badge-ok">PASS</span></td>
+  </tr>
+  <tr>
+    <td>staging</td>
+    <td><code>e41aff7</code></td>
+    <td><code>0	0</code> vs dev</td>
+    <td>—</td>
+    <td><span class="badge badge-ok">PASS</span></td>
+  </tr>
+  <tr>
+    <td>main</td>
+    <td><code>e41aff7</code></td>
+    <td><code>0	0</code> vs dev, <code>0	0</code> vs staging</td>
+    <td>—</td>
+    <td><span class="badge badge-ok">PASS</span></td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>5. Vercel Deployment Status</h2>
+
+<div class="callout info">
+  <strong>CI confirms green build.</strong> All 7 CI jobs passed for commit <code class="inline-code">e41aff7</code>, including Frontend lint + TypeScript check + Build. The "Deploy Frontend to Vercel" GitHub Action failed at the "Pull Vercel Environment" step — a pre-existing infrastructure issue (Vercel token/config), not a code build failure. This same infrastructure issue affected all previous deploy attempts today.
+</div>
+
+<p>The Vercel free-tier deployment limit was hit during manual CLI verification. The CI build output confirms the TypeScript compilation and Next.js build succeed with zero errors — the same build pipeline that Vercel runs.</p>
+
+<p>Production deployments confirmed successful for:</p>
+<ul>
+  <li><strong>admin-portal</strong> — Production deploy succeeded at commit <code class="inline-code">65fa669</code> (unchanged by this fix)</li>
+  <li><strong>mobile-pwa</strong> — Production deploy succeeded at commit <code class="inline-code">65fa669</code> (unchanged by this fix)</li>
+  <li><strong>frontend</strong> — Awaiting Vercel token refresh for GitHub Action; CI confirms build passes</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2>6. Summary</h2>
+
+<table>
+  <tr><th>Item</th><th>Status</th></tr>
+  <tr><td>confidence-waterfall.tsx — trimmed to visual only</td><td><span class="badge badge-ok">FIXED</span></td></tr>
+  <tr><td>explainability-panel.tsx — removed fabricated FactorExplanation blocks</td><td><span class="badge badge-ok">FIXED</span></td></tr>
+  <tr><td>CounterfactualPanel — shared type + removed 3 fabricated scenarios</td><td><span class="badge badge-ok">FIXED</span></td></tr>
+  <tr><td>Frontend build (local + CI)</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Admin-portal build</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Mobile-pwa build</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Push to development</td><td><span class="badge badge-ok">DONE</span></td></tr>
+  <tr><td>Fresh-clone verify development</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Promote development → staging</td><td><span class="badge badge-ok">DONE</span></td></tr>
+  <tr><td>Fresh-clone verify staging</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Promote staging → main</td><td><span class="badge badge-ok">DONE</span></td></tr>
+  <tr><td>Fresh-clone verify main</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Three-way branch parity</td><td><span class="badge badge-ok">0 0 0</span></td></tr>
+  <tr><td>CI — all 7 jobs</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Vercel frontend deploy</td><td><span class="badge badge-warn">Awaiting token refresh</span></td></tr>
+</table>
+
+</body>
+</html>

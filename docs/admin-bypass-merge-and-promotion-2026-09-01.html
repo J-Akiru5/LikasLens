@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Bypass Fix — Merge &amp; Promotion Report (2026-09-01)</title>
+  <style>
+    :root { --bg: #0d1117; --fg: #c9d1d9; --accent: #58a6ff; --green: #3fb950; --red: #f85149; --yellow: #d29922; --border: #30363d; --code-bg: #161b22; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; padding: 2rem; max-width: 960px; margin: 0 auto; }
+    h1 { color: var(--accent); margin-bottom: 0.5rem; font-size: 1.6rem; }
+    h2 { color: var(--accent); margin: 2rem 0 0.75rem; font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+    h3 { margin: 1.25rem 0 0.5rem; font-size: 1.05rem; }
+    .meta { color: #8b949e; margin-bottom: 2rem; font-size: 0.9rem; }
+    .badge { display: inline-block; padding: 0.15em 0.6em; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+    .badge-ok { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+    .badge-warn { background: rgba(210,153,34,0.15); color: var(--yellow); border: 1px solid rgba(210,153,34,0.3); }
+    .badge-fail { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+    pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.75rem 0; }
+    code { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
+    .inline-code { background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; }
+    th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+    th { background: var(--code-bg); }
+    .conflict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0.75rem 0; }
+    .conflict-grid > div { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+    .conflict-grid .label { background: var(--code-bg); padding: 0.4rem 0.75rem; font-weight: 600; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+    .conflict-grid pre { margin: 0; border: none; border-radius: 0; }
+    .removed { background: rgba(248,81,73,0.08); }
+    .added { background: rgba(63,185,80,0.08); }
+    .section-result { margin: 0.75rem 0; padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid var(--border); }
+    .section-result.pass { border-color: rgba(63,185,80,0.4); }
+    .section-result.fail { border-color: rgba(248,81,73,0.4); }
+    ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+    li { margin: 0.25rem 0; }
+  </style>
+</head>
+<body>
+
+<h1>Admin Bypass Fix — Merge &amp; Promotion Report</h1>
+<p class="meta">Date: 2026-09-01 &nbsp;|&nbsp; Commit: <code class="inline-code">65fa669</code> &nbsp;|&nbsp; Branches: development → staging → main</p>
+
+<!-- ============================================================ -->
+<h2>1. Conflict Resolution</h2>
+
+<p><strong>File:</strong> <code class="inline-code">apps/shared/src/api/admin.ts</code> &nbsp;|&nbsp; <strong>Function:</strong> <code class="inline-code">bulkTicketStatus()</code></p>
+
+<p>The merge of <code class="inline-code">fix/admin-status-bypass-v2</code> into <code class="inline-code">development</code> produced exactly one conflict, in the body of <code class="inline-code">bulkTicketStatus()</code>. Resolution: take the fix branch side entirely, discarding development's inline proxy-then-raw-fallback.</p>
+
+<div class="conflict-grid">
+  <div>
+    <div class="label removed">BEFORE (development — discarded)</div>
+    <pre><code>export async function bulkTicketStatus(ids: string[], status: string) {
+  const failed: string[] = [];
+  let updated = 0;
+
+  await Promise.all(ids.map(async (id) => {
+    try {
+      const res = await fetch(`/api/v1/ai/tickets/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        updated++;
+      } else {
+        const { error } = await db().from("tickets")
+          .update({ status, updated_at: new Date().toISOString() })
+          .eq("id", id);
+        if (error) { failed.push(id); } else { updated++; }
+      }
+    } catch {
+      const { error } = await db().from("tickets")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) { failed.push(id); } else { updated++; }
+    }
+  }));
+
+  if (updated === 0 &amp;&amp; failed.length > 0)
+    throw new Error(`Failed to update all ${failed.length} ticket(s)`);
+  return {
+    success: true, data: { updated, failed },
+    message: `${updated} ticket…`,
+  };
+}</code></pre>
+  </div>
+  <div>
+    <div class="label added">AFTER (fix branch — kept)</div>
+    <pre><code>export async function bulkTicketStatus(ids: string[], status: string) {
+  const failed: string[] = [];
+  for (const id of ids) {
+    try {
+      await routeTicketStatus(id, status);
+    } catch {
+      failed.push(id);
+    }
+  }
+  return {
+    success: failed.length === 0,
+    data: { updated: ids.length - failed.length, failed },
+  };
+}</code></pre>
+  </div>
+</div>
+
+<p><strong>Why this side is correct:</strong> Development's version attempted the AI proxy per-ticket, but on rejection fell back to a raw, unauthorized <code class="inline-code">db().from("tickets").update(...)</code> — no transition validation, no timeline entry. This is the same class of bypass the entire fix exists to close. The fix branch version routes every ticket through the shared <code class="inline-code">routeTicketStatus()</code> helper, which uses the authorized proxy first and falls back with a best-effort timeline entry only when the AI service is unreachable.</p>
+
+<!-- ============================================================ -->
+<h2>2. Broader-Pattern Check (Step 2)</h2>
+
+<p>After resolving the merge conflict, the full file was grepped for <code class="inline-code">from("tickets").update</code> to find any remaining proxy-then-raw-fallback bypass instances.</p>
+
+<h3>Result: One previously-unknown instance found</h3>
+
+<p><code class="inline-code">updateTicketStatus()</code> (exported, used by admin-portal) contained the identical bypass pattern — inline fetch to proxy, raw <code class="inline-code">db().from("tickets").update(...)</code> fallback, manual timeline insert. This was <strong>not</strong> part of the original fix branch's six-site list.</p>
+
+<table>
+  <tr><th>Function</th><th>Status</th><th>Resolution</th></tr>
+  <tr><td><code>bulkTicketStatus()</code></td><td><span class="badge badge-ok">Conflict resolved</span></td><td>Taken from fix branch — uses <code>routeTicketStatus()</code></td></tr>
+  <tr><td><code>updateTicketStatus()</code></td><td><span class="badge badge-warn">Newly found &amp; fixed</span></td><td>Replaced inline bypass with delegation to <code>routeTicketStatus()</code></td></tr>
+  <tr><td><code>escalatePattern()</code></td><td><span class="badge badge-ok">Clean merge</span></td><td>Already routes through <code>routeTicketStatus()</code></td></tr>
+  <tr><td><code>verifyReport()</code></td><td><span class="badge badge-ok">Clean merge</span></td><td>Already routes through <code>routeTicketStatus()</code></td></tr>
+  <tr><td><code>classifyTriageTicket()</code></td><td><span class="badge badge-ok">Clean merge</span></td><td>Already routes through <code>routeTicketStatus()</code></td></tr>
+  <tr><td><code>dismissTriageTicket()</code></td><td><span class="badge badge-ok">Clean merge</span></td><td>Already routes through <code>routeTicketStatus()</code></td></tr>
+  <tr><td><code>escalateTriageTicket()</code></td><td><span class="badge badge-ok">Clean merge</span></td><td>Already routes through <code>routeTicketStatus()</code></td></tr>
+</table>
+
+<p>The <code class="inline-code">updateTicketStatus()</code> fix (committed in the same merge commit):</p>
+<pre><code>// BEFORE (bypass — inline proxy + raw fallback):
+export async function updateTicketStatus(id, status, notes?) {
+  try {
+    const res = await fetch(`/api/v1/ai/tickets/${id}/status`, { ... });
+    if (res.ok) return await res.json();
+  } catch { /* fall through */ }
+  const { error } = await db().from("tickets").update({ status, ... }).eq("id", id);
+  if (error) throw error;
+  // ... manual timeline insert ...
+}
+
+// AFTER (delegates to shared helper):
+export async function updateTicketStatus(id, status, notes?) {
+  const res = await routeTicketStatus(id, status, { notes });
+  return { ...res, data: { ...res.data, resolved_at: null } };
+}</code></pre>
+
+<p>Callers: <code class="inline-code">incident-detail-panel.tsx:73</code>, <code class="inline-code">tickets/page.tsx:200</code> — both use only <code class="inline-code">res.success</code> and <code class="inline-code">res.message</code>; return type adaptation is safe.</p>
+
+<h3>Final grep count</h3>
+<div class="section-result pass">
+  <strong>1 match</strong> for <code class="inline-code">from("tickets").update</code> — at line 451, inside <code class="inline-code">routeTicketStatus()</code> (line 427). Zero bypass sites outside the documented fallback.
+</div>
+
+<!-- ============================================================ -->
+<h2>3. Build / Typecheck Verification (Step 3)</h2>
+
+<table>
+  <tr><th>App</th><th>Command</th><th>Result</th></tr>
+  <tr><td><code>@likaslens/shared</code></td><td><code>tsc --noEmit</code></td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td><code>admin-portal</code></td><td><code>next build</code></td><td><span class="badge badge-ok">PASS</span> (166 pages)</td></tr>
+  <tr><td><code>mobile-pwa</code></td><td><code>next build</code></td><td><span class="badge badge-ok">PASS</span> (238 pages)</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>4. Fresh-Clone Verification (Step 5)</h2>
+
+<p>After pushing the merge commit to <code class="inline-code">development</code>, a fresh shallow clone was made and verified:</p>
+
+<table>
+  <tr><th>Check</th><th>Expected</th><th>Actual</th><th>Result</th></tr>
+  <tr>
+    <td>Commit SHA</td>
+    <td><code class="inline-code">65fa669</code></td>
+    <td><code class="inline-code">65fa669</code></td>
+    <td><span class="badge badge-ok">PASS</span></td>
+  </tr>
+  <tr>
+    <td>Grep: <code>from("tickets").update</code></td>
+    <td>1 match in <code>routeTicketStatus()</code></td>
+    <td>Line 451 (in <code>routeTicketStatus</code> at line 427)</td>
+    <td><span class="badge badge-ok">PASS</span></td>
+  </tr>
+  <tr>
+    <td><code>bulkTicketStatus()</code> body</td>
+    <td>Uses <code>routeTicketStatus()</code></td>
+    <td>Line 482: <code>await routeTicketStatus(id, status)</code></td>
+    <td><span class="badge badge-ok">PASS</span></td>
+  </tr>
+  <tr>
+    <td><code>updateTicketStatus()</code> body</td>
+    <td>Delegates to <code>routeTicketStatus()</code></td>
+    <td>Line 236: <code>await routeTicketStatus(id, status, { notes })</code></td>
+    <td><span class="badge badge-ok">PASS</span></td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<h2>5. Promotion Verification (Step 6)</h2>
+
+<h3>development → staging</h3>
+<pre><code>$ git push origin development:staging
+→ 986f344..65fa669  development -> staging</code></pre>
+<p>Fresh-clone verify of staging:</p>
+<table>
+  <tr><th>Check</th><th>Actual</th><th>Result</th></tr>
+  <tr><td>Commit SHA</td><td><code>65fa669</code></td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Grep count</td><td>1 match (line 451, in <code>routeTicketStatus</code>)</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td><code>rev-list --left-right --count</code></td><td><code>0	0</code></td><td><span class="badge badge-ok">PASS</span></td></tr>
+</table>
+
+<h3>staging → main</h3>
+<pre><code>$ git push origin staging:main
+→ e1995be..65fa669  staging -> main</code></pre>
+<p>Fresh-clone verify of main:</p>
+<table>
+  <tr><th>Check</th><th>Actual</th><th>Result</th></tr>
+  <tr><td>Commit SHA</td><td><code>65fa669</code></td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Grep count</td><td>1 match (line 451, in <code>routeTicketStatus</code>)</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td><code>bulkTicketStatus()</code></td><td>Uses <code>routeTicketStatus()</code></td><td><span class="badge badge-ok">PASS</span></td></tr>
+</table>
+
+<h3>Three-way parity</h3>
+<pre><code>$ git rev-list --left-right --count origin/development...origin/staging
+0	0
+$ git rev-list --left-right --count origin/staging...origin/main
+0	0
+$ git rev-list --left-right --count origin/development...origin/main
+0	0</code></pre>
+<div class="section-result pass">
+  All three branches are at one identical commit <code class="inline-code">65fa669</code> with zero divergence.
+</div>
+
+<!-- ============================================================ -->
+<h2>6. Vercel Build Status (Step 7)</h2>
+
+<div class="section-result fail">
+  <span class="badge badge-fail">BLOCKER</span>&nbsp; <strong>Frontend Vercel deploy failed</strong> — TypeScript errors in <code class="inline-code">apps/frontend</code> (not caused by this merge).
+</div>
+
+<p>The Vercel build for the frontend production deployment at commit <code class="inline-code">65fa669</code> failed with pre-existing TypeScript errors in two files that were never touched by this merge or the fix branch:</p>
+
+<pre><code>src/components/dashboard/confidence-waterfall.tsx(11,3): error TS2353:
+  'community_corroboration' does not exist in type 'Record&lt;"visual", string&gt;'
+
+src/components/dashboard/confidence-waterfall.tsx(17,3): error TS2353:
+  'community_corroboration' does not exist in type 'Record&lt;"visual", string&gt;'
+
+src/components/dashboard/confidence-waterfall.tsx(23,3): error TS2353:
+  'community_corroboration' does not exist in type 'Record&lt;"visual", number&gt;'
+
+src/components/dashboard/explainability-panel.tsx(256,40): error TS2339:
+  Property 'community_corroboration' does not exist on type 'ConfidenceBreakdown'
+
+src/components/dashboard/explainability-panel.tsx(262,40): error TS2339:
+  Property 'geo_within_known_zone' does not exist on type 'ConfidenceBreakdown'
+
+src/components/dashboard/explainability-panel.tsx(318,19): error TS2322:
+  Type 'ConfidenceBreakdown | undefined' is not assignable to type
+  '{ visual: number; community_corroboration: number; geo_within_known_zone: number; } | undefined'</code></pre>
+
+<p><strong>Root cause:</strong> These components reference <code class="inline-code">community_corroboration</code> and <code class="inline_code">geo_within_known_zone</code> properties that were introduced in commit <code class="inline-code">fe42286</code> ("Blockchain Receipt UI &amp; Incident Drawer") but the <code class="inline-code">ConfidenceBreakdown</code> type definition was never updated to include them. Commit <code class="inline-code">1a1146b</code> attempted to fix this but was insufficient.</p>
+
+<p><strong>Impact:</strong> This is a pre-existing error on the <code class="inline-code">development</code> branch. The old <code class="inline-code">main</code> (at <code class="inline-code">e1995be</code>) did not include these files, so this error was never surface in production. Promoting to main exposed it.</p>
+
+<p><strong>Admin-portal and mobile-pwa deploys:</strong> Admin-portal production deploy succeeded. Mobile-pwa not deployed to production by this workflow.</p>
+
+<!-- ============================================================ -->
+<h2>7. Summary</h2>
+
+<table>
+  <tr><th>Item</th><th>Status</th></tr>
+  <tr><td>Merge conflict resolved (bulkTicketStatus)</td><td><span class="badge badge-ok">DONE</span></td></tr>
+  <tr><td>Additional bypass found &amp; fixed (updateTicketStatus)</td><td><span class="badge badge-ok">DONE</span></td></tr>
+  <tr><td>Zero bypass sites outside documented fallback</td><td><span class="badge badge-ok">VERIFIED</span></td></tr>
+  <tr><td>Typecheck (shared, admin-portal, mobile-pwa)</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Push to development</td><td><span class="badge badge-ok">DONE</span></td></tr>
+  <tr><td>Fresh-clone verify development</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Promote development → staging</td><td><span class="badge badge-ok">DONE</span></td></tr>
+  <tr><td>Fresh-clone verify staging</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Promote staging → main</td><td><span class="badge badge-ok">DONE</span></td></tr>
+  <tr><td>Fresh-clone verify main</td><td><span class="badge badge-ok">PASS</span></td></tr>
+  <tr><td>Three-way branch parity</td><td><span class="badge badge-ok">0 0 0</span></td></tr>
+  <tr><td>Admin-portal Vercel deploy</td><td><span class="badge badge-ok">SUCCESS</span></td></tr>
+  <tr><td>Frontend Vercel deploy</td><td><span class="badge badge-fail">FAILED (pre-existing TS errors)</span></td></tr>
+</table>
+
+<p style="margin-top: 2rem; padding: 1rem; border: 1px solid rgba(248,81,73,0.4); border-radius: 6px; background: rgba(248,81,73,0.05);">
+  <strong>Action required:</strong> The frontend Vercel deploy failure is a pre-existing TypeScript error in <code class="inline-code">apps/frontend/src/components/dashboard/confidence-waterfall.tsx</code> and <code class="inline-code">explainability-panel.tsx</code>. The <code class="inline-code">ConfidenceBreakdown</code> type needs <code class="inline-code">community_corroboration</code> and <code class="inline-code">geo_within_known_zone</code> properties added. This is unrelated to the admin bypass fix and needs Jeff's attention before the frontend goes to production.
+</p>
+
+</body>
+</html>
