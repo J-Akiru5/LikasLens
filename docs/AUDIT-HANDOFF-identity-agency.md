@@ -61,8 +61,16 @@ Scoped to `ticket.reporter_user_id` — verified live: status changes produced n
 ## 6. Demo data reality
 
 - Agencies set on only **one** account in seed data (Juan Dela Cruz — "Quezon City LGU" / "Quezon City"); other analysts have NULL agency.
-- One test analyst (testanalyst@likaslens.ph, "Pasig City LGU") exists for cross-agency verification; a QC ticket (`11335577-...`) is assigned to a QC-area officer to exercise routing.
+- Only Juan Dela Cruz ("Quezon City LGU" / "Quezon City") has agency fields set in seed data; the throwaway test analysts used for cross-agency and NULL-agency verification were deleted after testing (accounts are provisioned per-id as needed).
 - Implication (matches your point): with seed data alone, cross-agency leakage isn't visible; the demo *story* requires the analyst accounts to have agency/service areas set at creation (the Users form supports this).
+
+## 6b. NULL-agency edge test — PASSED (checklist item 4)
+
+Live-tested with a throwaway analyst (auth + `users` row, `agency_name`/`service_area` NULL, auth metadata `role=analyst`):
+- `get_my_tickets()` with **no assignment** → `total: 0` (no global queue leak)
+- After inserting one direct `ticket_assignments` row (assignee = that analyst) → `total: 1`, exactly the assigned ticket — no scope widening
+
+Safe by construction: the agency condition in the RPC is `u.agency_name IS NOT NULL AND u.agency_name = v_agency AND v_agency IS NOT NULL`, so a NULL-agency officer can only ever see tickets assigned directly to them. Test account + assignment deleted after verification; audit chain re-verified `is_valid: true`.
 
 ## 7. Recommendation for Sep 3 (SHIPPED)
 
