@@ -121,7 +121,7 @@ def detect_from_bytes(
             resp = requests.post(
                 url,
                 params={"api_key": api_key, "confidence": confidence},
-                files={"image": ("image.jpg", image_bytes, "image/jpeg")},
+                files={"file": ("image.jpg", image_bytes, "image/jpeg")},
                 timeout=30,
             )
         except requests.ConnectionError as exc:
