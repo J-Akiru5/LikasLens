@@ -53,6 +53,7 @@ class Ticket(Base):
     reporter_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True,
     )
+    reporter_display_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     title: Mapped[str] = mapped_column(String(500))
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="open")

@@ -26,8 +26,8 @@ const STATUS_OPTIONS = [
   { value: "investigating", label: "Investigating", description: "Active field investigation underway" },
   { value: "monitoring", label: "Monitoring", description: "Issue confirmed, under observation" },
   { value: "verified", label: "Verified", description: "Evidence verified by officer" },
-  { value: "resolved", label: "Resolved", description: "Issue resolved — case closed" },
-  { value: "closed", label: "Closed", description: "Closed without resolution" },
+  { value: "resolved", label: "Resolved", description: "Issue resolved — cleanup completed" },
+  { value: "closed", label: "Withdraw / Dismiss", description: "Wrong report, withdrawn, or not a violation" },
 ];
 
 function timeAgo(dateStr: string): string {

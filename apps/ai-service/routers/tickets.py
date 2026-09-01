@@ -154,7 +154,7 @@ async def get_timeline(
         "monitoring": "Being monitored",
         "resolved": "Action taken",
         "verified": "Verified by LGU",
-        "closed": "Closed",
+        "closed": "Withdrawn / dismissed",
     }
 
     return {

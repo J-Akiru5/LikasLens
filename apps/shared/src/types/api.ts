@@ -87,10 +87,20 @@ export interface LguPerformanceData {
 }
 
 export interface VerifiedReport {
+  id?: string;
   location: string;
   status: string;
   date: string;
   title: string;
+  description?: string;
+  latitude?: number;
+  longitude?: number;
+  category?: string;
+  before_url?: string;
+  after_url?: string;
+  ghost_mode?: boolean;
+  photo_url?: string | null;
+  is_ghost?: boolean;
 }
 
 

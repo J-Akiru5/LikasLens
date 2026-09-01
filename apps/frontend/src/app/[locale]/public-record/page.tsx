@@ -19,6 +19,9 @@ interface PublicIncident {
   status: string;
   category?: string;
   photo_url?: string | null;
+  before_url?: string;
+  after_url?: string;
+  reporter_display_name?: string | null;
   created_at: string;
   is_ghost?: boolean;
   ai_confidence?: number | null;
@@ -45,6 +48,9 @@ export default function PublicRecordPage() {
             created_at: r.date || new Date().toISOString(),
             category: r.category || r.type || undefined,
             photo_url: r.photo_url || r.image_url || null,
+            before_url: r.before_url || undefined,
+            after_url: r.after_url || undefined,
+            reporter_display_name: r.reporter_display_name || null,
             latitude: r.latitude || undefined,
             longitude: r.longitude || undefined,
             is_ghost: r.is_ghost || false,

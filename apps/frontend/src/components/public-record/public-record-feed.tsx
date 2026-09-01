@@ -12,6 +12,9 @@ interface PublicIncident {
   status: string;
   category?: string;
   photo_url?: string | null;
+  before_url?: string;
+  after_url?: string;
+  reporter_display_name?: string | null;
   created_at: string;
   is_ghost?: boolean;
   ai_confidence?: number | null;
@@ -22,7 +25,7 @@ const STATUS_BADGES: Record<string, { label: string; class: string }> = {
   investigating: { label: "Under Review", class: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
   monitoring: { label: "Verifying", class: "bg-purple/10 text-purple border-purple/20" },
   resolved: { label: "Resolved", class: "bg-green/10 text-green border-green/20" },
-  closed: { label: "Closed", class: "bg-ink/5 text-ink/50 border-ink/10" },
+  closed: { label: "Withdrawn", class: "bg-ink/5 text-ink/50 border-ink/10" },
   pending_review: { label: "Pending Review", class: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
   verified: { label: "Verified", class: "bg-green/10 text-green border-green/20" },
 };
@@ -83,8 +86,23 @@ export function PublicRecordFeed({
             )}
           >
             <div className="flex gap-3">
-              {/* Photo */}
-              {incident.photo_url && (
+              {/* Photo — before/after evidence takes priority over the single thumbnail */}
+              {(incident.before_url || incident.after_url) ? (
+                <div className="flex gap-1 flex-shrink-0">
+                  {incident.before_url && (
+                    <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-ink/[0.03]">
+                      <img src={incident.before_url} alt="" className="w-full h-full object-cover" />
+                      <span className="absolute bottom-0 left-0 right-0 py-0.5 bg-black/60 text-white text-[7px] font-mono font-bold uppercase tracking-wider text-center">Before</span>
+                    </div>
+                  )}
+                  {incident.after_url && (
+                    <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-ink/[0.03]">
+                      <img src={incident.after_url} alt="" className="w-full h-full object-cover" />
+                      <span className="absolute bottom-0 left-0 right-0 py-0.5 bg-emerald-600/80 text-white text-[7px] font-mono font-bold uppercase tracking-wider text-center">After</span>
+                    </div>
+                  )}
+                </div>
+              ) : incident.photo_url ? (
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-ink/[0.03] flex-shrink-0">
                   <img
                     src={incident.photo_url}
@@ -92,7 +110,7 @@ export function PublicRecordFeed({
                     className="w-full h-full object-cover"
                   />
                 </div>
-              )}
+              ) : null}
 
               {/* Content */}
               <div className="flex-1 min-w-0">
@@ -132,14 +150,21 @@ export function PublicRecordFeed({
                   </span>
                 </div>
 
-                {incident.is_ghost && (
+                {incident.is_ghost ? (
                   <div className="flex items-center gap-1 mt-2">
                     <Shield className="w-3 h-3 text-amber-500" />
                     <span className="text-[9px] font-mono text-amber-500 uppercase tracking-wider">
                       Anonymous Report
                     </span>
                   </div>
-                )}
+                ) : incident.reporter_display_name ? (
+                  <div className="flex items-center gap-1 mt-2">
+                    <Shield className="w-3 h-3 text-sky-500" />
+                    <span className="text-[9px] font-mono text-sky-500 uppercase tracking-wider">
+                      Reported by {incident.reporter_display_name}
+                    </span>
+                  </div>
+                ) : null}
               </div>
             </div>
           </button>

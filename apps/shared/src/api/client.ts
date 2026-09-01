@@ -28,6 +28,7 @@ export interface ReportPayload {
   report_type?: string;
   user_id?: string;
   ghost_mode?: boolean;
+  reporter_display_name?: string | null;
 }
 
 export interface ReportResult {
@@ -104,6 +105,7 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
   const location = b.location ? String(b.location) : undefined;
   const userId = b.user_id ? String(b.user_id) : null;
   const reportType = b.report_type ? String(b.report_type) : undefined;
+  const displayName = b.reporter_display_name ? String(b.reporter_display_name) : null;
 
   const ticketPayload: Record<string, unknown> = {
     id: crypto.randomUUID(),
@@ -114,6 +116,7 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
     address_text: location,
     status: "open",
     reporter_user_id: userId || null,
+    reporter_display_name: displayName,
     ai_triage_summary: reportType || "Unclassified",
     submission_path: "direct_fallback",
     needs_ai_reanalysis: true,
@@ -143,18 +146,55 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
   if (ticketErr) throw ticketErr;
 
   // Route the report to the covering analyst / LGU account — same logic as
-  // the AI-service path, so fallback submissions are routed too.
+  // the AI-service path, so fallback submissions are routed too. Runs through
+  // the server proxy (service-role key) because the assignment / ticket-update
+  // / notification writes are RLS-gated for the browser anon client.
   let routedOffice: string | null = null;
   try {
-    const routing = await routeTicketToCoveringOffice(
-      db(),
-      ticket.id,
-      ticket.address_text,
-      ticket.ai_triage_summary
-    );
-    if (routing.assigned) routedOffice = routing.officeName;
+    const routeRes = await fetch("/api/v1/reports/route", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ticket_id: ticket.id,
+        address: ticket.address_text,
+        category: ticket.ai_triage_summary,
+        latitude: typeof ticket.latitude === "number" ? ticket.latitude : null,
+        longitude: typeof ticket.longitude === "number" ? ticket.longitude : null,
+      }),
+    });
+    if (routeRes.ok) {
+      const routed = await routeRes.json();
+      routedOffice = routed?.data?.routed_office ?? null;
+    } else {
+      // Server route unavailable — best-effort direct routing (may be
+      // RLS-limited, but the report itself is already saved).
+      console.warn("[submitCitizenReport] server routing failed (", routeRes.status, ") — direct fallback");
+      const routing = await routeTicketToCoveringOffice(
+        db(),
+        ticket.id,
+        ticket.address_text,
+        ticket.ai_triage_summary,
+        typeof ticket.latitude === "number" ? ticket.latitude : null,
+        typeof ticket.longitude === "number" ? ticket.longitude : null
+      );
+      if (routing.assigned) routedOffice = routing.officeName;
+    }
   } catch (e) {
     console.warn("[submitCitizenReport] routing failed (non-fatal):", e);
+  }
+
+  // Persist the citizen's BEFORE photo as evidence (server-side, non-fatal).
+  try {
+    await fetch("/api/v1/evidence", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ticket_id: ticket.id,
+        base64Image: b.base64Image ? String(b.base64Image) : "",
+      }),
+    });
+  } catch (e) {
+    console.warn("[submitCitizenReport] evidence upload failed (non-fatal):", e);
   }
 
   return {

@@ -25,6 +25,7 @@ import {
   Sparkles,
   ShieldCheck,
   Shield,
+  UserRound,
   EyeOff,
   Navigation,
   Loader2,
@@ -47,6 +48,8 @@ import {
   submitCitizenReport,
   triageCitizenReport,
   queueReport,
+  findCoveringOffice,
+  getSupabaseClient,
 } from "@likaslens/shared";
 import { EdgeInterceptorModal } from "@/components/modals/edge-interceptor-modal";
 import { GeoTagMap } from "@/components/maps/geo-tag-map";
@@ -63,6 +66,20 @@ const INCIDENT_CATEGORIES = [
   { id: "open_burning", label: "Open Burning", icon: Flame, color: "text-orange-500", bg: "bg-orange-500/10" },
   { id: "other", label: "Other Hazard", icon: AlertCircle, color: "text-indigo-500", bg: "bg-indigo-500/10" },
 ];
+
+// Exact statutory mapping per incident category — shown in the review modal
+// instead of a generic catch-all, so citizens see the right law up front.
+const CATEGORY_LAW: Record<string, string> = {
+  illegal_logging: "PD 705 — Revised Forestry Code",
+  water_pollution: "RA 9275 — Philippine Clean Water Act",
+  waste_dumping: "RA 9003 — Ecological Solid Waste Management Act",
+  wildlife_poaching: "RA 9147 — Wildlife Resources Conservation Act",
+  mining_violation: "RA 7942 — Philippine Mining Act",
+  air_pollution: "RA 8749 — Philippine Clean Air Act",
+  coastal_hazard: "RA 10654 — Philippine Fisheries Code",
+  open_burning: "RA 9003 & RA 8749 — Open Burning Prohibition",
+  other: "RA 9003 / RA 9275 / RA 8749 (as applicable)",
+};
 
 const SUGGESTED_DETAILS = [
   "Illegal Dumpsite",
@@ -92,6 +109,7 @@ export default function ReportPage() {
   const [longitude, setLongitude] = useState<number | null>(null);
   const [resolvedAddress, setResolvedAddress] = useState<string>("Locating coordinates...");
   const [isGhostMode, setIsGhostMode] = useState<boolean>(false);
+  const [displayName, setDisplayName] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isTriaging, setIsTriaging] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(true);
@@ -113,6 +131,11 @@ export default function ReportPage() {
   } | null>(null);
   const [isAnalyzingPhoto, setIsAnalyzingPhoto] = useState(false);
   const [isOverridden, setIsOverridden] = useState(false);
+  const [matchedOffice, setMatchedOffice] = useState<{
+    officeName: string;
+    serviceArea: string;
+    matchedBy: "coords" | "text";
+  } | null>(null);
   const params = useParams();
   const locale = (params?.locale as string) || "en";
 
@@ -226,6 +249,9 @@ export default function ReportPage() {
       return;
     }
     setIsGhostMode(checked);
+    // Selecting Civic (false) or Ghost (true) clears any typed alias name —
+    // only Alias Mode keeps a public display name.
+    setDisplayName("");
     const newTheme = checked ? "ghost" : "civic";
     document.documentElement.setAttribute("data-theme", newTheme);
     try {
@@ -394,6 +420,7 @@ export default function ReportPage() {
       }
     }
 
+    const alias = displayName.trim();
     const payload: Record<string, unknown> = {
       base64Image: cleanedImage,
       latitude,
@@ -402,6 +429,8 @@ export default function ReportPage() {
       description: description.trim() || `${reportType.replace(/_/g, " ")} reported.`,
       report_type: reportType,
       ghost_mode: isGhostMode,
+      // Alias mode: a public-facing display name, real identity stays private
+      reporter_display_name: !isGhostMode && alias ? alias : null,
     };
 
     // Only include user_id if we have a valid UUID — null FK refs cause constraint violations
@@ -485,6 +514,32 @@ export default function ReportPage() {
   };
 
   const selectedCategory = INCIDENT_CATEGORIES.find((c) => c.id === reportType);
+  const applicableLaw = CATEGORY_LAW[reportType] || CATEGORY_LAW.other;
+
+  // Live office match — show the citizen which government office this report
+  // WILL be routed to (by GPS distance, then address text), using the same
+  // matcher the server runs after submission.
+  useEffect(() => {
+    let cancelled = false;
+    if (!latitude || !longitude) {
+      setMatchedOffice(null);
+      return;
+    }
+    findCoveringOffice(getSupabaseClient(), resolvedAddress, latitude, longitude)
+      .then((m) => {
+        if (!cancelled && m) {
+          setMatchedOffice({
+            officeName: m.officeName,
+            serviceArea: m.serviceArea,
+            matchedBy: m.matchedBy,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [latitude, longitude, resolvedAddress]);
 
   return (
     <>
@@ -710,7 +765,7 @@ export default function ReportPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="font-bold text-ink text-sm sm:text-base">2. Assigned to Government Office</p>
-                          <p className="text-ink/60 text-xs mt-0.5">Assigned to <strong className="text-ink font-semibold">DENR & City Environment Office (CENRO)</strong> under <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">Clean Air & Waste Management laws</strong>.</p>
+                          <p className="text-ink/60 text-xs mt-0.5">Assigned to <strong className="text-ink font-semibold">{matchedOffice ? matchedOffice.officeName : "DENR & City Environment Office (CENRO)"}</strong> under <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">{applicableLaw}</strong>.</p>
                         </div>
                         <span className="shrink-0 ml-2 px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 uppercase">
                           Assigned
@@ -788,14 +843,14 @@ export default function ReportPage() {
                       </p>
                     </div>
 
-                    {/* Privacy Mode — Clear, Simple 2-Choice Cards */}
+                    {/* Privacy Mode — Clear, Simple 3-Choice Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       {/* Civic Mode Card */}
                       <button
                         type="button"
                         onClick={() => handleGhostModeToggle(false)}
                         className={`relative p-3.5 sm:p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
-                          !isGhostMode
+                          !isGhostMode && !displayName.trim()
                             ? "border-emerald-500/80 bg-emerald-500/10 dark:bg-emerald-950/30 shadow-[0_4px_18px_-2px_rgba(16,185,129,0.22)] ring-2 ring-emerald-500/30"
                             : "border-ink/10 bg-panel hover:border-emerald-500/40 hover:bg-emerald-500/[0.03] opacity-75 hover:opacity-100"
                         }`}
@@ -803,19 +858,19 @@ export default function ReportPage() {
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <div className="flex items-center gap-2 min-w-0">
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-                              !isGhostMode
+                              !isGhostMode && !displayName.trim()
                                 ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/30"
                                 : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                             }`}>
                               <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
                             </div>
                             <span className={`text-sm font-black tracking-tight truncate ${
-                              !isGhostMode ? "text-emerald-700 dark:text-emerald-300" : "text-ink"
+                              !isGhostMode && !displayName.trim() ? "text-emerald-700 dark:text-emerald-300" : "text-ink"
                             }`}>
                               Civic Mode (With My Name)
                             </span>
                           </div>
-                          {!isGhostMode && (
+                          {!isGhostMode && !displayName.trim() && (
                             <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs shrink-0">
                               <Check className="w-3 h-3 stroke-[3]" />
                               Selected
@@ -823,9 +878,72 @@ export default function ReportPage() {
                           )}
                         </div>
                         <p className="text-xs text-ink/65 pl-10 leading-snug">
-                          Your name is included • Track status • Get official updates
+                          Name shared only with the LGU • Never shown publicly • Track status
                         </p>
                       </button>
+
+                      {/* Alias Mode Card — public display name, real identity stays private */}
+                      <div
+                        className={`relative p-3.5 sm:p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                          !isGhostMode && displayName.trim()
+                            ? "border-sky-500/80 bg-sky-500/10 dark:bg-sky-950/30 shadow-[0_4px_18px_-2px_rgba(14,165,233,0.22)] ring-2 ring-sky-500/30"
+                            : "border-ink/10 bg-panel hover:border-sky-500/40 hover:bg-sky-500/[0.03] opacity-75 hover:opacity-100"
+                        }`}
+                        onClick={() => handleGhostModeToggle(false)}
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                              !isGhostMode && displayName.trim()
+                                ? "bg-sky-500 text-white shadow-sm shadow-sky-500/30"
+                                : "bg-sky-500/15 text-sky-600 dark:text-sky-400"
+                            }`}>
+                              <UserRound className="w-4 h-4 stroke-[2.5]" />
+                            </div>
+                            <span className={`text-sm font-black tracking-tight truncate ${
+                              !isGhostMode && displayName.trim() ? "text-sky-700 dark:text-sky-300" : "text-ink"
+                            }`}>
+                              Alias Mode (Public Name)
+                            </span>
+                          </div>
+                          {!isGhostMode && displayName.trim() && (
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-500 text-white shadow-xs shrink-0">
+                              <Check className="w-3 h-3 stroke-[3]" />
+                              Selected
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-ink/65 pl-10 leading-snug">
+                          Public name only • Real identity stays private & never shown
+                        </p>
+                        <div className="mt-2.5 pl-10">
+                          <input
+                            type="text"
+                            value={displayName}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setDisplayName(value);
+                              // Switching away from Ghost to Alias: clear ghost
+                              // without wiping the just-typed alias text.
+                              if (isGhostMode) {
+                                setIsGhostMode(false);
+                                const newTheme = "civic";
+                                document.documentElement.setAttribute("data-theme", newTheme);
+                                try { localStorage.setItem("likaslens-theme", newTheme); } catch {}
+                                notifyThemeColor();
+                              }
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            placeholder="e.g. Barangay Watcher"
+                            maxLength={40}
+                            className={`w-full px-3 py-2 rounded-xl text-xs font-medium border bg-ink/[0.02] outline-none transition-all ${
+                              !isGhostMode && displayName.trim()
+                                ? "border-sky-500/50 focus:border-sky-500 text-ink"
+                                : "border-ink/10 focus:border-sky-500/60 text-ink placeholder:text-ink/40"
+                            }`}
+                          />
+                        </div>
+                      </div>
 
                       {/* Ghost Mode Card */}
                       <button
@@ -1308,10 +1426,16 @@ export default function ReportPage() {
                     <span className={`inline-flex items-center gap-1.5 text-xs font-mono font-bold px-2.5 py-0.5 rounded-full ${
                       isGhostMode
                         ? "bg-teal-500/15 text-teal-600 dark:text-teal-400"
+                        : displayName.trim()
+                        ? "bg-sky-500/15 text-sky-600 dark:text-sky-400"
                         : "bg-accent/15 text-accent"
                     }`}>
-                      {isGhostMode ? <EyeOff className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
-                      {isGhostMode ? "Ghost Mode (Anonymous)" : "Civic Mode (With Name)"}
+                      {isGhostMode ? <EyeOff className="w-3 h-3" /> : displayName.trim() ? <UserRound className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
+                      {isGhostMode
+                        ? "Ghost Mode (Anonymous)"
+                        : displayName.trim()
+                        ? `Alias Mode (as ${displayName.trim()})`
+                        : "Civic Mode (With Name)"}
                     </span>
                   </div>
                 </div>
@@ -1332,11 +1456,25 @@ export default function ReportPage() {
                   <div className="space-y-1.5 text-xs font-mono text-ink/75">
                     <div className="flex items-center justify-between p-2.5 rounded-xl bg-ink/[0.03] dark:bg-white/5">
                       <span>Assigned Office:</span>
-                      <strong className="text-ink">DENR-EMB / City Environment Office (CENRO)</strong>
+                      <strong className="text-ink">
+                        {matchedOffice
+                          ? matchedOffice.officeName
+                          : "Routed to covering office after submission"}
+                      </strong>
                     </div>
+                    {matchedOffice && (
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-ink/[0.03] dark:bg-white/5">
+                        <span>Matched by:</span>
+                        <strong className="text-ink/70">
+                          {matchedOffice.matchedBy === "coords"
+                            ? `GPS distance to ${matchedOffice.serviceArea}`
+                            : `Address mentions ${matchedOffice.serviceArea}`}
+                        </strong>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between p-2.5 rounded-xl bg-ink/[0.03] dark:bg-white/5">
                       <span>Applicable Law:</span>
-                      <strong className="text-emerald-600 dark:text-emerald-400">RA 9003 / Clean Air / Water Act</strong>
+                      <strong className="text-emerald-600 dark:text-emerald-400">{applicableLaw}</strong>
                     </div>
                     <div className="flex items-center justify-between p-2.5 rounded-xl bg-ink/[0.03] dark:bg-white/5">
                       <span>Photo Verification:</span>
@@ -1346,12 +1484,20 @@ export default function ReportPage() {
                 </div>
 
                 {/* Privacy & Verification Badge */}
-                <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-3 text-xs text-ink/80">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                <div className={`p-3.5 rounded-2xl border flex items-center gap-3 text-xs text-ink/80 ${
+                  isGhostMode
+                    ? "bg-teal-500/10 border-teal-500/25"
+                    : displayName.trim()
+                    ? "bg-sky-500/10 border-sky-500/25"
+                    : "bg-emerald-500/10 border-emerald-500/25"
+                }`}>
+                  {isGhostMode ? <EyeOff className="w-5 h-5 text-teal-500 shrink-0" /> : displayName.trim() ? <UserRound className="w-5 h-5 text-sky-500 shrink-0" /> : <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
                   <span>
                     {isGhostMode
                       ? "All personal and phone information removed. Report is completely anonymous."
-                      : "Filed under your name. You will receive official updates as authorities take action."}
+                      : displayName.trim()
+                      ? `Shown publicly as \"${displayName.trim()}\". Your real name is never made public — only the handling LGU sees it.`
+                      : "Filed under your real name — visible ONLY to the handling LGU office, never shown publicly. You will receive official updates as authorities take action."}
                   </span>
                 </div>
               </div>

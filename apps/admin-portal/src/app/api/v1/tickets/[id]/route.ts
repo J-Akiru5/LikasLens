@@ -118,13 +118,19 @@ export async function GET(
       ),
     ];
 
+    // Display names: prefer the user's AGENCY name (e.g. "Dingle Municipal
+    // Environment Office") over the officer's personal name — the record should
+    // read as the desk that handled it, not the individual. Citizens without
+    // an agency keep their own name (government-only view).
     const nameById = new Map<string, string>();
     if (userIds.length > 0) {
       const { data: userRows } = await db
         .from("users")
-        .select("id, name")
+        .select("id, name, agency_name")
         .in("id", userIds);
-      for (const u of userRows || []) nameById.set(u.id, u.name);
+      for (const u of userRows || []) {
+        nameById.set(u.id, String(u.agency_name || u.name));
+      }
     }
     const ngoIds = [
       ...new Set(

@@ -21,7 +21,7 @@ const STATUS_OPTIONS = [
   { value: "monitoring", label: "Monitoring", color: "bg-purple" },
   { value: "verified", label: "Verified", color: "bg-green" },
   { value: "resolved", label: "Mark Resolved", color: "bg-green" },
-  { value: "closed", label: "Close", color: "bg-ink/20" },
+  { value: "closed", label: "Withdraw / Dismiss", color: "bg-ink/20" },
 ];
 
 function confidenceColor(confidence: number | null): string {

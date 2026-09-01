@@ -54,6 +54,7 @@ class ReportRequest(BaseModel):
     description: str | None = None
     report_type: str | None = None
     ghost_mode: bool = False
+    reporter_display_name: str | None = None
 
 
 class TriageRequest(BaseModel):
@@ -147,6 +148,8 @@ async def submit_report(
         latitude=body.latitude,
         longitude=body.longitude,
     )
+    if not body.ghost_mode and body.reporter_display_name:
+        ghost_fields["reporter_display_name"] = body.reporter_display_name.strip()[:40]
 
     # 4. Upload to Supabase Storage (S3-compatible)
     ticket_id = uuid.uuid4()

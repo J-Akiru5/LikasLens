@@ -96,7 +96,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           serviceClient,
           String(data.ticket_id),
           body.location ? String(body.location) : null,
-          body.report_type ? String(body.report_type) : null
+          body.report_type ? String(body.report_type) : null,
+          typeof body.latitude === "number" ? body.latitude : null,
+          typeof body.longitude === "number" ? body.longitude : null
         );
         routedOffice = routing.assigned ? routing.officeName : null;
       } catch (e) {

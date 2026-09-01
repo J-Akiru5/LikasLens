@@ -15,7 +15,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const PROFILE_COLUMNS =
-  "id, name, email, role, agency_name, service_area, trust_score, created_at";
+  "id, name, email, role, agency_name, service_area, service_area_lat, service_area_lng, trust_score, created_at";
 
 function getServiceDb() {
   return createServiceClient(
@@ -74,11 +74,15 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       updates.agency_name = body.agency_name.trim() || null;
     if (typeof body.service_area === "string")
       updates.service_area = body.service_area.trim() || null;
+    if (typeof body.service_area_lat === "number" && Number.isFinite(body.service_area_lat))
+      updates.service_area_lat = body.service_area_lat;
+    if (typeof body.service_area_lng === "number" && Number.isFinite(body.service_area_lng))
+      updates.service_area_lng = body.service_area_lng;
 
     const db = getServiceDb();
     const { data: before } = await db
       .from("users")
-      .select("name, agency_name, service_area")
+      .select("name, agency_name, service_area, service_area_lat, service_area_lng")
       .eq("supabase_auth_user_id", user.id)
       .maybeSingle();
 

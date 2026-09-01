@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { findCoveringOffice } from "@likaslens/shared";
 
 /**
  * Helpers used by the ticket status route:
@@ -132,29 +133,24 @@ export async function maybeAutoAssign(
 
     const { data: ticket } = await db
       .from("tickets")
-      .select("id, title, address_text, ai_triage_summary")
+      .select("id, title, address_text, ai_triage_summary, latitude, longitude")
       .eq("id", ticketId)
       .maybeSingle();
 
     const address = String(ticket?.address_text || "");
-    if (!address) return { assigned: false, officerId: null };
+    if (!address && ticket?.latitude == null) {
+      return { assigned: false, officerId: null };
+    }
 
-    // Officers with a service area set — prefer LGU desk roles over analysts
-    const { data: officers } = await db
-      .from("users")
-      .select("id, name, role, service_area, agency_name")
-      .in("role", ["analyst", "lgu", "lgu_officer"])
-      .not("service_area", "is", null)
-      .order("created_at", { ascending: true });
-
-    const matches = (officers || []).filter((o) =>
-      address.toLowerCase().includes(String(o.service_area || "").toLowerCase())
+    // Officers with a service area set — prefer coordinate (centroid) matches
+    // over address-text matches; prefer LGU desk roles over analysts.
+    const match = await findCoveringOffice(
+      db,
+      address,
+      ticket?.latitude != null ? Number(ticket.latitude) : null,
+      ticket?.longitude != null ? Number(ticket.longitude) : null
     );
-    if (matches.length === 0) return { assigned: false, officerId: null };
-
-    const priority = { lgu_officer: 0, lgu: 1, analyst: 2 } as Record<string, number>;
-    matches.sort((a, b) => (priority[a.role] ?? 3) - (priority[b.role] ?? 3));
-    const officer = matches[0];
+    if (!match) return { assigned: false, officerId: null };
 
     // Resolve the agency group ("desk") for the assignment — required NOT NULL
     // column. Match by the ticket's AI category (ai_triage_summary).
@@ -171,7 +167,7 @@ export async function maybeAutoAssign(
       id: crypto.randomUUID(),
       ticket_id: ticketId,
       assigned_group_id: assignedGroupId,
-      assignee_user_id: officer.id,
+      assignee_user_id: match.officerId,
       assigned_by_user_id: assignedByUserId ?? null,
       status: "pending",
       created_at: new Date().toISOString(),
@@ -181,8 +177,8 @@ export async function maybeAutoAssign(
       return { assigned: false, officerId: null };
     }
 
-    await notifyAssignee(db, ticketId, officer.id);
-    return { assigned: true, officerId: officer.id };
+    await notifyAssignee(db, ticketId, match.officerId);
+    return { assigned: true, officerId: match.officerId };
   } catch (err) {
     console.error("[ticket-notify] maybeAutoAssign failed (non-fatal):", err);
     return { assigned: false, officerId: null };

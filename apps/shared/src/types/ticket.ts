@@ -21,6 +21,14 @@ export interface Ticket {
   reporter?: string;
   ghost_mode?: boolean;
   reporter_user_id?: string | null;
+  reporter_display_name?: string | null;
+  ai_recommended_office?: string | null;
+  evidence?: Array<{
+    id: string;
+    storage_bucket?: string | null;
+    storage_path?: string | null;
+    uploaded_by_user_id?: string | null;
+  }>;
   created_at: string;
   resolved_at?: string | null;
 }
@@ -78,7 +86,7 @@ export const STATUS_LABELS: Record<TicketStatus, string> = {
   investigating: "Investigating",
   monitoring: "Monitoring",
   resolved: "Resolved",
-  closed: "Closed",
+  closed: "Withdrawn / Dismissed",
   pending_review: "Pending AI Review",
   verified: "Verified",
 };
@@ -92,6 +100,12 @@ export const STATUS_COLORS: Record<TicketStatus, string> = {
   pending_review: "bg-amber/10 text-amber",
   verified: "bg-green/10 text-green",
 };
+
+// True success terminals — the states citizens should celebrate.
+export const SUCCESS_TERMINALS: ReadonlySet<TicketStatus> = new Set([
+  "resolved",
+  "verified",
+]);
 
 // Triage
 export interface TriageTicket {

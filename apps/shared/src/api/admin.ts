@@ -39,6 +39,15 @@ function db() {
   return getSupabaseClient();
 }
 
+// Explicit column list for `users` reads — the v4 RLS setup only grants
+// SELECT on these columns (password/remember_token stay locked). Never use
+// select("*") on users: it fails with "permission denied" for anon/auth'd.
+const USER_READ_COLUMNS =
+  "id, supabase_auth_user_id, name, email, role, trust_score, " +
+  "reward_points_balance, country_code, agency_name, service_area, " +
+  "service_area_lat, service_area_lng, " +
+  "created_at, updated_at, deleted_at, total_verified_reports, total_xp, ranking_tier";
+
 // ── Helpers ──────────────────────────────────────────────────────────────
 function paginate(params?: Record<string, string>) {
   const page = parseInt(params?.page ?? "1");
@@ -62,11 +71,11 @@ export async function getProfile(client?: SupabaseClient) {
   if (!user) return { success: true, data: null } as ApiResponse<UserProfile | null>;
   const { data, error } = await supabase
     .from("users")
-    .select("*")
+    .select(USER_READ_COLUMNS)
     .eq("supabase_auth_user_id", user.id)
     .maybeSingle();
   if (error) throw error;
-  return { success: true, data } as ApiResponse<UserProfile>;
+  return { success: true, data: data as unknown as UserProfile } as ApiResponse<UserProfile>;
 }
 
 // Citizen Dashboard
@@ -362,19 +371,19 @@ export async function deleteTicket(id: string) {
 // Admin: Users
 export async function getAdminUsers(params?: Record<string, string>) {
   const { page, perPage, from, to } = paginate(params);
-  const { data, error, count } = await db().from("users").select("*", { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
+  const { data, error, count } = await db().from("users").select(USER_READ_COLUMNS, { count: "exact" }).order("created_at", { ascending: false }).range(from, to);
   if (error) throw error;
   return {
     success: true,
-    data: data || [],
+    data: (data || []) as unknown as User[],
     meta: { current_page: page, last_page: Math.max(1, Math.ceil((count || 0) / perPage)), per_page: perPage, total: count || 0 },
   } as PaginatedResponse<User>;
 }
 
 export async function getAdminUser(id: string) {
-  const { data, error } = await db().from("users").select("*").eq("id", id).single();
+  const { data, error } = await db().from("users").select(USER_READ_COLUMNS).eq("id", id).single();
   if (error) throw error;
-  return { success: true, data } as ApiResponse<User>;
+  return { success: true, data: data as unknown as User } as ApiResponse<User>;
 }
 
 // Admin user/role mutations — routed through FastAPI proxy (RBAC enforced)
@@ -1369,7 +1378,7 @@ export async function getPublicImpact() {
   try {
     const { data, error } = await db()
       .from("tickets")
-      .select("id, title, status, description, address_text, latitude, longitude, ghost_mode, ai_triage_summary, urgency_score, created_at, updated_at, resolved_at");
+      .select("id, title, status, description, address_text, latitude, longitude, ghost_mode, reporter_display_name, ai_triage_summary, urgency_score, created_at, updated_at, resolved_at");
     const tickets = (!error && data) ? data : [];
 
     const resolvedStatuses = new Set(["resolved", "verified", "closed"]);
@@ -1391,12 +1400,40 @@ export async function getPublicImpact() {
     }
 
     // Real recently resolved/verified cases from the database
-    const recentVerified = resolved
+    const recentVerifiedRaw = resolved
       .sort((a: Record<string, unknown>, b: Record<string, unknown>) =>
         String(b.resolved_at || b.updated_at || "").localeCompare(String(a.resolved_at || a.updated_at || ""))
       )
-      .slice(0, 10)
-      .map((t: Record<string, unknown>) => ({
+      .slice(0, 10);
+
+    // Fetch evidence for these tickets so the public record can show the
+    // citizen's BEFORE photo and the office's AFTER (resolution) photo.
+    const recentIds = recentVerifiedRaw.map((t: Record<string, unknown>) => String(t.id));
+    const evidenceByTicket: Record<string, { before?: string; after?: string }> = {};
+    try {
+      const supabaseUrl =
+        process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+      if (recentIds.length > 0 && supabaseUrl) {
+        const { data: evidenceRows } = await db()
+          .from("ticket_evidence")
+          .select("ticket_id, storage_bucket, storage_path")
+          .in("ticket_id", recentIds);
+        for (const ev of (evidenceRows || []) as Array<Record<string, unknown>>) {
+          const ticketId = String(ev.ticket_id);
+          const path = String(ev.storage_path || "");
+          const url = `${supabaseUrl}/storage/v1/object/public/${String(ev.storage_bucket || "evidence")}/${path}`;
+          if (!evidenceByTicket[ticketId]) evidenceByTicket[ticketId] = {};
+          if (path.startsWith("resolution/")) evidenceByTicket[ticketId].after = url;
+          else evidenceByTicket[ticketId].before = url;
+        }
+      }
+    } catch {
+      // evidence is a nice-to-have on the public record — never break the page
+    }
+
+    const recentVerified = recentVerifiedRaw.map((t: Record<string, unknown>) => {
+      const ev = evidenceByTicket[String(t.id)] || {};
+      return {
         id: String(t.id),
         title: String(t.title || "Environmental Incident"),
         description: t.description ? String(t.description) : undefined,
@@ -1406,9 +1443,14 @@ export async function getPublicImpact() {
         status: String(t.status || "resolved"),
         date: String(t.resolved_at || t.updated_at || t.created_at || new Date().toISOString()),
         category: String(t.ai_triage_summary || "") || undefined,
+        before_url: ev.before,
+        after_url: ev.after,
+        ghost_mode: Boolean(t.ghost_mode),
+        reporter_display_name: t.reporter_display_name ? String(t.reporter_display_name) : null,
         photo_url: t.photo_url ? String(t.photo_url) : null,
         is_ghost: Boolean(t.ghost_mode),
-      }));
+      };
+    });
 
     // Real citizen / NGO / community counts
     let totalCitizens = 0;
