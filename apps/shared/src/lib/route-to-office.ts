@@ -33,6 +33,7 @@ export interface OfficeMatch {
   officerId: string;
   officeName: string;
   serviceArea: string;
+  role: string;
   matchedBy: "coords" | "text";
   distKm?: number;
 }
@@ -100,6 +101,7 @@ export async function findCoveringOffice(
             officerId: o.id,
             officeName: officeNameFor(o),
             serviceArea: String(o.service_area || ""),
+            role: String(o.role || ""),
             matchedBy: "coords",
             distKm: d,
           });
@@ -110,7 +112,7 @@ export async function findCoveringOffice(
       coordMatches.sort(
         (a, b) =>
           a.distKm - b.distKm ||
-          (ROLE_PRIORITY[a.officerId] ?? 3) - (ROLE_PRIORITY[b.officerId] ?? 3)
+          (ROLE_PRIORITY[a.role] ?? 3) - (ROLE_PRIORITY[b.role] ?? 3)
       );
       return coordMatches[0];
     }
@@ -124,13 +126,14 @@ export async function findCoveringOffice(
       officerId: String(o.id),
       officeName: officeNameFor(o as never),
       serviceArea: String(o.service_area || ""),
+      role: String((o as Record<string, unknown>).role || ""),
       matchedBy: "text" as const,
     }));
 
   if (textMatches.length === 0) return null;
   textMatches.sort(
     (a, b) =>
-      (ROLE_PRIORITY[a.officerId] ?? 3) - (ROLE_PRIORITY[b.officerId] ?? 3)
+      (ROLE_PRIORITY[a.role] ?? 3) - (ROLE_PRIORITY[b.role] ?? 3)
   );
   return textMatches[0];
 }
