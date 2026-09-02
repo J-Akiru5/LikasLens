@@ -8,7 +8,6 @@ import {
   User,
   LogOut,
   ChevronRight,
-  Settings,
   Edit2,
   History,
   BarChart3,
@@ -31,7 +30,6 @@ const ACCOUNT_ITEMS = [
   { href: "/history", label: "My Submissions", Icon: History, tint: "var(--accent)" },
   { href: "/notifications", label: "Notifications", Icon: Bell, tint: "var(--green)" },
   { href: "/offline-queue", label: "Offline Queue", Icon: WifiOff, tint: "var(--amber)" },
-  { href: "/settings", label: "Account Settings", Icon: Settings, tint: "var(--muted)" },
 ];
 
 const TOOL_ITEMS = [

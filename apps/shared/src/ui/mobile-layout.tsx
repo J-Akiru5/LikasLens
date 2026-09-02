@@ -114,7 +114,7 @@ export function MobileLayout({
                       isGhostMode ? "bg-secondary" : "bg-red text-white"
                     )}
                   >
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
               </button>
@@ -161,6 +161,14 @@ export function MobileLayout({
                         </>
                       )}
                     </div>
+
+                    <Link
+                      href={`${localePrefix}/notifications`}
+                      onClick={() => setShowNotifications(false)}
+                      className="block w-full py-3 border-t border-ink/10 text-center text-xs font-bold text-emerald-600 hover:bg-ink/[0.03] active:bg-ink/[0.05] transition-colors"
+                    >
+                      View All Notifications
+                    </Link>
                   </div>
                 </>
               )}

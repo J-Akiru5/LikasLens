@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { locales } from "../i18n/config";
 import { Bell, Leaf, Menu, Fingerprint, X, AlertCircle, CheckCircle, Info } from "lucide-react";
 import { cn } from "../utils";
 import { useNotifications } from "../hooks/useNotifications";
@@ -57,6 +59,10 @@ export function MobileHeader({
   const { notifications, unreadCount, markAsRead } = useNotifications({ pollInterval: 30000 });
   const viewNotifications = notifications.map(toMobileNotif);
   const [notifOpen, setNotifOpen] = useState(false);
+  const pathname = usePathname();
+  const pathParts = pathname.split("/");
+  const hasLocale = (locales as readonly string[]).includes(pathParts[1]);
+  const localePrefix = hasLocale ? `/${pathParts[1]}` : "";
   const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -128,7 +134,7 @@ export function MobileHeader({
                 )}
                 aria-hidden="true"
               >
-                {unreadCount > 9 ? "9+" : unreadCount}
+                {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </button>
@@ -175,6 +181,13 @@ export function MobileHeader({
                   ))
                 )}
               </div>
+              <Link
+                href={`${localePrefix}/notifications`}
+                onClick={() => setNotifOpen(false)}
+                className="block w-full py-3 border-t border-ink/10 text-center text-xs font-bold text-emerald-600 hover:bg-ink/[0.03] active:bg-ink/[0.05] transition-colors"
+              >
+                View All Notifications
+              </Link>
             </div>
           )}
         </div>

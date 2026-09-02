@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { MobileLayout, RouteProgress, notifyThemeColor, LiksiChat, cn } from "@likaslens/shared";
-import { LayoutDashboard, Camera, User, Globe, ShieldCheck, EyeOff, FileText } from "lucide-react";
+import { LayoutDashboard, Camera, User, Globe, ShieldCheck, EyeOff, FileText, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PageTransition } from "@/components/page-transition";
 import { usePathname } from "next/navigation";
@@ -14,8 +14,9 @@ import { AnimatePresence, motion } from "framer-motion";
 const BOTTOM_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/history", label: "My Records", icon: FileText },
-  { href: "/profile", label: "More", icon: User },
   { href: "/report", label: "Report", icon: Camera, isPrimary: true },
+  { href: "/profile", label: "More", icon: User },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 const MAIN_ROUTES = BOTTOM_NAV_ITEMS.map((item) => item.href);
@@ -116,7 +117,7 @@ function AppLayoutInner({
   let backHref: string | undefined;
   if (!isMainRoute) {
     // Citizen tools accessed from More/Profile → back to More
-    const CITIZEN_TOOLS = ["/incidents", "/map", "/impact", "/knowledge-graph", "/laws", "/analytics", "/reports", "/notifications", "/settings", "/offline-queue"];
+    const CITIZEN_TOOLS = ["/incidents", "/map", "/impact", "/knowledge-graph", "/laws", "/analytics", "/reports", "/notifications", "/offline-queue"];
     const isCitizenTool = CITIZEN_TOOLS.some((t) => cleanPath === t || cleanPath.startsWith(t + "/"));
     if (isCitizenTool) backHref = `/${locale}/profile`;
     else if (cleanPath.startsWith("/profile/")) backHref = `/${locale}/profile`;
@@ -206,7 +207,7 @@ function AppLayoutInner({
         </div>
       </MobileLayout>
 
-      {/* 2026 Persistent Floating Liksi Assistant — Fixed on the left side above navigation dock (z-[60]) */}
+      {/* 2026 Persistent Floating Liksi Assistant — Fixed on the right side above navigation dock (z-[60]) */}
       {mounted && !isReportPage && (
         <LiksiChat
           persona="citizen"
@@ -214,8 +215,8 @@ function AppLayoutInner({
           isAuthenticated={isAuthenticated}
           className={cn(
             hideBottomNav
-              ? "bottom-4 left-3.5 sm:bottom-6 sm:left-6 z-[60]"
-              : "bottom-[88px] left-3.5 sm:bottom-6 sm:left-6 z-[60]"
+              ? "bottom-4 right-3.5 sm:bottom-6 sm:right-6 z-[60]"
+              : "bottom-[88px] right-3.5 sm:bottom-6 sm:right-6 z-[60]"
           )}
         />
       )}

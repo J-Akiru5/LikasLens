@@ -356,3 +356,29 @@ export function formatDistanceToNow(
   if (days < 30) return `${Math.floor(days / 7)}w ago`;
   return d.toLocaleDateString(options.locale || "en", { month: "short", day: "numeric", timeZone: "Asia/Manila" });
 }
+
+/**
+ * Format a duration in minutes into a concise, human-readable string (e.g., "45m", "2.5h", "23d").
+ * Avoids displaying raw, confusing minute counts like "32809m".
+ *
+ * @example
+ *   formatDuration(45)       // "45m"
+ *   formatDuration(150)      // "2.5h"
+ *   formatDuration(32809)    // "23d"
+ *   formatDuration(0)        // "—"
+ */
+export function formatDuration(minutes: number | null | undefined): string {
+  if (minutes == null || Number.isNaN(minutes) || minutes <= 0) return "—";
+  if (minutes < 60) return `${Math.round(minutes)}m`;
+  const hours = minutes / 60;
+  if (hours < 24) {
+    const formattedHours = hours % 1 === 0 ? String(hours) : hours.toFixed(1);
+    return `${formattedHours}h`;
+  }
+  const days = hours / 24;
+  if (days < 10) {
+    const formattedDays = days % 1 === 0 ? String(days) : days.toFixed(1);
+    return `${formattedDays}d`;
+  }
+  return `${Math.round(days)}d`;
+}

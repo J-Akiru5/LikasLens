@@ -140,7 +140,7 @@ export function SplashScreen() {
           By
         </span>
         <span className="text-xs font-bold tracking-[0.2em] text-accent uppercase" style={{ fontFamily: "var(--font-heading)" }}>
-          Syntaxure SEA
+          Syntaxure Labs
         </span>
       </motion.div>
         </motion.div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { StatsCards, ActivityFeed, EmptyState, cn, Dropdown, Button, RevealSection, SpotlightCard, PulseBadge, getTickets } from "@likaslens/shared";
+import { StatsCards, ActivityFeed, EmptyState, cn, Dropdown, Button, RevealSection, SpotlightCard, PulseBadge, getTickets, formatDuration } from "@likaslens/shared";
 import { getQueueCount } from "@likaslens/shared";
 import type { DashboardStats, ActivityFeedItem, Ticket } from "@likaslens/shared";
 import { AlertTriangle, Activity, Clock, CheckCircle, TriangleAlert, TrendingUp, Loader2, WifiOff, RefreshCw, EyeOff, Search, ArrowRight, MapPin, Sparkles, CheckCircle2, FileText } from "lucide-react";
@@ -151,7 +151,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
     {
       id: "avg-response",
       label: "Avg Response",
-      value: `${stats?.avg_response_minutes ?? 0}m`,
+      value: formatDuration(stats?.avg_response_minutes),
       trend: "up" as const,
       delta: stats?.avg_response_trend || "",
       sparkline: [0, 0, 0, 0, 0, 0, stats?.avg_response_minutes ?? 0],

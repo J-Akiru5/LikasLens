@@ -110,50 +110,71 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   const tokenRef = useRef(token);
   tokenRef.current = token;
 
+  const getEffectiveToken = async (): Promise<string | undefined> => {
+    if (tokenRef.current) return tokenRef.current;
+    try {
+      const { data } = await db().auth.getSession();
+      return data.session?.access_token;
+    } catch {
+      return undefined;
+    }
+  };
+
   const refreshUnreadCount = useCallback(async () => {
-    const tok = tokenRef.current;
-    if (!tok) {
-      try {
-        const { count } = await db()
-          .from("notifications")
-          .select("id", { count: "exact", head: true })
-          .is("read_at", null);
-        if (mountedRef.current) {
-          setUnreadCount(count || 0);
+    try {
+      const tok = await getEffectiveToken();
+      if (tok) {
+        try {
+          const result = await rpcFetch<RpcInboxResult>("get_my_notifications", { p_page: 1 }, tok);
+          if (mountedRef.current && result && typeof result.unread_count === "number") {
+            setUnreadCount(result.unread_count);
+            return;
+          }
+        } catch {
+          // Fall through to cookie api route
         }
-      } catch {
-        // Silently fail — non-critical
       }
-      return;
-    }      try {
-        const result = await rpcFetch<RpcInboxResult>("get_my_notifications", { p_page: 1 }, tok);
-        if (mountedRef.current) {
-          setUnreadCount(result?.unread_count || 0);
-        }
-      } catch {
-      // RPC unavailable — fall back to the public read below
+
+      // Try cookie-session route
       try {
-        const { count } = await db()
-          .from("notifications")
-          .select("id", { count: "exact", head: true })
-          .is("read_at", null);
-        if (mountedRef.current) {
-          setUnreadCount(count || 0);
+        const result = await apiRouteFetch<RpcInboxResult>("/api/v1/notifications?page=1");
+        if (mountedRef.current && result && typeof result.unread_count === "number") {
+          setUnreadCount(result.unread_count);
+          return;
         }
       } catch {
-        // Silently fail
+        // Fall through to authenticated citizen check
       }
+
+      // Supabase direct check: ONLY for the authenticated citizen
+      const { data: { user } } = await db().auth.getUser();
+      if (!user) {
+        if (mountedRef.current) setUnreadCount(0);
+        return;
+      }
+
+      const { count } = await db()
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .or(`user_id.eq.${user.id},and(for_role.eq.citizen,user_id.is.null)`)
+        .is("read_at", null);
+
+      if (mountedRef.current) {
+        setUnreadCount(count || 0);
+      }
+    } catch {
+      if (mountedRef.current) setUnreadCount(0);
     }
   }, []);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const tok = tokenRef.current;
+    const tok = await getEffectiveToken();
 
     // Authenticated path: role-aware inbox with per-user read receipts.
     // 1) direct RPC with a session token, or 2) cookie-session API route,
-    // or 3) legacy public-read fallback.
+    // or 3) citizen-scoped direct query.
     let result: RpcInboxResult | null = null;
     let routeError: string | null = null;
     if (tok) {
@@ -183,25 +204,38 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         });
         setUnreadCount(result.unread_count || 0);
       }
+      if (mountedRef.current) setLoading(false);
       return;
     }
     if (routeError && mountedRef.current) {
       setError(routeError);
     }
 
-    // Legacy fallback: public read of the global log (no per-user receipts).
+    // Direct Supabase check: strictly scoped to the logged-in citizen
     try {
+      const { data: { user } } = await db().auth.getUser();
+      if (!user) {
+        if (mountedRef.current) {
+          setNotifications([]);
+          setUnreadCount(0);
+          setMeta(null);
+        }
+        return;
+      }
+
       const page = 1;
       const perPage = 20;
       const [notifRes, unreadRes] = await Promise.all([
         db()
           .from("notifications")
           .select("*", { count: "exact" })
+          .or(`user_id.eq.${user.id},and(for_role.eq.citizen,user_id.is.null)`)
           .order("created_at", { ascending: false })
           .range(0, perPage - 1),
         db()
           .from("notifications")
           .select("id", { count: "exact", head: true })
+          .or(`user_id.eq.${user.id},and(for_role.eq.citizen,user_id.is.null)`)
           .is("read_at", null),
       ]);
 
@@ -228,7 +262,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   const loadMore = useCallback(async () => {
     if (!meta || meta.current_page >= meta.last_page) return;
     setLoading(true);
-    const tok = tokenRef.current;
+    const tok = await getEffectiveToken();
 
     let result: RpcInboxResult | null = null;
     if (tok) {
@@ -248,7 +282,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
           `/api/v1/notifications?page=${meta.current_page + 1}`
         );
       } catch {
-        // fall through to legacy pagination
+        // fall through to citizen-scoped pagination
       }
     }
 
@@ -271,6 +305,12 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     }
 
     try {
+      const { data: { user } } = await db().auth.getUser();
+      if (!user) {
+        if (mountedRef.current) setLoading(false);
+        return;
+      }
+
       const nextPage = meta.current_page + 1;
       const perPage = meta.per_page;
       const from = (nextPage - 1) * perPage;
@@ -279,6 +319,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       const { data, count } = await db()
         .from("notifications")
         .select("*", { count: "exact" })
+        .or(`user_id.eq.${user.id},and(for_role.eq.citizen,user_id.is.null)`)
         .order("created_at", { ascending: false })
         .range(from, to);
 
@@ -304,7 +345,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   const markAsRead = useCallback(
     async (id: string) => {
-      const tok = tokenRef.current;
+      const tok = await getEffectiveToken();
       try {
         if (tok) {
           await rpcFetch("mark_notification_read", { p_id: id }, tok);
@@ -332,7 +373,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   );
 
   const markAllAsRead = useCallback(async () => {
-    const tok = tokenRef.current;
+    const tok = await getEffectiveToken();
     try {
       if (tok) {
         await rpcFetch("mark_all_notifications_read", {}, tok);

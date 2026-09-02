@@ -206,7 +206,7 @@ export function AppHeader({
                     )}
                     aria-hidden="true"
                   >
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
               </button>

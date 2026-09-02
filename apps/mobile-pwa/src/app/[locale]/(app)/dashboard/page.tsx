@@ -11,6 +11,7 @@ import {
   getTickets,
   showToast,
   formatDate,
+  formatDuration,
   StatsCards,
   ActivityFeed,
   RevealSection,
@@ -248,9 +249,9 @@ export default function DashboardPage() {
     {
       id: "avg-response",
       label: "Avg Response",
-      value: `${stats?.avg_response_minutes ?? 0}m`,
+      value: formatDuration(stats?.avg_response_minutes),
       trend: "up" as const,
-      delta: "Fast",
+      delta: stats?.avg_response_minutes && stats.avg_response_minutes < 1440 ? "Fast" : "Active",
       sparkline: [0, 0, 0, 0, 0, 0, stats?.avg_response_minutes ?? 0],
       category: "Response Time",
       icon: Clock,
@@ -430,7 +431,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-3 divide-x divide-white/10 py-1">
             <HeroStat value={String(activeIncidents)} label="Ongoing" sublabel="Reports" accent="text-amber-300" />
             <HeroStat value={String(resolvedToday)} label="Resolved" sublabel="Today" accent="text-emerald-300" />
-            <HeroStat value={`${stats?.avg_response_minutes ?? 0}m`} label="Average" sublabel="Response" accent="text-sky-300" />
+            <HeroStat value={formatDuration(stats?.avg_response_minutes)} label="Average" sublabel="Response" accent="text-sky-300" />
           </div>
         </div>
 
