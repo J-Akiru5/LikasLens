@@ -41,7 +41,12 @@ export async function GET(
       const tickets = result.tickets || [];
       const hit = tickets.find((t) => t.id === id);
       if (hit) {
-        return NextResponse.json({ success: true, data: hit });
+        const location = String(
+          (hit as Record<string, unknown>)?.location ??
+          (hit as Record<string, unknown>)?.address_text ??
+          ""
+        );
+        return NextResponse.json({ success: true, data: { ...hit, location } });
       }
       const total = Number(result.total ?? 0);
       if (page * 50 >= total) break;

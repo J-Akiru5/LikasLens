@@ -8,12 +8,28 @@ import { useTranslations } from "next-intl";
 
 // Safe wrapper: useTranslations throws during SSR if NextIntlClientProvider
 // context is missing (e.g. on error boundary / login redirect pages).
-// Fall back to a no-op translator so the chat widget never crashes a page.
+// Fall back to sensible defaults so the chat widget never crashes a page.
 function useSafeTranslations(namespace: string) {
   try {
     return useTranslations(namespace);
   } catch {
-    return (key: string) => key;
+    const defaults: Record<string, Record<string, string>> = {
+      chat: {
+        title: "Liksi",
+        subtitle: "AI Assistant",
+        online: "Online",
+        placeholder: "Ask Liksi...",
+        send: "Send message",
+        closeChat: "Close chat",
+        openChat: "Open Liksi chat",
+        errorFallback: "Oops! I couldn't reach my brain right now. Please check your connection or try again later.",
+        welcomeCitizen: "Hello po! I'm Liksi, your helpful AI guide for LikasLens. I'm here to assist you with reporting environmental concerns, exploring the platform, or understanding Philippine environmental laws. How may I assist you today?",
+        welcomeAdmin: "Welcome to the LikasLens Admin Portal! I'm Liksi, your AI operations assistant. I can help you triage reports, analyze trends, check laws, and manage the platform.",
+        signInPrompt: "Please sign in to chat with Liksi",
+        errorProcess: "Sorry, I couldn't process that. Try again!"
+      },
+    };
+    return (key: string) => defaults[namespace]?.[key] ?? key;
   }
 }
 import Link from "next/link";

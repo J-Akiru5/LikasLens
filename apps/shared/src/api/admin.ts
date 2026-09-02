@@ -1416,17 +1416,28 @@ export async function getAnalyticsDashboard() {
     ticketsByType[type] = (ticketsByType[type] || 0) + 1;
   }
 
-  // Real hotspots: group tickets by province (last segment of address_text)
+  // Real hotspots: group tickets by municipality/province from address_text
   const byProvince = new Map<string, { count: number; urgency: number[]; types: Record<string, number> }>();
   for (const t of tickets) {
     const addr = String(t.address_text || "");
-    const province = addr.split(",").pop()?.trim() || "Unknown";
-    const entry = byProvince.get(province) || { count: 0, urgency: [], types: {} };
+    const segments = addr
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s && !s.toLowerCase().includes("philippines") && !/^\d{4,5}$/.test(s));
+    
+    // Pick the most relevant location segment (city, municipality, or province)
+    let loc = "Unknown Location";
+    if (segments.length >= 2) {
+      loc = segments[segments.length - 1];
+    } else if (segments.length === 1) {
+      loc = segments[0];
+    }
+    const entry = byProvince.get(loc) || { count: 0, urgency: [], types: {} };
     entry.count += 1;
     entry.urgency.push(Number(t.urgency_score) || 0);
-    const type = String(t.ai_triage_summary || "") || "Other";
+    const type = String(t.ai_triage_summary || "") || "Waste Dumping";
     entry.types[type] = (entry.types[type] || 0) + 1;
-    byProvince.set(province, entry);
+    byProvince.set(loc, entry);
   }
   const hotspots = [...byProvince.entries()]
     .map(([province, v]) => ({

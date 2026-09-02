@@ -242,12 +242,47 @@ export function IncidentDetailPanel({
                   >
                     {ticket.ai_confidence != null
                       ? `${(ticket.ai_confidence * 100).toFixed(0)}% confidence`
-                      : "No AI analysis"}
+                      : ticket.ai_triage_summary
+                        ? "AI Triaged"
+                        : "Pending Triage"}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-ink/5 text-ink/50">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-ink/5 text-ink/70 border border-border">
                     {ticket.status}
                   </span>
                 </div>
+              </div>
+
+              {/* Incident Location & Jurisdiction */}
+              <div className="p-3.5 rounded-xl bg-ink/[0.02] border border-border space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-mono text-muted uppercase tracking-wider flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />
+                    <span>Incident Location</span>
+                  </p>
+                  {ticket.latitude && ticket.longitude && (
+                    <a
+                      href={`https://www.google.com/maps?q=${ticket.latitude},${ticket.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-mono text-accent hover:underline flex items-center gap-0.5"
+                    >
+                      <span>Open Map</span>
+                      <ArrowUpRight className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-ink font-sans leading-relaxed">
+                  {ticket.location ||
+                    ((ticket as unknown) as Record<string, unknown>).address_text as string ||
+                    (ticket.latitude && ticket.longitude
+                      ? `GPS: ${Number(ticket.latitude).toFixed(5)}, ${Number(ticket.longitude).toFixed(5)}`
+                      : "Location coordinates logged in database")}
+                </p>
+                {ticket.latitude && ticket.longitude && (
+                  <p className="text-[11px] font-mono text-muted">
+                    Coordinates: {Number(ticket.latitude).toFixed(6)}, {Number(ticket.longitude).toFixed(6)}
+                  </p>
+                )}
               </div>
 
               {/* Description */}
@@ -264,12 +299,12 @@ export function IncidentDetailPanel({
 
               {/* AI Summary */}
               {ticket.ai_triage_summary && (
-                <div className="p-3 rounded-xl bg-accent/5 border border-accent/10">
-                  <p className="text-xs font-mono text-accent uppercase tracking-wider mb-1">
-                    AI Analysis
+                <div className="p-3.5 rounded-xl bg-accent/5 border border-accent/15 space-y-1">
+                  <p className="text-xs font-mono text-accent uppercase tracking-wider font-semibold">
+                    AI Environmental Triage
                   </p>
-                  <p className="text-sm text-ink/70 leading-relaxed">
-                    {ticket.ai_triage_summary}
+                  <p className="text-sm text-ink/80 leading-relaxed font-sans">
+                    {ticket.ai_triage_summary.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   </p>
                 </div>
               )}
@@ -334,21 +369,19 @@ export function IncidentDetailPanel({
               )}
 
               {/* Meta */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-xs text-ink/40 font-mono">
-                  <MapPin className="w-3 h-3" />
-                  {ticket.location}
-                </div>
-                <div className="flex items-center gap-2 text-xs text-ink/40 font-mono">
-                  <Clock className="w-3 h-3" />
-                  {new Date(ticket.created_at).toLocaleString()}
+              <div className="space-y-2 pt-2 border-t border-border">
+                <div className="flex items-center gap-2 text-xs text-muted font-mono">
+                  <Clock className="w-3.5 h-3.5 text-muted/60" />
+                  <span>Submitted {new Date(ticket.created_at).toLocaleString()}</span>
                 </div>
                 {ticket.reporter && (
-                  <div className="flex items-center gap-2 text-xs text-ink/40 font-mono">
-                    <Fingerprint className="w-3 h-3" />
-                    {ticket.reporter === "anonymous"
-                      ? "Anonymous (Ghost Mode)"
-                      : `Reported by ${ticket.reporter}`}
+                  <div className="flex items-center gap-2 text-xs text-muted font-mono">
+                    <Fingerprint className="w-3.5 h-3.5 text-muted/60" />
+                    <span>
+                      {ticket.reporter === "anonymous"
+                        ? "Anonymous (Ghost Mode Whistleblower)"
+                        : `Reported by ${ticket.reporter}`}
+                    </span>
                   </div>
                 )}
               </div>

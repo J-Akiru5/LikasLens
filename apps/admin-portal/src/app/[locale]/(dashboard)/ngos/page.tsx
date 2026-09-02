@@ -270,116 +270,149 @@ export default function NgosPage() {
         </div>
       )}
 
-      {!showForm && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="flex-1 min-w-[200px] max-w-[240px]">
-            <Dropdown
-              value={regionFilter}
-              onChange={(val) => setRegionFilter(val)}
-              options={[
-                { value: "", label: "All Regions" },
-                ...regions.map((r) => ({ value: r, label: r })),
-              ]}
-              placeholder="All Regions"
-              size="md"
-              onClear={() => setRegionFilter("")}
-            />
-          </div>
-          <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
-            <input
-              type="checkbox"
-              checked={activeOnly}
-              onChange={(e) => setActiveOnly(e.target.checked)}
-              className="w-4 h-4 rounded border-ink/20 text-green focus:ring-green/20"
-            />
-            <span className="font-mono text-xs text-ink/60">Active only</span>
-          </label>
+      {/* Filter Controls (Always Visible) */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="flex-1 min-w-[200px] max-w-[240px]">
+          <Dropdown
+            value={regionFilter}
+            onChange={(val) => setRegionFilter(val)}
+            options={[
+              { value: "", label: "All Regions" },
+              ...regions.map((r) => ({ value: r, label: r })),
+            ]}
+            placeholder="All Regions"
+            size="md"
+            onClear={() => setRegionFilter("")}
+          />
         </div>
-      )}
+        <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
+          <input
+            type="checkbox"
+            checked={activeOnly}
+            onChange={(e) => setActiveOnly(e.target.checked)}
+            className="w-4 h-4 rounded border-ink/20 text-accent focus:ring-accent/20"
+          />
+          <span className="font-mono text-xs text-ink/60">Active only</span>
+        </label>
+      </div>
 
-      {showForm && (
-        <div className="bg-panel rounded-3xl p-4 sm:p-6 shadow-sm border border-ink/5">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="rounded-xl border border-red/20 bg-red/5 p-3 font-mono text-sm text-red">
-                {error}
-              </div>
-            )}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="label-pill label-pill-light block mb-2">
-                  Name *
-                </label>
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => { setForm({ ...form, name: e.target.value }); setFormErrors({ ...formErrors, name: "" }); }}
-                  className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.name ? "border-red" : "border-ink/10"}`}
-                />
-                {formErrors.name && (
-                  <p className="mt-1 font-mono text-xs text-red">{formErrors.name}</p>
-                )}
-              </div>
-              <div>
-                <label className="label-pill label-pill-light block mb-2">
-                  Region *
-                </label>
-                <input
-                  required
-                  value={form.region}
-                  onChange={(e) => { setForm({ ...form, region: e.target.value }); setFormErrors({ ...formErrors, region: "" }); }}
-                  className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.region ? "border-red" : "border-ink/10"}`}
-                />
-                {formErrors.region && (
-                  <p className="mt-1 font-mono text-xs text-red">{formErrors.region}</p>
-                )}
-              </div>
-              <div>
-                <label className="label-pill label-pill-light block mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={form.contact_email}
-                  onChange={(e) => { setForm({ ...form, contact_email: e.target.value }); setFormErrors({ ...formErrors, contact_email: "" }); }}
-                  className={`w-full bg-page border px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all ${formErrors.contact_email ? "border-red" : "border-ink/10"}`}
-                />
-                {formErrors.contact_email && (
-                  <p className="mt-1 font-mono text-xs text-red">{formErrors.contact_email}</p>
-                )}
-              </div>
-              <div>
-                <label className="label-pill label-pill-light block mb-2">
-                  Phone
-                </label>
-                <input
-                  value={form.contact_phone}
-                  onChange={(e) =>
-                    setForm({ ...form, contact_phone: e.target.value })
-                  }
-                  className="w-full bg-page border border-ink/10 px-4 py-2.5 font-mono text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-green/20 focus:border-green/30 transition-all"
-                />
-              </div>
+      {/* ── Add / Edit NGO Modal Dialog ────────────────────────────── */}
+      <Modal
+        isOpen={showForm}
+        onClose={() => {
+          if (!saving) {
+            setShowForm(false);
+            setEditId(null);
+            setError(null);
+            setFormErrors({});
+          }
+        }}
+        title={editId ? "Edit Partner Organization" : "Add Partner Organization"}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          {error && (
+            <div className="rounded-xl border border-red/20 bg-red/5 p-3 font-mono text-sm text-red">
+              {error}
             </div>
-            <div className="flex gap-2">
-              <Button variant="primary" type="submit" loading={saving}>
-                {editId ? "Update" : "Create"}
-              </Button>
-              <Button
-                variant="secondary"
-                type="button"
-                disabled={saving}
-                onClick={() => {
-                  setShowForm(false);
-                  setError(null);
+          )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-muted mb-1.5 font-semibold">
+                Organization Name *
+              </label>
+              <input
+                required
+                placeholder="e.g. Clean Rivers Foundation"
+                value={form.name}
+                onChange={(e) => {
+                  setForm({ ...form, name: e.target.value });
+                  setFormErrors({ ...formErrors, name: "" });
                 }}
-              >
-                Cancel
-              </Button>
+                className={`w-full bg-page border px-3.5 py-2.5 font-sans text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all ${
+                  formErrors.name ? "border-red" : "border-ink/10"
+                }`}
+              />
+              {formErrors.name && (
+                <p className="mt-1 font-mono text-xs text-red">{formErrors.name}</p>
+              )}
             </div>
-          </form>
-        </div>
-      )}
+
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-muted mb-1.5 font-semibold">
+                Operational Region *
+              </label>
+              <input
+                required
+                placeholder="e.g. Region IV-A (CALABARZON)"
+                value={form.region}
+                onChange={(e) => {
+                  setForm({ ...form, region: e.target.value });
+                  setFormErrors({ ...formErrors, region: "" });
+                }}
+                className={`w-full bg-page border px-3.5 py-2.5 font-sans text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all ${
+                  formErrors.region ? "border-red" : "border-ink/10"
+                }`}
+              />
+              {formErrors.region && (
+                <p className="mt-1 font-mono text-xs text-red">{formErrors.region}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-muted mb-1.5 font-semibold">
+                Contact Email
+              </label>
+              <input
+                type="email"
+                placeholder="contact@organization.ph"
+                value={form.contact_email}
+                onChange={(e) => {
+                  setForm({ ...form, contact_email: e.target.value });
+                  setFormErrors({ ...formErrors, contact_email: "" });
+                }}
+                className={`w-full bg-page border px-3.5 py-2.5 font-sans text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all ${
+                  formErrors.contact_email ? "border-red" : "border-ink/10"
+                }`}
+              />
+              {formErrors.contact_email && (
+                <p className="mt-1 font-mono text-xs text-red">{formErrors.contact_email}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-mono uppercase tracking-wider text-muted mb-1.5 font-semibold">
+                Contact Phone
+              </label>
+              <input
+                placeholder="+63 912 345 6789"
+                value={form.contact_phone}
+                onChange={(e) => setForm({ ...form, contact_phone: e.target.value })}
+                className="w-full bg-page border border-ink/10 px-3.5 py-2.5 font-sans text-sm text-ink rounded-xl focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-border mt-4">
+            <Button
+              variant="secondary"
+              type="button"
+              disabled={saving}
+              onClick={() => {
+                setShowForm(false);
+                setEditId(null);
+                setError(null);
+                setFormErrors({});
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" loading={saving}>
+              {editId ? "Update Organization" : "Create Organization"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {loading ? (
         <AdminCardGridSkeleton cards={6} />

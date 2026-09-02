@@ -156,6 +156,13 @@ class Settings(BaseSettings):
             return v.lower() == "true"
         return bool(v)
 
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, v: str) -> str:
+        if isinstance(v, str) and v.startswith("postgresql://"):
+            return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
+
     # ── Derived properties ────────────────────────────────────────────────
 
     @property

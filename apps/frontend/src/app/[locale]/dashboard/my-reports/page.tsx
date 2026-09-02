@@ -243,7 +243,7 @@ export default function MyReportsPage() {
     >
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-6">
         {/* Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-ink tracking-tight">My Submissions</h1>
             <p className="text-xs sm:text-sm text-ink/60 mt-1">
@@ -261,8 +261,8 @@ export default function MyReportsPage() {
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2 rounded-2xl bg-panel border border-ink/[0.08] dark:border-white/10 shadow-xs">
-          <div className="flex items-center gap-1.5 p-1 bg-ink/[0.03] dark:bg-white/[0.04] rounded-xl">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-2 rounded-2xl bg-panel border border-ink/[0.08] dark:border-white/10 shadow-xs overflow-hidden">
+          <div className="flex items-center gap-1.5 p-1 bg-ink/[0.03] dark:bg-white/[0.04] rounded-xl overflow-x-auto scrollbar-none">
             <button
               onClick={() => setFilterStatus("all")}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
@@ -357,7 +357,7 @@ export default function MyReportsPage() {
                   key={report.id}
                   className="rounded-3xl bg-panel/90 backdrop-blur-xl border border-ink/[0.08] dark:border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.06)] overflow-hidden p-5 sm:p-6 space-y-5 transition-all duration-300 w-full hover:border-accent/40"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1.5 min-w-0 flex-1">
                       <div className="flex items-center gap-2.5 flex-wrap">
                         <span
@@ -386,7 +386,7 @@ export default function MyReportsPage() {
                         <span className="truncate">{report.location || "Coordinates Recorded"}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-wrap">
                       <span
                         className={`px-3.5 py-1.5 rounded-full font-mono text-xs font-bold border flex items-center gap-2 shadow-xs ${meta.pillBg}`}
                       >
@@ -404,7 +404,7 @@ export default function MyReportsPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="pt-2 pb-1 px-1 sm:px-3">
+                  <div className="pt-2 pb-1 px-0 sm:px-3">
                     <div className="relative">
                       <div className="absolute top-3.5 sm:top-4 left-6 right-6 h-1.5 bg-ink/10 dark:bg-white/10 rounded-full z-0" />
                       <div
@@ -498,9 +498,10 @@ export default function MyReportsPage() {
                 <button
                   type="button"
                   onClick={() => setModalReport(null)}
-                  className="p-2.5 rounded-xl border border-ink/10 hover:bg-ink/[0.06] text-ink/70 hover:text-ink transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl border border-ink/10 hover:bg-ink/[0.06] text-ink/70 hover:text-ink transition-colors cursor-pointer shrink-0"
                 >
-                  ✕ Close
+                  <span className="hidden sm:inline">✕ Close</span>
+                  <span className="sm:hidden">✕</span>
                 </button>
               </div>
 

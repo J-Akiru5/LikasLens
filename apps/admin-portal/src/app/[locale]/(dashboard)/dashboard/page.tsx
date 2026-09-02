@@ -1,12 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useState, useCallback, useId } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import {
   getDashboardStats,
   getDashboardFeed,
   getTickets,
   getAnalyticsDashboard,
-  Sparkline,
   EmptyState,
   cn,
   RevealSection,
@@ -19,22 +20,27 @@ import type {
 } from "@likaslens/shared";
 import { DashboardSkeleton } from "@likaslens/shared";
 import {
-  AlertTriangle,
+  AlertCircle,
   CheckCircle2,
   Clock,
   Users,
-  LayoutDashboard,
   MapPin,
+  RefreshCw,
+  FileText,
+  Activity,
+  ArrowUpRight,
+  ChevronRight,
+  PieChart as PieChartIcon,
 } from "lucide-react";
 
-const ADMIN_KPI_GRID = "grid grid-cols-12 gap-4";
-const ADMIN_KPI_TILE_SPAN = {
-  hero: "col-span-12 lg:col-span-4",
-  primary: "col-span-6 sm:col-span-6 lg:col-span-4",
-  secondary: "col-span-6 sm:col-span-6 lg:col-span-2",
-} as const;
-const ADMIN_PULSE_BADGE =
-  "items-center gap-2 bg-green/10 text-green px-3 py-1.5 rounded-full text-xs font-mono font-bold uppercase tracking-widest border border-green/20 shadow-xs";
+function formatCategory(raw: string): string {
+  if (!raw) return "Environmental Incident";
+  const cleaned = raw.replace(/_/g, " ").trim();
+  return cleaned
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
 
 export default function DashboardPage() {
   const params = useParams<{ locale: string }>();
@@ -43,36 +49,41 @@ export default function DashboardPage() {
   const [feed, setFeed] = useState<ActivityFeedItem[]>([]);
   const [recentTickets, setRecentTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [activeSegment, setActiveSegment] = useState<string | null>(null);
+
+  const loadData = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) setRefreshing(true);
+    try {
+      const [statsRes, feedRes, ticketsRes, analyticsRes] = await Promise.all([
+        getDashboardStats(),
+        getDashboardFeed(),
+        getTickets({ per_page: "6" }),
+        getAnalyticsDashboard().catch(() => null),
+      ]);
+      if (statsRes.success) setStats(statsRes.data);
+      if (feedRes.success) setFeed(feedRes.data);
+      if (ticketsRes.success) setRecentTickets(ticketsRes.data);
+      if (analyticsRes) setAnalyticsData(analyticsRes);
+    } catch (err) {
+      console.error("Failed to load dashboard data:", err);
+    } finally {
+      setLoading(false);
+      if (isManualRefresh) setRefreshing(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const [statsRes, feedRes, ticketsRes, analyticsRes] = await Promise.all([
-          getDashboardStats(),
-          getDashboardFeed(),
-          getTickets({ per_page: "5" }),
-          getAnalyticsDashboard().catch(() => null),
-        ]);
-        if (statsRes.success) setStats(statsRes.data);
-        if (feedRes.success) setFeed(feedRes.data);
-        if (ticketsRes.success) setRecentTickets(ticketsRes.data);
-        if (analyticsRes) setAnalyticsData(analyticsRes);
-      } catch (err) {
-        console.error("Failed to load dashboard:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+    loadData();
+  }, [loadData]);
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-fade-in">
+      <div className="space-y-6">
         <div className="space-y-2">
-          <div className="h-12 w-44 rounded-xl bg-ink/5 animate-shimmer" />
-          <div className="h-5 w-52 rounded bg-ink/5 animate-shimmer" />
+          <div className="h-6 w-36 rounded bg-ink/5 animate-shimmer" />
+          <div className="h-4 w-64 rounded bg-ink/5 animate-shimmer" />
         </div>
         <DashboardSkeleton />
       </div>
@@ -80,304 +91,620 @@ export default function DashboardPage() {
   }
 
   const now = new Date();
-  const greeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 18 ? "Good afternoon" : "Good evening";
   const dateStr = formatDate(now, "long", locale);
 
-  const kpiTiles = [
+  // Parse and clean top locations
+  const rawHotspots = analyticsData?.data?.hotspots || [];
+  const hotspots: {
+    name: string;
+    count: number;
+    dominantType: string;
+  }[] = rawHotspots
+    .map((h: any) => {
+      let locName = (h.province || h.name || "Metro Manila").trim();
+      if (locName.toLowerCase() === "philippines") locName = "Metro Manila";
+      return {
+        name: locName,
+        count: Number(h.report_count ?? h.count ?? 0),
+        dominantType: formatCategory(h.dominant_type || "Waste Dumping"),
+      };
+    })
+    .filter((h: { count: number }) => h.count > 0)
+    .slice(0, 5);
+
+  const totalHotspotIncidents = hotspots.reduce((acc, h) => acc + h.count, 0) || 1;
+  const maxHotspotCount = Math.max(...hotspots.map((h) => h.count), 1);
+
+  const totalIncidents = stats?.active_incidents_total ?? 0;
+  const activeCount = stats?.active_incidents ?? 0;
+  const resolvedCount = stats?.resolved_today ?? 0;
+  const totalUsers = stats?.total_users ?? 0;
+  const openTickets = (stats as any)?.open_tickets ?? 0;
+
+  const avgResponseDisplay = (() => {
+    const mins = stats?.avg_response_minutes ?? 0;
+    if (mins <= 0) return "—";
+    if (mins < 60) return `${mins}m`;
+    const hrs = mins / 60;
+    if (hrs < 24) return `${hrs.toFixed(1)} hrs`;
+    return `${Math.floor(hrs / 24)}d ${Math.round(hrs % 24)}h`;
+  })();
+
+  // Precise status distribution matching frontend donut schema
+  const pendingCount = (stats as any)?.status_counts?.pending_review ?? 0;
+  const investigatingCount = (stats as any)?.status_counts?.investigating ?? 0;
+  const monitoringCount = (stats as any)?.status_counts?.monitoring ?? 0;
+  const resolvedTotal = (stats as any)?.status_counts?.resolved ?? 0;
+  const closedTotal = (stats as any)?.status_counts?.closed ?? 0;
+
+  // Status Segments for the Circular Donut Chart
+  const statusSegments = [
     {
-      id: "active-incidents",
-      label: "Active Incidents",
-      value: stats?.active_incidents ?? 0,
-      span: ADMIN_KPI_TILE_SPAN.hero,
-      accent: "green" as const,
-      icon: AlertTriangle,
-      color: "text-amber",
-      bg: "bg-amber/10",
-      sparkline: [] as number[],
+      id: "open",
+      name: "New Reports",
+      value: openTickets,
+      color: "#f59e0b", // Amber (matches frontend air quality / warning)
+      description: "Awaiting agency review and dispatch",
+    },
+    {
+      id: "investigating",
+      name: "Under Investigation",
+      value: investigatingCount,
+      color: "#06b6d4", // Cyan (matches frontend water quality)
+      description: "Active field investigation underway",
+    },
+    {
+      id: "monitoring",
+      name: "In Progress / Monitored",
+      value: pendingCount + monitoringCount,
+      color: "#8b5cf6", // Violet (matches frontend wildlife)
+      description: "Confirmed case under active supervision",
+    },
+    {
+      id: "resolved",
+      name: "Resolved",
+      value: resolvedTotal,
+      color: "#10b981", // Emerald (matches frontend success)
+      description: "Issue addressed and cleanup confirmed",
+    },
+    {
+      id: "closed",
+      name: "Closed / Dismissed",
+      value: closedTotal,
+      color: "#64748b", // Slate
+      description: "Withdrawn, duplicate, or non-violation",
+    },
+  ].filter((s) => s.value > 0);
+
+  // If no items have counts, provide a baseline display
+  const effectiveSegments =
+    statusSegments.length > 0
+      ? statusSegments
+      : [{ id: "empty", name: "No Active Reports", value: 1, color: "#cbd5e1", description: "All systems clear" }];
+
+  const donutTotal = statusSegments.reduce((sum, s) => sum + s.value, 0) || totalIncidents || 0;
+
+  // SVG Circular Donut calculations
+  const size = 200;
+  const strokeWidth = 24;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  let cumulativeOffset = 0;
+  const donutArcs = effectiveSegments.map((segment) => {
+    const share = donutTotal > 0 ? segment.value / donutTotal : 1 / effectiveSegments.length;
+    const strokeDasharray = `${share * circumference} ${circumference}`;
+    const strokeDashoffset = -cumulativeOffset;
+    cumulativeOffset += share * circumference;
+    const pct = Math.round(share * 100);
+
+    return {
+      ...segment,
+      pct,
+      strokeDasharray,
+      strokeDashoffset,
+    };
+  });
+
+  const kpiCards = [
+    {
+      id: "active",
+      label: "Active Reports",
+      value: activeCount,
+      help: totalIncidents > 0 ? `${activeCount} of ${totalIncidents} total reports` : "No ongoing reports",
+      icon: AlertCircle,
     },
     {
       id: "resolved-today",
       label: "Resolved Today",
-      value: stats?.resolved_today ?? 0,
-      span: ADMIN_KPI_TILE_SPAN.primary,
-      accent: "accent" as const,
+      value: resolvedCount,
+      help: "Reports completed today",
       icon: CheckCircle2,
-      color: "text-green",
-      bg: "bg-green/10",
-      sparkline: [] as number[],
     },
     {
       id: "avg-response",
-      label: "Avg Response",
-      value: (() => {
-        const mins = stats?.avg_response_minutes ?? 0;
-        if (mins <= 0) return "—";
-        if (mins < 60) return `${mins}m`;
-        const hrs = mins / 60;
-        if (hrs < 24) return `${hrs.toFixed(1)}h`;
-        return `${Math.floor(hrs / 24)}d ${Math.round(hrs % 24)}h`;
-      })(),
-      span: ADMIN_KPI_TILE_SPAN.primary,
-      accent: "amber" as const,
+      label: "Avg. Response Time",
+      value: avgResponseDisplay,
+      help: "Average time to handle reports",
       icon: Clock,
-      color: "text-accent",
-      bg: "bg-accent/10",
-      sparkline: [] as number[],
     },
     {
-      id: "total-users",
+      id: "users",
       label: "Total Users",
-      value: stats?.total_users ?? 0,
-      span: ADMIN_KPI_TILE_SPAN.secondary,
-      accent: "muted" as const,
+      value: totalUsers,
+      help: "Citizens and officers registered",
       icon: Users,
-      color: "text-secondary",
-      bg: "bg-secondary/10",
-      sparkline: [] as number[],
     },
     {
-      id: "open-tickets",
-      label: "Open Tickets",
-      value: (stats as any)?.open_tickets ?? 0,
-      span: ADMIN_KPI_TILE_SPAN.secondary,
-      accent: "muted" as const,
-      icon: AlertTriangle,
-      color: "text-ink",
-      bg: "bg-ink/[0.04]",
-      sparkline: [] as number[],
+      id: "triage",
+      label: "New Reports",
+      value: openTickets,
+      help: "Waiting to be assigned",
+      icon: FileText,
     },
   ];
 
-  const accentBarClass: Record<typeof kpiTiles[number]["accent"], string> = {
-    green: "before:bg-green",
-    amber: "before:bg-amber",
-    accent: "before:bg-accent",
-    muted: "before:bg-muted",
-  };
-
-  const bgTintClass: Record<typeof kpiTiles[number]["accent"], string> = {
-    green: "bg-green/[0.02] hover:bg-green/[0.04]",
-    amber: "bg-amber/[0.02] hover:bg-amber/[0.04]",
-    accent: "bg-accent/[0.02] hover:bg-accent/[0.04]",
-    muted: "bg-ink/[0.02] hover:bg-ink/[0.04]",
-  };
-
-  const valueColorClass: Record<typeof kpiTiles[number]["accent"], string> = {
-    green: "text-green",
-    amber: "text-amber",
-    accent: "text-accent",
-    muted: "text-ink",
-  };
-
-  // Extract hotspots from analytics data
-  const hotspots: { name: string; count: number }[] = analyticsData?.data?.hotspots
-    ? analyticsData.data.hotspots.slice(0, 5)
-    : [];
-
   return (
-    <div className="space-y-8">
-      {/* ── Welcome Header ─────────────────────────────────── */}
-      <div className="flex items-start justify-between">
+    <div className="space-y-6 pb-14 text-ink">
+      {/* ── Header ─────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <h1 className="font-heading font-bold tracking-tight text-3xl md:text-4xl text-ink">
-            {greeting}
+          <h1 className="font-heading font-bold text-2xl sm:text-3xl text-ink tracking-tight">
+            Dashboard
           </h1>
-          <p className="font-mono text-sm text-muted mt-1">{dateStr}</p>
+          <p className="text-xs sm:text-sm text-muted mt-0.5">
+            Overview of citizen environmental reports and field actions for {dateStr}.
+          </p>
         </div>
-        {/* Green-halo "All Systems Online" pulse badge */}
-        <span className={cn(ADMIN_PULSE_BADGE, "hidden md:inline-flex")}>
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green/60" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-green" />
-          </span>
-          All Systems Online
-        </span>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => loadData(true)}
+            disabled={refreshing}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border bg-panel hover:bg-ink/[0.04] text-ink transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={cn("w-3.5 h-3.5", refreshing && "animate-spin text-accent")} />
+            <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
+          </button>
+          <Link
+            href={`/${locale}/tickets`}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-accent hover:bg-accent-hover text-white transition-colors"
+          >
+            <span>View All Tickets</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
 
-      {/* ── Asymmetric KPI Grid (1 hero + 2 primary + 2 secondary) ── */}
-      <RevealSection stagger={0.06}>
-      <div className={ADMIN_KPI_GRID}>
-        {kpiTiles.map((kpi) => {
-          const Icon = kpi.icon;
-          return (
-            <div
-              key={kpi.id}
-              className={cn(
-                kpi.span,
-                "kpi-card relative overflow-hidden rounded-2xl bg-panel/90 backdrop-blur-xl border border-ink/[0.08] p-5 group transition-all duration-300 shadow-[0_2px_12px_-2px_rgba(0,0,0,0.04)] hover:shadow-md hover:border-ink/[0.14]",
-                bgTintClass[kpi.accent],
-                "before:absolute before:left-0 before:right-0 before:top-0 before:h-0.5",
-                accentBarClass[kpi.accent]
-              )}
-            >
-              {/* Subtle ambient hover glow */}
-              <div className="absolute -right-8 -bottom-8 w-28 h-28 rounded-full blur-[30px] opacity-0 group-hover:opacity-20 pointer-events-none transition-opacity duration-500 bg-accent-bright" />
-              
-              <div 
-                className={cn(
-                  "absolute right-0 bottom-0 translate-x-2 translate-y-2 pointer-events-none transition-all duration-500 group-hover:scale-110",
-                  kpi.color
-                )}
-                style={{ opacity: 0.05 }}
+      {/* ── KPI Metric Cards (Clean, No Left-Side Color Bars) ──────── */}
+      <RevealSection stagger={0.03}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          {kpiCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.id}
+                className="bg-panel rounded-xl border border-border p-4 shadow-2xs hover:border-ink/20 transition-all flex flex-col justify-between"
               >
-                <Icon className="w-24 h-24 sm:w-32 sm:h-32" />
-              </div>
-              <div className="flex items-start justify-between mb-3 relative z-10">
-                <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center`}>
-                  <Icon className={`w-5 h-5 ${kpi.color}`} />
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-xs font-medium text-muted">
+                    {card.label}
+                  </span>
+                  <div className="w-7 h-7 rounded-md bg-ink/[0.04] flex items-center justify-center text-ink/70">
+                    <Icon className="w-4 h-4" />
+                  </div>
                 </div>
-                <div className="w-16 h-8">
-                  <Sparkline data={kpi.sparkline} width={64} height={32} color="var(--accent)" />
+
+                <div>
+                  <p className="font-heading font-bold text-2xl sm:text-3xl text-ink tracking-tight tabular-nums">
+                    {card.value}
+                  </p>
+                  <p className="text-xs text-muted mt-1">
+                    {card.help}
+                  </p>
                 </div>
               </div>
-              <p className="font-mono text-[11px] text-ink/70 uppercase tracking-widest mb-1 relative z-10">
-                {kpi.label}
-              </p>
-              <p className={cn("font-heading font-bold tracking-tight text-2xl relative z-10", valueColorClass[kpi.accent])}>
-                {kpi.value}
-              </p>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
       </RevealSection>
 
-      {/* ── Activity + Tickets Side by Side ─────────────────── */}
+      {/* ── Circular Donut Status Breakdown (Frontend Consistency) ─── */}
       <RevealSection>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="bg-panel/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-ink/[0.08] shadow-xs">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-              <LayoutDashboard className="w-4 h-4 text-ink/60" />
-            </div>
-            <h3 className="font-heading font-semibold tracking-tight text-lg text-ink">
-              Recent Activity
-            </h3>
-          </div>
-          <div className="space-y-3">
-            {feed.slice(0, 8).map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start gap-3 border-b border-ink/5 pb-3 last:border-0"
-              >
-                <div
-                  className={`mt-1.5 h-2.5 w-2.5 rounded-full shrink-0 ${item.type === "Critical" ? "bg-red" : item.type === "Warning" ? "bg-amber" : "bg-green"}`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-ink truncate">
-                    {item.title}
-                  </p>
-                  <p className="font-mono text-sm text-muted">
-                    {item.location} · {item.time}
-                  </p>
-                </div>
-                <span className="font-mono text-sm text-muted shrink-0">
-                  {item.status}
-                </span>
+        <div className="bg-panel rounded-xl border border-border p-5 sm:p-6 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-5 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center">
+                <PieChartIcon className="w-4 h-4" />
               </div>
-            ))}
-            {feed.length === 0 && (
-              <EmptyState
-                icon={LayoutDashboard}
-                title="No recent activity"
-                description="New activity from citizen reports and system actions will appear here."
-              />
-            )}
-          </div>
-        </div>
-
-        <div className="bg-panel/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-ink/[0.08] shadow-xs">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-9 h-9 rounded-xl bg-ink/[0.04] flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4 text-ink/60" />
+              <div>
+                <h2 className="font-heading font-bold text-base sm:text-lg text-ink">
+                  Report Status & Lifecycle
+                </h2>
+                <p className="text-xs text-muted">
+                  Current distribution of citizen reports across resolution stages
+                </p>
+              </div>
             </div>
-            <h3 className="font-heading font-semibold tracking-tight text-lg text-ink">
-              Recent Tickets
-            </h3>
+
+            <div className="text-xs font-mono text-muted self-start sm:self-center">
+              Total: <strong className="text-ink font-bold">{donutTotal}</strong> reports in system
+            </div>
           </div>
-          <div className="space-y-3">
-            {recentTickets.map((ticket) => (
-              <div
-                key={ticket.id}
-                className="flex items-center justify-between border-b border-ink/5 pb-3 last:border-0"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm text-ink truncate">
-                    {ticket.title}
-                  </p>
-                  <p className="font-mono text-sm text-muted">
-                    {ticket.location}
-                  </p>
-                </div>
-                <span
-                  className={`ml-2 shrink-0 rounded-full px-2.5 py-1 text-xs font-mono ${
-                    ticket.status === "open"
-                      ? "bg-amber/10 text-amber"
-                      : ticket.status === "resolved"
-                        ? "bg-green/10 text-green"
-                        : "bg-ink/[0.04] text-ink/60"
-                  }`}
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-6">
+            {/* Left: The SVG Donut Chart (Exact Visual Parity with Frontend) */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
+              <div className="relative w-[210px] h-[210px] flex items-center justify-center">
+                <svg
+                  width={size}
+                  height={size}
+                  viewBox={`0 0 ${size} ${size}`}
+                  className="rotate-[-90deg] transition-all duration-500"
                 >
-                  {ticket.status}
-                </span>
-              </div>
-            ))}
-            {recentTickets.length === 0 && (
-              <EmptyState
-                icon={AlertTriangle}
-                title="No recent tickets"
-                description="When citizens submit reports, tickets will appear here for review and dispatch."
-              />
-            )}
-          </div>
-        </div>
-      </div>
-      </RevealSection>
+                  {/* Background Track Circle */}
+                  <circle
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={strokeWidth}
+                    className="text-ink/[0.06]"
+                  />
 
-      {/* ── Regional Hotspots ──────────────────────── */}
-      {hotspots.length > 0 && (
-        <RevealSection>
-        <div className="bg-panel/90 backdrop-blur-xl rounded-2xl p-4 sm:p-6 border border-ink/[0.08] shadow-xs">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-9 h-9 rounded-xl bg-red/10 flex items-center justify-center">
-              <MapPin className="w-4 h-4 text-red" />
+                  {/* Dynamic Color Arcs */}
+                  {donutArcs.map((arc) => {
+                    const isHovered = activeSegment === arc.id;
+                    return (
+                      <circle
+                        key={arc.id}
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        fill="none"
+                        stroke={arc.color}
+                        strokeWidth={isHovered ? strokeWidth + 4 : strokeWidth}
+                        strokeDasharray={arc.strokeDasharray}
+                        strokeDashoffset={arc.strokeDashoffset}
+                        strokeLinecap="round"
+                        className="transition-all duration-300 cursor-pointer"
+                        onMouseEnter={() => setActiveSegment(arc.id)}
+                        onMouseLeave={() => setActiveSegment(null)}
+                      />
+                    );
+                  })}
+                </svg>
+
+                {/* Center Counter (Identical to Frontend Violation Donut) */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+                  <span className="font-heading font-extrabold text-3xl sm:text-4xl text-ink tracking-tight tabular-nums">
+                    {donutTotal}
+                  </span>
+                  <span className="font-mono text-[9px] font-bold text-muted uppercase tracking-widest mt-0.5">
+                    TOTAL REPORTS
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-muted font-sans mt-3 text-center">
+                Hover over a segment or item to highlight status
+              </p>
             </div>
-            <div>
-              <h3 className="font-heading font-semibold tracking-tight text-lg text-ink">
-                Regional Hotspots
-              </h3>
-              <p className="font-mono text-sm text-muted">Top locations by incident count</p>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {hotspots.map((spot, idx) => {
-              const maxCount = hotspots[0]?.count ?? 1;
-              const pct = Math.round((spot.count / maxCount) * 100);
-              return (
-                <div key={`${spot.name}-${idx}`} className="flex items-center gap-4">
-                  <span className="font-mono text-sm text-muted w-4 text-right">{idx + 1}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="font-medium text-sm text-ink truncate">{spot.name}</p>
-                      <span className="font-mono text-sm text-muted shrink-0 ml-2">{spot.count} reports</span>
+
+            {/* Right: Modern Category Cards (Matching Frontend 2-Column Grid) */}
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {donutArcs.map((item) => {
+                const isHovered = activeSegment === item.id;
+                return (
+                  <div
+                    key={item.id}
+                    onMouseEnter={() => setActiveSegment(item.id)}
+                    onMouseLeave={() => setActiveSegment(null)}
+                    className={cn(
+                      "p-3.5 rounded-xl border transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-2",
+                      isHovered
+                        ? "bg-ink/[0.04] border-accent/40 shadow-xs"
+                        : "bg-ink/[0.015] border-border hover:bg-ink/[0.03]"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-xs"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-xs font-semibold text-ink truncate">
+                          {item.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="font-mono text-xs font-bold text-ink px-1.5 py-0.5 rounded bg-ink/[0.05]">
+                          {item.value}
+                        </span>
+                        <span className="font-mono text-[11px] font-semibold text-muted">
+                          {item.pct}%
+                        </span>
+                      </div>
                     </div>
-                    <div className="h-1.5 bg-ink/5 rounded-full overflow-hidden">
+
+                    <p className="text-[11px] text-muted leading-tight">
+                      {item.description}
+                    </p>
+
+                    {/* Progress Fill Indicator */}
+                    <div className="h-1.5 w-full bg-ink/[0.06] rounded-full overflow-hidden">
                       <div
-                        className="h-full rounded-full transition-all duration-700"
+                        className="h-full rounded-full transition-all duration-500"
                         style={{
-                          width: `${pct}%`,
-                          background: idx === 0 ? "var(--red)" : idx === 1 ? "var(--amber)" : "var(--accent)",
+                          width: `${item.pct}%`,
+                          backgroundColor: item.color,
                         }}
                       />
                     </div>
                   </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </RevealSection>
+
+      {/* ── Top Locations ──────────────────────────────────────────── */}
+      <RevealSection>
+        <div className="bg-panel rounded-xl border border-border shadow-2xs overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 border-b border-border gap-2">
+            <div>
+              <h2 className="font-heading font-bold text-base sm:text-lg text-ink">
+                Top Locations
+              </h2>
+              <p className="text-xs text-muted mt-0.5">
+                Places with the most reported environmental incidents
+              </p>
+            </div>
+            <Link
+              href={`/${locale}/analytics`}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline self-start sm:self-center"
+            >
+              <span>View Map Analytics</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="divide-y divide-border">
+            {hotspots.map((spot, idx) => {
+              const relativePct = Math.min(100, Math.round((spot.count / maxHotspotCount) * 100));
+              const sharePct = Math.round((spot.count / totalHotspotIncidents) * 100);
+
+              return (
+                <div
+                  key={`${spot.name}-${idx}`}
+                  className="p-3.5 sm:p-4 hover:bg-ink/[0.015] transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-mono text-xs font-bold text-muted w-6 text-center shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="font-heading font-semibold text-sm sm:text-base text-ink truncate">
+                        {spot.name}
+                      </p>
+                      <p className="text-xs text-muted truncate mt-0.5">
+                        Most common issue: <span className="text-ink font-medium">{spot.dominantType}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 sm:w-64 shrink-0 justify-between sm:justify-end">
+                    <div className="w-full sm:w-36 space-y-1">
+                      <div className="h-1.5 w-full bg-ink/[0.06] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-accent rounded-full transition-all duration-500"
+                          style={{ width: `${relativePct}%` }}
+                        />
+                      </div>
+                      <p className="text-[11px] font-mono text-muted text-right">
+                        {sharePct}% of reports
+                      </p>
+                    </div>
+
+                    <Link
+                      href={`/${locale}/tickets?search=${encodeURIComponent(spot.name)}`}
+                      className="text-xs font-semibold text-ink bg-ink/[0.04] hover:bg-ink/[0.08] hover:text-accent px-2.5 py-1 rounded-md border border-border transition-colors shrink-0 flex items-center gap-1"
+                    >
+                      <span>{spot.count} {spot.count === 1 ? "report" : "reports"}</span>
+                      <ArrowUpRight className="w-3 h-3 text-muted" />
+                    </Link>
+                  </div>
                 </div>
               );
             })}
+
+            {hotspots.length === 0 && (
+              <div className="p-8">
+                <EmptyState
+                  icon={MapPin}
+                  title="No locations reported yet"
+                  description="As citizens submit reports with locations, top areas will appear here."
+                />
+              </div>
+            )}
           </div>
         </div>
-        </RevealSection>
-      )}
+      </RevealSection>
+
+      {/* ── Recent Activity & Recent Tickets ───────────────────────── */}
+      <RevealSection>
+        <div className="grid gap-5 lg:grid-cols-2">
+          {/* Recent Activity */}
+          <div className="bg-panel rounded-xl border border-border shadow-2xs overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-accent" />
+                  <h2 className="font-heading font-bold text-base text-ink">
+                    Recent Activity
+                  </h2>
+                </div>
+                <Link
+                  href={`/${locale}/audit-logs`}
+                  className="text-xs font-semibold text-accent hover:underline flex items-center gap-1"
+                >
+                  <span>All Activity</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              <div className="divide-y divide-border">
+                {feed.slice(0, 6).map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3.5 sm:p-4 hover:bg-ink/[0.015] transition-colors flex items-start gap-3"
+                  >
+                    <span
+                      className={cn(
+                        "mt-1.5 h-2 w-2 rounded-full shrink-0",
+                        item.type === "Critical"
+                          ? "bg-red-500"
+                          : item.type === "Warning"
+                            ? "bg-amber-500"
+                            : "bg-emerald-500"
+                      )}
+                    />
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="font-medium text-xs sm:text-sm text-ink truncate font-sans">
+                          {item.title}
+                        </p>
+                        <span className="font-mono text-[11px] text-muted shrink-0 tabular-nums">
+                          {item.time}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs font-mono text-muted truncate">
+                        {item.location && (
+                          <span className="truncate flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-muted/60 shrink-0" />
+                            <span className="truncate">{item.location}</span>
+                          </span>
+                        )}
+                        {item.status && (
+                          <>
+                            <span className="text-muted/40">•</span>
+                            <span className="uppercase text-[10px] font-semibold text-ink/75 px-1.5 py-0.2 rounded bg-ink/[0.04] border border-border">
+                              {item.status}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {feed.length === 0 && (
+                  <div className="p-8">
+                    <EmptyState
+                      icon={Activity}
+                      title="No recent activity"
+                      description="Citizen reports and status updates will appear here."
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-3.5 border-t border-border bg-ink/[0.01] flex items-center justify-between text-xs text-muted">
+              <span>Showing latest updates</span>
+              <Link href={`/${locale}/tickets`} className="text-accent hover:underline font-semibold">
+                View All Reports →
+              </Link>
+            </div>
+          </div>
+
+          {/* Recent Tickets */}
+          <div className="bg-panel rounded-xl border border-border shadow-2xs overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-accent" />
+                  <h2 className="font-heading font-bold text-base text-ink">
+                    Recent Tickets
+                  </h2>
+                </div>
+                <Link
+                  href={`/${locale}/tickets`}
+                  className="text-xs font-semibold text-accent hover:underline flex items-center gap-1"
+                >
+                  <span>Ticket List</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              <div className="divide-y divide-border">
+                {recentTickets.map((ticket) => {
+                  const isOpen = ticket.status === "open";
+                  const isResolved = ticket.status === "resolved";
+                  const isInvestigating = ticket.status === "investigating";
+
+                  const badgeClass = isOpen
+                    ? "text-amber-800 dark:text-amber-300 bg-amber-500/10 border-amber-500/20"
+                    : isResolved
+                      ? "text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 border-emerald-500/20"
+                      : isInvestigating
+                        ? "text-blue-800 dark:text-blue-300 bg-blue-500/10 border-blue-500/20"
+                        : "text-muted bg-ink/[0.04] border-border";
+
+                  return (
+                    <Link
+                      key={ticket.id}
+                      href={`/${locale}/tickets?selected=${ticket.id}`}
+                      className="group p-3.5 sm:p-4 hover:bg-ink/[0.015] transition-colors flex items-center justify-between gap-3 block"
+                    >
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[11px] font-bold text-accent bg-accent/10 px-1.5 py-0.5 rounded-[4px] border border-accent/20">
+                            {ticket.display_id || ticket.id.slice(0, 8).toUpperCase()}
+                          </span>
+                          <p className="font-semibold text-xs sm:text-sm text-ink truncate group-hover:text-accent transition-colors font-sans">
+                            {ticket.title}
+                          </p>
+                        </div>
+                        <p className="text-xs text-muted truncate flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-muted/60 shrink-0" />
+                          <span className="truncate">{ticket.location || "Location logged"}</span>
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={cn("px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider border", badgeClass)}>
+                          {ticket.status}
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-muted/60 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                    </Link>
+                  );
+                })}
+
+                {recentTickets.length === 0 && (
+                  <div className="p-8">
+                    <EmptyState
+                      icon={FileText}
+                      title="No tickets yet"
+                      description="When citizens submit reports, tickets will appear here for review."
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="p-3.5 border-t border-border bg-ink/[0.01] flex items-center justify-between text-xs text-muted">
+              <span>Showing latest tickets</span>
+              <Link href={`/${locale}/triage`} className="text-accent hover:underline font-semibold">
+                Open Triage →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </RevealSection>
     </div>
   );
 }

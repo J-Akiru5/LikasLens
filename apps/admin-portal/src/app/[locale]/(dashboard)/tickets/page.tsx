@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { getTickets, bulkTicketStatus, bulkTicketAssign, bulkTicketAssignOfficer, bulkTicketDelete, getAdminNgos, getAdminUsers, updateTicketStatus, deleteTicket, Button } from "@likaslens/shared";
 import type { Ticket, NgoGroup, User } from "@likaslens/shared";
-import { showToast, Dropdown, AdminTableSkeleton, ConfidenceTierBadge, ReddEligibilityBadge } from "@likaslens/shared";
+import { showToast, Dropdown, AdminTableSkeleton, ConfidenceTierBadge, ReddEligibilityBadge, cn } from "@likaslens/shared";
 import { createClient } from "@/lib/supabase";
 import {
   Search,
@@ -15,6 +15,9 @@ import {
   RefreshCw,
   Trash2,
   ArrowUpRight,
+  X,
+  Filter,
+  RotateCcw,
 } from "lucide-react";
 import { useBulkSelect } from "@/hooks/use-bulk-select";
 import { BulkActionsBar } from "@/components/bulk-actions-bar";
@@ -264,26 +267,105 @@ export default function TicketsPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/60" />
-          <input
-            type="text"
-            placeholder="Search tickets..."
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-9 pr-4 py-2.5 bg-page border border-ink/10 rounded-xl font-mono text-sm text-ink placeholder:text-ink/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent/30 transition-all"
-          />
+      {/* ── Search & Filter Controls (2026 UX) ─────────────────────── */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          {/* Primary Search Bar (Resilient Flex with Min-Width) */}
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search tickets by title, location, or ID..."
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="w-full pl-10 pr-20 py-2.5 bg-panel border border-border rounded-xl font-sans text-sm text-ink placeholder:text-muted/60 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent transition-all shadow-2xs"
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => { setSearch(""); setPage(1); }}
+                  className="p-1 rounded-md text-muted hover:text-ink hover:bg-ink/[0.05] transition-colors"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-muted/60 bg-ink/[0.03] border border-border rounded">
+                /
+              </kbd>
+            </div>
+          </div>
+
+          {/* Compact Status Dropdown (Strictly Constrained Width) */}
+          <div className="w-full sm:w-52 shrink-0">
+            <Dropdown
+              value={statusFilter}
+              onChange={(val) => { setStatusFilter(val as string); setPage(1); }}
+              options={[
+                { value: "", label: "All Statuses" },
+                { value: "open", label: "Open" },
+                { value: "pending_review", label: "Pending Review" },
+                { value: "investigating", label: "Investigating" },
+                { value: "monitoring", label: "Monitoring" },
+                { value: "verified", label: "Verified" },
+                { value: "resolved", label: "Resolved" },
+                { value: "closed", label: "Closed / Dismissed" },
+              ]}
+              className="w-full"
+              size="md"
+              placeholder="Filter by status"
+            />
+          </div>
+
+          {/* Refresh Trigger */}
+          <button
+            onClick={() => fetchTickets()}
+            className="hidden sm:inline-flex items-center justify-center p-2.5 rounded-xl border border-border bg-panel hover:bg-ink/[0.03] text-muted hover:text-ink transition-colors shadow-2xs shrink-0"
+            title="Refresh tickets list"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
-        <Dropdown
-          value={statusFilter}
-          onChange={(val) => { setStatusFilter(val as string); setPage(1); }}
-          options={[
-            { value: "", label: "All statuses" },
-            ...statuses.map((s) => ({ value: s.toLowerCase(), label: s })),
-          ]}
-          size="md"
-        />
+
+        {/* Quick Filter Status Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-mono no-scrollbar">
+          {[
+            { key: "", label: "All Cases" },
+            { key: "open", label: "Open" },
+            { key: "investigating", label: "Investigating" },
+            { key: "monitoring", label: "Monitoring" },
+            { key: "verified", label: "Verified" },
+            { key: "resolved", label: "Resolved" },
+            { key: "closed", label: "Closed" },
+          ].map((tab) => {
+            const isActive = statusFilter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => { setStatusFilter(tab.key); setPage(1); }}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg whitespace-nowrap transition-all border flex items-center gap-1.5",
+                  isActive
+                    ? "bg-accent text-white font-semibold border-accent shadow-2xs"
+                    : "bg-panel text-muted hover:text-ink hover:bg-ink/[0.02] border-border"
+                )}
+              >
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+
+          {(search || statusFilter) && (
+            <button
+              onClick={() => { setSearch(""); setStatusFilter(""); setPage(1); }}
+              className="ml-auto inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-sans text-muted hover:text-ink hover:underline shrink-0"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset filters</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (

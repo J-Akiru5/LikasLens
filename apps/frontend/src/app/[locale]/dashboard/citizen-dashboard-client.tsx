@@ -202,7 +202,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
     }));
 
   return (
-    <div className="space-y-8 pb-16 pt-2 px-4 sm:px-6 max-w-7xl mx-auto">
+    <div className="space-y-6 sm:space-y-8 pb-16 pt-2 px-4 sm:px-6 max-w-7xl mx-auto">
 
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -210,8 +210,8 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">Dashboard Overview</h1>
           <p className="text-sm text-ink/60 mt-1">Live environmental updates, community reports, and government action tracker.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <PulseBadge label="Live Activity" size="sm" />
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <PulseBadge label="Live Activity" size="sm" className="hidden sm:flex" />
           <Button asChild variant="ink" size="md" className="rounded-xl shadow-sm">
             <Link href="/report">Submit Report</Link>
           </Button>
@@ -220,7 +220,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
 
       {/* Tabs and Filters */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-ink/5 pb-4">
-        <div className="flex items-center gap-1.5 bg-ink/[0.03] dark:bg-white/[0.04] p-1.5 rounded-2xl w-full sm:w-fit border border-ink/5 min-w-0">
+        <div className="flex items-center gap-1.5 bg-ink/[0.03] dark:bg-white/[0.04] p-1.5 rounded-2xl w-full sm:w-fit border border-ink/5 min-w-0 overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab('overview')}
             className={cn(activeTab === 'overview' ? CITIZEN_TAB_ACTIVE : CITIZEN_TAB_INACTIVE)}
@@ -254,7 +254,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
               placeholder="Search reports, locations, IDs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-72 pl-10 pr-4 py-2 text-sm border border-border bg-panel text-ink placeholder:text-muted focus:ring-2 focus:ring-accent focus:ring-offset-2 rounded-xl transition-all"
+              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border bg-panel text-ink placeholder:text-muted focus:ring-2 focus:ring-accent focus:ring-offset-2 rounded-xl transition-all"
             />
           </div>
         </div>
@@ -262,8 +262,8 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
 
       {/* Content Area: TAB 1 - MY SUBMISSIONS */}
       {activeTab === 'my-reports' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-bold text-ink">My Submissions & Case History</h2>
               <p className="text-xs sm:text-sm text-ink/60 mt-0.5">
@@ -272,7 +272,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
             </div>
             <Link
               href={`/${locale || "en"}/report`}
-              className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-ink text-page font-bold text-xs hover:-translate-y-0.5 transition-all shadow-md shrink-0 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-ink text-page font-bold text-xs hover:-translate-y-0.5 transition-all shadow-md shrink-0 cursor-pointer"
             >
               + File New Report
             </Link>
@@ -303,7 +303,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               {myReports
                 .filter((r) => {
                   if (!searchQuery.trim()) return true;
@@ -385,7 +385,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
 
                         <Link
                           href={`/${locale || "en"}/dashboard/my-reports`}
-                          className="px-4 py-2 rounded-xl bg-ink text-page font-bold text-xs flex items-center gap-1.5 hover:-translate-y-0.5 transition-all shadow-sm shrink-0 cursor-pointer"
+                          className="px-3 sm:px-4 py-2 rounded-xl bg-ink text-page font-bold text-[10px] sm:text-xs flex items-center gap-1.5 hover:-translate-y-0.5 transition-all shadow-sm shrink-0 cursor-pointer"
                         >
                           <FileText className="w-3.5 h-3.5" />
                           View Case Timeline
@@ -402,7 +402,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
 
       {/* Content Area: TAB 2 - COMMUNITY TELEMETRY */}
       {activeTab === 'overview' && (
-        <div className="space-y-10">
+        <div className="space-y-6 sm:space-y-10">
 
           {/* Offline queue card */}
           {queueCount > 0 && (

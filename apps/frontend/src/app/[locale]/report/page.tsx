@@ -546,7 +546,7 @@ export default function ReportPage() {
           {/* Stepper Navigation Progress */}
           {!isSubmittedSuccess && (
             <div className="mb-7">
-              <div className="grid grid-cols-3 gap-3 sm:gap-5">
+              <div className="grid grid-cols-3 gap-2 sm:gap-5">
                 {[
                   { num: 1, label: "Privacy & Capture" },
                   { num: 2, label: "AI Triage" },
@@ -563,7 +563,7 @@ export default function ReportPage() {
                         if (s.num === 2 && base64Image) setStep(2);
                         if (s.num === 3 && base64Image) setStep(3);
                       }}
-                      className={`relative flex items-center gap-3.5 p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border transition-all text-left ${
+                      className={`relative flex items-center gap-2 sm:gap-3.5 p-2.5 sm:p-4 rounded-xl sm:rounded-3xl border transition-all text-left ${
                         isActive
                           ? "bg-panel border-accent shadow-[0_6px_24px_-4px_rgba(6,182,212,0.18)] ring-2 ring-accent"
                           : isDone
@@ -582,7 +582,7 @@ export default function ReportPage() {
                       >
                         {isDone ? <Check className="w-5 h-5 stroke-[3]" /> : s.num}
                       </div>
-                      <div className="min-w-0 hidden sm:block">
+                      <div className="min-w-0 hidden md:block">
                         <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-ink/40 leading-none mb-1">
                           Step 0{s.num}
                         </p>
@@ -1023,7 +1023,7 @@ export default function ReportPage() {
                         </div>
 
                         {/* Step 2 Actions */}
-                        <div className="flex items-center justify-between gap-3 pt-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
                           <button
                             type="button"
                             onClick={retakePhoto}
@@ -1150,7 +1150,7 @@ export default function ReportPage() {
                       </div>
 
                       {/* Step 3 Actions */}
-                      <div className="flex items-center justify-between gap-3 pt-2">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
                         <button
                           type="button"
                           onClick={() => setStep(2)}

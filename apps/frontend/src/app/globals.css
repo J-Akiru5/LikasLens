@@ -53,12 +53,19 @@ body {
 }
 .ec-ledger-row {
   display: grid;
-  grid-template-columns: 92px 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 14px;
-  padding: 13px 18px;
+  gap: 10px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--ec-rule);
   position: relative;
+}
+@media (min-width: 640px) {
+  .ec-ledger-row {
+    grid-template-columns: 92px 1fr auto;
+    gap: 14px;
+    padding: 13px 18px;
+  }
 }
 .ec-ledger-row:last-child {
   border-bottom: none;
@@ -192,6 +199,15 @@ body {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--accent);
+}
+
+/* -- Scrollbar hide utility for mobile overflow containers ---------------------- */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
 /* -- Focus visible (WCAG 2.4.7) ------------------------------------------------ */

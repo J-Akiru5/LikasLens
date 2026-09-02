@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { DashboardLayout, getQueueCount, notifyThemeColor, useNotifications } from "@likaslens/shared";
 import type { NavItem } from "@likaslens/shared";
+import type { BottomNavItem } from "@likaslens/shared";
 import {
   LayoutGrid,
   AlertCircle,
@@ -138,6 +139,14 @@ export function DashboardLayoutWrapper({
     }, 3200);
   };
 
+  const bottomNavItems: BottomNavItem[] = [
+    { href: "/dashboard", label: "Home", icon: LayoutGrid, exact: true },
+    { href: "/dashboard/my-reports", label: "My Reports", icon: FileText },
+    { href: "/report", label: "Report", icon: Camera, isPrimary: true },
+    { href: "/dashboard/incidents", label: "Incidents", icon: AlertCircle },
+    { href: "/profile", label: "Profile", icon: User },
+  ];
+
   return (
     <>
       {/* 2026 Stealth Status Confirmation Toast (Below navbar on top-right, plain citizen wording) */}
@@ -176,6 +185,7 @@ export function DashboardLayoutWrapper({
 
       <DashboardLayout
         navItems={navItemsWithBadge}
+        bottomNavItems={bottomNavItems}
         userRole={userRole ?? null}
         isGhostMode={isGhostMode}
         onThemeToggle={toggleGhostMode}

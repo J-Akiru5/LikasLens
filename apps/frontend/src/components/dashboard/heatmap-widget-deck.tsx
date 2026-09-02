@@ -199,23 +199,23 @@ export function HeatmapWidget() {
   }, []);
 
   return (
-    <div className="relative w-full h-[540px] rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-none border border-ink/10 dark:border-white/10 overflow-hidden group">
+    <div className="relative w-full h-[360px] sm:h-[450px] lg:h-[540px] rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-none border border-ink/10 dark:border-white/10 overflow-hidden group">
       
       {/* Floating Header */}
-      <div className="absolute top-4 left-4 z-10">
-        <div className="bg-panel/85 backdrop-blur-xl border border-ink/10 dark:border-white/10 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)] rounded-[18px] p-2.5 flex items-center gap-3.5 transition-transform duration-500 hover:-translate-y-0.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center border border-emerald-500/20">
-            <MapPin className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+      <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
+        <div className="bg-panel/85 backdrop-blur-xl border border-ink/10 dark:border-white/10 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.12)] rounded-2xl sm:rounded-[18px] p-2 sm:p-2.5 flex items-center gap-2.5 sm:gap-3.5 transition-transform duration-500 hover:-translate-y-0.5">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 flex items-center justify-center border border-emerald-500/20">
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <h3 className="font-bold text-ink text-sm tracking-tight leading-none">Live Incident Heatmap</h3>
-            <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-ink/50 mt-1.5 font-medium">Last 30 Days Activity</p>
+            <h3 className="font-bold text-ink text-xs sm:text-sm tracking-tight leading-none">Live Incident Heatmap</h3>
+            <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-ink/50 mt-1 sm:mt-1.5 font-medium">Last 30 Days Activity</p>
           </div>
         </div>
       </div>
 
       {/* Floating Top-Right Controls: Expand Full Map & Legend Toggle */}
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 flex items-center gap-1.5 sm:gap-2">
         <button
           onClick={() => setShowLegend(!showLegend)}
           className={`backdrop-blur-xl border shadow-md rounded-xl px-3.5 py-2.5 flex items-center gap-2 text-xs font-semibold transition-all duration-200 ${
@@ -231,17 +231,18 @@ export function HeatmapWidget() {
 
         <Link
           href="/en/dashboard/map"
-          className="bg-panel/95 hover:bg-page backdrop-blur-xl border border-ink/10 dark:border-white/10 shadow-md hover:shadow-lg rounded-xl px-4 py-2.5 flex items-center gap-2 text-xs font-bold text-ink hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 hover:-translate-y-0.5"
+          className="bg-panel/95 hover:bg-page backdrop-blur-xl border border-ink/10 dark:border-white/10 shadow-md hover:shadow-lg rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2 text-xs font-bold text-ink hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 hover:-translate-y-0.5"
           title="Expand to Fullscreen Map"
         >
           <Maximize2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span>Expand Full Map</span>
+          <span className="hidden sm:inline">Expand Full Map</span>
+          <span className="sm:hidden">Expand</span>
         </Link>
       </div>
 
       {/* Detailed Hazard Legend Panel (When Toggled) */}
       {showLegend && (
-        <div className="absolute top-16 right-4 z-20 w-80 max-w-[calc(100vw-2rem)] bg-panel/95 backdrop-blur-2xl border border-ink/10 dark:border-white/10 shadow-2xl rounded-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="absolute top-14 right-3 sm:top-16 sm:right-4 z-20 w-72 sm:w-80 max-w-[calc(100vw-1.5rem)] bg-panel/95 backdrop-blur-2xl border border-ink/10 dark:border-white/10 shadow-2xl rounded-2xl p-3 sm:p-4 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-ink/10 dark:border-white/10">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -300,10 +301,10 @@ export function HeatmapWidget() {
       )}
 
       {/* Floating Bottom Quick Color Strip & Incident Counts */}
-      <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
+      <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-10 flex flex-wrap items-center justify-between gap-2 sm:gap-3 pointer-events-none">
         {/* Incident Counts */}
         {data && Array.isArray(data.points) && data.points.length > 0 ? (
-          <div className="bg-panel/85 backdrop-blur-xl border border-ink/10 dark:border-white/10 shadow-lg rounded-full px-4 py-2 flex items-center gap-4 font-mono text-[11px] uppercase tracking-wider pointer-events-auto">
+          <div className="bg-panel/85 backdrop-blur-xl border border-ink/10 dark:border-white/10 shadow-lg rounded-full px-3 sm:px-4 py-1.5 sm:py-2 flex items-center gap-2.5 sm:gap-4 font-mono text-[10px] sm:text-[11px] uppercase tracking-wider pointer-events-auto">
             <span className="flex items-center gap-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -358,7 +359,7 @@ export function HeatmapWidget() {
 
       {error && (
         <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-panel/60 backdrop-blur-sm">
-          <div className="bg-page border border-ink/5 shadow-2xl rounded-2xl p-6 flex flex-col items-center gap-3 text-center max-w-[280px]">
+          <div className="bg-page border border-ink/5 shadow-2xl rounded-2xl p-4 sm:p-6 flex flex-col items-center gap-3 text-center max-w-[260px] sm:max-w-[280px]">
             <div className="w-12 h-12 rounded-full bg-red/10 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-red" />
             </div>

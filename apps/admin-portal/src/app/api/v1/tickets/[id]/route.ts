@@ -181,9 +181,20 @@ export async function GET(
           : undefined,
     }));
 
+    const location = String(
+      (hit as Record<string, unknown>)?.location ??
+      (hit as Record<string, unknown>)?.address_text ??
+      ""
+    );
+
     return NextResponse.json({
       success: true,
-      data: { ...hit, evidence, assignments },
+      data: {
+        ...hit,
+        location,
+        evidence,
+        assignments,
+      },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

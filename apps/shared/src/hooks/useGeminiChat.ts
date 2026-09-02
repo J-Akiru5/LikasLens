@@ -19,8 +19,18 @@ function useSafeTranslations(namespace: string) {
   } catch {
     const fallbacks: Record<string, Record<string, string>> = {
       chat: {
-        welcomeCitizen: "Hello! I'm Liksi, your AI guide for LikasLens. How may I assist you today?",
-        welcomeAdmin: "Welcome to the Admin Portal! I'm Liksi, your AI operations assistant.",
+        title: "Liksi",
+        subtitle: "AI Assistant",
+        online: "Online",
+        placeholder: "Ask Liksi...",
+        send: "Send message",
+        closeChat: "Close chat",
+        openChat: "Open Liksi chat",
+        errorFallback: "Oops! I couldn't reach my brain right now. Please check your connection or try again later.",
+        welcomeCitizen: "Hello po! I'm Liksi, your helpful AI guide for LikasLens. 🌿 I can help you with reporting environmental concerns, understanding Philippine environmental laws, or navigating the platform. How may I assist you today?",
+        welcomeAdmin: "Welcome to the LikasLens Admin Portal! I'm Liksi, your AI operations assistant. I can help you triage reports, analyze trends, check laws, and manage the platform.",
+        signInPrompt: "Please sign in to chat with Liksi",
+        errorProcess: "Sorry, I couldn't process that. Try again!"
       },
     };
     return (key: string) => fallbacks[namespace]?.[key] ?? key;

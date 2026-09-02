@@ -250,7 +250,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
             </m.p>
 
             {/* Primary & Secondary CTA System */}
-            <m.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
+            <m.div variants={fadeUp} style={{ display: "flex", flexWrap: "wrap", gap: 10 }} className="flex-col sm:flex-row">
               <MagneticButton pull={0.3}>
                 <Link
                   href="/report"
@@ -312,7 +312,7 @@ export function HeroSection({ ghostMode, onGhostToggle }: HeroSectionProps) {
             </m.div>
 
             {/* Provenance & Island Reliability Bar — 2026 Civic Guarantee */}
-            <m.div variants={fadeUp} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
+            <m.div variants={fadeUp} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 4 }} className="max-w-full">
               <div
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
