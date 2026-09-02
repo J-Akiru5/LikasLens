@@ -78,7 +78,7 @@ export default function ReportsAnalyticsPage() {
         </head>
         <body>
           <h1>LikasLens Environmental Report</h1>
-          <p style="color:#64748b;font-size:13px">Generated ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</p>
+          <p style="color:#64748b;font-size:13px">Generated ${new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Manila" })}</p>
           <div style="text-align:center;margin:24px 0">
             <div class="kpi"><div class="kpi-value">${totalCount}</div><div class="kpi-label">Total Reports</div></div>
             <div class="kpi"><div class="kpi-value" style="color:#16a34a">${resolvedCount}</div><div class="kpi-label">Resolved</div></div>
@@ -107,7 +107,7 @@ export default function ReportsAnalyticsPage() {
                   <td>${t.title}</td>
                   <td>${(t.category || "").replace(/_/g, " ")}</td>
                   <td><span class="status ${t.status}">${t.status}</span></td>
-                  <td>${new Date(t.created_at).toLocaleDateString()}</td>
+                  <td>${new Date(t.created_at).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Manila" })}</td>
                 </tr>
               `).join("")}
             </tbody>

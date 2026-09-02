@@ -543,7 +543,7 @@ export function EnhancedMap({
                 </div>
                 <div className="flex items-center gap-1 text-ink/70 truncate">
                   <Clock className="w-3 h-3 text-ink/40 shrink-0" />
-                  <span className="truncate">{selectedPoint.created_at ? new Date(selectedPoint.created_at).toLocaleDateString() : "Recent"}</span>
+                  <span className="truncate">{selectedPoint.created_at ? new Date(selectedPoint.created_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric" }) : "Recent"}</span>
                 </div>
               </div>
 

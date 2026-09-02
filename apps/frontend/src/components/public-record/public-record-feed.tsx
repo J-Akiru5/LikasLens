@@ -41,7 +41,7 @@ function timeAgo(dateStr: string): string {
   if (diffH < 24) return `${diffH}h ago`;
   const diffD = Math.floor(diffH / 24);
   if (diffD < 30) return `${diffD}d ago`;
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "Asia/Manila" });
 }
 
 interface PublicRecordFeedProps {

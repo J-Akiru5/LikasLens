@@ -100,7 +100,7 @@ function exportToCsv(logs: AuditLogEntry[]) {
 
   const rows = logs.map((log) => [
     log.id,
-    new Date(log.created_at).toLocaleString(),
+    new Date(log.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }),
     log.actor?.name ?? "System",
     log.action,
     log.entity_type,
@@ -251,7 +251,7 @@ function DiffModal({
               Timestamp
             </span>
             <p className="font-mono text-sm text-ink">
-              {new Date(log.created_at).toLocaleString()}
+              {new Date(log.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
             </p>
           </div>
           {log.ip_address && (
@@ -393,7 +393,7 @@ function TimelineView({
                     </span>
                   </div>
                   <span className="font-mono text-sm text-muted shrink-0">
-                    {new Date(log.created_at).toLocaleString()}
+                    {new Date(log.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
                   </span>
                 </div>
 
@@ -717,7 +717,7 @@ export default function AuditLogsPage() {
                 </div>
                 <p className="font-mono text-sm text-ink/70">
                   {log.actor?.name ?? "System"} &middot;{" "}
-                  {new Date(log.created_at).toLocaleString()}
+                  {new Date(log.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
                 </p>
                 {log.ip_address && (
                   <p className="font-mono text-sm text-muted mt-1">

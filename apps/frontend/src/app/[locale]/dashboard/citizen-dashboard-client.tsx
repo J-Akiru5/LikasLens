@@ -155,7 +155,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
       trend: "up" as const,
       delta: stats?.avg_response_trend || "",
       sparkline: [0, 0, 0, 0, 0, 0, stats?.avg_response_minutes ?? 0],
-      category: stats?.avg_response_sla ? `vs ${stats.avg_response_sla}m SLA` : "SLA target not configured",
+      category: stats?.avg_response_sla ? `vs ${Math.round((stats.avg_response_sla || 1440) / 60)}h SLA Target` : "24h Response SLA",
       icon: Clock,
       accent: "accent" as const,
     },
@@ -380,7 +380,7 @@ export function CitizenDashboardClient({ locale, impact, stats, feed, ghostModeA
 
                       <div className="pt-3 border-t border-ink/5 flex items-center justify-between gap-3">
                         <span className="text-[10px] font-mono text-ink/40">
-                          {report.created_at ? new Date(report.created_at).toLocaleDateString() : "Recently"}
+                          {report.created_at ? new Date(report.created_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", year: "numeric", month: "short", day: "numeric" }) : "Recently"}
                         </span>
 
                         <Link

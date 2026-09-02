@@ -45,16 +45,19 @@ export function formatDate(
   if (Number.isNaN(d.getTime())) return "—";
 
   const loc = locale || undefined; // undefined = browser locale
+  // Default to Philippine Time (UTC+8) for consistent display across all apps
+  const tz = "Asia/Manila";
 
   switch (style) {
     case "short":
-      return d.toLocaleDateString(loc, { month: "short", day: "numeric" });
+      return d.toLocaleDateString(loc, { month: "short", day: "numeric", timeZone: tz });
 
     case "short-year":
       return d.toLocaleDateString(loc, {
         month: "short",
         day: "numeric",
         year: "numeric",
+        timeZone: tz,
       });
 
     case "medium":
@@ -62,6 +65,7 @@ export function formatDate(
         month: "long",
         day: "numeric",
         year: "numeric",
+        timeZone: tz,
       });
 
     case "long":
@@ -70,16 +74,17 @@ export function formatDate(
         month: "long",
         day: "numeric",
         year: "numeric",
+        timeZone: tz,
       });
 
     case "month-year":
-      return d.toLocaleDateString(loc, { month: "long", year: "numeric" });
+      return d.toLocaleDateString(loc, { month: "long", year: "numeric", timeZone: tz });
 
     case "month-day":
-      return d.toLocaleDateString(loc, { month: "short", day: "numeric" });
+      return d.toLocaleDateString(loc, { month: "short", day: "numeric", timeZone: tz });
 
     case "weekday":
-      return d.toLocaleDateString(loc, { weekday: "long" });
+      return d.toLocaleDateString(loc, { weekday: "long", timeZone: tz });
 
     case "datetime":
       return d.toLocaleString(loc, {
@@ -88,6 +93,7 @@ export function formatDate(
         year: "numeric",
         hour: "numeric",
         minute: "2-digit",
+        timeZone: tz,
       });
 
     case "iso":
@@ -97,16 +103,17 @@ export function formatDate(
       return d.toLocaleTimeString(loc, {
         hour: "numeric",
         minute: "2-digit",
+        timeZone: tz,
       });
 
     case "compact":
-      return d.toLocaleDateString(loc);
+      return d.toLocaleDateString(loc, { timeZone: tz });
 
     case "relative":
       return formatRelativeTime(d, loc);
 
     default:
-      return d.toLocaleDateString(loc);
+      return d.toLocaleDateString(loc, { timeZone: tz });
   }
 }
 
@@ -146,6 +153,7 @@ function formatRelativeTime(date: Date, locale?: string): string {
     return date.toLocaleDateString(locale || undefined, {
       month: "short",
       day: "numeric",
+      timeZone: "Asia/Manila",
     });
   }
 }
@@ -346,5 +354,5 @@ export function formatDistanceToNow(
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
   if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  return d.toLocaleDateString(options.locale || "en", { month: "short", day: "numeric" });
+  return d.toLocaleDateString(options.locale || "en", { month: "short", day: "numeric", timeZone: "Asia/Manila" });
 }

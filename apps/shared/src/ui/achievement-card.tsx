@@ -115,7 +115,7 @@ export function AchievementCard({ achievement, variant = "full", className }: Ac
             {unlocked && unlocked_at ? (
               <div className="flex items-center gap-1.5 text-green">
                 <CheckCircle className="w-4 h-4" />
-                <span className="font-mono text-xs">{new Date(unlocked_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+                <span className="font-mono text-xs">{new Date(unlocked_at).toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "Asia/Manila" })}</span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 text-muted">

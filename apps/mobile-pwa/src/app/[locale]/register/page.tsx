@@ -50,6 +50,23 @@ export default function RegisterPage() {
       return;
     }
 
+    // Provision the users table row so reports can link to this citizen
+    if (data.user) {
+      const userId = data.user.id;
+      await supabase.from("users").upsert(
+        {
+          id: userId,
+          supabase_auth_user_id: userId,
+          name: name || email.split("@")[0],
+          email: email.trim(),
+          role: "citizen",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "id" }
+      );
+    }
+
     router.push(`/${locale}/dashboard`);
   }
 

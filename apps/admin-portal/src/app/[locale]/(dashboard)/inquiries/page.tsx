@@ -104,7 +104,7 @@ export default function InquiriesPage() {
                     <div className="flex items-center gap-2 text-ink/70">
                       <Clock className="w-4 h-4" />
                       <span className="font-mono text-sm">
-                        {new Date(msg.created_at).toLocaleString()}
+                        {new Date(msg.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
                       </span>
                     </div>
 
@@ -135,7 +135,7 @@ export default function InquiriesPage() {
                       <CheckCircle2 className="w-4 h-4" />
                       Read{" "}
                       {msg.read_at &&
-                        new Date(msg.read_at).toLocaleDateString()}
+                        new Date(msg.read_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric" })}
                     </span>
                   )}
                 </div>

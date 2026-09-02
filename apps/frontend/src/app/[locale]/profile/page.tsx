@@ -75,6 +75,7 @@ function ProfilePageContent() {
                   month: "short",
                   day: "numeric",
                   year: "numeric",
+                  timeZone: "Asia/Manila",
                 })
               : null,
           );
@@ -404,7 +405,7 @@ function ProfilePageContent() {
                                 {ticket.display_id || `LL-${ticket.id.slice(0, 6)}`}
                               </span>
                               <span className="text-[10px] text-ink/40 font-mono">
-                                {ticket.created_at ? new Date(ticket.created_at).toLocaleDateString() : ""}
+                                {ticket.created_at ? new Date(ticket.created_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric" }) : ""}
                               </span>
                             </div>
                             <h4 className="font-bold text-sm text-ink truncate group-hover:text-accent transition-colors">

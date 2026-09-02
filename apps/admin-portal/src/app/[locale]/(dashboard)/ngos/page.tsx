@@ -664,7 +664,7 @@ export default function NgosPage() {
                         </div>
                         <span className="font-mono text-[10px] text-muted shrink-0 ml-2">
                           {a.created_at
-                            ? new Date(String(a.created_at)).toLocaleDateString()
+                            ? new Date(String(a.created_at)).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric" })
                             : ""}
                         </span>
                       </div>

@@ -107,6 +107,26 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
   const reportType = b.report_type ? String(b.report_type) : undefined;
   const displayName = b.reporter_display_name ? String(b.reporter_display_name) : null;
 
+  // Resolve user_id: try exact match, then supabase_auth_user_id fallback
+  let resolvedUserId: string | null = null;
+  if (userId) {
+    const { data: exactMatch } = await db()
+      .from("users")
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle();
+    if (exactMatch?.id) {
+      resolvedUserId = exactMatch.id;
+    } else {
+      const { data: authMatch } = await db()
+        .from("users")
+        .select("id")
+        .eq("supabase_auth_user_id", userId)
+        .maybeSingle();
+      if (authMatch?.id) resolvedUserId = authMatch.id;
+    }
+  }
+
   const ticketPayload: Record<string, unknown> = {
     id: crypto.randomUUID(),
     title,
@@ -115,7 +135,7 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
     longitude,
     address_text: location,
     status: "open",
-    reporter_user_id: userId || null,
+    reporter_user_id: resolvedUserId,
     reporter_display_name: displayName,
     ai_triage_summary: reportType || "Unclassified",
     submission_path: "direct_fallback",

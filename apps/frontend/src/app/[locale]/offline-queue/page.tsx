@@ -58,6 +58,7 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
+    timeZone: "Asia/Manila",
   });
 }
 

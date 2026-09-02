@@ -187,8 +187,8 @@ export function AnalyticsDashboardWithExport() {
         {/* Footer */}
         <div className="pt-4 border-t border-secondary/20">
           <p className="text-xs text-foreground/50">
-            Generated on {new Date().toLocaleDateString()} at{" "}
-            {new Date().toLocaleTimeString()}
+            Generated on {new Date().toLocaleDateString("en-PH", { timeZone: "Asia/Manila" })} at{" "}
+            {new Date().toLocaleTimeString("en-PH", { timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit" })}
           </p>
         </div>
       </div>

@@ -80,7 +80,7 @@ function timeAgo(dateStr: string): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "Asia/Manila" });
 }
 
 // ── Hero Stat Item
@@ -670,7 +670,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="pt-2.5 border-t border-ink/5 flex items-center justify-between">
                       <span className="text-[10px] font-mono text-ink/40">
-                        {report.created_at ? new Date(report.created_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" }) : "Recently"}
+                        {report.created_at ? new Date(report.created_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", year: "numeric", month: "short", day: "numeric" }) : "Recently"}
                       </span>
                       <Link href={`/${locale}/history`} className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-[10px] flex items-center gap-1 active:scale-95 transition-all">
                         <Eye className="w-3 h-3" />

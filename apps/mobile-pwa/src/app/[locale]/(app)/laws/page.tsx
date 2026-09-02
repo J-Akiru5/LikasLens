@@ -67,16 +67,13 @@ export default function LawsPage() {
   }, [search]);
 
   const allLaws = useMemo(() => {
-    const merged = [...OFFICIAL_PHILIPPINE_LAWS];
-    apiLaws.forEach((apiLaw) => {
-      const existing = merged.find((l) => l.law_code === apiLaw.law_code);
-      if (existing) {
-        Object.assign(existing, apiLaw);
-      } else {
-        merged.push(apiLaw);
-      }
-    });
-    return merged.filter((l) => l.is_active);
+    // Database is the source of truth — show ONLY database laws
+    // so admin CRUD (create/update/delete) is fully synced here.
+    if (apiLaws.length > 0) {
+      return apiLaws.filter((l) => l.is_active);
+    }
+    // Fallback: use hardcoded laws only when DB is empty
+    return OFFICIAL_PHILIPPINE_LAWS.filter((l) => l.is_active);
   }, [apiLaws]);
 
   const filtered = useMemo(() => {

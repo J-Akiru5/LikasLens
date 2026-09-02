@@ -67,6 +67,25 @@ export function RegisterClient() {
         return;
       }
 
+      // Provision the users table row so reports can link to this citizen
+      if (data.user) {
+        const userId = data.user.id;
+        const displayName = email.split("@")[0];
+        // Upsert: insert if not exists (idempotent on re-register)
+        await supabase.from("users").upsert(
+          {
+            id: userId,
+            supabase_auth_user_id: userId,
+            name: displayName,
+            email: email.trim(),
+            role: "citizen",
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" }
+        );
+      }
+
       if (data.session) {
         window.location.href = redirectTo;
         return;

@@ -171,7 +171,7 @@ export default function AnalyticsPage() {
         {lastUpdated && (
           <div className="text-center py-2">
             <span className="text-[10px] text-ink/30 font-mono">
-              Auto-refreshes every 30s - Updated {lastUpdated.toLocaleTimeString()}
+              Auto-refreshes every 30s - Updated {lastUpdated.toLocaleTimeString("en-PH", { timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit", second: "2-digit" })}
             </span>
           </div>
         )}

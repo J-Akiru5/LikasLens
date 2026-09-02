@@ -372,7 +372,7 @@ export function IncidentDetailPanel({
               <div className="space-y-2 pt-2 border-t border-border">
                 <div className="flex items-center gap-2 text-xs text-muted font-mono">
                   <Clock className="w-3.5 h-3.5 text-muted/60" />
-                  <span>Submitted {new Date(ticket.created_at).toLocaleString()}</span>
+                  <span>Submitted {new Date(ticket.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}</span>
                 </div>
                 {ticket.reporter && (
                   <div className="flex items-center gap-2 text-xs text-muted font-mono">

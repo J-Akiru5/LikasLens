@@ -223,7 +223,8 @@ export default function LawsPage() {
           .order("law_code", { ascending: true });
 
         if (!error && data && data.length > 0) {
-          // Merge database laws with comprehensive official Philippine statutes
+          // Database is the source of truth — show ONLY database laws
+          // so admin CRUD (create/update/delete) is fully synced here.
           const dbLaws: Law[] = data.map((d: any) => ({
             id: d.id,
             law_code: d.law_code || d.code || "Republic Act",
@@ -236,16 +237,9 @@ export default function LawsPage() {
             source_url: d.source_url || null,
             is_active: d.is_active ?? true,
           }));
-
-          // Deduplicate
-          const combined = [...dbLaws];
-          for (const official of OFFICIAL_PHILIPPINE_LAWS) {
-            if (!combined.some((c) => c.law_code.toLowerCase().includes(official.law_code.toLowerCase()))) {
-              combined.push(official);
-            }
-          }
-          setLaws(combined);
+          setLaws(dbLaws);
         } else {
+          // Database empty — use hardcoded as seed/initial data
           setLaws(OFFICIAL_PHILIPPINE_LAWS);
         }
       } catch {

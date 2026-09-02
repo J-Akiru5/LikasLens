@@ -137,7 +137,7 @@ export default function ReportsPage() {
                 .footer{margin-top:40px;padding-top:20px;border-top:2px solid #2d6a4f;text-align:center;color:#999;font-size:11px}
                 @media print{body{padding:20px}}</style></head><body>
                 <h1>LikasLens Analytics Report</h1>
-                <p>Generated: ${new Date().toLocaleString()}</p>
+                <p>Generated: ${new Date().toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}</p>
                 <div class="summary">
                   <div class="summary-item"><div class="label">Total Incidents</div><div class="value">${totalIncidents}</div></div>
                   <div class="summary-item"><div class="label">Resolved</div><div class="value">${stats?.resolved_today ?? 0}</div></div>

@@ -339,6 +339,7 @@ export default function IncidentsPage() {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
+                        timeZone: "Asia/Manila",
                       })
                     : "Recently";
 

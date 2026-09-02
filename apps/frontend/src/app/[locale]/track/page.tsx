@@ -236,7 +236,7 @@ function TrackContent() {
                       LIVE TRACKING
                     </span>
                     <span className="text-xs font-mono text-ink/50">
-                      Filed: {new Date(activeTicket.created_at).toLocaleString()}
+                      Filed: {new Date(activeTicket.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}
                     </span>
                   </div>
                   <h3 className="text-2xl font-black text-ink tracking-tight">{activeTicket.title}</h3>
@@ -375,7 +375,7 @@ function TrackContent() {
                       </span>
                     </div>
                     <p className="text-xs text-ink/60 truncate">{rep.location}</p>
-                    <p className="text-[10px] font-mono text-ink/40">{new Date(rep.date).toLocaleDateString()}</p>
+                    <p className="text-[10px] font-mono text-ink/40">{new Date(rep.date).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric" })}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-ink/30 group-hover:text-ink transition-transform group-hover:translate-x-0.5" />
                 </button>

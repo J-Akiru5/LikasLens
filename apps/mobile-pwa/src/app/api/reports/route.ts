@@ -28,6 +28,7 @@ export async function POST(req: Request) {
 
     let validUserId: string | null = null;
     if (userId) {
+      // Try exact id match first (new registrations set id = supabase auth UUID)
       const { data: userRecord } = await supabase
         .from("users")
         .select("id")
@@ -35,6 +36,16 @@ export async function POST(req: Request) {
         .maybeSingle();
       if (userRecord?.id) {
         validUserId = userRecord.id;
+      } else {
+        // Fallback: look up by supabase_auth_user_id (legacy users)
+        const { data: legacyRecord } = await supabase
+          .from("users")
+          .select("id")
+          .eq("supabase_auth_user_id", userId)
+          .maybeSingle();
+        if (legacyRecord?.id) {
+          validUserId = legacyRecord.id;
+        }
       }
     }
 

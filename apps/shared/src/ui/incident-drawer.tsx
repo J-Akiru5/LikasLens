@@ -137,7 +137,7 @@ export function IncidentDrawer({ isOpen, onClose, incident }: IncidentDrawerProp
               <div className="grid grid-cols-1 gap-3 pt-3 border-t border-ink/5">
                 <div className="flex items-center gap-3 text-sm text-ink/70">
                   <Clock className="w-4 h-4 text-ink/40" />
-                  <span>{new Date(incident.created_at).toLocaleString()}</span>
+                  <span>{new Date(incident.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-ink/70">
                   <MapPin className="w-4 h-4 text-ink/40" />

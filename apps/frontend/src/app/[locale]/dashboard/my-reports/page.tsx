@@ -375,7 +375,7 @@ export default function MyReportsPage() {
                           {report.display_id || `LL-${report.id.slice(0, 8)}`}
                         </span>
                         <span className="text-xs text-ink/40 font-mono">
-                          {report.created_at ? new Date(report.created_at).toLocaleDateString() : "Recently"}
+                          {report.created_at ? new Date(report.created_at).toLocaleDateString("en-PH", { timeZone: "Asia/Manila", year: "numeric", month: "short", day: "numeric" }) : "Recently"}
                         </span>
                       </div>
                       <h3 className="text-xl sm:text-2xl font-black text-ink tracking-tight">

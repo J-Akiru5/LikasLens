@@ -47,7 +47,7 @@ function timeAgo(dateStr?: string): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "Asia/Manila" });
 }
 
 function getUrgency(t: any): string {
@@ -370,7 +370,7 @@ export default function IncidentsPage() {
                 <div>
                   <p className="text-[10px] font-mono text-ink/40 uppercase tracking-wider mb-0.5">Reported</p>
                   <p className="text-sm font-medium text-ink">
-                    {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleString() : "Recently"}
+                    {selectedTicket.created_at ? new Date(selectedTicket.created_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }) : "Recently"}
                   </p>
                 </div>
               </div>
