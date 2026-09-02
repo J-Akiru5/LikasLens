@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Route-to-Office Role-Priority Fix &amp; Staging Promotion — 2026-09-03</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #09090f; --bg-surface: #111118; --bg-raised: #16161f; --bg-overlay: #1c1c28;
+      --border: #2a2a3d; --border-faint: #1e1e2e;
+      --cyan: #00e5ff; --cyan-dim: #00b8d4; --cyan-glow: rgba(0,229,255,0.12);
+      --violet: #a855f7; --violet-dim: #7c3aed; --violet-glow: rgba(168,85,247,0.12);
+      --green: #00e676; --green-dim: rgba(0,230,118,0.15);
+      --red: #ff5252; --red-dim: rgba(255,82,82,0.13);
+      --amber: #ffab40; --amber-dim: rgba(255,171,64,0.13);
+      --fg: #e2e2f0; --fg-muted: #8888aa; --fg-faint: #55556a;
+      --mono: 'JetBrains Mono', monospace; --sans: 'Inter', system-ui, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--sans); background: var(--bg-base); color: var(--fg); line-height: 1.65; padding: 3rem 1.5rem; }
+    .wrapper { max-width: 980px; margin: 0 auto; }
+    .report-header { border-bottom: 1px solid var(--border); padding-bottom: 2rem; margin-bottom: 2.5rem; }
+    .eyebrow { font-family: var(--mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cyan); margin-bottom: 0.6rem; }
+    h1 { font-size: 1.9rem; font-weight: 700; background: linear-gradient(135deg, var(--cyan) 0%, var(--violet) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.2; margin-bottom: 0.9rem; }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-family: var(--mono); font-size: 0.78rem; color: var(--fg-muted); }
+    .meta-row span { display: flex; align-items: center; gap: 0.35rem; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); display: inline-block; }
+    .dot.violet { background: var(--violet); } .dot.green { background: var(--green); }
+    h2 { font-size: 1.05rem; font-weight: 600; color: var(--cyan); border-bottom: 1px solid var(--border); padding-bottom: 0.45rem; margin: 2.5rem 0 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    h2 .num { font-family: var(--mono); font-size: 0.7rem; font-weight: 600; color: var(--fg-faint); letter-spacing: 0.1em; }
+    h3 { font-size: 0.93rem; font-weight: 600; color: var(--fg); margin: 1.25rem 0 0.5rem; }
+    p { margin: 0.55rem 0; }
+    .badge { display: inline-flex; align-items: center; gap: 0.3em; padding: 0.18em 0.65em; border-radius: 4px; font-family: var(--mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.03em; vertical-align: middle; }
+    .badge-ok { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+    .badge-fail { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,82,82,0.3); }
+    .badge-warn { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(255,171,64,0.3); }
+    .badge-info { background: var(--cyan-glow); color: var(--cyan); border: 1px solid rgba(0,229,255,0.3); }
+    .badge-violet { background: var(--violet-glow); color: var(--violet); border: 1px solid rgba(168,85,247,0.3); }
+    code { font-family: var(--mono); font-size: 0.82em; background: var(--bg-raised); padding: 0.15em 0.4em; border-radius: 4px; color: var(--cyan-dim); border: 1px solid var(--border-faint); }
+    pre { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.1rem 1.25rem; overflow-x: auto; font-family: var(--mono); font-size: 0.8rem; line-height: 1.6; margin: 0.85rem 0; color: var(--fg); }
+    table { width: 100%; border-collapse: collapse; margin: 0.9rem 0; font-size: 0.85rem; }
+    th { background: var(--bg-raised); color: var(--fg-muted); font-family: var(--mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; padding: 0.55rem 0.85rem; text-align: left; border: 1px solid var(--border); }
+    td { padding: 0.55rem 0.85rem; border: 1px solid var(--border); vertical-align: top; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.015); }
+    .card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem 1.3rem; margin: 0.9rem 0; }
+    .card.cyan { border-left: 3px solid var(--cyan); }
+    .card.violet { border-left: 3px solid var(--violet); }
+    .card.green { border-left: 3px solid var(--green); }
+    .card.amber { border-left: 3px solid var(--amber); }
+    .card-title { font-family: var(--mono); font-size: 0.73rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .card.cyan .card-title { color: var(--cyan); } .card.violet .card-title { color: var(--violet); }
+    .card.green .card-title { color: var(--green); } .card.amber .card-title { color: var(--amber); }
+    .diff-block { border-radius: 8px; border: 1px solid var(--border); overflow: hidden; margin: 0.9rem 0; }
+    .diff-header { background: var(--bg-raised); padding: 0.45rem 1rem; font-family: var(--mono); font-size: 0.72rem; color: var(--fg-muted); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .diff-body { background: var(--bg-surface); }
+    .diff-line { font-family: var(--mono); font-size: 0.78rem; padding: 0.12rem 1rem; line-height: 1.65; white-space: pre; }
+    .diff-line.add { background: rgba(0,230,118,0.07); color: var(--green); }
+    .diff-line.del { background: rgba(255,82,82,0.07); color: var(--red); }
+    .diff-line.ctx { color: var(--fg-muted); }
+    .diff-line.hunk { background: var(--bg-overlay); color: var(--violet); }
+    .branch-flow { display: flex; align-items: center; gap: 0.6rem; font-family: var(--mono); font-size: 0.82rem; flex-wrap: wrap; margin: 0.75rem 0; }
+    .branch-pill { background: var(--bg-raised); border: 1px solid var(--border); border-radius: 5px; padding: 0.25em 0.7em; color: var(--fg); }
+    .branch-pill.cyan { border-color: rgba(0,229,255,0.4); color: var(--cyan); }
+    .branch-pill.violet { border-color: rgba(168,85,247,0.4); color: var(--violet); }
+    .branch-pill.green { border-color: rgba(0,230,118,0.4); color: var(--green); }
+    .arrow { color: var(--fg-faint); font-size: 1rem; }
+    .checklist { list-style: none; margin: 0.5rem 0; }
+    .checklist li { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.3rem 0; font-size: 0.88rem; }
+    .checklist li .icon { flex-shrink: 0; margin-top: 0.1rem; }
+    .check-ok { color: var(--green); } .check-fail { color: var(--red); }
+    ul, ol { padding-left: 1.4rem; } li { margin: 0.25rem 0; font-size: 0.88rem; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+    .footer { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 0.72rem; color: var(--fg-faint); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header class="report-header">
+    <div class="eyebrow">LikasLens · Engineering Report · 2026-09-03</div>
+    <h1>Route-to-Office Role-Priority Fix<br>+ Staging Promotion</h1>
+    <div class="meta-row">
+      <span><span class="dot"></span>Fix commit: <code>c3bd71c5</code></span>
+      <span><span class="dot violet"></span>Branches: <code>development</code> &#8594; <code>staging</code></span>
+      <span><span class="dot green"></span>File: <code>apps/shared/src/lib/route-to-office.ts</code></span>
+      <span><span class="dot"></span>Date: 2026-09-03 00:21 PHT</span>
+    </div>
+  </header>
+
+  <h2><span class="num">01</span> Executive Summary</h2>
+  <p>
+    A silent tiebreaker bug in <code>route-to-office.ts</code> caused <code>ROLE_PRIORITY</code> to be
+    indexed by <code>officerId</code> (a UUID) instead of the officer's <code>role</code> string. Because a
+    UUID never matches a key in <code>{ lgu_officer: 0, lgu: 1, analyst: 2 }</code>, every lookup returned
+    <code>undefined</code>, the <code>?? 3</code> fallback made every officer equal priority, and the sort
+    became a no-op — producing <strong>non-deterministic assignment</strong> when multiple officers overlap
+    on the same address token.
+  </p>
+  <div class="card amber">
+    <div class="card-title">Impact Scope</div>
+    <p>
+      <code>main</code> and <code>staging</code> are most affected: the admin-portal account-creation form
+      on those branches uses a free-text <code>service_area</code> field with no coordinate capture, meaning
+      every match goes through the broken text-fallback path. Two officers covering overlapping names (e.g.
+      "Iloilo" and "Dingle") resolve arbitrarily instead of deterministically by role.
+    </p>
+  </div>
+
+  <h2><span class="num">02</span> Branch Awareness Audit</h2>
+  <p>All checks run on a complete (non-shallow) clone after <code>git fetch --all</code>.</p>
+
+  <h3>Branch SHAs</h3>
+  <table>
+    <thead><tr><th>Branch</th><th>SHA Before</th><th>SHA After</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td><code>origin/development</code></td><td><code>b1cd3412</code></td><td><code>c3bd71c5</code></td><td><span class="badge badge-ok">pushed</span></td></tr>
+      <tr><td><code>origin/staging</code></td><td><code>39f5d4aa</code></td><td><code>c3bd71c5</code></td><td><span class="badge badge-ok">FF pushed</span></td></tr>
+      <tr><td><code>origin/main</code></td><td><code>39f5d4aa</code></td><td><code>39f5d4aa</code></td><td><span class="badge badge-info">intentionally untouched</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Fast-Forward Safety Checks</h3>
+  <table>
+    <thead><tr><th>Check</th><th>Command</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Ancestor test</td><td><code>git merge-base --is-ancestor origin/staging origin/development</code></td><td><span class="badge badge-ok">Exit 0 — clean ancestor</span></td></tr>
+      <tr><td>Staging-only commits (must be empty)</td><td><code>git log origin/development..origin/staging</code></td><td><span class="badge badge-ok">EMPTY — no divergence</span></td></tr>
+      <tr><td>Commits staging was missing</td><td><code>git log origin/staging..origin/development</code></td><td><code>b1cd3412</code> PWA/PH picker (1 commit)</td></tr>
+      <tr><td>Post-patch re-verify</td><td>Re-ran merge-base after <code>c3bd71c5</code></td><td><span class="badge badge-ok">Exit 0 — still clean</span></td></tr>
+      <tr><td>main relationship</td><td><code>git log development..main --oneline</code></td><td><span class="badge badge-info">EMPTY — no main-only work</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="card green">
+    <div class="card-title">Fast-Forward Verdict</div>
+    <p>
+      <code>origin/staging</code> was a strict linear ancestor of <code>development</code>. Zero staging-only
+      commits. Fast-forward executed via <code>git merge --ff-only development</code> — no merge commit,
+      no rebase, no force-push.
+    </p>
+  </div>
+  <div class="card cyan">
+    <div class="card-title">main visibility (out of scope)</div>
+    <p>
+      <code>main</code> is at <code>39f5d4aa</code> — 2 commits behind staging/development
+      (<code>b1cd3412</code> PWA/PH picker and <code>c3bd71c5</code> this fix).
+      Promoting to <code>main</code> is a separate, deferred decision. Not touched.
+    </p>
+  </div>
+
+  <h2><span class="num">03</span> Root Cause Analysis</h2>
+  <h3>What is ROLE_PRIORITY?</h3>
+  <pre>const ROLE_PRIORITY: Record&lt;string, number&gt; = {
+  lgu_officer: 0,   // highest priority — preferred desk
+  lgu:         1,
+  analyst:     2,   // lowest priority
+};</pre>
+  <p>
+    The map is keyed by <strong>role string</strong>. A lookup like <code>ROLE_PRIORITY["lgu_officer"]</code>
+    returns <code>0</code>. A lookup with a UUID like <code>ROLE_PRIORITY["a3f2...d91"]</code> returns
+    <code>undefined</code>, which the <code>?? 3</code> fallback coerces to <code>3</code> — making every
+    officer equal and the sort order arbitrary (engine-dependent insertion order).
+  </p>
+
+  <div class="diff-block">
+    <div class="diff-header"><span>route-to-office.ts — BEFORE (broken sort keys)</span><span class="badge badge-fail">BUG</span></div>
+    <div class="diff-body">
+      <div class="diff-line hunk">@@ coordMatches sort @@</div>
+      <div class="diff-line ctx">      coordMatches.sort((a, b) =&gt;</div>
+      <div class="diff-line ctx">        a.distKm - b.distKm ||</div>
+      <div class="diff-line del">-       (ROLE_PRIORITY[a.officerId] ?? 3) - (ROLE_PRIORITY[b.officerId] ?? 3)</div>
+      <div class="diff-line ctx">      );</div>
+      <div class="diff-line hunk">@@ textMatches sort @@</div>
+      <div class="diff-line ctx">  textMatches.sort((a, b) =&gt;</div>
+      <div class="diff-line del">-   (ROLE_PRIORITY[a.officerId] ?? 3) - (ROLE_PRIORITY[b.officerId] ?? 3)</div>
+      <div class="diff-line ctx">  );</div>
+    </div>
+  </div>
+
+  <h2><span class="num">04</span> The Fix — Four-Hunk Patch</h2>
+  <p>Two orthogonal parts: add <code>role</code> to <code>OfficeMatch</code> and populate it in both match paths; repoint the sort key from <code>officerId</code> to <code>role</code>.</p>
+
+  <div class="diff-block">
+    <div class="diff-header"><span>Hunk 1/4 — OfficeMatch interface</span><span class="badge badge-ok">TYPE CONTRACT</span></div>
+    <div class="diff-body">
+      <div class="diff-line ctx"> export interface OfficeMatch {</div>
+      <div class="diff-line ctx">   officerId: string;</div>
+      <div class="diff-line ctx">   officeName: string;</div>
+      <div class="diff-line ctx">   serviceArea: string;</div>
+      <div class="diff-line add">+  role: string;</div>
+      <div class="diff-line ctx">   matchedBy: "coords" | "text";</div>
+      <div class="diff-line ctx">   distKm?: number;</div>
+      <div class="diff-line ctx"> }</div>
+    </div>
+  </div>
+
+  <div class="diff-block">
+    <div class="diff-header"><span>Hunk 2/4 — coords match push</span><span class="badge badge-ok">DATA POPULATION</span></div>
+    <div class="diff-body">
+      <div class="diff-line ctx">   coordMatches.push({</div>
+      <div class="diff-line ctx">     officerId: o.id,</div>
+      <div class="diff-line ctx">     officeName: officeNameFor(o),</div>
+      <div class="diff-line ctx">     serviceArea: String(o.service_area || ""),</div>
+      <div class="diff-line add">+    role: String(o.role || ""),</div>
+      <div class="diff-line ctx">     matchedBy: "coords",</div>
+      <div class="diff-line ctx">     distKm: d,</div>
+      <div class="diff-line ctx">   });</div>
+    </div>
+  </div>
+
+  <div class="diff-block">
+    <div class="diff-header"><span>Hunk 3/4 — coordMatches sort key</span><span class="badge badge-ok">BUG FIX</span></div>
+    <div class="diff-body">
+      <div class="diff-line ctx">   coordMatches.sort((a, b) =&gt;</div>
+      <div class="diff-line ctx">     a.distKm - b.distKm ||</div>
+      <div class="diff-line del">-    (ROLE_PRIORITY[a.officerId] ?? 3) - (ROLE_PRIORITY[b.officerId] ?? 3)</div>
+      <div class="diff-line add">+    (ROLE_PRIORITY[a.role] ?? 3) - (ROLE_PRIORITY[b.role] ?? 3)</div>
+      <div class="diff-line ctx">   );</div>
+    </div>
+  </div>
+
+  <div class="diff-block">
+    <div class="diff-header"><span>Hunk 4/4 — text-match map + textMatches sort key</span><span class="badge badge-ok">BUG FIX + DATA</span></div>
+    <div class="diff-body">
+      <div class="diff-line ctx">   .map((o) =&gt; ({</div>
+      <div class="diff-line ctx">     officerId: String(o.id),</div>
+      <div class="diff-line ctx">     officeName: officeNameFor(o as never),</div>
+      <div class="diff-line ctx">     serviceArea: String(o.service_area || ""),</div>
+      <div class="diff-line add">+    role: String((o as Record&lt;string, unknown&gt;).role || ""),</div>
+      <div class="diff-line ctx">     matchedBy: "text" as const,</div>
+      <div class="diff-line ctx">   }));</div>
+      <div class="diff-line ctx"> </div>
+      <div class="diff-line ctx">   textMatches.sort((a, b) =&gt;</div>
+      <div class="diff-line del">-    (ROLE_PRIORITY[a.officerId] ?? 3) - (ROLE_PRIORITY[b.officerId] ?? 3)</div>
+      <div class="diff-line add">+    (ROLE_PRIORITY[a.role] ?? 3) - (ROLE_PRIORITY[b.role] ?? 3)</div>
+      <div class="diff-line ctx">   );</div>
+    </div>
+  </div>
+
+  <div class="card green">
+    <div class="card-title">Determinism Guarantee Post-Fix</div>
+    <p>When two officers overlap on the same address token, the sort now correctly orders: <code>lgu_officer (0) &lt; lgu (1) &lt; analyst (2)</code>. The tiebreaker is now a true tiebreaker with a meaningful semantic.</p>
+  </div>
+
+  <h2><span class="num">05</span> Commit Log</h2>
+  <table>
+    <thead><tr><th>SHA</th><th>Branch</th><th>Message</th></tr></thead>
+    <tbody>
+      <tr><td><code>c3bd71c5</code></td><td><code>development</code> <span class="badge badge-violet">this fix</span></td><td>fix(shared): route-to-office role-priority tiebreak indexed officerId instead of role</td></tr>
+      <tr><td><code>b1cd3412</code></td><td><code>development</code></td><td>feat: PWA report-flow parity and demo UX — Makati/BGC routing, verified/withdrawn lifecycle, PH service-area picker</td></tr>
+      <tr><td><code>39f5d4aa</code></td><td>base (all 3 branches)</td><td>Merge branch 'development' of https://github.com/J-Akiru5/LikasLens into development</td></tr>
+    </tbody>
+  </table>
+
+  <h2><span class="num">06</span> Branch Promotion</h2>
+  <div class="branch-flow">
+    <span class="branch-pill cyan">staging @ 39f5d4aa</span>
+    <span class="arrow">&#10230; FF &#10230;</span>
+    <span class="branch-pill green">staging @ c3bd71c5</span>
+    <span class="arrow">==</span>
+    <span class="branch-pill violet">development HEAD</span>
+  </div>
+
+  <pre>
+# 1. Pull development to HEAD
+git checkout development &amp;&amp; git pull origin development   # → b1cd3412
+
+# 2. Apply patch + commit
+git add apps/shared/src/lib/route-to-office.ts
+git commit -m "fix(shared): route-to-office role-priority tiebreak indexed officerId instead of role"
+# → c3bd71c5
+
+# 3. Re-verify fast-forward clean
+git fetch origin staging
+git merge-base --is-ancestor origin/staging development   # exit 0 ✓
+git log development..origin/staging --oneline             # empty ✓
+
+# 4. Fast-forward — NO merge commit, NO rebase, NO force-push
+git checkout staging
+git merge --ff-only development                           # → c3bd71c5
+
+# 5. Push staging + development
+git push origin staging      # 39f5d4aa..c3bd71c5
+git push origin development  # b1cd3412..c3bd71c5</pre>
+
+  <h3>Post-push verification (fresh fetch of origin/staging)</h3>
+  <ul class="checklist">
+    <li><span class="icon check-ok">&#10003;</span><span><code>origin/staging</code> SHA = <code>c3bd71c5</code> — matches development HEAD</span></li>
+    <li><span class="icon check-ok">&#10003;</span><span><code>apps/admin-portal/src/components/service-area-picker.tsx</code> present on <code>origin/staging</code></span></li>
+    <li><span class="icon check-ok">&#10003;</span><span>Two occurrences of <code>ROLE_PRIORITY[a.role]</code> in <code>route-to-office.ts</code> on <code>origin/staging</code>; zero of <code>ROLE_PRIORITY[a.officerId]</code></span></li>
+    <li><span class="icon check-ok">&#10003;</span><span>No force-push — remote accepted as clean fast-forward</span></li>
+    <li><span class="icon check-ok">&#10003;</span><span><code>main</code> untouched at <code>39f5d4aa</code></span></li>
+  </ul>
+
+  <h2><span class="num">07</span> Behaviour Change Analysis</h2>
+  <table>
+    <thead><tr><th>Scenario</th><th>Before</th><th>After</th></tr></thead>
+    <tbody>
+      <tr><td>Single officer matches address</td><td>Correct (no tiebreak needed)</td><td>Correct (unchanged)</td></tr>
+      <tr><td>Multiple officers same distance, different roles (coord match)</td><td>Arbitrary — sort no-op</td><td><strong>Deterministic</strong> — lgu_officer wins over lgu wins over analyst</td></tr>
+      <tr><td>Multiple officers overlapping text area (text match)</td><td>Arbitrary — sort no-op</td><td><strong>Deterministic</strong> — role priority applied correctly</td></tr>
+      <tr><td>Callers reading <code>OfficeMatch.role</code></td><td>Field absent — TS error if accessed</td><td>Field populated from DB <code>role</code> column — safe to read</td></tr>
+    </tbody>
+  </table>
+
+  <div class="card violet">
+    <div class="card-title">No DB Schema Change Required</div>
+    <p>
+      The <code>role</code> column is already present in the <code>users</code> table and was already
+      fetched in the existing <code>.select()</code> query — it just was not passed through to the
+      <code>OfficeMatch</code> shape. No migration needed. No <code>ph_municipalities</code> table interaction.
+    </p>
+  </div>
+
+  <h2><span class="num">08</span> Routing &amp; Auth Adjacency</h2>
+  <p>
+    <code>routeTicketToCoveringOffice</code> auto-assigns incoming citizen tickets. Changes here are
+    auth-adjacent because the selected <code>officerId</code> becomes <code>assignee_user_id</code> in
+    <code>ticket_assignments</code>, determines which officer receives a <code>TicketAssigned</code>
+    notification, and sets <code>ai_recommended_office</code> on the ticket visible in public and admin
+    views.
+  </p>
+  <p>
+    The fix does <strong>not change the set of officers considered</strong> — only which one "wins"
+    when multiple match. It does not alter authentication logic, RLS policies, or JWT flows.
+  </p>
+
+  <h2><span class="num">09</span> Constraints Observed</h2>
+  <ul class="checklist">
+    <li><span class="icon check-ok">&#10003;</span><span><code>main</code> not touched</span></li>
+    <li><span class="icon check-ok">&#10003;</span><span>No <code>git push --force</code> used anywhere</span></li>
+    <li><span class="icon check-ok">&#10003;</span><span>No merge commit — clean fast-forward only</span></li>
+    <li><span class="icon check-ok">&#10003;</span><span>No rebase — linear history preserved</span></li>
+    <li><span class="icon check-ok">&#10003;</span><span><code>ph_municipalities</code> table not touched</span></li>
+    <li><span class="icon check-ok">&#10003;</span><span>Patch applied exactly as specified</span></li>
+    <li><span class="icon check-ok">&#10003;</span><span>Commit message verbatim as specified</span></li>
+    <li><span class="icon check-ok">&#10003;</span><span><code>pnpm</code> not invoked — file change only</span></li>
+  </ul>
+
+  <footer class="footer">
+    <span>LikasLens · J-Akiru5/LikasLens · 2026-09-03</span>
+    <span>Generated by Antigravity Lead Architect · Claude Sonnet 4.6 (Thinking)</span>
+  </footer>
+
+</div>
+</body>
+</html>
