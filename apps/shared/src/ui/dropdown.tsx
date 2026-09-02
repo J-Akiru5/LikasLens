@@ -52,6 +52,10 @@ interface DropdownBaseProps {
   size?: "sm" | "md" | "lg";
   /** Show a search input at top of options */
   searchable?: boolean;
+  /** Alignment of menu relative to trigger: 'left' | 'right' */
+  align?: "left" | "right";
+  /** Placement direction of menu: 'auto' | 'bottom' | 'top' */
+  placement?: "auto" | "bottom" | "top";
   /** Called when the selection is cleared (single-select only) */
   onClear?: () => void;
 }
@@ -101,6 +105,8 @@ export function Dropdown(props: DropdownProps) {
     menuWidth,
     size = "md",
     searchable = false,
+    align = "left",
+    placement: forcedPlacement = "auto",
     onClear,
   } = props;
 
@@ -174,6 +180,10 @@ export function Dropdown(props: DropdownProps) {
   // ── Placement detection ────────────────────────────────────────────────
 
   const computePlacement = useCallback(() => {
+    if (forcedPlacement && forcedPlacement !== "auto") {
+      setPlacement(forcedPlacement);
+      return;
+    }
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const itemHeight = size === "sm" ? 36 : size === "lg" ? 52 : 44;
@@ -185,7 +195,7 @@ export function Dropdown(props: DropdownProps) {
     } else {
       setPlacement("bottom");
     }
-  }, [filteredFlat.length, maxVisibleItems, size]);
+  }, [filteredFlat.length, maxVisibleItems, size, forcedPlacement]);
 
   // ── Open / Close ───────────────────────────────────────────────────────
 
@@ -482,7 +492,7 @@ export function Dropdown(props: DropdownProps) {
   return (
     <div
       ref={containerRef}
-      className={cn("relative w-full", className)}
+      className={cn("relative w-full", isOpen && "z-40", className)}
       onKeyDown={handleKeyDown}
     >
       {/* Trigger Button */}
@@ -639,6 +649,7 @@ export function Dropdown(props: DropdownProps) {
             className={cn(
               "absolute z-50 rounded-2xl border border-ink/10 bg-panel shadow-2xl backdrop-blur-2xl overflow-hidden",
               placement === "top" ? "bottom-full mb-2" : "top-full mt-2",
+              align === "right" ? "right-0" : "left-0",
               menuWidth || "w-full"
             )}
           >

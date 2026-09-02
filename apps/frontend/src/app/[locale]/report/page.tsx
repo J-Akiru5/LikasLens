@@ -820,33 +820,31 @@ export default function ReportPage() {
                         onClick={() => handleGhostModeToggle(false)}
                         className={`relative p-3.5 sm:p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                           !isGhostMode
-                            ? "border-emerald-500/80 bg-emerald-500/10 dark:bg-emerald-950/30 shadow-[0_4px_18px_-2px_rgba(16,185,129,0.22)] ring-2 ring-emerald-500/30"
+                            ? "border-emerald-600 bg-emerald-500/[0.08] dark:bg-emerald-950/40 shadow-sm ring-1 ring-emerald-600/30"
                             : "border-ink/10 bg-panel hover:border-emerald-500/40 hover:bg-emerald-500/[0.03] opacity-75 hover:opacity-100"
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-2.5 min-w-0">
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                               !isGhostMode
-                                ? "bg-emerald-500 text-white shadow-sm shadow-emerald-500/30"
+                                ? "bg-emerald-600 text-white shadow-xs"
                                 : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                             }`}>
                               <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
                             </div>
-                            <span className={`text-sm font-black tracking-tight truncate ${
-                              !isGhostMode ? "text-emerald-700 dark:text-emerald-300" : "text-ink"
-                            }`}>
+                            <span className="text-sm sm:text-base font-bold text-ink tracking-tight truncate">
                               Civic Mode (With My Name)
                             </span>
                           </div>
                           {!isGhostMode && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs shrink-0">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-600 text-white shadow-xs shrink-0">
                               <Check className="w-3 h-3 stroke-[3]" />
                               Selected
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-ink/65 pl-10 leading-snug">
+                        <p className="text-xs text-ink/80 pl-10.5 leading-snug font-medium">
                           Name shared only with the LGU • Never shown publicly • Track status
                         </p>
                       </button>
@@ -857,33 +855,31 @@ export default function ReportPage() {
                         onClick={() => handleGhostModeToggle(true)}
                         className={`relative p-3.5 sm:p-4 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                           isGhostMode
-                            ? "border-teal-500/80 bg-teal-500/10 dark:bg-teal-950/30 shadow-[0_4px_18px_-2px_rgba(20,184,166,0.22)] ring-2 ring-teal-500/30"
+                            ? "border-teal-600 bg-teal-500/[0.08] dark:bg-teal-950/40 shadow-sm ring-1 ring-teal-600/30"
                             : "border-ink/10 bg-panel hover:border-teal-500/40 hover:bg-teal-500/[0.03] opacity-75 hover:opacity-100"
                         }`}
                       >
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-2.5 min-w-0">
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
                               isGhostMode
-                                ? "bg-teal-500 text-white shadow-sm shadow-teal-500/30"
+                                ? "bg-teal-600 text-white shadow-xs"
                                 : "bg-teal-500/15 text-teal-600 dark:text-teal-400"
                             }`}>
                               <EyeOff className="w-4 h-4 stroke-[2.5]" />
                             </div>
-                            <span className={`text-sm font-black tracking-tight truncate ${
-                              isGhostMode ? "text-teal-700 dark:text-teal-300" : "text-ink"
-                            }`}>
+                            <span className="text-sm sm:text-base font-bold text-ink tracking-tight truncate">
                               Ghost Mode (Anonymous)
                             </span>
                           </div>
                           {isGhostMode && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-teal-500 text-white shadow-xs shrink-0">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-teal-600 text-white shadow-xs shrink-0">
                               <Check className="w-3 h-3 stroke-[3]" />
                               Selected
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-ink/65 pl-10 leading-snug">
+                        <p className="text-xs text-ink/80 pl-10.5 leading-snug font-medium">
                           Completely private • No name or phone data shared
                         </p>
                       </button>

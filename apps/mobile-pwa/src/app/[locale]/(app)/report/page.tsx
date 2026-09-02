@@ -748,7 +748,7 @@ export default function ReportPage() {
                     onClick={() => handleGhostModeToggle(false)}
                     className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                       !isGhostMode
-                        ? "border-emerald-500/80 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-500/30 shadow-xs"
+                        ? "border-emerald-600 bg-emerald-500/[0.08] dark:bg-emerald-950/40 ring-1 ring-emerald-600/30 shadow-xs"
                         : "border-ink/10 bg-panel hover:border-emerald-500/30 opacity-75"
                     }`}
                   >
@@ -756,22 +756,22 @@ export default function ReportPage() {
                       <div className="flex items-center gap-2">
                         <div
                           className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
-                            !isGhostMode ? "bg-emerald-500 text-white shadow-xs" : "bg-emerald-500/15 text-emerald-600"
+                            !isGhostMode ? "bg-emerald-600 text-white shadow-xs" : "bg-emerald-500/15 text-emerald-600"
                           }`}
                         >
                           <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
                         </div>
-                        <span className={`text-xs font-black ${!isGhostMode ? "text-emerald-700 dark:text-emerald-300" : "text-ink"}`}>
+                        <span className="text-xs font-bold text-ink tracking-tight">
                           Civic Mode (With My Name)
                         </span>
                       </div>
                       {!isGhostMode && (
-                        <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500 text-white">
+                        <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-600 text-white">
                           Selected
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-ink/65 pl-9 leading-tight">
+                    <p className="text-[11px] text-ink/80 pl-9 leading-tight font-medium">
                       Official accountability • Verified submission tracking
                     </p>
                   </button>
@@ -781,7 +781,7 @@ export default function ReportPage() {
                     onClick={() => handleGhostModeToggle(true)}
                     className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
                       isGhostMode
-                        ? "border-teal-500/80 bg-teal-500/10 dark:bg-teal-950/30 ring-2 ring-teal-500/30 shadow-xs"
+                        ? "border-teal-600 bg-teal-500/[0.08] dark:bg-teal-950/40 ring-1 ring-teal-600/30 shadow-xs"
                         : "border-ink/10 bg-panel hover:border-teal-500/30 opacity-75"
                     }`}
                   >
@@ -789,22 +789,22 @@ export default function ReportPage() {
                       <div className="flex items-center gap-2">
                         <div
                           className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${
-                            isGhostMode ? "bg-teal-500 text-white shadow-xs" : "bg-teal-500/15 text-teal-600"
+                            isGhostMode ? "bg-teal-600 text-white shadow-xs" : "bg-teal-500/15 text-teal-600"
                           }`}
                         >
                           <EyeOff className="w-4 h-4 stroke-[2.5]" />
                         </div>
-                        <span className={`text-xs font-black ${isGhostMode ? "text-teal-700 dark:text-teal-300" : "text-ink"}`}>
+                        <span className="text-xs font-bold text-ink tracking-tight">
                           Ghost Mode (Anonymous)
                         </span>
                       </div>
                       {isGhostMode && (
-                        <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-teal-500 text-white">
+                        <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-teal-600 text-white">
                           Selected
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-ink/65 pl-9 leading-tight">
+                    <p className="text-[11px] text-ink/80 pl-9 leading-tight font-medium">
                       100% private • EXIF-stripped & zero user identifiers
                     </p>
                   </button>
