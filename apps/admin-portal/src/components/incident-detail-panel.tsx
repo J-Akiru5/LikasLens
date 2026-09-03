@@ -24,6 +24,60 @@ const STATUS_OPTIONS = [
   { value: "closed", label: "Withdraw / Dismiss", color: "bg-ink/20" },
 ];
 
+// Human urgency override — score buckets match the map's severity legend
+// (>=4 critical, >=3 high, >=2 medium, else low).
+const URGENCY_OPTIONS = [
+  {
+    score: 5,
+    label: "Critical",
+    selectedClass: "bg-red-500 text-white border-red-500",
+    idleClass: "bg-red-500/5 text-red-500 border-red-500/25 hover:bg-red-500/10",
+  },
+  {
+    score: 4,
+    label: "High",
+    selectedClass: "bg-amber-500 text-white border-amber-500",
+    idleClass: "bg-amber-500/5 text-amber-500 border-amber-500/25 hover:bg-amber-500/10",
+  },
+  {
+    score: 3,
+    label: "Medium",
+    selectedClass: "bg-blue-500 text-white border-blue-500",
+    idleClass: "bg-blue-500/5 text-blue-500 border-blue-500/25 hover:bg-blue-500/10",
+  },
+  {
+    score: 2,
+    label: "Low",
+    selectedClass: "bg-green text-white border-green",
+    idleClass: "bg-green/5 text-green border-green/25 hover:bg-green/10",
+  },
+];
+
+function urgencyLabel(score: number | null): string {
+  if (score == null) return "Unrated";
+  if (score >= 4) return "Critical";
+  if (score >= 3) return "High";
+  if (score >= 2) return "Medium";
+  return "Low";
+}
+
+function urgencyClass(score: number | null): string {
+  if (score == null) return "bg-ink/5 text-ink/50 border border-border";
+  if (score >= 4) return "bg-red-500/10 text-red-500 border border-red-500/20";
+  if (score >= 3) return "bg-amber-500/10 text-amber-500 border border-amber-500/20";
+  if (score >= 2) return "bg-blue-500/10 text-blue-500 border border-blue-500/20";
+  return "bg-green/10 text-green border border-green/20";
+}
+
+// Nearest override score for an existing rating (keeps the same bucket label).
+function urgencyOptionFor(score: number | null): number {
+  if (score == null) return 3;
+  if (score >= 4) return 5;
+  if (score >= 3) return 4;
+  if (score >= 2) return 3;
+  return 2;
+}
+
 function confidenceColor(confidence: number | null): string {
   if (confidence === null) return "bg-ink/5 text-ink/40";
   if (confidence >= 0.7) return "bg-green/10 text-green";
@@ -46,6 +100,7 @@ export function IncidentDetailPanel({
   const [loading, setLoading] = useState(false);
   const [acting, setActing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [urgency, setUrgency] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadTicket = useCallback(async () => {
@@ -53,7 +108,10 @@ export function IncidentDetailPanel({
     setLoading(true);
     try {
       const res = await getTicket(ticketId);
-      if (res.success) setTicket(res.data);
+      if (res.success) {
+        setTicket(res.data);
+        setUrgency(urgencyOptionFor(res.data.urgency_score ?? null));
+      }
     } catch (err) {
       console.error("Failed to load ticket:", err);
     } finally {
@@ -104,7 +162,7 @@ export function IncidentDetailPanel({
     if (!ticket) return;
     setActing(true);
     try {
-      await updateTicketStatus(ticket.id, newStatus);
+      await updateTicketStatus(ticket.id, newStatus, undefined, urgency ?? undefined);
       showToast(`Ticket moved to ${newStatus}`, "success");
       onStatusChange?.();
       onClose();
@@ -248,6 +306,15 @@ export function IncidentDetailPanel({
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-ink/5 text-ink/70 border border-border">
                     {ticket.status}
+                  </span>
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider",
+                      urgencyClass(ticket.urgency_score ?? null)
+                    )}
+                    title={"AI urgency rating — can be overridden below"}
+                  >
+                    {urgencyLabel(ticket.urgency_score ?? null)}
                   </span>
                 </div>
               </div>
@@ -423,6 +490,34 @@ export function IncidentDetailPanel({
         {/* Action Footer */}
         {ticket && (
           <div className="px-5 py-4 border-t border-ink/5 space-y-2">
+            <div className="mb-1">
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-[10px] font-mono text-ink/30 uppercase tracking-wider">
+                  Urgency — override AI rating
+                </p>
+                <button
+                  onClick={() => setUrgency(urgencyOptionFor(ticket.urgency_score ?? null))}
+                  className="text-[10px] font-mono text-ink/40 hover:text-ink transition-colors"
+                >
+                  Reset to AI rating
+                </button>
+              </div>
+              <div className="grid grid-cols-4 gap-1.5">
+                {URGENCY_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.score}
+                    onClick={() => setUrgency(urgency === opt.score ? null : opt.score)}
+                    title={`Set urgency to ${opt.label} (score ${opt.score})`}
+                    className={cn(
+                      "px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-all cursor-pointer",
+                      urgency === opt.score ? opt.selectedClass : opt.idleClass
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <p className="text-[10px] font-mono text-ink/30 uppercase tracking-wider mb-2">
               Actions
             </p>

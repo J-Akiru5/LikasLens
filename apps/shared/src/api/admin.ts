@@ -347,8 +347,16 @@ export async function getTicket(id: string) {
   return { success: true, data: ticket } as ApiResponse<TicketDetail>;
 }
 
-export async function updateTicketStatus(id: string, status: string, notes?: string): Promise<ApiResponse<{ id: string; old_status: string; new_status: string; resolved_at: string | null }>> {
-  const res = await routeTicketStatus(id, status, { notes });
+export async function updateTicketStatus(
+  id: string,
+  status: string,
+  notes?: string,
+  urgencyScore?: number
+): Promise<ApiResponse<{ id: string; old_status: string; new_status: string; resolved_at: string | null }>> {
+  const res = await routeTicketStatus(id, status, {
+    notes,
+    ...(urgencyScore !== undefined ? { urgency_score: urgencyScore } : {}),
+  });
   return { ...res, data: { ...res.data, resolved_at: null } } as ApiResponse<{ id: string; old_status: string; new_status: string; resolved_at: string | null }>;
 }
 

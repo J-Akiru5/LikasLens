@@ -119,6 +119,9 @@ export async function PATCH(
       .single();
 
     const updatePayload: Record<string, unknown> = { status: body.status };
+    if (body.urgency_score !== undefined && body.urgency_score !== null) {
+      updatePayload.urgency_score = body.urgency_score;
+    }
     if (body.status === "resolved" || body.status === "closed") {
       updatePayload.resolved_at = new Date().toISOString();
     }
