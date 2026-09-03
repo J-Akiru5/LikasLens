@@ -54,12 +54,13 @@ export function LanguageDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-ink/10 bg-panel shadow-2xl overflow-hidden z-[100] backdrop-blur-xl animate-fade-in max-h-80 overflow-y-auto">
+        <div className="fixed left-4 right-4 top-16 z-[100] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-56 rounded-2xl border border-ink/10 bg-panel shadow-2xl overflow-hidden backdrop-blur-xl animate-fade-in">
           <div className="px-4 py-2.5 border-b border-ink/5 bg-ink/[0.03]">
             <span className="font-mono text-[10px] font-bold tracking-[0.12em] uppercase text-ink/60">
               Select Language
             </span>
           </div>
+          <div className="max-h-[55vh] overflow-y-auto overscroll-contain">
           {locales.map((loc) => {
             const name = localeNames[loc];
             const isActive = loc === activeLocale;
@@ -86,6 +87,7 @@ export function LanguageDropdown({
               </button>
             );
           })}
+          </div>
         </div>
       )}
     </div>

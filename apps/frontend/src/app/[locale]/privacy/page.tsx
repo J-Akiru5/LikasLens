@@ -48,8 +48,8 @@ export default function PrivacyPage() {
           </h1>
           <p className="text-xl text-ink/80 font-semibold max-w-2xl">
             At LikasLens, we believe environmental protection and data privacy
-            are two sides of the same coin. Here is how we protect your digital
-            footprint.
+            are two sides of the same coin. Here is how we protect your
+            information — explained in plain language.
           </p>
         </div>
 
@@ -86,9 +86,8 @@ export default function PrivacyPage() {
                   <ul className="space-y-2 text-sm text-ink/80">
                     <li>• Profile linked to your report (name, avatar)</li>
                     <li>• GPS coordinates attached to evidence photos</li>
-                    <li>• EXIF metadata stripped for privacy protection</li>
+                    <li>• Hidden photo details (EXIF metadata) removed for privacy</li>
                     <li>• Report visible on your public profile</li>
-                    <li>• Eco-credits awarded for verified reports</li>
                   </ul>
                 </div>
                 <div className="p-5 border border-accent/30 rounded-lg bg-accent/5">
@@ -101,9 +100,8 @@ export default function PrivacyPage() {
                   <ul className="space-y-2 text-sm text-ink/80">
                     <li>• No profile information attached to report</li>
                     <li>• GPS coordinates stripped before submission</li>
-                    <li>• All EXIF metadata scrubbed from photos</li>
+                    <li>• All hidden photo details (EXIF metadata) removed</li>
                     <li>• Report anonymous on public records</li>
-                    <li>• No eco-credits (identity not tracked)</li>
                   </ul>
                 </div>
               </div>
@@ -144,9 +142,10 @@ export default function PrivacyPage() {
                       <span className="w-2 h-2 rounded-full bg-green" /> Standard
                     </span>
                     <p className="text-sm text-ink/80">
-                      Photos with full EXIF metadata (timestamp, GPS, device info),
-                      precise GPS coordinates, and address text. All metadata is
-                      preserved for forensic integrity.
+                      Your photos keep their full hidden details (EXIF metadata)
+                      — the exact time, location, and device used — along with
+                      the precise GPS coordinates and address. Everything stays
+                      intact so the photo can serve as official evidence.
                     </p>
                   </div>
                   <div className="p-3 rounded-lg border border-accent/30 bg-accent/5">
@@ -154,11 +153,24 @@ export default function PrivacyPage() {
                       <span className="w-2 h-2 rounded-full bg-accent" /> Ghost
                     </span>
                     <p className="text-sm text-ink/80">
-                      Photos with all EXIF data stripped. No GPS coordinates, no
-                      device identifiers, no timestamps. Only the image pixel
-                      data and AI-generated classification are retained.
+                      All hidden details are removed before your photo is sent —
+                      no location, no device info, no time stamp. Only the
+                      picture itself and the AI&apos;s findings are kept.
                     </p>
                   </div>
+                </div>
+                <div className="mt-4 p-4 rounded-lg border border-accent/25 bg-accent/5">
+                  <p className="text-sm text-ink/85 leading-relaxed">
+                    <strong>What does EXIF metadata mean?</strong> When you take
+                    a photo, your phone stores extra hidden information inside
+                    the image file — like the exact date and time, the location
+                    where the photo was taken, and what device took it. You
+                    can&apos;t see it when you look at the photo, but it&apos;s there.
+                    This matters for reporting: in Standard Mode this information
+                    is kept to strengthen the evidence, and in Ghost Mode we
+                    remove all of it so the photo can never be traced back to
+                    you or where it was taken.
+                  </p>
                 </div>
               </div>
 
@@ -173,9 +185,11 @@ export default function PrivacyPage() {
                       <span className="w-2 h-2 rounded-full bg-green" /> Standard
                     </span>
                     <p className="text-sm text-ink/80">
-                      Your name, email, avatar, trust score, eco-credit balance,
-                      and report history are linked to your submissions. This
-                      enables public accountability and reward tracking.
+                      Your name and email are linked to your submissions so
+                      government offices can follow up with you about your
+                      report. LikasLens does not run any points, credits, or
+                      rewards program — your reports stand on their own as civic
+                      action.
                     </p>
                   </div>
                   <div className="p-3 rounded-lg border border-accent/30 bg-accent/5">
@@ -202,9 +216,10 @@ export default function PrivacyPage() {
                       <span className="w-2 h-2 rounded-full bg-green" /> Standard
                     </span>
                     <p className="text-sm text-ink/80">
-                      Images are processed by our YOLOv8 vision model to classify
-                      issue type and severity. AI confidence scores and triage
-                      summaries are stored alongside your report.
+                      Your photo is analyzed by our AI image recognition system
+                      to identify what type of issue it is and how serious it
+                      looks. We keep a short AI summary with your report —
+                      including how confident the AI was in its finding.
                     </p>
                   </div>
                   <div className="p-3 rounded-lg border border-accent/30 bg-accent/5">
@@ -212,9 +227,9 @@ export default function PrivacyPage() {
                       <span className="w-2 h-2 rounded-full bg-accent" /> Ghost
                     </span>
                     <p className="text-sm text-ink/80">
-                      Identical AI processing applies. The classification pipeline
-                      cannot distinguish between Standard and Ghost Mode reports —
-                      every submission receives the same quality of analysis.
+                      The same AI analysis applies. Our system cannot tell
+                      whether you used Standard or Ghost Mode — every report gets
+                      the same quality of analysis.
                     </p>
                   </div>
                 </div>
@@ -227,10 +242,11 @@ export default function PrivacyPage() {
                 </h3>
                 <div className="text-sm text-ink/80">
                   <p>
-                    Both modes collect identical anonymous analytics: screen views,
-                    feature usage patterns, and crash reports. This data is never
-                    personally identifiable and is used solely to improve platform
-                    performance. Ghost Mode does not affect analytics collection.
+                    Both modes collect the same basic, unnamed usage information:
+                    which pages you view, which features you use, and when the app
+                    crashes. This data cannot identify you personally and is only
+                    used to improve the platform. Ghost Mode does not change what
+                    we collect.
                   </p>
                 </div>
               </div>
@@ -383,8 +399,9 @@ export default function PrivacyPage() {
                     •
                   </span>
                   <span>
-                    <strong>Session Token:</strong> A secure, httpOnly token to
-                    keep you logged in. Expires after 24 hours.
+                    <strong>Login Token:</strong> A secure piece of information
+                    stored by your browser that keeps you logged in. It expires
+                    automatically after 24 hours.
                   </span>
                 </li>
                 <li className="flex gap-3">
@@ -401,8 +418,8 @@ export default function PrivacyPage() {
                     •
                   </span>
                   <span>
-                    <strong>Locale Setting:</strong> Your preferred language
-                    (English, Filipino, or Vietnamese).
+                    <strong>Language Setting:</strong> Your preferred language
+                    (one of the 10 supported languages).
                   </span>
                 </li>
                 <li className="flex gap-3">
@@ -410,9 +427,9 @@ export default function PrivacyPage() {
                     •
                   </span>
                   <span>
-                    <strong>Offline Cache:</strong> Service worker cache for
-                    offline report drafting. No personal data is stored in the
-                    cache.
+                    <strong>Offline Drafts:</strong> A temporary copy of a report
+                    you are drafting so it is not lost if you lose connection. No
+                    personal data is kept in this copy.
                   </span>
                 </li>
               </ul>
@@ -446,9 +463,8 @@ export default function PrivacyPage() {
                     Supabase
                   </h3>
                   <p className="text-sm">
-                    Authentication and real-time database. Data is stored in
-                    encrypted PostgreSQL databases hosted in the Southeast Asia
-                    region.
+                    Handles your login and our live database. Data is stored
+                    encrypted on servers in Southeast Asia.
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-page">
@@ -456,8 +472,9 @@ export default function PrivacyPage() {
                     Azure Container Apps
                   </h3>
                   <p className="text-sm">
-                    Backend API and AI service hosting. All data in transit is
-                    encrypted with TLS 1.3. Data at rest uses AES-256.
+                    Hosts our backend and AI systems. Connections to our servers
+                    are encrypted (the same standard online banking uses), and
+                    stored data is encrypted too.
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-page">
@@ -465,17 +482,17 @@ export default function PrivacyPage() {
                     Vercel
                   </h3>
                   <p className="text-sm">
-                    Frontend hosting and CDN. No personal data is stored on
-                    Vercel servers — all data flows directly to our backend.
+                    Hosts and delivers the website you see. No personal data is
+                    stored there — your information flows straight to our backend.
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-page">
                   <h3 className="font-mono font-semibold uppercase text-accent mb-2">
-                    Custom AI Pipeline
+                    Our Own AI Systems
                   </h3>
                   <p className="text-sm">
-                    YOLOv8 runs on our own Azure infrastructure. Image data is
-                    never sent to external AI services or third-party APIs.
+                    Our AI runs on our own servers. Your photos are never sent to
+                    outside AI services.
                   </p>
                 </div>
               </div>
@@ -508,8 +525,9 @@ export default function PrivacyPage() {
                     ✓
                   </span>
                   <span>
-                    <strong>End-to-end encryption</strong> for all data in
-                    transit (TLS 1.3)
+                    <strong>Encrypted connections</strong> whenever your data
+                    travels to our servers — the same standard used by online
+                    banking
                   </span>
                 </li>
                 <li className="flex gap-3">
@@ -517,8 +535,8 @@ export default function PrivacyPage() {
                     ✓
                   </span>
                   <span>
-                    <strong>AES-256 encryption</strong> at rest for all stored
-                    evidence and personal data
+                    <strong>Encrypted storage</strong> for all saved photos and
+                    personal data (the AES-256 standard)
                   </span>
                 </li>
                 <li className="flex gap-3">
@@ -526,8 +544,8 @@ export default function PrivacyPage() {
                     ✓
                   </span>
                   <span>
-                    <strong>Rate limiting</strong> on all API endpoints to
-                    prevent abuse and brute-force attacks
+                    <strong>Attack protection</strong> that blocks automated
+                    abuse and repeated password guessing
                   </span>
                 </li>
                 <li className="flex gap-3">
@@ -535,8 +553,9 @@ export default function PrivacyPage() {
                     ✓
                   </span>
                   <span>
-                    <strong>Role-based access control</strong> ensuring only
-                    authorized personnel can access report details
+                    <strong>Strict access control</strong> — only authorized
+                    government staff can view report details, and every access is
+                    checked
                   </span>
                 </li>
                 <li className="flex gap-3">
@@ -544,8 +563,8 @@ export default function PrivacyPage() {
                     ✓
                   </span>
                   <span>
-                    <strong>Regular security audits</strong> and penetration
-                    testing by independent assessors
+                    <strong>Regular security reviews</strong> and testing by
+                    independent security experts
                   </span>
                 </li>
               </ul>
@@ -592,7 +611,7 @@ export default function PrivacyPage() {
             className="panel p-6 sm:p-10"
           >
             <h2 className="font-heading text-2xl sm:text-3xl font-black uppercase tracking-tight text-primary mb-6">
-              Your Sovereignty
+              Your Rights
             </h2>
             <ul className="space-y-4 font-mono text-sm">
               <li className="flex gap-3">
@@ -745,7 +764,7 @@ export default function PrivacyPage() {
           {/* Footer Note */}
           <div className="text-center pt-8">
             <p className="font-mono text-xs uppercase tracking-widest text-muted">
-              Last Updated: June 9, 2026 • Philippine Data Privacy Act
+              Last Updated: September 3, 2026 • Philippine Data Privacy Act
               Compliant
             </p>
           </div>
