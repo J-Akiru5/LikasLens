@@ -187,9 +187,9 @@ export default function LawsPage() {
 
                   {/* Penalty callout */}
                   {law.penalties && (
-                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
-                      <p className="text-[10px] font-mono text-amber-700 dark:text-amber-400 font-bold uppercase tracking-wider mb-0.5">Statutory Penalties</p>
-                      <p className="text-xs font-bold text-amber-800 dark:text-amber-300">{law.penalties}</p>
+                    <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 [[data-theme=ghost]_&]:bg-amber-500/15 [[data-theme=ghost]_&]:border-amber-500/30">
+                      <p className="text-[10px] font-mono text-amber-800 [[data-theme=ghost]_&]:text-amber-400 font-bold uppercase tracking-wider mb-0.5">Statutory Penalties</p>
+                      <p className="text-xs text-ink/85 leading-relaxed">{law.penalties}</p>
                     </div>
                   )}
 
