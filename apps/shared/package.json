@@ -57,7 +57,7 @@
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",      "react": "^19",
       "react-dom": "^19",
-    "typescript": "^5",
+    "typescript": "^7",
     "vitest": "^4.1.9"
   },
   "peerDependencies": {
