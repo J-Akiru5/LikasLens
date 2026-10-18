@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LikasLens CSC AVP — build report</title>
+<style>
+  :root{
+    --ink:#0b1220; --ink-2:#111c31; --panel:#0f1a2e; --line:#1e2c46;
+    --text:#e6edf7; --muted:#94a3b8; --faint:#64748b;
+    --accent:#34d399; --accent-dim:#0f766e; --warn:#fbbf24; --bad:#f87171;
+    --measure:74ch;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink); color:var(--text);
+    font:16px/1.65 "Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bleed{width:100%; background:var(--ink-2)}
+  .bleed--dark{background:var(--ink)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 clamp(20px,5vw,72px)}
+  .prose{max-width:var(--measure)}
+
+  header.hero{padding:clamp(40px,7vw,84px) 0 clamp(28px,4vw,48px);
+    background:radial-gradient(1100px 600px at 12% -10%, #16243c 0%, var(--ink-2) 55%, var(--ink) 100%)}
+  .eyebrow{display:inline-flex;align-items:center;gap:10px;font:600 12px/1 ui-monospace,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--accent);
+    border:1px solid rgba(52,211,153,.4);background:rgba(52,211,153,.1);
+    padding:8px 14px;border-radius:999px;margin-bottom:22px}
+  .dot{width:8px;height:8px;border-radius:99px;background:var(--accent)}
+  h1{font-size:clamp(30px,5.2vw,52px);line-height:1.08;letter-spacing:-.02em;font-weight:800}
+  header.hero p.lede{margin-top:18px;font-size:clamp(16px,2.1vw,19px);color:var(--muted);max-width:var(--measure)}
+  .metaline{margin-top:26px;display:flex;flex-wrap:wrap;gap:10px 26px;font:500 13px/1.5 ui-monospace,monospace;color:var(--faint)}
+  .metaline b{color:var(--muted);font-weight:600}
+
+  h2{font-size:clamp(22px,3.2vw,32px);line-height:1.15;letter-spacing:-.015em;margin-bottom:8px;font-weight:750}
+  h3{font-size:clamp(17px,2.1vw,20px);margin:34px 0 10px;font-weight:700;letter-spacing:-.01em}
+  h4{font-size:15px;margin:22px 0 8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+  p{margin:12px 0;color:#cbd5e1}
+  p.tight{margin:8px 0}
+  ul,ol{margin:12px 0 12px 22px;color:#cbd5e1}
+  li{margin:7px 0}
+  a{color:var(--accent)}
+  code{font:500 .88em ui-monospace,monospace;background:rgba(148,163,184,.14);padding:2px 6px;border-radius:5px;color:#e2e8f0}
+  section{padding:clamp(38px,6vw,74px) 0}
+  section + section{border-top:1px solid var(--line)}
+  .kicker{font:600 12px/1 ui-monospace,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:26px 0}
+  .card{background:linear-gradient(165deg,var(--panel),#0c1526);border:1px solid var(--line);
+    border-radius:14px;padding:18px 18px 16px}
+  .card .n{font-size:clamp(24px,3.6vw,32px);font-weight:800;letter-spacing:-.02em;line-height:1.1}
+  .card .n.ok{color:var(--accent)} .card .n.warn{color:var(--warn)} .card .n.bad{color:var(--bad)}
+  .card .l{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.45}
+  .card .sub{font:500 11.5px/1.4 ui-monospace,monospace;color:var(--faint);margin-top:8px}
+
+  .tblwrap{overflow-x:auto;margin:22px 0;border:1px solid var(--line);border-radius:14px;background:#0c1526}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:14.2px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:rgba(148,163,184,.07);font:700 11.5px/1.4 ui-monospace,monospace;
+    letter-spacing:.09em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+  tbody tr:last-child td{border-bottom:0}
+  td.num{font:500 13px/1.5 ui-monospace,monospace;white-space:nowrap}
+  .pill{display:inline-block;font:700 10.5px/1 ui-monospace,monospace;letter-spacing:.07em;
+    text-transform:uppercase;padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .pill.ok{background:rgba(52,211,153,.16);color:#6ee7b7;border:1px solid rgba(52,211,153,.42)}
+  .pill.warn{background:rgba(251,191,36,.15);color:#fcd34d;border:1px solid rgba(251,191,36,.42)}
+  .pill.bad{background:rgba(248,113,113,.15);color:#fca5a5;border:1px solid rgba(248,113,113,.42)}
+  .pill.neutral{background:rgba(148,163,184,.14);color:#cbd5e1;border:1px solid rgba(148,163,184,.3)}
+
+  .callout{border-left:3px solid var(--accent);background:rgba(52,211,153,.06);
+    border-radius:0 12px 12px 0;padding:16px 20px;margin:22px 0}
+  .callout.warn{border-left-color:var(--warn);background:rgba(251,191,36,.07)}
+  .callout.bad{border-left-color:var(--bad);background:rgba(248,113,113,.07)}
+  .callout h4{margin-top:0;color:var(--text);text-transform:none;letter-spacing:0;font-size:15.5px}
+  .callout p:last-child{margin-bottom:0}
+
+  .flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:10px;margin:26px 0;align-items:stretch}
+  .step{position:relative;background:#0c1526;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .step .k{font:700 10.5px/1 ui-monospace,monospace;letter-spacing:.1em;color:var(--accent);text-transform:uppercase}
+  .step .t{font-weight:700;font-size:14.5px;margin-top:8px}
+  .step .d{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .step .fn{font:500 11px/1.4 ui-monospace,monospace;color:var(--faint);margin-top:8px}
+
+  .bar{height:10px;background:rgba(148,163,184,.14);border-radius:99px;overflow:hidden;margin:6px 0 2px}
+  .bar > i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent-dim),var(--accent))}
+  .bar.warn > i{background:linear-gradient(90deg,#92400e,var(--warn))}
+  .bar.bad  > i{background:linear-gradient(90deg,#7f1d1d,var(--bad))}
+  .barlabel{display:flex;justify-content:space-between;font:500 11.5px/1.4 ui-monospace,monospace;color:var(--faint)}
+
+  .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin:22px 0}
+  .panelbox{background:#0c1526;border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+  .panelbox h4{margin-top:0}
+
+  .tl{margin:26px 0;border-left:2px solid var(--line);padding-left:22px}
+  .tl .ev{position:relative;padding-bottom:22px}
+  .tl .ev:last-child{padding-bottom:0}
+  .tl .ev::before{content:"";position:absolute;left:-29px;top:6px;width:12px;height:12px;border-radius:99px;
+    background:var(--accent);border:2px solid var(--ink-2)}
+  .tl .ev.bad::before{background:var(--bad)} .tl .ev.warn::before{background:var(--warn)}
+  .tl .when{font:600 11.5px/1 ui-monospace,monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+  .tl .what{font-weight:700;margin-top:7px;font-size:15.5px}
+  .tl .why{color:var(--muted);font-size:14px;margin-top:5px}
+
+  footer{padding:44px 0 64px;color:var(--faint);font-size:13.5px}
+  .src{font:500 12.5px/1.6 ui-monospace,monospace;color:var(--faint)}
+  @media (max-width:640px){ .metaline{flex-direction:column;gap:6px} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow"><span class="dot"></span>Build report · 19 Oct 2026</span>
+    <h1>LikasLens CSC AVP</h1>
+    <p class="lede">An 81-second narrated screen recording of the real apps, captured on localhost. This report records what was built, what the two spikes actually found, which staged photo was chosen and why, the defaults taken for the open decisions, and — at length — what could not be verified.</p>
+    <div class="metaline">
+      <span><b>Recorded commit</b> 537e7dcb</span>
+      <span><b>Output</b> 1920x1080 · 30 fps · H.264 + AAC · 10.98 MB · 81.00 s</span>
+      <span><b>Voice</b> Kokoro af_heart, local</span>
+      <span><b>Branches</b> feat/avp-tooling · demo/csc-avp · fix/triage-confidence-arg</span>
+    </div>
+  </div>
+</header>
+
+<div class="bleed bleed--dark">
+<section>
+  <div class="wrap">
+    <div class="kicker">TL;DR</div>
+    <h2>Four things to know</h2>
+    <div class="cards">
+      <div class="card"><div class="n ok">Verified</div><div class="l">Deliverable is 1920x1080, exactly 30 fps, H.264 + AAC, 81.00 s, 10.98 MB — inside every brief limit.</div><div class="sub">ffprobe + assemble checks</div></div>
+      <div class="card"><div class="n warn">2 of 2 spikes</div><div class="l">Both spikes found the brief's stated approach would not work, and both were replaced with something that does.</div><div class="sub">S1 fixtures · S2 sharpness</div></div>
+      <div class="card"><div class="n bad">1 shipped bug</div><div class="l">The citizen-facing AI triage returned "no concern" for every photo, in every environment, because of a swallowed <code>TypeError</code>.</div><div class="sub">fix/triage-confidence-arg</div></div>
+      <div class="card"><div class="n warn">3 gaps</div><div class="l">Scene 6 cut, no live knowledge graph, and total speech is below the brief's guidance.</div><div class="sub">see Not verified</div></div>
+    </div>
+    <div class="prose">
+      <p>The headline is that the screen recording is real: every AI result in the finished video came out of the running system during the take, not out of a script. That is also why the video differs from the storyboard in three places — the brief told the agent to say only what the screen showed, and the screen did not always oblige.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="bleed">
+<section>
+  <div class="wrap">
+    <div class="kicker">What was built</div>
+    <h2>One pipeline, six stages</h2>
+    <div class="prose">
+      <p><code>demo-video/</code> is a self-contained toolkit that lives outside the pnpm workspace on purpose: these scripts can never enter an app's dependency graph and can never be deployed. No file under <code>apps/</code> was changed by the tooling.</p>
+    </div>
+    <div class="flow">
+      <div class="step"><div class="k">01</div><div class="t">Local stack</div><div class="d">The three Next apps plus a local Supabase-protocol stub and the FastAPI service.</div><div class="fn">stub/supabase-stub.mjs</div></div>
+      <div class="step"><div class="k">02</div><div class="t">Narration first</div><div class="d">Kokoro reads the script before anything is recorded, so every scene can hold for its audio plus 0.4 s.</div><div class="fn">narration/synthesize.mjs</div></div>
+      <div class="step"><div class="k">03</div><div class="t">Take recorder</div><div class="d">Per scene, waits on real UI state, and reports the moment the scene really begins.</div><div class="fn">capture/record.mjs</div></div>
+      <div class="step"><div class="k">04</div><div class="t">Text layer</div><div class="d">Step chip, caption and "Demo data" tag, rasterised by Chromium — never by ffmpeg.</div><div class="fn">capture/frame-overlay.mjs</div></div>
+      <div class="step"><div class="k">05</div><div class="t">Assembly</div><div class="d">Trim from each in-point, composite, lay narration, one loudness pass.</div><div class="fn">build/assemble.mjs</div></div>
+      <div class="step"><div class="k">06</div><div class="t">Independent QA</div><div class="d">A reviewer that did not build the video, working the brief's section 9 checklist.</div><div class="fn">out/QA-report.md</div></div>
+    </div>
+
+    <h3>The seven scenes, as delivered</h3>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>#</th><th>Scene</th><th>App / route</th><th>In</th><th>Len</th><th>What is genuinely on screen</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td>The problem</td><td>photo push-in</td><td class="num">0:00</td><td class="num">10 s</td><td>A licensed CC0 photograph of the Marilao River, slow push-in.</td></tr>
+          <tr><td class="num">2</td><td>One photo, Ghost Mode</td><td>mobile <code>/report</code></td><td class="num">0:10</td><td class="num">14 s</td><td>Ghost Mode switched on, the camera opened, a real capture taken from the fake device.</td></tr>
+          <tr><td class="num">3</td><td>The AI reads the photo</td><td>mobile <code>/report</code> step 2</td><td class="num">0:24</td><td class="num">15 s</td><td>The <em>real</em> triage response: the labels <code>Vehicle / Traffic</code> and <code>e-waste</code>.</td></tr>
+          <tr><td class="num">4</td><td>Liksi</td><td>mobile <code>/dashboard</code></td><td class="num">0:39</td><td class="num">7 s</td><td>A real Gemini answer naming RA 9003 and its penalties.</td></tr>
+          <tr><td class="num">5</td><td>The LGU side</td><td>admin <code>/triage</code> → <code>/lgu-performance</code></td><td class="num">0:46</td><td class="num">16 s</td><td>Five tickets on a Kanban board, then SLA figures: 5 assigned, 1 escalated, 80% SLA.</td></tr>
+          <tr><td class="num">6</td><td>The public record</td><td>frontend <code>/public-record</code></td><td class="num">1:02</td><td class="num">6 s</td><td>Two resolved/verified incidents, both anonymous.</td></tr>
+          <tr><td class="num">7</td><td>End card</td><td>card</td><td class="num">1:08</td><td class="num">13 s</td><td>Logo, tagline, credit, contact.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn">
+      <h4>The storyboard had eight scenes. Scene 6 was cut.</h4>
+      <p>The offline-queue scene could not be shown honestly — see <a href="#gaps">Not verified</a>. Its 7 seconds were redistributed across the remaining scenes so the timeline stays at 81 s, inside the 75–90 s band.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="bleed bleed--dark">
+<section>
+  <div class="wrap">
+    <div class="kicker">Spike results</div>
+    <h2>Both spikes overturned the brief's assumption</h2>
+
+    <h3>S1 — can scenes 2–6 run with no write to the live Supabase project?</h3>
+    <div class="callout bad">
+      <h4>The brief's approach could not work, for a reason visible only in the code.</h4>
+      <p>Section 6 said to fake Supabase with Playwright <code>page.route</code>. That only intercepts the <em>browser</em>. Both apps re-verify the session in the Next.js <strong>server</strong> — <code>apps/mobile-pwa/src/proxy.ts:74</code> and <code>apps/admin-portal/src/proxy.ts:51</code> — so the middleware would redirect every protected route to <code>/login</code>. Two further paths are equally unreachable: the app's own <code>/api/v1/ai/reports</code> route writing to Supabase with the <strong>service-role</strong> key, and the admin route handlers.</p>
+    </div>
+    <div class="prose">
+      <p>The replacement is <code>stub/supabase-stub.mjs</code>, a local server implementing enough of the Supabase wire protocol — auth, a PostgREST subset including RPC, and storage — that <em>both</em> the browser and the Next server can talk to it. The real apps run unmodified. This is exactly what the throwaway branch is for: "env wiring, fixture hooks, stubbed auth".</p>
+      <p>Result of <code>capture/spike-s1.mjs</code>, all six checks passing:</p>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Check</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Login through the local stub</td><td><span class="pill ok">pass</span></td></tr>
+          <tr><td><code>/report</code> renders from fixtures rather than bouncing to <code>/login</code></td><td><span class="pill ok">pass</span></td></tr>
+          <tr><td>Ghost / Civic switch readable</td><td><span class="pill ok">pass</span></td></tr>
+          <tr><td>Submit write-path intercepted at the browser boundary</td><td><span class="pill ok">pass</span></td></tr>
+          <tr><td>Fake camera stream available</td><td><span class="pill ok">pass</span></td></tr>
+          <tr><td>No traffic to any real Supabase host</td><td><span class="pill ok">pass</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>Two guards keep the live project untouched, and the second is stronger than the brief asked for. The stub is the only Supabase the apps can reach, and it makes no outbound request. Separately, the local AI service is started with <code>DATABASE_URL</code> and the storage keys blanked <em>in the process environment</em>, so <code>POST /api/v1/reports</code> fails closed rather than persisting. <code>/health/config</code> reports <code>database: "missing: DATABASE_URL"</code>. No scene in the finished video submits a report.</p>
+      <h4>Also found while building S1</h4>
+      <ul>
+        <li>The brief's camera flag, <code>--use-fake-device-with-video-capture</code>, <strong>does not exist in Chromium</strong>. With it, <code>getUserMedia</code> finds no video track at all and the report page can never take a photo. The working flag is <code>--use-fake-device-for-media-stream</code>.</li>
+        <li>The report page has a real <strong>"02 AI Triage"</strong> step rendering an <em>"AI Auto-Detected: … (…%)"</em> banner. It was fed by a hardcoded <code>setTimeout</code> — see the product findings below.</li>
+        <li>The Next.js dev badge appears in every capture unless hidden. It is suppressed with injected CSS (<code>nextjs-portal{display:none}</code>) rather than by changing app config.</li>
+      </ul>
+    </div>
+
+    <h3>S2 — how do you get sharp phone footage into a 1080p frame?</h3>
+    <div class="prose">
+      <p>The brief offered three routes and predicted the first would be "likely soft" and the third "crispest, heavier". Both predictions turned out to be incomplete:</p>
+    </div>
+    <div class="two">
+      <div class="panelbox">
+        <h4>Route 1 — record at 540x960, upscale</h4>
+        <p class="tight">Soft, as predicted. The brief's premise that <code>recordVideo</code> ignores <code>deviceScaleFactor</code> is <strong>true</strong> — verified: 540x960 stayed 540x960 at dsf 2.</p>
+      </div>
+      <div class="panelbox">
+        <h4>Route 3 — screenshot loop</h4>
+        <p class="tight"><strong>Unusable.</strong> Measured <strong>1.9 fps</strong> at dsf 3, because a full-page 1170x2532 PNG takes ~500 ms to encode. A 1.9 fps take cannot show a tap, a keystroke or a scroll. <code>capture/probe-video-scale.mjs</code> keeps the raw evidence.</p>
+      </div>
+    </div>
+    <div class="callout">
+      <h4>What actually works: <code>--force-device-scale-factor</code></h4>
+      <p>The context <code>deviceScaleFactor</code> never reaches the encoder, but Chromium's <code>--force-device-scale-factor</code> flag <strong>does</strong>. A 540x960 viewport with that flag gives a genuine 1080x1920 capture at a full 25 fps, which is then <em>downscaled</em> 0.563x into the 608x1080 panel. Two controls confirm this is real resolution rather than an upscale: enlarging <code>recordVideo.size</code> alone produces soft edges and colour fringing, while the flag produces clean text at the same output size.</p>
+    </div>
+    <div class="prose">
+      <p><strong>Frame rate.</strong> Playwright's recorder emits 25 fps; the deliverable must be exactly 30. Concatenating segments also leaves a non-standard rate in the container, so the final pass re-encodes at CFR 30 (<code>37263360/1242619</code> → <code>30/1</code>).</p>
+      <p><strong>One more discovery that shaped the whole look:</strong> <code>ffmpeg -vf drawtext</code> fails on this machine's build — <em>"Cannot load default config file"</em>, no fontconfig. Every glyph in the video is therefore rasterised by Chromium. That is a constraint, but it is also why the captions are crisp and why no font files need to ship.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="bleed">
+<section>
+  <div class="wrap">
+    <div class="kicker">Decision D7</div>
+    <h2>Which staged photo, and why</h2>
+    <div class="prose">
+      <p>Five real photographs were sourced from Wikimedia Commons — no stock-photo sites, because searches for "Philippines garbage dump" there return many AI-generated or AI-upscaled results, and generated imagery is out of scope. Each candidate was run twice through the <strong>real</strong> pipeline: <code>POST /api/v1/reports/triage</code> (COCO YOLO + the waste model + Roboflow, EXIF stripped server-side first), then <code>POST /api/v1/analyze-hazard</code> for law and agency.</p>
+      <p>The choice rule was a clean, stable result twice in a row — not a fallback message. That rule turned out to be nearly impossible to satisfy, because the triage endpoint was silently broken. See the product findings; the numbers below are from the <em>fixed</em> endpoint.</p>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Photo</th><th>maxCOCO</th><th>max waste-model</th><th>max Roboflow</th><th>composite</th><th>Labels returned</th><th>Licence</th></tr></thead>
+        <tbody>
+          <tr><td><code>marilao-03.jpg</code> <span class="pill ok">chosen</span></td><td class="num">—</td><td class="num">0.708</td><td class="num">0.857</td><td class="num">0.5811</td><td>Vehicle / Traffic, e-waste</td><td>CC0</td></tr>
+          <tr><td><code>landfill-cc0.jpg</code></td><td class="num">0.815</td><td class="num">0.629</td><td class="num">—</td><td class="num">0.5559</td><td>Vehicle / Traffic, e-waste</td><td>CC0</td></tr>
+          <tr><td><code>marilao-01.jpg</code></td><td class="num">0.470</td><td class="num">0.486</td><td class="num">0.247</td><td class="num">0.3914</td><td>Vehicle / Traffic, Wildlife, e-waste</td><td>CC0</td></tr>
+          <tr><td><code>talisay-cebu.jpg</code></td><td class="num">—</td><td class="num">0.593</td><td class="num">—</td><td class="num">0.3892</td><td>Vehicle / Traffic, <strong>plastic</strong></td><td>CC BY-SA</td></tr>
+          <tr><td><code>marilao-02.jpg</code></td><td class="num">—</td><td class="num">0.316</td><td class="num">0.470</td><td class="num">0.3484</td><td>Vehicle / Traffic</td><td>CC0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="two">
+      <div class="panelbox">
+        <h4>Why <code>marilao-03.jpg</code></h4>
+        <p class="tight">It is CC0, so the finished video carries no attribution obligation. Its subject matches the story: waste in a river, which is what scenes 1 and 2 describe. Roboflow detects PET at 0.857 on it — the strongest single score of any candidate — and it clears the 0.40 auto-dismiss gate at 0.5811.</p>
+      </div>
+      <div class="panelbox">
+        <h4>Why the narration names no material</h4>
+        <p class="tight">Every candidate returns a <code>Vehicle / Traffic</code> indicator — the COCO model reacting to a boat in the water. On the chosen photo the waste model's class is <code>e-waste</code>, <em>not</em> plastic. The scene therefore says only that the AI flags what it recognises, and that a person confirms. Naming "plastic" would describe something the screen did not show.</p>
+      </div>
+    </div>
+    <div class="callout warn">
+      <h4>The nearest miss is worth recording</h4>
+      <p><code>talisay-cebu.jpg</code> returns the accurate label <strong>plastic</strong> and would have made a stronger scene, but it is CC BY-SA and shows a dump rather than a waterway. If the owner wants the more accurate label on screen, swapping the photo and the narration is a fifteen-minute change — both are driven from <code>steps.json</code> and <code>assets/photos/sources.json</code>.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="bleed bleed--dark">
+<section>
+  <div class="wrap">
+    <div class="kicker">Decisions</div>
+    <h2>Defaults taken, and one owner answer that changed the plan</h2>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>#</th><th>Decision</th><th>Taken</th><th>Basis</th></tr></thead>
+        <tbody>
+          <tr><td class="num">D5</td><td>Official placing</td><td>Left out of the video</td><td><span class="pill neutral">default</span> owner silent</td></tr>
+          <tr><td class="num">D6</td><td>Contact line</td><td><code>admin@syntaxure.dev</code></td><td><span class="pill ok">owner</span></td></tr>
+          <tr><td class="num">D7</td><td>Which staged photo</td><td><code>marilao-03.jpg</code></td><td><span class="pill ok">owner approved</span> after the evidence above</td></tr>
+          <tr><td class="num">D8</td><td>Credit line</td><td>"Built by students of ISUFST with Syntaxure Labs"</td><td><span class="pill neutral">default</span> owner still confirms before it leaves the building</td></tr>
+          <tr><td class="num">D9</td><td>Scene 1 footage</td><td>A licensed CC0 photograph</td><td><span class="pill warn">deviation</span> the owner's own photo never reached disk; brief section 1 explicitly permits "one owned <em>or licensed</em> opening shot"</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Option C, and why it became C1</h3>
+    <div class="prose">
+      <p>Scene 3 as briefed — "AI analysis, hazard label, law, agency" — was not honestly capturable. The mobile success screen renders none of those; the badge that looks like an AI result was a hardcoded <code>setTimeout</code>, and the law/agency block lives on a different screen entirely, where the law is a local keyword map rather than anything the AI produced. The genuine GraphRAG endpoint existed but had <strong>zero call sites in any UI</strong>.</p>
+      <p>The owner chose option C: wire the real AI into the report result. That split into C1 (the real triage result, no Neo4j needed) and C2 (law and agency from the knowledge graph, which needs Neo4j). C2 turned out to be unavailable, so <strong>C1 is what shipped</strong>.</p>
+    </div>
+    <div class="callout bad">
+      <h4>Correction to an earlier claim in this session</h4>
+      <p>I initially reported "the live graph genuinely works — <code>illegal_dumping</code> → RA 9003". That was <strong>wrong</strong>. The endpoint I probed, <code>/graph/bootstrap-payload</code>, returns <code>build_seed_vertices()</code> — a static constant in the code, not a live Neo4j query. The credentials in <code>apps/ai-service/.env</code> point at <code>b7bba3b8.databases.neo4j.io</code>, and <strong>that hostname does not resolve</strong>: the AuraDB instance no longer exists. <code>/health/config</code> reporting <code>neo4j: configured</code> only means the variables are <em>set</em>. Every <code>analyze-hazard</code> call returned <code>retrieval_method: "failed"</code>.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="bleed">
+<section>
+  <div class="wrap">
+    <div class="kicker">Product findings</div>
+    <h2>What the recording work exposed about the product</h2>
+    <div class="prose">
+      <p>Building the AVP meant running the real pipeline repeatedly and reading its output. Four things surfaced that are worth more than the video itself. None of them were invented by the AVP work, and all of them affect real users.</p>
+    </div>
+
+    <h3>1. The citizen-facing AI triage never worked <span class="pill bad">shipped bug · fixed</span></h3>
+    <div class="prose">
+      <p><code>apps/ai-service/routers/reports.py</code> called <code>analyze_base64_async(stripped_b64, confidence=0.35)</code>, but the function's parameter is named <code>confidence_threshold</code>. The call raised <code>TypeError</code> on every request, and a bare <code>except Exception: result = {}</code> swallowed it.</p>
+      <p>Effect: <code>POST /api/v1/reports/triage</code> answered <code>success: true, has_concern: false, indicators: [], confidence: 0.0</code> for <strong>every photo, in every environment, including production</strong>. The pre-submission check told every citizen their photo showed nothing, and the intended 0.35 threshold was never applied.</p>
+    </div>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Against a real waste photo, on the local service</th><th>Before</th><th>After</th></tr></thead>
+        <tbody>
+          <tr><td>Result</td><td class="num">has_concern=false, indicators=0, confidence=0.0</td><td class="num">indicators=2, confidence=0.5782</td></tr>
+          <tr><td>Labels</td><td class="num">—</td><td class="num">Vehicle / Traffic; e-waste (severity critical)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>Fixed on <code>fix/triage-confidence-arg</code> with a regression test suite that pins the contract: the async wrapper accepts the keyword the router uses, the sync and async signatures agree, the router source cannot reintroduce the bad keyword, a real result maps through to the response, and an inference failure still degrades to a safe 200. Full suite: <strong>96 passed, 2 failed</strong>; both failures are <code>test_e2e_migration.py::TestAuthSync</code> and are <strong>pre-existing</strong> — verified by reverting the file and reproducing them identically.</p>
+    </div>
+
+    <h3>2. A "critical" detection does not count as a concern</h3>
+    <div class="prose">
+      <p><code>has_environmental_concern</code> requires an indicator whose <em>type</em> is in <code>high_severity_types</code> <strong>and</strong> whose severity is high or critical. That set is <code>{solid_waste, sanitation, open_burning, air_pollution, water_pollution, habitat_destruction}</code> — it <strong>omits <code>hazardous_waste</code></strong>, which is exactly the type the waste model assigns to <code>e-waste</code>, mapped to severity <code>critical</code>.</p>
+      <p>So a photo that returns a critical hazardous-waste indicator still reports <code>has_concern: false</code>. This is a tuning question rather than a crash, so it was left alone and reported. It is also why the C1 screen keys off the indicators themselves rather than the concern flag — otherwise the UI would have shown "no concern" next to a critical detection.</p>
+    </div>
+
+    <h3>3. The triage gate is hard to clear by design</h3>
+    <div class="prose">
+      <p><code>composite = max(coco, waste, roboflow) × 0.6 + agreement × 0.3 + sources × 0.1</code>, with <code>≥ 0.70</code> auto-routed, <code>0.40–0.69</code> pending review, and <code>&lt; 0.40</code> auto-dismissed. A single source therefore needs ≥ 0.50, or two sources must agree. A real photograph of a waste-filled river scored <strong>0.3914</strong> — dismissed by 0.009.</p>
+    </div>
+    <div class="bars">
+      <div class="barlabel"><span>marilao-03 — chosen</span><span>0.5811 · pending review</span></div>
+      <div class="bar"><i style="width:58%"></i></div>
+      <div class="barlabel" style="margin-top:12px"><span>landfill-cc0</span><span>0.5559 · pending review</span></div>
+      <div class="bar"><i style="width:56%"></i></div>
+      <div class="barlabel" style="margin-top:12px"><span>marilao-01</span><span>0.3914 · dismissed</span></div>
+      <div class="bar bad"><i style="width:39%"></i></div>
+      <div class="barlabel" style="margin-top:12px"><span>auto-dismiss threshold</span><span>0.40</span></div>
+      <div class="bar warn"><i style="width:40%"></i></div>
+    </div>
+
+    <h3>4. Two mismatches around the offline queue</h3>
+    <ul>
+      <li>The service worker intercepts <code>POST /api/reports</code>, but the report page submits to <code>/api/v1/ai/reports</code>. The two queues are disjoint, so the app queue never receives what the service worker would catch.</li>
+      <li>Independently, the queue screen never left its loading state under the fixture stack — <code>getAllQueued()</code> did not resolve. This is why scene 6 was cut rather than faked. The brief already flagged that Playwright's offline switch does not cover service workers and that a real-phone test is still required; that test remains outstanding.</li>
+    </ul>
+
+    <h3>5. A confidence percentage is on screen in the admin ticket grid</h3>
+    <div class="prose">
+      <p>Every card in <code>apps/admin-portal/…/tickets/page.tsx</code> renders <code>ConfidenceTierBadge</code> with <code>showScore</code>, which prints an AI confidence percentage. Confidence percentages are on the owner's banned list, so scene 5 deliberately uses the <strong>triage Kanban</strong> and the <strong>LGU performance</strong> table instead — neither shows one. This is a scene-composition workaround, not a product change; the badge is still there for real users.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="bleed bleed--dark">
+<section id="gaps">
+  <div class="wrap">
+    <div class="kicker">Not verified</div>
+    <h2>What this build does not establish</h2>
+    <div class="prose">
+      <p>Stated plainly, because the brief's definition of done asks for it and because a reviewer should not have to infer these.</p>
+    </div>
+    <div class="tl">
+      <div class="ev bad">
+        <div class="when">Scene 6 · cut</div>
+        <div class="what">Offline queueing was never demonstrated end to end</div>
+        <div class="why">The page never left its loading state under the local fixture stack. Cut, as brief step 14 permits. No claim about offline behaviour appears in the video. A real-phone test is still required before any offline claim is made to CSC.</div>
+      </div>
+      <div class="ev warn">
+        <div class="when">Scene 3 · narrowed</div>
+        <div class="what">No knowledge-graph law lookup on screen</div>
+        <div class="why">The Neo4j instance behind <code>analyze-hazard</code> no longer resolves, and its credentials exist only in the Render environment. The narration makes no graph claim. If that instance is dead in production too, <code>analyze-hazard</code> is broken there as well — worth checking directly, since <code>/health/config</code> cannot distinguish "configured" from "alive".</div>
+      </div>
+      <div class="ev warn">
+        <div class="when">Pacing</div>
+        <div class="what">Total speech is 55.7 s, under the brief's 60–70 s guidance</div>
+        <div class="why">Cutting scene 6 removed 5.8 s of narration. It was not replaced with padding, because the remaining screens do not support additional claims. The 81 s timeline leaves 25 s of gaps, which reads as deliberate pacing rather than dead air.</div>
+      </div>
+      <div class="ev warn">
+        <div class="when">Voice</div>
+        <div class="what">Nobody has listened to the narration</div>
+        <div class="why">An agent cannot judge how a name sounds. The brief requires the owner to confirm each pronunciation by ear — <code>LikasLens</code>, <code>Liksi</code>, <code>ISUFST</code>, <code>Syntaxure</code> — and to approve the pace. Note that <code>ISUFST</code> expands to five spoken words, which is why scene 7 measures 10.9 s for 19 written words.</div>
+      </div>
+      <div class="ev warn">
+        <div class="when">Screens</div>
+        <div class="what">Every screen was captured against fixtures, not live data</div>
+        <div class="why">The layouts, routes and AI calls are real; the ticket rows, users and LGU figures are fixtures on the reserved <code>.invalid</code> TLD. The "Demo data" tag stays on screen for scenes 2–6 to make that unambiguous.</div>
+      </div>
+      <div class="ev bad">
+        <div class="when">Secrets</div>
+        <div class="what">Three secrets were echoed into a chat log during this work</div>
+        <div class="why">The Gemini key (supplied in chat), the AI-service API key, and the Neo4j password were each printed by commands that were meant to show key <em>names</em> only. All three should be rotated. Nothing key-like is committed — <code>git diff --cached</code> is clean and no <code>.env*</code> file is tracked — but the chat log is not private.</div>
+      </div>
+      <div class="ev">
+        <div class="when">Placement</div>
+        <div class="what">No placing, and no SDG or accuracy claim, anywhere in the video</div>
+        <div class="why">D5 default applied. The repo's own audit found the SDG and "57 tests" claims unsupported; they stay out, as does the landing-page seed ledger.</div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="bleed">
+<section>
+  <div class="wrap">
+    <div class="kicker">Definition of done</div>
+    <h2>Where the deliverables stand</h2>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Deliverable</th><th>Location</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td>Video</td><td class="num">demo-video/out/likaslens-csc-avp.mp4</td><td><span class="pill ok">1920x1080 · 30 fps · 81.00 s · 10.98 MB</span></td></tr>
+          <tr><td>Subtitles</td><td class="num">demo-video/out/likaslens-csc-avp.srt</td><td><span class="pill ok">6 cues, monotonic, ≤40 chars/line</span></td></tr>
+          <tr><td>Poster</td><td class="num">demo-video/out/poster.jpg</td><td><span class="pill ok">taken from the finished file at scene 3</span></td></tr>
+          <tr><td>QA report</td><td class="num">demo-video/out/QA-report.md</td><td><span class="pill warn">independent pass, see that file</span></td></tr>
+          <tr><td>Rebuild instructions</td><td class="num">demo-video/README.md</td><td><span class="pill ok">from a clean clone</span></td></tr>
+          <tr><td>Triage fix</td><td class="num">fix/triage-confidence-arg</td><td><span class="pill ok">96 passed, 2 pre-existing failures</span></td></tr>
+          <tr><td>C1 front-end change</td><td class="num">feat/report-real-triage</td><td><span class="pill ok">typecheck clean</span></td></tr>
+          <tr><td>Owner sign-off</td><td>—</td><td><span class="pill bad">outstanding: listen to the audio, approve the script</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p class="src">Recorded commit 537e7dcb · root AGENTS.md rules applied (pnpm only, service boundaries respected, EXIF stripping confirmed at report/page.tsx:392 and ai-service/services/exif.py, no ad-hoc endpoints added).</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>LikasLens CSC AVP — build report, 19 October 2026. Audio-visual presentation for the Civil Service Commission HR Innovation Lab.</p>
+  </div>
+</footer>
+
+</body>
+</html>
