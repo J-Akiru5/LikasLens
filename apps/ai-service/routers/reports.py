@@ -124,8 +124,14 @@ async def triage_image(body: TriageRequest):
 
     try:
         from image_analysis import analyze_base64_async
-        result = await analyze_base64_async(stripped_b64, confidence=0.35)
+        result = await analyze_base64_async(stripped_b64, confidence_threshold=0.35)
     except Exception:
+        # A silent fallback here previously hid a TypeError: this call passed
+        # `confidence=`, which analyze_base64_async does not accept, so the
+        # function raised on every request and this handler returned
+        # has_concern=False with no indicators for every photo. Log it so a
+        # future mismatch cannot hide again.
+        logger.exception("Triage inference failed for this submission")
         result = {}
 
     assessment = result.get("environmental_assessment", {})
