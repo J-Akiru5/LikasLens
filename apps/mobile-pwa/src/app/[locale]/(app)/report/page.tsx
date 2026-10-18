@@ -936,7 +936,7 @@ export default function ReportPage() {
                     className={`p-3.5 rounded-2xl space-y-2 border ${
                       triageError
                         ? "bg-amber-500/10 border-amber-500/30"
-                        : aiTriage?.hasConcern
+                        : aiTriage && aiTriage.labels.length > 0
                           ? "bg-emerald-500/10 border-emerald-500/30"
                           : "bg-ink/[0.03] border-ink/15"
                     }`}
@@ -950,9 +950,9 @@ export default function ReportPage() {
                       <p className="text-xs font-mono font-bold text-ink uppercase tracking-wide">
                         {triageError
                           ? "AI Analysis Unavailable"
-                          : aiTriage?.hasConcern
+                          : aiTriage && aiTriage.labels.length > 0
                             ? "AI Analysis Complete"
-                            : "No Concern Detected"}
+                            : "Nothing Flagged"}
                       </p>
                     </div>
 
@@ -971,8 +971,9 @@ export default function ReportPage() {
                           ))}
                         </div>
                         <p className="text-[11px] text-ink/70 leading-relaxed pl-6">
-                          The AI flagged the material above. An analyst confirms what the photo
-                          shows before any action is taken.
+                          {aiTriage.hasConcern
+                            ? "The AI flagged this photo as an environmental concern. An analyst confirms what the photo shows before any action is taken."
+                            : "The AI flagged the material above. An analyst confirms what the photo shows before any action is taken."}
                         </p>
                       </>
                     ) : (
@@ -981,7 +982,6 @@ export default function ReportPage() {
                         analyst will review it.
                       </p>
                     )}
-
                     {isOverridden && (
                       <p className="text-[11px] text-ink/50 leading-relaxed pl-6">
                         You set the category to {selectedCategory?.label || reportType}.
