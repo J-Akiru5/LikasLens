@@ -1,0 +1,21 @@
+{
+  "name": "likaslens-demo-video",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "LikasLens CSC AVP tooling. Deliberately NOT part of the pnpm workspace: these scripts must never enter the apps' dependency graph and must never be deployed.",
+  "scripts": {
+    "stub": "node stub/supabase-stub.mjs",
+    "photos": "node scripts/fetch-photos.mjs",
+    "spike:s1": "node capture/spike-s1.mjs",
+    "spike:s2": "node capture/spike-s2.mjs",
+    "record": "node capture/record.mjs",
+    "voice": "node narration/synthesize.mjs",
+    "cards": "node cards/build-cards.mjs",
+    "assemble": "node build/assemble.mjs",
+    "words": "node narration/word-count.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  }
+}

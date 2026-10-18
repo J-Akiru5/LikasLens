@@ -1,0 +1,34 @@
+# ---------------------------------------------------------------------------
+# demo-video/ ignores. Nothing in this folder may ever be committed if it can
+# contain a secret, a session, an account email or a raw recording.
+# The repository is public.
+# ---------------------------------------------------------------------------
+
+# Local toolchain
+node_modules/
+.venv/
+__pycache__/
+
+# Secrets and pulled environment. Never commit, never print.
+.env
+.env.*
+!.env.example
+
+# Downloaded assets (re-fetchable with `pnpm run photos` / models script)
+assets/models/
+assets/photos/.private/
+assets/photos/*.jpg
+assets/photos/*.jpeg
+assets/photos/*.png
+assets/photos/*.webp
+assets/photos/*.y4m
+
+# Generated narration audio
+audio/
+
+# Raw recordings and per-take artefacts (contain account details and API output)
+capture/takes/
+
+# Built cards and finished deliverables
+cards/out/
+out/

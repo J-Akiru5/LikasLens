@@ -1,0 +1,74 @@
+{
+  "_comment": "Staged-photo provenance for the AVP. Every file here is a real photograph uploaded by a human, not generated imagery. D7 in the brief asks for 3-5 candidates so the AI can be tested; the winner is chosen on detection quality and logged in capture/takes/photo-test.md. Binaries are NOT committed (see .gitignore) — run `pnpm run photos` to fetch them.",
+  "policy": "Real photos only. No AI-generated imagery (brief section 7). Prefer CC0/public domain, then CC BY, then CC BY-SA, so the finished video carries no attribution obligation the owner has not agreed to.",
+  "candidates": [
+    {
+      "file": "marilao-01.jpg",
+      "commons_title": "File:1129Marilao River System Station Garbage plastic pollution 01.jpg",
+      "subject": "Garbage and plastic pollution in the Marilao River, Bulacan, Philippines",
+      "author": "JFVelasquez Floro",
+      "license": "CC0 1.0 (Public Domain Dedication)",
+      "attribution_required": false,
+      "source_page": "https://commons.wikimedia.org/wiki/File:1129Marilao_River_System_Station_Garbage_plastic_pollution_01.jpg",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/3/30/1129Marilao_River_System_Station_Garbage_plastic_pollution_01.jpg",
+      "original_pixels": "4608x3456"
+    },
+    {
+      "file": "marilao-02.jpg",
+      "commons_title": "File:1078Garbage-plastic pollution in Marilao River 02.jpg",
+      "subject": "Garbage and plastic pollution in the Marilao River, Bulacan, Philippines",
+      "author": "JFVelasquez Floro",
+      "license": "CC0 1.0 (Public Domain Dedication)",
+      "attribution_required": false,
+      "source_page": "https://commons.wikimedia.org/wiki/File:1078Garbage-plastic_pollution_in_Marilao_River_02.jpg",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/7/7a/1078Garbage-plastic_pollution_in_Marilao_River_02.jpg",
+      "original_pixels": "4608x3456"
+    },
+    {
+      "file": "marilao-03.jpg",
+      "commons_title": "File:1176Marilao River System 02.jpg",
+      "subject": "Marilao River system, Bulacan, Philippines",
+      "author": "JFVelasquez Floro",
+      "license": "CC0 1.0 (Public Domain Dedication)",
+      "attribution_required": false,
+      "source_page": "https://commons.wikimedia.org/wiki/File:1176Marilao_River_System_02.jpg",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/1176Marilao_River_System_02.jpg/1280px-1176Marilao_River_System_02.jpg",
+      "original_pixels": "4608x3456"
+    },
+    {
+      "file": "landfill-cc0.jpg",
+      "commons_title": "File:Waste disposal-landfill.jpg",
+      "subject": "Waste disposal at a landfill",
+      "author": "Mumtahina Rahman",
+      "license": "CC0 1.0 (Public Domain Dedication)",
+      "attribution_required": false,
+      "source_page": "https://commons.wikimedia.org/wiki/File:Waste_disposal-landfill.jpg",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Waste_disposal-landfill.jpg/1280px-Waste_disposal-landfill.jpg",
+      "original_pixels": "5871x4024"
+    },
+    {
+      "file": "talisay-cebu.jpg",
+      "commons_title": "File:Garbage dump, Talisay, Cebu.jpg",
+      "subject": "Garbage dump in Talisay, Cebu, Philippines",
+      "author": "Oyvind Holmstad",
+      "license": "CC BY-SA 4.0",
+      "attribution_required": true,
+      "attribution_text": "Photo: Oyvind Holmstad, CC BY-SA 4.0, via Wikimedia Commons",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Garbage_dump,_Talisay,_Cebu.jpg",
+      "download": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Garbage_dump%2C_Talisay%2C_Cebu.jpg/1280px-Garbage_dump%2C_Talisay%2C_Cebu.jpg",
+      "original_pixels": "5472x3648",
+      "note": "Only candidate with an attribution obligation. Used only if the detector performs materially better than the CC0 candidates."
+    }
+  ],
+  "rejected": [
+    {
+      "reason": "Stock-photo sites (Getty, Adobe Stock, Shutterstock) returned many 'AI generated' or AI-upscaled results for 'Philippines garbage dump'. Excluded because generated imagery is out of scope and the licence is not usable for a pitch video.",
+      "action": "none"
+    },
+    {
+      "commons_title": "File:Improper waste disposal.jpg",
+      "reason": "CC BY-SA 4.0 and geographically unidentified; weaker than the CC0 Philippine candidates.",
+      "action": "not downloaded"
+    }
+  ]
+}

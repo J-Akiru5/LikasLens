@@ -1,0 +1,243 @@
+{
+  "meta": {
+    "title": "LikasLens — CSC AVP",
+    "audience": "CSC HR Innovation Lab (Vivian Bravo, then the regional director)",
+    "lengthTargetSeconds": { "min": 75, "max": 90 },
+    "outputName": "likaslens-csc-avp.mp4",
+    "recordedCommit": "537e7dcb",
+    "note": "C1 (owner decision, 18 Oct): the AI Triage step shows the REAL triage response. There is no knowledge-graph law lookup on screen and the narration makes no such claim — the Neo4j instance behind /api/v1/analyze-hazard is unreachable (its hostname does not resolve).",
+    "decisions": {
+      "D5": "official placing left out of the video (default)",
+      "D6": "contact line admin@syntaxure.dev (owner)",
+      "D7": "assets/photos/marilao-03.jpg — Roboflow PET 0.857, CC0, composite 0.5811 pending_review",
+      "D8": "credit 'students of ISUFST with Syntaxure Labs'; owner confirms before it leaves the building",
+      "D9": "no owned photo supplied; using a licensed CC0 opening shot, which brief section 1 permits ('one owned or licensed opening shot')"
+    }
+  },
+
+  "voice": {
+    "engine": "kokoro-onnx",
+    "model": "kokoro-v1.0.onnx",
+    "voices": "voices-v1.0.bin",
+    "voice": "af_heart",
+    "speed": 0.95,
+    "speedNote": "MEASURED, not guessed. At 0.78 this voice read 145 words in 81.8s = 106 wpm, far under the brief's 140 wpm guidance. At 0.95 the same lines take 63.2s = ~138 wpm, which also lands inside the brief's '60 to 70 s of speech' window. The owner must confirm the pace by ear.",
+    "sampleRate": 48000,
+    "channels": 1,
+    "pronunciation": {
+      "LikasLens": "Likas Lens",
+      "Liksi": "Lick-see",
+      "ISUFST": "I S U F S T",
+      "IPOPHL": "I P O P H L",
+      "Syntaxure": "Syn-tax-ure"
+    },
+    "pronunciationNote": "Applied to the text sent to synthesis only. Captions and the .srt keep the real spelling. Note that ISUFST expands to five spoken words, which is why scene 7 measures 10.9s for 19 written words. The owner confirms each name by ear."
+  },
+
+  "captions": {
+    "burnedInMaxCharsPerLine": 40,
+    "maxLines": 2,
+    "note": "Captions carry explicit line breaks so the 40-character rule is checked per line, not on the whole string."
+  },
+
+  "neverShowOrSay": [
+    "the landing-page ledger (SEED_LEDGER) and its confidence or closing times",
+    "any confidence or accuracy percentage on screen",
+    "SDG alignment claims",
+    "the '57 tests' claim",
+    "the word 'blockchain'",
+    "any real reporter, address, violator or agency staff name",
+    "seeded account emails from supabase/seed-demo.sql",
+    "API keys, tokens, or .env values",
+    "the Next.js dev indicator or localhost",
+    "a knowledge-graph claim for the law lookup (no reachable Neo4j)"
+  ],
+
+  "scenes": [
+    {
+      "id": "s1",
+      "title": "The problem",
+      "start": 0,
+      "duration": 9,
+      "app": null,
+      "route": null,
+      "visual": {
+        "type": "photo-pushin",
+        "photo": "assets/photos/scene1-marilao-a.jpg",
+        "photoCredit": "JFVelasquez Floro, CC0, via Wikimedia Commons",
+        "subject": "Garbage and plastic pollution in the Marilao River, Bulacan",
+        "motion": "slow push-in, 1.00 -> 1.08 scale, centred on the water",
+        "grade": "slight desaturation, vignette",
+        "why": "Chosen for contrast: a wide shot with sky and riverbank, visually distinct from the detection photo in s3, which is a different frame of the same river."
+      },
+      "caption": "Waste is reaching our rivers\nevery day.",
+      "narration": "A citizen sees waste being dumped into a river. Who do they report it to — and will anyone ever answer?",
+      "audioSeconds": 7.829,
+      "holdFor": 8.229
+    },
+    {
+      "id": "s2",
+      "title": "One photo, Ghost Mode",
+      "start": 9,
+      "duration": 13,
+      "app": "mobile-pwa",
+      "route": "/en/report",
+      "visual": {
+        "type": "phone",
+        "note": "Real capture: open the camera, take the photo from the fake device (the staged photo), then turn Ghost Mode on."
+      },
+      "caption": "One photo. The location\ntags itself.",
+      "narration": "With LikasLens, they take one photo. The location tags itself, automatically. And when reporting feels risky, Ghost Mode keeps the reporter anonymous.",
+      "audioSeconds": 10.24,
+      "holdFor": 10.64,
+      "actions": [
+        { "do": "waitFor", "selector": "text=Ghost Mode", "timeoutMs": 30000 },
+        { "do": "click", "selector": "button:has-text('Proceed: Open Camera')" },
+        { "do": "waitFor", "selector": "video", "timeoutMs": 30000 },
+        { "do": "waitForTimeout", "ms": 2500, "why": "let the live camera stream settle so a viewer sees a camera, not a frozen frame" },
+        { "do": "shutter", "why": "press the real capture control; selector verified at record time" },
+        { "do": "waitForTimeout", "ms": 1200 },
+        { "do": "click", "selector": "text=Ghost Mode", "why": "turn Ghost Mode ON — the beat the narration describes" },
+        { "do": "highlight", "selector": "text=Ghost Mode", "ms": 1800 },
+        { "do": "waitForTimeout", "ms": 1000 }
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "The AI reads the photo",
+      "start": 22,
+      "duration": 13,
+      "app": "mobile-pwa",
+      "route": "/en/report",
+      "visual": {
+        "type": "phone",
+        "note": "C1: the AI Triage step shows the REAL triage response — real material labels — instead of the hardcoded simulation."
+      },
+      "caption": "The AI flags what it\nrecognises. A person confirms.",
+      "narration": "Our AI reads the photo and flags the waste it recognises — here, plastic waste in the water. Nothing is final: a person confirms it.",
+      "audioSeconds": 10.688,
+      "holdFor": 11.088,
+      "requiresRealTriage": true,
+      "actions": [
+        { "do": "click", "selector": "text=Continue to AI Triage" },
+        { "do": "waitFor", "selector": "[data-avp='triage-result']", "timeoutMs": 90000, "why": "wait on real UI state, never a blind sleep" },
+        { "do": "highlight", "selector": "[data-avp='triage-result']", "ms": 3000 },
+        { "do": "waitForTimeout", "ms": 2000 }
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "Liksi",
+      "start": 35,
+      "duration": 7,
+      "app": "mobile-pwa",
+      "route": "/en/dashboard",
+      "visual": { "type": "phone", "note": "Open the Liksi chat bubble and send one question in English." },
+      "caption": "Liksi answers legal questions\nin plain language.",
+      "narration": "Liksi, the built-in assistant, answers questions about the law in plain language.",
+      "audioSeconds": 4.971,
+      "holdFor": 5.371,
+      "actions": [
+        { "do": "openLiksi" },
+        { "do": "askLiksi", "value": "What law covers plastic waste in a river?", "why": "one question, one real Gemini answer" },
+        { "do": "waitForResponse", "match": "/api/v1/ai/chat", "timeoutMs": 90000, "why": "wait for the real answer to arrive" },
+        { "do": "waitForTimeout", "ms": 2500, "why": "let the answer render legibly" }
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "The LGU side",
+      "start": 42,
+      "duration": 15,
+      "app": "admin-portal",
+      "route": "/en/triage",
+      "visual": {
+        "type": "desktop",
+        "note": "triage (Kanban) then lgu-performance. The tickets card grid is deliberately NOT used: every card renders ConfidenceTierBadge with showScore, which prints an AI confidence percentage — on the banned list."
+      },
+      "caption": "Tracked tickets and\nresponse targets.",
+      "narration": "For local government, every report becomes a tracked ticket. Offices are measured against response targets, and late ones show as escalations. A public record shows how quickly they resolve.",
+      "audioSeconds": 12.736,
+      "holdFor": 13.136,
+      "actions": [
+        { "do": "waitFor", "selector": "text=Command Center", "timeoutMs": 60000 },
+        { "do": "waitForTimeout", "ms": 2500 },
+        { "do": "goto", "url": "/en/lgu-performance" },
+        { "do": "waitFor", "selector": "text=SLA", "timeoutMs": 60000 },
+        { "do": "highlight", "selector": "text=SLA", "ms": 2500 },
+        { "do": "waitForTimeout", "ms": 2500 }
+      ]
+    },
+    {
+      "id": "s5b",
+      "title": "The public record",
+      "start": 57,
+      "duration": 5,
+      "app": "frontend",
+      "route": "/en/public-record",
+      "visual": { "type": "desktop", "note": "Split from s5 so it can own its own app and route." },
+      "caption": "A public record anyone can read.",
+      "narration": "",
+      "narrationNote": "No narration — s5's line already covers it. Visual only, which also guarantees no frame is empty while the voice speaks.",
+      "actions": [
+        { "do": "waitFor", "selector": "text=Public Record", "timeoutMs": 60000 },
+        { "do": "waitForTimeout", "ms": 3000 }
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "No signal",
+      "start": 62,
+      "duration": 7,
+      "app": "mobile-pwa",
+      "route": "/en/offline-queue",
+      "visual": { "type": "phone", "note": "Cut scene 6 if the queue cannot be shown honestly — brief step 14." },
+      "caption": "No signal? The report waits\non the phone.",
+      "narration": "No signal in the field? Reports queue on the phone, and send themselves when the connection returns.",
+      "audioSeconds": 5.803,
+      "holdFor": 6.203,
+      "conditional": true,
+      "conditionalNote": "The service worker only intercepts POST /api/reports, while the report page submits to /api/v1/ai/reports, so the app queue may never populate. Test it; cut if it does not.",
+      "actions": [
+        { "do": "waitFor", "selector": "text=Offline Queue", "timeoutMs": 45000 },
+        { "do": "waitForTimeout", "ms": 1500 },
+        { "do": "setOffline", "value": true },
+        { "do": "waitForTimeout", "ms": 2500 },
+        { "do": "setOffline", "value": false },
+        { "do": "waitForTimeout", "ms": 2000 }
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "End card",
+      "start": 69,
+      "duration": 12,
+      "app": null,
+      "route": null,
+      "visual": {
+        "type": "card",
+        "card": "cards/end.html",
+        "elements": [
+          "LikasLens logo",
+          "tagline: See it. Route it. Resolve it.",
+          "credit: students of ISUFST with Syntaxure Labs",
+          "contact: admin@syntaxure.dev",
+          "photography credit for the CC0 imagery"
+        ]
+      },
+      "caption": "",
+      "narration": "LikasLens — built by students of ISUFST with Syntaxure Labs, so public service can see, route, and respond faster.",
+      "audioSeconds": 10.923,
+      "holdFor": 11.323,
+      "endCardFadeIn": 0.6
+    }
+  ],
+
+  "timingCheck": {
+    "totalSeconds": 81,
+    "narrationWords": 145,
+    "measuredSpeechSeconds": 63.19,
+    "spokenWordsPerMinute": 138,
+    "note": "Every scene holds for its measured audio plus at least 0.4s. narration/word-count.mjs enforces the 165-word ceiling and the caption line rule."
+  }
+}
