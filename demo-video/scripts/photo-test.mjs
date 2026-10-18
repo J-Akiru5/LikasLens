@@ -25,6 +25,7 @@ const argv = process.argv.slice(2);
 const val = (n, d) => (argv.indexOf(n) >= 0 && argv[argv.indexOf(n) + 1] ? argv[argv.indexOf(n) + 1] : d);
 const RUNS = Number(val("--runs", 2));
 const ONLY = val("--only", null);
+const CHOOSE = val("--choose", null);
 
 const PHOTO_DIR = PATHS.photos;
 const sources = JSON.parse(readFileSync(join(PHOTO_DIR, "sources.json"), "utf8"));
@@ -132,7 +133,7 @@ const rank = (e) => {
   return s;
 };
 const ranked = [...rows].sort((a, b) => rank(b) - rank(a));
-const winner = ranked[0];
+const winner = CHOOSE ? rows.find((r) => r.file === CHOOSE) ?? ranked[0] : ranked[0];
 
 const md = [];
 md.push("# D7 — staged photo test");
@@ -158,8 +159,16 @@ for (const e of ranked) {
 md.push("");
 md.push(`## Chosen: \`${winner.file}\``);
 md.push("");
-md.push(`Score ${rank(winner)} of a possible ${rows.length ? 17 : 17}. ${winner.subject}.`);
+md.push(`Subject: ${winner.subject}.`);
 md.push(`Licence: ${winner.license}${winner.attribution_required ? ` — attribution required: ${winner.attribution_text}` : " (no attribution obligation)"}.`);
+md.push("");
+md.push("Why this one, given the numbers above:");
+md.push("");
+md.push("- It is CC0, so the finished video carries no attribution obligation beyond good practice.");
+md.push("- Its subject matches the story: waste in a river, which is what scene 1 and scene 2 describe.");
+md.push("- The highest-scoring alternative, `talisay-cebu.jpg`, returns the label `plastic`, which is more accurate than this one's `e-waste`. It was not chosen because it is CC BY-SA and shows a dump rather than a waterway.");
+md.push("");
+md.push("**The narration deliberately does not name a material.** Every candidate returns a `Vehicle / Traffic` indicator from the COCO model, and the waste model's class for the winning photo is `e-waste`, not `plastic`. The scene therefore says only that the AI flags what it recognises, and that a person confirms. Naming a material the screen does not show would break the rule in brief section 7.");
 md.push("");
 md.push("Full AI output per run, including the Gemini summary:");
 md.push("");

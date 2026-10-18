@@ -294,14 +294,18 @@ function handleAuth(req, res, url) {
 }
 
 function handleRest(req, res, url) {
-  const table = url.pathname.replace(/^\/rest\/v1\/?/, "").split("/")[0];
-  if (!table) return json(res, 400, REST_ERROR("Missing table"));
+  const rest = url.pathname.replace(/^\/rest\/v1\/?/, "");
 
-  // rpc/<fn> — return an empty result rather than a hard failure.
-  if (table.startsWith("rpc/")) {
-    log("REST", `rpc ${table}`, "stubbed -> []");
-    return json(res, 200, []);
+  // PostgREST RPC: /rest/v1/rpc/<function>. The admin portal reads its ticket
+  // list through the get_my_tickets RPC, so an empty [] here leaves every
+  // screen looking like there is no data at all.
+  const rpcMatch = /^rpc\/(.+)$/.exec(rest);
+  if (rpcMatch) {
+    return handleRpc(req, res, rpcMatch[1]);
   }
+
+  const table = rest.split("/")[0];
+  if (!table) return json(res, 400, REST_ERROR("Missing table"));
 
   if (!tables.has(table)) {
     log("REST", `${req.method} /rest/v1/${table}`, "TABLE NOT IN FIXTURES -> []");
@@ -335,8 +339,55 @@ function handleRest(req, res, url) {
   return json(res, 200, shaped, headers);
 }
 
-function handleStorage(req, res, url) {
-  log("STORAGE", `${req.method} ${url.pathname}`, "placeholder");
+/**
+ * PostgREST RPC stub.
+ *
+ * The admin portal's ticket list and its KPI panels are backed by SQL functions,
+ * not table reads, so they must be answered explicitly. Anything unknown returns
+ * an empty array rather than an error, so a missing function degrades to "no
+ * data" instead of breaking a whole screen mid-take.
+ */
+function handleRpc(req, res, name) {
+  let body = "";
+  req.on("data", (c) => (body += c));
+  req.on("end", () => {
+    let params = {};
+    try {
+      params = JSON.parse(body || "{}");
+    } catch {
+      /* ignore */
+    }
+
+    const tickets = tables.get("tickets") ?? [];
+
+    if (name === "get_my_tickets") {
+      const page = Number(params.p_page ?? 1) || 1;
+      const perPage = Number(params.p_per_page ?? 50) || 50;
+      const status = params.p_status ?? null;
+      let rows = tickets;
+      if (status) rows = rows.filter((t) => t.status === status);
+      const from = (page - 1) * perPage;
+      log("REST", `rpc get_my_tickets page=${page} status=${status}`, `${rows.length} row(s) from fixtures`);
+      return json(res, 200, {
+        tickets: rows.slice(from, from + perPage),
+        total: rows.length,
+        page,
+        per_page: perPage,
+      });
+    }
+
+    // A few dashboards call an aggregate that just needs a sane shape.
+    if (/count|stats|summary|kpi/i.test(name)) {
+      log("REST", `rpc ${name}`, "aggregate stub");
+      return json(res, 200, { total: tickets.length, count: tickets.length });
+    }
+
+    log("REST", `rpc ${name}`, "NOT IMPLEMENTED -> []");
+    return json(res, 200, []);
+  });
+}
+
+function handleStorage(req, res, url) {  log("STORAGE", `${req.method} ${url.pathname}`, "placeholder");
   // 1x1 transparent PNG so <img src> never breaks a layout.
   const png = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",

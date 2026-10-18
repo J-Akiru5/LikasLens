@@ -2,7 +2,10 @@
   "meta": {
     "title": "LikasLens — CSC AVP",
     "audience": "CSC HR Innovation Lab (Vivian Bravo, then the regional director)",
-    "lengthTargetSeconds": { "min": 75, "max": 90 },
+    "lengthTargetSeconds": {
+      "min": 75,
+      "max": 90
+    },
     "outputName": "likaslens-csc-avp.mp4",
     "recordedCommit": "537e7dcb",
     "note": "C1 (owner decision, 18 Oct): the AI Triage step shows the REAL triage response. There is no knowledge-graph law lookup on screen and the narration makes no such claim — the Neo4j instance behind /api/v1/analyze-hazard is unreachable (its hostname does not resolve).",
@@ -12,9 +15,14 @@
       "D7": "assets/photos/marilao-03.jpg — Roboflow PET 0.857, CC0, composite 0.5811 pending_review",
       "D8": "credit 'students of ISUFST with Syntaxure Labs'; owner confirms before it leaves the building",
       "D9": "no owned photo supplied; using a licensed CC0 opening shot, which brief section 1 permits ('one owned or licensed opening shot')"
-    }
+    },
+    "cutScenes": [
+      {
+        "id": "s6",
+        "reason": "the offline queue page never left its loading state under the local fixture stack (getAllQueued() did not resolve), so the screen could not be shown honestly. Brief step 14 permits cutting scene 6 if sync fails. Attempted three times; evidence in capture/takes/."
+      }
+    ]
   },
-
   "voice": {
     "engine": "kokoro-onnx",
     "model": "kokoro-v1.0.onnx",
@@ -33,13 +41,11 @@
     },
     "pronunciationNote": "Applied to the text sent to synthesis only. Captions and the .srt keep the real spelling. Note that ISUFST expands to five spoken words, which is why scene 7 measures 10.9s for 19 written words. The owner confirms each name by ear."
   },
-
   "captions": {
     "burnedInMaxCharsPerLine": 40,
     "maxLines": 2,
     "note": "Captions carry explicit line breaks so the 40-character rule is checked per line, not on the whole string."
   },
-
   "neverShowOrSay": [
     "the landing-page ledger (SEED_LEDGER) and its confidence or closing times",
     "any confidence or accuracy percentage on screen",
@@ -52,13 +58,12 @@
     "the Next.js dev indicator or localhost",
     "a knowledge-graph claim for the law lookup (no reachable Neo4j)"
   ],
-
   "scenes": [
     {
       "id": "s1",
       "title": "The problem",
       "start": 0,
-      "duration": 9,
+      "duration": 10,
       "app": null,
       "route": null,
       "visual": {
@@ -78,8 +83,8 @@
     {
       "id": "s2",
       "title": "One photo, Ghost Mode",
-      "start": 9,
-      "duration": 13,
+      "start": 10,
+      "duration": 14,
       "app": "mobile-pwa",
       "route": "/en/report",
       "visual": {
@@ -91,6 +96,7 @@
       "audioSeconds": 10.24,
       "holdFor": 10.64,
       "actions": [
+<<<<<<< Updated upstream
         { "do": "waitFor", "selector": "text=Ghost Mode", "timeoutMs": 30000 },
         { "do": "click", "selector": "button:has-text('Proceed: Open Camera')" },
         { "do": "waitFor", "selector": "video", "timeoutMs": 30000 },
@@ -100,13 +106,53 @@
         { "do": "click", "selector": "text=Ghost Mode", "why": "turn Ghost Mode ON — the beat the narration describes" },
         { "do": "highlight", "selector": "text=Ghost Mode", "ms": 1800 },
         { "do": "waitForTimeout", "ms": 1000 }
+=======
+        {
+          "do": "waitFor",
+          "selector": "text=Ghost Mode",
+          "timeoutMs": 30000
+        },
+        {
+          "do": "click",
+          "selector": "text=Ghost Mode",
+          "why": "turn Ghost Mode ON — the beat the narration describes"
+        },
+        {
+          "do": "highlight",
+          "selector": "text=Ghost Mode",
+          "ms": 1800
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Proceed: Open Camera')"
+        },
+        {
+          "do": "waitFor",
+          "selector": "video",
+          "timeoutMs": 30000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2200,
+          "why": "let the live camera stream settle so a viewer sees a camera, not a frozen frame"
+        },
+        {
+          "do": "shutter",
+          "why": "press the real capture control; the selector is resolved at record time"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1500,
+          "why": "hold on the captured photo"
+        }
+>>>>>>> Stashed changes
       ]
     },
     {
       "id": "s3",
       "title": "The AI reads the photo",
-      "start": 22,
-      "duration": 13,
+      "start": 24,
+      "duration": 15,
       "app": "mobile-pwa",
       "route": "/en/report",
       "visual": {
@@ -114,41 +160,122 @@
         "note": "C1: the AI Triage step shows the REAL triage response — real material labels — instead of the hardcoded simulation."
       },
       "caption": "The AI flags what it\nrecognises. A person confirms.",
-      "narration": "Our AI reads the photo and flags the waste it recognises — here, plastic waste in the water. Nothing is final: a person confirms it.",
+      "narration": "Our AI reads the photo and flags what it recognises in the scene. Nothing is final: a person confirms it before anything is acted on.",
+      "narrationNote": "Deliberately does NOT name a material. The recorded take shows the labels 'Vehicle / Traffic' and 'e-waste' — naming 'plastic' here would describe something the screen did not show, which brief section 7 forbids.",
       "audioSeconds": 10.688,
       "holdFor": 11.088,
       "requiresRealTriage": true,
+      "deferMark": true,
       "actions": [
+<<<<<<< Updated upstream
         { "do": "click", "selector": "text=Continue to AI Triage" },
         { "do": "waitFor", "selector": "[data-avp='triage-result']", "timeoutMs": 90000, "why": "wait on real UI state, never a blind sleep" },
         { "do": "highlight", "selector": "[data-avp='triage-result']", "ms": 3000 },
         { "do": "waitForTimeout", "ms": 2000 }
+=======
+        {
+          "do": "waitFor",
+          "selector": "text=Ghost Mode",
+          "timeoutMs": 30000
+        },
+        {
+          "do": "click",
+          "selector": "text=Ghost Mode",
+          "why": "Ghost Mode on, as a real reporter would"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Proceed: Open Camera')"
+        },
+        {
+          "do": "waitFor",
+          "selector": "video",
+          "timeoutMs": 30000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2000
+        },
+        {
+          "do": "shutter",
+          "why": "capture; this is what kicks off the real triage call"
+        },
+        {
+          "do": "waitFor",
+          "selector": "[data-testid='ai-triage-result']",
+          "timeoutMs": 180000,
+          "why": "the real triage call takes 10-20s on this machine, so the scene starts only once the result is on screen"
+        },
+        {
+          "do": "scrollIntoView",
+          "selector": "[data-testid='ai-triage-result']"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 600
+        },
+        {
+          "do": "mark",
+          "why": "the scene begins on the result, not on the spinner"
+        },
+        {
+          "do": "highlight",
+          "selector": "[data-testid='ai-triage-result']",
+          "ms": 3500
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 6000,
+          "why": "hold on the result long enough to read"
+        }
+>>>>>>> Stashed changes
       ]
     },
     {
       "id": "s4",
       "title": "Liksi",
-      "start": 35,
+      "start": 39,
       "duration": 7,
       "app": "mobile-pwa",
       "route": "/en/dashboard",
-      "visual": { "type": "phone", "note": "Open the Liksi chat bubble and send one question in English." },
+      "deferMark": true,
+      "visual": {
+        "type": "phone",
+        "note": "Open the Liksi chat bubble and send one question in English."
+      },
       "caption": "Liksi answers legal questions\nin plain language.",
       "narration": "Liksi, the built-in assistant, answers questions about the law in plain language.",
       "audioSeconds": 4.971,
       "holdFor": 5.371,
       "actions": [
-        { "do": "openLiksi" },
-        { "do": "askLiksi", "value": "What law covers plastic waste in a river?", "why": "one question, one real Gemini answer" },
-        { "do": "waitForResponse", "match": "/api/v1/ai/chat", "timeoutMs": 90000, "why": "wait for the real answer to arrive" },
-        { "do": "waitForTimeout", "ms": 2500, "why": "let the answer render legibly" }
+        {
+          "do": "openLiksi"
+        },
+        {
+          "do": "askLiksi",
+          "value": "What law covers plastic waste in a river?",
+          "why": "one question, one real Gemini answer"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1500
+        },
+        {
+          "do": "mark",
+          "why": "askLiksi already polls until the reply bubble appears, so the answer is on screen by now"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 5000,
+          "why": "let the answer render legibly"
+        }
       ]
     },
     {
       "id": "s5",
       "title": "The LGU side",
-      "start": 42,
-      "duration": 15,
+      "start": 46,
+      "duration": 16,
       "app": "admin-portal",
       "route": "/en/triage",
       "visual": {
@@ -159,59 +286,92 @@
       "narration": "For local government, every report becomes a tracked ticket. Offices are measured against response targets, and late ones show as escalations. A public record shows how quickly they resolve.",
       "audioSeconds": 12.736,
       "holdFor": 13.136,
+      "deferMark": true,
       "actions": [
-        { "do": "waitFor", "selector": "text=Command Center", "timeoutMs": 60000 },
-        { "do": "waitForTimeout", "ms": 2500 },
-        { "do": "goto", "url": "/en/lgu-performance" },
-        { "do": "waitFor", "selector": "text=SLA", "timeoutMs": 60000 },
-        { "do": "highlight", "selector": "text=SLA", "ms": 2500 },
-        { "do": "waitForTimeout", "ms": 2500 }
+        {
+          "do": "waitFor",
+          "selector": "text=Command Center",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForHidden",
+          "selector": "text=Loading incidents...",
+          "timeoutMs": 60000,
+          "why": "the board is empty until the ticket RPC answers"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1500,
+          "why": "let the cards paint"
+        },
+        {
+          "do": "mark",
+          "why": "the LGU beat starts once the board actually has incidents on it"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 3500
+        },
+        {
+          "do": "goto",
+          "url": "/en/lgu-performance"
+        },
+        {
+          "do": "waitFor",
+          "selector": "text=SLA",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForGone",
+          "selector": "[class*='animate-shimmer']",
+          "timeoutMs": 60000,
+          "why": "the page renders a Skeleton (animate-shimmer) until its data arrives; wait for real content, not the placeholder"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 500
+        },
+        {
+          "do": "mark",
+          "why": "start on the page that actually has data on it"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 8000
+        }
       ]
     },
     {
       "id": "s5b",
       "title": "The public record",
-      "start": 57,
-      "duration": 5,
+      "start": 62,
+      "duration": 6,
       "app": "frontend",
       "route": "/en/public-record",
-      "visual": { "type": "desktop", "note": "Split from s5 so it can own its own app and route." },
+      "visual": {
+        "type": "desktop",
+        "note": "Split from s5 so it can own its own app and route."
+      },
       "caption": "A public record anyone can read.",
       "narration": "",
       "narrationNote": "No narration — s5's line already covers it. Visual only, which also guarantees no frame is empty while the voice speaks.",
       "actions": [
-        { "do": "waitFor", "selector": "text=Public Record", "timeoutMs": 60000 },
-        { "do": "waitForTimeout", "ms": 3000 }
-      ]
-    },
-    {
-      "id": "s6",
-      "title": "No signal",
-      "start": 62,
-      "duration": 7,
-      "app": "mobile-pwa",
-      "route": "/en/offline-queue",
-      "visual": { "type": "phone", "note": "Cut scene 6 if the queue cannot be shown honestly — brief step 14." },
-      "caption": "No signal? The report waits\non the phone.",
-      "narration": "No signal in the field? Reports queue on the phone, and send themselves when the connection returns.",
-      "audioSeconds": 5.803,
-      "holdFor": 6.203,
-      "conditional": true,
-      "conditionalNote": "The service worker only intercepts POST /api/reports, while the report page submits to /api/v1/ai/reports, so the app queue may never populate. Test it; cut if it does not.",
-      "actions": [
-        { "do": "waitFor", "selector": "text=Offline Queue", "timeoutMs": 45000 },
-        { "do": "waitForTimeout", "ms": 1500 },
-        { "do": "setOffline", "value": true },
-        { "do": "waitForTimeout", "ms": 2500 },
-        { "do": "setOffline", "value": false },
-        { "do": "waitForTimeout", "ms": 2000 }
+        {
+          "do": "waitFor",
+          "selector": "text=Public Record",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 3000
+        }
       ]
     },
     {
       "id": "s7",
       "title": "End card",
-      "start": 69,
-      "duration": 12,
+      "start": 68,
+      "duration": 13,
       "app": null,
       "route": null,
       "visual": {
@@ -232,12 +392,11 @@
       "endCardFadeIn": 0.6
     }
   ],
-
   "timingCheck": {
     "totalSeconds": 81,
-    "narrationWords": 145,
-    "measuredSpeechSeconds": 63.19,
+    "narrationWords": 128,
+    "measuredSpeechSeconds": 55.74,
     "spokenWordsPerMinute": 138,
-    "note": "Every scene holds for its measured audio plus at least 0.4s. narration/word-count.mjs enforces the 165-word ceiling and the caption line rule."
+    "note": "Scene 6 was cut (see meta.cutScenes) and its 7s redistributed. Every scene still holds for its measured audio plus at least 0.4s. Narration is intentionally below the brief 60-70s speech guidance because cutting s6 removed 5.8s of speech without padding the remaining lines with claims the screen does not support."
   }
 }

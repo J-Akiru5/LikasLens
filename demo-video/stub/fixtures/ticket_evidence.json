@@ -1,0 +1,32 @@
+[
+  {
+    "id": "6b5f28d1-a043-4e97-8c62-1f7d90b34e8a",
+    "ticket_id": "5c1e7b42-9d3a-4f81-b7c6-2e4a91d05f13",
+    "storage_bucket": "likaslens-evidence",
+    "storage_path": "evidence/demo/avp-001.jpg",
+    "file_path": "evidence/demo/avp-001.jpg",
+    "file_type": "image/jpeg",
+    "uploaded_by_user_id": null,
+    "created_at": "2026-10-14T01:12:00Z"
+  },
+  {
+    "id": "b803d6e9-4a71-4c25-9f18-5e2c47a0d93b",
+    "ticket_id": "1f9c6e23-7b48-4d9a-a0e5-3c82f4b76d91",
+    "storage_bucket": "likaslens-evidence",
+    "storage_path": "evidence/demo/avp-004-before.jpg",
+    "file_path": "evidence/demo/avp-004-before.jpg",
+    "file_type": "image/jpeg",
+    "uploaded_by_user_id": null,
+    "created_at": "2026-09-28T02:30:00Z"
+  },
+  {
+    "id": "43a9f7c0-2e85-4b61-a0d3-7c19e5b82f4d",
+    "ticket_id": "1f9c6e23-7b48-4d9a-a0e5-3c82f4b76d91",
+    "storage_bucket": "likaslens-evidence",
+    "storage_path": "evidence/demo/avp-004-after.jpg",
+    "file_path": "evidence/demo/avp-004-after.jpg",
+    "file_type": "image/jpeg",
+    "uploaded_by_user_id": null,
+    "created_at": "2026-10-03T06:00:00Z"
+  }
+]

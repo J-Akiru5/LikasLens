@@ -1,6 +1,6 @@
 [
   {
-    "id": "aaaaaaaa-0000-4000-8000-000000000001",
+    "id": "5c1e7b42-9d3a-4f81-b7c6-2e4a91d05f13",
     "display_id": "LL-2026-100441",
     "title": "Illegal dumping along the riverbank",
     "description": "Mixed household and plastic waste tipped on the riverbank. Roughly one truckload. No burning observed at the time of reporting.",
@@ -21,10 +21,18 @@
     "is_redd_eligible": false,
     "created_at": "2026-10-14T01:12:00Z",
     "updated_at": "2026-10-14T02:05:00Z",
-    "resolved_at": null
+    "resolved_at": null,
+    "assigned_to": "22222222-2222-4222-8222-222222222222",
+    "assigned_office": "City Environment and Natural Resources Office (CENRO) Iloilo",
+    "priority": "high",
+    "sla_response_breached": true,
+    "sla_resolution_breached": false,
+    "escalated_to": "Regional Office",
+    "response_due_at": null,
+    "resolution_due_at": null
   },
   {
-    "id": "aaaaaaaa-0000-4000-8000-000000000002",
+    "id": "8a44f0d9-16b7-4c25-9e38-7d2150bc4a6e",
     "display_id": "LL-2026-100442",
     "title": "Plastic waste accumulating in the estero",
     "description": "Plastic and styrofoam caught against a culvert, water not flowing. Reported after heavy rain.",
@@ -45,10 +53,18 @@
     "is_redd_eligible": false,
     "created_at": "2026-10-12T05:40:00Z",
     "updated_at": "2026-10-13T00:20:00Z",
-    "resolved_at": null
+    "resolved_at": null,
+    "assigned_to": "22222222-2222-4222-8222-222222222222",
+    "assigned_office": "City Environment and Natural Resources Office (CENRO) Iloilo",
+    "priority": "medium",
+    "sla_response_breached": false,
+    "sla_resolution_breached": false,
+    "escalated_to": null,
+    "response_due_at": null,
+    "resolution_due_at": null
   },
   {
-    "id": "aaaaaaaa-0000-4000-8000-000000000003",
+    "id": "d27b3c85-4e69-4a17-8f02-9b6d38e1c5a4",
     "display_id": "LL-2026-100443",
     "title": "Open burning of mixed waste",
     "description": "Smoke from a pile of mixed waste behind a commercial row. Observed mid-afternoon.",
@@ -69,10 +85,18 @@
     "is_redd_eligible": false,
     "created_at": "2026-10-09T07:05:00Z",
     "updated_at": "2026-10-11T03:00:00Z",
-    "resolved_at": null
+    "resolved_at": null,
+    "assigned_to": "22222222-2222-4222-8222-222222222222",
+    "assigned_office": "City Environment and Natural Resources Office (CENRO) Iloilo",
+    "priority": "medium",
+    "sla_response_breached": false,
+    "sla_resolution_breached": false,
+    "escalated_to": "CENRO Iloilo",
+    "response_due_at": null,
+    "resolution_due_at": null
   },
   {
-    "id": "aaaaaaaa-0000-4000-8000-000000000004",
+    "id": "1f9c6e23-7b48-4d9a-a0e5-3c82f4b76d91",
     "display_id": "LL-2026-100438",
     "title": "Segregated collection restored on the riverside street",
     "description": "Waste cleared and collection schedule restored. Photographed before and after by the barangay.",
@@ -93,16 +117,24 @@
     "is_redd_eligible": true,
     "created_at": "2026-09-28T02:30:00Z",
     "updated_at": "2026-10-03T06:00:00Z",
-    "resolved_at": "2026-10-03T06:00:00Z"
+    "resolved_at": "2026-10-03T06:00:00Z",
+    "assigned_to": "22222222-2222-4222-8222-222222222222",
+    "assigned_office": "City Environment and Natural Resources Office (CENRO) Iloilo",
+    "priority": "low",
+    "sla_response_breached": false,
+    "sla_resolution_breached": false,
+    "escalated_to": null,
+    "response_due_at": null,
+    "resolution_due_at": null
   },
   {
-    "id": "aaaaaaaa-0000-4000-8000-000000000005",
+    "id": "e4b8a571-2c96-4f03-bd17-6a93e5c08f2b",
     "display_id": "LL-2026-100431",
     "title": "Creek cleared of floating plastic",
     "description": "Plastic removed from the creek mouth by the barangay clean-up team and verified two days later.",
     "location": "Barangay Tabucan, Iloilo City",
     "address_text": "Barangay Tabucan, Iloilo City",
-    "latitude": 10.7180,
+    "latitude": 10.718,
     "longitude": 122.5592,
     "status": "verified",
     "urgency_score": 44,
@@ -117,6 +149,14 @@
     "is_redd_eligible": true,
     "created_at": "2026-09-20T04:15:00Z",
     "updated_at": "2026-09-26T01:10:00Z",
-    "resolved_at": "2026-09-26T01:10:00Z"
+    "resolved_at": "2026-09-26T01:10:00Z",
+    "assigned_to": "22222222-2222-4222-8222-222222222222",
+    "assigned_office": "City Environment and Natural Resources Office (CENRO) Iloilo",
+    "priority": "low",
+    "sla_response_breached": false,
+    "sla_resolution_breached": false,
+    "escalated_to": null,
+    "response_due_at": null,
+    "resolution_due_at": null
   }
 ]
