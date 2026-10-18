@@ -96,17 +96,6 @@
       "audioSeconds": 10.24,
       "holdFor": 10.64,
       "actions": [
-<<<<<<< Updated upstream
-        { "do": "waitFor", "selector": "text=Ghost Mode", "timeoutMs": 30000 },
-        { "do": "click", "selector": "button:has-text('Proceed: Open Camera')" },
-        { "do": "waitFor", "selector": "video", "timeoutMs": 30000 },
-        { "do": "waitForTimeout", "ms": 2500, "why": "let the live camera stream settle so a viewer sees a camera, not a frozen frame" },
-        { "do": "shutter", "why": "press the real capture control; selector verified at record time" },
-        { "do": "waitForTimeout", "ms": 1200 },
-        { "do": "click", "selector": "text=Ghost Mode", "why": "turn Ghost Mode ON — the beat the narration describes" },
-        { "do": "highlight", "selector": "text=Ghost Mode", "ms": 1800 },
-        { "do": "waitForTimeout", "ms": 1000 }
-=======
         {
           "do": "waitFor",
           "selector": "text=Ghost Mode",
@@ -145,7 +134,6 @@
           "ms": 1500,
           "why": "hold on the captured photo"
         }
->>>>>>> Stashed changes
       ]
     },
     {
@@ -167,12 +155,6 @@
       "requiresRealTriage": true,
       "deferMark": true,
       "actions": [
-<<<<<<< Updated upstream
-        { "do": "click", "selector": "text=Continue to AI Triage" },
-        { "do": "waitFor", "selector": "[data-avp='triage-result']", "timeoutMs": 90000, "why": "wait on real UI state, never a blind sleep" },
-        { "do": "highlight", "selector": "[data-avp='triage-result']", "ms": 3000 },
-        { "do": "waitForTimeout", "ms": 2000 }
-=======
         {
           "do": "waitFor",
           "selector": "text=Ghost Mode",
@@ -228,7 +210,6 @@
           "ms": 6000,
           "why": "hold on the result long enough to read"
         }
->>>>>>> Stashed changes
       ]
     },
     {
