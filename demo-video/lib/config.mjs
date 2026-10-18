@@ -37,20 +37,25 @@ export const SERVICES = {
 /**
  * Final video geometry. 1920x1080 at 30 fps, per brief section 1.
  *
- * The phone footage is shot portrait; in the 1080p frame it sits in a
- * centred 608x1080 window with the caption bar beneath it. 608x1080 is exact
- * 16:9-height math (1080 * 9/16 = 607.5 -> 608) so a 1080x1920 phone capture
- * scales by exactly 0.5625 with no fractional resampling.
+ * Layout decision: the phone sits on the RIGHT at full height, 608x1080, and
+ * the text column sits on the LEFT. The phone is magnified 1.126x from its
+ * 540x960 CSS viewport, which is what keeps the app's 11px labels readable at
+ * 1080p — the brief's acceptance test. Captions get a 960px-wide column rather
+ * than being squeezed into the phone, and they are rendered by the browser,
+ * because `ffmpeg -vf drawtext` is unavailable on this build (no fontconfig).
  */
 export const FRAME = { width: 1920, height: 1080, fps: 30 };
 
 export const PHONE = {
   /** Final on-frame size of the phone panel. */
   frame: { width: 608, height: 1080 },
-  /** Offsets used by the overlay/assembly stages. */
-  x: 656,
+  /** Top-left offset inside the 1920x1080 frame. */
+  x: 1232,
   y: 0,
 };
+
+/** Left text column for the step chip and the burned-in caption. */
+export const TEXT_COLUMN = { x: 96, width: 1000 };
 
 /** Loudness target from brief step 12. */
 export const AUDIO = {

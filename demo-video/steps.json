@@ -21,7 +21,11 @@
         "id": "s6",
         "reason": "the offline queue page never left its loading state under the local fixture stack (getAllQueued() did not resolve), so the screen could not be shown honestly. Brief step 14 permits cutting scene 6 if sync fails. Attempted three times; evidence in capture/takes/."
       }
-    ]
+    ],
+    "qaRevision": {
+      "date": "2026-10-18",
+      "note": "Revised after the independent QA pass. Three narration claims were removed because the screens did not support them, s3's stored audio timing was corrected, and the closing line was added to the .srt."
+    }
   },
   "voice": {
     "engine": "kokoro-onnx",
@@ -91,10 +95,10 @@
         "type": "phone",
         "note": "Real capture: open the camera, take the photo from the fake device (the staged photo), then turn Ghost Mode on."
       },
-      "caption": "One photo. The location\ntags itself.",
-      "narration": "With LikasLens, they take one photo. The location tags itself, automatically. And when reporting feels risky, Ghost Mode keeps the reporter anonymous.",
-      "audioSeconds": 10.24,
-      "holdFor": 10.64,
+      "caption": "One photo. Ghost Mode keeps\nthe reporter anonymous.",
+      "narration": "With LikasLens, they take one photo. And when reporting feels risky, Ghost Mode keeps the reporter anonymous.",
+      "audioSeconds": 7.189,
+      "holdFor": 7.589,
       "actions": [
         {
           "do": "waitFor",
@@ -134,7 +138,8 @@
           "ms": 1500,
           "why": "hold on the captured photo"
         }
-      ]
+      ],
+      "narrationNote": "QA found the earlier line 'The location tags itself, automatically' was not demonstrated anywhere on screen: no address, map pin or 'location added' state appears in any frame. The claim was removed rather than the shot being faked."
     },
     {
       "id": "s3",
@@ -150,8 +155,8 @@
       "caption": "The AI flags what it\nrecognises. A person confirms.",
       "narration": "Our AI reads the photo and flags what it recognises in the scene. Nothing is final: a person confirms it before anything is acted on.",
       "narrationNote": "Deliberately does NOT name a material. The recorded take shows the labels 'Vehicle / Traffic' and 'e-waste' — naming 'plastic' here would describe something the screen did not show, which brief section 7 forbids.",
-      "audioSeconds": 10.688,
-      "holdFor": 11.088,
+      "audioSeconds": 9.045,
+      "holdFor": 9.445,
       "requiresRealTriage": true,
       "deferMark": true,
       "actions": [
@@ -263,10 +268,10 @@
         "type": "desktop",
         "note": "triage (Kanban) then lgu-performance. The tickets card grid is deliberately NOT used: every card renders ConfidenceTierBadge with showScore, which prints an AI confidence percentage — on the banned list."
       },
-      "caption": "Tracked tickets and\nresponse targets.",
-      "narration": "For local government, every report becomes a tracked ticket. Offices are measured against response targets, and late ones show as escalations. A public record shows how quickly they resolve.",
-      "audioSeconds": 12.736,
-      "holdFor": 13.136,
+      "caption": "Tracked tickets, response\ntimes, and escalations.",
+      "narration": "For local government, every report becomes a tracked ticket. Offices are measured on response time and SLA compliance, and escalations are counted.",
+      "audioSeconds": 9.877,
+      "holdFor": 10.277,
       "deferMark": true,
       "actions": [
         {
@@ -320,7 +325,8 @@
           "do": "waitForTimeout",
           "ms": 8000
         }
-      ]
+      ],
+      "narrationNote": "QA found 'late ones show as escalations' and 'a public record shows how quickly they resolve' were not demonstrable. The wording now tracks the on-screen column headers RESPONSE, SLA and ESCALATED, and the AVG RESPONSE / SLA COMPLIANCE tiles."
     },
     {
       "id": "s5b",
@@ -333,9 +339,9 @@
         "type": "desktop",
         "note": "Split from s5 so it can own its own app and route."
       },
-      "caption": "A public record anyone can read.",
-      "narration": "",
-      "narrationNote": "No narration — s5's line already covers it. Visual only, which also guarantees no frame is empty while the voice speaks.",
+      "caption": "Resolved cases, with the\nreporter left anonymous.",
+      "narration": "Resolved cases are published here, with the reporter left anonymous.",
+      "narrationNote": "Added after QA: s5b was silent, which read as a mistake. Every claim here is visible on the Public Record screen - resolved/verified badges and ANONYMOUS REPORT labels.",
       "actions": [
         {
           "do": "waitFor",
@@ -346,7 +352,9 @@
           "do": "waitForTimeout",
           "ms": 3000
         }
-      ]
+      ],
+      "audioSeconds": 3.883,
+      "holdFor": 4.283
     },
     {
       "id": "s7",
@@ -357,20 +365,23 @@
       "route": null,
       "visual": {
         "type": "card",
-        "card": "cards/end.html",
+        "card": "rendered by capture/frame-overlay.mjs -> endCard()",
         "elements": [
           "LikasLens logo",
           "tagline: See it. Route it. Resolve it.",
           "credit: students of ISUFST with Syntaxure Labs",
           "contact: admin@syntaxure.dev",
           "photography credit for the CC0 imagery"
-        ]
+        ],
+        "cardNote": "There is no separate cards/end.html; the end card is generated in frame-overlay.mjs."
       },
-      "caption": "",
-      "narration": "LikasLens — built by students of ISUFST with Syntaxure Labs, so public service can see, route, and respond faster.",
-      "audioSeconds": 10.923,
-      "holdFor": 11.323,
-      "endCardFadeIn": 0.6
+      "caption": "Built by students of ISUFST\nwith Syntaxure Labs.",
+      "narration": "LikasLens — built by students of ISUFST with Syntaxure Labs, so public service can see it, route it, and resolve it.",
+      "audioSeconds": 10.581,
+      "holdFor": 10.981,
+      "endCardFadeIn": 0.6,
+      "narrationNote": "QA found 'respond faster' was an unsupported comparative — nothing in the video sets a baseline. It now echoes the on-screen tagline 'See it. Route it. Resolve it.'",
+      "captionNote": "Not burned in — the end card draws its own typography. Present so the .srt captions the closing narration, which QA flagged as the one uncaptioned spoken line."
     }
   ],
   "timingCheck": {

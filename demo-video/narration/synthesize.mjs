@@ -135,7 +135,7 @@ for (const scene of steps.scenes) {
 
   const seconds = durationOf(out);
   const peakDb = measurePeakDb(out);
-  durations[scene.id] = {
+  const measured = {
     seconds: Number(seconds.toFixed(3)),
     slot: scene.duration,
     holdFor: Number((seconds + 0.4).toFixed(3)),
@@ -144,6 +144,13 @@ for (const scene of steps.scenes) {
     suspectClipping: peakDb !== null && peakDb >= -0.1,
     words: text.split(/\s+/).filter(Boolean).length,
   };
+  durations[scene.id] = measured;
+
+  // Write the measurement back into steps.json. The script and the audio are
+  // supposed to agree; leaving a hand-written estimate there is how they drift.
+  scene.audioSeconds = measured.seconds;
+  scene.holdFor = measured.holdFor;
+
   totalSpeech += seconds;
 }
 
@@ -162,6 +169,9 @@ writeFileSync(
     2,
   ),
 );
+
+// Keep the script in sync with the audio it is spoken from.
+writeFileSync(PATHS.steps, JSON.stringify(steps, null, 2) + "\n");
 
 console.log(`\nTotal speech: ${totalSpeech.toFixed(1)}s across ${Object.keys(durations).length} scene(s)`);
 

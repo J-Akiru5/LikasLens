@@ -11,7 +11,7 @@
     "spike:s2": "node capture/spike-s2.mjs",
     "record": "node capture/record.mjs",
     "voice": "node narration/synthesize.mjs",
-    "cards": "node cards/build-cards.mjs",
+    "overlays": "node capture/frame-overlay.mjs",
     "assemble": "node build/assemble.mjs",
     "words": "node narration/word-count.mjs"
   },

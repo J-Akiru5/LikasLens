@@ -4,8 +4,10 @@ Builds `likaslens-csc-avp.mp4`: a 75–90 second narrated screen recording of th
 real LikasLens apps, captured on localhost. 1920x1080, 30 fps, H.264 + AAC,
 under 50 MB so it emails cleanly.
 
-**Recorded commit:** `537e7dcb`. Re-check this before recording — if `development`
-has moved, the screens may not match the script.
+**Recorded commit:** `537e7dcb` is the base. The takes were recorded on the
+throwaway `demo/csc-avp` line, whose head at recording time was `5e5c699c` —
+that is the commit recorded in every take manifest. Re-check `development`
+before recording: if it has moved, the screens may not match the script.
 
 Read `steps.json` first. It is the script: every scene's route, actions, caption
 and narration, with measured timings. Nothing else in this folder is
@@ -132,22 +134,29 @@ Two independent guards keep the live project untouched:
 
 ## 5. Run it
 
+All commands below assume you are in `demo-video/` unless stated. Paths to the
+Python venv need `.\` in PowerShell (`demo-video\.venv\Scripts\python.exe` is
+not executable without it).
+
 ```powershell
-# 1. install
-pnpm install --ignore-workspace        # from demo-video/
+# 1. install, from demo-video/
+pnpm install --ignore-workspace
 node scripts/fetch-photos.mjs          # staged photos (CC0; not committed)
 
-# 2. start the stack (4 terminals)
-node stub/supabase-stub.mjs --port 8002
+# 2. start the stack — four terminals, each from the REPO ROOT
+node demo-video/stub/supabase-stub.mjs --port 8002
 pnpm --filter mobile-pwa dev           # :3003
 pnpm --filter admin-portal dev         # :3002
 pnpm --filter frontend dev             # :3000
-# AI service, with the live-write paths disabled:
+
+# AI service, from the repo root, with the live-write paths disabled:
 $env:DATABASE_URL=""; $env:SUPABASE_STORAGE_URL=""; $env:SUPABASE_STORAGE_KEY=""
 $env:SUPABASE_STORAGE_SECRET=""; $env:AI_SERVICE_API_KEY=""
-cd ../../apps/ai-service; .\.venv\Scripts\python -m uvicorn main:app --host 127.0.0.1 --port 8001
+cd apps/ai-service
+.\.venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8001
+# then `cd ../..` to get back to the repo root
 
-# 3. build the fake camera source from the chosen photo
+# 3. back in demo-video/ — build the fake camera source from the chosen photo
 node scripts/make-y4m.mjs assets/photos/marilao-03.jpg --seconds 4
 
 # 4. narration BEFORE recording (each scene must hold for its audio + 0.4s)
@@ -168,6 +177,10 @@ ffprobe -v error -show_entries format=duration,size -show_entries stream=width,h
 
 `assemble.mjs` exits non-zero if any of its checks fail: 1920x1080, exactly
 30 fps, H.264 + AAC, 75–90 s, under 50 MB.
+
+`narration/synthesize.mjs` writes the measured audio duration back into
+`steps.json` (`audioSeconds`, `holdFor`) as well as `audio/durations.json`, so
+the script and the audio cannot drift apart.
 
 ### Useful passes
 
