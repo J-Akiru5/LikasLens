@@ -170,7 +170,22 @@ writeFileSync(
   ),
 );
 
-// Keep the script in sync with the audio it is spoken from.
+// Keep the script in sync with the audio it is spoken from, including the
+// aggregate figures. Round 2 of QA caught timingCheck still quoting the
+// pre-revision speech total.
+const words = steps.scenes.reduce(
+  (a, s) => a + (s.narration ? s.narration.trim().split(/\s+/).filter(Boolean).length : 0),
+  0,
+);
+steps.timingCheck = {
+  ...(steps.timingCheck ?? {}),
+  totalSeconds: steps.scenes.reduce((a, s) => a + s.duration, 0),
+  narrationWords: words,
+  measuredSpeechSeconds: Number(totalSpeech.toFixed(2)),
+  spokenWordsPerMinute: totalSpeech > 0 ? Math.round(words / (totalSpeech / 60)) : 0,
+  note:
+    "Regenerated from audio/durations.json by narration/synthesize.mjs. Do not hand-edit; the numbers here are measurements.",
+};
 writeFileSync(PATHS.steps, JSON.stringify(steps, null, 2) + "\n");
 
 console.log(`\nTotal speech: ${totalSpeech.toFixed(1)}s across ${Object.keys(durations).length} scene(s)`);

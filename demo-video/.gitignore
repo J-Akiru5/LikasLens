@@ -32,3 +32,7 @@ capture/takes/
 # Built cards and finished deliverables
 cards/out/
 out/
+
+# The repo-root .gitignore excludes build/. The assembly script must ship.
+!build/
+!build/**

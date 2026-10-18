@@ -227,36 +227,37 @@
       "deferMark": true,
       "visual": {
         "type": "phone",
-        "note": "Open the Liksi chat bubble and send one question in English."
+        "note": "Dashboard with the Liksi helper card visible. The chat panel is deliberately NOT opened: its header label overstates what the recording can show."
       },
-      "caption": "Liksi can explain the legal\nside in plain language.",
-      "narration": "Liksi, the built-in assistant, can explain the legal side in plain language.",
-      "audioSeconds": 4.629,
-      "holdFor": 5.029,
+      "caption": "Liksi helps with the rules\nand where to report.",
+      "narration": "Liksi, the built-in assistant, helps with environmental rules and where to report violations.",
+      "audioSeconds": 5.845,
+      "holdFor": 6.245,
       "actions": [
         {
-          "do": "openLiksi"
-        },
-        {
           "do": "waitFor",
-          "selector": "text=Philippine environmental law",
-          "timeoutMs": 60000,
-          "why": "the greeting names the laws Liksi can explain"
+          "selector": "text=LIKSI AI HELPER",
+          "timeoutMs": 60000
         },
         {
           "do": "waitForTimeout",
           "ms": 1200
         },
         {
+          "do": "highlight",
+          "selector": "text=LIKSI AI HELPER",
+          "ms": 2500,
+          "optional": true
+        },
+        {
           "do": "mark"
         },
         {
           "do": "waitForTimeout",
-          "ms": 5000,
-          "why": "hold so the greeting is readable"
+          "ms": 4000
         }
       ],
-      "narrationNote": "The question was removed. The app could not reach the AI gateway, so the chat route served a hardcoded fallback reply that misstates RA 9003 penalties (it applies the P1,000,000 landfill ceiling to open burning and dumping, and attaches community service to open burning, which the Act does not). Showing that to a government audience is a legal-accuracy risk, and editing an AI answer would be faking it. The scene now shows the assistant open with its capability greeting, which is what the wording claims."
+      "narrationNote": "QA round 2: the chat panel header reads Statutory Legal AI - Online, which the recording cannot support (the take makes zero AI calls), so the scene no longer opens the chat. It shows the dashboard helper card instead, whose own copy is Hi! Ask me anything about environmental rules, penalties, or where to report violations. The narration claims only what that card says."
     },
     {
       "id": "s5",
@@ -387,9 +388,9 @@
   ],
   "timingCheck": {
     "totalSeconds": 81,
-    "narrationWords": 128,
-    "measuredSpeechSeconds": 55.74,
-    "spokenWordsPerMinute": 138,
-    "note": "Scene 6 was cut (see meta.cutScenes) and its 7s redistributed. Every scene still holds for its measured audio plus at least 0.4s. Narration is intentionally below the brief 60-70s speech guidance because cutting s6 removed 5.8s of speech without padding the remaining lines with claims the screen does not support."
+    "narrationWords": 129,
+    "measuredSpeechSeconds": 54.25,
+    "spokenWordsPerMinute": 143,
+    "note": "Regenerated from audio/durations.json by narration/synthesize.mjs. Do not hand-edit; the numbers here are measurements."
   }
 }

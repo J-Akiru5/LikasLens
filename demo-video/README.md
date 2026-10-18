@@ -143,7 +143,7 @@ not executable without it).
 pnpm install --ignore-workspace
 node scripts/fetch-photos.mjs          # staged photos (CC0; not committed)
 
-# 2. start the stack — four terminals, each from the REPO ROOT
+# 2. start the stack — five processes, each from the REPO ROOT
 node demo-video/stub/supabase-stub.mjs --port 8002
 pnpm --filter mobile-pwa dev           # :3003
 pnpm --filter admin-portal dev         # :3002
@@ -156,7 +156,8 @@ cd apps/ai-service
 .\.venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8001
 # then `cd ../..` to get back to the repo root
 
-# 3. back in demo-video/ — build the fake camera source from the chosen photo
+# 3. back in demo-video/, build the fake camera source from the chosen photo
+cd demo-video
 node scripts/make-y4m.mjs assets/photos/marilao-03.jpg --seconds 4
 
 # 4. narration BEFORE recording (each scene must hold for its audio + 0.4s)
@@ -237,6 +238,8 @@ re-fetchable with `scripts/fetch-photos.mjs`.
 - **No knowledge-graph law lookup.** `POST /api/v1/analyze-hazard` needs Neo4j and
   the instance configured in `apps/ai-service/.env` no longer resolves. Scene 3
   shows the real triage result only, and the narration makes no graph claim.
-- **Total speech is 55.7 s**, a little under the brief's 60–70 s guidance, because
+- **Total speech is 54.3 s**, a little under the brief's 60-70 s guidance, because
   cutting scene 6 removed 5.8 s of narration that was not replaced with claims
-  the screens do not support.
+  the screens do not support. The figure is measured, not estimated: it is
+  written into `steps.json` by `narration/synthesize.mjs`. If it ever disagrees
+  with `audio/durations.json`, the script is stale.

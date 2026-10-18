@@ -82,22 +82,27 @@ function textPanel(scene, index, total, { opaque, shape }) {
     ${shape === "lowerthird" ? `
     .bar { position:absolute; left:0; right:0; bottom:0; height:206px;
       background: linear-gradient(180deg, rgba(7,12,23,0.86) 0%, rgba(7,12,23,0.97) 38%, #070c17 100%); }
-    .topscrim { position:absolute; left:0; right:0; top:0; height:132px;
-      background: linear-gradient(180deg, rgba(7,12,23,0.88) 0%, rgba(7,12,23,0.55) 55%, rgba(7,12,23,0) 100%); }
     .barline { position:absolute; left:0; right:0; bottom:206px; height:4px;
       background: linear-gradient(90deg, #34d399 0%, rgba(52,211,153,0.15) 55%, rgba(52,211,153,0) 100%); }
-    .row { position:absolute; left:96px; right:64px; bottom:52px; display:flex; align-items:flex-end; gap:44px; }
+    /* Everything lives inside the bottom bar. Nothing is drawn over the app's
+       own header, which previously collided with its wordmark, search box and
+       CIVIC pill. */
+    .row { position:absolute; left:96px; right:96px; bottom:52px; display:flex; align-items:flex-end; gap:40px; }
     .colcap { flex:1 1 auto; color:#f1f5f9; font-weight:600; font-size:40px; line-height:1.28; }
     .rightstack { flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-end; gap:12px; padding-bottom:6px; }
-    .brand { right:96px; bottom:auto; top:44px; }
-    .topchip { position:absolute; left:96px; top:44px; display:flex; align-items:center; gap:16px; }
+    .brandinline { flex:0 0 auto; color:#334155; font:700 24px/1 "Segoe UI", system-ui, sans-serif;
+      letter-spacing:0.18em; padding-bottom:8px; }
     ` : `
     .col { position:absolute; left:${TEXT_COLUMN.x}px; width:${TEXT_COLUMN.width}px; }
     .chip { top:120px; display:flex; align-items:center; gap:14px; }
     .title-block { top:330px; }
     .rule-block { top:492px; }
     .cap-block { top:545px; }
-    .foot { bottom:64px; left:${TEXT_COLUMN.x}px; position:absolute; display:flex; align-items:center; gap:16px; }
+    /* The phone panel starts at PHONE.x and is composited on top, so a brand at
+       the canvas's right edge was clipped to a stray "S". It sits in the text
+       column instead. */
+    .foot { bottom:64px; left:${TEXT_COLUMN.x}px; width:${TEXT_COLUMN.width}px; position:absolute;
+      display:flex; align-items:center; justify-content:space-between; gap:16px; }
     `}
   </style></head><body>${body}</body></html>`;
 }
@@ -112,10 +117,9 @@ function leftPanelBody(scene, index, total, appLabel, captionLines, demoTag) {
     <div class="col rule-blob rule rule-block"></div>
     ${captionLines.length ? `<div class="col cap-block cap">${captionLines.map(esc).join("<br>")}</div>` : ""}
     <div class="foot">
-      ${demoTag ? `<span class="demo">Demo data</span>` : ""}
-      ${scene.visual?.photoCredit ? `<span class="credit">${esc(scene.visual.photoCredit)}</span>` : ""}
-    </div>
-    <div class="brand">LIKASLENS</div>`;
+      <span>${demoTag ? `<span class="demo">Demo data</span>` : ""}</span>
+      <span class="brandinline" style="color:#334155">LIKASLENS</span>
+    </div>`;
 }
 
 function lowerThirdBody(scene, index, total, demoTag) {
@@ -123,15 +127,11 @@ function lowerThirdBody(scene, index, total, demoTag) {
   const appLabel =
     scene.app === "admin-portal" ? "LGU DASHBOARD" : scene.app === "frontend" ? "PUBLIC SITE" : "";
   return `
-    <div class="topscrim"></div>
     <div class="bar"></div>
     <div class="barline"></div>
-    <div class="topchip">
-      <span class="step"><span class="dot"></span>STEP ${index + 1} OF ${total}</span>
-      ${appLabel ? `<span class="app">${esc(appLabel)}</span>` : ""}
-    </div>
-    <div class="brand">LIKASLENS</div>
     <div class="row">
+      <span class="step"><span class="dot"></span>STEP ${index + 1} OF ${total}</span>
+      ${appLabel ? `<span class="app" style="padding-bottom:8px">${esc(appLabel)}</span>` : ""}
       <div class="colcap">${captionLines.map(esc).join("<br>")}</div>
       <div class="rightstack">
         ${demoTag ? `<span class="demo">Demo data</span>` : ""}
