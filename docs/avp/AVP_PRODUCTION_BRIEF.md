@@ -50,8 +50,11 @@ Verified by reading the repo (full clone, not shallow) or by loading the live si
   `supabase/config.toml`. The repo has 11 `supabase/*.sql` patch files (`fix-*`, `seed-*`) and two Alembic
   migrations in `apps/ai-service/db/migrations`. A second clean Supabase project is therefore not a quick
   option.
-- `vercel-ignore.sh` makes Vercel build only `main` and `staging`. A branch named `demo/csc-avp` is not
-  built or deployed.
+- `vercel-ignore.sh` is set as `ignoreCommand` in the root and the three app `vercel.json` files and says to
+  build only `main` and `staging`. **But PR #216 (a docs branch) still triggered all three Vercel projects, and
+  they failed with the Free-plan limit "more than 100 deployments per day".** So a pushed `demo/csc-avp` may also
+  show red Vercel checks and use deploy attempts. Recording on localhost is not affected. The owner decides
+  whether to keep the throwaway branch local only (recommended) or push it.
 - `.env*` files are git-ignored (`.env.local`, `.env`, `.env.*`, except `.env.example`). The repo is public.
 - Env variable names (values not read): AI service `GOOGLE_API_KEY`, `DATABASE_URL`, `SUPABASE_URL`,
   `SUPABASE_STORAGE_*`, `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD`, optional `AI_SERVICE_API_KEY`
@@ -173,7 +176,7 @@ demo-video/
 - **Two branches, kept apart:**
   - `feat/avp-tooling` (from `development`): `demo-video/` scripts, `steps.json`, cards, README. Touches
     no app code. Normal PR into `development`; the owner merges.
-  - `demo/csc-avp` (from `development`): **throwaway, never merged, never deployed.** Holds anything that
+  - `demo/csc-avp` (from `development`): **throwaway, never merged, never deployed. Keep it local; do not push it unless the owner says so.** Holds anything that
     changes how the apps run for the recording (env wiring, fixture hooks, stubbed auth). Delete it after the
     owner approves the video. If a change belongs in the product, port it to a normal branch by a separate
     PR.
