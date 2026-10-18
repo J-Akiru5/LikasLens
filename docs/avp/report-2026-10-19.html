@@ -139,6 +139,17 @@
     <div class="prose">
       <p>The headline is that the screen recording is real: every AI result in the finished video came out of the running system during the take, not out of a script. That is also why the video differs from the storyboard in three places — the brief told the agent to say only what the screen showed, and the screen did not always oblige.</p>
     </div>
+    <div class="callout bad" style="margin-top:26px">
+      <h4>Revision after the independent QA pass</h4>
+      <p>The first cut was reviewed by a separate agent that did not build it, and it found real defects. All have been fixed, and the video was re-recorded and re-assembled:</p>
+      <ul>
+        <li><strong>A rebuild blocker.</strong> A bad merge had reverted <code>lib/config.mjs</code> to the old geometry, so <code>frame-overlay.mjs</code> threw <code>does not provide an export named TEXT_COLUMN</code> on a clean clone. Restored.</li>
+        <li><strong>Three narration claims the screens did not support</strong> — the location tagging itself, "late ones show as escalations", and "respond faster". All three were removed rather than faked.</li>
+        <li><strong>The Liksi answer on screen was legally wrong — and was not Gemini at all.</strong> It is a hardcoded fallback in the mobile chat route, and it applies the ₱1,000,000 landfill ceiling to open burning and dumping. Scene 4 no longer asks a legal question.</li>
+        <li><strong>The stored audio timing for scene 3 disagreed with the audio.</strong> <code>synthesize.mjs</code> now writes measured durations back into <code>steps.json</code>, so that drift cannot recur.</li>
+      </ul>
+      <p>This is why the closing line is now captioned, why scene 5b is no longer silent, and why the report below records what the QA pass could not verify rather than asserting it was fine.</p>
+    </div>
   </div>
 </section>
 </div>
@@ -168,7 +179,7 @@
           <tr><td class="num">1</td><td>The problem</td><td>photo push-in</td><td class="num">0:00</td><td class="num">10 s</td><td>A licensed CC0 photograph of the Marilao River, slow push-in.</td></tr>
           <tr><td class="num">2</td><td>One photo, Ghost Mode</td><td>mobile <code>/report</code></td><td class="num">0:10</td><td class="num">14 s</td><td>Ghost Mode switched on, the camera opened, a real capture taken from the fake device.</td></tr>
           <tr><td class="num">3</td><td>The AI reads the photo</td><td>mobile <code>/report</code> step 2</td><td class="num">0:24</td><td class="num">15 s</td><td>The <em>real</em> triage response: the labels <code>Vehicle / Traffic</code> and <code>e-waste</code>.</td></tr>
-          <tr><td class="num">4</td><td>Liksi</td><td>mobile <code>/dashboard</code></td><td class="num">0:39</td><td class="num">7 s</td><td>A real Gemini answer naming RA 9003 and its penalties.</td></tr>
+          <tr><td class="num">4</td><td>Liksi</td><td>mobile <code>/dashboard</code></td><td class="num">0:39</td><td class="num">7 s</td><td>The assistant open with its capability greeting. <strong>No answer is sent</strong> — see the QA revision below.</td></tr>
           <tr><td class="num">5</td><td>The LGU side</td><td>admin <code>/triage</code> → <code>/lgu-performance</code></td><td class="num">0:46</td><td class="num">16 s</td><td>Five tickets on a Kanban board, then SLA figures: 5 assigned, 1 escalated, 80% SLA.</td></tr>
           <tr><td class="num">6</td><td>The public record</td><td>frontend <code>/public-record</code></td><td class="num">1:02</td><td class="num">6 s</td><td>Two resolved/verified incidents, both anonymous.</td></tr>
           <tr><td class="num">7</td><td>End card</td><td>card</td><td class="num">1:08</td><td class="num">13 s</td><td>Logo, tagline, credit, contact.</td></tr>
@@ -375,6 +386,17 @@
     <div class="prose">
       <p>Every card in <code>apps/admin-portal/…/tickets/page.tsx</code> renders <code>ConfidenceTierBadge</code> with <code>showScore</code>, which prints an AI confidence percentage. Confidence percentages are on the owner's banned list, so scene 5 deliberately uses the <strong>triage Kanban</strong> and the <strong>LGU performance</strong> table instead — neither shows one. This is a scene-composition workaround, not a product change; the badge is still there for real users.</p>
     </div>
+
+    <h3>6. The canned Liksi reply is legally inaccurate</h3>
+    <div class="prose">
+      <p>When the AI gateway is unreachable, <code>apps/mobile-pwa/src/app/api/v1/ai/chat/route.ts</code> returns a hardcoded reply. It was reachable during recording only as a fallback, and it states that open burning and illegal dumping carry fines "from ₱300 up to ₱1,000,000" with "1 to 15 days community service". Per RA 9003 §48, the ₱1,000,000 ceiling belongs to the landfill offences in §48(14)–(16); open burning carries a fine <em>or</em> imprisonment, not community service. Any citizen who hits that fallback is told the wrong exposure. This is a product-content fix, not an AVP fix, and it needs a lawyer's eye rather than an agent's.</p>
+      <p>Separately, the chat panel is labelled <strong>"Statutory Legal AI • Online"</strong>. Nothing in the product qualifies that framing, and the fallback shows how thin it can be.</p>
+    </div>
+
+    <h3>7. Ghost Mode's privacy copy and the report flow's third parties</h3>
+    <div class="prose">
+      <p>The report screen says <strong>"100% private • EXIF-stripped &amp; zero user identifiers"</strong>. The take evidence shows the capture coordinates (<code>10.6969, 122.5644</code>) being sent to the public OpenStreetMap Nominatim geocoder, alongside Unsplash and Carto map requests. EXIF stripping is real and verified in code (<code>report/page.tsx:392</code>, <code>ai-service/services/exif.py</code>), but "zero user identifiers" sits uneasily next to GPS coordinates leaving for a third-party service. Worth a legal/privacy read before this line is repeated to a government agency.</p>
+    </div>
   </div>
 </section>
 </div>
@@ -437,10 +459,10 @@
       <table>
         <thead><tr><th>Deliverable</th><th>Location</th><th>State</th></tr></thead>
         <tbody>
-          <tr><td>Video</td><td class="num">demo-video/out/likaslens-csc-avp.mp4</td><td><span class="pill ok">1920x1080 · 30 fps · 81.00 s · 10.98 MB</span></td></tr>
-          <tr><td>Subtitles</td><td class="num">demo-video/out/likaslens-csc-avp.srt</td><td><span class="pill ok">6 cues, monotonic, ≤40 chars/line</span></td></tr>
+          <tr><td>Video</td><td class="num">demo-video/out/likaslens-csc-avp.mp4</td><td><span class="pill ok">1920x1080 · 30 fps · 81.00 s · 11.25 MB</span></td></tr>
+          <tr><td>Subtitles</td><td class="num">demo-video/out/likaslens-csc-avp.srt</td><td><span class="pill ok">7 cues incl. the closing line, monotonic, ≤40 chars/line</span></td></tr>
           <tr><td>Poster</td><td class="num">demo-video/out/poster.jpg</td><td><span class="pill ok">taken from the finished file at scene 3</span></td></tr>
-          <tr><td>QA report</td><td class="num">demo-video/out/QA-report.md</td><td><span class="pill warn">independent pass, see that file</span></td></tr>
+          <tr><td>QA report</td><td class="num">demo-video/out/QA-report.md</td><td><span class="pill warn">first pass found defects; re-run on the frozen files</span></td></tr>
           <tr><td>Rebuild instructions</td><td class="num">demo-video/README.md</td><td><span class="pill ok">from a clean clone</span></td></tr>
           <tr><td>Triage fix</td><td class="num">fix/triage-confidence-arg</td><td><span class="pill ok">96 passed, 2 pre-existing failures</span></td></tr>
           <tr><td>C1 front-end change</td><td class="num">feat/report-real-triage</td><td><span class="pill ok">typecheck clean</span></td></tr>

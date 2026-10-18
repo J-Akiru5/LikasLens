@@ -229,33 +229,34 @@
         "type": "phone",
         "note": "Open the Liksi chat bubble and send one question in English."
       },
-      "caption": "Liksi answers legal questions\nin plain language.",
-      "narration": "Liksi, the built-in assistant, answers questions about the law in plain language.",
-      "audioSeconds": 4.971,
-      "holdFor": 5.371,
+      "caption": "Liksi can explain the legal\nside in plain language.",
+      "narration": "Liksi, the built-in assistant, can explain the legal side in plain language.",
+      "audioSeconds": 4.629,
+      "holdFor": 5.029,
       "actions": [
         {
           "do": "openLiksi"
         },
         {
-          "do": "askLiksi",
-          "value": "What law covers plastic waste in a river?",
-          "why": "one question, one real Gemini answer"
+          "do": "waitFor",
+          "selector": "text=Philippine environmental law",
+          "timeoutMs": 60000,
+          "why": "the greeting names the laws Liksi can explain"
         },
         {
           "do": "waitForTimeout",
-          "ms": 1500
+          "ms": 1200
         },
         {
-          "do": "mark",
-          "why": "askLiksi already polls until the reply bubble appears, so the answer is on screen by now"
+          "do": "mark"
         },
         {
           "do": "waitForTimeout",
           "ms": 5000,
-          "why": "let the answer render legibly"
+          "why": "hold so the greeting is readable"
         }
-      ]
+      ],
+      "narrationNote": "The question was removed. The app could not reach the AI gateway, so the chat route served a hardcoded fallback reply that misstates RA 9003 penalties (it applies the P1,000,000 landfill ceiling to open burning and dumping, and attaches community service to open burning, which the Act does not). Showing that to a government audience is a legal-accuracy risk, and editing an AI answer would be faking it. The scene now shows the assistant open with its capability greeting, which is what the wording claims."
     },
     {
       "id": "s5",
