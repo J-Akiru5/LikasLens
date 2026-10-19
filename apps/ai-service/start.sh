@@ -37,8 +37,9 @@ print('[startup] YOLO models loaded successfully.')
 
 echo ""
 echo "=========================================="
-echo " Starting uvicorn on port 8001"
+PORT="${PORT:-8001}"
+echo " Starting uvicorn on port ${PORT}"
 echo "=========================================="
 echo ""
 
-exec uvicorn main:app --host 0.0.0.0 --port 8001
+exec uvicorn main:app --host 0.0.0.0 --port "${PORT}"

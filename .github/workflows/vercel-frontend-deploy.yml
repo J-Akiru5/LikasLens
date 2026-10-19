@@ -1,3 +1,14 @@
+# Deploy the frontend to Vercel.
+#
+# Rewritten after the deploy failed before building with:
+#   vercel pull --yes --environment=production
+#   Error: Could not retrieve Project Settings.
+#
+# That failure is credential/project-linking, not code, so this version checks the
+# three secrets and the project lookup first and says exactly which one is wrong.
+# It also runs from apps/frontend: the previous version ran at the repo root, where
+# the root vercel.json writes apps/frontend/.next while Vercel looks for ./.next.
+
 name: Deploy Frontend to Vercel
 
 on:
@@ -7,12 +18,23 @@ on:
       - "apps/frontend/**"
       - "apps/shared/**"
       - "pnpm-lock.yaml"
-      - "vercel.json"
+      - "pnpm-workspace.yaml"
+      - "vercel-ignore.sh"
+      - ".github/workflows/vercel-frontend-deploy.yml"
   workflow_dispatch:
+
+concurrency:
+  group: vercel-frontend-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_SCOPE: ${{ vars.VERCEL_SCOPE }}
 
 jobs:
   deploy:
@@ -23,27 +45,79 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 11
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Guard - production deploys come from main only
+        shell: bash
+        run: |
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            echo "::error::This workflow deploys to production and must run from main (got ${GITHUB_REF_NAME})."
+            exit 1
+          fi
+
+      - name: Preflight - secrets are present
+        shell: bash
+        run: |
+          status=0
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is empty. Set it under Settings > Secrets and variables > Actions."
+              status=1
+            fi
+          done
+          exit "$status"
+
+      - name: Preflight - project is visible to the token
+        shell: bash
+        run: |
+          code=$(curl -sS -o /tmp/vercel-project.json -w '%{http_code}' \
+            -H "Authorization: Bearer $VERCEL_TOKEN" \
+            "https://api.vercel.com/v9/projects/$VERCEL_PROJECT_ID?teamId=$VERCEL_ORG_ID")
+          if [ "$code" != "200" ]; then
+            echo "::error::Vercel API returned HTTP $code for project $VERCEL_PROJECT_ID in org $VERCEL_ORG_ID."
+            echo "::error::404 = stale project id, or the token cannot see that team. 403 = wrong org id or token scope."
+            echo "::error::A project-scoped token cannot run vercel pull; it must be team-scoped."
+            cat /tmp/vercel-project.json || true
+            exit 1
+          fi
+          jq -r '"Resolved project: " + .name + " (" + .id + ")"' /tmp/vercel-project.json
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Install Vercel CLI
-        run: pnpm add -g vercel@latest
+        run: pnpm add -g vercel@64
 
-      - name: Pull Vercel Environment
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Pull Vercel environment
+        working-directory: apps/frontend
+        shell: bash
+        run: |
+          args=(--yes --environment=production --token "$VERCEL_TOKEN")
+          if [ -n "$VERCEL_SCOPE" ]; then args+=(--scope "$VERCEL_SCOPE"); fi
+          vercel pull "${args[@]}"
 
       - name: Build
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        working-directory: apps/frontend
+        run: vercel build --prod --token "$VERCEL_TOKEN"
 
-      - name: Deploy to Production
+      - name: Deploy to production
         id: deploy
+        working-directory: apps/frontend
+        shell: bash
         run: |
-          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
-          echo "url=$url" >> $GITHUB_OUTPUT
+          url=$(vercel deploy --prebuilt --prod --yes --token "$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "### Deployed $url" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Output deployment URL
-        run: echo "Deployed to ${{ steps.deploy.outputs.url }}"
+      - name: Verify the production alias
+        shell: bash
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' https://likaslens.syntaxure.dev/en)
+          echo "https://likaslens.syntaxure.dev/en -> HTTP $code"
+          test "$code" = "200"

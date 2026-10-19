@@ -1,0 +1,81 @@
+# render.yaml — LikasLens AI service (apps/ai-service)
+#
+# READ FIRST
+# ----------
+# The service already exists and owns likaslens-ai-service.onrender.com. A
+# Blueprint manages services BY NAME. If Render cannot adopt the existing service
+# it will create a second one with a different hostname, and every
+# RENDER_AI_URL in the Vercel projects (and keep-ai-service-warm.yml) breaks.
+#
+# Two safe ways to use this file:
+#   1. Documentation: apply the env vars below in the Render dashboard and leave
+#      this file as the record of what the service should look like.
+#   2. Deliberate recreation: delete the old service, apply the Blueprint, then
+#      update RENDER_AI_URL everywhere.
+#
+# Deployments are triggered by .github/workflows/render-ai-service-deploy.yml
+# via a deploy hook, so autoDeploy stays false here. Do not enable both, or every
+# push deploys twice.
+
+services:
+  - type: web
+    name: likaslens-ai-service
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    autoDeploy: false
+    dockerfilePath: ./apps/ai-service/Dockerfile
+    dockerContext: ./apps/ai-service
+    healthCheckPath: /health
+    buildFilter:
+      paths:
+        - apps/ai-service/**
+        - render.yaml
+
+    envVars:
+      # start.sh binds ${PORT:-8001}; Render injects PORT.
+      - key: PORT
+        value: "8001"
+
+      # Required
+      - key: DATABASE_URL
+        sync: false        # normalised to asyncpg by config.py
+      - key: SUPABASE_URL
+        sync: false        # ES256/JWKS auth
+      - key: AI_SERVICE_API_KEY
+        sync: false        # when unset, API-key auth is disabled (dev only)
+      - key: GOOGLE_API_KEY
+        sync: false        # Gemini chat, triage and RAG
+      - key: CORS_ORIGINS
+        value: "https://likaslens.syntaxure.dev,https://likaslensapp.syntaxure.dev,https://likasadmin.syntaxure.dev"
+
+      # Optional, already present in production
+      - key: APP_DEBUG
+        value: "false"
+      - key: JWKS_CACHE_TTL_SECONDS
+        value: "3600"
+      - key: SUPABASE_JWT_SECRET
+        sync: false        # legacy HS256 only
+      - key: SUPABASE_STORAGE_URL
+        sync: false
+      - key: SUPABASE_STORAGE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_SECRET
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET
+        value: "likaslens-evidence"
+      - key: ROBOFLOW_API_KEY
+        sync: false
+      - key: ROBOFLOW_MODEL_ID
+        value: "garbage-detection-sht1u/4"
+      - key: OPENCODE_API_KEY
+        sync: false        # dormant
+      - key: YOLO_MODEL_PATH
+        value: "yolov8n.pt"
+
+      # Deliberately unset: the second (waste) YOLO model does not fit in a free
+      # 512 MB instance alongside the COCO model. Enable only after verifying
+      # memory headroom.
+      # - key: ENV_MODEL_PATH
+      #   value: "models/yolov8-waste.pt"

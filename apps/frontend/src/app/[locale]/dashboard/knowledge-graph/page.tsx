@@ -133,7 +133,7 @@ const NODE_CONFIG = {
     glow: "rgba(34,197,94,0.35)",
     ring: "#22c55e",
     bg: "rgba(34,197,94,0.12)",
-    label: "Agency",
+    label: "Organisation",
     radius: 26,
   },
   proof: {
@@ -300,17 +300,15 @@ function buildPreset(selected: KnowledgeSelected): Preset {
     });
   });
 
-  let edges = 0;
-  for (const law of laws) {
-    for (const agency of agencies) {
-      if (edges >= 12) break;
-      links.push({
-        source: `law:${law.code}`,
-        target: `agency:${agency.name}`,
-        label: "Enforced by",
-      });
-      edges += 1;
-    }
+  // No edge between a statute and an organisation: the data does not establish
+  // that any of these organisations enforces any particular statute. They are in
+  // scope for the hazard, which is what the edge says.
+  for (const agency of agencies) {
+    links.push({
+      source: hazardId,
+      target: `agency:${agency.name}`,
+      label: "Assistance in scope",
+    });
   }
 
   return {
@@ -361,7 +359,7 @@ export default function KnowledgeGraphPage() {
   );
 
   const [nodes, setNodes] = useState<GraphNode[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>("inc");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const selectedNode = nodes.find((n) => n.id === selectedId) ?? null;
 
   const [dragging, setDragging] = useState<string | null>(null);
@@ -376,7 +374,9 @@ export default function KnowledgeGraphPage() {
   const svgH = 440;
 
   // The page is driven by the API, not a fixed preset.
+  const requestRef = useRef(0);
   const loadKnowledge = useCallback(async (hazard?: string) => {
+    const requestId = ++requestRef.current;
     setLoadState("loading");
     try {
       const url = hazard
@@ -385,6 +385,8 @@ export default function KnowledgeGraphPage() {
       const res = await fetch(url);
       if (!res.ok) throw new Error("knowledge request failed");
       const data = (await res.json()) as KnowledgeResponse;
+      // A slow earlier request must not overwrite a newer selection.
+      if (requestId !== requestRef.current) return;
       setHazards(data.hazards ?? []);
       setKnowledge(data.selected ?? null);
       setSuggestions(data.suggestions ?? []);
@@ -961,7 +963,7 @@ export default function KnowledgeGraphPage() {
           >
             <div className="flex items-center gap-2.5">
               <Terminal className="w-3.5 h-3.5 text-[#2ee6c8]" />
-              <span className="text-[11px] font-mono tracking-wider uppercase">Cypher Query Log</span>
+              <span className="text-[11px] font-mono tracking-wider uppercase">Knowledge Query Log</span>
               <div className="flex items-center gap-1 text-[10px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" />
                 <span className="text-[#22c55e] font-mono">sample</span>

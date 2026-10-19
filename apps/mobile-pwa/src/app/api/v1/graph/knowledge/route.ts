@@ -10,6 +10,11 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function aiHeaders(): Record<string, string> {
+  const key = process.env.AI_SERVICE_API_KEY;
+  return key ? { "X-API-Key": key } : {};
+}
+
 function aiBaseUrl(): string {
   return (
     process.env.RENDER_AI_URL ||
@@ -19,16 +24,19 @@ function aiBaseUrl(): string {
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const upstream = new URL(`${aiBaseUrl()}/graph/knowledge`);
-  for (const key of ["hazard", "location", "jurisdiction"]) {
-    const value = request.nextUrl.searchParams.get(key);
-    if (value) upstream.searchParams.set(key, value);
-  }
-
   try {
+    // Built inside the try: a malformed base URL must return a structured error,
+    // not an unhandled throw.
+    const upstream = new URL(`${aiBaseUrl()}/graph/knowledge`);
+    for (const key of ["hazard", "location", "jurisdiction"]) {
+      const value = request.nextUrl.searchParams.get(key);
+      if (value) upstream.searchParams.set(key, value);
+    }
+
     const res = await fetch(upstream, {
       signal: AbortSignal.timeout(8000),
       cache: "no-store",
+      headers: aiHeaders(),
     });
 
     if (!res.ok) {

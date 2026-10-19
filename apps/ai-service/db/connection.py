@@ -15,6 +15,11 @@ engine = create_async_engine(
     echo=False,
     pool_size=10,
     max_overflow=20,
+    # The pooler closes idle connections while a free-tier instance is spun down.
+    # Without a pre-ping the next request reuses a dead connection and fails with
+    # "connection is closed"; recycling bounds how long a connection can sit idle.
+    pool_pre_ping=True,
+    pool_recycle=300,
 ) if DATABASE_URL else None
 
 AsyncSessionLocal = (

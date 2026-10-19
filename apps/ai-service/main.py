@@ -69,7 +69,10 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
         content={
             "success": False,
             "error": "Internal server error",
-            "detail": str(exc),
+            # Never echo the exception: for a connection error that text contains
+            # the pooler host and role, and for a query error it contains the SQL
+            # and bound parameters. This endpoint is public on several routes.
+            "detail": "An unexpected error occurred. Check the service logs for the request id.",
         },
     )
 
@@ -237,7 +240,11 @@ async def graph_topology():
     }
 
 
-@app.get("/graph/knowledge")
+_KNOWLEDGE_CACHE: dict[tuple[str, str, str], tuple[float, dict]] = {}
+_KNOWLEDGE_CACHE_TTL_SECONDS = 60.0
+
+
+@app.get("/graph/knowledge", dependencies=[Depends(verify_api_key)])
 async def graph_knowledge(
     hazard: str | None = None,
     location: str | None = None,
@@ -249,10 +256,23 @@ async def graph_knowledge(
     selected hazard (real laws, real agencies), and pgvector suggestions.
 
     Suggestions are labelled separately from `laws` on purpose: a nearest
-    neighbour is a lead, not an assertion that the statute applies.
+    neighbour is a lead, not an assertion that the statute applies. They are only
+    computed when the relational answer is empty, so a normal request costs four
+    database queries and no Gemini call.
     """
     import graph_store
     from graph_rag import vector_search_laws
+
+    # Bound caller-supplied text before it reaches SQL or an embedding call.
+    hazard = hazard[:120] if hazard else None
+    location = location[:120] if location else None
+    jurisdiction = jurisdiction[:40] if jurisdiction else None
+
+    cache_key = (hazard or "", location or "", jurisdiction or "")
+    now = time.monotonic()
+    cached = _KNOWLEDGE_CACHE.get(cache_key)
+    if cached and now - cached[0] < _KNOWLEDGE_CACHE_TTL_SECONDS:
+        return cached[1]
 
     hazards = await graph_store.list_hazards()
     selected_code = hazard or (hazards[0]["code"] if hazards else None)
@@ -261,19 +281,27 @@ async def graph_knowledge(
     suggestions: list[dict] = []
     if selected_code:
         selected = await graph_store.knowledge_for_hazard(selected_code, location, jurisdiction)
-        query_text = f"{selected.get('name') or selected_code} environmental violation Philippines"
-        try:
-            suggestions = await vector_search_laws(query_text, top_k=5, jurisdiction=jurisdiction)
-        except Exception as exc:
-            # Suggestions are optional; the relational answer still stands.
-            logger.warning("Knowledge suggestions unavailable (%s)", type(exc).__name__)
 
-    return {
+        if not selected.get("laws"):
+            query_text = (
+                f"{selected.get('name') or selected_code} environmental violation Philippines"
+            )
+            try:
+                suggestions = await vector_search_laws(
+                    query_text, top_k=5, jurisdiction=jurisdiction
+                )
+            except Exception as exc:
+                # Suggestions are optional; the relational answer still stands.
+                logger.warning("Knowledge suggestions unavailable (%s)", type(exc).__name__)
+
+    payload = {
         "backend": "postgres+pgvector",
         "hazards": hazards,
         "selected": selected,
         "suggestions": suggestions,
     }
+    _KNOWLEDGE_CACHE[cache_key] = (now, payload)
+    return payload
 
 
 @app.get("/graph/bootstrap-payload")
@@ -625,11 +653,15 @@ async def health_config():
     report = settings.health_config()
     report["knowledge_store"] = {**probe, "backend": "postgres+pgvector"}
 
-    try:
-        report["knowledge_store"]["embedded_laws"] = await graph_store.count_embedded_laws()
-    except Exception as exc:
-        logger.warning("Embedded-law count failed (%s)", type(exc).__name__)
-        report["knowledge_store"]["embedded_laws"] = None
+    # Prefer the value the cached probe already fetched; only pay for a separate
+    # count when the probe did not supply one. A second unconditional count
+    # defeated the probe cache this endpoint documents.
+    if not isinstance(report["knowledge_store"].get("embedded_laws"), int):
+        try:
+            report["knowledge_store"]["embedded_laws"] = await graph_store.count_embedded_laws()
+        except Exception as exc:
+            logger.warning("Embedded-law count failed (%s)", type(exc).__name__)
+            report["knowledge_store"]["embedded_laws"] = None
 
     # Keep the old key present but honest, so a client that still reads it is not
     # told something false.
