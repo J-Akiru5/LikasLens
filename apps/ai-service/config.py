@@ -13,7 +13,7 @@ Classification:
 from __future__ import annotations
 
 import logging
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
@@ -258,8 +258,43 @@ class Settings(BaseSettings):
             else:
                 logger.warning("[config] %s", warning)
 
-    def health_config(self) -> dict:
-        """Return config status for /health/config endpoint. Never returns secret values."""
+    def _neo4j_health_section(self, probe: dict[str, Any] | None) -> dict:
+        """Describe Neo4j config + (when probed) reachability without leaking details."""
+        if not self.neo4j_configured:
+            return {
+                "status": "not_configured",
+                "missing": [
+                    k for k, v in [
+                        ("NEO4J_URI", self.neo4j_uri),
+                        ("NEO4J_USER", self.neo4j_user),
+                        ("NEO4J_PASSWORD", self.neo4j_password),
+                    ] if not v
+                ],
+            }
+
+        section: dict[str, Any] = {
+            "status": "configured",
+            "reachable": None,
+            "detail": "not_probed",
+        }
+        if probe is not None:
+            reachable = probe.get("reachable")
+            if reachable is False:
+                # Configured env vars alone are not health: the host does not
+                # resolve or nothing is listening on the Bolt port.
+                section["status"] = "configured_but_unreachable"
+            section["reachable"] = reachable
+            section["detail"] = probe.get("reason", "unknown")
+        return section
+
+    def health_config(self, neo4j_probe: dict[str, Any] | None = None) -> dict:
+        """Return config status for /health/config endpoint. Never returns secret values.
+
+        `neo4j_probe` is an optional dependency_health.check_neo4j_reachability()
+        result. When supplied, a configured Neo4j is reported as either
+        "configured" (reachable) or "configured_but_unreachable". When omitted,
+        reachability is reported as unknown rather than implied healthy.
+        """
         def _status(configured: bool, required_fields: list[str], missing_fields: list[str]) -> str:
             if configured:
                 return "configured"
@@ -311,19 +346,7 @@ class Settings(BaseSettings):
                     ["GOOGLE_API_KEY"] if not self.gemini_configured else [],
                 ),
             },
-            "neo4j": {
-                "status": _status(
-                    self.neo4j_configured,
-                    ["NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD"],
-                    (
-                        [k for k, v in [
-                            ("NEO4J_URI", self.neo4j_uri),
-                            ("NEO4J_USER", self.neo4j_user),
-                            ("NEO4J_PASSWORD", self.neo4j_password),
-                        ] if not v]
-                    ),
-                ),
-            },
+            "neo4j": self._neo4j_health_section(neo4j_probe),
             "roboflow": {
                 "status": _status(
                     self.roboflow_configured,

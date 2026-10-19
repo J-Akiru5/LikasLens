@@ -593,8 +593,11 @@ async def health_models():
 
 @app.get("/health/config")
 async def health_config():
-    """Return per-integration config status. Never returns secret values."""
-    return settings.health_config()
+    """Per-integration config status, with cached Neo4j reachability. No secrets."""
+    from dependency_health import check_neo4j_reachability
+
+    neo4j_probe = await check_neo4j_reachability()
+    return settings.health_config(neo4j_probe=neo4j_probe)
 
 
 if __name__ == "__main__":

@@ -253,6 +253,37 @@ def _compute_iou(bbox1: list[float], bbox2: list[float]) -> float:
     return intersection / union if union > 0 else 0.0
 
 
+# Hazard types that represent an environmental concern when they are severe
+# enough. `hazardous_waste` is intentionally included even though
+# ENVIRONMENTAL_INDICATORS never emits it (those are COCO heuristics):
+# ENV_MODEL_CLASS_MAP maps "e-waste" and "medical" to `hazardous_waste` at
+# severity "critical". Omitting it meant a CRITICAL hazardous-waste detection
+# still answered has_environmental_concern=False.
+CONCERN_TYPES: frozenset[str] = frozenset({
+    "solid_waste",
+    "sanitation",
+    "open_burning",
+    "air_pollution",
+    "water_pollution",
+    "habitat_destruction",
+    "hazardous_waste",
+})
+
+# Only high/critical indicators count. This keeps low/medium litter (bottle,
+# organic, paper) from flipping the pre-check, and means hazardous_waste only
+# counts when it is actually severe — the mapping table assigns e-waste and
+# medical "critical", so that is the case that matters.
+CONCERN_SEVERITIES: frozenset[str] = frozenset({"high", "critical"})
+
+
+def _indicates_environmental_concern(indicator: dict[str, Any]) -> bool:
+    """Return True when an indicator is concern-worthy at its severity."""
+    return (
+        indicator.get("type") in CONCERN_TYPES
+        and indicator.get("severity") in CONCERN_SEVERITIES
+    )
+
+
 def classify_environmental_risk(detections: list[dict[str, Any]]) -> dict[str, Any]:
     """Analyze detections for environmental violation indicators."""
     detected_classes = {d["class_id"] for d in detections}
@@ -290,12 +321,7 @@ def classify_environmental_risk(detections: list[dict[str, Any]]) -> dict[str, A
                 })
 
     # Determine if there's a genuine environmental concern
-    high_severity_types = {"solid_waste", "sanitation", "open_burning", "air_pollution",
-                           "water_pollution", "habitat_destruction"}
-    has_violation = any(
-        ind["type"] in high_severity_types and ind.get("severity") in ("high", "critical")
-        for ind in matched_indicators
-    )
+    has_violation = any(_indicates_environmental_concern(ind) for ind in matched_indicators)
 
     # Collect unique hazard IDs for routing
     hazard_ids = list({ind["hazard_id"] for ind in matched_indicators if ind.get("hazard_id")})
