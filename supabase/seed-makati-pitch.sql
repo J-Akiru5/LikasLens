@@ -11,12 +11,12 @@
 --   → 2 supplementary environmental laws.
 --
 -- DEMO LOGIN ACCOUNTS (all email-confirmed, ready to use):
---   makati.lgu@likaslens.ph      / MakatiLgu123!   → LGU (Makati CENRO)
---   maria.citizen@likaslens.ph   / Citizen123!     → Citizen (Makati)
---   jose.citizen@likaslens.ph    / Citizen123!     → Citizen (Makati)
---   gina.citizen@likaslens.ph    / Citizen123!     → Citizen (Laguna)
---   (analyst@likaslens.ph / Analyst123! and superadmin@likaslens.ph /
---    Admin123! are kept intact from the existing demo seed.)
+--   [REMOVED: credential line] see supabase/README.md
+--   [REMOVED: credential line] see supabase/README.md
+--   [REMOVED: credential line] see supabase/README.md
+--   [REMOVED: credential line] see supabase/README.md
+--   [REMOVED: credential line] see supabase/README.md
+--    credentials are provisioned out of band.)
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ───────────────────────────────────────────────────────────────────────────
@@ -24,11 +24,11 @@
 -- ───────────────────────────────────────────────────────────────────────────
 ALTER TABLE users ALTER COLUMN password DROP NOT NULL;
 
-UPDATE auth.users SET encrypted_password = crypt('Analyst123!', gen_salt('bf'))
+-- [REMOVED: hardcoded password] UPDATE auth.users SET encrypted_password = crypt(NULL, gen_salt('bf'))
 WHERE email = 'analyst@likaslens.ph';
-UPDATE auth.users SET encrypted_password = crypt('Admin123!', gen_salt('bf'))
+-- [REMOVED: hardcoded password] UPDATE auth.users SET encrypted_password = crypt(NULL, gen_salt('bf'))
 WHERE email = 'superadmin@likaslens.ph';
-UPDATE auth.users SET encrypted_password = crypt('Citizen123!', gen_salt('bf'))
+-- [REMOVED: hardcoded password] UPDATE auth.users SET encrypted_password = crypt(NULL, gen_salt('bf'))
 WHERE email = 'citizen@likaslens.ph';
 UPDATE auth.users SET email_confirmed_at = now()
 WHERE email_confirmed_at IS NULL
@@ -52,10 +52,10 @@ SELECT
   jsonb_build_object('full_name', full_name, 'role', role),
   now(), now()
 FROM (VALUES
-  ('makati.lgu@likaslens.ph',   'MakatiLgu123!', 'Engr. Ramon Villanueva', 'lgu'),
-  ('maria.citizen@likaslens.ph','Citizen123!',   'Maria Concepcion Santos', 'citizen'),
-  ('jose.citizen@likaslens.ph', 'Citizen123!',   'Jose Rizal Mercado',      'citizen'),
-  ('gina.citizen@likaslens.ph', 'Citizen123!',   'Gina Cruz Reyes',         'citizen')
+  ('makati.lgu@likaslens.ph',   NULL, 'Engr. Ramon Villanueva', 'lgu'),
+  ('maria.citizen@likaslens.ph',NULL,   'Maria Concepcion Santos', 'citizen'),
+  ('jose.citizen@likaslens.ph', NULL,   'Jose Rizal Mercado',      'citizen'),
+  ('gina.citizen@likaslens.ph', NULL,   'Gina Cruz Reyes',         'citizen')
 ) AS demo(email, password, full_name, role)
 ON CONFLICT (email) DO NOTHING;
 
@@ -64,10 +64,10 @@ UPDATE auth.users
 SET email_confirmed_at = now(),
     raw_user_meta_data = raw_user_meta_data || jsonb_build_object('role', demo.role, 'full_name', demo.full_name)
 FROM (VALUES
-  ('makati.lgu@likaslens.ph',   'MakatiLgu123!', 'Engr. Ramon Villanueva', 'lgu'),
-  ('maria.citizen@likaslens.ph','Citizen123!',   'Maria Concepcion Santos', 'citizen'),
-  ('jose.citizen@likaslens.ph', 'Citizen123!',   'Jose Rizal Mercado',      'citizen'),
-  ('gina.citizen@likaslens.ph', 'Citizen123!',   'Gina Cruz Reyes',         'citizen')
+  ('makati.lgu@likaslens.ph',   NULL, 'Engr. Ramon Villanueva', 'lgu'),
+  ('maria.citizen@likaslens.ph',NULL,   'Maria Concepcion Santos', 'citizen'),
+  ('jose.citizen@likaslens.ph', NULL,   'Jose Rizal Mercado',      'citizen'),
+  ('gina.citizen@likaslens.ph', NULL,   'Gina Cruz Reyes',         'citizen')
 ) AS demo(email, password, full_name, role)
 WHERE auth.users.email = demo.email
   AND auth.users.email_confirmed_at IS NULL;

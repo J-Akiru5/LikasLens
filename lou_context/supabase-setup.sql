@@ -71,7 +71,7 @@ CREATE POLICY "auth_update_contact" ON contact_messages FOR UPDATE USING (auth.u
 -- ============================================================
 -- 2. TEST ADMIN USER (seed into Supabase Auth)
 -- Run this to create a test admin you can login with
--- Password: Admin123!
+-- Password: [REMOVED — provision out of band, see supabase/README.md]
 -- ============================================================
 
 -- Insert into Supabase Auth (this creates the login credential)
@@ -89,7 +89,7 @@ BEGIN
       '00000000-0000-0000-0000-000000000000',
       gen_random_uuid(),
       'authenticated', 'authenticated',
-      'admin@likaslens.ph', crypt('Admin123!', gen_salt('bf')),
+      'admin@likaslens.ph', crypt(NULL, gen_salt('bf')),
       now(), '', now(), '', now(), '', '', now(), now(),
       '{"provider": "email", "providers": ["email"]}',
       '{"full_name": "Test Admin", "role": "admin"}',
@@ -132,7 +132,7 @@ WHERE au.email = 'admin@likaslens.ph'
 
 -- ============================================================
 -- 4. ALSO CREATE AN ANALYST ACCOUNT
--- Password: Analyst123!
+-- Password: [REMOVED — provision out of band, see supabase/README.md]
 -- ============================================================
 
 DO $$
@@ -149,7 +149,7 @@ BEGIN
       '00000000-0000-0000-0000-000000000000',
       gen_random_uuid(),
       'authenticated', 'authenticated',
-      'analyst@likaslens.ph', crypt('Analyst123!', gen_salt('bf')),
+      'analyst@likaslens.ph', crypt(NULL, gen_salt('bf')),
       now(), '', now(), '', now(), '', '', now(), now(),
       '{"provider": "email", "providers": ["email"]}',
       '{"full_name": "Juan Dela Cruz", "role": "analyst"}',
