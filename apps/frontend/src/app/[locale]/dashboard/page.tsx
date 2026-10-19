@@ -28,7 +28,10 @@ export default async function DashboardPage() {
     const supabase = await createClient();
 
     const [ticketsRes, userCountRes] = await Promise.all([
-      supabase.from("tickets").select("id, title, description, status, urgency_score, address_text, reporter_user_id, ghost_mode, created_at, resolved_at"),
+      // Public projection: the same fields the feed needs, minus reporter
+      // identity. `public_tickets` exposes `reporter_verified` (a boolean)
+      // instead of `reporter_user_id`.
+      supabase.from("public_tickets").select("id, title, description, status, urgency_score, address_text, reporter_verified, ghost_mode, created_at, resolved_at"),
       // The platform total used to read `users` directly. Public reads are now
       // restricted to your own row or staff, so the number comes from a
       // count-only SECURITY DEFINER function that returns a count, never rows.
@@ -106,7 +109,7 @@ export default async function DashboardPage() {
           : t.status === "monitoring" ? "Monitoring"
           : t.status === "verified" ? "Verified"
           : "Active",
-        reporter: t.reporter_user_id ? "Verified Citizen" : "Anonymous (Ghost Mode)",
+        reporter: t.reporter_verified ? "Verified Citizen" : "Anonymous (Ghost Mode)",
       };
     });
   } catch {

@@ -23,7 +23,7 @@ export function TimeSeriesChart() {
       try {
         const supabase = getSupabaseClient();
         const { data: tickets } = await supabase
-          .from("tickets")
+          .from("public_tickets")
           .select("created_at, status")
           .order("created_at", { ascending: true });
 

@@ -152,26 +152,27 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
     updated_at: new Date().toISOString(),
   };
 
-  let { data: ticket, error: ticketErr } = await db()
-    .from("tickets")
-    .insert(ticketPayload)
-    .select()
-    .single();
+  // No `.select()` read-back. The base table now returns only your own rows, and
+  // an anonymous (Ghost Mode) insert has no owner, so RETURNING would
+  // legitimately come back empty. Every field used below is generated here.
+  let { error: ticketErr } = await db().from("tickets").insert(ticketPayload);
 
   // Handle 409 conflict (e.g., AI service partially inserted before 502)
   if (ticketErr && (ticketErr as any).code === "23505") {
-    console.warn("[submitCitizenReport] Conflict on insert — retrying with new ID");
+    console.warn("[submitCitizenReport] Conflict on insert - retrying with new ID");
     ticketPayload.id = crypto.randomUUID();
-    const retry = await db()
-      .from("tickets")
-      .insert(ticketPayload)
-      .select()
-      .single();
-    ticket = retry.data;
-    ticketErr = retry.error;
+    ticketErr = (await db().from("tickets").insert(ticketPayload)).error;
   }
 
   if (ticketErr) throw ticketErr;
+
+  const ticket = {
+    id: String(ticketPayload.id),
+    address_text: (ticketPayload.address_text as string | null) ?? null,
+    ai_triage_summary: (ticketPayload.ai_triage_summary as string | null) ?? null,
+    latitude: (ticketPayload.latitude as number | null) ?? null,
+    longitude: (ticketPayload.longitude as number | null) ?? null,
+  };
 
   // Route the report to the covering analyst / LGU account — same logic as
   // the AI-service path, so fallback submissions are routed too. Runs through
