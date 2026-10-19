@@ -86,7 +86,7 @@ const NODE_CONFIG = {
   incident: { color: "#ef4444", bg: "rgba(239,68,68,0.15)", label: "Incident", radius: 24 },
   ai: { color: "#f59e0b", bg: "rgba(245,158,11,0.12)", label: "AI Engine", radius: 22 },
   law: { color: "#3b82f6", bg: "rgba(59,130,246,0.12)", label: "Law", radius: 22 },
-  agency: { color: "#22c55e", bg: "rgba(34,197,94,0.12)", label: "Agency", radius: 22 },
+  agency: { color: "#22c55e", bg: "rgba(34,197,94,0.12)", label: "Organisation", radius: 22 },
   proof: { color: "#a78bfa", bg: "rgba(167,139,250,0.12)", label: "Proof", radius: 20 },
 } as const;
 
@@ -218,17 +218,15 @@ function buildPreset(selected: KnowledgeSelected): Preset {
     });
   });
 
-  let edges = 0;
-  for (const law of laws) {
-    for (const agency of agencies) {
-      if (edges >= 12) break;
-      links.push({
-        source: `law:${law.code}`,
-        target: `agency:${agency.name}`,
-        label: "Enforced by",
-      });
-      edges += 1;
-    }
+  // No edge between a statute and an organisation: the data does not establish
+  // that any of these organisations enforces any particular statute. They are in
+  // scope for the hazard, which is what the edge says.
+  for (const agency of agencies) {
+    links.push({
+      source: hazardId,
+      target: `agency:${agency.name}`,
+      label: "Assistance in scope",
+    });
   }
 
   return { id: selected.code, title: selected.name ?? selected.code, nodes, links };
@@ -273,7 +271,7 @@ export default function KnowledgeGraphPage() {
     [knowledge],
   );
   const [nodes, setNodes] = useState<GraphNode[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>("inc");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const selectedNode = nodes.find((n) => n.id === selectedId) ?? null;
   const [dragging, setDragging] = useState<string | null>(null);
   const [showPresets, setShowPresets] = useState(false);
@@ -290,7 +288,9 @@ export default function KnowledgeGraphPage() {
   const svgH = 400;
   const nodesRef = useRef<GraphNode[]>([]);
 
+  const requestRef = useRef(0);
   const loadKnowledge = useCallback(async (hazard?: string) => {
+    const requestId = ++requestRef.current;
     setLoadState("loading");
     try {
       const url = hazard
@@ -299,6 +299,8 @@ export default function KnowledgeGraphPage() {
       const res = await fetch(url);
       if (!res.ok) throw new Error("knowledge request failed");
       const data = (await res.json()) as KnowledgeResponse;
+      // A slow earlier request must not overwrite a newer selection.
+      if (requestId !== requestRef.current) return;
       setHazards(data.hazards ?? []);
       setKnowledge(data.selected ?? null);
       setSuggestions(data.suggestions ?? []);
@@ -487,7 +489,13 @@ export default function KnowledgeGraphPage() {
           </div>
           <div>
             <h1 className="text-sm font-bold text-white tracking-wide leading-tight">Graph Explorer</h1>
-            <span className="text-[9px] font-mono text-white/40 block">LIVE KNOWLEDGE BASE</span>
+            <span className="text-[9px] font-mono text-white/40 block">
+              {loadState === "loading"
+                ? "LOADING..."
+                : loadState === "error"
+                  ? "SERVICE UNAVAILABLE"
+                  : "LIVE KNOWLEDGE BASE"}
+            </span>
           </div>
         </div>
 
@@ -651,7 +659,7 @@ export default function KnowledgeGraphPage() {
         <button onClick={() => setShowTerminal(!showTerminal)} className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#080c15] border border-white/10">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-green animate-pulse" />
-            <span className="text-[10px] font-mono text-white/40">CYPHER QUERY LOG</span>
+            <span className="text-[10px] font-mono text-white/40">KNOWLEDGE QUERY LOG</span>
           </div>
           {showTerminal ? <ChevronDown className="w-3 h-3 text-white/30" /> : <ChevronUp className="w-3 h-3 text-white/30" />}
         </button>
@@ -686,7 +694,13 @@ export default function KnowledgeGraphPage() {
                 </div>
                 <div>
                   <h2 className="text-sm font-bold text-ink tracking-tight">Select Graph Scenario</h2>
-                  <p className="text-[10px] text-ink/50 font-mono">4 ACTIVE REASONING SIMULATIONS</p>
+                  <p className="text-[10px] text-ink/50 font-mono">
+                {loadState === "loading"
+                  ? "LOADING VIOLATION TYPES..."
+                  : loadState === "error"
+                    ? "KNOWLEDGE SERVICE UNAVAILABLE"
+                    : `${hazards.length} VIOLATION TYPES`}
+              </p>
                 </div>
               </div>
               <button

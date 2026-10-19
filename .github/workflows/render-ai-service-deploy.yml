@@ -1,0 +1,79 @@
+# Deploy the AI service to Render.
+#
+# Why this exists: the live service silently kept serving a build from before the
+# Neo4j -> pgvector replacement. Nothing failed; the old build simply answered
+# 200 while still reporting `neo4j: configured`. This workflow makes that
+# impossible to miss: if the deploy hook is not configured it fails with a clear
+# message instead of doing nothing.
+#
+# Setup (one time):
+#   Render -> likaslens-ai-service -> Settings -> Deploy Hook -> copy the URL
+#   gh secret set RENDER_DEPLOY_HOOK_URL --body '<the hook URL>'
+#
+# If you prefer Render-native auto-deploy instead, set `autoDeploy: true` in
+# render.yaml and delete this workflow. Do not use both.
+
+name: Deploy AI Service to Render
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/ai-service/**"
+      - "render.yaml"
+      - ".github/workflows/render-ai-service-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: render-ai-service
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy AI Service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        shell: bash
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::error title=Render deploy not triggered::RENDER_DEPLOY_HOOK_URL is not set. Create a deploy hook in Render and add it with: gh secret set RENDER_DEPLOY_HOOK_URL"
+            {
+              echo "## Render deploy NOT triggered"
+              echo ""
+              echo "The secret \`RENDER_DEPLOY_HOOK_URL\` is missing, so this run deployed nothing."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          code=$(curl -sS -o /tmp/render-hook.json -w '%{http_code}' \
+            -X POST --max-time 30 "$RENDER_DEPLOY_HOOK_URL")
+          echo "Render responded HTTP $code"
+          cat /tmp/render-hook.json || true
+          case "$code" in
+            2*) ;;
+            *) echo "::error::Render deploy hook failed with HTTP $code"; exit 1 ;;
+          esac
+
+      - name: Wait until the new build is actually serving
+        shell: bash
+        run: |
+          BASE=https://likaslens-ai-service.onrender.com
+          for i in $(seq 1 40); do
+            body=$(curl -fsS --max-time 60 "$BASE/health/config" 2>/dev/null || true)
+            if printf '%s' "$body" | jq -e '
+                  .neo4j.status == "removed"
+                  and .knowledge_store.backend == "postgres+pgvector"' >/dev/null 2>&1; then
+              echo "New build live after about $((i * 30))s"
+              printf '%s' "$body" | jq '{database, supabase_auth, gemini, knowledge_store, neo4j}'
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "::error::Timed out after 20 minutes. The old build is still serving; check the Render deploy log."
+          exit 1

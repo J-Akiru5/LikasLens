@@ -34,13 +34,30 @@ CREATE TABLE IF NOT EXISTS public.violation_law_links (
   law_id uuid NOT NULL REFERENCES public.environmental_laws_ph(id) ON DELETE CASCADE,
   is_primary boolean NOT NULL DEFAULT false,
   source text NOT NULL,
+  citation text,
   citation_url text,
+  confidence text CHECK (confidence IN ('high', 'medium', 'low')),
   review_status text NOT NULL DEFAULT 'pending'
     CHECK (review_status IN ('verified', 'pending')),
   note text,
   created_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (violation_type_id, law_id)
 );
+
+-- The columns above were first added to the live table by hand. These ALTERs
+-- make the migration authoritative for a fresh environment, so the schema in
+-- the repository matches production.
+ALTER TABLE public.violation_law_links
+  ADD COLUMN IF NOT EXISTS citation text;
+ALTER TABLE public.violation_law_links
+  ADD COLUMN IF NOT EXISTS confidence text;
+
+-- At most one primary statute per violation. Without this, a re-mapping that
+-- drops a primary from the JSON leaves the old row marked primary, and the
+-- legacy `law_id` pointer becomes whichever primary happened to be written last.
+CREATE UNIQUE INDEX IF NOT EXISTS violation_law_links_one_primary
+  ON public.violation_law_links (violation_type_id)
+  WHERE is_primary;
 
 CREATE INDEX IF NOT EXISTS violation_law_links_violation_idx
   ON public.violation_law_links (violation_type_id);

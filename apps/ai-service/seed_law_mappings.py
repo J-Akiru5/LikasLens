@@ -93,15 +93,27 @@ async def main() -> int:
             )
             await session.flush()
 
-        # 2. Statute title corrections (an amendment makes the old title wrong)
-        for update in data.get("law_title_updates", []):
-            logger.info("title update: %s", update["law_code"])
+        # 2. Statute corrections. An amendment can make the stored title wrong,
+        #    and a summary may be filled in from the retrieved text.
+        for update in data.get("law_updates", []):
+            params: dict[str, str] = {"c": update["law_code"]}
+            assignments: list[str] = []
+            if update.get("title"):
+                assignments.append("title = :t")
+                params["t"] = update["title"]
+            if update.get("summary"):
+                assignments.append("summary = :s")
+                params["s"] = update["summary"]
+            if not assignments:
+                continue
+            logger.info("law update: %s", update["law_code"])
             await session.execute(
                 text(
-                    "update public.environmental_laws_ph set title = :t, updated_at = now() "
-                    "where law_code = :c"
+                    "update public.environmental_laws_ph set "
+                    + ", ".join(assignments)
+                    + ", updated_at = now() where law_code = :c"
                 ),
-                {"t": update["title"], "c": update["law_code"]},
+                params,
             )
 
         # 3. Rejected links
@@ -119,6 +131,14 @@ async def main() -> int:
                 text(
                     "delete from public.violation_law_links "
                     "where violation_type_id = :v and law_id = :l"
+                ),
+                {"v": vid, "l": lid},
+            )
+            # The legacy single-FK pointer must not resurrect a rejected link.
+            await session.execute(
+                text(
+                    "update public.violation_types set law_id = null "
+                    "where id = :v and law_id = :l"
                 ),
                 {"v": vid, "l": lid},
             )
@@ -145,6 +165,16 @@ async def main() -> int:
                 link["is_primary"],
                 link["review_status"],
             )
+            if link["is_primary"]:
+                # The partial unique index allows only one primary per violation.
+                await session.execute(
+                    text(
+                        "update public.violation_law_links set is_primary = false "
+                        "where violation_type_id = :v and law_id <> :l and is_primary"
+                    ),
+                    {"v": vid, "l": lid},
+                )
+
             await session.execute(
                 text(
                     "insert into public.violation_law_links "
@@ -181,6 +211,46 @@ async def main() -> int:
                 )
             applied += 1
 
+        # 5. Embed new statutes. Without this a newly added law is invisible to
+        #    the vector half until someone remembers to run seed_graph.py.
+        for law in data.get("new_laws", []):
+            lid = await _law_id(session, law["law_code"])
+            if not lid:
+                continue
+            has_embedding = (
+                await session.execute(
+                    text(
+                        "select embedding is not null from public.environmental_laws_ph "
+                        "where id = :i"
+                    ),
+                    {"i": lid},
+                )
+            ).scalar()
+            if has_embedding:
+                continue
+            try:
+                from graph_rag import embed_text
+
+                document = f"{law['law_code']}: {law['title']}. {law.get('summary') or ''}"
+                vector = await embed_text(document)
+                await session.execute(
+                    text(
+                        "update public.environmental_laws_ph "
+                        "set embedding = cast(:v as halfvec), updated_at = now() "
+                        "where id = :i"
+                    ),
+                    {"v": "[" + ",".join(f"{x:.8f}" for x in vector) + "]", "i": lid},
+                )
+                logger.info("embedded new law: %s", law["law_code"])
+            except Exception as exc:
+                problems.append(f"embedding failed for {law['law_code']}: {type(exc).__name__}")
+
+        # 4/6. Never leave a half-applied mapping set behind.
+        if problems:
+            await session.rollback()
+            logger.error("problems, rolled back: %s", "; ".join(problems))
+            return 2
+
         if args.dry_run:
             await session.rollback()
             logger.info("dry run: %d link(s) executed, then rolled back", applied)
@@ -188,9 +258,6 @@ async def main() -> int:
             await session.commit()
             logger.info("applied %d link(s)", applied)
 
-    if problems:
-        logger.error("problems: %s", "; ".join(problems))
-        return 1
     return 0
 
 

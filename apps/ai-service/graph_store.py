@@ -190,14 +190,19 @@ async def laws_for_hazard(
             where k.violation_type_id = :vid
               and l.deleted_at is null and coalesce(l.is_active, true)
         ) merged
-        order by code, is_primary desc, priority desc
+        order by code, priority desc, is_primary desc
         """,
         {"vid": violation["id"]},
     )
 
     scope = jurisdiction_to_scope(jurisdiction)
     if scope:
-        rows = [r for r in rows if (r.get("jurisdiction_scope") or "").lower() == scope]
+        # A national statute applies everywhere. Filtering to an exact match
+        # would hide every national law for a regional code such as PH-NCR.
+        allowed = {scope, "national"}
+        rows = [
+            r for r in rows if (r.get("jurisdiction_scope") or "national").lower() in allowed
+        ]
 
     return [
         {
@@ -223,15 +228,17 @@ async def agencies_for_hazard(
     A relevance heuristic, not an enforcement claim - see FOCUS_BY_HAZARD.
     """
     code = normalize_hazard_code(hazard_code)
-    sql = """
+    focuses = focus_for_hazard(code)
+
+    base = """
         select g.name, g.focus_area, g.city_municipality, g.province, g.region
         from public.ngo_groups g
         where coalesce(g.is_active, true) and g.name is not null
     """
-    params: dict[str, Any] = {}
+    params: dict[str, Any] = {"limit": max(1, min(int(limit), 25))}
 
     if location:
-        sql += """
+        base += """
           and (
             coalesce(g.city_municipality, '') ilike :loc
             or coalesce(g.province, '') ilike :loc
@@ -239,18 +246,25 @@ async def agencies_for_hazard(
           )
         """
         params["loc"] = f"%{location}%"
-    else:
-        focuses = focus_for_hazard(code)
-        if not focuses:
-            # No location and no relevance mapping: return nothing rather than
-            # dumping every agency in the country.
-            return []
-        sql += " and coalesce(g.focus_area, '') = any(:focuses)"
-        params["focuses"] = list(focuses)
 
-    sql += " order by g.name limit :limit"
-    params["limit"] = max(1, min(int(limit), 25))
-    return await _rows(sql, params)
+    # Location narrows the relevance filter; it does not replace it. Without
+    # this, ?location=Manila attached arbitrary Manila organisations to any
+    # hazard, and the UI drew them as if they enforced the statute.
+    if focuses:
+        scoped = base + " and coalesce(g.focus_area, '') = any(:focuses)"
+        scoped_params = {**params, "focuses": list(focuses)}
+        rows = await _rows(scoped + " order by g.name limit :limit", scoped_params)
+        if rows:
+            return rows
+        if not location:
+            return []
+
+    if not location:
+        # No location and no relevance mapping: return nothing rather than
+        # dumping every agency in the country.
+        return []
+
+    return await _rows(base + " order by g.name limit :limit", params)
 
 
 async def query_hazard_laws_and_agencies(
@@ -282,7 +296,7 @@ async def list_hazards() -> list[dict[str, Any]]:
                    'existing-law_id' as source
             from public.violation_types v
             join public.environmental_laws_ph l on l.id = v.law_id
-            where l.deleted_at is null
+            where l.deleted_at is null and coalesce(l.is_active, true)
 
             union all
 
@@ -290,7 +304,7 @@ async def list_hazards() -> list[dict[str, Any]]:
                    k.is_primary, k.review_status, k.source
             from public.violation_law_links k
             join public.environmental_laws_ph l on l.id = k.law_id
-            where l.deleted_at is null
+            where l.deleted_at is null and coalesce(l.is_active, true)
         ) merged
         order by code
         """,

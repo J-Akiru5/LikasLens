@@ -7,19 +7,13 @@
   "new_laws": [
     {
       "law_code": "RA-10654",
-      "title": "An Act to Prevent, Deter and Eliminate Illegal, Unreported and Unregulated Fishing, Amending RA 8550 (Philippine Fisheries Code)",
-      "summary": "Covers damage to coral reefs (Section 96), destructive fishing gear and methods (Section 97), and conversion of mangroves (Section 99). Replaced RA 8550 Chapter VI, so the RA 8550 sections 91-92 are no longer the operative text.",
+      "title": "AN ACT TO PREVENT, DETER AND ELIMINATE ILLEGAL, UNREPORTED AND UNREGULATED FISHING, AMENDING REPUBLIC ACT NO. 8550, OTHERWISE KNOWN AS \"THE PHILIPPINE FISHERIES CODE OF 1998,\" AND FOR OTHER PURPOSES",
+      "summary": "Amends the Philippine Fisheries Code of 1998 (RA 8550) to prevent, deter and eliminate illegal, unreported and unregulated fishing and to strengthen the conservation and management of Philippine fisheries and aquatic resources. Among its prohibited acts, it makes it unlawful to convert mangroves into fishponds or for any other purpose (Section 99), and to gather, possess, commercially transport, sell or export corals, or to commit any activity that damages coral reefs (Sections 96 and 97).",
       "issuing_agency": "DA-BFAR",
       "jurisdiction_scope": "national",
       "source_url": "https://lawphil.net/statutes/repacts/ra2015/ra_10654_2015.html",
-      "is_active": true
-    }
-  ],
-  "law_title_updates": [
-    {
-      "law_code": "RA-7586",
-      "title": "National Integrated Protected Areas System (NIPAS) Act, as amended by RA 11038",
-      "reason": "RA 11038 replaced the prohibited-acts and penalty sections. A row citing only the 1992 text points at superseded law."
+      "is_active": true,
+      "note": "Lapsed into law on 27 February 2015 without presidential signature (Art. VI, s.27(1), Constitution). Do not describe it as signed."
     }
   ],
   "links": [
@@ -27,12 +21,12 @@
       "violation_code": "AIR-EMISSION-VIOLATION",
       "law_code": "RA-8749",
       "is_primary": true,
-      "citation": "RA 8749 §19, §45 (stationary sources); §21, §46 (motor vehicles)",
+      "citation": "RA 8749 §19, §45 (stationary sources)",
       "citation_url": "https://lawphil.net/statutes/repacts/ra1999/ra_8749_1999.html",
       "confidence": "high",
       "review_status": "verified",
       "rationale": "The Clean Air Act is the only listed statute that sets air-emission limits and penalises exceedance.",
-      "note": "§20 bans incineration of municipal/biomedical/hazardous waste but exempts siga and traditional/agricultural burning; §47 is the residual penalty clause."
+      "note": "Stationary sources: §19 sets emission limits and §45 is the PAB daily fine. Motor vehicles are a separate track (§21, §46) and should be their own violation type. The criminal catch-all is §47 (₱10,000-₱100,000 and/or 6 months-6 years), which is not an administrative penalty."
     },
     {
       "violation_code": "CORAL-REEF-DAMAGE",
@@ -49,12 +43,12 @@
       "violation_code": "HAZWASTE-HANDLING",
       "law_code": "RA-6969",
       "is_primary": true,
-      "citation": "RA 6969 §13(d); §15",
+      "citation": "RA 6969 §13(d); §14(b) (criminal); §15 (administrative)",
       "citation_url": "https://lawphil.net/statutes/repacts/ra1990/ra_6969_1990.html",
       "confidence": "high",
       "review_status": "verified",
-      "rationale": "RA 6969 is the dedicated hazardous-waste statute: §13(d) prohibits keeping hazardous waste in storage anywhere in the Philippines, and §15 authorises administrative fines.",
-      "note": "The IRR supplies handling/transport/disposal standards; §14(b) is the criminal penalty for §13(d). If the waste reaches water, RA 9275 §27(f)-(g); household hazardous special wastes also touch RA 9003 §3(pp)."
+      "rationale": "RA 6969 is the dedicated hazardous-waste statute.",
+      "note": "§13(d) covers storage, import and transit of hazardous and nuclear waste. §14(b) is the criminal penalty (12 years and 1 day to 20 years); §15 is administrative fines only (₱10,000-₱50,000). Citing §15 alone understates criminal liability."
     },
     {
       "violation_code": "ILLEGAL-LOGGING",
@@ -82,23 +76,23 @@
       "violation_code": "PROTECTED-AREA-INTRUSION",
       "law_code": "RA-7586",
       "is_primary": true,
-      "citation": "RA 7586 §20(n), as amended by RA 11038; §21(b)",
+      "citation": "RA 7586 §20(n) as amended by RA 11038; §21(b)",
       "citation_url": "https://lawphil.net/statutes/repacts/ra2018/ra_11038_2018.html",
-      "confidence": "high",
+      "confidence": "medium",
       "review_status": "verified",
-      "rationale": "RA 11038 replaced the 1992 squatting clause with §20(n), which prohibits occupying or dwelling on public land inside a protected area without PAMB clearance; §21(b) sets the penalty.",
-      "note": "Cite the RA 11038 text, not the 1992 original. Fine is now ₱200,000-₱1,000,000 and/or 1-6 years. §§20(a)-(e) cover poaching, wildlife collection, timber cutting and destructive gear inside protected areas."
+      "rationale": "§21(b) covers §20 paragraphs (f)-(n); the pairing is real but the type conflates occupancy and construction.",
+      "note": "§20(n) is OCCUPANCY: 'occupying or dwelling in any public land within the protected area without clearance from the PAMB.' Construction or a business enterprise without clearance is §20(o) -> §21(c) (₱1,000,000-₱5,000,000 / 6-12 years). One 'intrusion' type cannot carry the right penalty for both; split the violation type or store the paragraph."
     },
     {
       "violation_code": "SWM-ILLEGAL-DUMPING",
       "law_code": "RA-9003",
       "is_primary": true,
-      "citation": "RA 9003 §48(1); §49(a)",
+      "citation": "RA 9003 §48(9); §49(d)",
       "citation_url": "https://lawphil.net/statutes/repacts/ra2001/ra_9003_2001.html",
       "confidence": "high",
       "review_status": "verified",
-      "rationale": "§48(1) prohibits littering, throwing or dumping waste in public places including roads, canals, esteros and parks, which is the exact conduct in a citizen dumping report.",
-      "note": "Open dumping in flood-prone areas: §48(6). Operating an open dump: §48(9) (₱500,000 plus 5-10% of net annual income). LGU ordinances may carry higher fines."
+      "rationale": "The violation type is dumping, not littering, so the open-dumping tier applies.",
+      "note": "§48(9)/§49(d) is open dumping: ₱500,000 plus 5-10% of net annual income. The earlier mapping pointed at §48(1)/§49(a), which is the LITTERING tier (₱300-₱1,000 or 1-15 days community service) - a substantive understatement. Related: flood-prone burying §48(6)/§49(c); bulk dumping outside prescribed facilities §48(13)/§49(e)."
     },
     {
       "violation_code": "WATER-UNAUTHORIZED-DISCHARGE",
@@ -137,12 +131,12 @@
       "violation_code": "MANGROVE-DESTRUCTION",
       "law_code": "PD-705",
       "is_primary": false,
-      "citation": "PD 705 §43; §69",
+      "citation": "PD 705 §69 (penal)",
       "citation_url": "https://lawphil.net/statutes/presdecs/pd1975/pd_705_1975.html",
       "confidence": "medium",
       "review_status": "pending",
       "rationale": "§43 bars clear-cutting of mangrove swamps set aside for coast protection and §69 penalises destruction of forest land; §3(o) defines mangrove as a forest type.",
-      "note": "Fallback only: PD 705 applies where the mangrove is classified as forest land. Kept as a secondary link for that case."
+      "note": "§69 is the penal hook ('destroys such forest land'). §43 is a protection/alienation restraint on shoreline mangrove strips and carries no penalty - citing it as an offence would be attacked. RA 10654 §99 is the primary provision."
     },
     {
       "violation_code": "MARINE-POLLUTION",
@@ -152,8 +146,8 @@
       "citation_url": "https://lawphil.net/statutes/presdecs/pd1976/pd_979_1976.html",
       "confidence": "high",
       "review_status": "verified",
-      "rationale": "§4(a) prohibits discharging oil, noxious or other harmful substances from vessels or man-made structures at sea into Philippine waters, and §7 provides the penalty.",
-      "note": "Confirmed for vessel/platform spills. §3(a) excludes industrial/manufacturing effluents, so land-based discharges fall under RA 9275 §27; §4(b) covers shore-based dumping of refuse; RA 9483 governs compensation."
+      "rationale": "§4(a) prohibits discharging oil or harmful substances from vessels or man-made structures at sea; §7 is the penalty.",
+      "note": "§4(a) covers vessel/platform discharge of oil, noxious and harmful substances - not marine pollution generally (§4(b) refuse, §4(c) bank deposits). §7's penalty is displaced for §4 violations by RA 9275 §28 (₱50,000-₱1,000,000 / 1-6 years). Non-oil marine pollution fits RA 9275 §27(e) better."
     }
   ],
   "remove_links": [
@@ -161,6 +155,19 @@
       "violation_code": "MANGROVE-DESTRUCTION",
       "law_code": "RA-7611",
       "reason": "Rejected by review: RA 7611 is Palawan-only and even there is a framework statute, not the offence-creating law. It has no penal section; penalties come only from PCSD rules under §19(8)."
+    }
+  ],
+  "law_updates": [
+    {
+      "law_code": "RA-10654",
+      "title": "AN ACT TO PREVENT, DETER AND ELIMINATE ILLEGAL, UNREPORTED AND UNREGULATED FISHING, AMENDING REPUBLIC ACT NO. 8550, OTHERWISE KNOWN AS \"THE PHILIPPINE FISHERIES CODE OF 1998,\" AND FOR OTHER PURPOSES",
+      "summary": "Amends the Philippine Fisheries Code of 1998 (RA 8550) to prevent, deter and eliminate illegal, unreported and unregulated fishing and to strengthen the conservation and management of Philippine fisheries and aquatic resources. Among its prohibited acts, it makes it unlawful to convert mangroves into fishponds or for any other purpose (Section 99), and to gather, possess, commercially transport, sell or export corals, or to commit any activity that damages coral reefs (Sections 96 and 97).",
+      "reason": "Enacted title is longer than the first draft; summary filled in from the statute."
+    },
+    {
+      "law_code": "RA-7586",
+      "title": "National Integrated Protected Areas System (NIPAS) Act, as amended by RA 11038",
+      "reason": "RA 11038 wholly rewrote the prohibited-acts and penalty sections."
     }
   ]
 }
