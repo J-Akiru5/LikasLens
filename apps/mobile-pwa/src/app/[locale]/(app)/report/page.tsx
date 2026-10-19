@@ -828,7 +828,7 @@ export default function ReportPage() {
                       )}
                     </div>
                     <p className="text-[11px] text-ink/80 pl-9 leading-tight font-medium">
-                      100% private • EXIF-stripped & zero user identifiers
+                      Identity hidden • EXIF stripped from the photo
                     </p>
                   </button>
                 </div>

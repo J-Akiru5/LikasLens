@@ -479,7 +479,6 @@ export default function TicketsPage() {
                 <div className="mb-3 flex items-center gap-2 flex-wrap">
                   <ConfidenceTierBadge
                     score={Number((ticket as unknown as { ai_confidence?: number }).ai_confidence ?? 0)}
-                    showScore
                   />
                   <ReddEligibilityBadge
                     eligible={(ticket as unknown as { is_redd_eligible?: boolean }).is_redd_eligible ?? false}
