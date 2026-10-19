@@ -149,8 +149,16 @@ pnpm --filter mobile-pwa dev           # :3003
 pnpm --filter admin-portal dev         # :3002
 pnpm --filter frontend dev             # :3000
 
-# AI service, from the repo root, with the live-write paths disabled:
-$env:DATABASE_URL=""; $env:SUPABASE_STORAGE_URL=""; $env:SUPABASE_STORAGE_KEY=""
+# AI service, from the repo root.
+#
+# DATABASE_URL is set to a DELIBERATELY DEAD local address. The Liksi endpoint
+# declares an AsyncSession dependency, and without a URL the whole route 502s
+# and the chat silently falls back to a canned reply. create_async_engine
+# connects lazily, so a citizen chat never opens a connection - and 127.0.0.1:5999
+# has nothing listening, so it physically cannot reach Supabase even if a code
+# path tried. Do not substitute the real database URL.
+$env:DATABASE_URL="postgresql+asyncpg://avp:avp@127.0.0.1:5999/avp_no_database"
+$env:SUPABASE_STORAGE_URL=""; $env:SUPABASE_STORAGE_KEY=""
 $env:SUPABASE_STORAGE_SECRET=""; $env:AI_SERVICE_API_KEY=""
 cd apps/ai-service
 .\.venv\Scripts\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8001
@@ -186,11 +194,20 @@ the script and the audio cannot drift apart.
 ### Useful passes
 
 ```powershell
-node scripts/probe-detection.mjs     # every candidate photo through the real model, with the raw scores
-node scripts/photo-test.mjs --runs 2 # D7 photo test, writes capture/takes/photo-test/photo-test.md
-node capture/spike-s1.mjs            # proves the fixture stack and that no supabase.co host is contacted
-node capture/spike-s2.mjs            # proves the phone-capture route and emits a 5 s test clip
+node scripts/screen-audit.mjs         # which routes actually render against the fixtures, with screenshots
+node scripts/probe-map.mjs            # why a map is or is not drawing: tiles, console, canvas
+node scripts/probe-detection.mjs      # every candidate photo through the real model, with the raw scores
+node scripts/photo-test.mjs --runs 2  # D7 photo test, writes capture/takes/photo-test/photo-test.md
+node capture/spike-s1.mjs             # proves the fixture stack and that no supabase.co host is contacted
+node capture/spike-s2.mjs             # proves the phone-capture route and emits a 5 s test clip
 ```
+
+`screen-audit.mjs` is worth running before writing any new scene: it visits every
+route, waits for skeletons to clear, screenshots, and classifies each one as
+`ok`, `skeleton`, `empty` or `error`. On the last run 25 of 29 routes rendered
+real content. Be aware it screenshots as soon as the DOM settles, so a map will
+look blank there even though it draws a few seconds later — `probe-map.mjs` is
+the one to trust for maps.
 
 ## 6. How capture works
 
@@ -215,11 +232,15 @@ node capture/spike-s2.mjs            # proves the phone-capture route and emits 
 
 ## 7. Layout
 
-1920x1080. Phone scenes put the 608x1080 phone on the right (magnified 1.126x so
-the app's small labels stay readable) with a text panel on the left. Scenes whose
-footage already fills the frame (the photo push-in, and the desktop app scenes)
-get a lower third instead, so the app is never dimmed under a haze. Two shapes,
-both in `capture/frame-overlay.mjs`.
+1920x1080. Phone scenes put the 608x1080 phone on the right, magnified 1.126x so
+the app's small labels stay readable, and fill the rest of the frame with a
+**blurred, darkened copy of the same screen** so nothing is empty. A scrim keeps
+the text column legible without touching the phone panel. Full-frame desktop
+scenes keep a lower third inside the bottom bar, clear of the app's own header.
+
+Captions are burned in and also muxed into the MP4 as an `mov_text` subtitle
+track, so a viewer can turn them off. `assemble.mjs` fails if the track is
+missing.
 
 ## 8. What is not committed
 
@@ -231,15 +252,32 @@ re-fetchable with `scripts/fetch-photos.mjs`.
 
 ## 9. Known gaps
 
-- **Scene 6 (offline queue) is cut.** The page never left its loading state under
-  this fixture stack — `getAllQueued()` did not resolve — so it could not be shown
-  honestly. Brief step 14 permits the cut. Its 7 s was redistributed; the
-  timeline is still 81 s. A real-phone test is still outstanding.
-- **No knowledge-graph law lookup.** `POST /api/v1/analyze-hazard` needs Neo4j and
-  the instance configured in `apps/ai-service/.env` no longer resolves. Scene 3
-  shows the real triage result only, and the narration makes no graph claim.
-- **Total speech is 54.3 s**, a little under the brief's 60-70 s guidance, because
-  cutting scene 6 removed 5.8 s of narration that was not replaced with claims
-  the screens do not support. The figure is measured, not estimated: it is
-  written into `steps.json` by `narration/synthesize.mjs`. If it ever disagrees
-  with `audio/durations.json`, the script is stale.
+- **The scene list is verified, not assumed.** `scripts/screen-audit.mjs` records
+  which routes render; the last run had 25 of 29 rendering real content, and the
+  four that did not (`offline-queue`, `notifications`, and two admin routes) are
+  handled explicitly rather than filmed anyway.
+- **The frontend home page is deliberately never filmed.** Its "Live Incident
+  Tracker" renders `SEED_LEDGER` — hand-written sample rows `RPT-7777` to
+  `RPT-7781` with confidence percentages — which the brief bans on camera.
+- **No knowledge-graph law lookup, and no graph claim.** `POST /api/v1/analyze-hazard`
+  needs Neo4j and the instance configured in `apps/ai-service/.env` no longer
+  resolves (`b7bba3b8.databases.neo4j.io`). The Graph Explorer screen renders,
+  but nothing in the narration claims a live graph.
+- **Every screen is fixtures.** Ticket rows, offices and place names are invented
+  — every office is "CENRO Demo City" and every location is a Demo City barangay,
+  because naming a real office with fabricated metrics in a pitch to that
+  government's commission is not acceptable. Everything is on the reserved
+  `.invalid` TLD and the "Demo data" tag stays on screen for app scenes.
+- **The map plots a heat blob near Iloilo.** The basemap is real geography and the
+  incidents are fictional; the coordinates are a plausible Philippine location
+  rather than a fictional one, because an empty ocean would defeat the purpose.
+- **No report is submitted during recording.** The submit call is intercepted at
+  the browser boundary, so the success screen in scene 6 is reached without any
+  server-side write.
+- **Total speech is measured, not estimated** — see `timingCheck` in `steps.json`,
+  written by `synthesize.mjs`.
+- **Nobody has listened to the narration.** An agent cannot judge how a name
+  sounds. The owner must confirm `LikasLens`, `Liksi`, `ISUFST`, `Syntaxure`,
+  `LGU`, `SLA` and the RA numbers by ear, and approve the pace.
+- **The real-phone offline test is still outstanding.** Scene 17 seeds the app's
+  own queue; that is not the same as a device going offline in the field.
