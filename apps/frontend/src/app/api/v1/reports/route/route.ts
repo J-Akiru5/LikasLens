@@ -11,23 +11,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { routeTicketToCoveringOffice } from "@likaslens/shared";
+import { decideTicketRoutingAccess, routeTicketToCoveringOffice } from "@likaslens/shared";
 import { createClient as createServerClient } from "@/utils/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-/** Roles allowed to route any ticket. Mirrors the admin portal's gate. */
-const ELEVATED_ROLES = new Set(["analyst", "admin", "super_admin", "lgu", "lgu_officer"]);
-
-/**
- * Ghost Mode escape hatch: an anonymous ticket has no reporter_user_id, so
- * ownership cannot be proven. Only the client that just created it can know the
- * id, so a short window is allowed — and only for tickets that are anonymous,
- * open, and brand new. Anything older, assigned, or attributed requires
- * ownership.
- */
-const FRESH_WINDOW_MS = 10 * 60 * 1000;
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -80,15 +68,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const role = (user.app_metadata as { role?: string } | null)?.role ?? "";
-    const isElevated = ELEVATED_ROLES.has(role);
-    const ownsTicket =
-      ticket.reporter_user_id != null && ticket.reporter_user_id === user.id;
-    const isFreshAnonymousOpen =
-      ticket.reporter_user_id == null &&
-      ticket.status === "open" &&
-      Date.now() - new Date(ticket.created_at as string).getTime() < FRESH_WINDOW_MS;
+    const decision = decideTicketRoutingAccess({
+      role,
+      callerId: user.id,
+      ticket: {
+        id: ticket.id as string,
+        reporter_user_id: (ticket.reporter_user_id as string | null) ?? null,
+        status: (ticket.status as string | null) ?? null,
+        created_at: (ticket.created_at as string | null) ?? null,
+      },
+    });
 
-    if (!isElevated && !ownsTicket && !isFreshAnonymousOpen) {
+    if (!decision.allowed) {
       return NextResponse.json(
         { error: "Not permitted to route this ticket" },
         { status: 403 }

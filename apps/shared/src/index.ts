@@ -4,6 +4,7 @@ export * from "./ui";
 export * from "./utils";
 export * from "./lib/format";
 export * from "./lib/route-to-office";
+export * from "./lib/routing-authz";
 export { notifyThemeColor } from "./lib/theme";
 export * from "./hooks/useGeminiChat";
 export * from "./hooks/useNotifications";

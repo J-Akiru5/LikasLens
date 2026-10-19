@@ -11,23 +11,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { routeTicketToCoveringOffice } from "@likaslens/shared";
+import { decideTicketRoutingAccess, routeTicketToCoveringOffice } from "@likaslens/shared";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-/** Roles allowed to route any ticket. Mirrors the admin portal's gate. */
-const ELEVATED_ROLES = new Set(["analyst", "admin", "super_admin", "lgu", "lgu_officer"]);
-
-/**
- * How recently a ticket must have been created for a caller who cannot prove
- * ownership to still be allowed to route it. This is the Ghost Mode escape
- * hatch: an anonymous ticket has reporter_user_id = null, so ownership is
- * unprovable, but the client that just created it is the only one that can know
- * its id. Bounded to keep the window useless for sweeping historical tickets.
- */
-const FRESH_WINDOW_MS = 10 * 60 * 1000;
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -82,15 +70,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const role = (user.app_metadata as { role?: string } | null)?.role ?? "";
-    const isElevated = ELEVATED_ROLES.has(role);
-    const ownsTicket =
-      ticket.reporter_user_id != null && ticket.reporter_user_id === user.id;
-    const isFreshOpenTicket =
-      ticket.reporter_user_id == null &&
-      ticket.status === "open" &&
-      Date.now() - new Date(ticket.created_at as string).getTime() < FRESH_WINDOW_MS;
+    const decision = decideTicketRoutingAccess({
+      role,
+      callerId: user.id,
+      ticket: {
+        id: ticket.id as string,
+        reporter_user_id: (ticket.reporter_user_id as string | null) ?? null,
+        status: (ticket.status as string | null) ?? null,
+        created_at: (ticket.created_at as string | null) ?? null,
+      },
+    });
 
-    if (!isElevated && !ownsTicket && !isFreshOpenTicket) {
+    if (!decision.allowed) {
       return NextResponse.json(
         { error: "Not permitted to route this ticket" },
         { status: 403 }
