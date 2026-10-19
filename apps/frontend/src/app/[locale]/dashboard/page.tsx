@@ -27,9 +27,12 @@ export default async function DashboardPage() {
   try {
     const supabase = await createClient();
 
-    const [ticketsRes, usersRes] = await Promise.all([
+    const [ticketsRes, userCountRes] = await Promise.all([
       supabase.from("tickets").select("id, title, description, status, urgency_score, address_text, reporter_user_id, ghost_mode, created_at, resolved_at"),
-      supabase.from("users").select("id", { count: "exact", head: true }),
+      // The platform total used to read `users` directly. Public reads are now
+      // restricted to your own row or staff, so the number comes from a
+      // count-only SECURITY DEFINER function that returns a count, never rows.
+      supabase.rpc("public_user_count"),
     ]);
 
     const tickets = ticketsRes.data || [];
@@ -66,7 +69,7 @@ export default async function DashboardPage() {
 
       total_tickets: total,
       total_reports: total,
-      total_users: usersRes.count || 0,
+      total_users: typeof userCountRes.data === "number" ? userCountRes.data : 0,
       ghost_reports: 0,
       tickets_by_status: {
         open: tickets.filter((t: any) => t.status === "open").length,
