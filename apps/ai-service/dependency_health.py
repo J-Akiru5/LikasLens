@@ -1,34 +1,38 @@
 """
 Reachability probes for /health/config.
 
-Configuration presence is not the same as health. A NEO4J_URI can still be set
-after its host stops resolving, and reporting that as "configured" reads like
-"healthy". These probes are deliberately short, cached, and secret-free so the
-health endpoint can say "configured_but_unreachable" plainly without making a
-network call on every request.
+Configuration presence is not the same as health. The service used to report
+`neo4j: {"status": "configured"}` purely because an environment variable was
+set, while the host had not resolved for weeks. Reporting that as "configured"
+reads like "healthy".
 
-Nothing in a probe result contains a hostname, URI, username or password.
+Neo4j is gone. The knowledge store is now Postgres + pgvector, inside the same
+database the service already depends on. This probe reports whether that database
+answers, and whether the vector extension and law embeddings are actually
+present — the parts that can silently be missing.
+
+Nothing in a probe result contains a hostname, DSN, username or password. Reasons
+come from a small fixed set of strings.
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
-import socket
 import time
 from typing import Any
-from urllib.parse import urlsplit
 
-from config import settings
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
-# Overall budget a single health request may spend waiting on the probe.
-PROBE_TIMEOUT_SECONDS = 0.9
+# Overall budget a single health request may spend waiting on the probe. This is
+# generous enough for a cold connection to the Supabase pooler (the first probe
+# pays connection setup, later ones reuse the pool), while the result is cached
+# for CACHE_TTL_SECONDS so the steady-state endpoint does no I/O.
+PROBE_TIMEOUT_SECONDS = 4.0
 # How long a result is reused before probing again.
 CACHE_TTL_SECONDS = 30.0
-# Neo4j's default Bolt port when the URI does not specify one.
-DEFAULT_NEO4J_PORT = 7687
 
 _cache: dict[str, Any] | None = None
 _cache_at: float = 0.0
@@ -41,60 +45,74 @@ def _reset_cache() -> None:
     _cache_at = 0.0
 
 
-def _probe_neo4j_tcp() -> tuple[bool, str]:
-    """
-    Resolve the configured Neo4j host and open a TCP connection to its port.
+def _classify(exc: BaseException) -> str:
+    """Map a database exception to a fixed, non-leaking reason string."""
+    name = type(exc).__name__.lower()
+    message = str(exc).lower()
 
-    Returns (reachable, reason). `reason` is one of a small fixed set of strings
-    — never the host, URI, credentials or raw exception text — so it is safe to
-    return to clients and write to logs.
-    """
+    if "timeout" in name or "timeout" in message:
+        return "timeout"
+    if "refused" in message:
+        return "connection_refused"
+    if "password" in message or "authentication" in message or "role" in message:
+        return "auth_failed"
+    if "does not exist" in message or "undefined" in message:
+        return "schema_missing"
+    if "connect" in message or "network" in message or "dns" in message:
+        return "unreachable"
+    return "probe_error"
+
+
+async def _probe_database() -> dict[str, Any]:
+    """Check the database answers, pgvector is installed, and embeddings exist."""
+    from db.connection import AsyncSessionLocal
+
+    if AsyncSessionLocal is None:
+        return {"reachable": False, "reason": "not_configured", "vector_ready": False}
+
     try:
-        parsed = urlsplit(settings.neo4j_uri)
-        host = parsed.hostname
-        port = parsed.port or DEFAULT_NEO4J_PORT
-    except ValueError:
-        return False, "invalid_uri"
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("select 1"))
 
-    if not host:
-        return False, "invalid_uri"
+            vector_ready = bool(
+                (
+                    await session.execute(
+                        text("select count(*) from pg_extension where extname = 'vector'")
+                    )
+                ).scalar()
+            )
 
-    try:
-        address_info = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
-    except (socket.gaierror, OSError):
-        return False, "dns_failed"
+            embedded = 0
+            if vector_ready:
+                embedded = int(
+                    (
+                        await session.execute(
+                            text(
+                                "select count(*) from public.environmental_laws_ph "
+                                "where embedding is not null and deleted_at is null"
+                            )
+                        )
+                    ).scalar()
+                    or 0
+                )
 
-    if not address_info:
-        return False, "dns_failed"
-
-    # Trying up to two addresses covers IPv4/IPv6 without spending the whole
-    # response budget on a host with many records.
-    last_reason = "unreachable"
-    for family, socktype, proto, _canonname, sockaddr in address_info[:2]:
-        sock = socket.socket(family, socktype, proto)
-        sock.settimeout(0.75)
-        try:
-            sock.connect(sockaddr)
-            return True, "reachable"
-        except socket.timeout:
-            last_reason = "timeout"
-        except ConnectionRefusedError:
-            last_reason = "connection_refused"
-        except OSError:
-            last_reason = "connection_failed"
-        finally:
-            sock.close()
-
-    return False, last_reason
+        return {
+            "reachable": True,
+            "reason": "reachable",
+            "vector_ready": vector_ready,
+            "embedded_laws": embedded,
+        }
+    except Exception as exc:
+        logger.warning("Knowledge store probe failed (%s)", type(exc).__name__)
+        return {"reachable": False, "reason": _classify(exc), "vector_ready": False}
 
 
-async def check_neo4j_reachability(force: bool = False) -> dict[str, Any]:
-    """
-    Return a cached Neo4j reachability result as {"reachable": bool, "reason": str}.
+async def check_knowledge_store(force: bool = False) -> dict[str, Any]:
+    """Return a cached knowledge-store probe.
 
-    An uncached call spends at most PROBE_TIMEOUT_SECONDS waiting for DNS + TCP
-    in a worker thread. The result is then cached for CACHE_TTL_SECONDS, so the
-    steady-state endpoint performs no network I/O.
+    An uncached call spends at most PROBE_TIMEOUT_SECONDS. The result is then
+    cached for CACHE_TTL_SECONDS, so the steady-state endpoint performs no
+    database I/O of its own.
     """
     global _cache, _cache_at
 
@@ -102,27 +120,15 @@ async def check_neo4j_reachability(force: bool = False) -> dict[str, Any]:
     if not force and _cache is not None and (now - _cache_at) < CACHE_TTL_SECONDS:
         return dict(_cache)
 
-    if not settings.neo4j_configured:
-        result: dict[str, Any] = {"reachable": False, "reason": "not_configured"}
-    else:
-        try:
-            reachable, reason = await asyncio.wait_for(
-                asyncio.to_thread(_probe_neo4j_tcp),
-                timeout=PROBE_TIMEOUT_SECONDS,
-            )
-            result = {"reachable": reachable, "reason": reason}
-        except asyncio.TimeoutError:
-            # The worker thread is allowed to finish in the background; the
-            # response is not allowed to wait for it.
-            result = {"reachable": False, "reason": "timeout"}
-        except Exception as exc:  # pragma: no cover - defensive
-            logger.warning(
-                "Neo4j reachability probe failed unexpectedly (%s)",
-                type(exc).__name__,
-            )
-            result = {"reachable": False, "reason": "probe_error"}
+    try:
+        result = await asyncio.wait_for(_probe_database(), timeout=PROBE_TIMEOUT_SECONDS)
+    except asyncio.TimeoutError:
+        result = {"reachable": False, "reason": "timeout", "vector_ready": False}
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.warning("Knowledge store probe failed unexpectedly (%s)", type(exc).__name__)
+        result = {"reachable": False, "reason": "probe_error", "vector_ready": False}
 
     _cache = result
     _cache_at = now
-    logger.info("Neo4j reachability probe: %s", result["reason"])
+    logger.info("Knowledge store probe: %s", result["reason"])
     return dict(result)

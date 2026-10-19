@@ -1,6 +1,6 @@
 """
 Neuro-symbolic hazard analysis pipeline for LikasLens.
-Combines Neo4j graph traversal + vector search (symbolic layer) with
+Combines relational graph traversal + pgvector search (symbolic layer) with
 Google Gemini 2.5 Flash (neural layer) to produce LGU-ready incident reports.
 
 Replaces the former Cosmos DB Gremlin-based hazard analyzer.
@@ -18,7 +18,7 @@ from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
 
 from config import settings
-from neo4j_client import is_configured
+from graph_store import is_configured
 from opencode_client import OpenCodeError, generate_via_opencode
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class HazardResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Symbolic layer -- Neo4j graph traversal + vector search
+# Symbolic layer -- relational graph traversal + pgvector search
 # ---------------------------------------------------------------------------
 
 async def retrieve_legal_context(
@@ -72,7 +72,7 @@ async def retrieve_legal_context(
     if not is_configured():
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Neo4j not configured. Set NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD.",
+            detail="Knowledge store not configured. Set DATABASE_URL.",
         )
 
     import re
@@ -82,12 +82,10 @@ async def retrieve_legal_context(
             detail="Invalid hazard_id format",
         )
 
-    from neo4j_client import get_driver
     from graph_rag import hybrid_retrieve
 
     try:
-        driver = await get_driver()
-        result = await hybrid_retrieve(driver, hazard_code, location, jurisdiction)
+        result = await hybrid_retrieve(hazard_code, location, jurisdiction)
     except Exception as exc:
         logger.error("Legal context retrieval failed for hazard=%s: %s", hazard_code, exc)
         raise HTTPException(

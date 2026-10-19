@@ -1,6 +1,6 @@
 """
-Neo4j graph topology metadata and bootstrap payloads for LikasLens.
-Replaces the former Cosmos DB Gremlin topology module.
+Graph topology metadata and bootstrap payloads for LikasLens.
+Replaces the former Cosmos DB Gremlin topology module; the runtime store is now Postgres + pgvector.
 """
 
 from __future__ import annotations

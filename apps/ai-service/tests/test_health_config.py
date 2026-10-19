@@ -1,234 +1,123 @@
-"""
-Tests for /health/config Neo4j reachability reporting.
+"""Tests for the /health/config knowledge-store probe.
 
 Context: the endpoint used to report `neo4j: {"status": "configured"}` purely
-from env presence. The configured host did not resolve, so "configured" read as
-healthy. These tests pin the three states — not_configured / configured /
-configured_but_unreachable — the short cached probe, and the fact that no
-hostname, URI or credential is exposed.
+because NEO4J_URI was set, while the host had not resolved for weeks. Neo4j is
+gone; the store is Postgres + pgvector. These tests pin the parts that can
+silently go wrong: not configured, unreachable, timing out, and caching.
 """
 
-from __future__ import annotations
-
 import asyncio
-import json
-import os
-import socket
-import sys
-import time
-from unittest.mock import patch
 
 import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-
-import dependency_health  # noqa: E402
-from config import settings  # noqa: E402
-from dependency_health import (  # noqa: E402
-    CACHE_TTL_SECONDS,
-    check_neo4j_reachability,
-)
-
-FAKE_URI = "neo4j+s://secret-host.invalid:7687"
-FAKE_USER = "secret-user"
-FAKE_PASSWORD = "secret-password"
+import dependency_health
+from dependency_health import _classify, _reset_cache, check_knowledge_store
 
 
 @pytest.fixture(autouse=True)
-def _reset_probe_cache():
-    dependency_health._reset_cache()
+def _clear_cache():
+    _reset_cache()
     yield
-    dependency_health._reset_cache()
+    _reset_cache()
 
 
-@pytest.fixture
-def _neo4j_configured():
-    with patch.object(settings, "neo4j_uri", FAKE_URI), \
-         patch.object(settings, "neo4j_user", FAKE_USER), \
-         patch.object(settings, "neo4j_password", FAKE_PASSWORD):
-        yield
+def test_not_configured_is_not_probed(monkeypatch):
+    monkeypatch.setattr("db.connection.AsyncSessionLocal", None)
+
+    result = asyncio.run(check_knowledge_store(force=True))
+
+    assert result["reachable"] is False
+    assert result["reason"] == "not_configured"
+    assert result["vector_ready"] is False
 
 
-@pytest.fixture
-def _neo4j_unconfigured():
-    with patch.object(settings, "neo4j_uri", ""), \
-         patch.object(settings, "neo4j_user", ""), \
-         patch.object(settings, "neo4j_password", ""):
-        yield
+def test_reachable_reports_embedding_state(monkeypatch):
+    async def fake_probe():
+        return {
+            "reachable": True,
+            "reason": "reachable",
+            "vector_ready": True,
+            "embedded_laws": 16,
+        }
+
+    monkeypatch.setattr(dependency_health, "_probe_database", fake_probe)
+    result = asyncio.run(check_knowledge_store(force=True))
+
+    assert result["reachable"] is True
+    assert result["vector_ready"] is True
+    assert result["embedded_laws"] == 16
 
 
-# ---------------------------------------------------------------------------
-# Probe behaviour
-# ---------------------------------------------------------------------------
+def test_result_is_cached_and_force_bypasses(monkeypatch):
+    calls = {"n": 0}
 
-def test_not_configured_is_not_probed(_neo4j_unconfigured, monkeypatch):
-    def boom():
-        raise AssertionError("must not probe an unconfigured dependency")
+    async def fake_probe():
+        calls["n"] += 1
+        return {"reachable": True, "reason": "reachable", "vector_ready": True}
 
-    monkeypatch.setattr(dependency_health, "_probe_neo4j_tcp", boom)
+    monkeypatch.setattr(dependency_health, "_probe_database", fake_probe)
 
-    result = asyncio.run(check_neo4j_reachability())
+    asyncio.run(check_knowledge_store())
+    asyncio.run(check_knowledge_store())
+    assert calls["n"] == 1, "second call should hit the cache"
 
-    assert result == {"reachable": False, "reason": "not_configured"}
-
-
-def test_dns_failure_reports_unreachable_without_leaking_host(
-    _neo4j_configured, monkeypatch
-):
-    def dns_failure(*_args, **_kwargs):
-        raise socket.gaierror("name or service not known")
-
-    monkeypatch.setattr(dependency_health.socket, "getaddrinfo", dns_failure)
-
-    reachable, reason = dependency_health._probe_neo4j_tcp()
-    result = {"reachable": reachable, "reason": reason}
-
-    assert result == {"reachable": False, "reason": "dns_failed"}
-    assert "secret-host" not in json.dumps(result)
-    assert FAKE_USER not in json.dumps(result)
-    assert FAKE_PASSWORD not in json.dumps(result)
+    asyncio.run(check_knowledge_store(force=True))
+    assert calls["n"] == 2, "force must bypass the cache"
 
 
-def test_reachable_host_reports_reachable(_neo4j_configured, monkeypatch):
-    address_info = [
-        (socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, "", ("192.0.2.1", 7687)),
-    ]
+def test_probe_timeout_is_bounded(monkeypatch):
+    async def slow_probe():
+        await asyncio.sleep(5)
+        return {"reachable": True, "reason": "reachable", "vector_ready": True}
 
-    class _Socket:
-        def __init__(self):
-            self.connected = None
-            self.closed = False
-
-        def settimeout(self, _timeout):
-            pass
-
-        def connect(self, address):
-            self.connected = address
-
-        def close(self):
-            self.closed = True
-
-    opened = []
-
-    def make_socket(*_args, **_kwargs):
-        sock = _Socket()
-        opened.append(sock)
-        return sock
-
-    monkeypatch.setattr(dependency_health.socket, "getaddrinfo", lambda *_a, **_k: address_info)
-    monkeypatch.setattr(dependency_health.socket, "socket", make_socket)
-
-    reachable, reason = dependency_health._probe_neo4j_tcp()
-
-    assert (reachable, reason) == (True, "reachable")
-    assert opened[0].connected == ("192.0.2.1", 7687)
-    assert opened[0].closed is True
-
-
-def test_connection_refused_is_reported(_neo4j_configured, monkeypatch):
-    address_info = [
-        (socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, "", ("192.0.2.1", 7687)),
-    ]
-
-    class _Socket:
-        def settimeout(self, _timeout):
-            pass
-
-        def connect(self, _address):
-            raise ConnectionRefusedError()
-
-        def close(self):
-            pass
-
-    monkeypatch.setattr(dependency_health.socket, "getaddrinfo", lambda *_a, **_k: address_info)
-    monkeypatch.setattr(dependency_health.socket, "socket", lambda *_a, **_k: _Socket())
-
-    reachable, reason = dependency_health._probe_neo4j_tcp()
-
-    assert (reachable, reason) == (False, "connection_refused")
-
-
-def test_result_is_cached(_neo4j_configured, monkeypatch):
-    calls = []
-
-    def fake_probe():
-        calls.append(1)
-        return True, "reachable"
-
-    monkeypatch.setattr(dependency_health, "_probe_neo4j_tcp", fake_probe)
-
-    first = asyncio.run(check_neo4j_reachability())
-    second = asyncio.run(check_neo4j_reachability())
-
-    assert first == second == {"reachable": True, "reason": "reachable"}
-    assert len(calls) == 1, "second call must be served from cache"
-
-    asyncio.run(check_neo4j_reachability(force=True))
-    assert len(calls) == 2, "force=True must bypass the cache"
-
-    assert CACHE_TTL_SECONDS > 0
-
-
-def test_probe_timeout_is_bounded(_neo4j_configured, monkeypatch):
-    def slow_probe():
-        time.sleep(0.3)
-        return True, "reachable"
-
-    monkeypatch.setattr(dependency_health, "_probe_neo4j_tcp", slow_probe)
+    monkeypatch.setattr(dependency_health, "_probe_database", slow_probe)
     monkeypatch.setattr(dependency_health, "PROBE_TIMEOUT_SECONDS", 0.05)
 
-    started = time.monotonic()
-    result = asyncio.run(check_neo4j_reachability())
-    elapsed = time.monotonic() - started
+    result = asyncio.run(check_knowledge_store(force=True))
 
-    assert result == {"reachable": False, "reason": "timeout"}
-    assert elapsed < 0.5, f"probe delayed the response by {elapsed:.2f}s"
+    assert result["reachable"] is False
+    assert result["reason"] == "timeout"
 
 
-# ---------------------------------------------------------------------------
-# /health/config shape
-# ---------------------------------------------------------------------------
+def test_unexpected_error_does_not_leak_details(monkeypatch):
+    async def exploding_probe():
+        raise RuntimeError("password authentication failed for user postgres")
 
-def test_health_config_reports_unreachable_plainly(_neo4j_configured):
-    report = settings.health_config(
-        neo4j_probe={"reachable": False, "reason": "dns_failed"}
-    )
+    monkeypatch.setattr(dependency_health, "_probe_database", exploding_probe)
+    result = asyncio.run(check_knowledge_store(force=True))
 
-    assert report["neo4j"]["status"] == "configured_but_unreachable"
-    assert report["neo4j"]["reachable"] is False
-    assert report["neo4j"]["detail"] == "dns_failed"
-
-    serialized = json.dumps(report)
-    assert "secret-host" not in serialized
-    assert FAKE_URI not in serialized
-    assert FAKE_USER not in serialized
-    assert FAKE_PASSWORD not in serialized
+    assert result["reachable"] is False
+    assert result["reason"] == "probe_error"
+    assert "password" not in str(result).lower()
 
 
-def test_health_config_reports_reachable(_neo4j_configured):
-    report = settings.health_config(
-        neo4j_probe={"reachable": True, "reason": "reachable"}
-    )
+@pytest.mark.parametrize(
+    "message, expected",
+    [
+        ("connection refused", "connection_refused"),
+        ("password authentication failed", "auth_failed"),
+        ("relation does not exist", "schema_missing"),
+        ("network is unreachable", "unreachable"),
+        ("something odd", "probe_error"),
+    ],
+)
+def test_classify_returns_fixed_reason(message, expected):
+    assert _classify(RuntimeError(message)) == expected
 
-    assert report["neo4j"]["status"] == "configured"
-    assert report["neo4j"]["reachable"] is True
-    assert report["neo4j"]["detail"] == "reachable"
+
+def test_classify_never_returns_the_message():
+    secret = "postgresql://user:supersecret@host:5432/db"
+    reason = _classify(RuntimeError(secret))
+    assert "supersecret" not in reason
+    assert reason == "unreachable" or reason == "probe_error"
 
 
-def test_health_config_without_probe_does_not_imply_health(_neo4j_configured):
+def test_health_config_has_no_live_neo4j_section():
+    from config import settings
+
     report = settings.health_config()
 
-    assert report["neo4j"]["status"] == "configured"
-    assert report["neo4j"]["reachable"] is None
-    assert report["neo4j"]["detail"] == "not_probed"
-
-
-def test_health_config_reports_not_configured(_neo4j_unconfigured):
-    report = settings.health_config()
-
-    assert report["neo4j"]["status"] == "not_configured"
-    assert report["neo4j"]["missing"] == [
-        "NEO4J_URI",
-        "NEO4J_USER",
-        "NEO4J_PASSWORD",
-    ]
+    assert "database" in report
+    assert "gemini" in report
+    # Neo4j is no longer configured, probed or reported as a live dependency.
+    assert "neo4j" not in report

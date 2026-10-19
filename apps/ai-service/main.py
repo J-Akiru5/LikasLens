@@ -15,7 +15,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from config import settings
-from neo4j_bootstrap import build_bootstrap_queries
 from graph_topology import build_seed_edges, build_seed_vertices, get_topology_config
 
 logger = logging.getLogger(__name__)
@@ -44,7 +43,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    from neo4j_client import reset_driver
+    from graph_store import reset_driver
     await reset_driver()
     logger.info("LikasLens AI Service shut down")
 
@@ -234,6 +233,7 @@ async def graph_topology():
         "vertex_labels": topology.vertex_labels,
         "edge_labels": topology.edge_labels,
         "edge_properties": topology.edge_properties,
+        "backend": "postgres+pgvector",
     }
 
 
@@ -243,13 +243,6 @@ async def graph_bootstrap_payload():
         "vertices": build_seed_vertices(),
         "edges": build_seed_edges(),
     }
-
-
-@app.get("/graph/bootstrap-queries")
-async def graph_bootstrap_queries():
-    vertices = build_seed_vertices()
-    edges = build_seed_edges()
-    return build_bootstrap_queries(vertices, edges)
 
 
 # ---------------------------------------------------------------------------
@@ -411,7 +404,7 @@ async def analyze_similarity(payload: dict):
 
 @app.get("/routing/status", dependencies=[Depends(verify_api_key)])
 async def routing_status():
-    from neo4j_client import get_connection_params, is_configured
+    from graph_store import get_connection_params, is_configured
 
     params = get_connection_params()
     return {
@@ -423,7 +416,7 @@ async def routing_status():
 
 @app.post("/routing/incident", dependencies=[Depends(verify_api_key)])
 async def route_incident_endpoint(payload: dict):
-    from neo4j_client import route_incident
+    from graph_store import route_incident
 
     citizen_id = payload.get("citizen_id")
     incident_id = payload.get("incident_id")
@@ -435,20 +428,6 @@ async def route_incident_endpoint(payload: dict):
 
     result = await route_incident(citizen_id, incident_id, violation_code, ngo_id)
     return {"success": result["success"], "routing": result}
-
-
-@app.get("/routing/traversal", dependencies=[Depends(verify_api_key)])
-async def routing_traversal(citizen_id: str, incident_id: str, violation_code: str, ngo_id: str = ""):
-    from neo4j_client import build_incident_routing_queries
-
-    try:
-        queries = await build_incident_routing_queries(
-            citizen_id, incident_id, violation_code, ngo_id or None
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    return {"queries": queries}
 
 
 @app.get("/routing/stats", dependencies=[Depends(verify_api_key)])
@@ -509,7 +488,7 @@ async def record_resolution(payload: dict):
 
 @app.post("/api/v1/analyze-hazard", dependencies=[Depends(verify_api_key)])
 async def analyze_hazard(payload: dict):
-    """Neuro-symbolic hazard analysis: Neo4j GraphRAG + Gemini LLM synthesis."""
+    """Neuro-symbolic hazard analysis: relational GraphRAG + Gemini LLM synthesis."""
     from hazard_analyzer import HazardRequest, HazardResponse, generate_grounded_report, retrieve_legal_context
 
     try:
@@ -593,11 +572,30 @@ async def health_models():
 
 @app.get("/health/config")
 async def health_config():
-    """Per-integration config status, with cached Neo4j reachability. No secrets."""
-    from dependency_health import check_neo4j_reachability
+    """Per-integration config status, with cached knowledge-store reachability.
 
-    neo4j_probe = await check_neo4j_reachability()
-    return settings.health_config(neo4j_probe=neo4j_probe)
+    Neo4j was removed; the vector store is pgvector inside the same Postgres
+    database the service already depends on, so a database outage already shows
+    up in readiness. This reports whether law embeddings are actually present,
+    which is the part that can silently be missing.
+    """
+    from dependency_health import check_knowledge_store
+    import graph_store
+
+    probe = await check_knowledge_store()
+    report = settings.health_config()
+    report["knowledge_store"] = {**probe, "backend": "postgres+pgvector"}
+
+    try:
+        report["knowledge_store"]["embedded_laws"] = await graph_store.count_embedded_laws()
+    except Exception as exc:
+        logger.warning("Embedded-law count failed (%s)", type(exc).__name__)
+        report["knowledge_store"]["embedded_laws"] = None
+
+    # Keep the old key present but honest, so a client that still reads it is not
+    # told something false.
+    report["neo4j"] = {"status": "removed", "reachable": None, "detail": "replaced by postgres+pgvector"}
+    return report
 
 
 if __name__ == "__main__":

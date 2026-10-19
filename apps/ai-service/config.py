@@ -94,20 +94,6 @@ class Settings(BaseSettings):
         description="OpenCode Zen API key for MiMo-V2.5 Free. Dormant/unused — OPENCODE_API_KEY is unset in all environments; hazard analysis uses Gemini only.",
     )
 
-    # ── Neo4j ─────────────────────────────────────────────────────────────
-    neo4j_uri: str = Field(
-        default="",
-        description="Neo4j AuraDB connection URI (e.g. neo4j+s://...).",
-    )
-    neo4j_user: str = Field(
-        default="",
-        description="Neo4j username.",
-    )
-    neo4j_password: str = Field(
-        default="",
-        description="Neo4j password.",
-    )
-
     # ── Roboflow ──────────────────────────────────────────────────────────
     roboflow_api_key: str = Field(
         default="",
@@ -170,10 +156,6 @@ class Settings(BaseSettings):
         return not self.app_debug
 
     @property
-    def neo4j_configured(self) -> bool:
-        return bool(self.neo4j_uri and self.neo4j_user and self.neo4j_password)
-
-    @property
     def storage_configured(self) -> bool:
         return bool(self.supabase_storage_url and self.supabase_storage_key and self.supabase_storage_secret)
 
@@ -223,9 +205,6 @@ class Settings(BaseSettings):
         if not self.google_api_key:
             warnings.append("GOOGLE_API_KEY not set — Gemini chat/hazard/RAG features DISABLED")
 
-        if self.neo4j_uri and (not self.neo4j_user or not self.neo4j_password):
-            warnings.append("NEO4J_URI set but NEO4J_USER or NEO4J_PASSWORD missing — Neo4j partially configured")
-
         if self.supabase_storage_url and (not self.supabase_storage_key or not self.supabase_storage_secret):
             warnings.append("SUPABASE_STORAGE_URL set but STORAGE_KEY or STORAGE_SECRET missing — storage partially configured")
 
@@ -243,7 +222,6 @@ class Settings(BaseSettings):
             f"[config]   Supabase Auth:     {'✓ configured (' + self.auth_mode + ')' if self.auth_configured else '✗ not configured'}",
             f"[config]   Supabase Storage:  {'✓ configured' if self.storage_configured else '✗ not configured'}",
             f"[config]   Gemini AI:         {'✓ configured' if self.gemini_configured else '✗ not configured (GOOGLE_API_KEY missing)'}",
-            f"[config]   Neo4j:             {'✓ configured' if self.neo4j_configured else '✗ not configured'}",
             f"[config]   Roboflow:          {'✓ configured' if self.roboflow_configured else '✗ not configured'}",
             f"[config]   YOLO models:       {'✓ custom path' if self.yolo_model_path else 'default'} + {'✓ custom env' if self.env_model_path else 'default env'}",
             f"[config]   Metrics log:       {'✓ ' + self.likaslens_metrics_log if self.likaslens_metrics_log else '✗ disabled'}",
@@ -258,43 +236,8 @@ class Settings(BaseSettings):
             else:
                 logger.warning("[config] %s", warning)
 
-    def _neo4j_health_section(self, probe: dict[str, Any] | None) -> dict:
-        """Describe Neo4j config + (when probed) reachability without leaking details."""
-        if not self.neo4j_configured:
-            return {
-                "status": "not_configured",
-                "missing": [
-                    k for k, v in [
-                        ("NEO4J_URI", self.neo4j_uri),
-                        ("NEO4J_USER", self.neo4j_user),
-                        ("NEO4J_PASSWORD", self.neo4j_password),
-                    ] if not v
-                ],
-            }
-
-        section: dict[str, Any] = {
-            "status": "configured",
-            "reachable": None,
-            "detail": "not_probed",
-        }
-        if probe is not None:
-            reachable = probe.get("reachable")
-            if reachable is False:
-                # Configured env vars alone are not health: the host does not
-                # resolve or nothing is listening on the Bolt port.
-                section["status"] = "configured_but_unreachable"
-            section["reachable"] = reachable
-            section["detail"] = probe.get("reason", "unknown")
-        return section
-
-    def health_config(self, neo4j_probe: dict[str, Any] | None = None) -> dict:
-        """Return config status for /health/config endpoint. Never returns secret values.
-
-        `neo4j_probe` is an optional dependency_health.check_neo4j_reachability()
-        result. When supplied, a configured Neo4j is reported as either
-        "configured" (reachable) or "configured_but_unreachable". When omitted,
-        reachability is reported as unknown rather than implied healthy.
-        """
+    def health_config(self) -> dict:
+        """Return config status for /health/config endpoint. Never returns secret values."""
         def _status(configured: bool, required_fields: list[str], missing_fields: list[str]) -> str:
             if configured:
                 return "configured"
@@ -346,7 +289,6 @@ class Settings(BaseSettings):
                     ["GOOGLE_API_KEY"] if not self.gemini_configured else [],
                 ),
             },
-            "neo4j": self._neo4j_health_section(neo4j_probe),
             "roboflow": {
                 "status": _status(
                     self.roboflow_configured,

@@ -374,7 +374,7 @@ async def bulk_status(
 
 
 async def _notify_routing_learner(ticket: Ticket):
-    """Port of TicketController::notifyRoutingLearner — updates Neo4j scoring table.
+    """Port of TicketController::notifyRoutingLearner - updates the routing learner.
 
     DISABLED: The Ticket model has no LGU foreign key (no agency_id, no
     lgu_id column). The previous implementation passed str(ticket.id) as
