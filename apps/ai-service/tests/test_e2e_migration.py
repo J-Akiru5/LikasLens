@@ -125,8 +125,10 @@ class TestAuthSync:
         session = _mock_session(one_result=None)
         app.dependency_overrides[get_db] = lambda: session
 
+        # supabase_auth_user_id is a UUID column in the DB; the handler rejects
+        # non-UUID values with 400 (see routers/auth.py::sync_user).
         resp = client.post("/api/v1/auth/sync", json={
-            "supabase_auth_user_id": "test-auth-id-123",
+            "supabase_auth_user_id": str(uuid.uuid4()),
             "email": "new@test.com",
             "name": "New User",
         })
@@ -149,7 +151,7 @@ class TestAuthSync:
         app.dependency_overrides[get_db] = lambda: session
 
         resp = client.post("/api/v1/auth/sync", json={
-            "supabase_auth_user_id": "existing-auth-id",
+            "supabase_auth_user_id": str(uuid.uuid4()),
             "email": "existing@test.com",
             "name": "Existing",
         })
@@ -160,6 +162,21 @@ class TestAuthSync:
     def test_sync_missing_fields(self):
         resp = client.post("/api/v1/auth/sync", json={})
         assert resp.status_code == 422
+
+    def test_sync_rejects_non_uuid_auth_id(self):
+        # The DB column is UUID; the contract is 400 for anything else.
+        session = _mock_session()
+        app.dependency_overrides[get_db] = lambda: session
+
+        resp = client.post("/api/v1/auth/sync", json={
+            "supabase_auth_user_id": "not-a-uuid",
+            "email": "bad@test.com",
+            "name": "Bad Id",
+        })
+        assert resp.status_code == 400
+        assert resp.json()["detail"] == "Invalid supabase_auth_user_id format"
+        session.execute.assert_not_awaited()
+        app.dependency_overrides.clear()
 
 
 # ============================================================================
@@ -202,7 +219,17 @@ class TestReports:
         })
         assert resp.status_code == 422
 
-    @patch("image_analysis.analyze_base64")
+    # The route imports the async wrapper (routers/reports.py::triage_image),
+    # so patching the sync analyze_base64 has no effect.
+    #
+    # CAVEAT for the reports.py owner: triage_image currently calls
+    # analyze_base64_async(..., confidence=0.35), but the real signature is
+    # (base64_string, confidence_threshold=...). That TypeError is swallowed by
+    # the surrounding try/except, so triage silently returns has_concern=False
+    # in production. A plain AsyncMock hides it; once reports.py passes
+    # confidence_threshold=, switch this patch to spec'd/autospec so signature
+    # drift is caught here.
+    @patch("image_analysis.analyze_base64_async", new_callable=AsyncMock)
     def test_triage_image(self, mock_analyze):
         mock_analyze.return_value = {
             "environmental_assessment": {
