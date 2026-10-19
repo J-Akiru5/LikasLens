@@ -4,7 +4,7 @@
 **Owner decisions:** recorded below (four answers given this session)
 **Branch of record:** `security/p0-remediation` → merges to `main`
 **Last verified commit:** `56faefc2`
-**Status:** in progress — this document is the task record; update it as work lands.
+**Status:** WS1 (live graph), WS2 (mappings) and WS3 (timestamp trigger) are implemented and verified. WS4 (deploy) is blocked on Vercel project credentials, recorded below.
 
 ---
 
@@ -256,7 +256,8 @@ Until then, work proceeds under `AGENTS.md` plus the PR workflow.
 ## 8. Resumption notes
 
 - **Current branch:** `security/p0-remediation` at `56faefc2`, clean and pushed.
-- **Next executable step:** merge #218, then branch from `main`.
+- **Next executable step:** merge `feat/live-knowledge-graph`, then fix the Vercel project link so a deploy can run.
+- **Completed on `feat/live-knowledge-graph`:** live `/graph/knowledge` endpoint and both UIs; `violation_law_links` with 12 cited mappings (11 violations, 10 verified); `created_at` trigger with a verified seed bypass.
 - **Subagent:** research session for the 9 mappings is running in the background;
   its output is a table, not a database write.
 - **Do not** re-run the users/tickets RLS migrations — both are applied and
