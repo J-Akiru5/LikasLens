@@ -192,7 +192,7 @@ export default function AdminLandingPage() {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        const role = user.user_metadata?.role as string | undefined;
+        const role = user.app_metadata?.role as string | undefined;
         const isAuthorized = !!(role && ["analyst", "super_admin", "admin", "lgu"].includes(role));
         setIsAuthenticated(isAuthorized);
         setUserRole(role || null);

@@ -46,7 +46,7 @@ def mock_user():
     return {
         "sub": str(uuid.uuid4()),
         "email": "test@example.com",
-        "user_metadata": {"role": "citizen"},
+        "app_metadata": {"role": "citizen"},
     }
 
 
@@ -56,7 +56,7 @@ def mock_lgu_token():
     return {
         "sub": str(uuid.uuid4()),
         "email": "lgu@example.com",
-        "user_metadata": {"role": "lgu_officer"},
+        "app_metadata": {"role": "lgu_officer"},
     }
 
 
@@ -66,7 +66,7 @@ def mock_admin_token():
     return {
         "sub": str(uuid.uuid4()),
         "email": "admin@example.com",
-        "user_metadata": {"role": "admin"},
+        "app_metadata": {"role": "admin"},
     }
 
 

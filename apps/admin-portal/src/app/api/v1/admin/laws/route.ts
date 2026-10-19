@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { logAuditEvent } from "@/lib/audit";
+import { requireSuperAdmin } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +21,10 @@ function getSupabase() {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireSuperAdmin();
+  if (guard.response) return guard.response;
   try {
     const body = await request.json();
     if (!body.title || !body.law_code) {
@@ -64,6 +69,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function PUT(request: NextRequest): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireSuperAdmin();
+  if (guard.response) return guard.response;
   try {
     const body = await request.json();
     const { id, ...updates } = body;
@@ -105,6 +114,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireSuperAdmin();
+  if (guard.response) return guard.response;
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");

@@ -7,13 +7,24 @@
 ALTER TABLE users ALTER COLUMN password DROP NOT NULL;
 
 
--- 1b. Set known passwords on existing auth users (idempotent)
-UPDATE auth.users SET encrypted_password = crypt('Analyst123!', gen_salt('bf'))
-WHERE email = 'analyst@likaslens.ph';
-UPDATE auth.users SET encrypted_password = crypt('Admin123!', gen_salt('bf'))
-WHERE email = 'superadmin@likaslens.ph';
-UPDATE auth.users SET encrypted_password = crypt('Citizen123!', gen_salt('bf'))
-WHERE email = 'citizen@likaslens.ph';
+-- 1b. REMOVED: this script used to set fixed, known passwords on the demo
+--     accounts — in plaintext, in a public repository — via
+--     crypt('<literal password>', gen_salt('bf')).
+--
+--     The three accounts were confirmed live, and the superadmin@ account held
+--     the super_admin role, so anyone reading this repository could sign in to
+--     the admin portal as a super-admin. The passwords have been rotated.
+--
+--     Note: the literal passwords are deliberately not reproduced here, even
+--     as an example. They remain in this file's git history; rotation, not
+--     deletion, is what removed the exposure.
+--
+--     Passwords are now provisioned out of band. Create or invite the accounts
+--     from the Supabase dashboard (Authentication -> Users), or with the admin
+--     API, and set each password there. Never put a password, a hash, or a
+--     shared secret in this file.
+--
+--     See supabase/README.md.
 
 -- 1c. Ensure all auth users are confirmed (email_confirmed_at set)
 UPDATE auth.users SET email_confirmed_at = now()

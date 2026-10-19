@@ -94,7 +94,7 @@ export default function ImpactPage() {
           try {
             const supabase = getSupabaseClient();
             const { data: trendTickets } = await supabase
-              .from("tickets")
+              .from("public_tickets")
               .select("created_at, status");
             const buckets = new Map<string, { filed: number; resolved: number }>();
             const now = new Date();

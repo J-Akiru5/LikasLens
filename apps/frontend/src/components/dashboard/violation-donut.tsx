@@ -66,7 +66,7 @@ export function ViolationDonut() {
       try {
         const supabase = getSupabaseClient();
         const { data: tickets, error } = await supabase
-          .from("tickets")
+          .from("public_tickets")
           .select("ai_triage_summary");
 
         if (error) throw error;

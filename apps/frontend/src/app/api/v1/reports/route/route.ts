@@ -11,7 +11,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
-import { routeTicketToCoveringOffice } from "@likaslens/shared";
+import { decideTicketRoutingAccess, routeTicketToCoveringOffice } from "@likaslens/shared";
+import { createClient as createServerClient } from "@/utils/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,12 +29,62 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const db = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "",
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+    const serviceKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
-        ""
-    );
+      process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
+      "";
+    if (!url || !serviceKey) {
+      return NextResponse.json(
+        { error: "Server is not configured to route reports." },
+        { status: 503 }
+      );
+    }
+
+    // A signed-in caller is required. This route previously had no caller check
+    // at all and would route any ticket id handed to it.
+    const sessionClient = await createServerClient();
+    const {
+      data: { user },
+    } = await sessionClient.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const db = createServiceClient(url, serviceKey);
+
+    const { data: ticket, error: ticketErr } = await db
+      .from("tickets")
+      .select("id, reporter_user_id, status, created_at")
+      .eq("id", ticketId)
+      .maybeSingle();
+
+    if (ticketErr) {
+      console.error("[/api/v1/reports/route] ticket lookup failed:", ticketErr.message);
+      return NextResponse.json({ error: "Ticket lookup failed" }, { status: 500 });
+    }
+    if (!ticket) {
+      return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
+    }
+
+    const role = (user.app_metadata as { role?: string } | null)?.role ?? "";
+    const decision = decideTicketRoutingAccess({
+      role,
+      callerId: user.id,
+      ticket: {
+        id: ticket.id as string,
+        reporter_user_id: (ticket.reporter_user_id as string | null) ?? null,
+        status: (ticket.status as string | null) ?? null,
+        created_at: (ticket.created_at as string | null) ?? null,
+      },
+    });
+
+    if (!decision.allowed) {
+      return NextResponse.json(
+        { error: "Not permitted to route this ticket" },
+        { status: 403 }
+      );
+    }
 
     const routing = await routeTicketToCoveringOffice(
       db,

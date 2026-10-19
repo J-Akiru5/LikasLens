@@ -15,12 +15,28 @@ const intlMiddleware = createMiddleware({
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Bypass if Supabase is not configured
+  const locale =
+    locales.find(
+      (loc) => pathname === `/${loc}` || pathname.startsWith(`/${loc}/`),
+    ) || locales[0];
+
+  // Fail closed. This used to return intlMiddleware(request) when Supabase env
+  // was absent, which served every protected admin page to an unauthenticated
+  // visitor. A misconfigured deployment must not silently become an open one.
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   ) {
-    return intlMiddleware(request);
+    const pathWithoutLocale = pathname.replace(/^\/[a-z]{2,3}\b/, "") || "/";
+    const isPublic = publicRoutes.some(
+      (r) => pathWithoutLocale === r || pathWithoutLocale === `${r}/`,
+    );
+    if (isPublic || pathname === "/") return intlMiddleware(request);
+
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/login`;
+    url.searchParams.set("error", "not_configured");
+    return NextResponse.redirect(url);
   }
 
   let supabaseResponse = intlMiddleware(request);
@@ -65,7 +81,7 @@ export async function proxy(request: NextRequest) {
     return pathWithoutLocale === route || pathWithoutLocale === `${route}/`;
   });
 
-  const userRole = user?.user_metadata?.role as string | undefined;
+  const userRole = user?.app_metadata?.role as string | undefined;
   const isAuthorizedAdmin = !!(user && userRole && ["analyst", "super_admin", "admin", "lgu"].includes(userRole));
 
   // If user is logged in with an authorized admin role and trying to access login, redirect to dashboard

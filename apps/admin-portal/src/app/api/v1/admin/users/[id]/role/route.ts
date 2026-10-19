@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase-server";
 import { logAuditEvent } from "@/lib/audit";
+import { requireSuperAdmin } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,9 +20,10 @@ function getAiUrl(): string {
 
 /**
  * Keep the Supabase auth account's role in sync with the users table.
- * The admin-portal login gate reads user_metadata.role, so without this
- * a role change in the UI would never change who may sign in.
- * Legacy rows without a real auth account are skipped silently.
+ * Every gate reads app_metadata.role, so without this a role change in the UI
+ * would never change who may sign in. user_metadata is written too, because the
+ * provisioning trigger reads it. Legacy rows without a real auth account are
+ * skipped silently.
  */
 async function syncAuthRole(userId: string, role: string): Promise<void> {
   try {
@@ -36,6 +38,7 @@ async function syncAuthRole(userId: string, role: string): Promise<void> {
       .maybeSingle();
     if (!userRow?.supabase_auth_user_id) return;
     const { error } = await db.auth.admin.updateUserById(userRow.supabase_auth_user_id, {
+      app_metadata: { role },
       user_metadata: { role },
     });
     if (error) console.warn("[/api/v1/admin/users/[id]/role] auth metadata sync:", error.message);
@@ -48,6 +51,10 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireSuperAdmin();
+  if (guard.response) return guard.response;
   try {
     const { id } = await params;
     const body = await request.json();

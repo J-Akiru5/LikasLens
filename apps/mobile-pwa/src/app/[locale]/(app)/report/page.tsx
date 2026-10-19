@@ -40,6 +40,7 @@ import { useHaptics } from "@/hooks/use-haptics";
 import {
   cn,
   submitCitizenReport,
+  triageCitizenReport,
   showToast,
   queueReport,
   Button,
@@ -99,13 +100,18 @@ export default function ReportPage() {
   const [longitude, setLongitude] = useState<number | null>(null);
   const [resolvedAddress, setResolvedAddress] = useState<string>("Locating coordinates...");
 
-  // AI & Detection states
-  const [aiDetectedCategory, setAiDetectedCategory] = useState<{
-    id: string;
-    confidence: number;
-    label: string;
-    reason: string;
+  // AI triage state.
+  //
+  // This reflects what the AI service actually returned for the captured
+  // photo: whether it saw an environmental concern, and the material labels
+  // it recognised. Deliberately holds no confidence value — a number like
+  // "94.6%" reads as a precision claim the model has not earned, and an
+  // analyst, not the model, decides what the photo shows.
+  const [aiTriage, setAiTriage] = useState<{
+    hasConcern: boolean;
+    labels: string[];
   } | null>(null);
+  const [triageError, setTriageError] = useState<string | null>(null);
   const [isAnalyzingPhoto, setIsAnalyzingPhoto] = useState(false);
   const [isOverridden, setIsOverridden] = useState(false);
 
@@ -313,26 +319,42 @@ export default function ReportPage() {
     };
   }, [showFullscreenCamera, startCamera, stopCamera]);
 
-  // AI Auto-Detection Simulation
-  const runAIDetectionOnCapturedPhoto = useCallback((photoDataUrl: string) => {
+  /**
+   * Ask the AI service what it can see in the captured photo.
+   *
+   * This replaces a hardcoded simulation that always reported
+   * "Illegal Waste Dumping (94.6%)" regardless of what the camera saw. Two
+   * things were wrong with that: the label was invented, and the percentage
+   * was a precision claim the model had not earned. This calls the real
+   * pre-submission triage endpoint (non-persisting) and reports only what
+   * came back.
+   *
+   * The citizen still chooses the incident category. Triage does not set it,
+   * because the model returns material labels, not the app's categories.
+   */
+  const runAIDetectionOnCapturedPhoto = useCallback(async (photoDataUrl: string) => {
     setIsAnalyzingPhoto(true);
-    showToast("AI analyzing photo with YOLOv8 & Roboflow...", "info");
-    setTimeout(() => {
+    setTriageError(null);
+    setAiTriage(null);
+    try {
+      const result = await triageCitizenReport(photoDataUrl);
+      const labels = Array.from(
+        new Set(
+          (result.indicators ?? [])
+            .map((i) => i.label ?? i.type)
+            .filter((l): l is string => Boolean(l)),
+        ),
+      );
+      setAiTriage({ hasConcern: Boolean(result.has_concern), labels });
+    } catch (err) {
+      setAiTriage(null);
+      setTriageError(
+        err instanceof Error ? err.message : "AI analysis is unavailable right now.",
+      );
+    } finally {
       setIsAnalyzingPhoto(false);
-      const detected = {
-        id: "waste_dumping",
-        confidence: 94.6,
-        label: "Illegal Waste Dumping",
-        reason: "YOLOv8 detected high-density solid waste and unsegregated plastics.",
-      };
-      setAiDetectedCategory(detected);
-      if (!reportType || reportType === "other") {
-        setReportType(detected.id);
-        setIsOverridden(false);
-      }
-      showToast("✨ AI Auto-Detected: Illegal Waste Dumping (94.6%)", "success");
-    }, 600);
-  }, [reportType]);
+    }
+  }, []);
 
   // Photo Capture Flow
   const capturePhoto = useCallback(() => {
@@ -714,7 +736,8 @@ export default function ReportPage() {
                   setStep(1);
                   setBase64Image("");
                   setDescription("");
-                  setAiDetectedCategory(null);
+                  setAiTriage(null);
+                  setTriageError(null);
                   setIsOverridden(false);
                 }}
                 className="w-full py-3 px-4 rounded-2xl border border-ink/15 text-ink font-bold text-xs active:scale-98 transition-transform text-center"
@@ -805,7 +828,7 @@ export default function ReportPage() {
                       )}
                     </div>
                     <p className="text-[11px] text-ink/80 pl-9 leading-tight font-medium">
-                      100% private • EXIF-stripped & zero user identifiers
+                      Identity hidden • EXIF stripped from the photo
                     </p>
                   </button>
                 </div>
@@ -906,22 +929,64 @@ export default function ReportPage() {
                   )}
                 </div>
 
-                {/* AI Detection Banner */}
-                {aiDetectedCategory && (
-                  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-1">
+                {/* AI triage result. Reports only what the AI service returned. */}
+                {(aiTriage || triageError) && (
+                  <div
+                    data-testid="ai-triage-result"
+                    className={`p-3.5 rounded-2xl space-y-2 border ${
+                      triageError
+                        ? "bg-amber-500/10 border-amber-500/30"
+                        : aiTriage && aiTriage.labels.length > 0
+                          ? "bg-emerald-500/10 border-emerald-500/30"
+                          : "bg-ink/[0.03] border-ink/15"
+                    }`}
+                  >
                     <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
-                        {isOverridden
-                          ? "👤 Category Overridden by You"
-                          : `✨ AI Auto-Detected: ${aiDetectedCategory.label} (${aiDetectedCategory.confidence}%)`}
+                      <Sparkles
+                        className={`w-4 h-4 shrink-0 ${
+                          triageError ? "text-amber-500" : "text-emerald-500"
+                        }`}
+                      />
+                      <p className="text-xs font-mono font-bold text-ink uppercase tracking-wide">
+                        {triageError
+                          ? "AI Analysis Unavailable"
+                          : aiTriage && aiTriage.labels.length > 0
+                            ? "AI Analysis Complete"
+                            : "Nothing Flagged"}
                       </p>
                     </div>
-                    <p className="text-[11px] text-ink/70 leading-relaxed pl-6">
-                      {isOverridden
-                        ? `Manually categorized as ${selectedCategory?.label || reportType}.`
-                        : `${aiDetectedCategory.reason} Tap below if you wish to change it.`}
-                    </p>
+
+                    {triageError ? (
+                      <p className="text-[11px] text-ink/70 leading-relaxed pl-6">{triageError}</p>
+                    ) : aiTriage && aiTriage.labels.length > 0 ? (
+                      <>
+                        <div className="flex flex-wrap gap-1.5 pl-6">
+                          {aiTriage.labels.map((label) => (
+                            <span
+                              key={label}
+                              className="font-mono text-[10px] text-ink/70 bg-ink/[0.05] px-2 py-0.5 rounded"
+                            >
+                              {label}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="text-[11px] text-ink/70 leading-relaxed pl-6">
+                          {aiTriage.hasConcern
+                            ? "The AI flagged this photo as an environmental concern. An analyst confirms what the photo shows before any action is taken."
+                            : "The AI flagged the material above. An analyst confirms what the photo shows before any action is taken."}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-[11px] text-ink/70 leading-relaxed pl-6">
+                        The AI did not flag anything in this photo. You can still submit it, and an
+                        analyst will review it.
+                      </p>
+                    )}
+                    {isOverridden && (
+                      <p className="text-[11px] text-ink/50 leading-relaxed pl-6">
+                        You set the category to {selectedCategory?.label || reportType}.
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -940,7 +1005,7 @@ export default function ReportPage() {
                           type="button"
                           onClick={() => {
                             setReportType(cat.id);
-                            setIsOverridden(cat.id !== aiDetectedCategory?.id);
+                            setIsOverridden(true);
                             haptic("light");
                           }}
                           className={`p-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 text-left active:scale-98 ${

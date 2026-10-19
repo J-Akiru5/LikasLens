@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { logAuditEvent } from "@/lib/audit";
+import { requireSuperAdmin } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,6 +35,10 @@ function generateTempPassword(): string {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireSuperAdmin();
+  if (guard.response) return guard.response;
   try {
     const body = await request.json();
     if (!body.name || !body.email) {
@@ -82,12 +87,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         : null;
     const tempPassword = generateTempPassword();
 
-    // 1. Create the real Supabase auth account (role lives in user_metadata,
-    //    which the admin-portal login gate reads).
+    // 1. Create the real Supabase auth account. The role is written to BOTH
+    //    claims: `app_metadata` is the authoritative one every gate reads, and
+    //    `user_metadata` is kept because the provisioning trigger copies it into
+    //    public.users.
     const { data: authData, error: authError } = await db.auth.admin.createUser({
       email,
       password: tempPassword,
       email_confirm: true,
+      app_metadata: { role },
       user_metadata: { name, role },
     });
 
@@ -144,6 +152,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function PUT(request: NextRequest): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireSuperAdmin();
+  if (guard.response) return guard.response;
   try {
     const body = await request.json();
     const { id, ...updates } = body;
@@ -187,6 +199,10 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireSuperAdmin();
+  if (guard.response) return guard.response;
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");

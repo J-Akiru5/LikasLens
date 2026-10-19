@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 def _require_super_admin(token: dict) -> None:
     """Verified is the super admin's final sign-off."""
-    role = token.get("user_metadata", {}).get("role", "citizen")
+    role = token.get("app_metadata", {}).get("role", "citizen")
     if role != "super_admin":
         raise HTTPException(
             status_code=403,
@@ -374,7 +374,7 @@ async def bulk_status(
 
 
 async def _notify_routing_learner(ticket: Ticket):
-    """Port of TicketController::notifyRoutingLearner — updates Neo4j scoring table.
+    """Port of TicketController::notifyRoutingLearner - updates the routing learner.
 
     DISABLED: The Ticket model has no LGU foreign key (no agency_id, no
     lgu_id column). The previous implementation passed str(ticket.id) as

@@ -19,6 +19,7 @@ import crypto from "node:crypto";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase-server";
 import { logAuditEvent } from "@/lib/audit";
+import { requireStaff } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,6 +65,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireStaff();
+  if (guard.response) return guard.response;
   try {
     const { id } = await params;
 
@@ -75,7 +80,7 @@ export async function POST(
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
-    const role = String(user.user_metadata?.role || "citizen");
+    const role = String(user.app_metadata?.role || "citizen");
     if (!STAFF_ROLES.has(role)) {
       return NextResponse.json(
         { error: "Only analyst / LGU / admin accounts can upload resolution evidence" },

@@ -50,7 +50,7 @@ export async function logAuditEvent(
         actorId = user.id ?? null;
         actorEmail = user.email ?? null;
         actorRole =
-          (user.user_metadata?.role as string | undefined) ?? null;
+          (user.app_metadata?.role as string | undefined) ?? null;
       }
     } catch {
       // Cookie/session unavailable — record as system action

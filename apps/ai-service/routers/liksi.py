@@ -49,7 +49,7 @@ async def liksi_chat(
     # The client's context_mode and system_prompt are NEVER trusted.
     # Role is derived from the verified Supabase JWT (or defaults to citizen).
     if token:
-        role = token.get("user_metadata", {}).get("role", "citizen")
+        role = token.get("app_metadata", {}).get("role", "citizen")
     else:
         role = "citizen"
 

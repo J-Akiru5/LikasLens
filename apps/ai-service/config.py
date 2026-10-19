@@ -13,7 +13,7 @@ Classification:
 from __future__ import annotations
 
 import logging
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
@@ -94,20 +94,6 @@ class Settings(BaseSettings):
         description="OpenCode Zen API key for MiMo-V2.5 Free. Dormant/unused — OPENCODE_API_KEY is unset in all environments; hazard analysis uses Gemini only.",
     )
 
-    # ── Neo4j ─────────────────────────────────────────────────────────────
-    neo4j_uri: str = Field(
-        default="",
-        description="Neo4j AuraDB connection URI (e.g. neo4j+s://...).",
-    )
-    neo4j_user: str = Field(
-        default="",
-        description="Neo4j username.",
-    )
-    neo4j_password: str = Field(
-        default="",
-        description="Neo4j password.",
-    )
-
     # ── Roboflow ──────────────────────────────────────────────────────────
     roboflow_api_key: str = Field(
         default="",
@@ -170,10 +156,6 @@ class Settings(BaseSettings):
         return not self.app_debug
 
     @property
-    def neo4j_configured(self) -> bool:
-        return bool(self.neo4j_uri and self.neo4j_user and self.neo4j_password)
-
-    @property
     def storage_configured(self) -> bool:
         return bool(self.supabase_storage_url and self.supabase_storage_key and self.supabase_storage_secret)
 
@@ -223,9 +205,6 @@ class Settings(BaseSettings):
         if not self.google_api_key:
             warnings.append("GOOGLE_API_KEY not set — Gemini chat/hazard/RAG features DISABLED")
 
-        if self.neo4j_uri and (not self.neo4j_user or not self.neo4j_password):
-            warnings.append("NEO4J_URI set but NEO4J_USER or NEO4J_PASSWORD missing — Neo4j partially configured")
-
         if self.supabase_storage_url and (not self.supabase_storage_key or not self.supabase_storage_secret):
             warnings.append("SUPABASE_STORAGE_URL set but STORAGE_KEY or STORAGE_SECRET missing — storage partially configured")
 
@@ -243,7 +222,6 @@ class Settings(BaseSettings):
             f"[config]   Supabase Auth:     {'✓ configured (' + self.auth_mode + ')' if self.auth_configured else '✗ not configured'}",
             f"[config]   Supabase Storage:  {'✓ configured' if self.storage_configured else '✗ not configured'}",
             f"[config]   Gemini AI:         {'✓ configured' if self.gemini_configured else '✗ not configured (GOOGLE_API_KEY missing)'}",
-            f"[config]   Neo4j:             {'✓ configured' if self.neo4j_configured else '✗ not configured'}",
             f"[config]   Roboflow:          {'✓ configured' if self.roboflow_configured else '✗ not configured'}",
             f"[config]   YOLO models:       {'✓ custom path' if self.yolo_model_path else 'default'} + {'✓ custom env' if self.env_model_path else 'default env'}",
             f"[config]   Metrics log:       {'✓ ' + self.likaslens_metrics_log if self.likaslens_metrics_log else '✗ disabled'}",
@@ -309,19 +287,6 @@ class Settings(BaseSettings):
                     self.gemini_configured,
                     ["GOOGLE_API_KEY"],
                     ["GOOGLE_API_KEY"] if not self.gemini_configured else [],
-                ),
-            },
-            "neo4j": {
-                "status": _status(
-                    self.neo4j_configured,
-                    ["NEO4J_URI", "NEO4J_USER", "NEO4J_PASSWORD"],
-                    (
-                        [k for k, v in [
-                            ("NEO4J_URI", self.neo4j_uri),
-                            ("NEO4J_USER", self.neo4j_user),
-                            ("NEO4J_PASSWORD", self.neo4j_password),
-                        ] if not v]
-                    ),
                 ),
             },
             "roboflow": {

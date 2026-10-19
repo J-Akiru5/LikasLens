@@ -33,26 +33,6 @@ POSTGRESQL_ROUTING_RULES = {
     "noise_pollution":  "LGU Environment Office",
 }
 
-# Map our category vocabulary to Neo4j ViolationType codes.
-# These match the codes in neo4j_upserts/baseline_rules.py:BASELINE_VIOLATIONS.
-# noise_pollution has no dedicated ViolationType/HazardType in the seeded
-# graph (no PH law in baseline_rules.py is noise-specific) — remapped to
-# AIR-EMISSION-VIOLATION rather than inventing a node with no real
-# enforcement/law backing; LGU Environment Office handles both as nuisance
-# complaints in practice. Revisit if a real noise ordinance is added.
-CATEGORY_TO_VIOLATION_CODE = {
-    "illegal_dumping":  "SWM-ILLEGAL-DUMPING",
-    "solid_waste":      "SWM-ILLEGAL-DUMPING",
-    "water_pollution":  "WATER-UNAUTHORIZED-DISCHARGE",
-    "air_pollution":    "AIR-EMISSION-VIOLATION",
-    "deforestation":    "ILLEGAL-LOGGING",
-    "illegal_burning":  "OPEN-BURNING",
-    "sewage_discharge": "WATER-UNAUTHORIZED-DISCHARGE",
-    "chemical_spill":   "HAZWASTE-HANDLING",
-    "noise_pollution":  "AIR-EMISSION-VIOLATION",
-}
-
-
 def _fallback_route(category: str) -> tuple[str, str]:
     """Fallback routing using PostgreSQL rule-based rules."""
     office = POSTGRESQL_ROUTING_RULES.get(
@@ -65,9 +45,8 @@ def _fallback_route(category: str) -> tuple[str, str]:
 async def run_triage(base64_image: str, ticket_id: str, db: AsyncSession) -> dict:
     """
     1. Call YOLOv8 + Gemini in-process
-    2. Attempt Neo4j routing recommendation
-    3. Fall back to PostgreSQL rule-based routing
-    4. Persist AI result + routing_source to ticket
+    2. Choose a recommended office from the routing rules
+    3. Persist AI result + routing_source to ticket
     """
     global _circuit_failures, _circuit_opened_at
     import time
@@ -99,38 +78,14 @@ async def run_triage(base64_image: str, ticket_id: str, db: AsyncSession) -> dic
     confidence = float(result.get("composite_confidence", 0.0))
     summary = f"YOLOv8: {result.get('detection_count', 0)} detection(s). Category: {category}."
 
-    # Attempt Neo4j routing
+    # Routing is rule-based. The old Neo4j write was consulted first and could
+    # override the office, but nothing ever read those edges back and the graph
+    # is gone, so the rules are the source of truth.
     recommended_office, routing_source = _fallback_route(category)
-    try:
-        from neo4j_client import route_incident
-        violation_code = CATEGORY_TO_VIOLATION_CODE.get(
-            category.lower().replace(" ", "_"),
-            category.upper().replace(" ", "_"),
-        )
-        neo4j_result = await route_incident(
-            citizen_id="system",
-            incident_id=ticket_id,
-            violation_code=violation_code,
-            ngo_id=None,
-        )
-        if neo4j_result.get("success") and neo4j_result.get("recommended_office"):
-            recommended_office = neo4j_result["recommended_office"]
-            routing_source = "neo4j"
-            logger.info(
-                "routing_source=neo4j | recommended=%s | ticket=%s",
-                recommended_office, ticket_id,
-            )
-        else:
-            logger.info(
-                "routing_source=postgresql_fallback | recommended=%s | ticket=%s",
-                recommended_office, ticket_id,
-            )
-    except Exception as e:
-        logger.warning("Neo4j unavailable — falling back to PostgreSQL routing rules: %s", e)
-        logger.info(
-            "routing_source=postgresql_fallback | recommended=%s | ticket=%s",
-            recommended_office, ticket_id,
-        )
+    logger.info(
+        "routing_source=%s | recommended=%s | ticket=%s",
+        routing_source, recommended_office, ticket_id,
+    )
 
     # Persist to DB
     try:

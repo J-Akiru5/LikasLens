@@ -44,8 +44,8 @@ export default function IncidentsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }: { data: { user: { user_metadata?: { role?: string } } | null } | null }) => {
-      const role = data?.user?.user_metadata?.role as string | undefined;
+    supabase.auth.getUser().then(({ data }: { data: { user: { app_metadata?: { role?: string } } | null } | null }) => {
+      const role = data?.user?.app_metadata?.role as string | undefined;
       setIsAdmin(
         role === "super_admin" || role === "analyst" || role === "lgu"
       );

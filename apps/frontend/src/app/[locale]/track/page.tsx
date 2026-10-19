@@ -75,7 +75,7 @@ function TrackContent() {
     setIsLoading(true);
     try {
       const db = getSupabaseClient();
-      const { data: res, error } = await db.from("tickets").select("*").eq("id", ticketId.trim()).single();
+      const { data: res, error } = await db.from("public_tickets").select("*").eq("id", ticketId.trim()).single();
       if (res) {
         setActiveTicket(res);
       } else {

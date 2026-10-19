@@ -13,8 +13,7 @@ import {
   ShieldCheck,
   Lock,
   ShieldAlert,
-  KeyRound,
-  Building2,
+
   CheckCircle2,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -260,44 +259,12 @@ export function LoginClient() {
                 )}
               </button>
 
-              {/* Demo Credentials Quick Fill */}
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail("analyst@likaslens.ph");
-                  setPassword("Analyst123!");
-                }}
-                className="w-full py-2.5 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/70 hover:text-white font-mono text-[11px] flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <KeyRound className="w-3.5 h-3.5 text-[#2ee6c8]" />
-                Auto-Fill Demo Analyst Credentials (<span className="text-[#2ee6c8]">analyst@likaslens.ph</span>)
-              </button>
-
-              {/* Demo LGU Quick Fill */}
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail("lgu@likaslens.ph");
-                  setPassword("Lgu123!");
-                }}
-                className="w-full py-2.5 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/70 hover:text-white font-mono text-[11px] flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <Building2 className="w-3.5 h-3.5 text-[#2ee6c8]" />
-                Auto-Fill Demo LGU Credentials (<span className="text-[#2ee6c8]">lgu@likaslens.ph</span>)
-              </button>
-
-              {/* Demo Super Admin Quick Fill */}
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail("superadmin@likaslens.ph");
-                  setPassword("Admin123!");
-                }}
-                className="w-full py-2.5 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-white/70 hover:text-white font-mono text-[11px] flex items-center justify-center gap-2 transition-all cursor-pointer"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-[#2ee6c8]" />
-                Auto-Fill Demo Super Admin Credentials (<span className="text-[#2ee6c8]">superadmin@likaslens.ph</span>)
-              </button>
+              {/* Demo credential auto-fill removed during security remediation.
+                  These buttons hardcoded a working password for a live
+                  super_admin account in client-side JavaScript, which is served
+                  to anyone who loads the login page. They also stopped working
+                  when the passwords were rotated. Sign in with your own
+                  credentials. */}
             </div>
           </form>
 

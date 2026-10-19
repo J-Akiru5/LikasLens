@@ -137,7 +137,7 @@ export default function ImpactPage() {
 
         // Direct Supabase query for real tickets
         const { data: dbTickets, error } = await supabase
-          .from("tickets")
+          .from("public_tickets")
           .select("*")
           .order("created_at", { ascending: false })
           .limit(100);

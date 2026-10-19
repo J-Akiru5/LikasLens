@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     const supabase = await createClient();
     const { data: { user: authUser } } = await supabase.auth.getUser();
     userGreeting = authUser?.email ? authUser.email.split('@')[0] : "Citizen";
-    userRole = authUser?.user_metadata?.role as string | undefined;
+    userRole = authUser?.app_metadata?.role as string | undefined;
 
   } catch {
     // Auth unavailable — render page without user-specific data
@@ -27,9 +27,15 @@ export default async function DashboardPage() {
   try {
     const supabase = await createClient();
 
-    const [ticketsRes, usersRes] = await Promise.all([
-      supabase.from("tickets").select("id, title, description, status, urgency_score, address_text, reporter_user_id, ghost_mode, created_at, resolved_at"),
-      supabase.from("users").select("id", { count: "exact", head: true }),
+    const [ticketsRes, userCountRes] = await Promise.all([
+      // Public projection: the same fields the feed needs, minus reporter
+      // identity. `public_tickets` exposes `reporter_verified` (a boolean)
+      // instead of `reporter_user_id`.
+      supabase.from("public_tickets").select("id, title, description, status, urgency_score, address_text, reporter_verified, ghost_mode, created_at, resolved_at"),
+      // The platform total used to read `users` directly. Public reads are now
+      // restricted to your own row or staff, so the number comes from a
+      // count-only SECURITY DEFINER function that returns a count, never rows.
+      supabase.rpc("public_user_count"),
     ]);
 
     const tickets = ticketsRes.data || [];
@@ -66,7 +72,7 @@ export default async function DashboardPage() {
 
       total_tickets: total,
       total_reports: total,
-      total_users: usersRes.count || 0,
+      total_users: typeof userCountRes.data === "number" ? userCountRes.data : 0,
       ghost_reports: 0,
       tickets_by_status: {
         open: tickets.filter((t: any) => t.status === "open").length,
@@ -103,7 +109,7 @@ export default async function DashboardPage() {
           : t.status === "monitoring" ? "Monitoring"
           : t.status === "verified" ? "Verified"
           : "Active",
-        reporter: t.reporter_user_id ? "Verified Citizen" : "Anonymous (Ghost Mode)",
+        reporter: t.reporter_verified ? "Verified Citizen" : "Anonymous (Ghost Mode)",
       };
     });
   } catch {

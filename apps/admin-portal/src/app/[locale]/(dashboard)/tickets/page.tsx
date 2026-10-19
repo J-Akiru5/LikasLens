@@ -134,8 +134,8 @@ export default function TicketsPage() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user?.user_metadata?.role) {
-        setUserRole(user.user_metadata.role as string);
+      if (user?.app_metadata?.role) {
+        setUserRole(user.app_metadata.role as string);
       }
     });
   }, []);
@@ -479,7 +479,6 @@ export default function TicketsPage() {
                 <div className="mb-3 flex items-center gap-2 flex-wrap">
                   <ConfidenceTierBadge
                     score={Number((ticket as unknown as { ai_confidence?: number }).ai_confidence ?? 0)}
-                    showScore
                   />
                   <ReddEligibilityBadge
                     eligible={(ticket as unknown as { is_redd_eligible?: boolean }).is_redd_eligible ?? false}

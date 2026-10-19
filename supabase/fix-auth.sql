@@ -2,9 +2,9 @@
 -- Run in Supabase SQL Editor: https://supabase.com/dashboard/project/sfklmmtimelotqvrldni/sql/new
 
 -- 1. Set known passwords
-UPDATE auth.users SET encrypted_password = crypt('Analyst123!', gen_salt('bf')) WHERE email = 'analyst@likaslens.ph';
-UPDATE auth.users SET encrypted_password = crypt('Admin123!', gen_salt('bf')) WHERE email = 'superadmin@likaslens.ph';
-UPDATE auth.users SET encrypted_password = crypt('Citizen123!', gen_salt('bf')) WHERE email = 'citizen@likaslens.ph';
+-- [REMOVED: hardcoded password] UPDATE auth.users SET encrypted_password = crypt(NULL, gen_salt('bf')) WHERE email = 'analyst@likaslens.ph';
+-- [REMOVED: hardcoded password] UPDATE auth.users SET encrypted_password = crypt(NULL, gen_salt('bf')) WHERE email = 'superadmin@likaslens.ph';
+-- [REMOVED: hardcoded password] UPDATE auth.users SET encrypted_password = crypt(NULL, gen_salt('bf')) WHERE email = 'citizen@likaslens.ph';
 
 -- 2. Confirm emails (skip email verification)
 UPDATE auth.users SET email_confirmed_at = now() WHERE email_confirmed_at IS NULL
