@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase-server";
 import { logAuditEvent } from "@/lib/audit";
+import { requireSuperAdmin } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,6 +49,10 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireSuperAdmin();
+  if (guard.response) return guard.response;
   try {
     const { id } = await params;
     const body = await request.json();

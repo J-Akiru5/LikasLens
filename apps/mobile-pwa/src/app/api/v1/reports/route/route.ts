@@ -86,6 +86,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const ownsTicket =
       ticket.reporter_user_id != null && ticket.reporter_user_id === user.id;
     const isFreshOpenTicket =
+      ticket.reporter_user_id == null &&
       ticket.status === "open" &&
       Date.now() - new Date(ticket.created_at as string).getTime() < FRESH_WINDOW_MS;
 

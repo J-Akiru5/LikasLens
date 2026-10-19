@@ -1,16 +1,27 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { routeTicketToCoveringOffice } from "@likaslens/shared";
+import { createClient as createServerClient } from "@/utils/supabase/server";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+    // Fail closed. Falling back to the anon key silently turned a service-role
+    // write into whatever RLS allows, hiding a misconfigured server.
     const serviceKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
       process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
       "";
+    if (!url || !serviceKey) {
+      return NextResponse.json(
+        { success: false, error: "Server is not configured to accept reports." },
+        { status: 503 },
+      );
+    }
 
     const supabase = createClient(url, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
@@ -23,8 +34,16 @@ export async function POST(req: Request) {
     const latitude = typeof body.latitude === "number" ? body.latitude : null;
     const longitude = typeof body.longitude === "number" ? body.longitude : null;
     const location = body.location ? String(body.location) : undefined;
-    const userId = body.user_id ? String(body.user_id) : null;
     const reportType = body.report_type ? String(body.report_type) : undefined;
+
+    // Identity comes from the session only. This route used to trust
+    // body.user_id, so any caller could file a report in someone else's name.
+    // Anonymous (Ghost Mode) submissions still work and store a null reporter.
+    const sessionClient = await createServerClient();
+    const {
+      data: { user },
+    } = await sessionClient.auth.getUser();
+    const userId = user?.id ?? null;
 
     let validUserId: string | null = null;
     if (userId) {

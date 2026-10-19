@@ -19,6 +19,7 @@ import crypto from "node:crypto";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase-server";
 import { logAuditEvent } from "@/lib/audit";
+import { requireStaff } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,6 +65,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireStaff();
+  if (guard.response) return guard.response;
   try {
     const { id } = await params;
 

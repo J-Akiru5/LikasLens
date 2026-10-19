@@ -79,11 +79,19 @@ export async function proxy(request: NextRequest) {
     const { data } = await supabase.auth.getUser();
     user = data.user;
   } catch {
-    // Supabase unreachable or token refresh failed — restore original cookies
+    // Supabase unreachable or token refresh failed. This used to return the
+    // protected page anyway, which made an auth outage an authentication
+    // bypass. Fail closed instead: restore the cookies and send the visitor to
+    // login.
     originalCookies.forEach(({ name, value }) => {
       supabaseResponse.cookies.set(name, value);
     });
-    return supabaseResponse;
+    if (isPublicRoute || pathname === "/") return supabaseResponse;
+
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/login`;
+    url.searchParams.set("error", "auth_unavailable");
+    return NextResponse.redirect(url);
   }
 
   // Helper: check if a path matches a locale-prefixed route

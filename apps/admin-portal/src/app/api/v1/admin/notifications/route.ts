@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { createClient as createServerClient } from "@/lib/supabase-server";
 import { logAuditEvent } from "@/lib/audit";
+import { requireStaff } from "@/lib/api-auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,6 +40,10 @@ function getSupabase() {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Authorisation must live in the handler: the proxy matcher excludes
+  // /api/*, so middleware never runs for this route.
+  const guard = await requireStaff();
+  if (guard.response) return guard.response;
   try {
     // 1. Resolve the acting session
     let sessionUser: { id: string; email?: string } | null = null;

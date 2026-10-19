@@ -24,12 +24,11 @@
 -- ───────────────────────────────────────────────────────────────────────────
 ALTER TABLE users ALTER COLUMN password DROP NOT NULL;
 
--- [REMOVED: hardcoded password] UPDATE auth.users SET encrypted_password = crypt(NULL, gen_salt('bf'))
-WHERE email = 'analyst@likaslens.ph';
--- [REMOVED: hardcoded password] UPDATE auth.users SET encrypted_password = crypt(NULL, gen_salt('bf'))
-WHERE email = 'superadmin@likaslens.ph';
--- [REMOVED: hardcoded password] UPDATE auth.users SET encrypted_password = crypt(NULL, gen_salt('bf'))
-WHERE email = 'citizen@likaslens.ph';
+-- REMOVED: this script used to reset the passwords of analyst@, superadmin@ and
+-- citizen@ to fixed literals. Those literals were published in a public
+-- repository and have been rotated. Credentials are provisioned out of band;
+-- see supabase/README.md. Do not re-add a password, a hash or a shared secret
+-- to this file.
 UPDATE auth.users SET email_confirmed_at = now()
 WHERE email_confirmed_at IS NULL
   AND email IN ('analyst@likaslens.ph', 'superadmin@likaslens.ph', 'citizen@likaslens.ph');
@@ -52,6 +51,10 @@ SELECT
   jsonb_build_object('full_name', full_name, 'role', role),
   now(), now()
 FROM (VALUES
+  -- These accounts are created WITHOUT a usable password on purpose: the
+  -- password column is NULL, so crypt(NULL, ...) stores NULL and password
+  -- sign-in is impossible until an operator sets one from the Supabase
+  -- dashboard. Never put a literal password in this list.
   ('makati.lgu@likaslens.ph',   NULL, 'Engr. Ramon Villanueva', 'lgu'),
   ('maria.citizen@likaslens.ph',NULL,   'Maria Concepcion Santos', 'citizen'),
   ('jose.citizen@likaslens.ph', NULL,   'Jose Rizal Mercado',      'citizen'),
