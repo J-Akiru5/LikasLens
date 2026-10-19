@@ -199,8 +199,8 @@ const PRESETS: Preset[] = [
     category: "Solid Waste",
     cypherQuery: "MATCH (h:HazardType {code: 'SOLID_WASTE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
-      { label: "Trash Heap — Brgy. 143", sublabel: "Manila, NCR", details: "Illegal dumping site (~4×5m) blocking pedestrian walkway. Classified via YOLOv8 vision pipeline.", meta: { Type: "Solid Waste", Confidence: "94.2%", GPS: "14.5995°N 120.9842°E", Status: "Active" } },
-      { label: "YOLOv8 + Liksi AI", sublabel: "FastAPI AI-Service", details: "Computer vision model and Liksi AI engine running on LikasLens AI microservice. Detects environmental violation classes.", meta: { Model: "YOLOv8n-Env", Accuracy: "94.2%", Latency: "~120ms", Framework: "FastAPI / Python 3.12" } },
+      { label: "Trash Heap — Brgy. 143", sublabel: "Manila, NCR", details: "Illegal dumping site (~4×5m) blocking pedestrian walkway. Classified via YOLOv8 vision pipeline.", meta: { Type: "Solid Waste", GPS: "14.5995°N 120.9842°E", Status: "Active" } },
+      { label: "YOLOv8 + Liksi AI", sublabel: "FastAPI AI-Service", details: "Computer vision model and Liksi AI engine running on LikasLens AI microservice. Detects environmental violation classes.", meta: { Model: "YOLOv8n-Env", Latency: "~120ms", Framework: "FastAPI / Python 3.12" } },
       { label: "Republic Act 9003", sublabel: "Ecological Solid Waste Mgmt.", details: "RA 9003 Section 48 — Prohibited Acts. Fines up to ₱300,000 and 6 years imprisonment.", meta: { Statute: "RA 9003", Section: "Sec. 48", Max_Fine: "₱300,000", Imprisonment: "Up to 6 years" } },
       { label: "CENRO Task Force", sublabel: "City Environment & NR Office", details: "Specialized enforcement unit. SLA: 24-hour field response. Coordinates with MMDA for Metro Manila.", meta: { Unit: "CENRO Enforcement", SLA: "24 Hours", Jurisdiction: "Metro Manila", Contact: "CENRO-Manila" } },
       { label: "Supabase Vault + SHA-256", sublabel: "EXIF-Stripped Evidence", details: "EXIF metadata stripped via Pillow, raw evidentiary photo persisted in Supabase S3 storage with SHA-256 checksum.", meta: { Storage: "Supabase Vault", Checksum: "SHA-256", EXIF_Stripping: "Automated", Status: "Verified" } }
@@ -215,7 +215,7 @@ const PRESETS: Preset[] = [
     cypherQuery: "MATCH (h:HazardType {code: 'DEFORESTATION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Canopy Loss — Mt. Apo Buffer", sublabel: "Davao del Sur", details: "Satellite imagery + citizen reports confirm commercial chain-sawing in protected forest buffer zone.", meta: { Type: "Illegal Logging", Area_Lost: "~3.2 hectares", Sat_Source: "Sentinel-2", Status: "Active" } },
-      { label: "Forestry Sentinel AI", sublabel: "FastAPI Inference Engine", details: "NDVI change-detection model and YOLO classifier running on LikasLens AI microservice.", meta: { Model: "NDVI-ChangeNet", Framework: "Python 3.12 / FastAPI", Change: "-12% NDVI", Confidence: "91.0%" } },
+      { label: "Forestry Sentinel AI", sublabel: "FastAPI Inference Engine", details: "NDVI change-detection model and YOLO classifier running on LikasLens AI microservice.", meta: { Model: "NDVI-ChangeNet", Framework: "Python 3.12 / FastAPI", Change: "-12% NDVI", } },
       { label: "P.D. 705 — Forestry Code", sublabel: "Revised Forestry Code", details: "Presidential Decree 705. Prohibits cutting, gathering, removing timber in forest lands without license.", meta: { Statute: "P.D. 705", Jurisdiction: "All forest lands", Max_Fine: "₱500,000", Imprisonment: "Up to 20 years" } },
       { label: "DENR — Forest Police", sublabel: "Dept. of Env. & Natural Res.", details: "Forest rangers with arrest authority. Deployed with GPS coordinates for field intercept operations.", meta: { Unit: "DENR Forest Rangers", Response: "Field Intercept", Alert: "SMS + Radio Broadcast", Priority: "CRITICAL" } },
       { label: "Forensic Audit Log", sublabel: "SHA-256 Timeline Record", details: "Evidence timestamp, location fuzzing, and AI triage classification recorded in tamper-evident timeline.", meta: { Method: "Forensic SHA-256 Hash", Privacy: "Ghost Mode Fuzzed", Status: "Verified" } }
@@ -230,7 +230,7 @@ const PRESETS: Preset[] = [
     cypherQuery: "MATCH (h:HazardType {code: 'WATER_POLLUTION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Toxic Runoff — Laguna Lake", sublabel: "Laguna de Bay Watershed", details: "Elevated chemical COD levels and visible discoloration detected near industrial discharge pipe #7.", meta: { Type: "Chemical Discharge", pH_Level: "4.2 (Acidic)", COD: "380 mg/L (3× limit)", Status: "Active Spill" } },
-      { label: "Water Sentinel AI", sublabel: "FastAPI Analysis Engine", details: "Analyzes photo color histograms and user-reported parameters against baseline water quality profiles.", meta: { Model: "WaterSpec-v1.3", Indicators: "Color, pH, COD", Confidence: "88.5%", Engine: "FastAPI / Python 3.12" } },
+      { label: "Water Sentinel AI", sublabel: "FastAPI Analysis Engine", details: "Analyzes photo color histograms and user-reported parameters against baseline water quality profiles.", meta: { Model: "WaterSpec-v1.3", Indicators: "Color, pH, COD", Engine: "FastAPI / Python 3.12" } },
       { label: "Republic Act 9275", sublabel: "Clean Water Act of 2004", details: "RA 9275 Section 27 — Prohibited Acts. Discharge of pollutants into water bodies is a criminal offense.", meta: { Statute: "RA 9275", Section: "Sec. 27", Max_Fine: "₱200,000/day", Imprisonment: "Up to 12 years" } },
       { label: "DENR-EMB & LLDA", sublabel: "Laguna Lake Dev. Authority", details: "LLDA environmental compliance officers and EMB joint inspection team. Water sampling authority.", meta: { Unit: "LLDA + EMB-R4A", Action: "Joint Inspection", Response: "Same-day sampling", Penalty: "Cease & Desist" } },
       { label: "Supabase Evidence Vault", sublabel: "SHA-256 Forensic Hash", details: "Audit-grade evidence stored in encrypted Supabase Storage with SHA-256 tamper-evident checksum.", meta: { Storage: "Supabase S3 Vault", Hash: "SHA-256 Checksum", EXIF_Stripping: "Automated (Pillow)", Status: "Verified" } }
@@ -245,7 +245,7 @@ const PRESETS: Preset[] = [
     cypherQuery: "MATCH (h:HazardType {code: 'CORAL_DAMAGE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Blast Fishing — Sulu Sea", sublabel: "Tawi-Tawi Marine Sanctuary", details: "Hydrophone arrays detected explosive frequency signatures. Visible coral fragmentation confirmed by citizen divers.", meta: { Type: "Dynamite Fishing", Zone: "Strict Protection Area", Hydrophone: "Positive Match", Depth: "8–15m" } },
-      { label: "Marine Audio-Visual AI", sublabel: "WaveformNet Classifier", details: "Audio pattern matching model trained on documented underwater explosion frequencies from 12 hydrophone stations.", meta: { Model: "WaveformNet-v2", Accuracy: "95.4%", Signal: "87–120 Hz blast", Latency: "<2s detection" } },
+      { label: "Marine Audio-Visual AI", sublabel: "WaveformNet Classifier", details: "Audio pattern matching model trained on documented underwater explosion frequencies from 12 hydrophone stations.", meta: { Model: "WaveformNet-v2", Signal: "87–120 Hz blast", Latency: "<2s detection" } },
       { label: "Republic Act 8550", sublabel: "Philippine Fisheries Code", details: "RA 8550 Sections 88–92. Dynamite fishing classified as a grave offense. Mandatory imprisonment.", meta: { Statute: "RA 8550", Section: "Sec. 88–92", Classification: "Grave Offense", Imprisonment: "20 yrs mandatory" } },
       { label: "BFAR + PCG — Maritime", sublabel: "Bureau of Fisheries & Coast Guard", details: "Philippine Coast Guard Patrol Boat 3 intercepting vessel. BFAR monitors and files charges.", meta: { Unit: "BFAR + PCG Tawi-Tawi", Vessel: "PCG Patrol Boat #3", Response: "Maritime Intercept", ETA: "~18 minutes" } },
       { label: "Digital Forensic Audit Trail", sublabel: "Digital Chain of Custody", details: "Zero-knowledge ghost mode protection with tamper-evident event timeline and forensic timestamping.", meta: { Method: "SHA-256 Audit Log", Timestamp: "UTC Authority", Privacy: "Ghost Mode Fuzzed", Status: "Verified" } }
@@ -281,7 +281,7 @@ export default function KnowledgeGraphPage() {
     nodesRef.current = fresh;
     setNodes(fresh);
     setSelectedId("inc");
-    const intro = `> Initializing LikasLens Neuro-Symbolic Engine\n> Connecting to Neo4j AuraDB endpoint...\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.cypherQuery}\n\n[OK] Traversal complete — ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[OK] Knowledge graph rendered in browser context`;
+    const intro = `> LikasLens knowledge graph - illustrative example\n> This is a fixed sample dataset rendered in the browser.\n> It is not a live query result and no graph database is queried.\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.cypherQuery}\n\n[SAMPLE] ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[NOTE] Example only - shown to explain how a report links to a statute and an agency`;
     setTerminalText("");
     setTerminalIdx(0);
     setIsTyping(true);
@@ -413,7 +413,7 @@ export default function KnowledgeGraphPage() {
       if (r.ok) {
         const d = await r.json();
         setApiStatus("ok");
-        setTerminalText((t) => `${t}\n\n[LIVE] Connected: AI graph topology service\n[DATA] Vertex labels: ${JSON.stringify(d.vertex_labels)}\n[DATA] Edge labels: ${JSON.stringify(d.edge_labels)}`);
+        setTerminalText((t) => `${t}\n\n[OK] AI graph topology service reachable\n[DATA] Vertex labels: ${JSON.stringify(d.vertex_labels)}\n[DATA] Edge labels: ${JSON.stringify(d.edge_labels)}`);
       } else throw new Error();
     } catch {
       setApiStatus("error");
@@ -439,7 +439,7 @@ export default function KnowledgeGraphPage() {
   return (
     <DashboardLayoutWrapper
       pageTitle="Graph Explorer"
-      pageSubtitle="Neuro-symbolic knowledge graph — Cypher traversal engine connecting incidents to statutes and agencies"
+      pageSubtitle="Illustrative graph showing how a report links to a statute and an enforcing agency - sample data, not a live query"
     >
       {/*
         ╔══════════════════════════════════════════════════════════════╗
@@ -487,7 +487,7 @@ export default function KnowledgeGraphPage() {
                     {active && (
                       <div className="mt-2 flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                        <span className="text-[10px] text-accent font-medium">Active traversal</span>
+                        <span className="text-[10px] text-accent font-medium">Sample traversal</span>
                       </div>
                     )}
                   </button>
@@ -529,7 +529,7 @@ export default function KnowledgeGraphPage() {
                   className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-semibold rounded-lg bg-accent text-white hover:bg-accent-hover transition-colors disabled:opacity-50"
                 >
                   {apiStatus === "connecting" ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
-                  {apiStatus === "connecting" ? "Connecting…" : apiStatus === "ok" ? "Verified ✓" : "Verify Live Endpoints"}
+                  {apiStatus === "connecting" ? "Connecting…" : apiStatus === "ok" ? "Reachable" : "Check AI service"}
                 </button>
               </div>
             </div>
@@ -841,8 +841,8 @@ export default function KnowledgeGraphPage() {
               <Terminal className="w-3.5 h-3.5 text-[#2ee6c8]" />
               <span className="text-[11px] font-mono tracking-wider uppercase">Cypher Query Log</span>
               <div className="flex items-center gap-1 text-[10px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
-                <span className="text-[#22c55e] font-mono">live</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e]" />
+                <span className="text-[#22c55e] font-mono">sample</span>
               </div>
             </div>
             {terminalOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}

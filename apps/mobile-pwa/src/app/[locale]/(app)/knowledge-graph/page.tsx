@@ -117,8 +117,8 @@ const PRESETS: Preset[] = [
     id: "solid-waste", title: "Illegal Solid Waste Dumping", severity: "high", category: "Solid Waste",
     cypherQuery: "MATCH (h:HazardType {code: 'SOLID_WASTE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
-      { label: "Trash Heap — Brgy. 143", sublabel: "Manila, NCR", details: "Illegal dumping site (~4×5m) blocking pedestrian walkway.", meta: { Type: "Solid Waste", Confidence: "94.2%", GPS: "14.5995°N 120.9842°E", Status: "Active" } },
-      { label: "YOLOv8 Classifier", sublabel: "FastAPI AI-Service", details: "Computer vision model detecting 47 environmental violation classes.", meta: { Model: "YOLOv8-Env-v2", Accuracy: "94.2%", Latency: "~120ms" } },
+      { label: "Trash Heap — Brgy. 143", sublabel: "Manila, NCR", details: "Illegal dumping site (~4×5m) blocking pedestrian walkway.", meta: { Type: "Solid Waste", GPS: "14.5995°N 120.9842°E", Status: "Active" } },
+      { label: "YOLOv8 Classifier", sublabel: "FastAPI AI-Service", details: "Computer vision model detecting 47 environmental violation classes.", meta: { Model: "YOLOv8-Env-v2", Latency: "~120ms" } },
       { label: "Republic Act 9003", sublabel: "Ecological Solid Waste Mgmt.", details: "RA 9003 Section 48 — Fines up to ₱300,000 and 6 years imprisonment.", meta: { Statute: "RA 9003", Max_Fine: "₱300,000" } },
       { label: "CENRO Task Force", sublabel: "City Environment & NR Office", details: "Specialized enforcement unit. SLA: 24-hour field response.", meta: { Unit: "CENRO", SLA: "24 Hours" } },
       { label: "Digital Audit Trail", sublabel: "SHA-256 Hash", details: "SHA-256 evidence hash committed to tamper-evident audit log.", meta: { Method: "SHA-256 Hash", Storage: "Supabase Vault" } }
@@ -142,7 +142,7 @@ const PRESETS: Preset[] = [
     cypherQuery: "MATCH (h:HazardType {code: 'WATER_POLLUTION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Toxic Runoff — Laguna Lake", sublabel: "Laguna de Bay", details: "Elevated COD levels and visible discoloration near discharge pipe.", meta: { Type: "Chemical Discharge", pH: "4.2 (Acidic)", COD: "380 mg/L" } },
-      { label: "Water Sentinel AI", sublabel: "Spectral Analysis", details: "Analyzes photo color histograms against baseline water profiles.", meta: { Model: "WaterSpec-v1.3", Confidence: "88.5%" } },
+      { label: "Water Sentinel AI", sublabel: "Spectral Analysis", details: "Analyzes photo color histograms against baseline water profiles.", meta: { Model: "WaterSpec-v1.3", } },
       { label: "Republic Act 9275", sublabel: "Clean Water Act of 2004", details: "Section 27 — Discharge of pollutants is a criminal offense.", meta: { Statute: "RA 9275", Max_Fine: "₱200,000/day" } },
       { label: "DENR-EMB & LLDA", sublabel: "Laguna Lake Dev. Authority", details: "Joint inspection team with water sampling authority.", meta: { Unit: "LLDA + EMB", Action: "Joint Inspection" } },
       { label: "Supabase Vault", sublabel: "SHA-256 Forensic Hash", details: "Audit-grade evidence sealed in encrypted Supabase Vault.", meta: { Storage: "Supabase S3", Status: "Verified" } }
@@ -154,7 +154,7 @@ const PRESETS: Preset[] = [
     cypherQuery: "MATCH (h:HazardType {code: 'CORAL_DAMAGE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
     nodes: makeNodes(
       { label: "Blast Fishing — Sulu Sea", sublabel: "Tawi-Tawi Sanctuary", details: "Hydrophone arrays detected explosive frequency signatures.", meta: { Type: "Dynamite Fishing", Zone: "Strict Protection" } },
-      { label: "Marine Audio-Visual AI", sublabel: "WaveformNet Classifier", details: "Audio pattern matching on underwater explosion frequencies.", meta: { Model: "WaveformNet-v2", Accuracy: "95.4%" } },
+      { label: "Marine Audio-Visual AI", sublabel: "WaveformNet Classifier", details: "Audio pattern matching on underwater explosion frequencies.", meta: { Model: "WaveformNet-v2", } },
       { label: "Republic Act 8550", sublabel: "Philippine Fisheries Code", details: "Sections 88–92. Dynamite fishing is a grave offense.", meta: { Statute: "RA 8550", Imprisonment: "20 yrs" } },
       { label: "BFAR + PCG — Maritime", sublabel: "Bureau of Fisheries & Coast Guard", details: "PCG Patrol Boat intercepting vessel. BFAR files charges.", meta: { Unit: "BFAR + PCG", Response: "Maritime Intercept" } },
       { label: "Forensic Audit Trail", sublabel: "SHA-256 Timeline Record", details: "Forensic timestamping with zero-knowledge ghost mode protection.", meta: { Method: "SHA-256 Audit Log", Status: "Verified" } }
@@ -190,7 +190,7 @@ export default function KnowledgeGraphPage() {
     setNodes(fresh);
     setSelectedId("inc");
     
-    const intro = `> Initializing LikasLens Engine\n> Connecting to Neo4j AuraDB endpoint...\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.cypherQuery}\n\n[OK] Traversal complete — ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[OK] Graph rendered`;
+    const intro = `> LikasLens knowledge graph - illustrative example\n> Fixed sample dataset rendered in the browser.\n> Not a live query result; no graph database is queried.\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.cypherQuery}\n\n[SAMPLE] ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[NOTE] Example only`;
     setTerminalText("");
     setTerminalIdx(0);
     setIsTyping(true);
@@ -300,7 +300,7 @@ export default function KnowledgeGraphPage() {
     };
   }, [activeId]);
 
-  // Live API verification
+  // AI service reachability check
   useEffect(() => {
     let cancelled = false;
     async function pingApi() {
@@ -359,7 +359,7 @@ export default function KnowledgeGraphPage() {
           </div>
           <div>
             <h1 className="text-sm font-bold text-white tracking-wide leading-tight">Graph Explorer</h1>
-            <span className="text-[9px] font-mono text-white/40 block">NEO4J REASONING MESH</span>
+            <span className="text-[9px] font-mono text-white/40 block">ILLUSTRATIVE GRAPH</span>
           </div>
         </div>
 
@@ -502,13 +502,13 @@ export default function KnowledgeGraphPage() {
           ))}
         </div>
 
-        {/* Live API Verification */}
+        {/* AI service reachability */}
         <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#080c15] border border-white/10">
           <div className="flex items-center gap-2">
             <span className={`w-1.5 h-1.5 rounded-full ${
               apiStatus === "ok" ? "bg-green" : apiStatus === "connecting" ? "bg-amber animate-pulse" : apiStatus === "error" ? "bg-red" : "bg-white/20"
             }`} />
-            <span className="text-[10px] font-mono text-white/40">NEO4J TOPOLOGY</span>
+            <span className="text-[10px] font-mono text-white/40">AI SERVICE STATUS</span>
           </div>
           <span className={`text-[9px] font-mono font-bold ${
             apiStatus === "ok" ? "text-green" : apiStatus === "error" ? "text-red" : "text-white/30"
