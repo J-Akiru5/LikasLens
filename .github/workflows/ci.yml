@@ -1,8 +1,15 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# LikasLens Monorepo CI – 2026 Industry Standard
-# Runs on every push to main/development and every PR.
-# Uses path-based triggers so only affected apps are tested.
-# ─────────────────────────────────────────────────────────────────────────────
+# LikasLens Monorepo CI
+#
+# Policy: a check that cannot fail is not a check. Every job below is blocking
+# unless its name says otherwise and the reason is written next to it.
+#
+# History: before the 2026-10 security remediation, all three frontend jobs and
+# the AI-service job carried `continue-on-error: true` at both job and step
+# level, and the AI-service job never ran pytest at all — only flake8 and an
+# AST parse. That is why a production bug which made the pre-submission AI
+# triage return "no concern" for every photo, and two failing tests, stayed
+# invisible for roughly seven weeks. Do not reintroduce blanket
+# continue-on-error.
 
 name: CI
 
@@ -21,18 +28,22 @@ on:
       - "docs/**"
       - "**.md"
       - "**.html"
-  workflow_call: # allows deployment workflows to call this as a reusable workflow
-  workflow_dispatch: # allow manual trigger
+  workflow_call:
+  workflow_dispatch:
 
 env:
   PNPM_VERSION: 11
   NODE_VERSION: 22
   PYTHON_VERSION: "3.12"
+  # Build-time placeholders only. No real project value is needed to compile,
+  # and no secret is available to pull-request runs from forks anyway.
+  NEXT_PUBLIC_SUPABASE_URL: "https://ci-placeholder.supabase.co"
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: "ci-placeholder-anon-key"
 
 jobs:
-  # ── 1. Dependency sync check (syncpack) ──────────────────────────────
+  # 1. Dependency consistency
   syncpack:
-    name: 🔗 SyncPack – dependency consistency
+    name: SyncPack - dependency consistency
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,14 +54,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Check dependency mismatches
-        run: npx syncpack lint
+      - run: pnpm install --frozen-lockfile
+      - run: npx syncpack lint
 
-  # ── 2. Shared package typecheck ──────────────────────────────────────
+  # 2. Shared package
   shared-typecheck:
-    name: 📦 Shared – typecheck
+    name: Shared - typecheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,16 +70,15 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: TypeScript check
-        run: pnpm --filter @likaslens/shared typecheck
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @likaslens/shared typecheck
+      - name: Unit tests
+        run: pnpm --filter @likaslens/shared test
 
-  # ── 3. Frontend – lint + typecheck + build ──────────────────────────
+  # 3. Frontend
   frontend:
-    name: 🖥️ Frontend – lint + typecheck
+    name: Frontend - lint + typecheck + build
     runs-on: ubuntu-latest
-    continue-on-error: true # pre-existing lint/type errors; non-blocking
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -80,23 +88,35 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Lint
+      - run: pnpm install --frozen-lockfile
+
+      # KNOWN DEBT, deliberately still advisory: `pnpm --filter frontend lint`
+      # reports ~89 errors on the current tree. Making it blocking today would
+      # turn main red immediately without fixing anything. It is tracked work;
+      # remove this continue-on-error once those errors are cleared. Everything
+      # else in this job is blocking.
+      - name: Lint (advisory - known pre-existing debt)
         run: pnpm --filter frontend lint
         continue-on-error: true
+
       - name: TypeScript check
-        run: npx tsc --noEmit -p apps/frontend/tsconfig.json
+        run: pnpm --filter frontend typecheck
+
+      # KNOWN DEBT, advisory for the same reason as lint: 3 of 16 vitest tests
+      # fail on the current tree (an image-validation suite). Blocking them
+      # today would make main red without fixing anything. Tracked work; drop
+      # this continue-on-error when they pass.
+      - name: Unit tests (advisory - 3 known pre-existing failures)
+        run: pnpm --filter frontend test
         continue-on-error: true
+
       - name: Build
         run: pnpm --filter frontend build
-        continue-on-error: true
 
-  # ── 4. Mobile PWA – lint + typecheck + build ────────────────────────
+  # 4. Mobile PWA — fully blocking.
   mobile-pwa:
-    name: 📱 Mobile PWA – lint + typecheck
+    name: Mobile PWA - lint + typecheck + build
     runs-on: ubuntu-latest
-    continue-on-error: true # pre-existing lint/type errors; non-blocking
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -106,23 +126,18 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - name: Lint
         run: pnpm --filter mobile-pwa lint
-        continue-on-error: true
       - name: TypeScript check
-        run: npx tsc --noEmit -p apps/mobile-pwa/tsconfig.json
-        continue-on-error: true
+        run: pnpm --filter mobile-pwa typecheck
       - name: Build
         run: pnpm --filter mobile-pwa build
-        continue-on-error: true
 
-  # ── 5. Admin Portal – lint + typecheck + build ──────────────────────
+  # 5. Admin Portal — fully blocking.
   admin-portal:
-    name: 🔐 Admin Portal – lint + typecheck
+    name: Admin Portal - lint + typecheck + build
     runs-on: ubuntu-latest
-    continue-on-error: true # pre-existing lint/type errors; non-blocking
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -132,23 +147,22 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - name: Lint
         run: pnpm --filter admin-portal lint
-        continue-on-error: true
       - name: TypeScript check
-        run: npx tsc --noEmit -p apps/admin-portal/tsconfig.json
-        continue-on-error: true
+        run: pnpm --filter admin-portal typecheck
       - name: Build
         run: pnpm --filter admin-portal build
-        continue-on-error: true
 
-  # ── 6. AI Service (Python) – lint + syntax + import check ───────────
+  # 6. AI service — real tests, blocking.
+  #
+  # This job previously ran flake8 and an AST parse and never executed a single
+  # test. It now runs the suite, including the triage-contract regression tests
+  # that would have caught the `confidence=` / `confidence_threshold` bug.
   ai-service:
-    name: 🤖 AI Service – lint + syntax
+    name: AI Service - tests
     runs-on: ubuntu-latest
-    continue-on-error: true # heavy deps (torch, ultralytics); skip if install times out
     defaults:
       run:
         working-directory: apps/ai-service
@@ -161,21 +175,27 @@ jobs:
           cache: pip
           cache-dependency-path: apps/ai-service/requirements.txt
 
-      - name: Install dependencies (subset — skip torch/ultralytics for CI speed)
-        run: |
-          pip install flake8 fastapi uvicorn python-dotenv Pillow python-multipart numpy
-        timeout-minutes: 5
+      # CPU-only torch keeps the install small; the full CUDA wheel is ~2.5 GB
+      # and CI has no GPU. Installed first so requirements.txt does not pull the
+      # default build.
+      - name: Install CPU-only torch
+        run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+        timeout-minutes: 15
 
-      - name: Lint with flake8 (fatal errors only)
-        run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest pytest-mock
+        timeout-minutes: 20
+
+      - name: Run tests
+        run: python -m pytest tests/ -q
+
+      - name: Lint (advisory - style only)
+        run: python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         continue-on-error: true
 
-      - name: Check Python syntax
-        run: python -c "import ast; ast.parse(open('main.py').read()); print('✓ Syntax OK')"
-
-  # ── 7. Security audit ───────────────────────────────────────────────
+  # 7. Dependency advisory
   security-audit:
-    name: 🛡️ Security audit
+    name: Security audit (advisory)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -186,10 +206,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
+      # Advisory by design: a new CVE in a transitive dependency must not block
+      # an unrelated hotfix. Reviewed on a schedule, not per-commit.
       - name: pnpm audit
         run: pnpm audit --audit-level=high
-        continue-on-error: true # advisory-only; non-blocking
-
-
+        continue-on-error: true
