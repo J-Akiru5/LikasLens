@@ -140,6 +140,10 @@ WHERE NOT EXISTS (SELECT 1 FROM environmental_laws_ph WHERE law_code = l.law_cod
 -- ───────────────────────────────────────────────────────────────────────────
 -- 6. Makati / Luzon environmental reports (14)
 -- ───────────────────────────────────────────────────────────────────────────
+-- Preserve the historical timestamps below: the tickets trigger forces
+-- server time for real inserts. Session-scoped, seeding only.
+SELECT set_config('likaslens.allow_timestamp_override', 'on', false);
+
 INSERT INTO tickets (id,title,description,status,ghost_mode,latitude,longitude,location_fuzzed,address_text,ai_triage_summary,ai_confidence,ai_recommended_office,routing_source,urgency_score,reporter_user_id,submission_path,created_at,updated_at)
 VALUES
 ('d2000001-0000-0000-0000-000000000001',

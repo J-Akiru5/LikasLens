@@ -8,6 +8,8 @@ import asyncio
 import uuid
 from datetime import datetime, timedelta, timezone
 
+from sqlalchemy import text
+
 from db.connection import AsyncSessionLocal
 from db.models import Ticket, TicketTimeline
 
@@ -88,6 +90,12 @@ DEMO_TICKETS = [
 
 async def seed():
     async with AsyncSessionLocal() as db:
+        # The tickets trigger forces server time for real inserts. This seed
+        # deliberately writes spread-out historical timestamps so the impact
+        # charts show a trend, so opt out for this transaction only.
+        await db.execute(
+            text("select set_config('likaslens.allow_timestamp_override', 'on', true)")
+        )
         for i, data in enumerate(DEMO_TICKETS):
             ticket_id = uuid.uuid4()
             base_time = datetime.now(timezone.utc) - timedelta(days=len(DEMO_TICKETS) - i)

@@ -55,6 +55,10 @@ WHERE au.email IN ('analyst@likaslens.ph', 'superadmin@likaslens.ph', 'citizen@l
 ON CONFLICT DO NOTHING;
 
 -- 3. Sample Tickets (15 environmental reports across all statuses)
+-- Preserve the historical timestamps below: the tickets trigger forces
+-- server time for real inserts. Session-scoped, seeding only.
+SELECT set_config('likaslens.allow_timestamp_override', 'on', false);
+
 INSERT INTO tickets (id,title,description,status,ghost_mode,latitude,longitude,location_fuzzed,address_text,ai_triage_summary,ai_confidence,ai_recommended_office,routing_source,urgency_score,reporter_user_id,submission_path,created_at,updated_at)
 VALUES
 ('d1000001-0000-0000-0000-000000000001','Illegal dumping near Pasig River estero','Large pile of construction waste dumped along estero bank.','open',false,14.5995,120.9842,false,'Barangay 649, Tondo, Manila','Illegal Dumping',0.91,'LGU Environment Office','neo4j',8.5,NULL,'ai_service',now()-interval '2 hours',now()-interval '2 hours'),
