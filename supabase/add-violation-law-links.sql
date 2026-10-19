@@ -70,9 +70,12 @@ FROM public.violation_types v
 WHERE v.law_id IS NOT NULL
 ON CONFLICT (violation_type_id, law_id) DO NOTHING;
 
--- Public knowledge, read-only. The AI service uses the service role and bypasses
--- RLS; these policies exist so the data is consistent with the other public
--- knowledge tables and cannot be written by a client.
+-- Public knowledge, read-only, WITHOUT the internal reviewer notes.
+-- `note` carries review commentary ("would be attacked in a pleading", etc.) and
+-- `source` is an internal provenance tag. Neither belongs in a public API, so the
+-- table-level grant is replaced with a column list, the same pattern used for
+-- `users`. The AI service reads this table with the service role and bypasses
+-- both RLS and these grants.
 ALTER TABLE public.violation_law_links ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "violation_law_links_public_read" ON public.violation_law_links;
@@ -81,6 +84,17 @@ CREATE POLICY "violation_law_links_public_read"
   FOR SELECT
   TO public
   USING (true);
+
+REVOKE ALL ON public.violation_law_links FROM anon, authenticated;
+GRANT SELECT (
+  violation_type_id,
+  law_id,
+  is_primary,
+  citation,
+  citation_url,
+  confidence,
+  review_status
+) ON public.violation_law_links TO anon, authenticated;
 
 -- VERIFICATION
 -- ------------
