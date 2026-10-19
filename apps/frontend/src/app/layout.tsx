@@ -1,36 +1,37 @@
 import type { Metadata, Viewport } from "next";
-import {
-  Bricolage_Grotesque,
-  Public_Sans,
-  JetBrains_Mono,
-} from "next/font/google";
+import localFont from "next/font/local";
 import { getLocale } from "next-intl/server";
 import "./globals.css";
 import { ThemeInitializer } from "@/components/theme-initializer";
 
-// Distinctive display face — characterful grotesque, not a 2026 reflex font.
-const displayFont = Bricolage_Grotesque({
+// Self-hosted faces. These used to come from next/font/google, which fetches
+// fonts.googleapis.com at build time; the response varies and its URL shape has
+// repeatedly broken the Turbopack build. Local files make the build
+// deterministic and remove a third-party dependency from deploys.
+//
+// Distinctive display face - characterful grotesque, not a 2026 reflex font.
+const displayFont = localFont({
+  src: "./fonts/bricolage-grotesque.woff2",
   variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: "600 800",
   display: "swap",
 });
 
 // Warm humanist sans, designed for civic / government readability. Replaces the
 // Inter reflex monoculture. Carries headings + body.
-const bodyFont = Public_Sans({
+const bodyFont = localFont({
+  src: "./fonts/public-sans.woff2",
   variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: "400 700",
   display: "swap",
 });
 
 // Already-committed data face. Reserved STRICTLY for real data (IDs, coords,
 // timestamps, confidence %). Identity-preserving.
-const dataFont = JetBrains_Mono({
+const dataFont = localFont({
+  src: "./fonts/jetbrains-mono.woff2",
   variable: "--font-data",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: "400 700",
   display: "swap",
 });
 
