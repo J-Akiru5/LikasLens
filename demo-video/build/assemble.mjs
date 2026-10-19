@@ -163,16 +163,22 @@ function buildSceneVideo(scene, outFile) {
   const phoneScene = type === "phone";
 
   if (phoneScene) {
-    if (!existsSync(bg)) throw new Error(`${scene.id}: left-panel overlay missing at ${bg}`);
-    // Background (opaque panel + text), then the phone on top at full height.
+    if (!existsSync(bg)) throw new Error(`${scene.id}: text overlay missing at ${bg}`);
+    // The frame is filled with a blurred, darkened copy of the SAME screen, so
+    // no scene is mostly empty. Then the phone goes on top, then the text layer.
+    // split is required because ffmpeg will not fan one stream out twice.
     runFfmpeg(
       [
         "-y",
         "-i", bg,
         "-ss", ss, "-i", take.rawVideo,
         "-filter_complex",
-        `[1:v]scale=${PHONE.frame.width}:${PHONE.frame.height}:flags=lanczos,setsar=1[phone];` +
-          `[0:v][phone]overlay=${PHONE.x}:${PHONE.y}:format=auto[v]`,
+        `[1:v]split=2[srcbg][srcphone];` +
+          `[srcbg]scale=${FRAME.width}:${FRAME.height}:force_original_aspect_ratio=increase,` +
+          `crop=${FRAME.width}:${FRAME.height},gblur=sigma=48,eq=brightness=-0.34:saturation=0.55[bg];` +
+          `[srcphone]scale=${PHONE.frame.width}:${PHONE.frame.height}:flags=lanczos,setsar=1[phone];` +
+          `[bg][phone]overlay=${PHONE.x}:${PHONE.y}:format=auto[mid];` +
+          `[mid][0:v]overlay=0:0:format=auto[v]`,
         "-map", "[v]", "-t", String(d), ...V, outFile,
       ],
       { label: `${scene.id} phone composite` },
@@ -234,27 +240,7 @@ const total = parts.reduce((a, p) => a + p.duration, 0);
 console.log(`\nJoined: ${total.toFixed(2)}s`);
 
 // ---------------------------------------------------------------------------
-// Final encode: loudness + faststart
-// ---------------------------------------------------------------------------
-const outMp4 = join(PATHS.out, steps.meta.outputName);
-runFfmpeg(
-  [
-    "-y", "-i", silentVideo,
-    "-af", `loudnorm=I=${AUDIO.lufs}:TP=${AUDIO.truePeakDb}:LRA=11:print_format=summary`,
-    // Re-encode the video rather than stream-copying: concatenating segments
-    // leaves a non-standard average frame rate in the container, and the
-    // deliverable must report exactly 30/1. CRF 16 keeps this visually lossless.
-    "-c:v", "libx264", "-preset", "slow", "-crf", "16", "-pix_fmt", "yuv420p",
-    "-r", String(FRAME.fps), "-fps_mode", "cfr",
-    "-c:a", "aac", "-b:a", "192k", "-ar", String(AUDIO.sampleRate), "-ac", "1",
-    "-movflags", "+faststart",
-    outMp4,
-  ],
-  { label: "final encode" },
-);
-
-// ---------------------------------------------------------------------------
-// SRT
+// SRT — written first so it can also be muxed into the container
 // ---------------------------------------------------------------------------
 function srtTime(t) {
   const h = Math.floor(t / 3600);
@@ -276,13 +262,51 @@ for (const scene of steps.scenes) {
   n += 1;
   srt.push(`${n}\n${srtTime(start + 0.1)} --> ${srtTime(end - 0.1)}\n${text}\n`);
 }
-writeFileSync(join(PATHS.out, "likaslens-csc-avp.srt"), srt.join("\n"), "utf8");
+const srtFile = join(PATHS.out, "likaslens-csc-avp.srt");
+writeFileSync(srtFile, srt.join("\n"), "utf8");
+
+// ---------------------------------------------------------------------------
+// Final encode: loudness, then the subtitle track
+// ---------------------------------------------------------------------------
+const outMp4 = join(PATHS.out, steps.meta.outputName);
+const beforeSubs = join(WORK, "final-nosubs.mp4");
+runFfmpeg(
+  [
+    "-y", "-i", silentVideo,
+    "-af", `loudnorm=I=${AUDIO.lufs}:TP=${AUDIO.truePeakDb}:LRA=11:print_format=summary`,
+    // Re-encode the video rather than stream-copying: concatenating segments
+    // leaves a non-standard average frame rate in the container, and the
+    // deliverable must report exactly 30/1. CRF 16 keeps this visually lossless.
+    "-c:v", "libx264", "-preset", "slow", "-crf", "16", "-pix_fmt", "yuv420p",
+    "-r", String(FRAME.fps), "-fps_mode", "cfr",
+    "-c:a", "aac", "-b:a", "192k", "-ar", String(AUDIO.sampleRate), "-ac", "1",
+    "-movflags", "+faststart",
+    beforeSubs,
+  ],
+  { label: "final encode" },
+);
+
+// Mux the captions in as a real subtitle track, so they can be switched off.
+// mov_text is the only subtitle codec MP4 reliably carries.
+runFfmpeg(
+  [
+    "-y", "-i", beforeSubs, "-i", srtFile,
+    "-map", "0:v", "-map", "0:a", "-map", "1:0",
+    "-c:v", "copy", "-c:a", "copy", "-c:s", "mov_text",
+    "-metadata:s:s:0", "language=eng",
+    "-metadata:s:s:0", "title=English",
+    "-movflags", "+faststart",
+    outMp4,
+  ],
+  { label: "subtitle mux" },
+);
 
 // ---------------------------------------------------------------------------
 // Poster: the most representative frame, taken from the finished file
 // ---------------------------------------------------------------------------
-const posterAt = Math.max(0, 22 + 4); // mid scene 3, the AI result
-runFfmpeg(["-y", "-ss", String(posterAt), "-i", outMp4, "-frames:v", "1", "-q:v", "3", join(PATHS.out, "poster.jpg")], { label: "poster" });
+const posterScene = steps.scenes.find((s) => s.id === "s4") ?? steps.scenes[1];
+const posterAt = posterScene.start + posterScene.duration * 0.55;
+runFfmpeg(["-y", "-ss", String(posterAt.toFixed(2)), "-i", outMp4, "-frames:v", "1", "-q:v", "3", join(PATHS.out, "poster.jpg")], { label: "poster" });
 
 // ---------------------------------------------------------------------------
 // Report
@@ -290,6 +314,7 @@ runFfmpeg(["-y", "-ss", String(posterAt), "-i", outMp4, "-frames:v", "1", "-q:v"
 const final = probe(outMp4);
 const v = final.streams.find((s) => s.codec_type === "video");
 const a = final.streams.find((s) => s.codec_type === "audio");
+const sub = final.streams.find((s) => s.codec_type === "subtitle");
 const sizeMb = Number(final.format.size) / 1024 ** 2;
 
 const checks = [
@@ -297,7 +322,8 @@ const checks = [
   ["30 fps", v.avg_frame_rate === "30/1", v.avg_frame_rate],
   ["H.264", v.codec_name === "h264", v.codec_name],
   ["AAC audio", a?.codec_name === "aac", a?.codec_name ?? "none"],
-  ["duration 75-90s", total >= 75 && total <= 90, `${total.toFixed(2)}s`],
+  ["subtitle track", sub?.codec_name === "mov_text", sub?.codec_name ?? "missing"],
+  [`duration ${steps.meta.lengthTargetSeconds.min}-${steps.meta.lengthTargetSeconds.max}s`, total >= steps.meta.lengthTargetSeconds.min && total <= steps.meta.lengthTargetSeconds.max, `${total.toFixed(2)}s`],
   ["under 50 MB", sizeMb < 50, `${sizeMb.toFixed(2)} MB`],
 ];
 

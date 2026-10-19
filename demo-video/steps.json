@@ -1,31 +1,29 @@
 {
   "meta": {
-    "title": "LikasLens — CSC AVP",
+    "title": "LikasLens — CSC AVP (extended cut)",
     "audience": "CSC HR Innovation Lab (Vivian Bravo, then the regional director)",
     "lengthTargetSeconds": {
-      "min": 75,
-      "max": 90
+      "min": 180,
+      "max": 260
     },
     "outputName": "likaslens-csc-avp.mp4",
-    "recordedCommit": "537e7dcb",
-    "note": "C1 (owner decision, 18 Oct): the AI Triage step shows the REAL triage response. There is no knowledge-graph law lookup on screen and the narration makes no such claim — the Neo4j instance behind /api/v1/analyze-hazard is unreachable (its hostname does not resolve).",
+    "baseCommit": "537e7dcb",
+    "recordedOn": "demo/csc-avp (throwaway; never merged, never pushed)",
+    "why": "Extended from the 81 s cut at the owner's request to show more of the platform: the report flow carried through to submission, the hazard maps, the law library, the public record and tracking, and the LGU accountability screens.",
     "decisions": {
       "D5": "official placing left out of the video (default)",
       "D6": "contact line admin@syntaxure.dev (owner)",
-      "D7": "assets/photos/marilao-03.jpg — Roboflow PET 0.857, CC0, composite 0.5811 pending_review",
+      "D7": "assets/photos/marilao-03.jpg — the photo the AI is tested against",
       "D8": "credit 'students of ISUFST with Syntaxure Labs'; owner confirms before it leaves the building",
-      "D9": "no owned photo supplied; using a licensed CC0 opening shot, which brief section 1 permits ('one owned or licensed opening shot')"
+      "D9": "no owned photo supplied; a licensed CC0 opening shot is used, which brief section 1 permits"
     },
+    "layout": "The phone sits right at 608x1080 and the rest of the frame is filled with a blurred, darkened copy of the same screen, so no scene is mostly empty. Full-frame desktop scenes keep a lower third. Text is rasterised by Chromium because ffmpeg's drawtext is unavailable on this build.",
     "cutScenes": [
       {
-        "id": "s6",
-        "reason": "the offline queue page never left its loading state under the local fixture stack (getAllQueued() did not resolve), so the screen could not be shown honestly. Brief step 14 permits cutting scene 6 if sync fails. Attempted three times; evidence in capture/takes/."
+        "id": "s6-of-81s-cut",
+        "reason": "The original offline-queue scene was cut because the page never left its loading state. It is retried in this cut as s17 only if it renders a real pending item."
       }
-    ],
-    "qaRevision": {
-      "date": "2026-10-18",
-      "note": "Revised after the independent QA pass. Three narration claims were removed because the screens did not support them, s3's stored audio timing was corrected, and the closing line was added to the .srt."
-    }
+    ]
   },
   "voice": {
     "engine": "kokoro-onnx",
@@ -33,7 +31,7 @@
     "voices": "voices-v1.0.bin",
     "voice": "af_heart",
     "speed": 0.95,
-    "speedNote": "MEASURED, not guessed. At 0.78 this voice read 145 words in 81.8s = 106 wpm, far under the brief's 140 wpm guidance. At 0.95 the same lines take 63.2s = ~138 wpm, which also lands inside the brief's '60 to 70 s of speech' window. The owner must confirm the pace by ear.",
+    "speedNote": "Measured, not guessed: at 0.95 this voice reads about 145 wpm. narration/synthesize.mjs writes the resulting durations back into this file.",
     "sampleRate": 48000,
     "channels": 1,
     "pronunciation": {
@@ -41,33 +39,38 @@
       "Liksi": "Lick-see",
       "ISUFST": "I S U F S T",
       "IPOPHL": "I P O P H L",
-      "Syntaxure": "Syn-tax-ure"
+      "Syntaxure": "Syn-tax-ure",
+      "LGU": "L G U",
+      "SLA": "S L A",
+      "RA 9003": "R A 9003",
+      "RA 9275": "R A 9275"
     },
-    "pronunciationNote": "Applied to the text sent to synthesis only. Captions and the .srt keep the real spelling. Note that ISUFST expands to five spoken words, which is why scene 7 measures 10.9s for 19 written words. The owner confirms each name by ear."
+    "pronunciationNote": "Applied to the text sent to synthesis only. Captions and the .srt keep the real spelling. The owner confirms each name by ear."
   },
   "captions": {
     "burnedInMaxCharsPerLine": 40,
     "maxLines": 2,
-    "note": "Captions carry explicit line breaks so the 40-character rule is checked per line, not on the whole string."
+    "alsoEmbeddedAsTrack": true,
+    "note": "Captions are burned in AND written into the .srt, which assemble.mjs muxes into the MP4 as a mov_text track so they can be turned off."
   },
   "neverShowOrSay": [
-    "the landing-page ledger (SEED_LEDGER) and its confidence or closing times",
-    "any confidence or accuracy percentage on screen",
+    "the landing-page Live Incident Tracker (SEED_LEDGER: RPT-7777 to RPT-7781) and its confidence percentages — the frontend home page renders it, so that page is not filmed",
+    "any confidence or accuracy percentage about the model",
     "SDG alignment claims",
     "the '57 tests' claim",
     "the word 'blockchain'",
-    "any real reporter, address, violator or agency staff name",
+    "any real reporter, address, violator or agency staff name — every fixture office and place is fictional",
     "seeded account emails from supabase/seed-demo.sql",
     "API keys, tokens, or .env values",
     "the Next.js dev indicator or localhost",
-    "a knowledge-graph claim for the law lookup (no reachable Neo4j)"
+    "a knowledge-graph claim for the law lookup: the Neo4j instance is unreachable, so the copy on the Graph Explorer screen is not narrated as a live graph"
   ],
   "scenes": [
     {
       "id": "s1",
       "title": "The problem",
       "start": 0,
-      "duration": 10,
+      "duration": 9,
       "app": null,
       "route": null,
       "visual": {
@@ -75,9 +78,7 @@
         "photo": "assets/photos/scene1-marilao-a.jpg",
         "photoCredit": "JFVelasquez Floro, CC0, via Wikimedia Commons",
         "subject": "Garbage and plastic pollution in the Marilao River, Bulacan",
-        "motion": "slow push-in, 1.00 -> 1.08 scale, centred on the water",
-        "grade": "slight desaturation, vignette",
-        "why": "Chosen for contrast: a wide shot with sky and riverbank, visually distinct from the detection photo in s3, which is a different frame of the same river."
+        "motion": "slow push-in, 1.00 -> 1.08 scale, centred on the water"
       },
       "caption": "Waste is reaching our rivers\nevery day.",
       "narration": "A citizen sees waste being dumped into a river. Who do they report it to — and will anyone ever answer?",
@@ -86,19 +87,54 @@
     },
     {
       "id": "s2",
+      "title": "The citizen's app",
+      "start": 9,
+      "duration": 12,
+      "app": "mobile-pwa",
+      "route": "/en/dashboard",
+      "visual": {
+        "type": "phone",
+        "note": "Home screen: greeting, the Liksi card, the live report summary, and the report button."
+      },
+      "caption": "One report begins in a\ncitizen's hand.",
+      "narration": "LikasLens begins with one photo. This is the citizen's app: what they have reported, and what is happening with it.",
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=Report a Violation",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1200
+        },
+        {
+          "do": "highlight",
+          "selector": "text=LIVE REPORT SUMMARY",
+          "ms": 2500,
+          "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2000
+        }
+      ],
+      "audioSeconds": 7.04,
+      "holdFor": 7.44
+    },
+    {
+      "id": "s3",
       "title": "One photo, Ghost Mode",
-      "start": 10,
+      "start": 21,
       "duration": 14,
       "app": "mobile-pwa",
       "route": "/en/report",
       "visual": {
         "type": "phone",
-        "note": "Real capture: open the camera, take the photo from the fake device (the staged photo), then turn Ghost Mode on."
+        "note": "Ghost Mode switched on, then the camera opened and a real capture taken from the fake device."
       },
       "caption": "One photo. Ghost Mode keeps\nthe reporter anonymous.",
-      "narration": "With LikasLens, they take one photo. And when reporting feels risky, Ghost Mode keeps the reporter anonymous.",
-      "audioSeconds": 7.189,
-      "holdFor": 7.589,
+      "narration": "They take one photo. The location is recorded with it. And when reporting feels risky, Ghost Mode keeps the reporter anonymous.",
       "actions": [
         {
           "do": "waitFor",
@@ -107,13 +143,12 @@
         },
         {
           "do": "click",
-          "selector": "text=Ghost Mode",
-          "why": "turn Ghost Mode ON — the beat the narration describes"
+          "selector": "text=Ghost Mode"
         },
         {
           "do": "highlight",
           "selector": "text=Ghost Mode",
-          "ms": 1800
+          "ms": 2000
         },
         {
           "do": "click",
@@ -126,38 +161,32 @@
         },
         {
           "do": "waitForTimeout",
-          "ms": 2200,
-          "why": "let the live camera stream settle so a viewer sees a camera, not a frozen frame"
+          "ms": 2500
         },
         {
-          "do": "shutter",
-          "why": "press the real capture control; the selector is resolved at record time"
+          "do": "shutter"
         },
         {
           "do": "waitForTimeout",
-          "ms": 1500,
-          "why": "hold on the captured photo"
+          "ms": 1500
         }
       ],
-      "narrationNote": "QA found the earlier line 'The location tags itself, automatically' was not demonstrated anywhere on screen: no address, map pin or 'location added' state appears in any frame. The claim was removed rather than the shot being faked."
+      "audioSeconds": 8.107,
+      "holdFor": 8.507
     },
     {
-      "id": "s3",
+      "id": "s4",
       "title": "The AI reads the photo",
-      "start": 24,
-      "duration": 15,
+      "start": 35,
+      "duration": 12,
       "app": "mobile-pwa",
       "route": "/en/report",
       "visual": {
         "type": "phone",
-        "note": "C1: the AI Triage step shows the REAL triage response — real material labels — instead of the hardcoded simulation."
+        "note": "The real triage response, from the AI service, with the labels it actually returned."
       },
       "caption": "The AI flags what it\nrecognises. A person confirms.",
-      "narration": "Our AI reads the photo and flags what it recognises in the scene. Nothing is final: a person confirms it before anything is acted on.",
-      "narrationNote": "Deliberately does NOT name a material. The recorded take shows the labels 'Vehicle / Traffic' and 'e-waste' — naming 'plastic' here would describe something the screen did not show, which brief section 7 forbids.",
-      "audioSeconds": 9.045,
-      "holdFor": 9.445,
-      "requiresRealTriage": true,
+      "narration": "Our AI reads the photo and flags what it recognises. Nothing is final: an analyst confirms it before anything is acted on.",
       "deferMark": true,
       "actions": [
         {
@@ -167,8 +196,7 @@
         },
         {
           "do": "click",
-          "selector": "text=Ghost Mode",
-          "why": "Ghost Mode on, as a real reporter would"
+          "selector": "text=Ghost Mode"
         },
         {
           "do": "click",
@@ -184,14 +212,12 @@
           "ms": 2000
         },
         {
-          "do": "shutter",
-          "why": "capture; this is what kicks off the real triage call"
+          "do": "shutter"
         },
         {
           "do": "waitFor",
           "selector": "[data-testid='ai-triage-result']",
-          "timeoutMs": 180000,
-          "why": "the real triage call takes 10-20s on this machine, so the scene starts only once the result is on screen"
+          "timeoutMs": 180000
         },
         {
           "do": "scrollIntoView",
@@ -202,8 +228,7 @@
           "ms": 600
         },
         {
-          "do": "mark",
-          "why": "the scene begins on the result, not on the spinner"
+          "do": "mark"
         },
         {
           "do": "highlight",
@@ -212,27 +237,298 @@
         },
         {
           "do": "waitForTimeout",
-          "ms": 6000,
-          "why": "hold on the result long enough to read"
+          "ms": 5000
         }
-      ]
+      ],
+      "audioSeconds": 8.384,
+      "holdFor": 8.784
     },
     {
-      "id": "s4",
-      "title": "Liksi",
-      "start": 39,
-      "duration": 7,
+      "id": "s5",
+      "title": "The citizen still decides",
+      "start": 47,
+      "duration": 11,
       "app": "mobile-pwa",
-      "route": "/en/dashboard",
-      "deferMark": true,
+      "route": "/en/report",
       "visual": {
         "type": "phone",
-        "note": "Dashboard with the Liksi helper card visible. The chat panel is deliberately NOT opened: its header label overstates what the recording can show."
+        "note": "The category grid. The citizen picks; the model does not."
       },
-      "caption": "Liksi helps with the rules\nand where to report.",
-      "narration": "Liksi, the built-in assistant, helps with environmental rules and where to report violations.",
-      "audioSeconds": 5.845,
-      "holdFor": 6.245,
+      "caption": "The AI does not choose\nthe category. The citizen does.",
+      "narration": "The citizen still says what they think it is. The AI does not decide that for them.",
+      "deferMark": true,
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=Ghost Mode",
+          "timeoutMs": 30000
+        },
+        {
+          "do": "click",
+          "selector": "text=Ghost Mode"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Proceed: Open Camera')"
+        },
+        {
+          "do": "waitFor",
+          "selector": "video",
+          "timeoutMs": 30000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1800
+        },
+        {
+          "do": "shutter"
+        },
+        {
+          "do": "waitFor",
+          "selector": "[data-testid='ai-triage-result']",
+          "timeoutMs": 180000
+        },
+        {
+          "do": "scrollIntoView",
+          "selector": "text=VERIFIED INCIDENT CATEGORY"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 800
+        },
+        {
+          "do": "mark"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Waste Dumping')"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 3000
+        }
+      ],
+      "audioSeconds": 4.757,
+      "holdFor": 5.157
+    },
+    {
+      "id": "s6",
+      "title": "Filed and given a reference",
+      "start": 58,
+      "duration": 15,
+      "app": "mobile-pwa",
+      "route": "/en/report",
+      "visual": {
+        "type": "phone",
+        "note": "The success screen with the reference id and the five-stage dispatch pipeline. The submit call is intercepted at the browser boundary, so no report is written anywhere."
+      },
+      "caption": "Filed, referenced, and\ngiven a pipeline.",
+      "narration": "The report is filed and given a reference number. From here it has a trail: received, assigned for inspection, and finally resolved.",
+      "deferMark": true,
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=Ghost Mode",
+          "timeoutMs": 30000
+        },
+        {
+          "do": "click",
+          "selector": "text=Ghost Mode"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Proceed: Open Camera')"
+        },
+        {
+          "do": "waitFor",
+          "selector": "video",
+          "timeoutMs": 30000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1800
+        },
+        {
+          "do": "shutter"
+        },
+        {
+          "do": "waitFor",
+          "selector": "[data-testid='ai-triage-result']",
+          "timeoutMs": 180000
+        },
+        {
+          "do": "click",
+          "selector": "text=Continue to Details"
+        },
+        {
+          "do": "waitFor",
+          "selector": "text=Report Sent Successfully",
+          "timeoutMs": 60000,
+          "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1200
+        },
+        {
+          "do": "mark"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 9000
+        }
+      ],
+      "audioSeconds": 8.448,
+      "holdFor": 8.848
+    },
+    {
+      "id": "s7",
+      "title": "My submissions",
+      "start": 73,
+      "duration": 13,
+      "app": "mobile-pwa",
+      "route": "/en/history",
+      "visual": {
+        "type": "phone",
+        "note": "History list, then a detail sheet showing the handling office, the environmental law and the response target."
+      },
+      "caption": "Handling office, law,\nand response target.",
+      "narration": "Every report stays in the citizen's history, with the office handling it, the law that applies, and the response target.",
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=My Submissions",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2000
+        },
+        {
+          "do": "click",
+          "selector": "text=Open burning of mixed waste",
+          "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2500
+        },
+        {
+          "do": "scrollIntoView",
+          "selector": "text=Assigned Authority & Law",
+          "optional": true
+        },
+        {
+          "do": "highlight",
+          "selector": "text=Assigned Authority & Law",
+          "ms": 3000,
+          "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2500
+        }
+      ],
+      "audioSeconds": 7.04,
+      "holdFor": 7.44
+    },
+    {
+      "id": "s8",
+      "title": "The hazard map",
+      "start": 86,
+      "duration": 13,
+      "app": "mobile-pwa",
+      "route": "/en/map",
+      "visual": {
+        "type": "phone",
+        "note": "The heatmap over the Philippine basemap, with the severity legend and the report count. Tiles take several seconds to paint, so the scene waits for the canvas instead of a fixed sleep."
+      },
+      "caption": "Where the trouble is\nconcentrating.",
+      "narration": "On the hazard map, reports from across the country become a picture of where trouble is concentrating.",
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=Hazard Map",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 9000,
+          "why": "Carto vector tiles need to paint; there is no DOM event for 'map finished drawing'"
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Pins')",
+          "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2500
+        },
+        {
+          "do": "click",
+          "selector": "button:has-text('Heatmap')",
+          "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2500
+        }
+      ],
+      "audioSeconds": 5.952,
+      "holdFor": 6.352
+    },
+    {
+      "id": "s9",
+      "title": "Community reports",
+      "start": 99,
+      "duration": 9,
+      "app": "mobile-pwa",
+      "route": "/en/incidents",
+      "visual": {
+        "type": "phone",
+        "note": "The nearby incident feed."
+      },
+      "caption": "And what neighbours\nhave reported.",
+      "narration": "They can also see what other people have reported nearby.",
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=Community Reports",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2500
+        },
+        {
+          "do": "highlight",
+          "selector": "text=Illegal dumping along the riverbank",
+          "ms": 2500,
+          "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2000
+        }
+      ],
+      "audioSeconds": 3.136,
+      "holdFor": 3.536
+    },
+    {
+      "id": "s10",
+      "title": "Liksi",
+      "start": 108,
+      "duration": 18,
+      "app": "mobile-pwa",
+      "route": "/en/dashboard",
+      "visual": {
+        "type": "phone",
+        "note": "The chat opened and a real question asked. The answer is live Gemini through the AI service, scoped to Philippine law by the server-side prompt."
+      },
+      "caption": "Liksi answers in\nplain language.",
+      "narration": "Liksi, the built-in assistant, answers questions about Philippine environmental law in plain language. It names the statutes, and it is clear that a person still decides.",
+      "deferMark": true,
       "actions": [
         {
           "do": "waitFor",
@@ -240,14 +536,222 @@
           "timeoutMs": 60000
         },
         {
+          "do": "openLiksi"
+        },
+        {
+          "do": "askLiksi",
+          "value": "Which Philippine law covers plastic waste in a river?"
+        },
+        {
           "do": "waitForTimeout",
           "ms": 1200
         },
         {
+          "do": "mark"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 9000
+        }
+      ],
+      "audioSeconds": 11.008,
+      "holdFor": 11.408
+    },
+    {
+      "id": "s11",
+      "title": "The law library",
+      "start": 126,
+      "duration": 9,
+      "app": "mobile-pwa",
+      "route": "/en/laws",
+      "visual": {
+        "type": "phone",
+        "note": "The statutes the routing is built on."
+      },
+      "caption": "The statutes behind\nthe routing.",
+      "narration": "Behind the routing is a library of Philippine environmental law, each statute with its penalties.",
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=Environmental Laws",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2000
+        },
+        {
+          "do": "scrollIntoView",
+          "selector": "text=Clean Water Act",
+          "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2500
+        }
+      ],
+      "audioSeconds": 6.272,
+      "holdFor": 6.672
+    },
+    {
+      "id": "s12",
+      "title": "The LGU side",
+      "start": 135,
+      "duration": 12,
+      "app": "admin-portal",
+      "route": "/en/triage",
+      "visual": {
+        "type": "desktop",
+        "note": "Command Center: every report as a ticket, moving across one board."
+      },
+      "caption": "Every report is a ticket\non one board.",
+      "narration": "On the government side, every report arrives as a ticket, and moves across one board from new to resolved.",
+      "deferMark": true,
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=Command Center",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForGone",
+          "selector": "[class*='animate-shimmer']",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1200
+        },
+        {
+          "do": "mark"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 7000
+        },
+        {
           "do": "highlight",
-          "selector": "text=LIKSI AI HELPER",
+          "selector": "text=REVIEW",
           "ms": 2500,
           "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1500
+        }
+      ],
+      "audioSeconds": 6.677,
+      "holdFor": 7.077
+    },
+    {
+      "id": "s13",
+      "title": "Measured response",
+      "start": 147,
+      "duration": 13,
+      "app": "admin-portal",
+      "route": "/en/lgu-performance",
+      "visual": {
+        "type": "desktop",
+        "note": "SLA compliance, average response time and escalations per office."
+      },
+      "caption": "Response time, SLA\ncompliance, escalations.",
+      "narration": "Each office is measured on how fast it responds and whether it meets its service targets. Escalations are counted, not buried.",
+      "deferMark": true,
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=LGU Performance",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForGone",
+          "selector": "[class*='animate-shimmer']",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1000
+        },
+        {
+          "do": "mark"
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 8000
+        }
+      ],
+      "audioSeconds": 8.32,
+      "holdFor": 8.72
+    },
+    {
+      "id": "s14",
+      "title": "Accountability",
+      "start": 160,
+      "duration": 12,
+      "app": "admin-portal",
+      "route": "/en/analytics",
+      "visual": {
+        "type": "desktop",
+        "note": "The compliance analytics page and its algorithmic risk register — which model routed a report and on what basis."
+      },
+      "caption": "Every automated decision\nis registered.",
+      "narration": "And the decisions the system makes are recorded, so an office can see which method routed a report and on what basis.",
+      "deferMark": true,
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=Compliance Analytics",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForGone",
+          "selector": "[class*='animate-shimmer']",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 1000
+        },
+        {
+          "do": "mark"
+        },
+        {
+          "do": "scrollIntoView",
+          "selector": "text=Distribution Engine",
+          "optional": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 7000
+        }
+      ],
+      "audioSeconds": 7.083,
+      "holdFor": 7.483
+    },
+    {
+      "id": "s15",
+      "title": "The public record",
+      "start": 172,
+      "duration": 13,
+      "app": "frontend",
+      "route": "/en/public-record",
+      "visual": {
+        "type": "desktop",
+        "note": "The public feed and its map view. Reporter identity is removed."
+      },
+      "caption": "The public record closes\nthe loop.",
+      "narration": "For the public, the record closes the loop: what was reported, where, and what was actually resolved.",
+      "deferMark": true,
+      "actions": [
+        {
+          "do": "waitFor",
+          "selector": "text=Public Record",
+          "timeoutMs": 60000
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 6000,
+          "why": "basemap tiles again"
         },
         {
           "do": "mark"
@@ -257,140 +761,127 @@
           "ms": 4000
         }
       ],
-      "narrationNote": "QA round 2: the chat panel header reads Statutory Legal AI - Online, which the recording cannot support (the take makes zero AI calls), so the scene no longer opens the chat. It shows the dashboard helper card instead, whose own copy is Hi! Ask me anything about environmental rules, penalties, or where to report violations. The narration claims only what that card says."
+      "audioSeconds": 5.931,
+      "holdFor": 6.331
     },
     {
-      "id": "s5",
-      "title": "The LGU side",
-      "start": 46,
-      "duration": 16,
-      "app": "admin-portal",
-      "route": "/en/triage",
+      "id": "s16",
+      "title": "Track a report",
+      "start": 185,
+      "duration": 9,
+      "app": "frontend",
+      "route": "/en/track",
       "visual": {
         "type": "desktop",
-        "note": "triage (Kanban) then lgu-performance. The tickets card grid is deliberately NOT used: every card renders ConfidenceTierBadge with showScore, which prints an AI confidence percentage — on the banned list."
+        "note": "Reference-number lookup, no account needed."
       },
-      "caption": "Tracked tickets, response\ntimes, and escalations.",
-      "narration": "For local government, every report becomes a tracked ticket. Offices are measured on response time and SLA compliance, and escalations are counted.",
-      "audioSeconds": 9.877,
-      "holdFor": 10.277,
-      "deferMark": true,
+      "caption": "Follow a report without\nan account.",
+      "narration": "Any citizen can follow a report by its reference number, without an account.",
       "actions": [
         {
           "do": "waitFor",
-          "selector": "text=Command Center",
+          "selector": "text=Incident Tracker",
           "timeoutMs": 60000
         },
         {
-          "do": "waitForHidden",
-          "selector": "text=Loading incidents...",
-          "timeoutMs": 60000,
-          "why": "the board is empty until the ticket RPC answers"
-        },
-        {
           "do": "waitForTimeout",
-          "ms": 1500,
-          "why": "let the cards paint"
-        },
+          "ms": 2500
+        }
+      ],
+      "audioSeconds": 4.331,
+      "holdFor": 4.731
+    },
+    {
+      "id": "s17",
+      "title": "Offline",
+      "start": 194,
+      "duration": 10,
+      "app": "mobile-pwa",
+      "route": "/en/offline-queue",
+      "visual": {
+        "type": "phone",
+        "note": "The queue seeded through the app's own store so the screen shows a real pending item. Included only if it renders; the recorder fails the scene otherwise and it is cut."
+      },
+      "caption": "No signal? The report\nwaits on the phone.",
+      "narration": "No signal in the field? Reports wait on the phone, and send themselves when the connection returns.",
+      "conditional": true,
+      "actions": [
         {
-          "do": "mark",
-          "why": "the LGU beat starts once the board actually has incidents on it"
-        },
-        {
-          "do": "waitForTimeout",
-          "ms": 3500
+          "do": "seedQueue",
+          "value": {
+            "category": "waste_dumping",
+            "description": "Mixed household waste tipped on the riverbank.",
+            "latitude": 10.6969,
+            "longitude": 122.5644,
+            "ghost_mode": true
+          }
         },
         {
           "do": "goto",
-          "url": "/en/lgu-performance"
+          "url": "/en/offline-queue"
         },
         {
           "do": "waitFor",
-          "selector": "text=SLA",
-          "timeoutMs": 60000
+          "selector": "text=Offline Queue",
+          "timeoutMs": 45000
         },
-        {
-          "do": "waitForGone",
-          "selector": "[class*='animate-shimmer']",
-          "timeoutMs": 60000,
-          "why": "the page renders a Skeleton (animate-shimmer) until its data arrives; wait for real content, not the placeholder"
-        },
-        {
-          "do": "waitForTimeout",
-          "ms": 500
-        },
-        {
-          "do": "mark",
-          "why": "start on the page that actually has data on it"
-        },
-        {
-          "do": "waitForTimeout",
-          "ms": 8000
-        }
-      ],
-      "narrationNote": "QA found 'late ones show as escalations' and 'a public record shows how quickly they resolve' were not demonstrable. The wording now tracks the on-screen column headers RESPONSE, SLA and ESCALATED, and the AVG RESPONSE / SLA COMPLIANCE tiles."
-    },
-    {
-      "id": "s5b",
-      "title": "The public record",
-      "start": 62,
-      "duration": 6,
-      "app": "frontend",
-      "route": "/en/public-record",
-      "visual": {
-        "type": "desktop",
-        "note": "Split from s5 so it can own its own app and route."
-      },
-      "caption": "Resolved cases, with the\nreporter left anonymous.",
-      "narration": "Resolved cases are published here, with the reporter left anonymous.",
-      "narrationNote": "Added after QA: s5b was silent, which read as a mistake. Every claim here is visible on the Public Record screen - resolved/verified badges and ANONYMOUS REPORT labels.",
-      "actions": [
         {
           "do": "waitFor",
-          "selector": "text=Public Record",
-          "timeoutMs": 60000
+          "selector": "text=pending",
+          "timeoutMs": 20000
         },
         {
           "do": "waitForTimeout",
-          "ms": 3000
+          "ms": 1500
+        },
+        {
+          "do": "setOffline",
+          "value": true
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2500
+        },
+        {
+          "do": "setOffline",
+          "value": false
+        },
+        {
+          "do": "waitForTimeout",
+          "ms": 2500
         }
       ],
-      "audioSeconds": 3.883,
-      "holdFor": 4.283
+      "audioSeconds": 5.952,
+      "holdFor": 6.352
     },
     {
-      "id": "s7",
+      "id": "s18",
       "title": "End card",
-      "start": 68,
-      "duration": 13,
+      "start": 204,
+      "duration": 12,
       "app": null,
       "route": null,
       "visual": {
         "type": "card",
-        "card": "rendered by capture/frame-overlay.mjs -> endCard()",
         "elements": [
           "LikasLens logo",
           "tagline: See it. Route it. Resolve it.",
           "credit: students of ISUFST with Syntaxure Labs",
           "contact: admin@syntaxure.dev",
           "photography credit for the CC0 imagery"
-        ],
-        "cardNote": "There is no separate cards/end.html; the end card is generated in frame-overlay.mjs."
+        ]
       },
       "caption": "Built by students of ISUFST\nwith Syntaxure Labs.",
       "narration": "LikasLens — built by students of ISUFST with Syntaxure Labs, so public service can see it, route it, and resolve it.",
       "audioSeconds": 10.581,
-      "holdFor": 10.981,
-      "endCardFadeIn": 0.6,
-      "narrationNote": "QA found 'respond faster' was an unsupported comparative — nothing in the video sets a baseline. It now echoes the on-screen tagline 'See it. Route it. Resolve it.'",
-      "captionNote": "Not burned in — the end card draws its own typography. Present so the .srt captions the closing narration, which QA flagged as the one uncaptioned spoken line."
+      "holdFor": 10.981
     }
   ],
   "timingCheck": {
-    "totalSeconds": 81,
-    "narrationWords": 129,
-    "measuredSpeechSeconds": 54.25,
-    "spokenWordsPerMinute": 143,
-    "note": "Regenerated from audio/durations.json by narration/synthesize.mjs. Do not hand-edit; the numbers here are measurements."
+    "note": "Regenerated from audio/durations.json by narration/synthesize.mjs, which also re-lays every scene start. Do not hand-edit; the numbers here are measurements.",
+    "totalSeconds": 216,
+    "narrationWords": 341,
+    "measuredSpeechSeconds": 126.85,
+    "spokenWordsPerMinute": 161
   }
 }

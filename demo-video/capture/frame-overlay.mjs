@@ -31,9 +31,12 @@ import { PATHS, FRAME, PHONE, TEXT_COLUMN } from "../lib/config.mjs";
 const steps = JSON.parse(readFileSync(PATHS.steps, "utf8"));
 mkdirSync(PATHS.cardsOut, { recursive: true });
 
-const SCENES_WITH_PHONE = new Set(["s2", "s3", "s4", "s6"]);
-const SCENES_WITH_DEMO_TAG = new Set(["s2", "s3", "s4", "s5", "s5b", "s6"]); // brief step 10
-const SCENES_FRAME_FILLING = new Set(["s1", "s5", "s5b"]); // photo push-in and desktop apps
+// Derived from the scene's own definition rather than a hardcoded id list, so
+// adding or renumbering a scene cannot silently drop the demo tag.
+const SCENES_WITH_DEMO_TAG = new Set(steps.scenes.filter((s) => s.app).map((s) => s.id));
+const SCENES_FRAME_FILLING = new Set(
+  steps.scenes.filter((s) => ["photo-pushin", "desktop"].includes(s.visual?.type)).map((s) => s.id),
+);
 
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -93,14 +96,16 @@ function textPanel(scene, index, total, { opaque, shape }) {
     .brandinline { flex:0 0 auto; color:#334155; font:700 24px/1 "Segoe UI", system-ui, sans-serif;
       letter-spacing:0.18em; padding-bottom:8px; }
     ` : `
+    /* The frame behind this layer is a blurred, darkened copy of the same
+       screen, so nothing is empty. A scrim keeps the text column readable
+       without touching the phone panel, which starts at PHONE.x. */
+    .scrim { position:absolute; left:0; top:0; bottom:0; width:820px;
+      background: linear-gradient(90deg, rgba(6,10,18,0.94) 0%, rgba(6,10,18,0.86) 55%, rgba(6,10,18,0) 100%); }
     .col { position:absolute; left:${TEXT_COLUMN.x}px; width:${TEXT_COLUMN.width}px; }
     .chip { top:120px; display:flex; align-items:center; gap:14px; }
     .title-block { top:330px; }
     .rule-block { top:492px; }
     .cap-block { top:545px; }
-    /* The phone panel starts at PHONE.x and is composited on top, so a brand at
-       the canvas's right edge was clipped to a stray "S". It sits in the text
-       column instead. */
     .foot { bottom:64px; left:${TEXT_COLUMN.x}px; width:${TEXT_COLUMN.width}px; position:absolute;
       display:flex; align-items:center; justify-content:space-between; gap:16px; }
     `}
@@ -109,6 +114,7 @@ function textPanel(scene, index, total, { opaque, shape }) {
 
 function leftPanelBody(scene, index, total, appLabel, captionLines, demoTag) {
   return `
+    <div class="scrim"></div>
     <div class="col chip">
       <span class="step"><span class="dot"></span>STEP ${index + 1} OF ${total}</span>
       ${appLabel ? `<span class="app">${esc(appLabel)}</span>` : ""}
@@ -179,9 +185,11 @@ const total = steps.scenes.length;
 const written = [];
 
 for (const [index, scene] of steps.scenes.entries()) {
-  const isCard = scene.id === "s7";
+  const isCard = scene.visual?.type === "card";
   const shape = isCard ? "card" : SCENES_FRAME_FILLING.has(scene.id) ? "lowerthird" : "leftpanel";
-  const opaque = SCENES_WITH_PHONE.has(scene.id) || isCard;
+  // Phone scenes are alpha: the blurred backdrop and the phone are composited
+  // underneath at assembly, so the frame is never mostly empty.
+  const opaque = isCard;
   const html = isCard ? endCard(scene) : textPanel(scene, index, total, { opaque, shape });
   const out = join(PATHS.cardsOut, `${scene.id}.png`);
 

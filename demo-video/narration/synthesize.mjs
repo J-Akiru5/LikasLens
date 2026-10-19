@@ -128,8 +128,13 @@ for (const scene of steps.scenes) {
   const out = join(PATHS.audio, `${scene.id}.wav`);
   if (!existsSync(raw)) continue;
 
+  // A peak limiter guards against a single out-of-range sample from the TTS
+  // (Kokoro occasionally emits one). The final loudnorm pass sets the real
+  // level, so this only stops pre-gain clipping.
   runFfmpeg(
-    ["-y", "-i", raw, "-ar", String(AUDIO.sampleRate), "-ac", String(AUDIO.channels), "-c:a", "pcm_s16le", out],
+    ["-y", "-i", raw, "-ar", String(AUDIO.sampleRate), "-ac", String(AUDIO.channels),
+     "-af", "alimiter=limit=0.95:attack=1:release=50:level=disabled",
+     "-c:a", "pcm_s16le", out],
     { label: `${scene.id} resample` },
   );
 
@@ -154,6 +159,34 @@ for (const scene of steps.scenes) {
   totalSpeech += seconds;
 }
 
+// ---------------------------------------------------------------------------
+// Self-heal the timeline
+//
+// A scene must hold for its audio plus 0.4 s. Rather than hand-maintaining
+// durations and re-laying starts after every narration edit, extend any scene
+// that has outgrown its slot and re-lay every start from zero. Hand-edited
+// timings are exactly how the script and the audio drifted apart before.
+// ---------------------------------------------------------------------------
+const extended = [];
+let cursor = 0;
+for (const scene of steps.scenes) {
+  const d = durations[scene.id];
+  if (d && d.holdFor > scene.duration) {
+    const was = scene.duration;
+    scene.duration = Math.ceil(d.holdFor);
+    d.slot = scene.duration;
+    d.fitsSlot = true;
+    extended.push(`${scene.id}: ${was}s -> ${scene.duration}s`);
+  }
+  scene.start = cursor;
+  cursor += scene.duration;
+}
+if (extended.length) {
+  console.log("\nExtended to fit narration:");
+  for (const e of extended) console.log(`  ${e}`);
+}
+const timelineSeconds = cursor;
+
 writeFileSync(
   join(PATHS.audio, "durations.json"),
   JSON.stringify(
@@ -163,6 +196,7 @@ writeFileSync(
       speed: V.speed,
       sampleRate: AUDIO.sampleRate,
       totalSpeechSeconds: Number(totalSpeech.toFixed(2)),
+      timelineSeconds,
       scenes: durations,
     },
     null,
@@ -179,12 +213,12 @@ const words = steps.scenes.reduce(
 );
 steps.timingCheck = {
   ...(steps.timingCheck ?? {}),
-  totalSeconds: steps.scenes.reduce((a, s) => a + s.duration, 0),
+  totalSeconds: timelineSeconds,
   narrationWords: words,
   measuredSpeechSeconds: Number(totalSpeech.toFixed(2)),
   spokenWordsPerMinute: totalSpeech > 0 ? Math.round(words / (totalSpeech / 60)) : 0,
   note:
-    "Regenerated from audio/durations.json by narration/synthesize.mjs. Do not hand-edit; the numbers here are measurements.",
+    "Regenerated from audio/durations.json by narration/synthesize.mjs, which also re-lays every scene start. Do not hand-edit; the numbers here are measurements.",
 };
 writeFileSync(PATHS.steps, JSON.stringify(steps, null, 2) + "\n");
 

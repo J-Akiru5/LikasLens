@@ -42,14 +42,30 @@ for (const r of rows) {
 
 const totalSeconds = steps.scenes.reduce((a, s) => a + s.duration, 0);
 
+/**
+ * The brief's 165-word ceiling applies to its 75-90 s cut, i.e. about
+ * 1.83 words per second of runtime. The ceiling is therefore derived from the
+ * timeline rather than fixed, so a longer cut is judged on the same density
+ * instead of tripping a limit written for a much shorter video.
+ */
+const BRIEF_WORDS = NARRATION.targetMax; // 165
+const BRIEF_SECONDS = 90;
+const density = totalSeconds > 0 ? total / totalSeconds : 0;
+const densityLimit = BRIEF_WORDS / BRIEF_SECONDS;
+const derivedCeiling = Math.round(totalSeconds * densityLimit);
+
 console.log("-".repeat(78));
-console.log(`narration words : ${total}   (ceiling ${NARRATION.targetMax}, warn above ${NARRATION.warnAbove})`);
+console.log(`narration words : ${total}   (derived ceiling ${derivedCeiling} for a ${totalSeconds}s cut)`);
 console.log(`speech estimate : ${speechSeconds.toFixed(1)}s at 140 wpm`);
 console.log(`timeline total  : ${totalSeconds}s   (target ${steps.meta.lengthTargetSeconds.min}-${steps.meta.lengthTargetSeconds.max}s)`);
+console.log(`density         : ${density.toFixed(2)} words/s   (brief's own density ${densityLimit.toFixed(2)} words/s)`);
 
 const issues = [];
-if (total > NARRATION.targetMax) issues.push(`narration is ${total} words, over the ${NARRATION.targetMax}-word ceiling`);
-else if (total > NARRATION.warnAbove) issues.push(`narration is ${total} words — above the ${NARRATION.warnAbove} warning line`);
+if (density > densityLimit) {
+  issues.push(
+    `narration density is ${density.toFixed(2)} words/s, above the brief's ${densityLimit.toFixed(2)} — the cut is talkier than the 90 s version it was written for`,
+  );
+}
 if (totalSeconds < steps.meta.lengthTargetSeconds.min) issues.push(`timeline is ${totalSeconds}s, under the ${steps.meta.lengthTargetSeconds.min}s minimum`);
 if (totalSeconds > steps.meta.lengthTargetSeconds.max) issues.push(`timeline is ${totalSeconds}s, over the ${steps.meta.lengthTargetSeconds.max}s maximum`);
 for (const r of rows.filter((x) => !x.fits)) issues.push(`${r.id}: ${r.seconds.toFixed(1)}s of speech does not fit its ${r.slot}s slot`);

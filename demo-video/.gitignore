@@ -36,3 +36,7 @@ out/
 # The repo-root .gitignore excludes build/. The assembly script must ship.
 !build/
 !build/**
+
+# Screen-audit screenshots: working artefacts, not deliverables
+capture/audit/
+

@@ -75,10 +75,14 @@ export async function launchDevice({ y4mPath, deviceScaleFactor = 2, record = nu
  * The inputs are React-controlled and the form's submit handler only exists
  * after hydration, so filling the moment the selector appears silently does
  * nothing. Wait for hydration, then retry rather than fail on a race.
+ *
+ * `app` selects which portal to authenticate against: the mobile PWA (citizen)
+ * or the admin portal (analyst).
  */
-export async function login(page, who = "citizen") {
+export async function login(page, who = "citizen", app = "mobile") {
   const acct = DEMO_ACCOUNT[who];
-  await page.goto(`${SERVICES.mobile}/en/login`, { waitUntil: "load", timeout: 120_000 });
+  const base = SERVICES[app === "admin-portal" || app === "admin" ? "admin" : "mobile"];
+  await page.goto(`${base}/en/login`, { waitUntil: "load", timeout: 120000 });
   await page.waitForSelector('input[type="email"]', { timeout: 60_000 });
 
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -88,7 +92,7 @@ export async function login(page, who = "citizen") {
     await page.locator('button[type="submit"]').click({ timeout: 30_000 });
 
     try {
-      await page.waitForURL(/dashboard/, { timeout: 20_000 });
+      await page.waitForURL((u) => !/\/login/.test(u.pathname), { timeout: 20_000 });
       return page; // success
     } catch {
       const errText = await page
@@ -100,7 +104,7 @@ export async function login(page, who = "citizen") {
       // otherwise it was almost certainly a hydration race — try again
     }
   }
-  throw new Error(`login did not reach /dashboard after 3 attempts (url=${page.url()})`);
+  throw new Error(`login did not leave /login after 3 attempts (url=${page.url()})`);
 }
 
 export function takeDir(name) {
