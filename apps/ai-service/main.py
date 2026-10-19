@@ -237,6 +237,45 @@ async def graph_topology():
     }
 
 
+@app.get("/graph/knowledge")
+async def graph_knowledge(
+    hazard: str | None = None,
+    location: str | None = None,
+    jurisdiction: str | None = None,
+) -> dict:
+    """Live knowledge-base payload for the graph screens.
+
+    Returns every violation type with its linked statutes, the detail for one
+    selected hazard (real laws, real agencies), and pgvector suggestions.
+
+    Suggestions are labelled separately from `laws` on purpose: a nearest
+    neighbour is a lead, not an assertion that the statute applies.
+    """
+    import graph_store
+    from graph_rag import vector_search_laws
+
+    hazards = await graph_store.list_hazards()
+    selected_code = hazard or (hazards[0]["code"] if hazards else None)
+
+    selected = None
+    suggestions: list[dict] = []
+    if selected_code:
+        selected = await graph_store.knowledge_for_hazard(selected_code, location, jurisdiction)
+        query_text = f"{selected.get('name') or selected_code} environmental violation Philippines"
+        try:
+            suggestions = await vector_search_laws(query_text, top_k=5, jurisdiction=jurisdiction)
+        except Exception as exc:
+            # Suggestions are optional; the relational answer still stands.
+            logger.warning("Knowledge suggestions unavailable (%s)", type(exc).__name__)
+
+    return {
+        "backend": "postgres+pgvector",
+        "hazards": hazards,
+        "selected": selected,
+        "suggestions": suggestions,
+    }
+
+
 @app.get("/graph/bootstrap-payload")
 async def graph_bootstrap_payload():
     return {

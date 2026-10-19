@@ -139,74 +139,214 @@ async def _rows(sql: str, params: dict[str, Any]) -> list[dict[str, Any]]:
         return [dict(row) for row in result.mappings().all()]
 
 
-async def query_hazard_laws_and_agencies(
-    hazard_code: str,
-    location: str | None = None,
-    jurisdiction: str | None = None,
-) -> dict[str, list[str]]:
-    """Laws a hazard violates, and agencies worth showing alongside them.
-
-    Traversal is the relational equivalent of the old
-    HazardType -[:VIOLATES]-> Law -[:ENFORCED_BY]-> Agency:
-
-        violation_types.law_id -> environmental_laws_ph
-        ngo_groups              filtered by focus area and/or location
-
-    Returns `{"laws": [title, ...], "agencies": [name, ...]}`. Empty lists are a
-    normal outcome when the data has no link; the caller falls back to vectors.
-    """
+async def _violation(hazard_code: str) -> dict[str, Any] | None:
+    """Look up a violation type by code, accepting legacy snake_case."""
     code = normalize_hazard_code(hazard_code)
     if not code:
-        return {"laws": [], "agencies": []}
+        return None
+    rows = await _rows(
+        "select id, code, name, description from public.violation_types "
+        "where upper(replace(code, '_', '-')) = :code limit 1",
+        {"code": code},
+    )
+    return rows[0] if rows else None
 
-    law_params: dict[str, Any] = {"code": code}
-    law_sql = """
-        select l.title
-        from public.violation_types v
-        join public.environmental_laws_ph l on l.id = v.law_id
-        where upper(replace(v.code, '_', '-')) = :code
-          and coalesce(l.is_active, true)
-          and l.deleted_at is null
+
+async def laws_for_hazard(
+    hazard_code: str,
+    jurisdiction: str | None = None,
+) -> list[dict[str, Any]]:
+    """Every statute linked to a hazard, with provenance.
+
+    Unions the legacy single `violation_types.law_id` with the richer
+    `violation_law_links` table, so a link is never lost while the mapping is
+    migrated, and a duplicate code resolves to its primary link.
     """
+    violation = await _violation(hazard_code)
+    if not violation:
+        return []
+
+    rows = await _rows(
+        """
+        select distinct on (code) code, title, issuing_agency, jurisdiction_scope,
+               is_primary, source, review_status, citation_url
+        from (
+            select l.law_code as code, l.title, l.issuing_agency, l.jurisdiction_scope,
+                   true as is_primary, 'existing-law_id' as source,
+                   'pending' as review_status, null::text as citation_url,
+                   0 as priority
+            from public.violation_types v
+            join public.environmental_laws_ph l on l.id = v.law_id
+            where v.id = :vid
+              and l.deleted_at is null and coalesce(l.is_active, true)
+
+            union all
+
+            select l.law_code, l.title, l.issuing_agency, l.jurisdiction_scope,
+                   k.is_primary, k.source, k.review_status, k.citation_url,
+                   1 as priority
+            from public.violation_law_links k
+            join public.environmental_laws_ph l on l.id = k.law_id
+            where k.violation_type_id = :vid
+              and l.deleted_at is null and coalesce(l.is_active, true)
+        ) merged
+        order by code, is_primary desc, priority desc
+        """,
+        {"vid": violation["id"]},
+    )
+
     scope = jurisdiction_to_scope(jurisdiction)
     if scope:
-        law_sql += " and lower(coalesce(l.jurisdiction_scope, '')) = :scope"
-        law_params["scope"] = scope
+        rows = [r for r in rows if (r.get("jurisdiction_scope") or "").lower() == scope]
 
-    law_rows = await _rows(law_sql, law_params)
-    laws = [row["title"] for row in law_rows if row.get("title")]
+    return [
+        {
+            "code": r["code"],
+            "title": r["title"],
+            "issuing_agency": r["issuing_agency"],
+            "is_primary": bool(r["is_primary"]),
+            "source": r["source"],
+            "review_status": r["review_status"],
+            "citation_url": r["citation_url"],
+        }
+        for r in rows
+    ]
 
-    agency_sql = """
-        select g.name
-        from public.ngo_groups g
-        where coalesce(g.is_active, true)
-          and g.name is not null
+
+async def agencies_for_hazard(
+    hazard_code: str,
+    location: str | None = None,
+    limit: int = 10,
+) -> list[dict[str, Any]]:
+    """Agencies worth showing for a hazard, with their location metadata.
+
+    A relevance heuristic, not an enforcement claim - see FOCUS_BY_HAZARD.
     """
-    agency_params: dict[str, Any] = {}
+    code = normalize_hazard_code(hazard_code)
+    sql = """
+        select g.name, g.focus_area, g.city_municipality, g.province, g.region
+        from public.ngo_groups g
+        where coalesce(g.is_active, true) and g.name is not null
+    """
+    params: dict[str, Any] = {}
 
     if location:
-        agency_sql += """
+        sql += """
           and (
             coalesce(g.city_municipality, '') ilike :loc
             or coalesce(g.province, '') ilike :loc
             or coalesce(g.region, '') ilike :loc
           )
         """
-        agency_params["loc"] = f"%{location}%"
+        params["loc"] = f"%{location}%"
     else:
         focuses = focus_for_hazard(code)
         if not focuses:
             # No location and no relevance mapping: return nothing rather than
             # dumping every agency in the country.
-            return {"laws": laws, "agencies": []}
-        agency_sql += " and coalesce(g.focus_area, '') = any(:focuses)"
-        agency_params["focuses"] = list(focuses)
+            return []
+        sql += " and coalesce(g.focus_area, '') = any(:focuses)"
+        params["focuses"] = list(focuses)
 
-    agency_sql += " order by g.name limit 10"
-    agency_rows = await _rows(agency_sql, agency_params)
-    agencies = [row["name"] for row in agency_rows if row.get("name")]
+    sql += " order by g.name limit :limit"
+    params["limit"] = max(1, min(int(limit), 25))
+    return await _rows(sql, params)
 
-    return {"laws": laws, "agencies": agencies}
+
+async def query_hazard_laws_and_agencies(
+    hazard_code: str,
+    location: str | None = None,
+    jurisdiction: str | None = None,
+) -> dict[str, list[str]]:
+    """Backwards-compatible summary used by `graph_rag.hybrid_retrieve`."""
+    laws = await laws_for_hazard(hazard_code, jurisdiction)
+    agencies = await agencies_for_hazard(hazard_code, location)
+    return {
+        "laws": [law["title"] for law in laws if law.get("title")],
+        "agencies": [agency["name"] for agency in agencies if agency.get("name")],
+    }
+
+
+async def list_hazards() -> list[dict[str, Any]]:
+    """Every violation type with its linked statutes, for the live graph UI."""
+    hazards = await _rows(
+        "select id, code, name, description from public.violation_types order by name",
+        {},
+    )
+    rows = await _rows(
+        """
+        select violation_type_id, code, title, is_primary, review_status, source
+        from (
+            select v.id as violation_type_id, l.law_code as code, l.title,
+                   true as is_primary, 'pending' as review_status,
+                   'existing-law_id' as source
+            from public.violation_types v
+            join public.environmental_laws_ph l on l.id = v.law_id
+            where l.deleted_at is null
+
+            union all
+
+            select k.violation_type_id, l.law_code, l.title,
+                   k.is_primary, k.review_status, k.source
+            from public.violation_law_links k
+            join public.environmental_laws_ph l on l.id = k.law_id
+            where l.deleted_at is null
+        ) merged
+        order by code
+        """,
+        {},
+    )
+
+    by_hazard: dict[str, dict[str, dict[str, Any]]] = {}
+    for row in rows:
+        bucket = by_hazard.setdefault(row["violation_type_id"], {})
+        existing = bucket.get(row["code"])
+        rank = (bool(row["is_primary"]), row["review_status"] == "verified")
+        if existing is None or rank > existing["_rank"]:
+            bucket[row["code"]] = {
+                "code": row["code"],
+                "title": row["title"],
+                "is_primary": bool(row["is_primary"]),
+                "review_status": row["review_status"],
+                "source": row["source"],
+                "_rank": rank,
+            }
+
+    out: list[dict[str, Any]] = []
+    for hazard in hazards:
+        laws = list(by_hazard.get(hazard["id"], {}).values())
+        for law in laws:
+            law.pop("_rank", None)
+        laws.sort(key=lambda item: (not item["is_primary"], item["code"]))
+        out.append(
+            {
+                "code": hazard["code"],
+                "name": hazard["name"],
+                "description": hazard["description"],
+                "laws": laws,
+                "linked": bool(laws),
+            }
+        )
+    return out
+
+
+async def knowledge_for_hazard(
+    hazard_code: str,
+    location: str | None = None,
+    jurisdiction: str | None = None,
+) -> dict[str, Any]:
+    """The live knowledge-base payload for one hazard."""
+    violation = await _violation(hazard_code)
+    laws = await laws_for_hazard(hazard_code, jurisdiction)
+    agencies = await agencies_for_hazard(hazard_code, location)
+    return {
+        "code": violation["code"] if violation else normalize_hazard_code(hazard_code),
+        "name": violation["name"] if violation else None,
+        "description": violation["description"] if violation else None,
+        "laws": laws,
+        "agencies": agencies,
+        "method": "relational" if laws else "none",
+    }
 
 
 async def search_laws_by_embedding(
