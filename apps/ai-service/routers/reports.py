@@ -129,10 +129,17 @@ async def triage_image(body: TriageRequest):
         # A silent fallback here previously hid a TypeError: this call passed
         # `confidence=`, which analyze_base64_async does not accept, so the
         # function raised on every request and this handler returned
-        # has_concern=False with no indicators for every photo. Log it so a
-        # future mismatch cannot hide again.
+        # has_concern=False with no indicators for every photo.
+        #
+        # Returning a "clean" result on failure is worse than returning nothing:
+        # the citizen is told the AI looked at their photo and found no problem,
+        # when in fact the AI never ran. Fail loudly with 503 so the UI can say
+        # the analysis is unavailable and still let them submit the report.
         logger.exception("Triage inference failed for this submission")
-        result = {}
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Image analysis is temporarily unavailable. You can still submit the report.",
+        )
 
     assessment = result.get("environmental_assessment", {})
     return {

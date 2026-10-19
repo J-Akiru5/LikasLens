@@ -87,12 +87,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         : null;
     const tempPassword = generateTempPassword();
 
-    // 1. Create the real Supabase auth account (role lives in user_metadata,
-    //    which the admin-portal login gate reads).
+    // 1. Create the real Supabase auth account. The role is written to BOTH
+    //    claims: `app_metadata` is the authoritative one every gate reads, and
+    //    `user_metadata` is kept because the provisioning trigger copies it into
+    //    public.users.
     const { data: authData, error: authError } = await db.auth.admin.createUser({
       email,
       password: tempPassword,
       email_confirm: true,
+      app_metadata: { role },
       user_metadata: { name, role },
     });
 

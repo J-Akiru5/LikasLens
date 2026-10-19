@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     const supabase = await createClient();
     const { data: { user: authUser } } = await supabase.auth.getUser();
     userGreeting = authUser?.email ? authUser.email.split('@')[0] : "Citizen";
-    userRole = authUser?.user_metadata?.role as string | undefined;
+    userRole = authUser?.app_metadata?.role as string | undefined;
 
   } catch {
     // Auth unavailable — render page without user-specific data

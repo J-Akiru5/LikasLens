@@ -80,7 +80,7 @@ export async function POST(
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
-    const role = String(user.user_metadata?.role || "citizen");
+    const role = String(user.app_metadata?.role || "citizen");
     if (!STAFF_ROLES.has(role)) {
       return NextResponse.json(
         { error: "Only analyst / LGU / admin accounts can upload resolution evidence" },

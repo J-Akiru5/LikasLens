@@ -126,7 +126,7 @@ def valid_es256_token() -> str:
         {
             "sub": str(uuid.uuid4()),
             "email": "test@example.com",
-            "user_metadata": {"role": "citizen"},
+            "app_metadata": {"role": "citizen"},
             "exp": int(time.time()) + 3600,
             "iat": int(time.time()),
             "iss": "test.supabase.co",
@@ -142,7 +142,7 @@ def expired_es256_token() -> str:
         {
             "sub": str(uuid.uuid4()),
             "email": "expired@example.com",
-            "user_metadata": {"role": "citizen"},
+            "app_metadata": {"role": "citizen"},
             "exp": int(time.time()) - 3600,  # expired 1 hour ago
             "iat": int(time.time()) - 7200,
             "iss": "test.supabase.co",
@@ -158,7 +158,7 @@ def unknown_kid_token() -> str:
         {
             "sub": str(uuid.uuid4()),
             "email": "unknown@example.com",
-            "user_metadata": {"role": "citizen"},
+            "app_metadata": {"role": "citizen"},
             "exp": int(time.time()) + 3600,
             "iat": int(time.time()),
         },
@@ -173,7 +173,7 @@ def hs256_token():
         {
             "sub": str(uuid.uuid4()),
             "email": "hs256@example.com",
-            "user_metadata": {"role": "citizen"},
+            "app_metadata": {"role": "citizen"},
             "exp": int(time.time()) + 3600,
             "iat": int(time.time()),
         },
@@ -189,7 +189,7 @@ def bad_hs256_token():
         {
             "sub": str(uuid.uuid4()),
             "email": "bad@example.com",
-            "user_metadata": {"role": "citizen"},
+            "app_metadata": {"role": "citizen"},
             "exp": int(time.time()) + 3600,
             "iat": int(time.time()),
         },
@@ -217,7 +217,7 @@ class TestES256Verification:
                 mock_decode.return_value = {
                     "sub": "test-user",
                     "email": "test@example.com",
-                    "user_metadata": {"role": "citizen"},
+                    "app_metadata": {"role": "citizen"},
                 }
                 result = _decode_with_jwks(valid_es256_token)
 

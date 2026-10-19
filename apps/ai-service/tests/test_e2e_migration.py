@@ -262,7 +262,7 @@ class TestTickets:
     def _auth_lgu(self):
         app.dependency_overrides[require_lgu_role] = lambda: {
             "sub": str(uuid.uuid4()),
-            "user_metadata": {"role": "admin"},
+            "app_metadata": {"role": "admin"},
         }
 
     def test_list_tickets(self):

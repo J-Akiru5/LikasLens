@@ -90,8 +90,8 @@ export function AdminDashboardLayoutWrapper({
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user?.user_metadata?.role) {
-        setRole(user.user_metadata.role as string);
+      if (user?.app_metadata?.role) {
+        setRole(user.app_metadata.role as string);
       }
     });
   }, []);

@@ -188,7 +188,7 @@ def optional_auth(
 
 def require_lgu_role(token: dict = Depends(verify_supabase_token)) -> dict:
     """Require the user to be officer staff (LGU / analyst / admin)."""
-    role = token.get("user_metadata", {}).get("role", "citizen")
+    role = token.get("app_metadata", {}).get("role", "citizen")
     if role not in ("lgu", "lgu_officer", "admin", "super_admin", "analyst"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -199,7 +199,7 @@ def require_lgu_role(token: dict = Depends(verify_supabase_token)) -> dict:
 
 def require_super_admin(token: dict = Depends(verify_supabase_token)) -> dict:
     """Require the user to have role = super_admin. Used for user/role management."""
-    role = token.get("user_metadata", {}).get("role", "citizen")
+    role = token.get("app_metadata", {}).get("role", "citizen")
     if role != "super_admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

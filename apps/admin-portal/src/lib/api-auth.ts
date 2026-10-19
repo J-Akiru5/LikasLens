@@ -18,20 +18,22 @@ import { createClient } from "@/lib/supabase-server";
  * at the top of the handler. Middleware is not a substitute for a check in the
  * handler that performs a privileged write.
  *
- * KNOWN LIMITATION — READ BEFORE TRUSTING THIS
- * --------------------------------------------
- * The role is read from the user's claims. Supabase lets a signed-in user write
- * `user_metadata` themselves (the mobile register page does exactly that), so a
- * citizen can currently set `user_metadata.role = "super_admin"` and satisfy
- * this check. `app_metadata` cannot be written by a user, so it is checked
- * first — but existing accounts carry their role in `user_metadata`, so the
- * fallback is what actually runs today.
+ * ROLE SOURCE
+ * -----------
+ * The role is read from `app_metadata`, never `user_metadata`. Supabase lets a
+ * signed-in user write their own `user_metadata` — the mobile register page does
+ * exactly that — so a citizen could set `user_metadata.role = "super_admin"` and
+ * satisfy this check. `app_metadata` is writable only with the service role, so
+ * it is the correct carrier for an authorisation claim.
  *
- * The real fix is to move roles into `app_metadata` (service-role only) or read
- * `public.users.role` server-side, then delete the `user_metadata` fallback.
- * Until that migration happens this guard reliably blocks unauthenticated and
- * non-staff callers, but it does not stop a determined authenticated user from
- * self-promoting. Do not describe it as more than that.
+ * Every existing account had its role copied into `app_metadata` before this
+ * module started reading it, so there is no fallback and no window in which an
+ * account has no usable claim. If a role is changed in the admin portal, the
+ * change writes BOTH claims: `app_metadata` is authoritative, and
+ * `user_metadata` is kept in step because the user-provisioning trigger reads it.
+ *
+ * `public.users.role` remains the source of truth for the database policies
+ * (`is_admin()` reads it server-side); this module guards the API handlers.
  */
 
 /** Roles allowed into the admin portal. Mirrors the page-level gate. */
@@ -48,11 +50,9 @@ export interface Caller {
 
 type GuardResult = { caller: Caller; response?: undefined } | { caller?: undefined; response: NextResponse };
 
-function roleOf(user: { app_metadata?: Record<string, unknown>; user_metadata?: Record<string, unknown> }): string {
-  const appRole = user.app_metadata?.role;
-  if (typeof appRole === "string" && appRole) return appRole;
-  const metaRole = user.user_metadata?.role;
-  return typeof metaRole === "string" ? metaRole : "";
+function roleOf(user: { app_metadata?: Record<string, unknown> }): string {
+  const role = user.app_metadata?.role;
+  return typeof role === "string" ? role : "";
 }
 
 async function currentCaller(): Promise<Caller | null> {

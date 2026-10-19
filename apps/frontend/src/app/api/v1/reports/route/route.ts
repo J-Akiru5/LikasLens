@@ -79,7 +79,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
     }
 
-    const role = (user.user_metadata as { role?: string } | null)?.role ?? "";
+    const role = (user.app_metadata as { role?: string } | null)?.role ?? "";
     const isElevated = ELEVATED_ROLES.has(role);
     const ownsTicket =
       ticket.reporter_user_id != null && ticket.reporter_user_id === user.id;

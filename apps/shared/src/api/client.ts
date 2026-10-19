@@ -103,7 +103,15 @@ export async function submitCitizenReport(payload: ReportPayload): Promise<Repor
   const latitude = typeof b.latitude === "number" ? b.latitude : null;
   const longitude = typeof b.longitude === "number" ? b.longitude : null;
   const location = b.location ? String(b.location) : undefined;
-  const userId = b.user_id ? String(b.user_id) : null;
+  // Identity comes from the session, never the payload. This used to read
+  // `b.user_id`, which is caller-controlled: anyone could file a report in
+  // another person's name. The row-level policy now also rejects a
+  // reporter_user_id that is not the caller, but deriving it here means an
+  // honest client is never rejected in the first place.
+  const {
+    data: { user: authUser },
+  } = await db().auth.getUser();
+  const userId = authUser?.id ?? null;
   const reportType = b.report_type ? String(b.report_type) : undefined;
   const displayName = b.reporter_display_name ? String(b.reporter_display_name) : null;
 

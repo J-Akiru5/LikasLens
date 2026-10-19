@@ -23,7 +23,7 @@ export async function signIn(email: string, password: string) {
   if (error) throw new Error(error.message);
   if (!data.user) throw new Error("No user returned from Supabase");
 
-  const role = data.user.user_metadata?.role as string | undefined;
+  const role = data.user.app_metadata?.role as string | undefined;
   const restrictedRoles = ["citizen", "ghost", undefined];
   if (restrictedRoles.includes(role)) {
     await supabase.auth.signOut();

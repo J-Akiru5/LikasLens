@@ -134,8 +134,8 @@ export default function TicketsPage() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user?.user_metadata?.role) {
-        setUserRole(user.user_metadata.role as string);
+      if (user?.app_metadata?.role) {
+        setUserRole(user.app_metadata.role as string);
       }
     });
   }, []);

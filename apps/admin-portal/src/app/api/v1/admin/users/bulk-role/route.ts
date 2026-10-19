@@ -39,6 +39,10 @@ async function syncAuthRoles(userIds: string[], role: string): Promise<void> {
         .filter((r) => r.supabase_auth_user_id)
         .map((r) =>
           db.auth.admin.updateUserById(r.supabase_auth_user_id, {
+            // app_metadata is authoritative; user_metadata is kept in step for
+            // the provisioning trigger. Changing only user_metadata would leave
+            // the new role inert.
+            app_metadata: { role },
             user_metadata: { role },
           })
         )

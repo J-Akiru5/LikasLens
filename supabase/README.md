@@ -29,10 +29,24 @@ accounts, and do not put it in a file that git can see.
 
 ### Roles
 
-The admin portal authorises on `user_metadata.role`. Allowed values:
-`analyst`, `admin`, `super_admin`, `lgu`, `lgu_officer`. Anything else —
-including `citizen`, `ghost` and a missing role — is rejected at sign-in and
-again in middleware.
+Authorisation reads `app_metadata.role`. Supabase lets a signed-in user write
+their own `user_metadata` — the mobile register page does exactly that — so
+`user_metadata.role` is **client-controlled and must never be trusted for an
+access decision**. `app_metadata` can only be written with the service role.
+
+The admin portal writes **both** claims when it creates an account or changes a
+role: `app_metadata` is authoritative, and `user_metadata` is kept in step
+because the user-provisioning trigger copies it into `public.users`.
+
+Allowed values: `analyst`, `admin`, `super_admin`, `lgu`, `lgu_officer`.
+Anything else — including `citizen`, `ghost` and a missing role — is rejected at
+sign-in, again in the proxy, and again in every admin API handler.
+
+`public.users.role` is a third copy, and it is the one the database policies read
+(`is_admin()`). It is populated by the provisioning trigger and changed through
+the admin portal, so it should agree with `app_metadata.role`; if the two ever
+disagree, the database follows `public.users.role` and the app follows
+`app_metadata`.
 
 `super_admin` is the highest privilege. Grant it to as few accounts as
 possible, and never to an account whose credentials are shared for demos.

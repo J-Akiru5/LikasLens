@@ -25,6 +25,7 @@ import os
 import sys
 
 import pytest
+from fastapi import HTTPException
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -102,8 +103,14 @@ def test_triage_maps_a_real_result_through(monkeypatch):
     assert out["confidence"] == 0.58
 
 
-def test_triage_degrades_safely_when_inference_raises(monkeypatch):
-    """Inference failure must not 500 the citizen's pre-check."""
+def test_triage_reports_unavailable_when_inference_raises(monkeypatch):
+    """Inference failure must not be dressed up as a clean photo.
+
+    This previously asserted `success: True, has_concern: False, indicators: []`,
+    which is exactly what a real clean photo returns. The citizen was told the AI
+    had looked and found nothing when it had not run at all. A 503 lets the UI
+    say "analysis unavailable" and still allow submission.
+    """
 
     async def boom(_b64, confidence_threshold=0.50):
         raise RuntimeError("model exploded")
@@ -111,11 +118,12 @@ def test_triage_degrades_safely_when_inference_raises(monkeypatch):
     monkeypatch.setattr("image_analysis.analyze_base64_async", boom)
 
     body = reports.TriageRequest(base64Image=_tiny_png_b64())
-    out = asyncio.run(reports.triage_image(body))
 
-    assert out["success"] is True
-    assert out["has_concern"] is False
-    assert out["indicators"] == []
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(reports.triage_image(body))
+
+    assert exc.value.status_code == 503
+    assert "unavailable" in exc.value.detail.lower()
 
 
 def _tiny_png_b64() -> str:

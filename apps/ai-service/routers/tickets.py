@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 def _require_super_admin(token: dict) -> None:
     """Verified is the super admin's final sign-off."""
-    role = token.get("user_metadata", {}).get("role", "citizen")
+    role = token.get("app_metadata", {}).get("role", "citizen")
     if role != "super_admin":
         raise HTTPException(
             status_code=403,

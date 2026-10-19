@@ -81,7 +81,7 @@ export async function proxy(request: NextRequest) {
     return pathWithoutLocale === route || pathWithoutLocale === `${route}/`;
   });
 
-  const userRole = user?.user_metadata?.role as string | undefined;
+  const userRole = user?.app_metadata?.role as string | undefined;
   const isAuthorizedAdmin = !!(user && userRole && ["analyst", "super_admin", "admin", "lgu"].includes(userRole));
 
   // If user is logged in with an authorized admin role and trying to access login, redirect to dashboard

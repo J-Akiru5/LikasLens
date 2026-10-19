@@ -180,7 +180,7 @@ export default function DashboardPage() {
       } catch {}
 
       if (authUser) {
-        const role = authUser.user_metadata?.role as string | undefined;
+        const role = authUser.app_metadata?.role as string | undefined;
         setUserRole(role);
         const rawName =
           authUser.user_metadata?.full_name ||
