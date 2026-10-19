@@ -409,11 +409,11 @@ export default function KnowledgeGraphPage() {
   const pingLiveApi = async () => {
     setApiStatus("connecting");
     try {
-      const r = await fetch("http://localhost:8001/graph/topology");
+      const r = await fetch("/api/v1/graph/topology");
       if (r.ok) {
         const d = await r.json();
         setApiStatus("ok");
-        setTerminalText((t) => `${t}\n\n[LIVE] Connected: localhost:8001/graph/topology\n[DATA] Vertex labels: ${JSON.stringify(d.vertex_labels)}\n[DATA] Edge labels: ${JSON.stringify(d.edge_labels)}`);
+        setTerminalText((t) => `${t}\n\n[LIVE] Connected: AI graph topology service\n[DATA] Vertex labels: ${JSON.stringify(d.vertex_labels)}\n[DATA] Edge labels: ${JSON.stringify(d.edge_labels)}`);
       } else throw new Error();
     } catch {
       setApiStatus("error");

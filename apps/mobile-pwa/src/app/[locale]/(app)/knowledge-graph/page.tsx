@@ -306,7 +306,7 @@ export default function KnowledgeGraphPage() {
     async function pingApi() {
       setApiStatus("connecting");
       try {
-        const res = await fetch("http://localhost:8001/graph/topology", { signal: AbortSignal.timeout(5000) });
+        const res = await fetch("/api/v1/graph/topology", { signal: AbortSignal.timeout(5000) });
         if (!cancelled) setApiStatus(res.ok ? "ok" : "error");
       } catch {
         if (!cancelled) setApiStatus("error");
