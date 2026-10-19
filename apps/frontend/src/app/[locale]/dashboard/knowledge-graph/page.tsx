@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { DashboardLayoutWrapper } from "@/components/layout/dashboard-layout-wrapper";
 import {
   Network,
@@ -49,11 +49,56 @@ interface GraphLink {
 interface Preset {
   id: string;
   title: string;
-  severity: "low" | "moderate" | "high" | "critical";
-  category: string;
-  cypherQuery: string;
   nodes: GraphNode[];
   links: GraphLink[];
+}
+
+interface KnowledgeLaw {
+  code: string;
+  title: string;
+  issuing_agency: string | null;
+  is_primary: boolean;
+  source: string;
+  review_status: "verified" | "pending";
+  citation_url: string | null;
+}
+
+interface KnowledgeAgency {
+  name: string;
+  focus_area: string | null;
+  city_municipality: string | null;
+  province: string | null;
+  region: string | null;
+}
+
+interface KnowledgeSelected {
+  code: string;
+  name: string | null;
+  description: string | null;
+  laws: KnowledgeLaw[];
+  agencies: KnowledgeAgency[];
+  method: "relational" | "vector" | "none";
+}
+
+interface KnowledgeSuggestion {
+  code: string;
+  title: string;
+  similarity: number;
+}
+
+interface HazardSummary {
+  code: string;
+  name: string;
+  description: string | null;
+  laws: { code: string; title: string; is_primary: boolean; review_status: string }[];
+  linked: boolean;
+}
+
+interface KnowledgeResponse {
+  backend: string;
+  hazards: HazardSummary[];
+  selected: KnowledgeSelected | null;
+  suggestions: KnowledgeSuggestion[];
 }
 
 // ─── Node type config ────────────────────────────────────────────────────────
@@ -170,95 +215,150 @@ function NodeIcon({ type, selected }: { type: GraphNode["type"]; selected: boole
   }
 }
 
-// ─── Presets ─────────────────────────────────────────────────────────────────
+// ─── Violation types ─────────────────────────────────────────────────────────────────
 
-function makeNodes(incident: Partial<GraphNode>, ai: Partial<GraphNode>, law: Partial<GraphNode>, agency: Partial<GraphNode>, proof: Partial<GraphNode>): GraphNode[] {
-  const base: Pick<GraphNode, "vx" | "vy">[] = [{ vx: 0, vy: 0 }];
-  return [
-    { id: "inc", type: "incident", x: 180, y: 220, vx: 0, vy: 0, code: "INCIDENT", ...incident } as GraphNode,
-    { id: "ai", type: "ai", x: 340, y: 100, vx: 0, vy: 0, code: "AI_ENGINE", ...ai } as GraphNode,
-    { id: "law", type: "law", x: 500, y: 220, vx: 0, vy: 0, code: "STATUTE", ...law } as GraphNode,
-    { id: "agency", type: "agency", x: 500, y: 380, vx: 0, vy: 0, code: "AGENCY", ...agency } as GraphNode,
-    { id: "proof", type: "proof", x: 180, y: 380, vx: 0, vy: 0, code: "AUDIT_LOG", ...proof } as GraphNode,
-  ];
+const EMPTY_PRESET: Preset = { id: "", title: "Knowledge graph", nodes: [], links: [] };
+
+/**
+ * Turn the live knowledge-base payload into the node/link shape the force
+ * renderer already understands. Nothing here is hardcoded: every label, code and
+ * agency comes from the API.
+ */
+function buildPreset(selected: KnowledgeSelected): Preset {
+  const nodes: GraphNode[] = [];
+  const links: GraphLink[] = [];
+
+  const hazardId = "hazard";
+  nodes.push({
+    id: hazardId,
+    type: "incident",
+    x: 170,
+    y: 220,
+    vx: 0,
+    vy: 0,
+    label: selected.name ?? selected.code,
+    sublabel: "Violation type",
+    details: selected.description ?? "No description recorded for this violation type.",
+    code: selected.code,
+    meta: {
+      linked_statutes: String(selected.laws.length),
+      agencies: String(selected.agencies.length),
+      method: selected.method,
+    },
+  });
+
+  const laws = selected.laws.slice(0, 4);
+  laws.forEach((law, index) => {
+    const id = `law:${law.code}`;
+    nodes.push({
+      id,
+      type: "law",
+      x: 380,
+      y: 120 + index * 110,
+      vx: 0,
+      vy: 0,
+      label: law.title,
+      sublabel: law.code,
+      details: law.issuing_agency
+        ? `Issued by ${law.issuing_agency}.`
+        : "No issuing agency recorded.",
+      code: law.code,
+      meta: {
+        review_status: law.review_status,
+        source: law.source,
+        primary: law.is_primary ? "yes" : "no",
+        citation: law.citation_url ?? "not recorded",
+      },
+    });
+    links.push({
+      source: hazardId,
+      target: id,
+      label: law.is_primary ? "Violates" : "Also relates",
+    });
+  });
+
+  const agencies = selected.agencies.slice(0, 5);
+  agencies.forEach((agency, index) => {
+    const id = `agency:${agency.name}`;
+    nodes.push({
+      id,
+      type: "agency",
+      x: 610,
+      y: 80 + index * 80,
+      vx: 0,
+      vy: 0,
+      label: agency.name,
+      sublabel: agency.focus_area ?? "Agency",
+      details:
+        [agency.city_municipality, agency.province, agency.region].filter(Boolean).join(", ") ||
+        "No location recorded.",
+      code: "AGENCY",
+      meta: {
+        focus_area: agency.focus_area ?? "not recorded",
+        region: agency.region ?? "not recorded",
+      },
+    });
+  });
+
+  let edges = 0;
+  for (const law of laws) {
+    for (const agency of agencies) {
+      if (edges >= 12) break;
+      links.push({
+        source: `law:${law.code}`,
+        target: `agency:${agency.name}`,
+        label: "Enforced by",
+      });
+      edges += 1;
+    }
+  }
+
+  return {
+    id: selected.code,
+    title: selected.name ?? selected.code,
+    nodes,
+    links,
+  };
 }
 
-const BASE_LINKS: GraphLink[] = [
-  { source: "inc", target: "ai", label: "Analyzed By" },
-  { source: "inc", target: "proof", label: "Forensic Audit" },
-  { source: "inc", target: "law", label: "Violates" },
-  { source: "law", target: "agency", label: "Enforced By" },
-  { source: "ai", target: "agency", label: "Routes To" },
-];
-
-const PRESETS: Preset[] = [
-  {
-    id: "solid-waste",
-    title: "Illegal Solid Waste Dumping",
-    severity: "high",
-    category: "Solid Waste",
-    cypherQuery: "MATCH (h:HazardType {code: 'SOLID_WASTE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
-    nodes: makeNodes(
-      { label: "Trash Heap — Brgy. 143", sublabel: "Manila, NCR", details: "Illegal dumping site (~4×5m) blocking pedestrian walkway. Classified via YOLOv8 vision pipeline.", meta: { Type: "Solid Waste", GPS: "14.5995°N 120.9842°E", Status: "Active" } },
-      { label: "YOLOv8 + Liksi AI", sublabel: "FastAPI AI-Service", details: "Computer vision model and Liksi AI engine running on LikasLens AI microservice. Detects environmental violation classes.", meta: { Model: "YOLOv8n-Env", Latency: "~120ms", Framework: "FastAPI / Python 3.12" } },
-      { label: "Republic Act 9003", sublabel: "Ecological Solid Waste Mgmt.", details: "RA 9003 Section 48 — Prohibited Acts. Fines up to ₱300,000 and 6 years imprisonment.", meta: { Statute: "RA 9003", Section: "Sec. 48", Max_Fine: "₱300,000", Imprisonment: "Up to 6 years" } },
-      { label: "CENRO Task Force", sublabel: "City Environment & NR Office", details: "Specialized enforcement unit. SLA: 24-hour field response. Coordinates with MMDA for Metro Manila.", meta: { Unit: "CENRO Enforcement", SLA: "24 Hours", Jurisdiction: "Metro Manila", Contact: "CENRO-Manila" } },
-      { label: "Supabase Vault + SHA-256", sublabel: "EXIF-Stripped Evidence", details: "EXIF metadata stripped via Pillow, raw evidentiary photo persisted in Supabase S3 storage with SHA-256 checksum.", meta: { Storage: "Supabase Vault", Checksum: "SHA-256", EXIF_Stripping: "Automated", Status: "Verified" } }
+function terminalFor(
+  selected: KnowledgeSelected | null,
+  suggestions: KnowledgeSuggestion[],
+): string {
+  if (!selected) return "> Knowledge store: postgres + pgvector\n> No violation type returned.";
+  const lines = [
+    "> Knowledge store: postgres + pgvector",
+    `> Hazard: ${selected.name ?? selected.code} (${selected.code})`,
+    `> Method: ${selected.method}`,
+    `> Linked statutes: ${selected.laws.length}`,
+    ...selected.laws.map(
+      (law) =>
+        `  - ${law.code} (${law.review_status}${law.is_primary ? ", primary" : ""}) ${law.title}`,
     ),
-    links: BASE_LINKS,
-  },
-  {
-    id: "deforestation",
-    title: "Illegal Deforestation",
-    severity: "critical",
-    category: "Forest Cover",
-    cypherQuery: "MATCH (h:HazardType {code: 'DEFORESTATION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
-    nodes: makeNodes(
-      { label: "Canopy Loss — Mt. Apo Buffer", sublabel: "Davao del Sur", details: "Satellite imagery + citizen reports confirm commercial chain-sawing in protected forest buffer zone.", meta: { Type: "Illegal Logging", Area_Lost: "~3.2 hectares", Sat_Source: "Sentinel-2", Status: "Active" } },
-      { label: "Forestry Sentinel AI", sublabel: "FastAPI Inference Engine", details: "NDVI change-detection model and YOLO classifier running on LikasLens AI microservice.", meta: { Model: "NDVI-ChangeNet", Framework: "Python 3.12 / FastAPI", Change: "-12% NDVI", } },
-      { label: "P.D. 705 — Forestry Code", sublabel: "Revised Forestry Code", details: "Presidential Decree 705. Prohibits cutting, gathering, removing timber in forest lands without license.", meta: { Statute: "P.D. 705", Jurisdiction: "All forest lands", Max_Fine: "₱500,000", Imprisonment: "Up to 20 years" } },
-      { label: "DENR — Forest Police", sublabel: "Dept. of Env. & Natural Res.", details: "Forest rangers with arrest authority. Deployed with GPS coordinates for field intercept operations.", meta: { Unit: "DENR Forest Rangers", Response: "Field Intercept", Alert: "SMS + Radio Broadcast", Priority: "CRITICAL" } },
-      { label: "Forensic Audit Log", sublabel: "SHA-256 Timeline Record", details: "Evidence timestamp, location fuzzing, and AI triage classification recorded in tamper-evident timeline.", meta: { Method: "Forensic SHA-256 Hash", Privacy: "Ghost Mode Fuzzed", Status: "Verified" } }
-    ),
-    links: BASE_LINKS,
-  },
-  {
-    id: "water-pollution",
-    title: "Industrial Wastewater Discharge",
-    severity: "critical",
-    category: "Water Quality",
-    cypherQuery: "MATCH (h:HazardType {code: 'WATER_POLLUTION'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
-    nodes: makeNodes(
-      { label: "Toxic Runoff — Laguna Lake", sublabel: "Laguna de Bay Watershed", details: "Elevated chemical COD levels and visible discoloration detected near industrial discharge pipe #7.", meta: { Type: "Chemical Discharge", pH_Level: "4.2 (Acidic)", COD: "380 mg/L (3× limit)", Status: "Active Spill" } },
-      { label: "Water Sentinel AI", sublabel: "FastAPI Analysis Engine", details: "Analyzes photo color histograms and user-reported parameters against baseline water quality profiles.", meta: { Model: "WaterSpec-v1.3", Indicators: "Color, pH, COD", Engine: "FastAPI / Python 3.12" } },
-      { label: "Republic Act 9275", sublabel: "Clean Water Act of 2004", details: "RA 9275 Section 27 — Prohibited Acts. Discharge of pollutants into water bodies is a criminal offense.", meta: { Statute: "RA 9275", Section: "Sec. 27", Max_Fine: "₱200,000/day", Imprisonment: "Up to 12 years" } },
-      { label: "DENR-EMB & LLDA", sublabel: "Laguna Lake Dev. Authority", details: "LLDA environmental compliance officers and EMB joint inspection team. Water sampling authority.", meta: { Unit: "LLDA + EMB-R4A", Action: "Joint Inspection", Response: "Same-day sampling", Penalty: "Cease & Desist" } },
-      { label: "Supabase Evidence Vault", sublabel: "SHA-256 Forensic Hash", details: "Audit-grade evidence stored in encrypted Supabase Storage with SHA-256 tamper-evident checksum.", meta: { Storage: "Supabase S3 Vault", Hash: "SHA-256 Checksum", EXIF_Stripping: "Automated (Pillow)", Status: "Verified" } }
-    ),
-    links: BASE_LINKS,
-  },
-  {
-    id: "coral-damage",
-    title: "Marine Coral Reef Destruction",
-    severity: "high",
-    category: "Marine Protection",
-    cypherQuery: "MATCH (h:HazardType {code: 'CORAL_DAMAGE'})-[:VIOLATES]->(l:Law)\n MATCH (l)-[:ENFORCED_BY]->(a:Agency)\n RETURN DISTINCT l.title AS law, a.name AS agency",
-    nodes: makeNodes(
-      { label: "Blast Fishing — Sulu Sea", sublabel: "Tawi-Tawi Marine Sanctuary", details: "Hydrophone arrays detected explosive frequency signatures. Visible coral fragmentation confirmed by citizen divers.", meta: { Type: "Dynamite Fishing", Zone: "Strict Protection Area", Hydrophone: "Positive Match", Depth: "8–15m" } },
-      { label: "Marine Audio-Visual AI", sublabel: "WaveformNet Classifier", details: "Audio pattern matching model trained on documented underwater explosion frequencies from 12 hydrophone stations.", meta: { Model: "WaveformNet-v2", Signal: "87–120 Hz blast", Latency: "<2s detection" } },
-      { label: "Republic Act 8550", sublabel: "Philippine Fisheries Code", details: "RA 8550 Sections 88–92. Dynamite fishing classified as a grave offense. Mandatory imprisonment.", meta: { Statute: "RA 8550", Section: "Sec. 88–92", Classification: "Grave Offense", Imprisonment: "20 yrs mandatory" } },
-      { label: "BFAR + PCG — Maritime", sublabel: "Bureau of Fisheries & Coast Guard", details: "Philippine Coast Guard Patrol Boat 3 intercepting vessel. BFAR monitors and files charges.", meta: { Unit: "BFAR + PCG Tawi-Tawi", Vessel: "PCG Patrol Boat #3", Response: "Maritime Intercept", ETA: "~18 minutes" } },
-      { label: "Digital Forensic Audit Trail", sublabel: "Digital Chain of Custody", details: "Zero-knowledge ghost mode protection with tamper-evident event timeline and forensic timestamping.", meta: { Method: "SHA-256 Audit Log", Timestamp: "UTC Authority", Privacy: "Ghost Mode Fuzzed", Status: "Verified" } }
-    ),
-    links: BASE_LINKS,
-  },
-];
-
-// ─── Component ───────────────────────────────────────────────────────────────
+    `> Agencies in scope: ${selected.agencies.length}`,
+  ];
+  if (selected.laws.length === 0) {
+    lines.push("> No statute is linked to this violation type yet.");
+  }
+  if (suggestions.length > 0) {
+    lines.push("> Suggested by pgvector similarity (not an assertion):");
+    lines.push(
+      ...suggestions.map((s) => `  ~ ${s.code} sim=${s.similarity.toFixed(3)} ${s.title}`),
+    );
+  }
+  return lines.join("\n");
+}
 
 export default function KnowledgeGraphPage() {
-  const [activeId, setActiveId] = useState("solid-waste");
-  const activePreset = PRESETS.find((p) => p.id === activeId)!;
+  const [hazards, setHazards] = useState<HazardSummary[]>([]);
+  const [selectedCode, setSelectedCode] = useState("");
+  const [knowledge, setKnowledge] = useState<KnowledgeSelected | null>(null);
+  const [suggestions, setSuggestions] = useState<KnowledgeSuggestion[]>([]);
+  const [loadState, setLoadState] = useState<"loading" | "ok" | "error">("loading");
+  const activePreset = useMemo(
+    () => (knowledge ? buildPreset(knowledge) : EMPTY_PRESET),
+    [knowledge],
+  );
 
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>("inc");
@@ -275,19 +375,42 @@ export default function KnowledgeGraphPage() {
   const svgW = 720;
   const svgH = 440;
 
-  // Reset nodes when preset changes
+  // The page is driven by the API, not a fixed preset.
+  const loadKnowledge = useCallback(async (hazard?: string) => {
+    setLoadState("loading");
+    try {
+      const url = hazard
+        ? `/api/v1/graph/knowledge?hazard=${encodeURIComponent(hazard)}`
+        : "/api/v1/graph/knowledge";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("knowledge request failed");
+      const data = (await res.json()) as KnowledgeResponse;
+      setHazards(data.hazards ?? []);
+      setKnowledge(data.selected ?? null);
+      setSuggestions(data.suggestions ?? []);
+      setSelectedCode(data.selected?.code ?? "");
+      setLoadState("ok");
+    } catch {
+      setLoadState("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadKnowledge();
+  }, [loadKnowledge]);
+
+  // Reset the simulation whenever the live dataset changes.
   useEffect(() => {
     const fresh = JSON.parse(JSON.stringify(activePreset.nodes));
     nodesRef.current = fresh;
     setNodes(fresh);
-    setSelectedId("inc");
-    const intro = `> LikasLens knowledge graph - illustrative example\n> This is a fixed sample dataset rendered in the browser.\n> It is not a live query result and no graph database is queried.\n> Query type: INCIDENT_TRAVERSAL\n\n${activePreset.cypherQuery}\n\n[SAMPLE] ${activePreset.nodes.length} vertices, ${activePreset.links.length} edges\n[NOTE] Example only - shown to explain how a report links to a statute and an agency`;
+    setSelectedId(activePreset.nodes[0]?.id ?? null);
+    const intro = terminalFor(knowledge, suggestions);
     setTerminalText("");
     setTerminalIdx(0);
     setIsTyping(true);
-    // Store full text for typewriter
     sessionStorage.setItem("__ll_term", intro);
-  }, [activeId]);
+  }, [activePreset, knowledge, suggestions]);
 
   // Typewriter effect
   useEffect(() => {
@@ -381,7 +504,7 @@ export default function KnowledgeGraphPage() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [activeId]);
+  }, [activePreset]);
 
   // Drag handlers
   const onNodeMouseDown = useCallback((id: string, e: React.MouseEvent<SVGGElement>) => {
@@ -421,13 +544,6 @@ export default function KnowledgeGraphPage() {
     }
   };
 
-  const severityColor: Record<string, string> = {
-    critical: "text-red-500 bg-red-500/10 border-red-500/20",
-    high: "text-amber-500 bg-amber-500/10 border-amber-500/20",
-    moderate: "text-blue-400 bg-blue-400/10 border-blue-400/20",
-    low: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-  };
-
   const TypeIcon = {
     incident: AlertTriangle,
     ai: Cpu,
@@ -439,12 +555,12 @@ export default function KnowledgeGraphPage() {
   return (
     <DashboardLayoutWrapper
       pageTitle="Graph Explorer"
-      pageSubtitle="Illustrative graph showing how a report links to a statute and an enforcing agency - sample data, not a live query"
+      pageSubtitle="Live view of the statutes and agencies linked to each violation type"
     >
       {/*
         ╔══════════════════════════════════════════════════════════════╗
         ║  INDUSTRY-STANDARD LAYOUT:                                  ║
-        ║  LEFT (presets 280px) | CENTER (graph hero) | RIGHT (280px) ║
+        ║  LEFT (violation types 280px) | CENTER (graph hero) | RIGHT (280px) ║
         ║  BOTTOM: collapsible query terminal                         ║
         ╚══════════════════════════════════════════════════════════════╝
       */}
@@ -453,22 +569,31 @@ export default function KnowledgeGraphPage() {
         {/* ── Main 3-column workspace ─────────────────────────────── */}
         <div className="flex gap-0 min-h-0 flex-1" style={{ minHeight: "520px" }}>
 
-          {/* ── LEFT PANEL: Presets ──────────────────────────────── */}
+          {/* ── LEFT PANEL: Violation types ──────────────────────────────── */}
           <div className="w-72 shrink-0 flex flex-col border-r border-border bg-panel hidden lg:flex">
             {/* Panel header */}
             <div className="px-4 pt-4 pb-3 border-b border-border">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">Incident Presets</p>
-              <p className="text-[11px] text-ink/50 mt-0.5">Select a violation type to simulate</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-ink/40">Violation Types</p>
+              <p className="text-[11px] text-ink/50 mt-0.5">
+                {loadState === "loading"
+                  ? "Loading from the knowledge base…"
+                  : loadState === "error"
+                    ? "Knowledge service unavailable"
+                    : `${hazards.length} types · ${hazards.filter((h) => h.linked).length} with a linked statute`}
+              </p>
             </div>
 
             {/* Preset list */}
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
-              {PRESETS.map((p) => {
-                const active = p.id === activeId;
+              {hazards.map((h) => {
+                const active = h.code === selectedCode;
                 return (
                   <button
-                    key={p.id}
-                    onClick={() => setActiveId(p.id)}
+                    key={h.code}
+                    onClick={() => {
+                      setSelectedCode(h.code);
+                      void loadKnowledge(h.code);
+                    }}
                     className={`w-full text-left rounded-xl p-3 border transition-all duration-150 group ${
                       active
                         ? "bg-accent/8 border-accent/40 text-ink shadow-sm"
@@ -477,19 +602,16 @@ export default function KnowledgeGraphPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className={`text-[11px] font-semibold leading-snug ${active ? "text-ink" : "text-ink/75"}`}>
-                        {p.title}
+                        {h.name}
                       </span>
-                      <span className={`shrink-0 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md border ${severityColor[p.severity]}`}>
-                        {p.severity}
+                      <span className="shrink-0 text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-md border border-border text-ink/50">
+                        {h.laws.length}
                       </span>
                     </div>
-                    <p className="text-[10px] text-ink/45 mt-1 font-medium">{p.category}</p>
-                    {active && (
-                      <div className="mt-2 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-                        <span className="text-[10px] text-accent font-medium">Sample traversal</span>
-                      </div>
-                    )}
+                    <p className="text-[10px] text-ink/45 mt-1 font-mono">{h.code}</p>
+                    <p className={`text-[10px] mt-1 font-medium ${h.linked ? "text-emerald-500" : "text-amber-500"}`}>
+                      {h.linked ? "Statute linked" : "No statute linked yet"}
+                    </p>
                   </button>
                 );
               })}
